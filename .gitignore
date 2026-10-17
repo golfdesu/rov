@@ -14,3 +14,4 @@ mlruns/
 mlflow.db
 .DS_Store
 Thumbs.db
+node_modules/

@@ -11,6 +11,9 @@
 * `data/hero_draft_stats.csv`, `data/synergy_matrix.csv`, `data/counter_matrix.csv` — ตารางสถิติการเล่นแยกตาม 5 เลนหลัก, คู่หู Synergy (2,605 คู่) และตัวแก้ทาง Counter (6,234 คู่)
 * `src/train_sota_model.py` — โมเดล SOTA **`RoVDraftGNNTransformer`** (Multi-Relational Hero GNN + Multi-Head Draft Transformer + Dual Policy & Win-Value Heads)
 * `src/predict_draft_cli.py` — ระบบจำลองและทำนายการดราฟต์ผ่าน CLI
+* `src/api.py` — FastAPI (`/health`, `/heroes`, `/draft/steps`, `/predict`) และเสิร์ฟหน้าเว็บจาก `frontend/dist`
+* `frontend/` — หน้าเว็บดราฟต์ (React + Vite + Tailwind) ธีมถ่ายทอดสด แสดงชื่อฮีโร่ตามเซิร์ฟไทย (เช่น Mortos, Celica, Riktor)
+* `scripts/fetch_hero_icons.py` — ดาวน์โหลดไอคอนฮีโร่สี่เหลี่ยม 130 ตัวลง `frontend/public/avatars/`
 * `run_sota_rov_h100.sbatch` — สคริปต์ SLURM สำหรับส่งงานเทรนสเกลใหญ่บนโหนดการ์ดจอ **NVIDIA H100 (`gpu-h100`)** ของ **ERAWAN HPC**
 
 ---
@@ -48,4 +51,28 @@ python src/predict_draft_cli.py \
   --ally-picks "Skud,Billow" \
   --enemy-picks "TeeMee,Hayate" \
   --global-bans "Toro,Marja"
+```
+
+---
+
+## วิธีเปิดหน้าเว็บดราฟต์ (Web UI)
+
+```bash
+cd frontend
+npm install
+npm run build
+cd ..
+uvicorn src.api:app --port 8000
+```
+
+แล้วเปิด http://localhost:8000
+
+คีย์ลัด: `/` ค้นหาฮีโร่, `Enter` ล็อกตัวที่ AI แนะนำอันดับ 1, `Ctrl+Z` ย้อนกลับ
+
+พัฒนาแบบ hot reload: รัน uvicorn ค้างไว้ แล้ว `cd frontend && npm run dev` เปิด http://localhost:3000
+
+หรือรันผ่าน Docker (build หน้าเว็บให้อัตโนมัติ):
+```bash
+docker build -t rov-draft .
+docker run -p 8000:8000 rov-draft
 ```

@@ -11,7 +11,8 @@ from src.predictor import LANE_LABELS, RoVDraftPredictor
 from src.schemas import DraftPredictionResponse, DraftStateRequest, HealthResponse
 from src.search.draft_mcts import DRAFT_STEPS
 
-WEB_DIR = Path(__file__).resolve().parent.parent / "web"
+FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
+FRONTEND_DIST = FRONTEND_DIR / "dist"
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 app = FastAPI(
@@ -32,7 +33,7 @@ predictor = RoVDraftPredictor()
 
 # Precompute rich hero metadata catalog
 hero_summary_path = DATA_DIR / "heroes_130_summary.csv"
-hero_images_path = WEB_DIR / "hero_images.json"
+hero_images_path = FRONTEND_DIR / "public" / "hero_images.json"
 
 hero_details_cache: list[dict] = []
 try:
@@ -116,5 +117,5 @@ def predict_draft(request: DraftStateRequest):
 
 
 # Mounted last so the API routes above take precedence over static files.
-if WEB_DIR.is_dir():
-    app.mount("/", StaticFiles(directory=WEB_DIR, html=True), name="web")
+if FRONTEND_DIST.is_dir():
+    app.mount("/", StaticFiles(directory=FRONTEND_DIST, html=True), name="frontend")

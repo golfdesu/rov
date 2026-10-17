@@ -41,13 +41,13 @@ def test_predict_endpoint():
 def test_web_ui_served():
     response = client.get("/")
     assert response.status_code == 200
-    assert "RoV Draft Assistant" in response.text
+    assert "RoV Draft Intelligence" in response.text
 
 
 def test_web_static_assets_served():
-    assert client.get("/app.js").status_code == 200
-    assert client.get("/styles.css").status_code == 200
     assert client.get("/manifest.webmanifest").status_code == 200
+    assert client.get("/favicon.svg").status_code == 200
+    assert client.get("/avatars/Airi.jpg").status_code == 200
 
 
 def test_api_routes_not_shadowed_by_static_mount():
@@ -60,7 +60,7 @@ def test_hero_images_served():
     assert response.status_code == 200
     images = response.json()
     assert len(images) > 100
-    assert all(url.startswith("https://") for url in images.values())
+    assert all(url.startswith("/avatars/") or url.startswith("https://") for url in images.values())
 
 
 def test_draft_steps_endpoint():

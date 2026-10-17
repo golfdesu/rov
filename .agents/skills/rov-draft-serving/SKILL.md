@@ -49,12 +49,15 @@ python src/predict_draft_cli.py \
 
 ## 3. Production FastAPI Serving (`src/api.py`)
 
-### Launch Local API Server
+### Launch Local API Server + Web UI
 ```bash
+cd frontend && npm install && npm run build && cd ..   # once, or after frontend changes
 uvicorn src.api:app --reload --port 8000
 ```
+- **Draft Web UI**: `http://localhost:8000` (served from `frontend/dist`; see `frontend/README.md`)
 - **Health Check**: `GET http://localhost:8000/health`
-- **List All 130 Heroes**: `GET http://localhost:8000/heroes`
+- **List All 130 Heroes**: `GET http://localhost:8000/heroes` (includes `hero_details` with role, lane, tier, `image_url`)
+- **Draft Order**: `GET http://localhost:8000/draft/steps`
 - **Predict Next Pick/Ban**: `POST http://localhost:8000/predict`
 - **Interactive Swagger UI**: `http://localhost:8000/docs`
 

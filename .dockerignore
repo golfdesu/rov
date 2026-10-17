@@ -6,3 +6,6 @@ __pycache__
 .pytest_cache
 .ruff_cache
 logs/
+mlruns/
+frontend/node_modules
+frontend/dist

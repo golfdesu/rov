@@ -1,0 +1,10 @@
+{
+  "name": "RoV Draft Intelligence",
+  "short_name": "RoV Draft",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070b14",
+  "theme_color": "#070b14",
+  "lang": "th",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

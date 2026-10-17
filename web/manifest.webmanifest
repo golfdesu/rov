@@ -1,9 +1,0 @@
-{
-  "name": "RoV Draft Assistant",
-  "short_name": "RoV Draft",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#f9fafb",
-  "theme_color": "#2560ff",
-  "lang": "th"
-}
