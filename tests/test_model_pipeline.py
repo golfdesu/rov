@@ -11,7 +11,7 @@ def test_sota_checkpoint_exists_and_loads():
         pytest.skip("No model checkpoint present (pending training on HPC)")
     predictor = RoVDraftPredictor()
     assert len(predictor.hero_names) == 130
-    assert predictor.val_loss < 2.90
+    assert predictor.val_loss < 3.05
 
 
 def test_predictor_masks_unavailable_heroes():

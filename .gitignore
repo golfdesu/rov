@@ -10,5 +10,7 @@ logs/*.out
 logs/*.log
 mlruns/
 .pytest_cache/
+*.db
+mlflow.db
 .DS_Store
 Thumbs.db
