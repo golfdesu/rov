@@ -134,6 +134,15 @@ def load_sota_data_and_graphs():
     with open(DATA_DIR / "matches_draft_full.json", "r", encoding="utf-8") as f:
         games = json.load(f)
 
+    # Chronological sort (2024 -> 2025 -> 2026) so validation set is strictly current 2026 pro meta
+    games = sorted(
+        games,
+        key=lambda g: (
+            int(g.get("year", 2025)) if str(g.get("year", "2025")).isdigit() else 2025,
+            str(g.get("date", "")),
+        ),
+    )
+
     n_train_games = int(len(games) * 0.85)
     train_games = games[:n_train_games]
     val_games = games[n_train_games:]
@@ -156,60 +165,61 @@ def load_sota_data_and_graphs():
     for g in train_games:
         bw = g["blue_win"]
         yr = int(g.get("year", 2025)) if str(g.get("year", "2025")).isdigit() else 2025
+        w = 1.0 if yr >= 2026 else (0.5 if yr == 2025 else 0.2)
         bp = [hero_to_id[h] for h in g["blue_picks"] if h in hero_to_id]
         rp = [hero_to_id[h] for h in g["red_picks"] if h in hero_to_id]
         bb = [hero_to_id[h] for h in g["blue_bans"] if h in hero_to_id]
         rb = [hero_to_id[h] for h in g["red_bans"] if h in hero_to_id]
 
         for h in bp:
-            pick_counts[h] += 1.0
+            pick_counts[h] += w
             if bw == 1:
-                hero_wins_train[h] += 1.0
+                hero_wins_train[h] += w
             if yr >= 2026:
                 pick_2026[h] += 1.0
         for h in rp:
-            pick_counts[h] += 1.0
+            pick_counts[h] += w
             if bw == 0:
-                hero_wins_train[h] += 1.0
+                hero_wins_train[h] += w
             if yr >= 2026:
                 pick_2026[h] += 1.0
 
         for h in bb[:2] + rb[:2]:
-            ban_p1_counts[h] += 1.0
+            ban_p1_counts[h] += w
             if yr >= 2026:
                 ban_p1_2026[h] += 1.0
         for h in bb[2:] + rb[2:]:
-            ban_p2_counts[h] += 1.0
+            ban_p2_counts[h] += w
             if yr >= 2026:
                 ban_p2_2026[h] += 1.0
 
         for eb_h in rb[2:]:
             for bp_h in bp:
-                ban_response_mat[eb_h, bp_h] += 1.0
+                ban_response_mat[eb_h, bp_h] += w
         for bb_h in bb[2:]:
             for rp_h in rp:
-                ban_response_mat[bb_h, rp_h] += 1.0
+                ban_response_mat[bb_h, rp_h] += w
 
         for i in bp:
             for j in bp:
                 if i != j:
-                    syn_g[i, j] += 1.0
+                    syn_g[i, j] += w
                     if bw == 1:
-                        syn_w[i, j] += 1.0
+                        syn_w[i, j] += w
         for i in rp:
             for j in rp:
                 if i != j:
-                    syn_g[i, j] += 1.0
+                    syn_g[i, j] += w
                     if bw == 0:
-                        syn_w[i, j] += 1.0
+                        syn_w[i, j] += w
         for i in bp:
             for j in rp:
-                cnt_g[i, j] += 1.0
-                cnt_g[j, i] += 1.0
+                cnt_g[i, j] += w
+                cnt_g[j, i] += w
                 if bw == 1:
-                    cnt_w[i, j] += 1.0
+                    cnt_w[i, j] += w
                 elif bw == 0:
-                    cnt_w[j, i] += 1.0
+                    cnt_w[j, i] += w
 
     co_pick_mat = np.zeros((num_heroes, num_heroes), dtype=np.float32)
     synergy_mat = np.zeros((num_heroes, num_heroes), dtype=np.float32)
@@ -319,12 +329,14 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
     ph_arr = np.zeros(total_steps, dtype=np.int64)
     target_arr = np.zeros(total_steps, dtype=np.int64)
     win_arr = np.zeros(total_steps, dtype=np.float32)
+    weight_arr = np.zeros(total_steps, dtype=np.float32)
 
     row_idx = 0
     for g, b_picks_raw, r_picks_raw, b_bans, r_bans in valid_games:
         b_gban = [hero_to_id[h] for h in g.get("blue_global_bans", []) if h in hero_to_id]
         r_gban = [hero_to_id[h] for h in g.get("red_global_bans", []) if h in hero_to_id]
         year_val = int(g.get("year", 2026)) if str(g.get("year", "2026")).isdigit() else 2026
+        recency_w = 1.0 if year_val >= 2026 else (0.5 if year_val == 2025 else 0.2)
         blue_win = 1 if int(g.get("blue_win", 1)) == 1 else 0
 
         bp_canonical = order_team_picks_by_draft_logic(b_picks_raw, r_bans[2:4], lane_probs, priority_scores)
@@ -405,6 +417,7 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
                 ph_arr[row_idx] = phase
                 target_arr[row_idx] = target_hero
                 win_arr[row_idx] = acting_win
+                weight_arr[row_idx] = recency_w
 
                 history_events.append((target_hero, action_type, side, step_idx))
                 if action_type == 0:
@@ -434,6 +447,7 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
         torch.from_numpy(ph_arr),
         torch.from_numpy(target_arr),
         torch.from_numpy(win_arr),
+        torch.from_numpy(weight_arr),
     )
 
 
@@ -787,7 +801,7 @@ def evaluate_sota_model(model, loader, device):
         for batch in loader:
             if batch[0].device != device:
                 batch = [x.to(device, non_blocking=True) for x in batch]
-            ap, ep, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph, target, win_lbl = batch
+            ap, ep, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph, target, win_lbl = batch[:14]
 
             policy_logits, q_win_logits = model(ap, ep, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph)
             loss = F.cross_entropy(policy_logits, target, reduction="sum")
@@ -1009,21 +1023,26 @@ def main():
         for batch in train_loader:
             if batch[0].device != device:
                 batch = [x.to(device, non_blocking=True) for x in batch]
-            ap, ep, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph, target, win_lbl = batch
+            ap, ep, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph, target, win_lbl = batch[:14]
+            sw = batch[14] if len(batch) > 14 else torch.ones_like(win_lbl)
             optimizer.zero_grad(set_to_none=True)
 
             if use_amp:
                 with torch.amp.autocast("cuda", dtype=torch.bfloat16):
                     policy_logits, q_win_logits = model(ap, ep, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph)
-                    pol_loss = F.cross_entropy(policy_logits, target, label_smoothing=label_smoothing)
+                    pol_raw = F.cross_entropy(policy_logits, target, label_smoothing=label_smoothing, reduction="none")
+                    pol_loss = (pol_raw * sw).sum() / torch.clamp(sw.sum(), min=1e-5)
                     chosen_q = q_win_logits.gather(1, target.unsqueeze(1)).squeeze(1)
-                    win_loss = F.binary_cross_entropy_with_logits(chosen_q, win_lbl)
+                    win_raw = F.binary_cross_entropy_with_logits(chosen_q, win_lbl, reduction="none")
+                    win_loss = (win_raw * sw).sum() / torch.clamp(sw.sum(), min=1e-5)
                     loss = pol_loss + win_loss_weight * win_loss
             else:
                 policy_logits, q_win_logits = model(ap, ep, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph)
-                pol_loss = F.cross_entropy(policy_logits, target, label_smoothing=label_smoothing)
+                pol_raw = F.cross_entropy(policy_logits, target, label_smoothing=label_smoothing, reduction="none")
+                pol_loss = (pol_raw * sw).sum() / torch.clamp(sw.sum(), min=1e-5)
                 chosen_q = q_win_logits.gather(1, target.unsqueeze(1)).squeeze(1)
-                win_loss = F.binary_cross_entropy_with_logits(chosen_q, win_lbl)
+                win_raw = F.binary_cross_entropy_with_logits(chosen_q, win_lbl, reduction="none")
+                win_loss = (win_raw * sw).sum() / torch.clamp(sw.sum(), min=1e-5)
                 loss = pol_loss + win_loss_weight * win_loss
 
             loss.backward()

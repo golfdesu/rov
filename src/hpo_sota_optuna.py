@@ -155,21 +155,26 @@ def main():
             for batch in train_loader:
                 if batch[0].device != device:
                     batch = [x.to(device, non_blocking=True) for x in batch]
-                ap, ep_v, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph, target, win_lbl = batch
+                ap, ep_v, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph, target, win_lbl = batch[:14]
+                sw = batch[14] if len(batch) > 14 else torch.ones_like(win_lbl)
                 optimizer.zero_grad(set_to_none=True)
 
                 if use_amp:
                     with torch.amp.autocast("cuda", dtype=torch.bfloat16):
                         policy_logits, q_win_logits = model(ap, ep_v, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph)
-                        pol_loss = F.cross_entropy(policy_logits, target, label_smoothing=label_smoothing)
+                        pol_raw = F.cross_entropy(policy_logits, target, label_smoothing=label_smoothing, reduction="none")
+                        pol_loss = (pol_raw * sw).sum() / torch.clamp(sw.sum(), min=1e-5)
                         chosen_q = q_win_logits.gather(1, target.unsqueeze(1)).squeeze(1)
-                        win_loss = F.binary_cross_entropy_with_logits(chosen_q, win_lbl)
+                        win_raw = F.binary_cross_entropy_with_logits(chosen_q, win_lbl, reduction="none")
+                        win_loss = (win_raw * sw).sum() / torch.clamp(sw.sum(), min=1e-5)
                         loss = pol_loss + win_loss_weight * win_loss
                 else:
                     policy_logits, q_win_logits = model(ap, ep_v, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph)
-                    pol_loss = F.cross_entropy(policy_logits, target, label_smoothing=label_smoothing)
+                    pol_raw = F.cross_entropy(policy_logits, target, label_smoothing=label_smoothing, reduction="none")
+                    pol_loss = (pol_raw * sw).sum() / torch.clamp(sw.sum(), min=1e-5)
                     chosen_q = q_win_logits.gather(1, target.unsqueeze(1)).squeeze(1)
-                    win_loss = F.binary_cross_entropy_with_logits(chosen_q, win_lbl)
+                    win_raw = F.binary_cross_entropy_with_logits(chosen_q, win_lbl, reduction="none")
+                    win_loss = (win_raw * sw).sum() / torch.clamp(sw.sum(), min=1e-5)
                     loss = pol_loss + win_loss_weight * win_loss
 
                 loss.backward()
