@@ -11,6 +11,7 @@ from src.schemas import (
     DraftPredictionResponse,
 )
 from src.train_sota_model import RoVDraftGNNTransformer, MAX_HISTORY_LEN
+from src.search.draft_mcts import DraftMinimaxSearch, DraftSearchState
 
 LANE_LABELS = [
     "DS_Lane (ออฟเลน)",
@@ -47,11 +48,14 @@ class RoVDraftPredictor:
             **model_cfg,
         )
         self.model.load_state_dict(self.ckpt["model_state_dict"])
+        self.device = torch.device("cpu")
+        self.model.to(self.device)
         self.model.eval()
 
         self.heroes_df = pd.read_csv(config.paths.heroes_csv_path).set_index("name")
         self.stats_df = pd.read_csv(config.paths.hero_stats_csv_path).set_index("name")
         self._lookup = self._build_alias_lookup()
+        self.search_engine = DraftMinimaxSearch(self)
 
     def _build_alias_lookup(self) -> dict[str, str]:
         lookup = {k.lower(): k for k in self.hero_to_id}
@@ -201,7 +205,44 @@ class RoVDraftPredictor:
 
         syn_mat = self.ckpt["graphs"]["synergy_mat"]
         cnt_mat = self.ckpt["graphs"]["counter_mat"]
-        top_indices = np.argsort(probs)[::-1][: req.top_k]
+
+        lookahead_win_rates: dict[int, float] = {}
+        if req.use_lookahead:
+            b_p = [self.hero_to_id[h] for h in ally_picks] if side_val == 0 else [self.hero_to_id[h] for h in enemy_picks]
+            r_p = [self.hero_to_id[h] for h in enemy_picks] if side_val == 0 else [self.hero_to_id[h] for h in ally_picks]
+            b_b = [self.hero_to_id[h] for h in ally_bans] if side_val == 0 else [self.hero_to_id[h] for h in enemy_bans]
+            r_b = [self.hero_to_id[h] for h in enemy_bans] if side_val == 0 else [self.hero_to_id[h] for h in ally_bans]
+            g_b = [self.hero_to_id[h] for h in global_bans]
+
+            step_idx = self.search_engine.find_matching_step(
+                side_val, act_type, req.phase, len(b_p), len(r_p), len(b_b), len(r_b)
+            )
+            root_state = DraftSearchState(
+                blue_picks=tuple(b_p),
+                red_picks=tuple(r_p),
+                blue_bans=tuple(b_b),
+                red_bans=tuple(r_b),
+                global_bans=tuple(g_b),
+                step_idx=step_idx,
+            )
+            candidate_pool = np.argsort(probs)[::-1][: max(req.top_k * 2, 8)].tolist()
+            candidate_pool = [c for c in candidate_pool if probs[c] > 0]
+            lookahead_win_rates = self.search_engine.search_lookahead_win_rates(
+                root_state,
+                candidate_pool,
+                depth=req.lookahead_depth,
+                branch_factor=5,
+            )
+
+            # Re-rank candidates by blending policy prior and adversarial lookahead win rate
+            def rank_score(h_idx: int) -> float:
+                p_score = float(probs[h_idx])
+                l_score = lookahead_win_rates.get(h_idx, float(win_probs[h_idx] * 100.0)) / 100.0
+                return 0.40 * p_score + 0.60 * l_score
+
+            top_indices = sorted(candidate_pool, key=rank_score, reverse=True)[: req.top_k]
+        else:
+            top_indices = np.argsort(probs)[::-1][: req.top_k]
 
         recs: list[HeroRecommendation] = []
         for rank_idx, h_idx in enumerate(top_indices, start=1):
@@ -226,12 +267,19 @@ class RoVDraftPredictor:
             if h_info["has_heal_sustain"] or h_info["has_shield"]:
                 caps.append("Sustain/Shield")
 
+            lookahead_val = (
+                lookahead_win_rates.get(h_idx, round(float(win_probs[h_idx] * 100.0), 2))
+                if req.use_lookahead
+                else None
+            )
+
             recs.append(
                 HeroRecommendation(
                     rank=rank_idx,
                     hero_name=h_name,
                     probability_pct=round(float(probs[h_idx] * 100.0), 2),
                     predicted_win_rate_pct=round(float(win_probs[h_idx] * 100.0), 2),
+                    lookahead_win_rate_pct=lookahead_val,
                     primary_lane=str(s_info["main_pro_lane"]),
                     primary_role=str(h_info["primary_role"]),
                     synergy_edge_pct=round(syn_edge, 2),

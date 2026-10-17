@@ -47,6 +47,16 @@ class DraftStateRequest(BaseModel):
         le=20,
         description="Number of top hero recommendations to return",
     )
+    use_lookahead: bool = Field(
+        default=False,
+        description="Whether to execute multi-step Minimax lookahead search using Value Head",
+    )
+    lookahead_depth: int = Field(
+        default=2,
+        ge=1,
+        le=4,
+        description="Minimax search depth (lookahead turns)",
+    )
 
 
 class HeroRecommendation(BaseModel):
@@ -54,6 +64,10 @@ class HeroRecommendation(BaseModel):
     hero_name: str
     probability_pct: float
     predicted_win_rate_pct: float
+    lookahead_win_rate_pct: float | None = Field(
+        default=None,
+        description="Minimax adversarial lookahead expected win rate percentage",
+    )
     primary_lane: str
     primary_role: str
     synergy_edge_pct: float

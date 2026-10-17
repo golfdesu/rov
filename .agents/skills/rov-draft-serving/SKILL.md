@@ -57,3 +57,12 @@ uvicorn src.api:app --reload --port 8000
 - **List All 130 Heroes**: `GET http://localhost:8000/heroes`
 - **Predict Next Pick/Ban**: `POST http://localhost:8000/predict`
 - **Interactive Swagger UI**: `http://localhost:8000/docs`
+
+---
+
+## 4. Full 18-Step Self-Play Simulation (`scripts/simulate_draft_selfplay.py`)
+
+Run an end-to-end tournament draft simulation between autonomous AI coaches (Minimax Lookahead vs Greedy Policy):
+```bash
+python scripts/simulate_draft_selfplay.py --blue-strategy lookahead --red-strategy greedy --depth 2
+```
