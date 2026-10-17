@@ -4,15 +4,17 @@ import math
 import random
 import time
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import TensorDataset, DataLoader
+from torch import nn
+from torch.utils.data import DataLoader, TensorDataset
 
 try:
     import mlflow
+
     HAS_MLFLOW = True
 except ImportError:
     HAS_MLFLOW = False
@@ -32,16 +34,16 @@ torch.manual_seed(SEED)
 # 18 canonical draft steps in tournament mode:
 # (step_idx, phase, action_type, side)  where action_type: 0=BAN, 1=PICK; side: 0=BLUE, 1=RED
 DRAFT_STEPS = [
-    (0, 1, 0, 0),   # Blue Ban 1
-    (1, 1, 0, 1),   # Red Ban 1
-    (2, 1, 0, 0),   # Blue Ban 2
-    (3, 1, 0, 1),   # Red Ban 2
-    (4, 1, 1, 0),   # Blue Pick 1
-    (5, 1, 1, 1),   # Red Pick 1
-    (6, 1, 1, 1),   # Red Pick 2
-    (7, 1, 1, 0),   # Blue Pick 2
-    (8, 1, 1, 0),   # Blue Pick 3
-    (9, 1, 1, 1),   # Red Pick 3
+    (0, 1, 0, 0),  # Blue Ban 1
+    (1, 1, 0, 1),  # Red Ban 1
+    (2, 1, 0, 0),  # Blue Ban 2
+    (3, 1, 0, 1),  # Red Ban 2
+    (4, 1, 1, 0),  # Blue Pick 1
+    (5, 1, 1, 1),  # Red Pick 1
+    (6, 1, 1, 1),  # Red Pick 2
+    (7, 1, 1, 0),  # Blue Pick 2
+    (8, 1, 1, 0),  # Blue Pick 3
+    (9, 1, 1, 1),  # Red Pick 3
     (10, 2, 0, 1),  # Red Ban 3
     (11, 2, 0, 0),  # Blue Ban 3
     (12, 2, 0, 1),  # Red Ban 4
@@ -86,13 +88,16 @@ def load_sota_data_and_graphs():
         if pd.notna(h_row["secondary_role"]) and h_row["secondary_role"] in roles:
             r_vec[roles.index(h_row["secondary_role"])] = 0.5
 
-        lane_counts = np.array([
-            s_row["ds_lane_picks"],
-            s_row["jungle_picks"],
-            s_row["mid_picks"],
-            s_row["dragon_lane_picks"],
-            s_row["roam_picks"],
-        ], dtype=np.float32)
+        lane_counts = np.array(
+            [
+                s_row["ds_lane_picks"],
+                s_row["jungle_picks"],
+                s_row["mid_picks"],
+                s_row["dragon_lane_picks"],
+                s_row["roam_picks"],
+            ],
+            dtype=np.float32,
+        )
         total_p = lane_counts.sum()
         if total_p > 0:
             l_prob = lane_counts / total_p
@@ -133,8 +138,8 @@ def load_sota_data_and_graphs():
         feat_vec = np.concatenate([r_vec, l_prob, skill_flags, meta_stats]).astype(np.float32)
         feature_list.append(feat_vec)
 
-    hero_features = np.stack(feature_list, axis=0)      # (130, 25)
-    lane_probs = np.stack(lane_probs_list, axis=0)      # (130, 5)
+    hero_features = np.stack(feature_list, axis=0)  # (130, 25)
+    lane_probs = np.stack(lane_probs_list, axis=0)  # (130, 5)
     skill_matrix = np.array(skill_flags_list, dtype=np.float32)  # (130, 10)
 
     with open(DATA_DIR / "matches_draft_full.json", "r", encoding="utf-8") as f:
@@ -255,8 +260,12 @@ def load_sota_data_and_graphs():
         "ban_p1_log_prior": np.log((ban_p1_counts + 1.0) / (ban_p1_counts.sum() + num_heroes)).astype(np.float32),
         "ban_p2_log_prior": np.log((ban_p2_counts + 1.0) / (ban_p2_counts.sum() + num_heroes)).astype(np.float32),
         "pick_2026_log_prior": np.log((pick_2026 + 0.5) / (pick_2026.sum() + 0.5 * num_heroes)).astype(np.float32),
-        "ban_p1_2026_log_prior": np.log((ban_p1_2026 + 0.5) / (ban_p1_2026.sum() + 0.5 * num_heroes)).astype(np.float32),
-        "ban_p2_2026_log_prior": np.log((ban_p2_2026 + 0.5) / (ban_p2_2026.sum() + 0.5 * num_heroes)).astype(np.float32),
+        "ban_p1_2026_log_prior": np.log((ban_p1_2026 + 0.5) / (ban_p1_2026.sum() + 0.5 * num_heroes)).astype(
+            np.float32
+        ),
+        "ban_p2_2026_log_prior": np.log((ban_p2_2026 + 0.5) / (ban_p2_2026.sum() + 0.5 * num_heroes)).astype(
+            np.float32
+        ),
         "hero_base_win_adv": hero_base_win_adv,
     }
 
@@ -358,10 +367,24 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
 
         for bp_seq, rp_seq in orderings:
             step_targets = [
-                b_bans[0], r_bans[0], b_bans[1], r_bans[1],
-                bp_seq[0], rp_seq[0], rp_seq[1], bp_seq[1], bp_seq[2], rp_seq[2],
-                r_bans[2], b_bans[2], r_bans[3], b_bans[3],
-                rp_seq[3], bp_seq[3], bp_seq[4], rp_seq[4],
+                b_bans[0],
+                r_bans[0],
+                b_bans[1],
+                r_bans[1],
+                bp_seq[0],
+                rp_seq[0],
+                rp_seq[1],
+                bp_seq[1],
+                bp_seq[2],
+                rp_seq[2],
+                r_bans[2],
+                b_bans[2],
+                r_bans[3],
+                b_bans[3],
+                rp_seq[3],
+                bp_seq[3],
+                bp_seq[4],
+                rp_seq[4],
             ]
 
             cur_b_bans, cur_r_bans = [], []
@@ -403,7 +426,7 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
                 mask_arr[row_idx, target_hero] = False
 
                 for i, (h_ev, act_ev, side_ev, s_ev) in enumerate(history_events):
-                    same_side = (side_ev == side)
+                    same_side = side_ev == side
                     ttype = (1 if same_side else 2) if act_ev == 1 else (3 if same_side else 4)
                     th_arr[row_idx, i] = h_ev
                     tt_arr[row_idx, i] = ttype
@@ -459,6 +482,7 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
 
 class GPUTensorBatcher:
     """Zero-overhead in-VRAM mini-batcher for fast H100 training and Optuna HPO."""
+
     def __init__(self, dataset: TensorDataset, batch_size: int, shuffle: bool, device: torch.device):
         self.tensors = [t.to(device, non_blocking=True) for t in dataset.tensors]
         self.n = self.tensors[0].size(0)
@@ -484,6 +508,7 @@ class RelationalHeroGNN(nn.Module):
     """
     2-Layer Multi-Relational Graph Neural Network (R-GCN) over the 130-Hero Graph.
     """
+
     def __init__(self, num_heroes, feat_dim, d_model, dropout=0.20):
         super().__init__()
         self.num_heroes = num_heroes
@@ -545,6 +570,7 @@ class RoVDraftGNNTransformer(nn.Module):
       3. Bounded Cosine-Gated Neural Residual + Explicit Role/Skill & Graph Priors
       4. Dual Policy Head (Next-Pick/Ban) & Action-Value Head (Counterfactual Win-Probability Q(s, a))
     """
+
     def __init__(
         self,
         num_heroes,
@@ -582,8 +608,12 @@ class RoVDraftGNNTransformer(nn.Module):
         self.register_buffer("ban_p1_log_prior", torch.tensor(priors["ban_p1_log_prior"], dtype=torch.float32))
         self.register_buffer("ban_p2_log_prior", torch.tensor(priors["ban_p2_log_prior"], dtype=torch.float32))
         self.register_buffer("pick_2026_log_prior", torch.tensor(priors["pick_2026_log_prior"], dtype=torch.float32))
-        self.register_buffer("ban_p1_2026_log_prior", torch.tensor(priors["ban_p1_2026_log_prior"], dtype=torch.float32))
-        self.register_buffer("ban_p2_2026_log_prior", torch.tensor(priors["ban_p2_2026_log_prior"], dtype=torch.float32))
+        self.register_buffer(
+            "ban_p1_2026_log_prior", torch.tensor(priors["ban_p1_2026_log_prior"], dtype=torch.float32)
+        )
+        self.register_buffer(
+            "ban_p2_2026_log_prior", torch.tensor(priors["ban_p2_2026_log_prior"], dtype=torch.float32)
+        )
         self.register_buffer("hero_base_win_adv", torch.tensor(priors["hero_base_win_adv"], dtype=torch.float32))
 
         self.gnn = RelationalHeroGNN(num_heroes, hero_features.shape[1], d_model, dropout=dropout)
@@ -632,9 +662,7 @@ class RoVDraftGNNTransformer(nn.Module):
             nn.GELU(),
         )
 
-        self.neural_temp = nn.Parameter(
-            torch.tensor([neural_scale, neural_scale, neural_scale], dtype=torch.float32)
-        )
+        self.neural_temp = nn.Parameter(torch.tensor([neural_scale, neural_scale, neural_scale], dtype=torch.float32))
 
         self.w_pick = nn.Parameter(torch.tensor([0.45, 0.55, 2.30, 0.00, 1.25, 0.85, 0.00, 0.90], dtype=torch.float32))
         self.w_ban1 = nn.Parameter(torch.tensor([0.40, 0.65, 0.00, 0.15, 0.20, 0.20, 0.30, -0.40], dtype=torch.float32))
@@ -825,7 +853,7 @@ def evaluate_sota_model(model, loader, device):
                 win_correct_late += int((pred_win[late_mask] == win_lbl[late_mask]).sum().item())
 
             top10_preds = torch.topk(policy_logits, k=10, dim=-1).indices
-            hits = (top10_preds == target.unsqueeze(1))
+            hits = top10_preds == target.unsqueeze(1)
             h1 = hits[:, :1].any(dim=1)
             h3 = hits[:, :3].any(dim=1)
             h5 = hits[:, :5].any(dim=1)
@@ -867,7 +895,13 @@ def parse_args():
     parser.add_argument("--weight-decay", type=float, default=None, help="AdamW weight decay")
     parser.add_argument("--label-smoothing", type=float, default=None, help="Cross-entropy label smoothing")
     parser.add_argument("--win-loss-weight", type=float, default=None, help="Weight of auxiliary win-value loss")
-    parser.add_argument("--top-rank", type=int, default=None, choices=[1, 2, 3, 4, 5], help="Select rank 1..5 from sota_rov_top5_trials.json")
+    parser.add_argument(
+        "--top-rank",
+        type=int,
+        default=None,
+        choices=[1, 2, 3, 4, 5],
+        help="Select rank 1..5 from sota_rov_top5_trials.json",
+    )
     parser.add_argument("--use-safest", action="store_true", help="Automatically use safest_recommended_trial from HPO")
     return parser.parse_args()
 
@@ -933,8 +967,12 @@ def main():
         augment_factor = args.augment_factor or tuned.get("augment_factor", 1)
         lr = args.lr or tuned.get("lr", 1.5e-3)
         weight_decay = args.weight_decay if args.weight_decay is not None else tuned.get("weight_decay", 1e-2)
-        label_smoothing = args.label_smoothing if args.label_smoothing is not None else tuned.get("label_smoothing", 0.05)
-        win_loss_weight = args.win_loss_weight if args.win_loss_weight is not None else tuned.get("win_loss_weight", 0.20)
+        label_smoothing = (
+            args.label_smoothing if args.label_smoothing is not None else tuned.get("label_smoothing", 0.05)
+        )
+        win_loss_weight = (
+            args.win_loss_weight if args.win_loss_weight is not None else tuned.get("win_loss_weight", 0.20)
+        )
     else:
         d_model = args.d_model or tuned.get("d_model", 64)
         nhead = args.nhead or tuned.get("nhead", 4)
@@ -976,7 +1014,7 @@ def main():
     train_ds = build_tensor_dataset(train_games, hero_to_id, lane_probs, priority_scores, augment_factor=augment_factor)
     val_ds = build_tensor_dataset(val_games, hero_to_id, lane_probs, priority_scores, augment_factor=1)
     print(
-        f"Train decision steps: {len(train_ds):,} | Val decision steps: {len(val_ds):,} (built in {time.time()-t0:.1f}s)",
+        f"Train decision steps: {len(train_ds):,} | Val decision steps: {len(val_ds):,} (built in {time.time() - t0:.1f}s)",
         flush=True,
     )
 
@@ -1011,25 +1049,30 @@ def main():
     )
 
     if HAS_MLFLOW:
-        mlflow.set_experiment("RoV_Draft_Intelligence")
-        mlflow.start_run(run_name=f"sota_train_{args.preset}_{int(time.time())}")
-        mlflow.log_params(model_config)
-        mlflow.log_params({
-            "lr": lr,
-            "weight_decay": weight_decay,
-            "label_smoothing": label_smoothing,
-            "win_loss_weight": win_loss_weight,
-            "batch_size": batch_size,
-            "preset": args.preset,
-            "total_params": total_params,
-            "recency_weighting": "2026=1.0,2025=0.5,2024=0.2",
-            "val_split": "100% 2026 matches",
-        })
-        print("MLflow tracking active (Experiment: 'RoV_Draft_Intelligence')", flush=True)
+        try:
+            mlflow.set_experiment("RoV_Draft_Intelligence")
+            mlflow.start_run(run_name=f"sota_train_{args.preset}_{int(time.time())}")
+            mlflow.log_params(model_config)
+            mlflow.log_params(
+                {
+                    "lr": lr,
+                    "weight_decay": weight_decay,
+                    "label_smoothing": label_smoothing,
+                    "win_loss_weight": win_loss_weight,
+                    "batch_size": batch_size,
+                    "preset": args.preset,
+                    "total_params": total_params,
+                    "recency_weighting": "2026=1.0,2025=0.5,2024=0.2",
+                    "val_split": "100% 2026 matches",
+                }
+            )
+            print("MLflow tracking active (Experiment: 'RoV_Draft_Intelligence')", flush=True)
+        except Exception as e:
+            print(f"Warning: MLflow start_run error: {e}", flush=True)
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
-    use_amp = (device.type == "cuda" and torch.cuda.is_bf16_supported())
+    use_amp = device.type == "cuda" and torch.cuda.is_bf16_supported()
 
     best_val_loss = float("inf")
     best_metrics = None
@@ -1089,21 +1132,27 @@ def main():
         is_best = val_loss < best_val_loss
         marker = " *BEST*" if is_best else ""
         print(
-            f"  Epoch {epoch:02d}/{epochs:02d} ({time.time()-ep_start:.1f}s) | Pol Loss: {train_pol_loss/train_n:.4f} | "
+            f"  Epoch {epoch:02d}/{epochs:02d} ({time.time() - ep_start:.1f}s) | Pol Loss: {train_pol_loss / train_n:.4f} | "
             f"Val Loss: {val_loss:.4f} | Top-1: {t1:.2f}% | Top-3: {t3:.2f}% | Top-5: {t5:.2f}% | Top-10: {t10:.2f}% | WinAcc: {val_win_acc:.1f}%{marker}",
             flush=True,
         )
 
         if HAS_MLFLOW:
-            mlflow.log_metrics({
-                "epoch_train_pol_loss": train_pol_loss / max(1, train_n),
-                "epoch_val_loss": val_loss,
-                "epoch_top1_pct": t1,
-                "epoch_top3_pct": t3,
-                "epoch_top5_pct": t5,
-                "epoch_top10_pct": t10,
-                "epoch_win_acc_pct": val_win_acc,
-            }, step=epoch)
+            try:
+                mlflow.log_metrics(
+                    {
+                        "epoch_train_pol_loss": train_pol_loss / max(1, train_n),
+                        "epoch_val_loss": val_loss,
+                        "epoch_top1_pct": t1,
+                        "epoch_top3_pct": t3,
+                        "epoch_top5_pct": t5,
+                        "epoch_top10_pct": t10,
+                        "epoch_win_acc_pct": val_win_acc,
+                    },
+                    step=epoch,
+                )
+            except Exception:
+                pass
 
         if is_best:
             best_val_loss = val_loss
@@ -1141,29 +1190,33 @@ def main():
         m = best_metrics[k]
         tot = max(1, m["total"])
         print(
-            f"{label:28s} -> Top-1: {m['top1']/tot*100:5.2f}% | Top-3: {m['top3']/tot*100:5.2f}% | "
-            f"Top-5: {m['top5']/tot*100:5.2f}% | Top-10: {m['top10']/tot*100:5.2f}%",
+            f"{label:28s} -> Top-1: {m['top1'] / tot * 100:5.2f}% | Top-3: {m['top3'] / tot * 100:5.2f}% | "
+            f"Top-5: {m['top5'] / tot * 100:5.2f}% | Top-10: {m['top10'] / tot * 100:5.2f}%",
             flush=True,
         )
     print(f"Saved SOTA checkpoint to: {MODEL_DIR / 'sota_draft_gnn_transformer.pt'}", flush=True)
 
     if HAS_MLFLOW:
-        ov = best_metrics["overall"]
-        tot = max(1, ov["total"])
-        mlflow.log_metrics({
-            "best_val_loss": best_val_loss,
-            "best_win_acc_pct": best_win_acc,
-            "final_top1_pct": ov["top1"] / tot * 100,
-            "final_top3_pct": ov["top3"] / tot * 100,
-            "final_top5_pct": ov["top5"] / tot * 100,
-            "final_top10_pct": ov["top10"] / tot * 100,
-        })
-        ckpt_path = MODEL_DIR / "sota_draft_gnn_transformer.pt"
-        if ckpt_path.exists():
-            mlflow.log_artifact(str(ckpt_path))
-        mlflow.end_run()
-        print("MLflow: Logged final SOTA training run and checkpoint artifact", flush=True)
-
+        try:
+            ov = best_metrics["overall"]
+            tot = max(1, ov["total"])
+            mlflow.log_metrics(
+                {
+                    "best_val_loss": best_val_loss,
+                    "best_win_acc_pct": best_win_acc,
+                    "final_top1_pct": ov["top1"] / tot * 100,
+                    "final_top3_pct": ov["top3"] / tot * 100,
+                    "final_top5_pct": ov["top5"] / tot * 100,
+                    "final_top10_pct": ov["top10"] / tot * 100,
+                }
+            )
+            ckpt_path = MODEL_DIR / "sota_draft_gnn_transformer.pt"
+            if ckpt_path.exists():
+                mlflow.log_artifact(str(ckpt_path))
+            mlflow.end_run()
+            print("MLflow: Logged final SOTA training run and checkpoint artifact", flush=True)
+        except Exception as e:
+            print(f"Warning: MLflow finalize error: {e}", flush=True)
 
 
 if __name__ == "__main__":

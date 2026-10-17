@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 
 from src.predictor import RoVDraftPredictor
-from src.schemas import DraftStateRequest, DraftPredictionResponse, HealthResponse
+from src.schemas import DraftPredictionResponse, DraftStateRequest, HealthResponse
 
 app = FastAPI(
     title="RoV SOTA Draft Intelligence API",

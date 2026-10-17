@@ -1,18 +1,16 @@
 import json
-import os
 import re
 from pathlib import Path
+
+import pandas as pd
 import requests
 from bs4 import BeautifulSoup
-import pandas as pd
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-HEADERS = {
-    "User-Agent": "ROVResearchProject/1.0 (https://github.com/rov-draft-ai; contact@example.com)"
-}
+HEADERS = {"User-Agent": "ROVResearchProject/1.0 (https://github.com/rov-draft-ai; contact@example.com)"}
 BROWSER_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 }
@@ -39,30 +37,30 @@ OFFICIAL_2025_2026_SKILLS = {
                 "name": "Mechanoid Legion",
                 "type": "Summon / Magic",
                 "cooldown": "0",
-                "description": "When Goverra defeats an enemy or minion, she summons a Mechanoid drone that automatically attacks nearby enemies. Mechanoids can merge to upgrade their combat power and explode upon expiration to deal magic damage to surrounding enemies."
+                "description": "When Goverra defeats an enemy or minion, she summons a Mechanoid drone that automatically attacks nearby enemies. Mechanoids can merge to upgrade their combat power and explode upon expiration to deal magic damage to surrounding enemies.",
             },
             {
                 "slot": "Skill 1",
                 "name": "Strafe",
                 "type": "Magic / Slow",
                 "cooldown": "7",
-                "description": "Goverra commands fighter drones to fly along a target path, dealing magic damage to enemies hit. Can be recast to order the drones to converge on a specific target; enemies hit by multiple drones simultaneously are slowed by 50% for 1.5 seconds."
+                "description": "Goverra commands fighter drones to fly along a target path, dealing magic damage to enemies hit. Can be recast to order the drones to converge on a specific target; enemies hit by multiple drones simultaneously are slowed by 50% for 1.5 seconds.",
             },
             {
                 "slot": "Skill 2",
                 "name": "Air Assault",
                 "type": "Magic / Summon",
                 "cooldown": "10",
-                "description": "Goverra deploys a squad of Mechanoids to bombard and land at the target area, dealing magic damage to enemies in the zone and attacking nearby targets or towers."
+                "description": "Goverra deploys a squad of Mechanoids to bombard and land at the target area, dealing magic damage to enemies in the zone and attacking nearby targets or towers.",
             },
             {
                 "slot": "Ultimate",
                 "name": "Deadly Payload",
                 "type": "Crowd Control / Magic / Buff",
                 "cooldown": "36",
-                "description": "Goverra locks onto an enemy hero with a targeting beacon, stunning the target, dealing continuous magic damage, and slowing their movement speed. Empowers allied Mechanoids in range, and explodes for heavy magic damage when the mark expires."
-            }
-        ]
+                "description": "Goverra locks onto an enemy hero with a targeting beacon, stunning the target, dealing continuous magic damage, and slowing their movement speed. Empowers allied Mechanoids in range, and explodes for heavy magic damage when the mark expires.",
+            },
+        ],
     },
     "Edras": {
         "class": "Warrior / Assassin",
@@ -74,30 +72,30 @@ OFFICIAL_2025_2026_SKILLS = {
                 "name": "Essence Blade",
                 "type": "Buff / Physical",
                 "cooldown": "0",
-                "description": "Edras's normal attacks and Skill 2 grant bonus EXP (+10) when hitting enemy heroes. Edras can switch combat forms upon unlocking his ultimate, converting bonus attack speed or attack damage into armor pierce and enhanced strikes."
+                "description": "Edras's normal attacks and Skill 2 grant bonus EXP (+10) when hitting enemy heroes. Edras can switch combat forms upon unlocking his ultimate, converting bonus attack speed or attack damage into armor pierce and enhanced strikes.",
             },
             {
                 "slot": "Skill 1",
                 "name": "Valiant Sprint",
                 "type": "Movement / Physical",
                 "cooldown": "6",
-                "description": "Edras dashes rapidly in the target direction, empowering his next attack and allowing him to engage or reposition in combat."
+                "description": "Edras dashes rapidly in the target direction, empowering his next attack and allowing him to engage or reposition in combat.",
             },
             {
                 "slot": "Skill 2",
                 "name": "Powerful Slash",
                 "type": "Physical / Slow",
                 "cooldown": "8",
-                "description": "Edras unleashes an aura blade wave in the target direction, dealing physical damage to all enemies along the path and slowing their movement speed. Grants bonus EXP when hitting enemy heroes."
+                "description": "Edras unleashes an aura blade wave in the target direction, dealing physical damage to all enemies along the path and slowing their movement speed. Grants bonus EXP when hitting enemy heroes.",
             },
             {
                 "slot": "Ultimate",
                 "name": "Essence Discovery: Light",
                 "type": "Transform / Buff / Crowd Control",
                 "cooldown": "30",
-                "description": "Edras awakens his lineage power and transforms into Light Form (or Dark/Berserker Form), gaining enhanced stats, knockback/control effects, and upgraded basic abilities."
-            }
-        ]
+                "description": "Edras awakens his lineage power and transforms into Light Form (or Dark/Berserker Form), gaining enhanced stats, knockback/control effects, and upgraded basic abilities.",
+            },
+        ],
     },
     "Tamyn": {
         "class": "Warrior / Assassin",
@@ -109,30 +107,30 @@ OFFICIAL_2025_2026_SKILLS = {
                 "name": "Radiant Holy Spear",
                 "type": "Buff / Physical / Heal",
                 "cooldown": "0",
-                "description": "Whenever Tamyn retrieves or recalls his spear, his next basic attack within 4 seconds is empowered (stacks up to 2 times) to deal bonus physical damage, grants 20-40% movement speed briefly, reduces all skill cooldowns by 1 second, and restores HP."
+                "description": "Whenever Tamyn retrieves or recalls his spear, his next basic attack within 4 seconds is empowered (stacks up to 2 times) to deal bonus physical damage, grants 20-40% movement speed briefly, reduces all skill cooldowns by 1 second, and restores HP.",
             },
             {
                 "slot": "Skill 1",
                 "name": "Sky-Piercing Spear",
                 "type": "Physical / Movement",
                 "cooldown": "7",
-                "description": "Tamyn hurls his spear forward or dashes along its trajectory, dealing physical damage to enemies in the path and leaving the spear for retrieval combos."
+                "description": "Tamyn hurls his spear forward or dashes along its trajectory, dealing physical damage to enemies in the path and leaving the spear for retrieval combos.",
             },
             {
                 "slot": "Skill 2",
                 "name": "Twilight Spear",
                 "type": "Physical / Slow",
                 "cooldown": "9",
-                "description": "Tamyn plants a spear into the target area, dealing physical damage and slowing enemies within the zone. Can be retrieved or recalled to trigger Radiant Holy Spear."
+                "description": "Tamyn plants a spear into the target area, dealing physical damage and slowing enemies within the zone. Can be retrieved or recalled to trigger Radiant Holy Spear.",
             },
             {
                 "slot": "Ultimate",
                 "name": "Gathering Holy Spear",
                 "type": "Physical / Buff / Heal",
                 "cooldown": "18",
-                "description": "Tamyn immediately recalls all planted spears back to himself regardless of distance, dealing heavy physical damage to enemies struck along the return path, restoring HP, granting movement speed, and resetting skill cooldowns via his passive."
-            }
-        ]
+                "description": "Tamyn immediately recalls all planted spears back to himself regardless of distance, dealing heavy physical damage to enemies struck along the return path, restoring HP, granting movement speed, and resetting skill cooldowns via his passive.",
+            },
+        ],
     },
     "Evita": {
         "class": "Mage",
@@ -144,31 +142,31 @@ OFFICIAL_2025_2026_SKILLS = {
                 "name": "Umbral Origin",
                 "type": "Magic / Buff",
                 "cooldown": "0",
-                "description": "Evita continuously accumulates dark energy. When full, her next skill hit on an enemy hero consumes all energy to summon Abyssal Beasts that pounce on the target, dealing magic damage, increasing Evita's movement speed, and reducing the cooldowns of Skill 1 and Skill 2."
+                "description": "Evita continuously accumulates dark energy. When full, her next skill hit on an enemy hero consumes all energy to summon Abyssal Beasts that pounce on the target, dealing magic damage, increasing Evita's movement speed, and reducing the cooldowns of Skill 1 and Skill 2.",
             },
             {
                 "slot": "Skill 1",
                 "name": "Abyssal Assault",
                 "type": "Magic / Area",
                 "cooldown": "6",
-                "description": "Evita releases an abyssal beast in the target direction that explodes upon hitting an enemy or reaching max range, dealing magic damage and scattering dark energy around the area."
+                "description": "Evita releases an abyssal beast in the target direction that explodes upon hitting an enemy or reaching max range, dealing magic damage and scattering dark energy around the area.",
             },
             {
                 "slot": "Skill 2",
                 "name": "Hand of Abyss",
                 "type": "Crowd Control / Magic",
                 "cooldown": "9",
-                "description": "Evita summons a Hand of Abyss from a rift that deals continuous magic damage and pulls enemies toward the center before exploding to stun targets. Also pulls nearby dark energy from Skill 1 to detonate together."
+                "description": "Evita summons a Hand of Abyss from a rift that deals continuous magic damage and pulls enemies toward the center before exploding to stun targets. Also pulls nearby dark energy from Skill 1 to detonate together.",
             },
             {
                 "slot": "Ultimate",
                 "name": "Umbral Cloak",
                 "type": "Magic / Shield / Slow",
                 "cooldown": "40",
-                "description": "Evita gains a protective shield and releases abyssal beasts to hunt nearby enemies, dealing magic damage, slowing targets, and rapidly charging dark energy. Each beast hit on enemies or towers grants additional shield. Takedowns extend the ultimate's duration."
-            }
-        ]
-    }
+                "description": "Evita gains a protective shield and releases abyssal beasts to hunt nearby enemies, dealing magic damage, slowing targets, and rapidly charging dark energy. Each beast hit on enemies or towers grants additional shield. Takedowns extend the ultimate's duration.",
+            },
+        ],
+    },
 }
 
 
@@ -292,7 +290,11 @@ def parse_fandom_wikitext(wikitext: str):
         tbl = m.group(0)
         cd_match = re.search(r"\|\s*Cooldown\s*\n((?:\|[^\n]+\n?)+)", tbl, re.IGNORECASE)
         if cd_match:
-            cd_cells = [clean_wikitext(c.lstrip("|").strip()) for c in cd_match.group(1).strip().split("\n") if c.strip().startswith("|")]
+            cd_cells = [
+                clean_wikitext(c.lstrip("|").strip())
+                for c in cd_match.group(1).strip().split("\n")
+                if c.strip().startswith("|")
+            ]
             cd_cells = [c for c in cd_cells if c]
             if cd_cells:
                 return f" [CD_EXTRACTED:{'/'.join(cd_cells)}] "
@@ -301,8 +303,8 @@ def parse_fandom_wikitext(wikitext: str):
     # Remove inner tables (tables that appear after the first {| header)
     first_table_start = skills_block.find("{|")
     if first_table_start != -1:
-        header_part = skills_block[:first_table_start + 2]
-        body_part = skills_block[first_table_start + 2:]
+        header_part = skills_block[: first_table_start + 2]
+        body_part = skills_block[first_table_start + 2 :]
         # Replace any nested {| ... |} that do not contain another {|
         for _ in range(3):
             body_part = re.sub(r"\{\|(?:(?!\{\|).)*?\|\}", replace_inner_table, body_part, flags=re.DOTALL)
@@ -378,13 +380,15 @@ def parse_fandom_wikitext(wikitext: str):
                 and s_name.lower() not in {"attribute", "base damage", "cooldown", "level", "1", "icon", "name"}
             ):
                 slot_label = slot_names[skill_idx] if skill_idx < len(slot_names) else f"Skill {skill_idx}"
-                info["skills"].append({
-                    "slot": slot_label,
-                    "name": s_name,
-                    "type": s_type,
-                    "cooldown": cd_val,
-                    "description": s_desc,
-                })
+                info["skills"].append(
+                    {
+                        "slot": slot_label,
+                        "name": s_name,
+                        "type": s_type,
+                        "cooldown": cd_val,
+                        "description": s_desc,
+                    }
+                )
                 skill_idx += 1
 
     return info
@@ -395,7 +399,7 @@ def fetch_fandom_pages(titles):
     results = {}
     batch_size = 40
     for i in range(0, len(titles), batch_size):
-        batch = titles[i:i + batch_size]
+        batch = titles[i : i + batch_size]
         url = "https://arenaofvalor.fandom.com/api.php"
         params = {
             "action": "query",
@@ -465,14 +469,18 @@ def fetch_fandom_parsed_html_skills(page_title: str):
                     s_desc = re.sub(r"\s+", " ", tds[2].get_text(" ", strip=True)).strip()
                     s_type = re.sub(r"\s+", " ", tds[3].get_text(" ", strip=True)).strip() if len(tds) >= 4 else ""
                     if s_name and s_desc and len(s_desc) > 10:
-                        slot_label = slot_names[len(skills)] if len(skills) < len(slot_names) else f"Skill {len(skills)}"
-                        skills.append({
-                            "slot": slot_label,
-                            "name": s_name,
-                            "type": s_type,
-                            "cooldown": cd_val,
-                            "description": s_desc,
-                        })
+                        slot_label = (
+                            slot_names[len(skills)] if len(skills) < len(slot_names) else f"Skill {len(skills)}"
+                        )
+                        skills.append(
+                            {
+                                "slot": slot_label,
+                                "name": s_name,
+                                "type": s_type,
+                                "cooldown": cd_val,
+                                "description": s_desc,
+                            }
+                        )
     return skills
 
 
@@ -481,7 +489,7 @@ def fetch_liquipedia_skills(hero_names):
     out = {}
     batch_size = 30
     for i in range(0, len(hero_names), batch_size):
-        batch = hero_names[i:i + batch_size]
+        batch = hero_names[i : i + batch_size]
         url = "https://liquipedia.net/arenaofvalor/api.php"
         params = {
             "action": "query",
@@ -502,22 +510,26 @@ def fetch_liquipedia_skills(hero_names):
             skills = []
             cards = re.findall(r"\{\{SkillCard(.*?)\n\}\}", wt, flags=re.DOTALL)
             for idx, card in enumerate(cards):
+
                 def get_field(f):
                     m = re.search(rf"\|\s*{f}\s*=\s*(.*?)(?=\n\||\Z)", card, flags=re.DOTALL)
                     return clean_wikitext(m.group(1)) if m else ""
+
                 s_name = get_field("name")
                 s_slot = get_field("skill") or (f"Skill {idx}" if idx > 0 else "Passive")
                 s_type = "/".join([x for x in [get_field("type"), get_field("type2"), get_field("dmg")] if x])
                 s_cd = get_field("cooldown")
                 s_desc = get_field("desc")
                 if s_name and s_desc:
-                    skills.append({
-                        "slot": s_slot,
-                        "name": s_name,
-                        "type": s_type,
-                        "cooldown": s_cd,
-                        "description": s_desc,
-                    })
+                    skills.append(
+                        {
+                            "slot": s_slot,
+                            "name": s_name,
+                            "type": s_type,
+                            "cooldown": s_cd,
+                            "description": s_desc,
+                        }
+                    )
             if skills:
                 out[title] = skills
     return out
@@ -525,9 +537,7 @@ def fetch_liquipedia_skills(hero_names):
 
 def extract_skill_features(skills, primary_role, secondary_role):
     """Derive structured boolean/numeric feature flags from a hero's skills for ML modeling."""
-    combined_text = " ".join(
-        f"{s.get('type', '')} {s.get('description', '')}" for s in skills
-    ).lower()
+    combined_text = " ".join(f"{s.get('type', '')} {s.get('description', '')}" for s in skills).lower()
 
     has_true_dmg = bool(re.search(r"\btrue damage\b|\btrue\b", combined_text))
     has_magic_dmg = bool(re.search(r"\bmagic damage\b|\bmagical damage\b|\bmgc\b", combined_text)) or (
@@ -544,7 +554,9 @@ def extract_skill_features(skills, primary_role, secondary_role):
         )
     )
     has_suppress = bool(re.search(r"\bsuppress|\bdevour\b|\bimprison", combined_text))
-    has_soft_cc = bool(re.search(r"\bslow\b|\bslows\b|\bslowed\b|\bslowing\b|\bsilence\b|\bsilenced\b|\bblind\b", combined_text))
+    has_soft_cc = bool(
+        re.search(r"\bslow\b|\bslows\b|\bslowed\b|\bslowing\b|\bsilence\b|\bsilenced\b|\bblind\b", combined_text)
+    )
     has_mobility = bool(
         re.search(
             r"\bdash\b|\bdashes\b|\bcharge\b|\bcharges\b|\bleap\b|\bleaps\b|\bblink\b|\bteleport\b|\bmovement speed\b|\bfly\b|\bflies\b|\bswing\b|\bsprint\b",
@@ -662,30 +674,32 @@ def main():
 
         # Build flat summary row for CSV
         skill_names = [f"{s['slot']}: {s['name']}" for s in skills]
-        summary_rows.append({
-            "hero_id": idx,
-            "name": name,
-            "primary_role": meta["primary_role"],
-            "secondary_role": meta["secondary_role"] or "",
-            "specialty": f_info.get("specialty") or "",
-            "attack_range": f_info.get("attack_range") or "",
-            "meta_tier_2026": meta["meta_tier_2026"],
-            "pro_win_rate_2026": meta["pro_win_rate_2026"],
-            "pro_pick_rate_2026": meta["pro_pick_rate_2026"],
-            "pro_ban_rate_2026": meta["pro_ban_rate_2026"],
-            "num_skills": features["num_skills"],
-            "has_true_damage": features["has_true_damage"],
-            "has_physical_damage": features["has_physical_damage"],
-            "has_magic_damage": features["has_magic_damage"],
-            "has_hard_cc": features["has_hard_cc"],
-            "has_soft_cc": features["has_soft_cc"],
-            "has_suppress": features["has_suppress"],
-            "has_mobility": features["has_mobility"],
-            "has_immunity": features["has_immunity"],
-            "has_heal_sustain": features["has_heal_sustain"],
-            "has_shield": features["has_shield"],
-            "skill_list": " | ".join(skill_names),
-        })
+        summary_rows.append(
+            {
+                "hero_id": idx,
+                "name": name,
+                "primary_role": meta["primary_role"],
+                "secondary_role": meta["secondary_role"] or "",
+                "specialty": f_info.get("specialty") or "",
+                "attack_range": f_info.get("attack_range") or "",
+                "meta_tier_2026": meta["meta_tier_2026"],
+                "pro_win_rate_2026": meta["pro_win_rate_2026"],
+                "pro_pick_rate_2026": meta["pro_pick_rate_2026"],
+                "pro_ban_rate_2026": meta["pro_ban_rate_2026"],
+                "num_skills": features["num_skills"],
+                "has_true_damage": features["has_true_damage"],
+                "has_physical_damage": features["has_physical_damage"],
+                "has_magic_damage": features["has_magic_damage"],
+                "has_hard_cc": features["has_hard_cc"],
+                "has_soft_cc": features["has_soft_cc"],
+                "has_suppress": features["has_suppress"],
+                "has_mobility": features["has_mobility"],
+                "has_immunity": features["has_immunity"],
+                "has_heal_sustain": features["has_heal_sustain"],
+                "has_shield": features["has_shield"],
+                "skill_list": " | ".join(skill_names),
+            }
+        )
 
     json_path = DATA_DIR / "heroes_130_full.json"
     csv_path = DATA_DIR / "heroes_130_summary.csv"

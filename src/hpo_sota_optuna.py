@@ -3,31 +3,31 @@ import copy
 import json
 import random
 import time
-from pathlib import Path
+
 import numpy as np
+import optuna
 import torch
 import torch.nn.functional as F
-from torch.utils.data import DataLoader
-import optuna
 from optuna.pruners import MedianPruner
 from optuna.samplers import TPESampler
+from torch.utils.data import DataLoader
 
 try:
     import mlflow
+
     HAS_MLFLOW = True
 except ImportError:
     HAS_MLFLOW = False
 
 from train_sota_model import (
-    BASE_DIR,
-    MODEL_DIR,
     BEST_PARAMS_DIR,
+    MODEL_DIR,
     SEED,
-    load_sota_data_and_graphs,
-    build_tensor_dataset,
     GPUTensorBatcher,
     RoVDraftGNNTransformer,
+    build_tensor_dataset,
     evaluate_sota_model,
+    load_sota_data_and_graphs,
 )
 
 optuna.logging.set_verbosity(optuna.logging.WARNING)
@@ -58,12 +58,15 @@ def main():
         torch.backends.cudnn.allow_tf32 = True
         torch.backends.cudnn.benchmark = True
 
-    use_amp = (device.type == "cuda" and torch.cuda.is_bf16_supported())
+    use_amp = device.type == "cuda" and torch.cuda.is_bf16_supported()
     print(f"=== Fast Optuna HPO for RoVDraftGNNTransformer on {device} (BF16 AMP={use_amp}) ===", flush=True)
 
     if HAS_MLFLOW:
-        mlflow.set_experiment("RoV_Draft_Intelligence")
-        print("MLflow tracking active (Experiment: 'RoV_Draft_Intelligence')", flush=True)
+        try:
+            mlflow.set_experiment("RoV_Draft_Intelligence")
+            print("MLflow tracking active (Experiment: 'RoV_Draft_Intelligence')", flush=True)
+        except Exception as e:
+            print(f"Warning: MLflow set_experiment error: {e}", flush=True)
 
     t0 = time.time()
     (
@@ -101,7 +104,7 @@ def main():
         }
 
     print(
-        f"Datasets ready in {time.time()-t0:.1f}s | Train 1x: {len(train_ds_1x):,} | "
+        f"Datasets ready in {time.time() - t0:.1f}s | Train 1x: {len(train_ds_1x):,} | "
         f"Train 2x: {len(train_ds_2x):,} | Val: {len(val_ds):,}",
         flush=True,
     )
@@ -149,9 +152,12 @@ def main():
         num_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 
         if HAS_MLFLOW:
-            mlflow.start_run(run_name=f"trial_{trial.number:02d}", nested=True)
-            mlflow.log_params(trial.params)
-            mlflow.log_param("num_params", num_params)
+            try:
+                mlflow.start_run(run_name=f"trial_{trial.number:02d}", nested=True)
+                mlflow.log_params(trial.params)
+                mlflow.log_param("num_params", num_params)
+            except Exception as e:
+                print(f"Warning: MLflow start_run error on trial {trial.number}: {e}", flush=True)
 
         optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.trial_epochs)
@@ -177,7 +183,9 @@ def main():
                 if use_amp:
                     with torch.amp.autocast("cuda", dtype=torch.bfloat16):
                         policy_logits, q_win_logits = model(ap, ep_v, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph)
-                        pol_raw = F.cross_entropy(policy_logits, target, label_smoothing=label_smoothing, reduction="none")
+                        pol_raw = F.cross_entropy(
+                            policy_logits, target, label_smoothing=label_smoothing, reduction="none"
+                        )
                         pol_loss = (pol_raw * sw).sum() / torch.clamp(sw.sum(), min=1e-5)
                         chosen_q = q_win_logits.gather(1, target.unsqueeze(1)).squeeze(1)
                         win_raw = F.binary_cross_entropy_with_logits(chosen_q, win_lbl, reduction="none")
@@ -206,11 +214,17 @@ def main():
             val_loss, val_metrics, val_win_acc = evaluate_sota_model(model, val_loader, device)
 
             if HAS_MLFLOW:
-                mlflow.log_metrics({
-                    "val_loss": val_loss,
-                    "train_pol_loss": cur_train_ce,
-                    "win_acc_pct": val_win_acc,
-                }, step=ep)
+                try:
+                    mlflow.log_metrics(
+                        {
+                            "val_loss": val_loss,
+                            "train_pol_loss": cur_train_ce,
+                            "win_acc_pct": val_win_acc,
+                        },
+                        step=ep,
+                    )
+                except Exception:
+                    pass
 
             if val_loss < best_trial_loss:
                 best_trial_loss = val_loss
@@ -224,13 +238,16 @@ def main():
             trial.report(val_loss, step=ep)
             if trial.should_prune():
                 print(
-                    f"  [Trial {trial.number:02d}/{args.n_trials:02d}] PRUNED at ep {ep:02d} ({time.time()-t_start:.1f}s) | "
+                    f"  [Trial {trial.number:02d}/{args.n_trials:02d}] PRUNED at ep {ep:02d} ({time.time() - t_start:.1f}s) | "
                     f"Best Val: {best_trial_loss:.4f} (d={d_model}, L={num_layers}, drop={dropout:.2f}, aug={augment_factor})",
                     flush=True,
                 )
                 if HAS_MLFLOW:
-                    mlflow.set_tag("status", "PRUNED")
-                    mlflow.end_run(status="KILLED")
+                    try:
+                        mlflow.set_tag("status", "PRUNED")
+                        mlflow.end_run(status="KILLED")
+                    except Exception:
+                        pass
                 raise optuna.TrialPruned()
 
         ov = best_trial_metrics["overall"]
@@ -259,7 +276,7 @@ def main():
         is_global_best = best_trial_loss < global_best["val_loss"]
         star = " *NEW BEST*" if is_global_best else ""
         print(
-            f"  [Trial {trial.number:02d}/{args.n_trials:02d}] ({time.time()-t_start:.1f}s) | "
+            f"  [Trial {trial.number:02d}/{args.n_trials:02d}] ({time.time() - t_start:.1f}s) | "
             f"Val: {best_trial_loss:.4f} (Train: {best_trial_train_loss:.4f}, Gap: {overfit_gap:+.4f}, ep={best_trial_ep:02d}) | "
             f"Top-1: {t1:.2f}% | Top-3: {t3:.2f}% | Top-5: {t5:.2f}% | Top-10: {t10:.2f}% | "
             f"(d={d_model}, h={nhead}, L={num_layers}, drop={dropout:.2f}, temp={neural_scale:.2f}, lr={lr:.4f}, aug={augment_factor}){star}",
@@ -267,18 +284,23 @@ def main():
         )
 
         if HAS_MLFLOW:
-            mlflow.log_metrics({
-                "best_val_loss": best_trial_loss,
-                "best_train_pol_loss": best_trial_train_loss,
-                "overfit_gap": overfit_gap,
-                "top1_pct": t1,
-                "top3_pct": t3,
-                "top5_pct": t5,
-                "top10_pct": t10,
-                "win_acc_pct": best_trial_win,
-            })
-            mlflow.set_tag("is_global_best", str(is_global_best))
-            mlflow.end_run()
+            try:
+                mlflow.log_metrics(
+                    {
+                        "best_val_loss": best_trial_loss,
+                        "best_train_pol_loss": best_trial_train_loss,
+                        "overfit_gap": overfit_gap,
+                        "top1_pct": t1,
+                        "top3_pct": t3,
+                        "top5_pct": t5,
+                        "top10_pct": t10,
+                        "win_acc_pct": best_trial_win,
+                    }
+                )
+                mlflow.set_tag("is_global_best", str(is_global_best))
+                mlflow.end_run()
+            except Exception:
+                pass
 
         if is_global_best and best_trial_state is not None:
             global_best["val_loss"] = best_trial_loss
@@ -287,7 +309,6 @@ def main():
             global_best["model_config"] = model_config
             global_best["state_dict"] = best_trial_state
             global_best["trial_number"] = trial.number
-
 
         return best_trial_loss
 
@@ -298,32 +319,44 @@ def main():
     )
 
     # Enqueue 2 well-regularized baseline trials (compact 64d and medium 128d) so MedianPruner has solid benchmarks
-    study.enqueue_trial({
-        "d_model": 64,
-        "nhead": 4,
-        "num_layers": 2,
-        "dropout": 0.22,
-        "neural_scale": 0.60,
-        "lr": 2.0e-3,
-        "weight_decay": 8e-3,
-        "label_smoothing": 0.04,
-        "win_loss_weight": 0.20,
-        "batch_size": 512,
-        "augment_factor": 1,
-    })
-    study.enqueue_trial({
-        "d_model": 128,
-        "nhead": 4,
-        "num_layers": 2,
-        "dropout": 0.28,
-        "neural_scale": 0.55,
-        "lr": 1.5e-3,
-        "weight_decay": 1.5e-2,
-        "label_smoothing": 0.06,
-        "win_loss_weight": 0.20,
-        "batch_size": 512,
-        "augment_factor": 1,
-    })
+    study.enqueue_trial(
+        {
+            "d_model": 64,
+            "nhead": 4,
+            "num_layers": 2,
+            "dropout": 0.22,
+            "neural_scale": 0.60,
+            "lr": 2.0e-3,
+            "weight_decay": 8e-3,
+            "label_smoothing": 0.04,
+            "win_loss_weight": 0.20,
+            "batch_size": 512,
+            "augment_factor": 1,
+        }
+    )
+    study.enqueue_trial(
+        {
+            "d_model": 128,
+            "nhead": 4,
+            "num_layers": 2,
+            "dropout": 0.28,
+            "neural_scale": 0.55,
+            "lr": 1.5e-3,
+            "weight_decay": 1.5e-2,
+            "label_smoothing": 0.06,
+            "win_loss_weight": 0.20,
+            "batch_size": 512,
+            "augment_factor": 1,
+        }
+    )
+
+    parent_run = None
+    if HAS_MLFLOW:
+        try:
+            parent_run = mlflow.start_run(run_name=f"hpo_study_40trials_{int(time.time())}")
+            mlflow.log_params({"n_trials": args.n_trials, "trial_epochs": args.trial_epochs})
+        except Exception as e:
+            print(f"Warning: MLflow parent run start error: {e}", flush=True)
 
     hpo_start = time.time()
     study.optimize(objective, n_trials=args.n_trials)
@@ -338,7 +371,9 @@ def main():
         top5_trials.append(r_copy)
 
     # Also identify the "safest" candidate among Top 5 (lowest overfit_gap + compact capacity)
-    safest_trial = min(top5_trials, key=lambda r: r["val_loss"] + 0.25 * max(0.0, r["overfit_gap"])) if top5_trials else None
+    safest_trial = (
+        min(top5_trials, key=lambda r: r["val_loss"] + 0.25 * max(0.0, r["overfit_gap"])) if top5_trials else None
+    )
 
     print("\n" + "=" * 95, flush=True)
     print(f"Optuna HPO Finished {args.n_trials} Trials in {hpo_elapsed:.1f}s!", flush=True)
@@ -416,27 +451,31 @@ def main():
             m = global_best["val_metrics"][k]
             tot = max(1, m["total"])
             print(
-                f"{label:28s} -> Top-1: {m['top1']/tot*100:5.2f}% | Top-3: {m['top3']/tot*100:5.2f}% | "
-                f"Top-5: {m['top5']/tot*100:5.2f}% | Top-10: {m['top10']/tot*100:5.2f}%",
+                f"{label:28s} -> Top-1: {m['top1'] / tot * 100:5.2f}% | Top-3: {m['top3'] / tot * 100:5.2f}% | "
+                f"Top-5: {m['top5'] / tot * 100:5.2f}% | Top-10: {m['top10'] / tot * 100:5.2f}%",
                 flush=True,
             )
         print(f"Saved Best SOTA checkpoint to: {MODEL_DIR / 'sota_draft_gnn_transformer.pt'}", flush=True)
 
-    if HAS_MLFLOW:
-        with mlflow.start_run(run_name=f"hpo_study_summary_{int(time.time())}"):
-            mlflow.log_params({"n_trials": args.n_trials, "trial_epochs": args.trial_epochs})
-            mlflow.log_metrics({
-                "best_study_val_loss": study.best_value,
-                "best_study_trial": study.best_trial.number,
-                "elapsed_seconds": round(hpo_elapsed, 2),
-            })
+    if HAS_MLFLOW and parent_run is not None:
+        try:
+            mlflow.log_metrics(
+                {
+                    "best_study_val_loss": study.best_value,
+                    "best_study_trial": study.best_trial.number,
+                    "elapsed_seconds": round(hpo_elapsed, 2),
+                }
+            )
             if top5_path.exists():
                 mlflow.log_artifact(str(top5_path))
             if best_params_path.exists():
                 mlflow.log_artifact(str(best_params_path))
             if (MODEL_DIR / "sota_draft_gnn_transformer.pt").exists():
                 mlflow.log_artifact(str(MODEL_DIR / "sota_draft_gnn_transformer.pt"))
-        print("MLflow: Logged HPO Study summary and artifacts to experiment 'RoV_Draft_Intelligence'", flush=True)
+            mlflow.end_run()
+            print("MLflow: Logged HPO Study summary and artifacts to experiment 'RoV_Draft_Intelligence'", flush=True)
+        except Exception as e:
+            print(f"Warning: MLflow finalize error: {e}", flush=True)
 
 
 if __name__ == "__main__":

@@ -15,6 +15,8 @@
 #SBATCH --mem=64G
 #SBATCH --time=01:30:00
 
+set -eo pipefail
+
 mkdir -p logs models best_params
 
 echo "=============================================================================="

@@ -2,8 +2,9 @@ import json
 import re
 import time
 from pathlib import Path
-import requests
+
 import pandas as pd
+import requests
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
@@ -144,10 +145,10 @@ def extract_balanced_templates(text: str, template_prefix: str):
         i = start
         n = len(text)
         while i < n - 1:
-            if text[i:i + 2] == "{{":
+            if text[i : i + 2] == "{{":
                 depth += 1
                 i += 2
-            elif text[i:i + 2] == "}}":
+            elif text[i : i + 2] == "}}":
                 depth -= 1
                 i += 2
                 if depth == 0:
@@ -163,7 +164,7 @@ def fetch_liquipedia_wikitext_batches(pages):
     results = {}
     batch_size = 25
     for i in range(0, len(pages), batch_size):
-        batch = pages[i:i + batch_size]
+        batch = pages[i : i + batch_size]
         print(f"Fetching Liquipedia batch {i // batch_size + 1} ({len(batch)} pages)...")
         url = "https://liquipedia.net/arenaofvalor/api.php"
         params = {
@@ -267,7 +268,7 @@ def parse_match_block(match_wt: str, tournament_page: str, series_idx: int, norm
             continue
 
         # In Game 7 of BO7 (Ultimate Battle), Global Ban Pick resets
-        is_ultimate_battle = (bestof == 7 and game_num == 7)
+        is_ultimate_battle = bestof == 7 and game_num == 7
         t1_global_bans = [] if is_ultimate_battle else list(team1_used_heroes)
         t2_global_bans = [] if is_ultimate_battle else list(team2_used_heroes)
 
@@ -337,47 +338,49 @@ def main():
                 b_picks = g["blue_picks"] + [""] * (5 - len(g["blue_picks"]))
                 r_picks = g["red_picks"] + [""] * (5 - len(g["red_picks"]))
 
-                flat_rows.append({
-                    "series_id": g["series_id"],
-                    "league": g["league"],
-                    "year": g["year"],
-                    "stage": g["stage"],
-                    "date": g["date"],
-                    "bestof": g["bestof"],
-                    "game_number": g["game_number"],
-                    "is_ultimate_battle": g["is_ultimate_battle"],
-                    "length": g["length"],
-                    "blue_team": g["blue_team"],
-                    "red_team": g["red_team"],
-                    "blue_win": g["blue_win"],
-                    # Phase 1 Bans
-                    "blue_ban_1": b_bans[0],
-                    "red_ban_1": r_bans[0],
-                    "blue_ban_2": b_bans[1],
-                    "red_ban_2": r_bans[1],
-                    # Phase 2 Bans
-                    "red_ban_3": r_bans[2],
-                    "blue_ban_3": b_bans[2],
-                    "red_ban_4": r_bans[3],
-                    "blue_ban_4": b_bans[3],
-                    # Blue Picks (1-5)
-                    "blue_pick_1": b_picks[0],
-                    "blue_pick_2": b_picks[1],
-                    "blue_pick_3": b_picks[2],
-                    "blue_pick_4": b_picks[3],
-                    "blue_pick_5": b_picks[4],
-                    # Red Picks (1-5)
-                    "red_pick_1": r_picks[0],
-                    "red_pick_2": r_picks[1],
-                    "red_pick_3": r_picks[2],
-                    "red_pick_4": r_picks[3],
-                    "red_pick_5": r_picks[4],
-                    # Global Bans (previously used heroes in same series)
-                    "blue_global_bans_count": len(g["blue_global_bans"]),
-                    "red_global_bans_count": len(g["red_global_bans"]),
-                    "blue_global_bans": "|".join(g["blue_global_bans"]),
-                    "red_global_bans": "|".join(g["red_global_bans"]),
-                })
+                flat_rows.append(
+                    {
+                        "series_id": g["series_id"],
+                        "league": g["league"],
+                        "year": g["year"],
+                        "stage": g["stage"],
+                        "date": g["date"],
+                        "bestof": g["bestof"],
+                        "game_number": g["game_number"],
+                        "is_ultimate_battle": g["is_ultimate_battle"],
+                        "length": g["length"],
+                        "blue_team": g["blue_team"],
+                        "red_team": g["red_team"],
+                        "blue_win": g["blue_win"],
+                        # Phase 1 Bans
+                        "blue_ban_1": b_bans[0],
+                        "red_ban_1": r_bans[0],
+                        "blue_ban_2": b_bans[1],
+                        "red_ban_2": r_bans[1],
+                        # Phase 2 Bans
+                        "red_ban_3": r_bans[2],
+                        "blue_ban_3": b_bans[2],
+                        "red_ban_4": r_bans[3],
+                        "blue_ban_4": b_bans[3],
+                        # Blue Picks (1-5)
+                        "blue_pick_1": b_picks[0],
+                        "blue_pick_2": b_picks[1],
+                        "blue_pick_3": b_picks[2],
+                        "blue_pick_4": b_picks[3],
+                        "blue_pick_5": b_picks[4],
+                        # Red Picks (1-5)
+                        "red_pick_1": r_picks[0],
+                        "red_pick_2": r_picks[1],
+                        "red_pick_3": r_picks[2],
+                        "red_pick_4": r_picks[3],
+                        "red_pick_5": r_picks[4],
+                        # Global Bans (previously used heroes in same series)
+                        "blue_global_bans_count": len(g["blue_global_bans"]),
+                        "red_global_bans_count": len(g["red_global_bans"]),
+                        "blue_global_bans": "|".join(g["blue_global_bans"]),
+                        "red_global_bans": "|".join(g["red_global_bans"]),
+                    }
+                )
         print(f"  {page_title}: {page_game_count} complete draft games")
 
     json_path = DATA_DIR / "matches_draft_full.json"

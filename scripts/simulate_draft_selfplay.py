@@ -31,8 +31,12 @@ def run_selfplay_simulation(
     print("=" * 80)
     print(" " * 20 + "ROV PRO DRAFT SELF-PLAY SIMULATOR")
     print("=" * 80)
-    print(f"Blue Team AI Strategy: {blue_strategy.upper()} (Depth: {lookahead_depth if blue_strategy == 'lookahead' else 1})")
-    print(f"Red Team AI Strategy : {red_strategy.upper()} (Depth: {lookahead_depth if red_strategy == 'lookahead' else 1})")
+    print(
+        f"Blue Team AI Strategy: {blue_strategy.upper()} (Depth: {lookahead_depth if blue_strategy == 'lookahead' else 1})"
+    )
+    print(
+        f"Red Team AI Strategy : {red_strategy.upper()} (Depth: {lookahead_depth if red_strategy == 'lookahead' else 1})"
+    )
     gb = global_bans or ["Marja"]
     print(f"Global Bans (Bo5/Bo7) : {', '.join(gb)}")
     print("-" * 80)
@@ -48,7 +52,7 @@ def run_selfplay_simulation(
         side_str = "blue" if side == 0 else "red"
         mode_str = "pick" if action_type == 1 else "ban"
         current_strategy = blue_strategy if side == 0 else red_strategy
-        use_lookahead = (current_strategy == "lookahead")
+        use_lookahead = current_strategy == "lookahead"
 
         if side == 0:
             ally_p, enemy_p = list(blue_picks), list(red_picks)
@@ -116,12 +120,26 @@ def run_selfplay_simulation(
         global_bans=gb,
         top_k=1,
     )
-    final_resp = predictor.predict(eval_req)
+    predictor.predict(eval_req)
     # Average team edge
-    blue_syn = sum(float(predictor.ckpt["graphs"]["synergy_mat"][predictor.hero_to_id[h1], predictor.hero_to_id[h2]])
-                   for h1 in blue_picks for h2 in blue_picks if h1 != h2) * 50.0
-    red_syn = sum(float(predictor.ckpt["graphs"]["synergy_mat"][predictor.hero_to_id[h1], predictor.hero_to_id[h2]])
-                  for h1 in red_picks for h2 in red_picks if h1 != h2) * 50.0
+    blue_syn = (
+        sum(
+            float(predictor.ckpt["graphs"]["synergy_mat"][predictor.hero_to_id[h1], predictor.hero_to_id[h2]])
+            for h1 in blue_picks
+            for h2 in blue_picks
+            if h1 != h2
+        )
+        * 50.0
+    )
+    red_syn = (
+        sum(
+            float(predictor.ckpt["graphs"]["synergy_mat"][predictor.hero_to_id[h1], predictor.hero_to_id[h2]])
+            for h1 in red_picks
+            for h2 in red_picks
+            if h1 != h2
+        )
+        * 50.0
+    )
 
     print(f"Blue Synergy Edge Score: +{blue_syn:.2f}%")
     print(f"Red Synergy Edge Score : +{red_syn:.2f}%")

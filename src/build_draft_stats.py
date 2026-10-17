@@ -1,5 +1,6 @@
 from collections import defaultdict
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
 
@@ -134,7 +135,7 @@ def main():
     for h in hero_names:
         s = stats[h]
         p = s["picks"]
-        b = s["bans_total"]
+        s["bans_total"]
         wp = s["weighted_picks"]
         wb = s["weighted_bans"]
         presence_pct = (wp + wb) / total_effective_games * 100.0
@@ -142,26 +143,28 @@ def main():
         smoothed_wr = ((s["weighted_wins"] + 3.0) / (wp + 6.0)) * 100.0
         lane_counts = [s[k] for k in lane_keys]
         main_lane = lane_labels[int(np.argmax(lane_counts))] if wp > 0 else "Unknown"
-        hero_rows.append({
-            "name": h,
-            "main_pro_lane": main_lane,
-            "picks": p,
-            "wins": s["wins"],
-            "win_rate_pct": round(wr, 2),
-            "smoothed_win_rate_pct": round(smoothed_wr, 2),
-            "pick_rate_pct": round(wp / total_effective_games * 100.0, 2),
-            "ban_rate_pct": round(wb / total_effective_games * 100.0, 2),
-            "presence_pct": round(presence_pct, 2),
-            "blue_picks": s["blue_picks"],
-            "red_picks": s["red_picks"],
-            "ds_lane_picks": round(s["ds_lane_picks"], 1),
-            "jungle_picks": round(s["jungle_picks"], 1),
-            "mid_picks": round(s["mid_picks"], 1),
-            "dragon_lane_picks": round(s["dragon_lane_picks"], 1),
-            "roam_picks": round(s["roam_picks"], 1),
-            "bans_phase1": s["bans_phase1"],
-            "bans_phase2": s["bans_phase2"],
-        })
+        hero_rows.append(
+            {
+                "name": h,
+                "main_pro_lane": main_lane,
+                "picks": p,
+                "wins": s["wins"],
+                "win_rate_pct": round(wr, 2),
+                "smoothed_win_rate_pct": round(smoothed_wr, 2),
+                "pick_rate_pct": round(wp / total_effective_games * 100.0, 2),
+                "ban_rate_pct": round(wb / total_effective_games * 100.0, 2),
+                "presence_pct": round(presence_pct, 2),
+                "blue_picks": s["blue_picks"],
+                "red_picks": s["red_picks"],
+                "ds_lane_picks": round(s["ds_lane_picks"], 1),
+                "jungle_picks": round(s["jungle_picks"], 1),
+                "mid_picks": round(s["mid_picks"], 1),
+                "dragon_lane_picks": round(s["dragon_lane_picks"], 1),
+                "roam_picks": round(s["roam_picks"], 1),
+                "bans_phase1": s["bans_phase1"],
+                "bans_phase2": s["bans_phase2"],
+            }
+        )
 
     stats_df = pd.DataFrame(hero_rows)
     stats_path = DATA_DIR / "hero_draft_stats.csv"
@@ -173,17 +176,19 @@ def main():
         if ha < hb and g >= 3.0:
             w = synergy_wins[(ha, hb)]
             wr = w / g * 100.0
-            pa = stats[ha]["weighted_picks"] / total_effective_games
-            pb = stats[hb]["weighted_picks"] / total_effective_games
+            stats[ha]["weighted_picks"] / total_effective_games
+            stats[hb]["weighted_picks"] / total_effective_games
             lift = g / max(1e-4, (stats[ha]["weighted_picks"] * stats[hb]["weighted_picks"]) / total_effective_games)
-            synergy_rows.append({
-                "hero_a": ha,
-                "hero_b": hb,
-                "games_together": round(g, 1),
-                "wins_together": round(w, 1),
-                "win_rate_pct": round(wr, 2),
-                "co_pick_lift": round(lift, 3),
-            })
+            synergy_rows.append(
+                {
+                    "hero_a": ha,
+                    "hero_b": hb,
+                    "games_together": round(g, 1),
+                    "wins_together": round(w, 1),
+                    "win_rate_pct": round(wr, 2),
+                    "co_pick_lift": round(lift, 3),
+                }
+            )
     synergy_df = pd.DataFrame(synergy_rows).sort_values(by=["games_together", "win_rate_pct"], ascending=False)
     synergy_path = DATA_DIR / "synergy_matrix.csv"
     synergy_df.to_csv(synergy_path, index=False, encoding="utf-8-sig")
@@ -194,14 +199,16 @@ def main():
             w = matchup_wins[(ha, hb)]
             wr = w / g * 100.0
             smoothed_adv = ((w + 3.0) / (g + 6.0)) - 0.5
-            counter_rows.append({
-                "hero": ha,
-                "opponent_hero": hb,
-                "games_against": round(g, 1),
-                "wins_against": round(w, 1),
-                "win_rate_against_pct": round(wr, 2),
-                "smoothed_advantage": round(smoothed_adv * 100.0, 2),
-            })
+            counter_rows.append(
+                {
+                    "hero": ha,
+                    "opponent_hero": hb,
+                    "games_against": round(g, 1),
+                    "wins_against": round(w, 1),
+                    "win_rate_against_pct": round(wr, 2),
+                    "smoothed_advantage": round(smoothed_adv * 100.0, 2),
+                }
+            )
     counter_df = pd.DataFrame(counter_rows).sort_values(by=["games_against", "win_rate_against_pct"], ascending=False)
     counter_path = DATA_DIR / "counter_matrix.csv"
     counter_df.to_csv(counter_path, index=False, encoding="utf-8-sig")

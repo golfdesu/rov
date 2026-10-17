@@ -2,12 +2,13 @@ import json
 import math
 import random
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import Dataset, DataLoader
+from torch import nn
+from torch.utils.data import DataLoader, Dataset
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
@@ -23,17 +24,17 @@ torch.manual_seed(SEED)
 # (step_idx, phase, action_type, side)  where action_type: 0=BAN, 1=PICK; side: 0=BLUE, 1=RED
 DRAFT_STEPS = [
     # Phase 1 Bans (0..3)
-    (0, 1, 0, 0),   # Blue Ban 1
-    (1, 1, 0, 1),   # Red Ban 1
-    (2, 1, 0, 0),   # Blue Ban 2
-    (3, 1, 0, 1),   # Red Ban 2
+    (0, 1, 0, 0),  # Blue Ban 1
+    (1, 1, 0, 1),  # Red Ban 1
+    (2, 1, 0, 0),  # Blue Ban 2
+    (3, 1, 0, 1),  # Red Ban 2
     # Phase 1 Picks (4..9)
-    (4, 1, 1, 0),   # Blue Pick 1
-    (5, 1, 1, 1),   # Red Pick 1
-    (6, 1, 1, 1),   # Red Pick 2
-    (7, 1, 1, 0),   # Blue Pick 2
-    (8, 1, 1, 0),   # Blue Pick 3
-    (9, 1, 1, 1),   # Red Pick 3
+    (4, 1, 1, 0),  # Blue Pick 1
+    (5, 1, 1, 1),  # Red Pick 1
+    (6, 1, 1, 1),  # Red Pick 2
+    (7, 1, 1, 0),  # Blue Pick 2
+    (8, 1, 1, 0),  # Blue Pick 3
+    (9, 1, 1, 1),  # Red Pick 3
     # Phase 2 Bans (10..13)
     (10, 2, 0, 1),  # Red Ban 3
     (11, 2, 0, 0),  # Blue Ban 3
@@ -73,13 +74,16 @@ def load_hero_features_and_matrices():
             r_vec[roles.index(h_row["secondary_role"])] = 0.5
 
         # 5-lane probability distribution [DS, JG, Mid, Dragon, Roam]
-        lane_counts = np.array([
-            s_row["ds_lane_picks"],
-            s_row["jungle_picks"],
-            s_row["mid_picks"],
-            s_row["dragon_lane_picks"],
-            s_row["roam_picks"],
-        ], dtype=np.float32)
+        lane_counts = np.array(
+            [
+                s_row["ds_lane_picks"],
+                s_row["jungle_picks"],
+                s_row["mid_picks"],
+                s_row["dragon_lane_picks"],
+                s_row["roam_picks"],
+            ],
+            dtype=np.float32,
+        )
         total_p = lane_counts.sum()
         if total_p > 0:
             l_prob = lane_counts / total_p
@@ -122,8 +126,8 @@ def load_hero_features_and_matrices():
         feat_vec = np.concatenate([r_vec, l_prob, skill_flags, meta_stats]).astype(np.float32)
         feature_list.append(feat_vec)
 
-    hero_features = np.stack(feature_list, axis=0)      # (130, 25)
-    lane_probs = np.stack(lane_probs_list, axis=0)      # (130, 5)
+    hero_features = np.stack(feature_list, axis=0)  # (130, 25)
+    lane_probs = np.stack(lane_probs_list, axis=0)  # (130, 5)
 
     # Build empirical Synergy & Counter matrices (130 x 130)
     synergy_mat = np.zeros((num_heroes, num_heroes), dtype=np.float32)
@@ -238,7 +242,7 @@ def order_team_picks_by_draft_logic(team_picks_ids, enemy_phase2_ban_ids, lane_p
 def build_step_samples(games, hero_to_id, lane_probs, priority_scores, augment_random_orders=False):
     """Convert games into 18-step sequential decision states."""
     samples = []
-    num_heroes = len(hero_to_id)
+    len(hero_to_id)
 
     for g in games:
         b_picks_raw = [hero_to_id[h] for h in g["blue_picks"] if h in hero_to_id]
@@ -266,10 +270,24 @@ def build_step_samples(games, hero_to_id, lane_probs, priority_scores, augment_r
 
         for bp_seq, rp_seq in orderings:
             step_targets = [
-                b_bans[0], r_bans[0], b_bans[1], r_bans[1],
-                bp_seq[0], rp_seq[0], rp_seq[1], bp_seq[1], bp_seq[2], rp_seq[2],
-                r_bans[2], b_bans[2], r_bans[3], b_bans[3],
-                rp_seq[3], bp_seq[3], bp_seq[4], rp_seq[4],
+                b_bans[0],
+                r_bans[0],
+                b_bans[1],
+                r_bans[1],
+                bp_seq[0],
+                rp_seq[0],
+                rp_seq[1],
+                bp_seq[1],
+                bp_seq[2],
+                rp_seq[2],
+                r_bans[2],
+                b_bans[2],
+                r_bans[3],
+                b_bans[3],
+                rp_seq[3],
+                bp_seq[3],
+                bp_seq[4],
+                rp_seq[4],
             ]
 
             cur_b_bans, cur_r_bans = [], []
@@ -286,20 +304,22 @@ def build_step_samples(games, hero_to_id, lane_probs, priority_scores, augment_r
                     ally_bans, enemy_bans = list(cur_r_bans), list(cur_b_bans)
                     ally_gbans, enemy_gbans = r_gban, b_gban
 
-                samples.append({
-                    "step_idx": step_idx,
-                    "phase": phase,
-                    "action_type": action_type,  # 0=BAN, 1=PICK
-                    "side": side,                # 0=BLUE, 1=RED
-                    "year": year_val,
-                    "ally_picks": ally_picks,
-                    "enemy_picks": enemy_picks,
-                    "ally_bans": ally_bans,
-                    "enemy_bans": enemy_bans,
-                    "ally_gbans": ally_gbans,
-                    "enemy_gbans": enemy_gbans,
-                    "target": target_hero,
-                })
+                samples.append(
+                    {
+                        "step_idx": step_idx,
+                        "phase": phase,
+                        "action_type": action_type,  # 0=BAN, 1=PICK
+                        "side": side,  # 0=BLUE, 1=RED
+                        "year": year_val,
+                        "ally_picks": ally_picks,
+                        "enemy_picks": enemy_picks,
+                        "ally_bans": ally_bans,
+                        "enemy_bans": enemy_bans,
+                        "ally_gbans": ally_gbans,
+                        "enemy_gbans": enemy_gbans,
+                        "target": target_hero,
+                    }
+                )
 
                 # Advance state
                 if action_type == 0:
@@ -360,15 +380,18 @@ class DraftDataset(Dataset):
         # Guard against rare Liquipedia editor typos where a hero appears twice in the same game
         unavailable_mask[s["target"]] = False
 
-        meta_ctx = np.array([
-            s["step_idx"] / 17.0,
-            float(s["phase"] == 2),
-            float(s["action_type"] == 1),
-            float(s["side"] == 1),
-            float(s["year"] >= 2026),
-            len(s["ally_picks"]) / 5.0,
-            len(s["enemy_picks"]) / 5.0,
-        ], dtype=np.float32)
+        meta_ctx = np.array(
+            [
+                s["step_idx"] / 17.0,
+                float(s["phase"] == 2),
+                float(s["action_type"] == 1),
+                float(s["side"] == 1),
+                float(s["year"] >= 2026),
+                len(s["ally_picks"]) / 5.0,
+                len(s["enemy_picks"]) / 5.0,
+            ],
+            dtype=np.float32,
+        )
 
         return (
             torch.from_numpy(ally_picks_vec),
@@ -392,6 +415,7 @@ class DraftPredictorNet(nn.Module):
     3. Empirical + Learned Pairwise Co-Pick, Synergy, and Counter-Matchup Scoring
     4. Strict Action Masking (already picked/banned + Global Ban Pool)
     """
+
     def __init__(
         self,
         num_heroes,
@@ -485,7 +509,7 @@ class DraftPredictorNet(nn.Module):
 
         # Explicit Domain Scores for all candidate heroes: (B, N)
         # 1. Missing-lane fit for Ally (when picking) and Enemy (when Phase 2 banning)
-        ally_lane_fit = torch.matmul(ally_missing_lanes, self.lane_probs.t())    # (B, N)
+        ally_lane_fit = torch.matmul(ally_missing_lanes, self.lane_probs.t())  # (B, N)
         enemy_lane_fit = torch.matmul(enemy_missing_lanes, self.lane_probs.t())  # (B, N)
 
         # 2. Pairwise Co-Pick, Synergy with Ally Picks, and Counter against Enemy Picks
@@ -645,7 +669,7 @@ def main():
         t5 = ov["top5"] / ov["total"] * 100
         t10 = ov["top10"] / ov["total"] * 100
         print(
-            f"  Epoch {epoch:02d}/{epochs:02d} | Train Loss: {train_loss_sum/train_n:.4f} | "
+            f"  Epoch {epoch:02d}/{epochs:02d} | Train Loss: {train_loss_sum / train_n:.4f} | "
             f"Val Loss: {val_loss:.4f} | Top-1: {t1:.2f}% | Top-3: {t3:.2f}% | Top-5: {t5:.2f}% | Top-10: {t10:.2f}%"
         )
 
@@ -677,8 +701,8 @@ def main():
         m = best_metrics[k]
         tot = max(1, m["total"])
         print(
-            f"{label:28s} -> Top-1: {m['top1']/tot*100:5.2f}% | Top-3: {m['top3']/tot*100:5.2f}% | "
-            f"Top-5: {m['top5']/tot*100:5.2f}% | Top-10: {m['top10']/tot*100:5.2f}%"
+            f"{label:28s} -> Top-1: {m['top1'] / tot * 100:5.2f}% | Top-3: {m['top3'] / tot * 100:5.2f}% | "
+            f"Top-5: {m['top5'] / tot * 100:5.2f}% | Top-10: {m['top10'] / tot * 100:5.2f}%"
         )
     print(f"\nSaved trained model checkpoint to: {MODEL_DIR / 'draft_predictor.pt'}")
 

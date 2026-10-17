@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import dataclasses
 from typing import TYPE_CHECKING
+
 import numpy as np
 import torch
 
@@ -221,9 +222,7 @@ class DraftMinimaxSearch:
             torch.from_numpy(phases).to(self.device),
         )
 
-    def evaluate_batch(
-        self, states: list[DraftSearchState]
-    ) -> tuple[torch.Tensor, torch.Tensor]:
+    def evaluate_batch(self, states: list[DraftSearchState]) -> tuple[torch.Tensor, torch.Tensor]:
         """Evaluate a batch of draft states through the neural network.
 
         Returns:

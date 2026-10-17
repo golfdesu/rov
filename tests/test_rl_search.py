@@ -5,7 +5,7 @@ from src.api import app
 from src.config import config
 from src.predictor import RoVDraftPredictor
 from src.schemas import DraftStateRequest
-from src.search.draft_mcts import DRAFT_STEPS, DraftMinimaxSearch, DraftSearchState
+from src.search.draft_mcts import DraftMinimaxSearch, DraftSearchState
 
 client = TestClient(app)
 

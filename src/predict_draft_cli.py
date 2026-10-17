@@ -2,6 +2,7 @@ import argparse
 import re
 import sys
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import torch
@@ -10,7 +11,7 @@ import torch.nn.functional as F
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-from train_sota_model import RoVDraftGNNTransformer, MAX_HISTORY_LEN
+from train_sota_model import MAX_HISTORY_LEN, RoVDraftGNNTransformer
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
@@ -21,6 +22,13 @@ LANE_NAMES = ["DS_Lane (ออฟเลน)", "Jungle (ป่า)", "Mid (เม
 
 def load_predictor():
     ckpt_path = MODEL_DIR / "sota_draft_gnn_transformer.pt"
+    if not ckpt_path.exists() and (MODEL_DIR / "archive" / "sota_draft_gnn_transformer.pt").exists():
+        ckpt_path = MODEL_DIR / "archive" / "sota_draft_gnn_transformer.pt"
+
+    if not ckpt_path.exists():
+        print(f"Warning: SOTA model checkpoint not found at {ckpt_path}. Please train the model first.", flush=True)
+        return None, None, None, None, None, None
+
     ckpt = torch.load(ckpt_path, map_location="cpu", weights_only=False)
     hero_names = ckpt["hero_names"]
     hero_to_id = ckpt["hero_to_id"]
@@ -166,15 +174,20 @@ def predict_next_action(
     if phase is None:
         phase = 2 if (len(ally_picks) >= 3 or len(ally_bans) >= 2) else 1
 
-    mctx = np.array([[
-        min(17, total_actions_done) / 17.0,
-        float(phase == 2),
-        float(act_int == 1),
-        float(side_int == 1),
-        1.0,  # 2026 tournament patch meta
-        len(ally_picks) / 5.0,
-        len(enemy_picks) / 5.0,
-    ]], dtype=np.float32)
+    mctx = np.array(
+        [
+            [
+                min(17, total_actions_done) / 17.0,
+                float(phase == 2),
+                float(act_int == 1),
+                float(side_int == 1),
+                1.0,  # 2026 tournament patch meta
+                len(ally_picks) / 5.0,
+                len(enemy_picks) / 5.0,
+            ]
+        ],
+        dtype=np.float32,
+    )
 
     th, tt, ts, tpad = build_sequence_tokens(ally_picks, enemy_picks, ally_bans, enemy_bans, hero_to_id)
 
@@ -233,27 +246,31 @@ def predict_next_action(
         if h_info["has_shield"] or h_info["has_heal_sustain"]:
             tags.append("Sustain/Shield")
 
-        recommendations.append({
-            "rank": rank,
-            "hero": h_name,
-            "prob_pct": round(float(probs[hid]) * 100.0, 2),
-            "pred_win_pct": round(float(win_probs[hid]) * 100.0, 1),
-            "role": h_info["primary_role"],
-            "main_lane": LANE_NAMES[main_lane_idx],
-            "synergy_edge_pct": round(syn_val, 2),
-            "counter_edge_pct": round(cnt_val, 2),
-            "pro_presence_pct": float(s_info["presence_pct"]),
-            "skill_tags": ", ".join(tags[:4]),
-        })
+        recommendations.append(
+            {
+                "rank": rank,
+                "hero": h_name,
+                "prob_pct": round(float(probs[hid]) * 100.0, 2),
+                "pred_win_pct": round(float(win_probs[hid]) * 100.0, 1),
+                "role": h_info["primary_role"],
+                "main_lane": LANE_NAMES[main_lane_idx],
+                "synergy_edge_pct": round(syn_val, 2),
+                "counter_edge_pct": round(cnt_val, 2),
+                "pro_presence_pct": float(s_info["presence_pct"]),
+                "skill_tags": ", ".join(tags[:4]),
+            }
+        )
 
     return missing_lanes, recommendations
 
 
-def print_scenario_report(title, mode, side, phase, ally_picks, enemy_picks, ally_bans, enemy_bans, global_bans, missing_lanes, recs):
+def print_scenario_report(
+    title, mode, side, phase, ally_picks, enemy_picks, ally_bans, enemy_bans, global_bans, missing_lanes, recs
+):
     print("=" * 98)
     print(f"SCENARIO: {title}")
     print("-" * 98)
-    print(f"  Model Architecture: SOTA RoVDraftGNNTransformer (Relational Hero GNN + Sequence Transformer)")
+    print("  Model Architecture: SOTA RoVDraftGNNTransformer (Relational Hero GNN + Sequence Transformer)")
     print(f"  Action to Predict : {mode.upper()} (Phase {phase}) | Acting Team: {side.upper()} SIDE")
     print(f"  Ally Bans         : {ally_bans if ally_bans else 'None'}")
     print(f"  Enemy Bans        : {enemy_bans if enemy_bans else 'None'}")
@@ -264,7 +281,9 @@ def print_scenario_report(title, mode, side, phase, ally_picks, enemy_picks, all
     if mode.lower() == "pick":
         print(f"  Missing Ally Lanes: {', '.join(missing_lanes)}")
     print("-" * 98)
-    print(f"  {'Rank':<4} | {'Hero':<16} | {'Prob%':<7} | {'PredWin%':<8} | {'Pro Lane':<20} | {'Syn%':<6} | {'Cnt%':<6} | {'Capabilities'}")
+    print(
+        f"  {'Rank':<4} | {'Hero':<16} | {'Prob%':<7} | {'PredWin%':<8} | {'Pro Lane':<20} | {'Syn%':<6} | {'Cnt%':<6} | {'Capabilities'}"
+    )
     print("-" * 98)
     for r in recs:
         print(
@@ -275,7 +294,11 @@ def print_scenario_report(title, mode, side, phase, ally_picks, enemy_picks, all
 
 
 def run_demos():
-    model, ckpt, hero_names, hero_to_id, heroes_df, stats_df = load_predictor()
+    pred_res = load_predictor()
+    if pred_res[0] is None:
+        print("Demo skipped: No trained SOTA model checkpoint available yet.", flush=True)
+        return
+    model, ckpt, hero_names, hero_to_id, heroes_df, stats_df = pred_res
 
     scenarios = [
         {
@@ -364,11 +387,17 @@ def main():
     parser.add_argument("--mode", choices=["pick", "ban"], default="pick", help="Action to predict: pick or ban")
     parser.add_argument("--side", choices=["blue", "red"], default="blue", help="Acting team side: blue or red")
     parser.add_argument("--phase", type=int, choices=[1, 2], default=None, help="Draft phase (1 or 2)")
-    parser.add_argument("--ally-picks", type=str, default="", help="Comma-separated heroes already picked by acting team")
-    parser.add_argument("--enemy-picks", type=str, default="", help="Comma-separated heroes already picked by enemy team")
+    parser.add_argument(
+        "--ally-picks", type=str, default="", help="Comma-separated heroes already picked by acting team"
+    )
+    parser.add_argument(
+        "--enemy-picks", type=str, default="", help="Comma-separated heroes already picked by enemy team"
+    )
     parser.add_argument("--ally-bans", type=str, default="", help="Comma-separated heroes banned by acting team")
     parser.add_argument("--enemy-bans", type=str, default="", help="Comma-separated heroes banned by enemy team")
-    parser.add_argument("--global-bans", type=str, default="", help="Comma-separated heroes unavailable due to Global Ban")
+    parser.add_argument(
+        "--global-bans", type=str, default="", help="Comma-separated heroes unavailable due to Global Ban"
+    )
     parser.add_argument("--top-k", type=int, default=5, help="Number of recommendations to display")
     args = parser.parse_args()
 
@@ -376,7 +405,11 @@ def main():
         run_demos()
         return
 
-    model, ckpt, hero_names, hero_to_id, heroes_df, stats_df = load_predictor()
+    pred_res = load_predictor()
+    if pred_res[0] is None:
+        print("Prediction aborted: No trained SOTA model checkpoint available yet.", flush=True)
+        return
+    model, ckpt, hero_names, hero_to_id, heroes_df, stats_df = pred_res
     ap = resolve_hero_list(args.ally_picks, hero_to_id)
     ep = resolve_hero_list(args.enemy_picks, hero_to_id)
     ab = resolve_hero_list(args.ally_bans, hero_to_id)

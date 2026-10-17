@@ -1,17 +1,18 @@
 import re
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import torch
 
 from src.config import config
 from src.schemas import (
+    DraftPredictionResponse,
     DraftStateRequest,
     HeroRecommendation,
-    DraftPredictionResponse,
 )
-from src.train_sota_model import RoVDraftGNNTransformer, MAX_HISTORY_LEN
 from src.search.draft_mcts import DraftMinimaxSearch, DraftSearchState
+from src.train_sota_model import MAX_HISTORY_LEN, RoVDraftGNNTransformer
 
 LANE_LABELS = [
     "DS_Lane (ออฟเลน)",
@@ -216,8 +217,12 @@ class RoVDraftPredictor:
 
         lookahead_win_rates: dict[int, float] = {}
         if req.use_lookahead:
-            b_p = [self.hero_to_id[h] for h in ally_picks] if side_val == 0 else [self.hero_to_id[h] for h in enemy_picks]
-            r_p = [self.hero_to_id[h] for h in enemy_picks] if side_val == 0 else [self.hero_to_id[h] for h in ally_picks]
+            b_p = (
+                [self.hero_to_id[h] for h in ally_picks] if side_val == 0 else [self.hero_to_id[h] for h in enemy_picks]
+            )
+            r_p = (
+                [self.hero_to_id[h] for h in enemy_picks] if side_val == 0 else [self.hero_to_id[h] for h in ally_picks]
+            )
             b_b = [self.hero_to_id[h] for h in ally_bans] if side_val == 0 else [self.hero_to_id[h] for h in enemy_bans]
             r_b = [self.hero_to_id[h] for h in enemy_bans] if side_val == 0 else [self.hero_to_id[h] for h in ally_bans]
             g_b = [self.hero_to_id[h] for h in global_bans]
@@ -276,9 +281,7 @@ class RoVDraftPredictor:
                 caps.append("Sustain/Shield")
 
             lookahead_val = (
-                lookahead_win_rates.get(h_idx, round(float(win_probs[h_idx] * 100.0), 2))
-                if req.use_lookahead
-                else None
+                lookahead_win_rates.get(h_idx, round(float(win_probs[h_idx] * 100.0), 2)) if req.use_lookahead else None
             )
 
             recs.append(
