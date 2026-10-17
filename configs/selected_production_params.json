@@ -1,0 +1,73 @@
+{
+  "last_updated": "2026-10-17T20:45:00+07:00",
+  "selection_protocol": "epsilon-tolerance parsimony rule (Hastie et al., 2009; Breiman et al., 1984)",
+  "tolerance_threshold": "delta <= 1.0%",
+  "dataset_summary": {
+    "num_heroes": 130,
+    "total_pro_games": 4208,
+    "train_games": 3576,
+    "val_games": 632
+  },
+  "models": {
+    "sota_rov_gnn_transformer": {
+      "model_name": "RoVDraftGNNTransformer",
+      "search_mode": "FAST_GPU_RESIDENT_OPTUNA_40_TRIALS",
+      "selected_for_production_safest": {
+        "status": "SELECTED_FOR_PRODUCTION_SAFEST",
+        "source_trial_rank": 2,
+        "trial_number": 10,
+        "val_loss": 2.74804,
+        "train_pol_loss": 2.49275,
+        "overfit_gap": 0.25529,
+        "top1_pct": 23.85,
+        "top3_pct": 49.0,
+        "top5_pct": 63.69,
+        "top10_pct": 81.11,
+        "win_acc_pct": 52.22,
+        "num_params": 1041181,
+        "selection_rationale": "Achieves the narrowest generalization gap (+0.25529) and highest Top-1 accuracy (23.85%) within 0.037% of the global Val Loss minimum via strong weight decay (0.040) and tight neural residual temperature (0.275).",
+        "params": {
+          "d_model": 128,
+          "nhead": 4,
+          "num_layers": 4,
+          "dropout": 0.3024930817639007,
+          "neural_scale": 0.2753562339956831,
+          "lr": 0.0011840105361393338,
+          "weight_decay": 0.04004079267828527,
+          "label_smoothing": 0.00300920424176334,
+          "win_loss_weight": 0.25719372328484613,
+          "batch_size": 512,
+          "augment_factor": 1
+        }
+      },
+      "selected_for_production_compact": {
+        "status": "SELECTED_FOR_PRODUCTION_PARSIMONIOUS",
+        "source_trial_rank": 1,
+        "trial_number": 21,
+        "val_loss": 2.74703,
+        "train_pol_loss": 2.47721,
+        "overfit_gap": 0.26982,
+        "top1_pct": 23.75,
+        "top3_pct": 48.92,
+        "top5_pct": 63.43,
+        "top10_pct": 81.23,
+        "win_acc_pct": 54.13,
+        "num_params": 776221,
+        "selection_rationale": "Achieves the absolute lowest Val Loss (2.74703) and highest Win-Value accuracy (54.13%) while using 25.4% fewer parameters (776K vs 1.04M) via a 2-layer Transformer with 0.049 label smoothing.",
+        "params": {
+          "d_model": 128,
+          "nhead": 4,
+          "num_layers": 2,
+          "dropout": 0.27218832940393906,
+          "neural_scale": 0.5112306528282587,
+          "lr": 0.001563007523002815,
+          "weight_decay": 0.016937339762392537,
+          "label_smoothing": 0.04946333024955897,
+          "win_loss_weight": 0.1532633122554873,
+          "batch_size": 512,
+          "augment_factor": 1
+        }
+      }
+    }
+  }
+}
