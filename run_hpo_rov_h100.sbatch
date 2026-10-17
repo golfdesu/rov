@@ -53,8 +53,9 @@ fi
 
 echo "Python Executable   : $(which python)"
 
-# Ensure optuna is installed in the active environment
+# Ensure optuna and mlflow are installed in the active environment
 python -c "import optuna" 2>/dev/null || pip install -q optuna
+python -c "import mlflow" 2>/dev/null || pip install -q mlflow
 
 # 2. Hardware Verification
 echo "------------------------------------------------------------------------------"

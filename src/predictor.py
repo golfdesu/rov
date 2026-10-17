@@ -26,10 +26,18 @@ class RoVDraftPredictor:
     """Production OOP Inference Engine for SOTA RoVDraftGNNTransformer."""
 
     def __init__(self, model_path: Path | None = None):
-        self.model_path: Path = model_path if model_path is not None else config.paths.sota_model_path
+        if model_path is not None:
+            self.model_path = model_path
+        elif config.paths.sota_model_path.exists():
+            self.model_path = config.paths.sota_model_path
+        elif (config.paths.models_dir / "archive" / "sota_draft_gnn_transformer.pt").exists():
+            self.model_path = config.paths.models_dir / "archive" / "sota_draft_gnn_transformer.pt"
+        else:
+            self.model_path = config.paths.sota_model_path
+
         if not self.model_path.exists():
             raise FileNotFoundError(
-                f"SOTA model artifact not found at {self.model_path}. Please run training first."
+                f"SOTA model artifact not found at {self.model_path}. Please run training on HPC first."
             )
 
         self.ckpt = torch.load(self.model_path, map_location="cpu", weights_only=False)

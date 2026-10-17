@@ -37,7 +37,8 @@ def test_draft_search_state_transitions():
 
 
 def test_minimax_lookahead_evaluation():
-    if not config.paths.sota_model_path.exists():
+    archive_path = config.paths.models_dir / "archive" / "sota_draft_gnn_transformer.pt"
+    if not (config.paths.sota_model_path.exists() or archive_path.exists()):
         pytest.skip("SOTA model checkpoint not present")
 
     predictor = RoVDraftPredictor()
@@ -71,7 +72,8 @@ def test_minimax_lookahead_evaluation():
 
 
 def test_predictor_with_lookahead_enabled():
-    if not config.paths.sota_model_path.exists():
+    archive_path = config.paths.models_dir / "archive" / "sota_draft_gnn_transformer.pt"
+    if not (config.paths.sota_model_path.exists() or archive_path.exists()):
         pytest.skip("SOTA model checkpoint not present")
 
     predictor = RoVDraftPredictor()

@@ -8,5 +8,7 @@ env/
 .vscode/
 logs/*.out
 logs/*.log
+mlruns/
+.pytest_cache/
 .DS_Store
 Thumbs.db

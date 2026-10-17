@@ -11,6 +11,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import TensorDataset, DataLoader
 
+try:
+    import mlflow
+    HAS_MLFLOW = True
+except ImportError:
+    HAS_MLFLOW = False
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
 MODEL_DIR = BASE_DIR / "models"
@@ -1004,6 +1010,23 @@ def main():
         flush=True,
     )
 
+    if HAS_MLFLOW:
+        mlflow.set_experiment("RoV_Draft_Intelligence")
+        mlflow.start_run(run_name=f"sota_train_{args.preset}_{int(time.time())}")
+        mlflow.log_params(model_config)
+        mlflow.log_params({
+            "lr": lr,
+            "weight_decay": weight_decay,
+            "label_smoothing": label_smoothing,
+            "win_loss_weight": win_loss_weight,
+            "batch_size": batch_size,
+            "preset": args.preset,
+            "total_params": total_params,
+            "recency_weighting": "2026=1.0,2025=0.5,2024=0.2",
+            "val_split": "100% 2026 matches",
+        })
+        print("MLflow tracking active (Experiment: 'RoV_Draft_Intelligence')", flush=True)
+
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
     use_amp = (device.type == "cuda" and torch.cuda.is_bf16_supported())
@@ -1071,6 +1094,17 @@ def main():
             flush=True,
         )
 
+        if HAS_MLFLOW:
+            mlflow.log_metrics({
+                "epoch_train_pol_loss": train_pol_loss / max(1, train_n),
+                "epoch_val_loss": val_loss,
+                "epoch_top1_pct": t1,
+                "epoch_top3_pct": t3,
+                "epoch_top5_pct": t5,
+                "epoch_top10_pct": t10,
+                "epoch_win_acc_pct": val_win_acc,
+            }, step=epoch)
+
         if is_best:
             best_val_loss = val_loss
             best_metrics = val_metrics
@@ -1112,6 +1146,24 @@ def main():
             flush=True,
         )
     print(f"Saved SOTA checkpoint to: {MODEL_DIR / 'sota_draft_gnn_transformer.pt'}", flush=True)
+
+    if HAS_MLFLOW:
+        ov = best_metrics["overall"]
+        tot = max(1, ov["total"])
+        mlflow.log_metrics({
+            "best_val_loss": best_val_loss,
+            "best_win_acc_pct": best_win_acc,
+            "final_top1_pct": ov["top1"] / tot * 100,
+            "final_top3_pct": ov["top3"] / tot * 100,
+            "final_top5_pct": ov["top5"] / tot * 100,
+            "final_top10_pct": ov["top10"] / tot * 100,
+        })
+        ckpt_path = MODEL_DIR / "sota_draft_gnn_transformer.pt"
+        if ckpt_path.exists():
+            mlflow.log_artifact(str(ckpt_path))
+        mlflow.end_run()
+        print("MLflow: Logged final SOTA training run and checkpoint artifact", flush=True)
+
 
 
 if __name__ == "__main__":

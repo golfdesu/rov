@@ -12,6 +12,12 @@ import optuna
 from optuna.pruners import MedianPruner
 from optuna.samplers import TPESampler
 
+try:
+    import mlflow
+    HAS_MLFLOW = True
+except ImportError:
+    HAS_MLFLOW = False
+
 from train_sota_model import (
     BASE_DIR,
     MODEL_DIR,
@@ -54,6 +60,10 @@ def main():
 
     use_amp = (device.type == "cuda" and torch.cuda.is_bf16_supported())
     print(f"=== Fast Optuna HPO for RoVDraftGNNTransformer on {device} (BF16 AMP={use_amp}) ===", flush=True)
+
+    if HAS_MLFLOW:
+        mlflow.set_experiment("RoV_Draft_Intelligence")
+        print("MLflow tracking active (Experiment: 'RoV_Draft_Intelligence')", flush=True)
 
     t0 = time.time()
     (
@@ -138,6 +148,11 @@ def main():
         ).to(device)
         num_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 
+        if HAS_MLFLOW:
+            mlflow.start_run(run_name=f"trial_{trial.number:02d}", nested=True)
+            mlflow.log_params(trial.params)
+            mlflow.log_param("num_params", num_params)
+
         optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.trial_epochs)
 
@@ -190,6 +205,13 @@ def main():
             cur_train_ce = ep_train_loss / max(1, ep_train_n)
             val_loss, val_metrics, val_win_acc = evaluate_sota_model(model, val_loader, device)
 
+            if HAS_MLFLOW:
+                mlflow.log_metrics({
+                    "val_loss": val_loss,
+                    "train_pol_loss": cur_train_ce,
+                    "win_acc_pct": val_win_acc,
+                }, step=ep)
+
             if val_loss < best_trial_loss:
                 best_trial_loss = val_loss
                 best_trial_train_loss = cur_train_ce
@@ -206,6 +228,9 @@ def main():
                     f"Best Val: {best_trial_loss:.4f} (d={d_model}, L={num_layers}, drop={dropout:.2f}, aug={augment_factor})",
                     flush=True,
                 )
+                if HAS_MLFLOW:
+                    mlflow.set_tag("status", "PRUNED")
+                    mlflow.end_run(status="KILLED")
                 raise optuna.TrialPruned()
 
         ov = best_trial_metrics["overall"]
@@ -241,6 +266,20 @@ def main():
             flush=True,
         )
 
+        if HAS_MLFLOW:
+            mlflow.log_metrics({
+                "best_val_loss": best_trial_loss,
+                "best_train_pol_loss": best_trial_train_loss,
+                "overfit_gap": overfit_gap,
+                "top1_pct": t1,
+                "top3_pct": t3,
+                "top5_pct": t5,
+                "top10_pct": t10,
+                "win_acc_pct": best_trial_win,
+            })
+            mlflow.set_tag("is_global_best", str(is_global_best))
+            mlflow.end_run()
+
         if is_global_best and best_trial_state is not None:
             global_best["val_loss"] = best_trial_loss
             global_best["val_metrics"] = best_trial_metrics
@@ -248,6 +287,7 @@ def main():
             global_best["model_config"] = model_config
             global_best["state_dict"] = best_trial_state
             global_best["trial_number"] = trial.number
+
 
         return best_trial_loss
 
@@ -381,6 +421,22 @@ def main():
                 flush=True,
             )
         print(f"Saved Best SOTA checkpoint to: {MODEL_DIR / 'sota_draft_gnn_transformer.pt'}", flush=True)
+
+    if HAS_MLFLOW:
+        with mlflow.start_run(run_name=f"hpo_study_summary_{int(time.time())}"):
+            mlflow.log_params({"n_trials": args.n_trials, "trial_epochs": args.trial_epochs})
+            mlflow.log_metrics({
+                "best_study_val_loss": study.best_value,
+                "best_study_trial": study.best_trial.number,
+                "elapsed_seconds": round(hpo_elapsed, 2),
+            })
+            if top5_path.exists():
+                mlflow.log_artifact(str(top5_path))
+            if best_params_path.exists():
+                mlflow.log_artifact(str(best_params_path))
+            if (MODEL_DIR / "sota_draft_gnn_transformer.pt").exists():
+                mlflow.log_artifact(str(MODEL_DIR / "sota_draft_gnn_transformer.pt"))
+        print("MLflow: Logged HPO Study summary and artifacts to experiment 'RoV_Draft_Intelligence'", flush=True)
 
 
 if __name__ == "__main__":
