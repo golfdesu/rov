@@ -26,7 +26,7 @@ echo "Partition           : $SLURM_JOB_PARTITION"
 echo "Job Name            : $SLURM_JOB_NAME"
 echo "Start Time          : $(date '+%Y-%m-%d %H:%M:%S')"
 echo "Working Directory   : $(pwd)"
-echo "Target Task         : SOTA RoVDraftGNNTransformer (d_model=256, nhead=8, layers=4, aug=6x)"
+echo "Target Task         : SOTA RoVDraftGNNTransformer (H100 Preset + Tuned Best Params)"
 echo "Unified Log File    : logs/${SLURM_JOB_NAME}_${SLURM_JOB_ID}.out"
 echo "=============================================================================="
 
@@ -39,6 +39,8 @@ fi
 # Activate Virtual Environment
 if [ -f ".venv/bin/activate" ]; then
     source .venv/bin/activate
+elif [ -f "$HOME/project/HPO/.venv/bin/activate" ]; then
+    source "$HOME/project/HPO/.venv/bin/activate"
 elif [ -f "../environment/.venv/bin/activate" ]; then
     source ../environment/.venv/bin/activate
 elif [ -f "../.venv/bin/activate" ]; then

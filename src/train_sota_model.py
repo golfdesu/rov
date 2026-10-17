@@ -14,7 +14,9 @@ from torch.utils.data import TensorDataset, DataLoader
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
 MODEL_DIR = BASE_DIR / "models"
+BEST_PARAMS_DIR = BASE_DIR / "best_params"
 MODEL_DIR.mkdir(parents=True, exist_ok=True)
+BEST_PARAMS_DIR.mkdir(parents=True, exist_ok=True)
 
 SEED = 42
 random.seed(SEED)
@@ -284,7 +286,11 @@ def order_team_picks_by_draft_logic(team_picks_ids, enemy_phase2_ban_ids, lane_p
 
 
 def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment_factor=1):
-    """Pre-build contiguous PyTorch TensorDataset in memory (supports multi-permutation augmentation on GPU)."""
+    """
+    Pre-build contiguous PyTorch TensorDataset in memory.
+    When augment_factor >= 2, only swaps simultaneous double-pick turns within the SAME phase
+    (e.g., Blue P2<->P3, Blue P4<->P5, Red P1<->P2) without corrupting Phase 1 vs Phase 2 boundaries.
+    """
     num_heroes = len(hero_to_id)
     valid_games = []
     for g in games:
@@ -295,7 +301,8 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
         if len(bp) == 5 and len(rp) == 5 and len(bb) == 4 and len(rb) == 4:
             valid_games.append((g, bp, rp, bb, rb))
 
-    total_steps = len(valid_games) * 18 * max(1, augment_factor)
+    eff_aug = max(1, min(int(augment_factor), 2))
+    total_steps = len(valid_games) * 18 * eff_aug
     ap_arr = np.zeros((total_steps, num_heroes), dtype=np.float32)
     ep_arr = np.zeros((total_steps, num_heroes), dtype=np.float32)
     ab_arr = np.zeros((total_steps, num_heroes), dtype=np.float32)
@@ -324,24 +331,12 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
         rp_canonical = order_team_picks_by_draft_logic(r_picks_raw, b_bans[2:4], lane_probs, priority_scores)
 
         orderings = [(bp_canonical, rp_canonical)]
-        for aug_i in range(1, max(1, augment_factor)):
-            bp_aug = list(bp_canonical)
-            rp_aug = list(rp_canonical)
-            if aug_i % 2 == 1:
-                # Permute within Phase 1 (first 3) and within Phase 2 (last 2)
-                p1_b, p2_b = bp_aug[:3], bp_aug[3:]
-                p1_r, p2_r = rp_aug[:3], rp_aug[3:]
-                random.shuffle(p1_b)
-                random.shuffle(p2_b)
-                random.shuffle(p1_r)
-                random.shuffle(p2_r)
-                bp_aug = p1_b + p2_b
-                rp_aug = p1_r + p2_r
-            else:
-                # Full random permutation across all 5 picks
-                random.shuffle(bp_aug)
-                random.shuffle(rp_aug)
-            orderings.append((bp_aug, rp_aug))
+        if eff_aug >= 2:
+            # Swap only simultaneous double-pick turns within the same phase:
+            # Blue simultaneous: (P2, P3) and (P4, P5); Red simultaneous: (P1, P2)
+            bp_swap = [bp_canonical[0], bp_canonical[2], bp_canonical[1], bp_canonical[4], bp_canonical[3]]
+            rp_swap = [rp_canonical[1], rp_canonical[0], rp_canonical[2], rp_canonical[3], rp_canonical[4]]
+            orderings.append((bp_swap, rp_swap))
 
         for bp_seq, rp_seq in orderings:
             step_targets = [
@@ -442,11 +437,34 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
     )
 
 
+class GPUTensorBatcher:
+    """Zero-overhead in-VRAM mini-batcher for fast H100 training and Optuna HPO."""
+    def __init__(self, dataset: TensorDataset, batch_size: int, shuffle: bool, device: torch.device):
+        self.tensors = [t.to(device, non_blocking=True) for t in dataset.tensors]
+        self.n = self.tensors[0].size(0)
+        self.batch_size = batch_size
+        self.shuffle = shuffle
+        self.device = device
+
+    def __len__(self):
+        return (self.n + self.batch_size - 1) // self.batch_size
+
+    def __iter__(self):
+        if self.shuffle:
+            perm = torch.randperm(self.n, device=self.device)
+            for i in range(0, self.n, self.batch_size):
+                idx = perm[i : i + self.batch_size]
+                yield [t[idx] for t in self.tensors]
+        else:
+            for i in range(0, self.n, self.batch_size):
+                yield [t[i : i + self.batch_size] for t in self.tensors]
+
+
 class RelationalHeroGNN(nn.Module):
     """
     2-Layer Multi-Relational Graph Neural Network (R-GCN) over the 130-Hero Graph.
     """
-    def __init__(self, num_heroes, feat_dim, d_model):
+    def __init__(self, num_heroes, feat_dim, d_model, dropout=0.20):
         super().__init__()
         self.num_heroes = num_heroes
         self.hero_embed = nn.Embedding(num_heroes, d_model)
@@ -455,6 +473,7 @@ class RelationalHeroGNN(nn.Module):
             nn.LayerNorm(d_model),
             nn.GELU(),
         )
+        self.drop = nn.Dropout(dropout)
 
         self.w1_self = nn.Linear(d_model, d_model)
         self.w1_cp = nn.Linear(d_model, d_model, bias=False)
@@ -470,7 +489,7 @@ class RelationalHeroGNN(nn.Module):
         self.w2_cby = nn.Linear(d_model, d_model, bias=False)
         self.ln2 = nn.LayerNorm(d_model)
 
-        self.gate = nn.Parameter(torch.tensor(0.5))
+        self.gate = nn.Parameter(torch.tensor(0.0))
 
     def forward(self, hero_features, adj_cp, adj_syn, adj_cnt, adj_cby):
         ids = torch.arange(self.num_heroes, device=hero_features.device)
@@ -483,7 +502,7 @@ class RelationalHeroGNN(nn.Module):
             + torch.matmul(adj_cnt, self.w1_cnt(h0))
             + torch.matmul(adj_cby, self.w1_cby(h0))
         )
-        h1 = self.ln1(h0 + F.gelu(m1))
+        h1 = self.ln1(h0 + self.drop(F.gelu(m1)))
 
         m2 = (
             self.w2_self(h1)
@@ -492,7 +511,7 @@ class RelationalHeroGNN(nn.Module):
             + torch.matmul(adj_cnt, self.w2_cnt(h1))
             + torch.matmul(adj_cby, self.w2_cby(h1))
         )
-        h2 = self.ln2(h1 + F.gelu(m2))
+        h2 = self.ln2(h1 + self.drop(F.gelu(m2)))
 
         g = torch.sigmoid(self.gate)
         return (1.0 - g) * h0 + g * h2
@@ -503,7 +522,7 @@ class RoVDraftGNNTransformer(nn.Module):
     State-of-the-Art MOBA Draft AI Architecture:
       1. Multi-Relational Hero Graph Neural Network (RelationalHeroGNN)
       2. Contextual Multi-Head Self-Attention Draft Transformer
-      3. Explicit Role/Skill Deficit & Higher-Order Pairwise Interaction Scoring
+      3. Bounded Cosine-Gated Neural Residual + Explicit Role/Skill & Graph Priors
       4. Dual Policy Head (Next-Pick/Ban) & Action-Value Head (Counterfactual Win-Probability Q(s, a))
     """
     def __init__(
@@ -516,10 +535,14 @@ class RoVDraftGNNTransformer(nn.Module):
         d_model=64,
         nhead=4,
         num_layers=2,
+        dropout=0.20,
+        neural_scale=0.65,
     ):
         super().__init__()
         self.num_heroes = num_heroes
         self.d_model = d_model
+        self.dropout_rate = dropout
+        self.neural_scale_init = neural_scale
 
         self.register_buffer("hero_features", torch.tensor(hero_features, dtype=torch.float32))
         self.register_buffer("lane_probs", torch.tensor(lane_probs, dtype=torch.float32))
@@ -543,7 +566,7 @@ class RoVDraftGNNTransformer(nn.Module):
         self.register_buffer("ban_p2_2026_log_prior", torch.tensor(priors["ban_p2_2026_log_prior"], dtype=torch.float32))
         self.register_buffer("hero_base_win_adv", torch.tensor(priors["hero_base_win_adv"], dtype=torch.float32))
 
-        self.gnn = RelationalHeroGNN(num_heroes, hero_features.shape[1], d_model)
+        self.gnn = RelationalHeroGNN(num_heroes, hero_features.shape[1], d_model, dropout=dropout)
 
         self.token_type_embed = nn.Embedding(5, d_model, padding_idx=0)
         self.step_pos_embed = nn.Embedding(18, d_model)
@@ -553,7 +576,7 @@ class RoVDraftGNNTransformer(nn.Module):
             nn.Linear(macro_dim, d_model * 2),
             nn.LayerNorm(d_model * 2),
             nn.GELU(),
-            nn.Dropout(0.15),
+            nn.Dropout(dropout),
             nn.Linear(d_model * 2, d_model),
             nn.LayerNorm(d_model),
         )
@@ -562,16 +585,36 @@ class RoVDraftGNNTransformer(nn.Module):
             d_model=d_model,
             nhead=nhead,
             dim_feedforward=d_model * 2,
-            dropout=0.15,
+            dropout=dropout,
             activation="gelu",
             batch_first=True,
             norm_first=False,
         )
         self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
+        self.joint_drop = nn.Dropout(dropout)
 
-        self.pick_query = nn.Sequential(nn.Linear(d_model * 2, d_model), nn.LayerNorm(d_model), nn.GELU())
-        self.ban1_query = nn.Sequential(nn.Linear(d_model * 2, d_model), nn.LayerNorm(d_model), nn.GELU())
-        self.ban2_query = nn.Sequential(nn.Linear(d_model * 2, d_model), nn.LayerNorm(d_model), nn.GELU())
+        self.pick_query = nn.Sequential(
+            nn.Dropout(dropout),
+            nn.Linear(d_model * 2, d_model),
+            nn.LayerNorm(d_model),
+            nn.GELU(),
+        )
+        self.ban1_query = nn.Sequential(
+            nn.Dropout(dropout),
+            nn.Linear(d_model * 2, d_model),
+            nn.LayerNorm(d_model),
+            nn.GELU(),
+        )
+        self.ban2_query = nn.Sequential(
+            nn.Dropout(dropout),
+            nn.Linear(d_model * 2, d_model),
+            nn.LayerNorm(d_model),
+            nn.GELU(),
+        )
+
+        self.neural_temp = nn.Parameter(
+            torch.tensor([neural_scale, neural_scale, neural_scale], dtype=torch.float32)
+        )
 
         self.w_pick = nn.Parameter(torch.tensor([0.45, 0.55, 2.30, 0.00, 1.25, 0.85, 0.00, 0.90], dtype=torch.float32))
         self.w_ban1 = nn.Parameter(torch.tensor([0.40, 0.65, 0.00, 0.15, 0.20, 0.20, 0.30, -0.40], dtype=torch.float32))
@@ -581,6 +624,7 @@ class RoVDraftGNNTransformer(nn.Module):
             nn.Linear(d_model * 2, 64),
             nn.LayerNorm(64),
             nn.GELU(),
+            nn.Dropout(dropout),
             nn.Linear(64, 1),
         )
         self.action_adv_proj = nn.Linear(d_model * 2, d_model)
@@ -649,12 +693,13 @@ class RoVDraftGNNTransformer(nn.Module):
 
         seq_out = self.transformer(seq_in, src_key_padding_mask=full_pad_mask)
         trans_cls = seq_out[:, 0, :]
-        joint_state = torch.cat([trans_cls, cls_tok], dim=-1)
+        joint_state = self.joint_drop(torch.cat([trans_cls, cls_tok], dim=-1))
 
         scale = 1.0 / math.sqrt(self.d_model)
-        neural_pick_logits = torch.matmul(self.pick_query(joint_state), H_gnn.t()) * scale
-        neural_ban1_logits = torch.matmul(self.ban1_query(joint_state), H_gnn.t()) * scale
-        neural_ban2_logits = torch.matmul(self.ban2_query(joint_state), H_gnn.t()) * scale
+        temps = torch.clamp(self.neural_temp, min=0.10, max=1.50)
+        neural_pick_logits = torch.matmul(self.pick_query(joint_state), H_gnn.t()) * (scale * temps[0])
+        neural_ban1_logits = torch.matmul(self.ban1_query(joint_state), H_gnn.t()) * (scale * temps[1])
+        neural_ban2_logits = torch.matmul(self.ban2_query(joint_state), H_gnn.t()) * (scale * temps[2])
 
         ally_lane_fit = torch.matmul(ally_missing_lanes, self.lane_probs.t())
         enemy_lane_fit = torch.matmul(enemy_missing_lanes, self.lane_probs.t())
@@ -721,13 +766,17 @@ class RoVDraftGNNTransformer(nn.Module):
 
 
 def evaluate_sota_model(model, loader, device):
+    """Fully vectorized GPU evaluation (zero per-sample Python loops or CUDA syncs)."""
     model.eval()
+    bucket_defs = [
+        ("ban_p1", 0, 1),
+        ("pick_p1", 1, 1),
+        ("ban_p2", 0, 2),
+        ("pick_p2", 1, 2),
+    ]
     metrics = {
-        "pick_p1": {"top1": 0, "top3": 0, "top5": 0, "top10": 0, "total": 0},
-        "pick_p2": {"top1": 0, "top3": 0, "top5": 0, "top10": 0, "total": 0},
-        "ban_p1": {"top1": 0, "top3": 0, "top5": 0, "top10": 0, "total": 0},
-        "ban_p2": {"top1": 0, "top3": 0, "top5": 0, "top10": 0, "total": 0},
-        "overall": {"top1": 0, "top3": 0, "top5": 0, "top10": 0, "total": 0},
+        k: {"top1": 0, "top3": 0, "top5": 0, "top10": 0, "total": 0}
+        for k in ["ban_p1", "pick_p1", "ban_p2", "pick_p2", "overall"]
     }
     total_loss = 0.0
     total_count = 0
@@ -736,40 +785,47 @@ def evaluate_sota_model(model, loader, device):
 
     with torch.no_grad():
         for batch in loader:
-            ap, ep, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph, target, win_lbl = [
-                x.to(device, non_blocking=True) for x in batch
-            ]
+            if batch[0].device != device:
+                batch = [x.to(device, non_blocking=True) for x in batch]
+            ap, ep, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph, target, win_lbl = batch
+
             policy_logits, q_win_logits = model(ap, ep, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph)
             loss = F.cross_entropy(policy_logits, target, reduction="sum")
             total_loss += loss.item()
-            total_count += target.size(0)
+            bsz = target.size(0)
+            total_count += bsz
 
             chosen_q = q_win_logits.gather(1, target.unsqueeze(1)).squeeze(1)
             pred_win = (torch.sigmoid(chosen_q) >= 0.5).float()
 
+            late_mask = (act == 1) & (ph == 2)
+            n_late = int(late_mask.sum().item())
+            if n_late > 0:
+                win_total_late += n_late
+                win_correct_late += int((pred_win[late_mask] == win_lbl[late_mask]).sum().item())
+
             top10_preds = torch.topk(policy_logits, k=10, dim=-1).indices
-            for i in range(target.size(0)):
-                t = target[i].item()
-                preds = top10_preds[i].tolist()
-                a_val = act[i].item()
-                p_val = ph[i].item()
-                key = f"{'pick' if a_val == 1 else 'ban'}_p{p_val}"
+            hits = (top10_preds == target.unsqueeze(1))
+            h1 = hits[:, :1].any(dim=1)
+            h3 = hits[:, :3].any(dim=1)
+            h5 = hits[:, :5].any(dim=1)
+            h10 = hits.any(dim=1)
 
-                if p_val == 2 and a_val == 1:
-                    win_total_late += 1
-                    if pred_win[i].item() == win_lbl[i].item():
-                        win_correct_late += 1
+            metrics["overall"]["total"] += bsz
+            metrics["overall"]["top1"] += int(h1.sum().item())
+            metrics["overall"]["top3"] += int(h3.sum().item())
+            metrics["overall"]["top5"] += int(h5.sum().item())
+            metrics["overall"]["top10"] += int(h10.sum().item())
 
-                for bucket in [key, "overall"]:
-                    metrics[bucket]["total"] += 1
-                    if t == preds[0]:
-                        metrics[bucket]["top1"] += 1
-                    if t in preds[:3]:
-                        metrics[bucket]["top3"] += 1
-                    if t in preds[:5]:
-                        metrics[bucket]["top5"] += 1
-                    if t in preds[:10]:
-                        metrics[bucket]["top10"] += 1
+            for b_key, a_val, p_val in bucket_defs:
+                b_mask = (act == a_val) & (ph == p_val)
+                cnt = int(b_mask.sum().item())
+                if cnt > 0:
+                    metrics[b_key]["total"] += cnt
+                    metrics[b_key]["top1"] += int(h1[b_mask].sum().item())
+                    metrics[b_key]["top3"] += int(h3[b_mask].sum().item())
+                    metrics[b_key]["top5"] += int(h5[b_mask].sum().item())
+                    metrics[b_key]["top10"] += int(h10[b_mask].sum().item())
 
     avg_loss = total_loss / max(1, total_count)
     win_acc = (win_correct_late / max(1, win_total_late)) * 100.0
@@ -782,29 +838,96 @@ def parse_args():
     parser.add_argument("--d-model", type=int, default=None, help="Transformer & GNN embedding dimension")
     parser.add_argument("--nhead", type=int, default=None, help="Number of attention heads")
     parser.add_argument("--num-layers", type=int, default=None, help="Number of Transformer encoder layers")
+    parser.add_argument("--dropout", type=float, default=None, help="Dropout rate")
+    parser.add_argument("--neural-scale", type=float, default=None, help="Initial cosine neural logit temperature")
     parser.add_argument("--epochs", type=int, default=None, help="Training epochs")
     parser.add_argument("--batch-size", type=int, default=None, help="Mini-batch size")
-    parser.add_argument("--augment-factor", type=int, default=None, help="Pick-order permutation augmentation factor")
-    parser.add_argument("--lr", type=float, default=2.5e-3, help="Peak learning rate")
+    parser.add_argument("--augment-factor", type=int, default=None, help="Simultaneous pick-pair augmentation (1 or 2)")
+    parser.add_argument("--lr", type=float, default=None, help="Peak learning rate")
+    parser.add_argument("--weight-decay", type=float, default=None, help="AdamW weight decay")
+    parser.add_argument("--label-smoothing", type=float, default=None, help="Cross-entropy label smoothing")
+    parser.add_argument("--win-loss-weight", type=float, default=None, help="Weight of auxiliary win-value loss")
+    parser.add_argument("--top-rank", type=int, default=None, choices=[1, 2, 3, 4, 5], help="Select rank 1..5 from sota_rov_top5_trials.json")
+    parser.add_argument("--use-safest", action="store_true", help="Automatically use safest_recommended_trial from HPO")
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
+
+    # Load Optuna best_params / top_5_trials if available
+    best_params_file = BEST_PARAMS_DIR / "sota_rov_best_params.json"
+    top5_file = BEST_PARAMS_DIR / "sota_rov_top5_trials.json"
+    tuned = {}
+    if top5_file.exists() and (args.top_rank is not None or args.use_safest):
+        try:
+            with open(top5_file, "r", encoding="utf-8") as f:
+                t5_data = json.load(f)
+            if args.use_safest and t5_data.get("safest_recommended_trial"):
+                chosen = t5_data["safest_recommended_trial"]
+                tuned = chosen.get("params", {})
+                print(
+                    f"Loaded [SAFEST] HPO candidate (Rank #{chosen.get('rank')}, Trial #{chosen.get('trial_number')}, "
+                    f"Val={chosen.get('val_loss')}, Gap={chosen.get('overfit_gap')}): {tuned}",
+                    flush=True,
+                )
+            elif args.top_rank is not None:
+                candidates = t5_data.get("top_5_trials", [])
+                idx = min(max(0, args.top_rank - 1), len(candidates) - 1)
+                if candidates:
+                    chosen = candidates[idx]
+                    tuned = chosen.get("params", {})
+                    print(
+                        f"Loaded Top-{args.top_rank} HPO candidate (Trial #{chosen.get('trial_number')}, "
+                        f"Val={chosen.get('val_loss')}, Gap={chosen.get('overfit_gap')}): {tuned}",
+                        flush=True,
+                    )
+        except Exception as e:
+            print(f"Warning: could not read {top5_file}: {e}", flush=True)
+    elif best_params_file.exists():
+        try:
+            with open(best_params_file, "r", encoding="utf-8") as f:
+                bp_data = json.load(f)
+                if bp_data.get("safest_recommended_trial"):
+                    chosen = bp_data["safest_recommended_trial"]
+                    tuned = chosen.get("params", bp_data.get("best_params", {}))
+                    print(
+                        f"Loaded safest tuned hyperparameters from {best_params_file.name} "
+                        f"(Rank #{chosen.get('rank')}, Val={chosen.get('val_loss')}, Gap={chosen.get('overfit_gap')}): {tuned}",
+                        flush=True,
+                    )
+                else:
+                    tuned = bp_data.get("best_params", {})
+                    print(f"Loaded tuned hyperparameters from {best_params_file.name}: {tuned}", flush=True)
+        except Exception as e:
+            print(f"Warning: could not read {best_params_file}: {e}", flush=True)
+
     if args.preset == "h100":
-        d_model = args.d_model or 256
-        nhead = args.nhead or 8
-        num_layers = args.num_layers or 4
-        epochs = args.epochs or 40
-        batch_size = args.batch_size or 1024
-        augment_factor = args.augment_factor or 6
+        d_model = args.d_model or tuned.get("d_model", 128)
+        nhead = args.nhead or tuned.get("nhead", 4)
+        num_layers = args.num_layers or tuned.get("num_layers", 2)
+        dropout = args.dropout if args.dropout is not None else tuned.get("dropout", 0.25)
+        neural_scale = args.neural_scale if args.neural_scale is not None else tuned.get("neural_scale", 0.65)
+        epochs = args.epochs or 30
+        batch_size = args.batch_size or tuned.get("batch_size", 512)
+        augment_factor = args.augment_factor or tuned.get("augment_factor", 1)
+        lr = args.lr or tuned.get("lr", 1.5e-3)
+        weight_decay = args.weight_decay if args.weight_decay is not None else tuned.get("weight_decay", 1e-2)
+        label_smoothing = args.label_smoothing if args.label_smoothing is not None else tuned.get("label_smoothing", 0.05)
+        win_loss_weight = args.win_loss_weight if args.win_loss_weight is not None else tuned.get("win_loss_weight", 0.20)
     else:
-        d_model = args.d_model or 64
-        nhead = args.nhead or 4
-        num_layers = args.num_layers or 2
+        d_model = args.d_model or tuned.get("d_model", 64)
+        nhead = args.nhead or tuned.get("nhead", 4)
+        num_layers = args.num_layers or tuned.get("num_layers", 2)
+        dropout = args.dropout if args.dropout is not None else tuned.get("dropout", 0.20)
+        neural_scale = args.neural_scale if args.neural_scale is not None else tuned.get("neural_scale", 0.65)
         epochs = args.epochs or 8
         batch_size = args.batch_size or 512
         augment_factor = args.augment_factor or 1
+        lr = args.lr or 2.0e-3
+        weight_decay = args.weight_decay if args.weight_decay is not None else 5e-3
+        label_smoothing = args.label_smoothing if args.label_smoothing is not None else 0.04
+        win_loss_weight = args.win_loss_weight if args.win_loss_weight is not None else 0.20
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if device.type == "cuda":
@@ -837,14 +960,19 @@ def main():
         flush=True,
     )
 
-    pin_mem = (device.type == "cuda")
-    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, pin_memory=pin_mem)
-    val_loader = DataLoader(val_ds, batch_size=1024, shuffle=False, pin_memory=pin_mem)
+    if device.type == "cuda":
+        train_loader = GPUTensorBatcher(train_ds, batch_size=batch_size, shuffle=True, device=device)
+        val_loader = GPUTensorBatcher(val_ds, batch_size=2048, shuffle=False, device=device)
+    else:
+        train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
+        val_loader = DataLoader(val_ds, batch_size=1024, shuffle=False)
 
     model_config = {
         "d_model": d_model,
         "nhead": nhead,
         "num_layers": num_layers,
+        "dropout": dropout,
+        "neural_scale": neural_scale,
     }
     model = RoVDraftGNNTransformer(
         num_heroes=len(hero_names),
@@ -857,18 +985,20 @@ def main():
 
     total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(
-        f"Initialized RoVDraftGNNTransformer (d_model={d_model}, nhead={nhead}, layers={num_layers} | "
-        f"{total_params:,} trainable params) on {device}",
+        f"Initialized RoVDraftGNNTransformer (d_model={d_model}, nhead={nhead}, layers={num_layers}, "
+        f"dropout={dropout:.2f}, neural_scale={neural_scale:.2f} | {total_params:,} params) on {device}",
         flush=True,
     )
 
-    optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=2e-4)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
     use_amp = (device.type == "cuda" and torch.cuda.is_bf16_supported())
 
     best_val_loss = float("inf")
     best_metrics = None
     best_win_acc = 0.0
+    patience = 8
+    bad_epochs = 0
 
     for epoch in range(1, epochs + 1):
         ep_start = time.time()
@@ -877,30 +1007,33 @@ def main():
         train_n = 0
 
         for batch in train_loader:
-            ap, ep, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph, target, win_lbl = [
-                x.to(device, non_blocking=True) for x in batch
-            ]
+            if batch[0].device != device:
+                batch = [x.to(device, non_blocking=True) for x in batch]
+            ap, ep, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph, target, win_lbl = batch
             optimizer.zero_grad(set_to_none=True)
 
             if use_amp:
                 with torch.amp.autocast("cuda", dtype=torch.bfloat16):
                     policy_logits, q_win_logits = model(ap, ep, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph)
-                    pol_loss = F.cross_entropy(policy_logits, target)
+                    pol_loss = F.cross_entropy(policy_logits, target, label_smoothing=label_smoothing)
                     chosen_q = q_win_logits.gather(1, target.unsqueeze(1)).squeeze(1)
                     win_loss = F.binary_cross_entropy_with_logits(chosen_q, win_lbl)
-                    loss = pol_loss + 0.25 * win_loss
+                    loss = pol_loss + win_loss_weight * win_loss
             else:
                 policy_logits, q_win_logits = model(ap, ep, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph)
-                pol_loss = F.cross_entropy(policy_logits, target)
+                pol_loss = F.cross_entropy(policy_logits, target, label_smoothing=label_smoothing)
                 chosen_q = q_win_logits.gather(1, target.unsqueeze(1)).squeeze(1)
                 win_loss = F.binary_cross_entropy_with_logits(chosen_q, win_lbl)
-                loss = pol_loss + 0.25 * win_loss
+                loss = pol_loss + win_loss_weight * win_loss
 
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()
 
-            train_pol_loss += pol_loss.item() * target.size(0)
+            # Track unsmoothed cross-entropy for apples-to-apples comparison with Val Loss
+            with torch.no_grad():
+                raw_ce = F.cross_entropy(policy_logits, target)
+            train_pol_loss += raw_ce.item() * target.size(0)
             train_n += target.size(0)
 
         scheduler.step()
@@ -911,16 +1044,19 @@ def main():
         t3 = ov["top3"] / ov["total"] * 100
         t5 = ov["top5"] / ov["total"] * 100
         t10 = ov["top10"] / ov["total"] * 100
+        is_best = val_loss < best_val_loss
+        marker = " *BEST*" if is_best else ""
         print(
             f"  Epoch {epoch:02d}/{epochs:02d} ({time.time()-ep_start:.1f}s) | Pol Loss: {train_pol_loss/train_n:.4f} | "
-            f"Val Loss: {val_loss:.4f} | Top-1: {t1:.2f}% | Top-3: {t3:.2f}% | Top-5: {t5:.2f}% | Top-10: {t10:.2f}% | WinAcc: {val_win_acc:.1f}%",
+            f"Val Loss: {val_loss:.4f} | Top-1: {t1:.2f}% | Top-3: {t3:.2f}% | Top-5: {t5:.2f}% | Top-10: {t10:.2f}% | WinAcc: {val_win_acc:.1f}%{marker}",
             flush=True,
         )
 
-        if val_loss < best_val_loss:
+        if is_best:
             best_val_loss = val_loss
             best_metrics = val_metrics
             best_win_acc = val_win_acc
+            bad_epochs = 0
             checkpoint = {
                 "architecture": "RoVDraftGNNTransformer",
                 "model_config": model_config,
@@ -935,6 +1071,11 @@ def main():
                 "val_win_acc": best_win_acc,
             }
             torch.save(checkpoint, MODEL_DIR / "sota_draft_gnn_transformer.pt")
+        else:
+            bad_epochs += 1
+            if bad_epochs >= patience:
+                print(f"  Early stopping triggered at epoch {epoch} (best Val Loss: {best_val_loss:.4f})", flush=True)
+                break
 
     print("\n=== SOTA RoVDraftGNNTransformer Validation Metrics (Out of 130 Heroes) ===", flush=True)
     for k, label in [
