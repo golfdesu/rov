@@ -42,6 +42,8 @@ Every AI agent (including fast models such as `3.8flash`) MUST strictly obey the
    - Always use `GPUTensorBatcher` and vectorized `evaluate_sota_model()` (zero per-sample `.item()` loops on GPU).
 5. **CLI Argument Naming (`predict_draft_cli.py`)**:
    - The CLI flag for action type is `--mode pick` or `--mode ban` (NOT `--action`).
+6. **Code Quality & Automatic Linting Protocol (Ruff)**:
+   - Whenever any code is written, updated, or refactored, the AI agent **MUST** autonomously run `ruff check --fix .` and `ruff format .` to maintain zero lint errors and consistent formatting before completing any task.
 
 ---
 
@@ -120,6 +122,7 @@ python src/train_sota_model.py --preset h100 --top-rank 1
 # 6. Start FastAPI server locally
 uvicorn src.api:app --reload --port 8000
 
-# 7. Lint and format check
-ruff check src/ tests/
+# 7. Lint and format check (Autonomous verification)
+ruff check --fix .
+ruff format .
 ```
