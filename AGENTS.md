@@ -81,7 +81,9 @@ ROV/
 │   ├── matches_draft_flat.csv       # Flattened match draft table
 │   ├── hero_draft_stats.csv         # 5-lane distributions, pick/ban/win/presence rates
 │   ├── synergy_matrix.csv           # Pairwise ally synergy matrix
-│   └── counter_matrix.csv           # Pairwise enemy counter matrix
+│   ├── counter_matrix.csv           # Pairwise enemy counter matrix
+│   ├── items.json                   # 114 items: rovmeta.com + patch-note overrides (numeric stats, price, passives)
+│   └── items_overrides.json         # Hand-maintained corrections from official Garena TH patch notes
 ├── frontend/                        # React 19 + Vite + Tailwind 4 draft UI (see frontend/README.md)
 │   ├── src/                         # App, hooks/useDraft.ts, components/, utils/heroNames.ts
 │   └── public/
@@ -105,9 +107,10 @@ ROV/
 │   └── train_draft_model.py         # Baseline Deep Sets + MLP trainer
 ├── scripts/
 │   ├── fetch_hero_icons.py          # Square hero icons (rovmeta/Garena TH + Liquipedia overrides)
+│   ├── fetch_items.py               # Item catalog from rovmeta.com -> data/items.json
 │   └── simulate_draft_selfplay.py   # 18-step AI vs AI self-play draft simulation
 └── tests/
-    ├── test_data_integrity.py       # Verifies 130 heroes, skills, and 4,208 match mappings
+    ├── test_data_integrity.py       # Verifies 130 heroes, skills, 4,208 match mappings, and item catalog
     ├── test_model_pipeline.py       # Verifies SOTA checkpoint, masking, and predictor output
     └── test_api.py                  # Verifies FastAPI endpoints and the served frontend build
 ```

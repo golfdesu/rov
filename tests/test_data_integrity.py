@@ -46,3 +46,29 @@ def test_matches_draft_integrity():
         assert 1 <= len(g["red_bans"]) <= 4
         for h in g["blue_picks"] + g["red_picks"] + g["blue_bans"] + g["red_bans"]:
             assert h in valid_names, f"Unmapped hero in match data: {h}"
+
+
+def test_items_catalog():
+    assert config.paths.items_json_path.exists()
+    with open(config.paths.items_json_path, "r", encoding="utf-8") as f:
+        catalog = json.load(f)
+
+    items = catalog["items"]
+    assert catalog["count"] == len(items) >= 100
+    assert len({i["slug"] for i in items}) == len(items), "Duplicate item slugs"
+    assert sum(1 for i in items if i["tier"] == 3) >= 50
+
+    units = catalog["stat_units"]
+    for i in items:
+        for key, value in i["stats"].items():
+            assert key in units, f"{i['name']}: unknown stat {key}"
+            assert value > 0, f"{i['name']}: non-positive {key}"
+
+    by_name = {i["name"]: i for i in items}
+    assert by_name["Fenrir's Tooth"]["stats"]["attack_damage"] == 180
+    assert by_name["Boots of Speed"]["stats"]["movement_speed"] == 30
+
+    # Patch-note overrides (data/items_overrides.json) must be applied on top of rovmeta
+    assert by_name["Stealth Bracer"]["patch"] == "Beta 55"
+    assert by_name["Light Shield"]["stats"]["max_hp"] == 1000
+    assert by_name["Mail of Pain"]["stats"] == {"armor": 300, "attack_damage": 50, "max_hp": 700}

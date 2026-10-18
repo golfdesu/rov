@@ -1,0 +1,79 @@
+{
+  "_comment": "Manual corrections applied on top of rovmeta.com by scripts/fetch_items.py. Each entry replaces (or adds) the item with the same slug. Values come from official patch notes (Garena TH https://www.rov.in.th/patch-notes and Garena TW https://moba.garena.tw/news, which lists exact numbers). TW text is translated from Traditional Chinese to English.",
+  "items": [
+    {
+      "name": "Stealth Bracer",
+      "slug": "stealth-bracer",
+      "category": "attack",
+      "tier": 3,
+      "price": null,
+      "stats": {
+        "attack_damage": 40,
+        "attack_speed": 20,
+        "critical_chance": 20,
+        "max_hp": 650
+      },
+      "passives": [
+        "Active - Untrackable: Instantly become invisible for 2.5s (1s for melee heroes), gaining 30% movement speed and restoring 130~260 HP every 0.5s. Using a skill or normal attack ends invisibility. Cooldown 75s."
+      ],
+      "patch": "Beta 55",
+      "sources": [
+        "https://www.rov.in.th/patch-notes/beta55",
+        "https://moba.garena.tw/news/show/5716",
+        "https://www.rov.in.th/patch-notes/expserver260827"
+      ]
+    },
+    {
+      "name": "Light Shield",
+      "slug": "light-shield",
+      "category": "defense",
+      "tier": 3,
+      "price": null,
+      "stats": {
+        "cooldown_reduction": 10,
+        "armor": 180,
+        "max_hp": 1000
+      },
+      "passives": [
+        "Passive - Daybreak: Damaging an enemy hero with a normal attack or skill grants a shield of 250~500 (+4% max HP) to yourself and the lowest-HP nearby ally for 3s (+50% shield with no ally nearby). Cooldown 10s melee / 12.5s ranged."
+      ],
+      "patch": "Beta 55",
+      "sources": [
+        "https://www.rov.in.th/patch-notes/beta55",
+        "https://moba.garena.tw/news/show/5716"
+      ]
+    },
+    {
+      "name": "Mail of Pain",
+      "slug": "mail-of-pain",
+      "category": "defense",
+      "tier": 3,
+      "price": null,
+      "stats": {
+        "attack_damage": 50,
+        "armor": 300,
+        "max_hp": 700
+      },
+      "passives": [
+        "Unique Passive - Backfire: When taking damage, reflect 5% of it to the attacker as true damage (based on the raw damage before damage reduction; decays with distance by up to 50%).",
+        "Active - Counter-stab: Increase Backfire reflection to 25% for 3s. Cooldown 75s."
+      ],
+      "patch": "Beta 55 (rework)",
+      "sources": [
+        "https://www.rov.in.th/patch-notes/beta55",
+        "https://moba.garena.tw/news/show/5716"
+      ]
+    },
+    {
+      "slug": "death-sickle",
+      "passives": [
+        "Unique Passive - Insatiable: Gains invincibility and temporary damage immunity and increases attack and movement speed by 25% for 1.25 seconds. (Cooldown: 120 seconds)"
+      ],
+      "patch": "Beta 55 (1.25s from EXP server 4 Sep 2026; TW 24 Sep notice fixes the upgraded Death Sickle duration on live)",
+      "sources": [
+        "https://www.rov.in.th/patch-notes/expserver260904",
+        "https://moba.garena.tw/news/show/5721"
+      ]
+    }
+  ]
+}

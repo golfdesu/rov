@@ -14,6 +14,7 @@
 * `src/api.py` — FastAPI (`/health`, `/heroes`, `/draft/steps`, `/predict`) และเสิร์ฟหน้าเว็บจาก `frontend/dist`
 * `frontend/` — หน้าเว็บดราฟต์ (React + Vite + Tailwind) ธีมถ่ายทอดสด แสดงชื่อฮีโร่ตามเซิร์ฟไทย (เช่น Mortos, Celica, Riktor)
 * `scripts/fetch_hero_icons.py` — ดาวน์โหลดไอคอนฮีโร่สี่เหลี่ยม 130 ตัวลง `frontend/public/avatars/`
+* `data/items.json` — ไอเทม 114 ชิ้น (สเตตัสเป็นตัวเลข, ราคา, passive) จาก rovmeta.com แล้วแก้ทับด้วย `data/items_overrides.json` ที่อ้างอิง Patch Note ทางการ (rov.in.th) สร้างด้วย `python scripts/fetch_items.py`
 * `run_sota_rov_h100.sbatch` — สคริปต์ SLURM สำหรับส่งงานเทรนสเกลใหญ่บนโหนดการ์ดจอ **NVIDIA H100 (`gpu-h100`)** ของ **ERAWAN HPC**
 
 ---
