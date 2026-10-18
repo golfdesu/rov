@@ -11,6 +11,7 @@ class PathConfig:
 
         self.heroes_json_path: Path = self.data_dir / "heroes_130_full.json"
         self.heroes_csv_path: Path = self.data_dir / "heroes_130_summary.csv"
+        self.hero_skills_json_path: Path = self.data_dir / "hero_skills_full.json"
         self.matches_json_path: Path = self.data_dir / "matches_draft_full.json"
         self.matches_csv_path: Path = self.data_dir / "matches_draft_flat.csv"
         self.hero_stats_csv_path: Path = self.data_dir / "hero_draft_stats.csv"

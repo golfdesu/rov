@@ -157,3 +157,31 @@ def test_enchantments_catalog():
     for e in enchantments:
         assert e["name"]
         assert len(e["description"]) >= 10
+
+
+def test_hero_skills_catalog():
+    assert config.paths.hero_skills_json_path.exists()
+    with open(config.paths.hero_skills_json_path, "r", encoding="utf-8") as f:
+        catalog = json.load(f)
+
+    assert catalog.get("hero_count") == 130
+    assert catalog.get("total_skills") >= 520
+    heroes = catalog.get("heroes", {})
+    assert len(heroes) == 130
+
+    valid_damage_types = {"physical", "magic", "true", "none"}
+
+    for name, skills in heroes.items():
+        assert len(skills) >= 4, f"{name}: expected >= 4 skills, got {len(skills)}"
+        slots = [s["slot"] for s in skills]
+        assert "Passive" in slots, f"{name}: missing Passive skill slot"
+        assert "Ultimate" in slots, f"{name}: missing Ultimate skill slot"
+
+        for s in skills:
+            assert s["name"], f"{name}: skill missing name"
+            assert s["slot"], f"{name}: skill missing slot"
+            assert s["damage_type"] in valid_damage_types, f"{name} {s['name']}: invalid damage_type {s['damage_type']}"
+            assert isinstance(s["cooldown"], list), f"{name} {s['name']}: cooldown must be a list"
+            assert isinstance(s["mana_cost"], list), f"{name} {s['name']}: mana_cost must be a list"
+            assert isinstance(s["base_damage"], list), f"{name} {s['name']}: base_damage must be a list"
+            assert isinstance(s["scaling"], dict), f"{name} {s['name']}: scaling must be a dict"

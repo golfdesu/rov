@@ -14,7 +14,7 @@ This repository follows Big Tech Machine Learning Engineering standards (modeled
 ### Current System Status
 | Component | Status & Verified Metrics |
 | :--- | :--- |
-| **Hero & Skill Database** | **130 / 130 Heroes** (`data/heroes_130_full.json`, `data/heroes_130_summary.csv`) up to **Evita** (Oct 2026), **Tamyn** (Jul 2026), and **Flowborn (Marksman & Mage)**, each with `>= 4` skills and 10 combat capability flags. |
+| **Hero & Skill Database** | **130 / 130 Heroes** (`data/heroes_130_full.json`, `data/heroes_130_summary.csv`, `data/hero_skills_full.json`) up to **Evita** (Oct 2026), **Tamyn** (Jul 2026), and **Flowborn (Marksman & Mage)**, each with `>= 4` skills, 100% numerical cooldowns/mana arrays, base damage, and AD/AP/HP scaling. |
 | **Pro Match Dataset** | **4,208 Complete Pro Games** (`data/matches_draft_full.json`) from RPL, APL, AIC, AOG, and GCS (2024–2026) with Global Ban Pick tracking and **0 unmapped hero names**. |
 | **Draft Web UI** | React 19 + Vite + Tailwind 4 broadcast-style draft board (`frontend/`), served by FastAPI from `frontend/dist`. 130 / 130 square hero icons (`frontend/public/avatars/`), Thai display names (Arthur -> Mortos, Brunhilda -> Celica, Richter -> Riktor). |
 | **SOTA Architecture** | `RoVDraftGNNTransformer` (`src/train_sota_model.py`): 2-Layer Multi-Relational Hero GNN (`adj_copick`, `adj_synergy`, `adj_counter`, `adj_countered_by`) + Sequence Transformer + Bounded Neural Temperature Gate + Dual Policy & Win-Value Heads. |
@@ -89,6 +89,7 @@ ROV/
 │   ├── hero_patch_history.json      # 334 historical balance adjustments across 92 heroes from TW patch notes
 │   ├── hero_level_stats.json        # Exact level 1-15 stats table for all 130 heroes (JSON catalog)
 │   ├── hero_level_stats.csv         # 1,950 row level 1-15 scaling table (130 heroes * 15 levels)
+│   ├── hero_skills_full.json        # 524 structured hero skills with numerical cooldowns, mana costs & scalings
 │   ├── arcana.json                  # 90 official Arcana runes (30 Red, 30 Purple, 30 Green across Tiers I-III)
 │   └── enchantments.json            # 31 official Enchantments (พลังแฝง) across 4 factions (Veda, Lokheim, Afata, Humans)
 ├── frontend/                        # React 19 + Vite + Tailwind 4 draft UI (see frontend/README.md)
@@ -118,6 +119,7 @@ ROV/
 │   ├── parse_tw_hero_patches.py     # Crawls Garena TW balance notices -> data/hero_patch_history.json
 │   ├── build_hero_level_stats.py    # Builds 1-15 level stats scaling tables -> data/hero_level_stats.*
 │   ├── download_rov_apk.py          # Garena RoV TH official APK/XAPK inspector & downloader
+│   ├── build_hero_skills_catalog.py # Multi-source scraper/parser for 524 numerical hero skills, cooldowns & scalings
 │   ├── fetch_arcana_and_enchantments.py # Scrapes 90 Arcana & 31 Enchantments from Garena TW & MediaWiki
 │   └── simulate_draft_selfplay.py   # 18-step AI vs AI self-play draft simulation
 └── tests/

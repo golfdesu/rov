@@ -17,9 +17,11 @@
 * `data/items.json` — ไอเทม 114 ชิ้น (สเตตัสเป็นตัวเลข, ราคา, passive) จาก rovmeta.com แล้วแก้ทับด้วย `data/items_overrides.json` ที่อ้างอิง Patch Note ทางการ (rov.in.th) สร้างด้วย `python scripts/fetch_items.py`
 * `data/hero_patch_history.json` — ประวัติการปรับสมดุลตัวเลขฮีโร่ 334 รายการ ครอบคลุม 92 ตัวละคร แปลเป็นภาษาอังกฤษจาก Patch Note ทางการไต้หวัน (Garena TW) ผ่าน `scripts/parse_tw_hero_patches.py`
 * `data/hero_level_stats.json` & `data/hero_level_stats.csv` — ตารางสเตตัสเป๊ะๆ ครบทุกเลเวล 1–15 ของฮีโร่ทั้ง 130 ตัว (1,950 แถว) สร้างด้วย `scripts/build_hero_level_stats.py`
+* `data/hero_skills_full.json` — แคตตาล็อกสกิลแบบตัวเลขเป๊ะๆ ทั้ง 524 สกิลของฮีโร่ครบ 130 ตัว (คูลดาวน์, การใช้มานา, Base Damage และอัตราส่วน AD/AP/HP scaling ทุกเลเวล) สร้างด้วย `scripts/build_hero_skills_catalog.py`
 * `data/arcana.json` — รูน Arcana ทางการครบ 90 ชนิด (แดง/ม่วง/เขียว เลเวล 1–3) พร้อมค่าสเตตัสตัวเลขเป๊ะๆ และไอคอน
 * `data/enchantments.json` — พลังแฝงทางการ 31 ชนิด ครบทั้ง 4 ฝ่าย (Veda, Lokheim, Afata, League of Humans)
 * `scripts/fetch_arcana_and_enchantments.py` — สคริปต์ดึงและ parse รูน Arcana 90 ชนิด และพลังแฝง 31 ชนิด
+* `scripts/build_hero_skills_catalog.py` — สคริปต์ multi-source parser ดึงและคำนวณตัวเลขความแรงสกิล, คูลดาวน์ และสเกลลิ่งครบทุกเลเวล 130 ตัวละคร
 * `scripts/download_rov_apk.py` — สคริปต์สแกนโครงสร้างและดาวน์โหลดไฟล์ติดตั้งทางการ (Official APK/XAPK) ของ Garena RoV (v1.64.1.7) ผ่าน HTTP Range Request
 * `run_sota_rov_h100.sbatch` — สคริปต์ SLURM สำหรับส่งงานเทรนสเกลใหญ่บนโหนดการ์ดจอ **NVIDIA H100 (`gpu-h100`)** ของ **ERAWAN HPC**
 
