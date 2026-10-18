@@ -83,7 +83,14 @@ ROV/
 │   ├── synergy_matrix.csv           # Pairwise ally synergy matrix
 │   ├── counter_matrix.csv           # Pairwise enemy counter matrix
 │   ├── items.json                   # 114 items: rovmeta.com + patch-note overrides (numeric stats, price, passives)
-│   └── items_overrides.json         # Hand-maintained corrections from official Garena TH patch notes
+│   ├── items_overrides.json         # Hand-maintained corrections from official Garena TH/TW patch notes
+│   ├── hero_names_zh_tw.json        # Traditional Chinese -> canonical English hero name dictionary
+│   ├── hero_patch_translations.json # Translation dictionary for patch note phrases & sentences
+│   ├── hero_patch_history.json      # 334 historical balance adjustments across 92 heroes from TW patch notes
+│   ├── hero_level_stats.json        # Exact level 1-15 stats table for all 130 heroes (JSON catalog)
+│   ├── hero_level_stats.csv         # 1,950 row level 1-15 scaling table (130 heroes * 15 levels)
+│   ├── arcana.json                  # 90 official Arcana runes (30 Red, 30 Purple, 30 Green across Tiers I-III)
+│   └── enchantments.json            # 31 official Enchantments (พลังแฝง) across 4 factions (Veda, Lokheim, Afata, Humans)
 ├── frontend/                        # React 19 + Vite + Tailwind 4 draft UI (see frontend/README.md)
 │   ├── src/                         # App, hooks/useDraft.ts, components/, utils/heroNames.ts
 │   └── public/
@@ -108,6 +115,10 @@ ROV/
 ├── scripts/
 │   ├── fetch_hero_icons.py          # Square hero icons (rovmeta/Garena TH + Liquipedia overrides)
 │   ├── fetch_items.py               # Item catalog from rovmeta.com -> data/items.json
+│   ├── parse_tw_hero_patches.py     # Crawls Garena TW balance notices -> data/hero_patch_history.json
+│   ├── build_hero_level_stats.py    # Builds 1-15 level stats scaling tables -> data/hero_level_stats.*
+│   ├── download_rov_apk.py          # Garena RoV TH official APK/XAPK inspector & downloader
+│   ├── fetch_arcana_and_enchantments.py # Scrapes 90 Arcana & 31 Enchantments from Garena TW & MediaWiki
 │   └── simulate_draft_selfplay.py   # 18-step AI vs AI self-play draft simulation
 └── tests/
     ├── test_data_integrity.py       # Verifies 130 heroes, skills, 4,208 match mappings, and item catalog

@@ -74,6 +74,90 @@
         "https://www.rov.in.th/patch-notes/expserver260904",
         "https://moba.garena.tw/news/show/5721"
       ]
+    },
+    {
+      "slug": "caranos-vow",
+      "stats": {
+        "ability_power": 180,
+        "magic_life_steal": 12,
+        "movement_speed_pct": 5
+      },
+      "patch": "Innovation Era version, Jan 2026 (rovmeta merged passive text into stats)",
+      "sources": ["https://moba.garena.tw/news/show/5423"]
+    },
+    {
+      "slugs": ["earth-gem", "fire-gem"],
+      "passives_add": [
+        "Passive - Reward: +200~410 max HP.",
+        "Passive - Up-and-Coming: Every 3s, gain 6 EXP and give 6 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 450 gold, and pull in one coin from anywhere on the map (cooldown 15s)."
+      ],
+      "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
+      "sources": [
+        "https://moba.garena.tw/news/show/5423",
+        "https://moba.garena.tw/news/show/5528",
+        "https://moba.garena.tw/news/show/5622"
+      ]
+    },
+    {
+      "slugs": [
+        "mother-earth-barrier",
+        "mother-earth-cleansing",
+        "mother-earth-eradicate",
+        "mother-earth-genesis",
+        "mother-earth-magic-eye",
+        "wildfire-barrier",
+        "wildfire-cleansing",
+        "wildfire-eradicate",
+        "wildfire-genesis",
+        "wildfire-magic-eye"
+      ],
+      "price": 1900,
+      "stats_update": {
+        "movement_speed_pct": 8
+      },
+      "passives_add": [
+        "Passive - Reward: +400~820 max HP.",
+        "Passive - Up-and-Coming: Every 3s, gain 8 EXP and give 8 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 600 gold, and pull in one coin from anywhere on the map (cooldown 10s).",
+        "Active - Resonance: Unlocks after collecting 600 gold. Target an allied hero; you and the ally gain 200 gold and 200 EXP in total (once per match)."
+      ],
+      "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
+      "sources": [
+        "https://moba.garena.tw/news/show/5423",
+        "https://moba.garena.tw/news/show/5528",
+        "https://moba.garena.tw/news/show/5622"
+      ]
+    },
+    {
+      "slugs": ["monsters-bane", "lokis-curse"],
+      "passives_add": [
+        "Smite (jungle): Stores 2 charges (45s per charge, 10s cooldown). Deals true damage and stuns monsters/minions for 1s; against heroes deals 300 (+20/level) magic damage."
+      ],
+      "patch": "Underworld Ace, Jul 2026",
+      "sources": ["https://moba.garena.tw/news/show/5622"]
+    },
+    {
+      "slugs": ["gnoll-cleaver", "leviathan"],
+      "passives_add": [
+        "Smite (jungle): Stores 2 charges (45s per charge, 10s cooldown). Deals true damage and stuns monsters/minions for 1s; against heroes deals 185 (+15/level) true damage."
+      ],
+      "patch": "Underworld Ace, Jul 2026",
+      "sources": ["https://moba.garena.tw/news/show/5622"]
+    },
+    {
+      "slugs": ["mr-stabby", "soulreaver", "whispering-wind", "scorching-wind"],
+      "passives_add": [
+        "Smite (jungle): Stores 2 charges (45s per charge, 10s cooldown). Deals true damage and stuns monsters/minions for 1s; against heroes deals 400 (+30/level) physical damage and steals 30% movement speed for 2s."
+      ],
+      "patch": "Underworld Ace, Jul 2026",
+      "sources": ["https://moba.garena.tw/news/show/5622"]
+    },
+    {
+      "slugs": ["kukri", "gnoll-cleaver", "monsters-bane", "mr-stabby", "whispering-wind", "leviathan", "lokis-curse", "scorching-wind", "soulreaver"],
+      "passives_add": [
+        "Passive - Modest: Damage to minions reduced by 25% for the first 4 minutes."
+      ],
+      "patch": "Full Element Assault, Apr 2026",
+      "sources": ["https://moba.garena.tw/news/show/5528"]
     }
   ]
 }

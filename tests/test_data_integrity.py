@@ -72,3 +72,88 @@ def test_items_catalog():
     assert by_name["Stealth Bracer"]["patch"] == "Beta 55"
     assert by_name["Light Shield"]["stats"]["max_hp"] == 1000
     assert by_name["Mail of Pain"]["stats"] == {"armor": 300, "attack_damage": 50, "max_hp": 700}
+    assert by_name["Carano's Vow"]["stats"] == {"ability_power": 180, "magic_life_steal": 12, "movement_speed_pct": 5}
+
+
+def test_hero_patch_history():
+    assert config.paths.hero_patch_history_path.exists()
+    with open(config.paths.hero_patch_history_path, "r", encoding="utf-8") as f:
+        history = json.load(f)
+
+    changes = history.get("changes", [])
+    assert len(changes) >= 300
+    assert history.get("heroes", 0) >= 90
+
+    import re
+
+    cjk_re = re.compile(r"[一-鿿]")
+    for c in changes:
+        for field in ("hero", "skill", "field", "before", "after"):
+            val = c.get(field)
+            assert not (val and cjk_re.search(val)), f"Untranslated CJK in {c['hero']} {c['skill']} {field}: {val}"
+
+
+def test_hero_level_stats():
+    assert config.paths.hero_level_stats_json_path.exists()
+    assert config.paths.hero_level_stats_csv_path.exists()
+
+    with open(config.paths.hero_level_stats_json_path, "r", encoding="utf-8") as f:
+        stats_data = json.load(f)
+
+    heroes_dict = stats_data.get("heroes", {})
+    assert len(heroes_dict) == 130, f"Expected 130 heroes, got {len(heroes_dict)}"
+    assert stats_data.get("levels_count") == 15
+
+    df = pd.read_csv(config.paths.hero_level_stats_csv_path)
+    assert len(df) == 130 * 15 == 1950
+
+    for name, data in heroes_dict.items():
+        assert "base_stats" in data
+        assert "growth_rates" in data
+        levels = data["levels"]
+        assert len(levels) == 15
+
+        lv1 = levels["1"]
+        lv15 = levels["15"]
+        assert 2000 <= lv1["hp"] <= 5000, f"{name}: invalid Lv.1 HP {lv1['hp']}"
+        assert lv15["hp"] > lv1["hp"], f"{name}: Lv.15 HP {lv15['hp']} not > Lv.1 HP {lv1['hp']}"
+        assert lv15["armor"] > lv1["armor"], f"{name}: Armor does not scale"
+        assert lv15["attack_damage"] > lv1["attack_damage"], f"{name}: AD does not scale"
+        assert lv1["movement_speed"] >= 340, f"{name}: Speed too low"
+
+
+def test_arcana_catalog():
+    assert config.paths.arcana_json_path.exists()
+    with open(config.paths.arcana_json_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    arcana = data.get("arcana", [])
+    assert len(arcana) == 90
+    assert data.get("count") == 90
+
+    colors = {a["color"] for a in arcana}
+    assert colors == {"Red", "Purple", "Green"}
+
+    for a in arcana:
+        assert a["tier"] in (1, 2, 3)
+        assert len(a["stats"]) >= 1
+        for stat_name, stat_val in a["stats"].items():
+            assert stat_val > 0, f"{a['name']}: non-positive {stat_name}"
+
+
+def test_enchantments_catalog():
+    assert config.paths.enchantments_json_path.exists()
+    with open(config.paths.enchantments_json_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    enchantments = data.get("enchantments", [])
+    assert len(enchantments) >= 25
+    factions = {e["faction"] for e in enchantments}
+    assert "Veda" in factions
+    assert "Lokheim" in factions
+    assert "Afata" in factions
+    assert "League of Humans" in factions
+
+    for e in enchantments:
+        assert e["name"]
+        assert len(e["description"]) >= 10

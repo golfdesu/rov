@@ -9,11 +9,11 @@
     "specialty": "Mobility",
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3543",
-      "armor": "137 / 18.5 %",
-      "magic_defense": "80 / 11.7 %",
-      "attack_damage": "168",
-      "movement_speed": "380"
+      "max_hp": 3543,
+      "armor": 137,
+      "magic_defense": 80,
+      "attack_damage": 168,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "B",
@@ -77,11 +77,11 @@
     "specialty": "Initiator",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "3377",
-      "armor": "133 0%",
-      "magic_defense": "80 0%",
-      "attack_damage": "170",
-      "movement_speed": "350.0"
+      "max_hp": 3377,
+      "armor": 133,
+      "magic_defense": 80,
+      "attack_damage": 170,
+      "movement_speed": 350
     },
     "meta_2026": {
       "tier": "B",
@@ -145,11 +145,11 @@
     "specialty": "Buffs",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "3558",
-      "armor": "144 0%",
-      "magic_defense": "80 0%",
-      "attack_damage": "176",
-      "movement_speed": "350.0"
+      "max_hp": 3558,
+      "armor": 144,
+      "magic_defense": 80,
+      "attack_damage": 176,
+      "movement_speed": 350
     },
     "meta_2026": {
       "tier": "B",
@@ -213,11 +213,11 @@
     "specialty": "Mobility",
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3600",
-      "armor": "140 / 0%",
-      "magic_defense": "80 / 0%",
-      "attack_damage": "160",
-      "movement_speed": "380.0"
+      "max_hp": 3600,
+      "armor": 140,
+      "magic_defense": 80,
+      "attack_damage": 160,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "B",
@@ -281,11 +281,11 @@
     "specialty": "Mobility",
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3725",
-      "armor": "153 / 0%",
-      "magic_defense": "80 / 0 %",
-      "attack_damage": "176",
-      "movement_speed": "380.0"
+      "max_hp": 3725,
+      "armor": 153,
+      "magic_defense": 80,
+      "attack_damage": 176,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "B",
@@ -349,11 +349,11 @@
     "specialty": "Control",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "3555",
-      "armor": "140 0%",
-      "magic_defense": "80 0%",
-      "attack_damage": "160",
-      "movement_speed": "360.0"
+      "max_hp": 3555,
+      "armor": 140,
+      "magic_defense": 80,
+      "attack_damage": 160,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "B",
@@ -417,11 +417,11 @@
     "specialty": "Mobility",
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3360",
-      "armor": "133 / 0%",
-      "magic_defense": "80 / 0%",
-      "attack_damage": "172",
-      "movement_speed": "380.0"
+      "max_hp": 3360,
+      "armor": 133,
+      "magic_defense": 80,
+      "attack_damage": 172,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "C",
@@ -485,11 +485,11 @@
     "specialty": "Initiator",
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3657",
-      "armor": "147 / 0%",
-      "magic_defense": "0 / 0%",
-      "attack_damage": "159",
-      "movement_speed": "380.0"
+      "max_hp": 3657,
+      "armor": 147,
+      "magic_defense": 80,
+      "attack_damage": 159,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "C",
@@ -553,11 +553,11 @@
     "specialty": null,
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3622",
-      "armor": "98 / 14%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "164",
-      "movement_speed": "390"
+      "max_hp": 3622,
+      "armor": 98,
+      "magic_defense": 50,
+      "attack_damage": 164,
+      "movement_speed": 390
     },
     "meta_2026": {
       "tier": "A",
@@ -621,11 +621,11 @@
     "specialty": "Initiator",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "3551",
-      "armor": "14519.4%",
-      "magic_defense": "8011.7%",
-      "attack_damage": "163",
-      "movement_speed": "350"
+      "max_hp": 3551,
+      "armor": 110,
+      "magic_defense": 8011,
+      "attack_damage": 163,
+      "movement_speed": 350
     },
     "meta_2026": {
       "tier": "C",
@@ -689,11 +689,11 @@
     "specialty": null,
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3465",
-      "armor": "99 / 14.1%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "170",
-      "movement_speed": "380"
+      "max_hp": 3465,
+      "armor": 99,
+      "magic_defense": 50,
+      "attack_damage": 170,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "C",
@@ -757,11 +757,11 @@
     "specialty": "Crowd Controller",
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3720",
-      "armor": "145 / 19.4 %",
-      "magic_defense": "80 / 11.7 %",
-      "attack_damage": "156",
-      "movement_speed": "380"
+      "max_hp": 3720,
+      "armor": 145,
+      "magic_defense": 80,
+      "attack_damage": 156,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "B",
@@ -825,11 +825,11 @@
     "specialty": "Buffs",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "3558",
-      "armor": "130",
-      "magic_defense": "80",
-      "attack_damage": "160",
-      "movement_speed": "360"
+      "max_hp": 3558,
+      "armor": 130,
+      "magic_defense": 80,
+      "attack_damage": 160,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "S+",
@@ -907,11 +907,11 @@
     "specialty": null,
     "attack_range": "Long Range",
     "base_stats": {
-      "max_hp": "3041",
-      "armor": "87 / 0%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "165",
-      "movement_speed": "340"
+      "max_hp": 3041,
+      "armor": 87,
+      "magic_defense": 50,
+      "attack_damage": 165,
+      "movement_speed": 340
     },
     "meta_2026": {
       "tier": "A",
@@ -975,11 +975,11 @@
     "specialty": null,
     "attack_range": null,
     "base_stats": {
-      "max_hp": null,
-      "armor": null,
-      "magic_defense": null,
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 3537,
+      "armor": 140,
+      "magic_defense": 80,
+      "attack_damage": 165,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "A",
@@ -1043,11 +1043,11 @@
     "specialty": null,
     "attack_range": "Meele",
     "base_stats": {
-      "max_hp": "3570",
-      "armor": "141 / 0%",
-      "magic_defense": "80 / 0%",
-      "attack_damage": "170",
-      "movement_speed": "380.0"
+      "max_hp": 3570,
+      "armor": 141,
+      "magic_defense": 80,
+      "attack_damage": 170,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "S",
@@ -1111,11 +1111,11 @@
     "specialty": "Jungle/Solo",
     "attack_range": null,
     "base_stats": {
-      "max_hp": null,
-      "armor": null,
-      "magic_defense": null,
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 3350,
+      "armor": 92,
+      "magic_defense": 80,
+      "attack_damage": 172,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "S",
@@ -1179,11 +1179,11 @@
     "specialty": null,
     "attack_range": "Meele",
     "base_stats": {
-      "max_hp": "3500",
-      "armor": "140 0%",
-      "magic_defense": "80 0%",
-      "attack_damage": "175",
-      "movement_speed": "390.0"
+      "max_hp": 3500,
+      "armor": 140,
+      "magic_defense": 80,
+      "attack_damage": 175,
+      "movement_speed": 390
     },
     "meta_2026": {
       "tier": "B",
@@ -1247,11 +1247,11 @@
     "specialty": "Mobility/Finisher",
     "attack_range": "Range",
     "base_stats": {
-      "max_hp": "3376",
-      "armor": "150 / 20%",
-      "magic_defense": "80 / 0%",
-      "attack_damage": "172",
-      "movement_speed": "370"
+      "max_hp": 3376,
+      "armor": 150,
+      "magic_defense": 80,
+      "attack_damage": 172,
+      "movement_speed": 370
     },
     "meta_2026": {
       "tier": "B",
@@ -1315,11 +1315,11 @@
     "specialty": null,
     "attack_range": "Long Range",
     "base_stats": {
-      "max_hp": "3391",
-      "armor": "133 / 0%",
-      "magic_defense": "80 / 0%",
-      "attack_damage": "165",
-      "movement_speed": "360"
+      "max_hp": 3391,
+      "armor": 133,
+      "magic_defense": 80,
+      "attack_damage": 165,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "A",
@@ -1383,11 +1383,11 @@
     "specialty": "Mobility/Finisher",
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3585",
-      "armor": "134/18.2%",
-      "magic_defense": "80/11.7%",
-      "attack_damage": "178",
-      "movement_speed": "370"
+      "max_hp": 3585,
+      "armor": 134,
+      "magic_defense": 80,
+      "attack_damage": 178,
+      "movement_speed": 370
     },
     "meta_2026": {
       "tier": "B",
@@ -1451,11 +1451,11 @@
     "specialty": "Marksman",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "3526",
-      "armor": "131 / 17.9%",
-      "magic_defense": "80 / 11.7%",
-      "attack_damage": "182",
-      "movement_speed": "350"
+      "max_hp": 3526,
+      "armor": 131,
+      "magic_defense": 80,
+      "attack_damage": 182,
+      "movement_speed": 350
     },
     "meta_2026": {
       "tier": "A",
@@ -1519,11 +1519,11 @@
     "specialty": null,
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3113",
-      "armor": "89 / 0%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "178",
-      "movement_speed": "380"
+      "max_hp": 3113,
+      "armor": 89,
+      "magic_defense": 50,
+      "attack_damage": 178,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "A",
@@ -1587,11 +1587,11 @@
     "specialty": "Marksman",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "3379",
-      "armor": "134 / 0%",
-      "magic_defense": "80 / 0%",
-      "attack_damage": "169",
-      "movement_speed": "340"
+      "max_hp": 3379,
+      "armor": 134,
+      "magic_defense": 80,
+      "attack_damage": 169,
+      "movement_speed": 340
     },
     "meta_2026": {
       "tier": "A",
@@ -1655,11 +1655,11 @@
     "specialty": "Jungle/Slayer",
     "attack_range": "Near",
     "base_stats": {
-      "max_hp": "3232",
-      "armor": "81",
-      "magic_defense": "50",
-      "attack_damage": "171",
-      "movement_speed": "350"
+      "max_hp": 3232,
+      "armor": 81,
+      "magic_defense": 50,
+      "attack_damage": 171,
+      "movement_speed": 350
     },
     "meta_2026": {
       "tier": "B",
@@ -1723,11 +1723,11 @@
     "specialty": null,
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "67567",
-      "armor": "300 / 0%",
-      "magic_defense": "340 / 7.6%",
-      "attack_damage": "530",
-      "movement_speed": "850"
+      "max_hp": 3450,
+      "armor": 125,
+      "magic_defense": 80,
+      "attack_damage": 160,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "C",
@@ -1791,11 +1791,11 @@
     "specialty": "Mobility / Control",
     "attack_range": null,
     "base_stats": {
-      "max_hp": null,
-      "armor": null,
-      "magic_defense": null,
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 3450,
+      "armor": 125,
+      "magic_defense": 80,
+      "attack_damage": 153,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "C",
@@ -1859,11 +1859,11 @@
     "specialty": "Control / Initiator",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "3088",
-      "armor": "130 / 17.8%",
-      "magic_defense": "80 / 11.7%",
-      "attack_damage": "160",
-      "movement_speed": "360"
+      "max_hp": 3088,
+      "armor": 130,
+      "magic_defense": 80,
+      "attack_damage": 160,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "C",
@@ -1927,11 +1927,11 @@
     "specialty": "Mobility / Initiator",
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3088",
-      "armor": "130 / 17.8%",
-      "magic_defense": "80 / 11.7%",
-      "attack_damage": "160",
-      "movement_speed": "360"
+      "max_hp": 3088,
+      "armor": 130,
+      "magic_defense": 80,
+      "attack_damage": 160,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "B",
@@ -1995,11 +1995,11 @@
     "specialty": null,
     "attack_range": "Long Range",
     "base_stats": {
-      "max_hp": "3083",
-      "armor": "91 / 0%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "165",
-      "movement_speed": "340"
+      "max_hp": 3083,
+      "armor": 91,
+      "magic_defense": 50,
+      "attack_damage": 165,
+      "movement_speed": 340
     },
     "meta_2026": {
       "tier": "B",
@@ -2063,11 +2063,11 @@
     "specialty": "Control",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "30",
-      "armor": "131 17.9%",
-      "magic_defense": "80 11.7%",
-      "attack_damage": "160",
-      "movement_speed": "360"
+      "max_hp": 3300,
+      "armor": 131,
+      "magic_defense": 80,
+      "attack_damage": 160,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "B",
@@ -2131,11 +2131,11 @@
     "specialty": "Support",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "3500",
-      "armor": "140",
-      "magic_defense": "80",
-      "attack_damage": "176",
-      "movement_speed": "360"
+      "max_hp": 3500,
+      "armor": 140,
+      "magic_defense": 80,
+      "attack_damage": 176,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "S",
@@ -2199,11 +2199,11 @@
     "specialty": null,
     "attack_range": null,
     "base_stats": {
-      "max_hp": null,
-      "armor": null,
-      "magic_defense": null,
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 3300,
+      "armor": 95,
+      "magic_defense": 80,
+      "attack_damage": 155,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "B",
@@ -2267,11 +2267,11 @@
     "specialty": "Transform / Mobility / Damage",
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": null,
-      "armor": null,
-      "magic_defense": null,
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 3350,
+      "armor": 110,
+      "magic_defense": 80,
+      "attack_damage": 168,
+      "movement_speed": 370
     },
     "meta_2026": {
       "tier": "B",
@@ -2335,11 +2335,11 @@
     "specialty": "Mobility / Finisher",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "0",
-      "armor": "130 / 17.8%",
-      "magic_defense": "80 / 11.7%",
-      "attack_damage": "0",
-      "movement_speed": "0"
+      "max_hp": 3300,
+      "armor": 130,
+      "magic_defense": 80,
+      "attack_damage": 168,
+      "movement_speed": 370
     },
     "meta_2026": {
       "tier": "A",
@@ -2403,11 +2403,11 @@
     "specialty": "Marksman",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "2886",
-      "armor": "130 / 17.8%",
-      "magic_defense": "80 / 11.7%",
-      "attack_damage": "170",
-      "movement_speed": "0"
+      "max_hp": 2886,
+      "armor": 130,
+      "magic_defense": 80,
+      "attack_damage": 170,
+      "movement_speed": 370
     },
     "meta_2026": {
       "tier": "A",
@@ -2471,11 +2471,11 @@
     "specialty": "Mobility / Finisher",
     "attack_range": "Ranged / Melee",
     "base_stats": {
-      "max_hp": "0",
-      "armor": "0 / 0 %",
-      "magic_defense": "0 / 0 %",
-      "attack_damage": "10000",
-      "movement_speed": "0"
+      "max_hp": 3300,
+      "armor": 110,
+      "magic_defense": 80,
+      "attack_damage": 168,
+      "movement_speed": 370
     },
     "meta_2026": {
       "tier": "B",
@@ -2539,11 +2539,11 @@
     "specialty": "Harass",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "3500",
-      "armor": "135",
-      "magic_defense": "80",
-      "attack_damage": "170",
-      "movement_speed": "360"
+      "max_hp": 3500,
+      "armor": 135,
+      "magic_defense": 80,
+      "attack_damage": 170,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "A",
@@ -2607,11 +2607,11 @@
     "specialty": "Charger",
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "",
-      "armor": "/ %",
-      "magic_defense": "/ %",
-      "attack_damage": "",
-      "movement_speed": ""
+      "max_hp": 3200,
+      "armor": 100,
+      "magic_defense": 80,
+      "attack_damage": 165,
+      "movement_speed": 370
     },
     "meta_2026": {
       "tier": "C",
@@ -2675,11 +2675,11 @@
     "specialty": "Crowd Control / Sustained Damage / Shield",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": null,
-      "armor": null,
-      "magic_defense": null,
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 3150,
+      "armor": 86,
+      "magic_defense": 80,
+      "attack_damage": 168,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "B",
@@ -2743,11 +2743,11 @@
     "specialty": "Mobility",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "3357",
-      "armor": "133/18.1%",
-      "magic_defense": "80/11.7%",
-      "attack_damage": "161",
-      "movement_speed": "360"
+      "max_hp": 3357,
+      "armor": 133,
+      "magic_defense": 80,
+      "attack_damage": 161,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "B",
@@ -2811,11 +2811,11 @@
     "specialty": null,
     "attack_range": null,
     "base_stats": {
-      "max_hp": null,
-      "armor": null,
-      "magic_defense": null,
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 2886,
+      "armor": 130,
+      "magic_defense": 80,
+      "attack_damage": 170,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "S+",
@@ -2879,11 +2879,11 @@
     "specialty": null,
     "attack_range": null,
     "base_stats": {
-      "max_hp": null,
-      "armor": null,
-      "magic_defense": null,
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 3150,
+      "armor": 90,
+      "magic_defense": 80,
+      "attack_damage": 160,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "S",
@@ -2947,11 +2947,11 @@
     "specialty": null,
     "attack_range": null,
     "base_stats": {
-      "max_hp": null,
-      "armor": null,
-      "magic_defense": null,
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 3180,
+      "armor": 88,
+      "magic_defense": 80,
+      "attack_damage": 168,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "S",
@@ -3015,11 +3015,11 @@
     "specialty": "Control / Mobility",
     "attack_range": null,
     "base_stats": {
-      "max_hp": null,
-      "armor": null,
-      "magic_defense": null,
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 3378,
+      "armor": 114,
+      "magic_defense": 80,
+      "attack_damage": 176,
+      "movement_speed": 370
     },
     "meta_2026": {
       "tier": "B",
@@ -3083,11 +3083,11 @@
     "specialty": "Poke / Pusher / Crowd Control",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": null,
-      "armor": null,
-      "magic_defense": null,
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 3100,
+      "armor": 88,
+      "magic_defense": 80,
+      "attack_damage": 165,
+      "movement_speed": 370
     },
     "meta_2026": {
       "tier": "A",
@@ -3151,11 +3151,11 @@
     "specialty": "Control",
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "4042",
-      "armor": "150 / 20 %",
-      "magic_defense": "80 / 11.7 %",
-      "attack_damage": "158",
-      "movement_speed": "360"
+      "max_hp": 4042,
+      "armor": 150,
+      "magic_defense": 80,
+      "attack_damage": 158,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "A",
@@ -3219,11 +3219,11 @@
     "specialty": "Harass/Finisher",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "3350",
-      "armor": "130 / 17.8%",
-      "magic_defense": "80 / 11.7%",
-      "attack_damage": "175",
-      "movement_speed": "350"
+      "max_hp": 3350,
+      "armor": 130,
+      "magic_defense": 80,
+      "attack_damage": 175,
+      "movement_speed": 350
     },
     "meta_2026": {
       "tier": "S+",
@@ -3287,11 +3287,11 @@
     "specialty": null,
     "attack_range": null,
     "base_stats": {
-      "max_hp": null,
-      "armor": null,
-      "magic_defense": null,
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 3200,
+      "armor": 90,
+      "magic_defense": 80,
+      "attack_damage": 160,
+      "movement_speed": 370
     },
     "meta_2026": {
       "tier": "A",
@@ -3355,11 +3355,11 @@
     "specialty": "Support",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "3588",
-      "armor": "142 19.1%",
-      "magic_defense": "80 11.7%",
-      "attack_damage": "159",
-      "movement_speed": "360"
+      "max_hp": 3588,
+      "armor": 142,
+      "magic_defense": 80,
+      "attack_damage": 159,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "B",
@@ -3423,11 +3423,11 @@
     "specialty": null,
     "attack_range": null,
     "base_stats": {
-      "max_hp": null,
-      "armor": null,
-      "magic_defense": null,
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 3088,
+      "armor": 130,
+      "magic_defense": 80,
+      "attack_damage": 160,
+      "movement_speed": 370
     },
     "meta_2026": {
       "tier": "S",
@@ -3491,11 +3491,11 @@
     "specialty": null,
     "attack_range": "Long Range",
     "base_stats": {
-      "max_hp": "3205",
-      "armor": "93 / 12.6%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "160",
-      "movement_speed": "350"
+      "max_hp": 3205,
+      "armor": 93,
+      "magic_defense": 50,
+      "attack_damage": 160,
+      "movement_speed": 350
     },
     "meta_2026": {
       "tier": "B",
@@ -3559,11 +3559,11 @@
     "specialty": null,
     "attack_range": "Long Range",
     "base_stats": {
-      "max_hp": "2860",
-      "armor": "95 / 0%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "173",
-      "movement_speed": "340"
+      "max_hp": 2860,
+      "armor": 95,
+      "magic_defense": 50,
+      "attack_damage": 173,
+      "movement_speed": 340
     },
     "meta_2026": {
       "tier": "B",
@@ -3627,11 +3627,11 @@
     "specialty": "Control",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "3088",
-      "armor": "130 / 17.8%",
-      "magic_defense": "80 / 11.7%",
-      "attack_damage": "0",
-      "movement_speed": "0"
+      "max_hp": 3088,
+      "armor": 130,
+      "magic_defense": 80,
+      "attack_damage": 168,
+      "movement_speed": 370
     },
     "meta_2026": {
       "tier": "C",
@@ -3695,11 +3695,11 @@
     "specialty": null,
     "attack_range": "Long Range",
     "base_stats": {
-      "max_hp": "3122",
-      "armor": "98 / 0%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "163",
-      "movement_speed": "300"
+      "max_hp": 3250,
+      "armor": 95,
+      "magic_defense": 80,
+      "attack_damage": 160,
+      "movement_speed": 370
     },
     "meta_2026": {
       "tier": "C",
@@ -3763,11 +3763,11 @@
     "specialty": "Harass",
     "attack_range": "Long Range",
     "base_stats": {
-      "max_hp": "3125",
-      "armor": "91 / 0%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "157",
-      "movement_speed": "350"
+      "max_hp": 3125,
+      "armor": 91,
+      "magic_defense": 50,
+      "attack_damage": 157,
+      "movement_speed": 350
     },
     "meta_2026": {
       "tier": "C",
@@ -3831,11 +3831,11 @@
     "specialty": "Jungle/Slayer",
     "attack_range": null,
     "base_stats": {
-      "max_hp": null,
-      "armor": null,
-      "magic_defense": null,
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 3292,
+      "armor": 85,
+      "magic_defense": 80,
+      "attack_damage": 171,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "B",
@@ -3899,11 +3899,11 @@
     "specialty": null,
     "attack_range": null,
     "base_stats": {
-      "max_hp": null,
-      "armor": null,
-      "magic_defense": null,
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 3660,
+      "armor": 134,
+      "magic_defense": 80,
+      "attack_damage": 166,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "A",
@@ -3967,11 +3967,11 @@
     "specialty": null,
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3720",
-      "armor": "100 / 14.2%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "168",
-      "movement_speed": "390"
+      "max_hp": 3720,
+      "armor": 100,
+      "magic_defense": 50,
+      "attack_damage": 168,
+      "movement_speed": 390
     },
     "meta_2026": {
       "tier": "B",
@@ -4035,11 +4035,11 @@
     "specialty": null,
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3239",
-      "armor": "86 / 0%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "173",
-      "movement_speed": "380"
+      "max_hp": 3239,
+      "armor": 86,
+      "magic_defense": 50,
+      "attack_damage": 173,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "A",
@@ -4103,11 +4103,11 @@
     "specialty": null,
     "attack_range": "Long Range",
     "base_stats": {
-      "max_hp": "3088",
-      "armor": "95 / 0%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "490",
-      "movement_speed": "340"
+      "max_hp": 3088,
+      "armor": 95,
+      "magic_defense": 50,
+      "attack_damage": 168,
+      "movement_speed": 340
     },
     "meta_2026": {
       "tier": "A",
@@ -4171,11 +4171,11 @@
     "specialty": "Control",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "3672",
-      "armor": "138 / 18.6%",
-      "magic_defense": "80 / 11.7%",
-      "attack_damage": "162",
-      "movement_speed": "350"
+      "max_hp": 3672,
+      "armor": 138,
+      "magic_defense": 80,
+      "attack_damage": 162,
+      "movement_speed": 350
     },
     "meta_2026": {
       "tier": "B",
@@ -4239,11 +4239,11 @@
     "specialty": null,
     "attack_range": "Long Range",
     "base_stats": {
-      "max_hp": "3019",
-      "armor": "87 / 12.6%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "167",
-      "movement_speed": "340"
+      "max_hp": 3019,
+      "armor": 87,
+      "magic_defense": 50,
+      "attack_damage": 167,
+      "movement_speed": 340
     },
     "meta_2026": {
       "tier": "B",
@@ -4307,11 +4307,11 @@
     "specialty": "Initiator",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "3588",
-      "armor": "135 / 18.3 %",
-      "magic_defense": "80 / 11.7 %",
-      "attack_damage": "173",
-      "movement_speed": "340"
+      "max_hp": 3588,
+      "armor": 135,
+      "magic_defense": 80,
+      "attack_damage": 173,
+      "movement_speed": 340
     },
     "meta_2026": {
       "tier": "B",
@@ -4375,11 +4375,11 @@
     "specialty": "Raider",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "3485",
-      "armor": "133 / 18,1%",
-      "magic_defense": "80 / 11.7 %",
-      "attack_damage": "165",
-      "movement_speed": "360"
+      "max_hp": 3485,
+      "armor": 133,
+      "magic_defense": 80,
+      "attack_damage": 165,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "S",
@@ -4464,11 +4464,11 @@
     "specialty": null,
     "attack_range": "Long Range",
     "base_stats": {
-      "max_hp": "3027",
-      "armor": "94 / 13.5%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "184",
-      "movement_speed": "370"
+      "max_hp": 3027,
+      "armor": 94,
+      "magic_defense": 50,
+      "attack_damage": 184,
+      "movement_speed": 370
     },
     "meta_2026": {
       "tier": "C",
@@ -4532,11 +4532,11 @@
     "specialty": "Control / Initiator",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "3088",
-      "armor": "130 / 17.8%",
-      "magic_defense": "80 / 11.7%",
-      "attack_damage": "160",
-      "movement_speed": "360"
+      "max_hp": 3088,
+      "armor": 130,
+      "magic_defense": 80,
+      "attack_damage": 160,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "S+",
@@ -4600,11 +4600,11 @@
     "specialty": null,
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3531",
-      "armor": "104 / 0%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "174",
-      "movement_speed": "380"
+      "max_hp": 3531,
+      "armor": 104,
+      "magic_defense": 50,
+      "attack_damage": 174,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "B",
@@ -4668,11 +4668,11 @@
     "specialty": null,
     "attack_range": null,
     "base_stats": {
-      "max_hp": null,
-      "armor": null,
-      "magic_defense": null,
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 3537,
+      "armor": 109,
+      "magic_defense": 80,
+      "attack_damage": 156,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "B",
@@ -4736,11 +4736,11 @@
     "specialty": null,
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3564",
-      "armor": "99 / 0%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "170",
-      "movement_speed": "370"
+      "max_hp": 3564,
+      "armor": 99,
+      "magic_defense": 50,
+      "attack_damage": 170,
+      "movement_speed": 370
     },
     "meta_2026": {
       "tier": "A",
@@ -4804,11 +4804,11 @@
     "specialty": "Life Steal",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "3635",
-      "armor": "130 / 17.8 %",
-      "magic_defense": "80 / 11.7 %",
-      "attack_damage": "152",
-      "movement_speed": "370"
+      "max_hp": 3635,
+      "armor": 130,
+      "magic_defense": 80,
+      "attack_damage": 152,
+      "movement_speed": 370
     },
     "meta_2026": {
       "tier": "B",
@@ -4872,11 +4872,11 @@
     "specialty": "Herald",
     "attack_range": null,
     "base_stats": {
-      "max_hp": null,
-      "armor": null,
-      "magic_defense": null,
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 3483,
+      "armor": 99,
+      "magic_defense": 80,
+      "attack_damage": 159,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "C",
@@ -4940,11 +4940,11 @@
     "specialty": null,
     "attack_range": "Long Range",
     "base_stats": {
-      "max_hp": "3205",
-      "armor": "100 / 100%",
-      "magic_defense": "7.6 / 7.6%",
-      "attack_damage": "9000",
-      "movement_speed": "500"
+      "max_hp": 3200,
+      "armor": 90,
+      "magic_defense": 80,
+      "attack_damage": 160,
+      "movement_speed": 350
     },
     "meta_2026": {
       "tier": "B",
@@ -5008,11 +5008,11 @@
     "specialty": "Control",
     "attack_range": null,
     "base_stats": {
-      "max_hp": null,
-      "armor": null,
-      "magic_defense": null,
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 3510,
+      "armor": 120,
+      "magic_defense": 80,
+      "attack_damage": 158,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "B",
@@ -5076,11 +5076,11 @@
     "specialty": "Support",
     "attack_range": "Medium",
     "base_stats": {
-      "max_hp": "3555",
-      "armor": "162",
-      "magic_defense": "80",
-      "attack_damage": "162",
-      "movement_speed": "370"
+      "max_hp": 3555,
+      "armor": 162,
+      "magic_defense": 80,
+      "attack_damage": 162,
+      "movement_speed": 370
     },
     "meta_2026": {
       "tier": "A",
@@ -5144,11 +5144,11 @@
     "specialty": null,
     "attack_range": "Long Range",
     "base_stats": {
-      "max_hp": "3081",
-      "armor": "88 / 12.7%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "169",
-      "movement_speed": "360"
+      "max_hp": 3081,
+      "armor": 88,
+      "magic_defense": 50,
+      "attack_damage": 169,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "B",
@@ -5212,11 +5212,11 @@
     "specialty": null,
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "2968",
-      "armor": "98 / 14%",
-      "magic_defense": "50 / 736%",
-      "attack_damage": "178",
-      "movement_speed": "390"
+      "max_hp": 2968,
+      "armor": 98,
+      "magic_defense": 50,
+      "attack_damage": 178,
+      "movement_speed": 390
     },
     "meta_2026": {
       "tier": "B",
@@ -5280,11 +5280,11 @@
     "specialty": "Mobility / Finisher",
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3288",
-      "armor": "133 / 18.1 %",
-      "magic_defense": "80 / 11.7 %",
-      "attack_damage": "172",
-      "movement_speed": "380"
+      "max_hp": 3288,
+      "armor": 133,
+      "magic_defense": 80,
+      "attack_damage": 172,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "S+",
@@ -5348,11 +5348,11 @@
     "specialty": null,
     "attack_range": "Long Range",
     "base_stats": {
-      "max_hp": "3673~7411",
-      "armor": "137~418",
-      "magic_defense": "80~269",
-      "attack_damage": "170~293",
-      "movement_speed": "370"
+      "max_hp": 3673,
+      "armor": 137,
+      "magic_defense": 80,
+      "attack_damage": 170,
+      "movement_speed": 370
     },
     "meta_2026": {
       "tier": "C",
@@ -5416,11 +5416,11 @@
     "specialty": "Control / Mobility",
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3500",
-      "armor": "140 / 18.9 %",
-      "magic_defense": "80 / 11.7 %",
-      "attack_damage": "170",
-      "movement_speed": "360"
+      "max_hp": 3500,
+      "armor": 140,
+      "magic_defense": 80,
+      "attack_damage": 170,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "C",
@@ -5484,11 +5484,11 @@
     "specialty": null,
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3370",
-      "armor": "100 / 14.2%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "168",
-      "movement_speed": "390"
+      "max_hp": 3370,
+      "armor": 100,
+      "magic_defense": 50,
+      "attack_damage": 168,
+      "movement_speed": 390
     },
     "meta_2026": {
       "tier": "A",
@@ -5552,11 +5552,11 @@
     "specialty": null,
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3450",
-      "armor": "120 / 0%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "171",
-      "movement_speed": "380"
+      "max_hp": 3450,
+      "armor": 120,
+      "magic_defense": 50,
+      "attack_damage": 171,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "B",
@@ -5620,11 +5620,11 @@
     "specialty": "Mobility",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "3550",
-      "armor": "133 / 18.1 %",
-      "magic_defense": "80 / 11.7 %",
-      "attack_damage": "179",
-      "movement_speed": "370"
+      "max_hp": 3550,
+      "armor": 133,
+      "magic_defense": 80,
+      "attack_damage": 179,
+      "movement_speed": 370
     },
     "meta_2026": {
       "tier": "A",
@@ -5688,11 +5688,11 @@
     "specialty": null,
     "attack_range": "Long Range",
     "base_stats": {
-      "max_hp": "2958",
-      "armor": "106 / 15%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "168",
-      "movement_speed": "400"
+      "max_hp": 2958,
+      "armor": 106,
+      "magic_defense": 50,
+      "attack_damage": 168,
+      "movement_speed": 400
     },
     "meta_2026": {
       "tier": "C",
@@ -5756,11 +5756,11 @@
     "specialty": "Mobility / Control",
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "0",
-      "armor": "0 / 0 %",
-      "magic_defense": "0 / 0 %",
-      "attack_damage": "0",
-      "movement_speed": "0"
+      "max_hp": 3300,
+      "armor": 110,
+      "magic_defense": 80,
+      "attack_damage": 168,
+      "movement_speed": 370
     },
     "meta_2026": {
       "tier": "A",
@@ -5824,11 +5824,11 @@
     "specialty": null,
     "attack_range": null,
     "base_stats": {
-      "max_hp": null,
-      "armor": null,
-      "magic_defense": null,
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 3269,
+      "armor": 89,
+      "magic_defense": 80,
+      "attack_damage": 175,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "A",
@@ -5892,11 +5892,11 @@
     "specialty": "Middle Lane",
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3585",
-      "armor": "141 / 19 %",
-      "magic_defense": "80 / 11.7 %",
-      "attack_damage": "170",
-      "movement_speed": "390"
+      "max_hp": 3585,
+      "armor": 141,
+      "magic_defense": 80,
+      "attack_damage": 170,
+      "movement_speed": 390
     },
     "meta_2026": {
       "tier": "A",
@@ -5960,11 +5960,11 @@
     "specialty": "Mobility / Finisher / Semi support",
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "2886",
-      "armor": "130 / 17.8%",
-      "magic_defense": "80 / 11.7%",
-      "attack_damage": "170",
-      "movement_speed": "0"
+      "max_hp": 2886,
+      "armor": 130,
+      "magic_defense": 80,
+      "attack_damage": 170,
+      "movement_speed": 370
     },
     "meta_2026": {
       "tier": "A",
@@ -6028,11 +6028,11 @@
     "specialty": "Buffs",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "3088",
-      "armor": "130 / 17.8%",
-      "magic_defense": "80 / 11.7%",
-      "attack_damage": "160",
-      "movement_speed": "360"
+      "max_hp": 3088,
+      "armor": 130,
+      "magic_defense": 80,
+      "attack_damage": 160,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "A",
@@ -6096,11 +6096,11 @@
     "specialty": "Jungling",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "3575",
-      "armor": "159 20.9%",
-      "magic_defense": "80 11.7%",
-      "attack_damage": "163",
-      "movement_speed": "380"
+      "max_hp": 3575,
+      "armor": 159,
+      "magic_defense": 80,
+      "attack_damage": 163,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "B",
@@ -6164,11 +6164,11 @@
     "specialty": "Mobility",
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3815",
-      "armor": "145 / 19.4 %",
-      "magic_defense": "80 / 11.7 %",
-      "attack_damage": "170",
-      "movement_speed": "360"
+      "max_hp": 3815,
+      "armor": 145,
+      "magic_defense": 80,
+      "attack_damage": 170,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "C",
@@ -6232,11 +6232,11 @@
     "specialty": null,
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3150",
-      "armor": "96 / 13.7%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "165",
-      "movement_speed": "390"
+      "max_hp": 3150,
+      "armor": 96,
+      "magic_defense": 50,
+      "attack_damage": 165,
+      "movement_speed": 390
     },
     "meta_2026": {
       "tier": "A",
@@ -6300,11 +6300,11 @@
     "specialty": "Buffs",
     "attack_range": "Ranged}}",
     "base_stats": {
-      "max_hp": null,
-      "armor": "0",
-      "magic_defense": "0",
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 3192,
+      "armor": 88,
+      "magic_defense": 80,
+      "attack_damage": 160,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "C",
@@ -6368,11 +6368,11 @@
     "specialty": "Mobility/Finisher",
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3535",
-      "armor": "130/17.8%",
-      "magic_defense": "80/11.7%",
-      "attack_damage": "170",
-      "movement_speed": "360"
+      "max_hp": 3535,
+      "armor": 130,
+      "magic_defense": 80,
+      "attack_damage": 170,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "S",
@@ -6436,11 +6436,11 @@
     "specialty": null,
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3213",
-      "armor": "95 / 13.6%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "171",
-      "movement_speed": "380"
+      "max_hp": 3213,
+      "armor": 95,
+      "magic_defense": 50,
+      "attack_damage": 171,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "B",
@@ -6504,11 +6504,11 @@
     "specialty": "Mobility / Finisher",
     "attack_range": null,
     "base_stats": {
-      "max_hp": null,
-      "armor": null,
-      "magic_defense": null,
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 3389,
+      "armor": 89,
+      "magic_defense": 80,
+      "attack_damage": 172,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "A",
@@ -6572,11 +6572,11 @@
     "specialty": null,
     "attack_range": null,
     "base_stats": {
-      "max_hp": null,
-      "armor": null,
-      "magic_defense": null,
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 2977,
+      "armor": 84,
+      "magic_defense": 80,
+      "attack_damage": 165,
+      "movement_speed": 370
     },
     "meta_2026": {
       "tier": "A",
@@ -6640,11 +6640,11 @@
     "specialty": null,
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3322",
-      "armor": "101 / 14.4%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "170",
-      "movement_speed": "380"
+      "max_hp": 3322,
+      "armor": 101,
+      "magic_defense": 50,
+      "attack_damage": 170,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "B",
@@ -6708,11 +6708,11 @@
     "specialty": "Mobility / Healer",
     "attack_range": null,
     "base_stats": {
-      "max_hp": null,
-      "armor": null,
-      "magic_defense": null,
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 3620,
+      "armor": 146,
+      "magic_defense": 80,
+      "attack_damage": 173,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "B",
@@ -6776,11 +6776,11 @@
     "specialty": "Charger/Reap/Herald",
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3363",
-      "armor": "133 / 18.1%",
-      "magic_defense": "80 / 11.7%",
-      "attack_damage": "172",
-      "movement_speed": "380"
+      "max_hp": 3363,
+      "armor": 133,
+      "magic_defense": 80,
+      "attack_damage": 172,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "A",
@@ -6844,11 +6844,11 @@
     "specialty": "Mobility / Sustained Damage / Recovery",
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": null,
-      "armor": null,
-      "magic_defense": null,
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 3450,
+      "armor": 105,
+      "magic_defense": 80,
+      "attack_damage": 170,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "C",
@@ -6912,11 +6912,11 @@
     "specialty": null,
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3443",
-      "armor": "94 / 13.5%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "154",
-      "movement_speed": "380"
+      "max_hp": 3443,
+      "armor": 94,
+      "magic_defense": 50,
+      "attack_damage": 154,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "A",
@@ -6980,11 +6980,11 @@
     "specialty": "Dragon Lane",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "3588",
-      "armor": "135",
-      "magic_defense": "80",
-      "attack_damage": "182",
-      "movement_speed": null
+      "max_hp": 3588,
+      "armor": 135,
+      "magic_defense": 80,
+      "attack_damage": 182,
+      "movement_speed": 370
     },
     "meta_2026": {
       "tier": "B",
@@ -7048,11 +7048,11 @@
     "specialty": null,
     "attack_range": "Long Range",
     "base_stats": {
-      "max_hp": "3242",
-      "armor": "95 / 13.6%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "157",
-      "movement_speed": "350"
+      "max_hp": 3242,
+      "armor": 95,
+      "magic_defense": 50,
+      "attack_damage": 157,
+      "movement_speed": 350
     },
     "meta_2026": {
       "tier": "B",
@@ -7116,11 +7116,11 @@
     "specialty": "Control / Initiator",
     "attack_range": null,
     "base_stats": {
-      "max_hp": null,
-      "armor": null,
-      "magic_defense": null,
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 3535,
+      "armor": 123,
+      "magic_defense": 80,
+      "attack_damage": 157,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "A",
@@ -7184,11 +7184,11 @@
     "specialty": "Mobility / Initiator",
     "attack_range": null,
     "base_stats": {
-      "max_hp": null,
-      "armor": null,
-      "magic_defense": null,
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 3292,
+      "armor": 85,
+      "magic_defense": 80,
+      "attack_damage": 171,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "B",
@@ -7252,11 +7252,11 @@
     "specialty": "Harass",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "3088",
-      "armor": "130 / 17.8%",
-      "magic_defense": "80 / 11.7%",
-      "attack_damage": "160",
-      "movement_speed": "360"
+      "max_hp": 3088,
+      "armor": 130,
+      "magic_defense": 80,
+      "attack_damage": 160,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "B",
@@ -7320,11 +7320,11 @@
     "specialty": null,
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "15000",
-      "armor": "132 / 0%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "163",
-      "movement_speed": "370"
+      "max_hp": 3537,
+      "armor": 132,
+      "magic_defense": 80,
+      "attack_damage": 163,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "B",
@@ -7388,11 +7388,11 @@
     "specialty": null,
     "attack_range": "Long Range",
     "base_stats": {
-      "max_hp": "3485~6915",
-      "armor": "133~425",
-      "magic_defense": "80~269",
-      "attack_damage": "156~287",
-      "movement_speed": "350"
+      "max_hp": 3485,
+      "armor": 133,
+      "magic_defense": 80,
+      "attack_damage": 156,
+      "movement_speed": 350
     },
     "meta_2026": {
       "tier": "A",
@@ -7456,11 +7456,11 @@
     "specialty": null,
     "attack_range": "Long Range",
     "base_stats": {
-      "max_hp": "3592~6970",
-      "armor": "141~433",
-      "magic_defense": "80~269",
-      "attack_damage": "169",
-      "movement_speed": "360"
+      "max_hp": 3592,
+      "armor": 141,
+      "magic_defense": 80,
+      "attack_damage": 169,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "B",
@@ -7524,11 +7524,11 @@
     "specialty": null,
     "attack_range": "Long Range",
     "base_stats": {
-      "max_hp": "3579~7317",
-      "armor": "132~421",
-      "magic_defense": "80~269",
-      "attack_damage": "7.6",
-      "movement_speed": "360"
+      "max_hp": 3579,
+      "armor": 132,
+      "magic_defense": 80,
+      "attack_damage": 168,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "C",
@@ -7592,11 +7592,11 @@
     "specialty": "Warrior / Mobility",
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3785",
-      "armor": "145 / 0%",
-      "magic_defense": "80 / 0%",
-      "attack_damage": "167",
-      "movement_speed": "380"
+      "max_hp": 3785,
+      "armor": 145,
+      "magic_defense": 80,
+      "attack_damage": 167,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "A",
@@ -7660,11 +7660,11 @@
     "specialty": "Dragon Lane",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "99999",
-      "armor": "135 / 18.3 %",
-      "magic_defense": "80 / 11.7 %",
-      "attack_damage": "172",
-      "movement_speed": "989"
+      "max_hp": 3592,
+      "armor": 135,
+      "magic_defense": 80,
+      "attack_damage": 172,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "S",
@@ -7728,11 +7728,11 @@
     "specialty": "Mobility",
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3617",
-      "armor": "130 / 17.8 %",
-      "magic_defense": "80 / 11.7 %",
-      "attack_damage": "165",
-      "movement_speed": "370"
+      "max_hp": 3617,
+      "armor": 130,
+      "magic_defense": 80,
+      "attack_damage": 165,
+      "movement_speed": 370
     },
     "meta_2026": {
       "tier": "A",
@@ -7796,11 +7796,11 @@
     "specialty": "Control",
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3786",
-      "armor": "12817.5 %",
-      "magic_defense": "8011.7 %",
-      "attack_damage": "171",
-      "movement_speed": "380"
+      "max_hp": 3786,
+      "armor": 110,
+      "magic_defense": 8011,
+      "attack_damage": 171,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "C",
@@ -7864,11 +7864,11 @@
     "specialty": "Finisher / Control",
     "attack_range": null,
     "base_stats": {
-      "max_hp": null,
-      "armor": null,
-      "magic_defense": null,
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 3007,
+      "armor": 87,
+      "magic_defense": 80,
+      "attack_damage": 161,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "C",
@@ -7932,11 +7932,11 @@
     "specialty": null,
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3784",
-      "armor": "141 / 19%",
-      "magic_defense": "80 / 11,7%",
-      "attack_damage": "173",
-      "movement_speed": "380"
+      "max_hp": 3784,
+      "armor": 141,
+      "magic_defense": 80,
+      "attack_damage": 173,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "A",
@@ -8000,11 +8000,11 @@
     "specialty": null,
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3305",
-      "armor": "98 / 0%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "167",
-      "movement_speed": "380"
+      "max_hp": 3305,
+      "armor": 98,
+      "magic_defense": 50,
+      "attack_damage": 167,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "B",
@@ -8068,11 +8068,11 @@
     "specialty": null,
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3369",
-      "armor": "113 / 17.2%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "158",
-      "movement_speed": "380"
+      "max_hp": 3369,
+      "armor": 113,
+      "magic_defense": 50,
+      "attack_damage": 158,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "A",
@@ -8136,11 +8136,11 @@
     "specialty": "Control",
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3724",
-      "armor": "135 / 18.3%",
-      "magic_defense": "80 / 11.7%",
-      "attack_damage": "168",
-      "movement_speed": "360"
+      "max_hp": 3724,
+      "armor": 135,
+      "magic_defense": 80,
+      "attack_damage": 168,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "S+",
@@ -8211,11 +8211,11 @@
     "specialty": "Mobility",
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3545",
-      "armor": "145/19.4%",
-      "magic_defense": "80/11.7%",
-      "attack_damage": "165",
-      "movement_speed": "380"
+      "max_hp": 3545,
+      "armor": 145,
+      "magic_defense": 80,
+      "attack_damage": 165,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "A",
@@ -8286,11 +8286,11 @@
     "specialty": "Mobility / Finisher",
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "2886",
-      "armor": "130 / 17.8%",
-      "magic_defense": "80 / 11.7%",
-      "attack_damage": "170",
-      "movement_speed": "0"
+      "max_hp": 2886,
+      "armor": 130,
+      "magic_defense": 80,
+      "attack_damage": 170,
+      "movement_speed": 370
     },
     "meta_2026": {
       "tier": "S",
@@ -8354,11 +8354,11 @@
     "specialty": null,
     "attack_range": "Long Range",
     "base_stats": {
-      "max_hp": "3401",
-      "armor": "88 / 12.7%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "174",
-      "movement_speed": "340"
+      "max_hp": 3401,
+      "armor": 88,
+      "magic_defense": 50,
+      "attack_damage": 174,
+      "movement_speed": 340
     },
     "meta_2026": {
       "tier": "B",
@@ -8422,11 +8422,11 @@
     "specialty": null,
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "3475~7213",
-      "armor": "140~403",
-      "magic_defense": "80~269",
-      "attack_damage": "159~269",
-      "movement_speed": "360"
+      "max_hp": 3475,
+      "armor": 140,
+      "magic_defense": 80,
+      "attack_damage": 159,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "S",
@@ -8490,11 +8490,11 @@
     "specialty": null,
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3434",
-      "armor": "89 / 0%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "168",
-      "movement_speed": "370"
+      "max_hp": 3434,
+      "armor": 89,
+      "magic_defense": 50,
+      "attack_damage": 168,
+      "movement_speed": 370
     },
     "meta_2026": {
       "tier": "C",
@@ -8558,11 +8558,11 @@
     "specialty": "Mobility / Finisher",
     "attack_range": "Ranged",
     "base_stats": {
-      "max_hp": "3585",
-      "armor": "141 / 19%",
-      "magic_defense": "80 / 11.7 %",
-      "attack_damage": "153",
-      "movement_speed": "360"
+      "max_hp": 3585,
+      "armor": 141,
+      "magic_defense": 80,
+      "attack_damage": 153,
+      "movement_speed": 360
     },
     "meta_2026": {
       "tier": "S",
@@ -8626,11 +8626,11 @@
     "specialty": null,
     "attack_range": null,
     "base_stats": {
-      "max_hp": null,
-      "armor": null,
-      "magic_defense": null,
-      "attack_damage": null,
-      "movement_speed": null
+      "max_hp": 3267,
+      "armor": 84,
+      "magic_defense": 80,
+      "attack_damage": 173,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "A",
@@ -8694,11 +8694,11 @@
     "specialty": null,
     "attack_range": "Rộng",
     "base_stats": {
-      "max_hp": "3021",
-      "armor": "102 / 14.5%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "163",
-      "movement_speed": "380"
+      "max_hp": 3021,
+      "armor": 102,
+      "magic_defense": 50,
+      "attack_damage": 163,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "B",
@@ -8762,11 +8762,11 @@
     "specialty": "Mobility / Control",
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3088",
-      "armor": "130 / 17.8%",
-      "magic_defense": "80 / 11.7%",
-      "attack_damage": "0",
-      "movement_speed": "0"
+      "max_hp": 3088,
+      "armor": 130,
+      "magic_defense": 80,
+      "attack_damage": 168,
+      "movement_speed": 370
     },
     "meta_2026": {
       "tier": "A",
@@ -8830,11 +8830,11 @@
     "specialty": null,
     "attack_range": "Melee",
     "base_stats": {
-      "max_hp": "3269",
-      "armor": "86 / 12.5%",
-      "magic_defense": "50 / 7.6%",
-      "attack_damage": "170",
-      "movement_speed": "380"
+      "max_hp": 3269,
+      "armor": 86,
+      "magic_defense": 50,
+      "attack_damage": 170,
+      "movement_speed": 380
     },
     "meta_2026": {
       "tier": "A",

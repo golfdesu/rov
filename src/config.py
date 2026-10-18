@@ -15,6 +15,11 @@ class PathConfig:
         self.matches_csv_path: Path = self.data_dir / "matches_draft_flat.csv"
         self.hero_stats_csv_path: Path = self.data_dir / "hero_draft_stats.csv"
         self.items_json_path: Path = self.data_dir / "items.json"
+        self.hero_patch_history_path: Path = self.data_dir / "hero_patch_history.json"
+        self.hero_level_stats_json_path: Path = self.data_dir / "hero_level_stats.json"
+        self.hero_level_stats_csv_path: Path = self.data_dir / "hero_level_stats.csv"
+        self.arcana_json_path: Path = self.data_dir / "arcana.json"
+        self.enchantments_json_path: Path = self.data_dir / "enchantments.json"
         self.synergy_csv_path: Path = self.data_dir / "synergy_matrix.csv"
         self.counter_csv_path: Path = self.data_dir / "counter_matrix.csv"
 

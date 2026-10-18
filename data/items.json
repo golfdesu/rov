@@ -571,10 +571,13 @@
       "icon_url": "https://rovmeta.com/items/slikks-sting.png"
     },
     {
+      "slug": "stealth-bracer",
       "stats_raw": [],
       "icon_url": null,
+      "passives": [
+        "Active - Untrackable: Instantly become invisible for 2.5s (1s for melee heroes), gaining 30% movement speed and restoring 130~260 HP every 0.5s. Using a skill or normal attack ends invisibility. Cooldown 75s."
+      ],
       "name": "Stealth Bracer",
-      "slug": "stealth-bracer",
       "category": "attack",
       "tier": 3,
       "price": null,
@@ -584,9 +587,6 @@
         "critical_chance": 20.0,
         "max_hp": 650.0
       },
-      "passives": [
-        "Active - Untrackable: Instantly become invisible for 2.5s (1s for melee heroes), gaining 30% movement speed and restoring 130~260 HP every 0.5s. Using a skill or normal attack ends invisibility. Cooldown 75s."
-      ],
       "patch": "Beta 55",
       "sources": [
         "https://www.rov.in.th/patch-notes/beta55",
@@ -956,10 +956,13 @@
       "icon_url": "https://rovmeta.com/items/hercules-madness.png"
     },
     {
+      "slug": "light-shield",
       "stats_raw": [],
       "icon_url": null,
+      "passives": [
+        "Passive - Daybreak: Damaging an enemy hero with a normal attack or skill grants a shield of 250~500 (+4% max HP) to yourself and the lowest-HP nearby ally for 3s (+50% shield with no ally nearby). Cooldown 10s melee / 12.5s ranged."
+      ],
       "name": "Light Shield",
-      "slug": "light-shield",
       "category": "defense",
       "tier": 3,
       "price": null,
@@ -968,9 +971,6 @@
         "cooldown_reduction": 10.0,
         "max_hp": 1000.0
       },
-      "passives": [
-        "Passive - Daybreak: Damaging an enemy hero with a normal attack or skill grants a shield of 250~500 (+4% max HP) to yourself and the lowest-HP nearby ally for 3s (+50% shield with no ally nearby). Cooldown 10s melee / 12.5s ranged."
-      ],
       "patch": "Beta 55",
       "sources": [
         "https://www.rov.in.th/patch-notes/beta55",
@@ -1145,11 +1145,16 @@
       "stats": {},
       "passives": [
         "Passive - Hunter: Normal attacks / skills hitting the wildling will deal 50-120 additional true damage every 0.5s for 2s, and receive 20% more EXP from killing monsters.",
-        "Passive - Modest: When near an ally hero, the ally hero gains 100% gold and EXP from Minions, while you only gain 50%. This effect is removed after 4 minutes. Also, damage dealt on enemies minions is reduced by 25% ( removed after 4 minutes )."
+        "Passive - Modest: When near an ally hero, the ally hero gains 100% gold and EXP from Minions, while you only gain 50%. This effect is removed after 4 minutes. Also, damage dealt on enemies minions is reduced by 25% ( removed after 4 minutes ).",
+        "Passive - Modest: Damage to minions reduced by 25% for the first 4 minutes."
       ],
       "passives_incomplete": false,
       "stats_raw": [],
-      "icon_url": "https://rovmeta.com/items/kukri.png"
+      "icon_url": "https://rovmeta.com/items/kukri.png",
+      "patch": "Full Element Assault, Apr 2026",
+      "sources": [
+        "https://moba.garena.tw/news/show/5528"
+      ]
     },
     {
       "name": "Gnoll Cleaver",
@@ -1163,13 +1168,19 @@
       "passives": [
         "Passive - Burn: Deal 50~78",
         "Passive - Hunter: Normal attacks / skills hitting the wildling will deal 60~172 additional true damage every 0.5s for 2s, and receive 35% more EXP from killing monsters.",
-        "Passive - Wild: Increase 25 Max HP and 0.2% CD reduction for every monster killed, max stack up to 15 times."
+        "Passive - Wild: Increase 25 Max HP and 0.2% CD reduction for every monster killed, max stack up to 15 times.",
+        "Smite (jungle): Stores 2 charges (45s per charge, 10s cooldown). Deals true damage and stuns monsters/minions for 1s; against heroes deals 185 (+15/level) true damage.",
+        "Passive - Modest: Damage to minions reduced by 25% for the first 4 minutes."
       ],
       "passives_incomplete": true,
       "stats_raw": [
         "+400 Max HP"
       ],
-      "icon_url": "https://rovmeta.com/items/gnoll-cleaver.png"
+      "icon_url": "https://rovmeta.com/items/gnoll-cleaver.png",
+      "patch": "Full Element Assault, Apr 2026",
+      "sources": [
+        "https://moba.garena.tw/news/show/5528"
+      ]
     },
     {
       "name": "Monster's Bane",
@@ -1182,13 +1193,19 @@
       },
       "passives": [
         "Passive - Hunter: Normal attacks / skills hitting the wildling will deal 60~172 additional true damage every 0.5s for 2s, and receive 35% more EXP from killing monsters.",
-        "Passive - Wild: Gain 4 AP and 0.2% CD reduction for every monster killed, max stack up to 15 times."
+        "Passive - Wild: Gain 4 AP and 0.2% CD reduction for every monster killed, max stack up to 15 times.",
+        "Smite (jungle): Stores 2 charges (45s per charge, 10s cooldown). Deals true damage and stuns monsters/minions for 1s; against heroes deals 300 (+20/level) magic damage.",
+        "Passive - Modest: Damage to minions reduced by 25% for the first 4 minutes."
       ],
       "passives_incomplete": false,
       "stats_raw": [
         "+40 AP"
       ],
-      "icon_url": "https://rovmeta.com/items/monsters-bane.png"
+      "icon_url": "https://rovmeta.com/items/monsters-bane.png",
+      "patch": "Full Element Assault, Apr 2026",
+      "sources": [
+        "https://moba.garena.tw/news/show/5528"
+      ]
     },
     {
       "name": "Mr. Stabby",
@@ -1201,13 +1218,19 @@
       },
       "passives": [
         "Passive - Hunter: Normal attacks / skills hitting the wildling will deal 60~172 additional true damage every 0.5s for 2s, and receive 35% more EXP from killing monsters.",
-        "Passive - Wild: Increase 2 AD and 0.2% CD reduction for every monster killed, max stack up to 15 times."
+        "Passive - Wild: Increase 2 AD and 0.2% CD reduction for every monster killed, max stack up to 15 times.",
+        "Smite (jungle): Stores 2 charges (45s per charge, 10s cooldown). Deals true damage and stuns monsters/minions for 1s; against heroes deals 400 (+30/level) physical damage and steals 30% movement speed for 2s.",
+        "Passive - Modest: Damage to minions reduced by 25% for the first 4 minutes."
       ],
       "passives_incomplete": false,
       "stats_raw": [
         "+25 AD"
       ],
-      "icon_url": "https://rovmeta.com/items/mr-stabby.png"
+      "icon_url": "https://rovmeta.com/items/mr-stabby.png",
+      "patch": "Full Element Assault, Apr 2026",
+      "sources": [
+        "https://moba.garena.tw/news/show/5528"
+      ]
     },
     {
       "name": "Whispering Wind",
@@ -1220,13 +1243,19 @@
       },
       "passives": [
         "Passive - Hunter: Normal attacks / skills hitting the wildling will deal 60~172 additional true damage every 0.5s for 2s, and receive 35% more EXP from killing monsters.",
-        "Passive - Wild: Increase 0.8% Attack Speed and 0.2 Life Steal for every monster killed, max stack up to 15 times."
+        "Passive - Wild: Increase 0.8% Attack Speed and 0.2 Life Steal for every monster killed, max stack up to 15 times.",
+        "Smite (jungle): Stores 2 charges (45s per charge, 10s cooldown). Deals true damage and stuns monsters/minions for 1s; against heroes deals 400 (+30/level) physical damage and steals 30% movement speed for 2s.",
+        "Passive - Modest: Damage to minions reduced by 25% for the first 4 minutes."
       ],
       "passives_incomplete": false,
       "stats_raw": [
         "+12% Attack Speed"
       ],
-      "icon_url": "https://rovmeta.com/items/whispering-wind.png"
+      "icon_url": "https://rovmeta.com/items/whispering-wind.png",
+      "patch": "Full Element Assault, Apr 2026",
+      "sources": [
+        "https://moba.garena.tw/news/show/5528"
+      ]
     },
     {
       "name": "Leviathan",
@@ -1241,7 +1270,9 @@
       },
       "passives": [
         "Passive - Burn: Deal (+2% self-max HP)",
-        "Passive - Wild: Increase 25 Max HP and 0.2% CD reduction for every monster killed, max stack up to 25 times."
+        "Passive - Wild: Increase 25 Max HP and 0.2% CD reduction for every monster killed, max stack up to 25 times.",
+        "Smite (jungle): Stores 2 charges (45s per charge, 10s cooldown). Deals true damage and stuns monsters/minions for 1s; against heroes deals 185 (+15/level) true damage.",
+        "Passive - Modest: Damage to minions reduced by 25% for the first 4 minutes."
       ],
       "passives_incomplete": false,
       "stats_raw": [
@@ -1249,7 +1280,11 @@
         "+1200 Max HP",
         "+6% Movement Speed"
       ],
-      "icon_url": "https://rovmeta.com/items/leviathan.png"
+      "icon_url": "https://rovmeta.com/items/leviathan.png",
+      "patch": "Full Element Assault, Apr 2026",
+      "sources": [
+        "https://moba.garena.tw/news/show/5528"
+      ]
     },
     {
       "name": "Loki's Curse",
@@ -1264,7 +1299,9 @@
       },
       "passives": [
         "Passive - Elemental Power: After using a skill, the next normal attack in 5s deals additional",
-        "Passive - Wild: Gain 4 AP and 0.2 CD reduction for every monster killed, max stack up to 25 times."
+        "Passive - Wild: Gain 4 AP and 0.2 CD reduction for every monster killed, max stack up to 25 times.",
+        "Smite (jungle): Stores 2 charges (45s per charge, 10s cooldown). Deals true damage and stuns monsters/minions for 1s; against heroes deals 300 (+20/level) magic damage.",
+        "Passive - Modest: Damage to minions reduced by 25% for the first 4 minutes."
       ],
       "passives_incomplete": false,
       "stats_raw": [
@@ -1272,7 +1309,11 @@
         "+5% CD reduction",
         "+7% Movement Speed"
       ],
-      "icon_url": "https://rovmeta.com/items/lokis-curse.png"
+      "icon_url": "https://rovmeta.com/items/lokis-curse.png",
+      "patch": "Full Element Assault, Apr 2026",
+      "sources": [
+        "https://moba.garena.tw/news/show/5528"
+      ]
     },
     {
       "name": "Scorching Wind",
@@ -1287,7 +1328,9 @@
       },
       "passives": [
         "Passive - Fire Storm: Normal attacks place a mark on the target, dealing 15~19",
-        "Passive - Wild: Increase 0.8% Attack Speed and 0.2% Life Steal for every monster killed, max stack up to 25 times."
+        "Passive - Wild: Increase 0.8% Attack Speed and 0.2% Life Steal for every monster killed, max stack up to 25 times.",
+        "Smite (jungle): Stores 2 charges (45s per charge, 10s cooldown). Deals true damage and stuns monsters/minions for 1s; against heroes deals 400 (+30/level) physical damage and steals 30% movement speed for 2s.",
+        "Passive - Modest: Damage to minions reduced by 25% for the first 4 minutes."
       ],
       "passives_incomplete": true,
       "stats_raw": [
@@ -1295,7 +1338,11 @@
         "+15% Lifesteal",
         "+7% Movement Speed"
       ],
-      "icon_url": "https://rovmeta.com/items/scorching-wind.png"
+      "icon_url": "https://rovmeta.com/items/scorching-wind.png",
+      "patch": "Full Element Assault, Apr 2026",
+      "sources": [
+        "https://moba.garena.tw/news/show/5528"
+      ]
     },
     {
       "name": "Soulreaver",
@@ -1310,7 +1357,9 @@
       },
       "passives": [
         "Passive - Armor Smasher: +60 Armor Pierce.",
-        "Passive - Wild: Increase 2 AD and 0.2% CD reduction for every monster killed, max stack up to 25 times."
+        "Passive - Wild: Increase 2 AD and 0.2% CD reduction for every monster killed, max stack up to 25 times.",
+        "Smite (jungle): Stores 2 charges (45s per charge, 10s cooldown). Deals true damage and stuns monsters/minions for 1s; against heroes deals 400 (+30/level) physical damage and steals 30% movement speed for 2s.",
+        "Passive - Modest: Damage to minions reduced by 25% for the first 4 minutes."
       ],
       "passives_incomplete": false,
       "stats_raw": [
@@ -1318,7 +1367,11 @@
         "+5% CD reduction",
         "+8% Movement Speed"
       ],
-      "icon_url": "https://rovmeta.com/items/soulreaver.png"
+      "icon_url": "https://rovmeta.com/items/soulreaver.png",
+      "patch": "Full Element Assault, Apr 2026",
+      "sources": [
+        "https://moba.garena.tw/news/show/5528"
+      ]
     },
     {
       "name": "Lapis Ring",
@@ -1406,9 +1459,7 @@
       "price": null,
       "stats": {
         "ability_power": 180.0,
-        "ability_power_pct": 100.0,
         "magic_life_steal": 12.0,
-        "max_hp_pct": 8.0,
         "movement_speed_pct": 5.0
       },
       "passives": [
@@ -1422,7 +1473,11 @@
         "+100% magic bonus",
         "+8% bonus HP"
       ],
-      "icon_url": "https://rovmeta.com/items/caranos-vow.jpg"
+      "icon_url": "https://rovmeta.com/items/caranos-vow.jpg",
+      "patch": "Innovation Era version, Jan 2026 (rovmeta merged passive text into stats)",
+      "sources": [
+        "https://moba.garena.tw/news/show/5423"
+      ]
     },
     {
       "name": "Enchanted Scroll",
@@ -2063,7 +2118,9 @@
         "movement_speed_pct": 5.0
       },
       "passives": [
-        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 40 Max HP."
+        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 40 Max HP.",
+        "Passive - Reward: +200~410 max HP.",
+        "Passive - Up-and-Coming: Every 3s, gain 6 EXP and give 6 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 450 gold, and pull in one coin from anywhere on the map (cooldown 15s)."
       ],
       "passives_incomplete": false,
       "stats_raw": [
@@ -2071,7 +2128,13 @@
         "+5% CD reduction",
         "+5% Movement Speed"
       ],
-      "icon_url": "https://rovmeta.com/items/earth-gem.png"
+      "icon_url": "https://rovmeta.com/items/earth-gem.png",
+      "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
+      "sources": [
+        "https://moba.garena.tw/news/show/5423",
+        "https://moba.garena.tw/news/show/5528",
+        "https://moba.garena.tw/news/show/5622"
+      ]
     },
     {
       "name": "Fire Gem",
@@ -2085,7 +2148,9 @@
         "movement_speed_pct": 5.0
       },
       "passives": [
-        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 2 AD."
+        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 2 AD.",
+        "Passive - Reward: +200~410 max HP.",
+        "Passive - Up-and-Coming: Every 3s, gain 6 EXP and give 6 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 450 gold, and pull in one coin from anywhere on the map (cooldown 15s)."
       ],
       "passives_incomplete": false,
       "stats_raw": [
@@ -2093,22 +2158,31 @@
         "+5% CD reduction",
         "+5% Movement Speed"
       ],
-      "icon_url": "https://rovmeta.com/items/fire-gem.png"
+      "icon_url": "https://rovmeta.com/items/fire-gem.png",
+      "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
+      "sources": [
+        "https://moba.garena.tw/news/show/5423",
+        "https://moba.garena.tw/news/show/5528",
+        "https://moba.garena.tw/news/show/5622"
+      ]
     },
     {
       "name": "Mother Earth Barrier",
       "slug": "mother-earth-barrier",
       "category": "support",
       "tier": 3,
-      "price": 1200,
+      "price": 1900,
       "stats": {
         "cooldown_reduction": 10.0,
         "max_hp": 400.0,
-        "movement_speed_pct": 5.0
+        "movement_speed_pct": 8.0
       },
       "passives": [
         "Active",
-        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 60 Max HP."
+        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 60 Max HP.",
+        "Passive - Reward: +400~820 max HP.",
+        "Passive - Up-and-Coming: Every 3s, gain 8 EXP and give 8 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 600 gold, and pull in one coin from anywhere on the map (cooldown 10s).",
+        "Active - Resonance: Unlocks after collecting 600 gold. Target an allied hero; you and the ally gain 200 gold and 200 EXP in total (once per match)."
       ],
       "passives_incomplete": false,
       "stats_raw": [
@@ -2116,22 +2190,31 @@
         "+10% CD reduction",
         "+5% Movement Speed"
       ],
-      "icon_url": "https://rovmeta.com/items/mother-earth-barrier.png"
+      "icon_url": "https://rovmeta.com/items/mother-earth-barrier.png",
+      "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
+      "sources": [
+        "https://moba.garena.tw/news/show/5423",
+        "https://moba.garena.tw/news/show/5528",
+        "https://moba.garena.tw/news/show/5622"
+      ]
     },
     {
       "name": "Mother Earth Cleansing",
       "slug": "mother-earth-cleansing",
       "category": "support",
       "tier": 3,
-      "price": 1200,
+      "price": 1900,
       "stats": {
         "cooldown_reduction": 10.0,
         "max_hp": 400.0,
-        "movement_speed_pct": 5.0
+        "movement_speed_pct": 8.0
       },
       "passives": [
         "Active",
-        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 60 Max HP."
+        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 60 Max HP.",
+        "Passive - Reward: +400~820 max HP.",
+        "Passive - Up-and-Coming: Every 3s, gain 8 EXP and give 8 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 600 gold, and pull in one coin from anywhere on the map (cooldown 10s).",
+        "Active - Resonance: Unlocks after collecting 600 gold. Target an allied hero; you and the ally gain 200 gold and 200 EXP in total (once per match)."
       ],
       "passives_incomplete": false,
       "stats_raw": [
@@ -2139,22 +2222,31 @@
         "+10% CD reduction",
         "+5% Movement Speed"
       ],
-      "icon_url": "https://rovmeta.com/items/mother-earth-cleansing.png"
+      "icon_url": "https://rovmeta.com/items/mother-earth-cleansing.png",
+      "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
+      "sources": [
+        "https://moba.garena.tw/news/show/5423",
+        "https://moba.garena.tw/news/show/5528",
+        "https://moba.garena.tw/news/show/5622"
+      ]
     },
     {
       "name": "Mother Earth Eradicate",
       "slug": "mother-earth-eradicate",
       "category": "support",
       "tier": 3,
-      "price": 1200,
+      "price": 1900,
       "stats": {
         "cooldown_reduction": 10.0,
         "max_hp": 400.0,
-        "movement_speed_pct": 5.0
+        "movement_speed_pct": 8.0
       },
       "passives": [
         "Active",
-        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 60 Max HP."
+        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 60 Max HP.",
+        "Passive - Reward: +400~820 max HP.",
+        "Passive - Up-and-Coming: Every 3s, gain 8 EXP and give 8 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 600 gold, and pull in one coin from anywhere on the map (cooldown 10s).",
+        "Active - Resonance: Unlocks after collecting 600 gold. Target an allied hero; you and the ally gain 200 gold and 200 EXP in total (once per match)."
       ],
       "passives_incomplete": false,
       "stats_raw": [
@@ -2162,23 +2254,32 @@
         "+10% CD reduction",
         "+5% Movement Speed"
       ],
-      "icon_url": "https://rovmeta.com/items/mother-earth-eradicate.png"
+      "icon_url": "https://rovmeta.com/items/mother-earth-eradicate.png",
+      "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
+      "sources": [
+        "https://moba.garena.tw/news/show/5423",
+        "https://moba.garena.tw/news/show/5528",
+        "https://moba.garena.tw/news/show/5622"
+      ]
     },
     {
       "name": "Mother Earth Genesis",
       "slug": "mother-earth-genesis",
       "category": "support",
       "tier": 3,
-      "price": 1200,
+      "price": 1900,
       "stats": {
         "cooldown_reduction": 10.0,
         "max_hp": 400.0,
-        "movement_speed_pct": 5.0
+        "movement_speed_pct": 8.0
       },
       "passives": [
         "Passive - Elemental Affinity: +50 Armor.",
         "Passive - Genesis Protection: +88~200 Armor and +66~150 Magic Armor for yourself and nearby allies within 6m.",
-        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 60 Max HP."
+        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 60 Max HP.",
+        "Passive - Reward: +400~820 max HP.",
+        "Passive - Up-and-Coming: Every 3s, gain 8 EXP and give 8 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 600 gold, and pull in one coin from anywhere on the map (cooldown 10s).",
+        "Active - Resonance: Unlocks after collecting 600 gold. Target an allied hero; you and the ally gain 200 gold and 200 EXP in total (once per match)."
       ],
       "passives_incomplete": false,
       "stats_raw": [
@@ -2186,22 +2287,31 @@
         "+10% CD reduction",
         "+5% Movement Speed"
       ],
-      "icon_url": "https://rovmeta.com/items/mother-earth-genesis.png"
+      "icon_url": "https://rovmeta.com/items/mother-earth-genesis.png",
+      "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
+      "sources": [
+        "https://moba.garena.tw/news/show/5423",
+        "https://moba.garena.tw/news/show/5528",
+        "https://moba.garena.tw/news/show/5622"
+      ]
     },
     {
       "name": "Mother Earth Magic Eye",
       "slug": "mother-earth-magic-eye",
       "category": "support",
       "tier": 3,
-      "price": 1200,
+      "price": 1900,
       "stats": {
         "cooldown_reduction": 10.0,
         "max_hp": 400.0,
-        "movement_speed_pct": 5.0
+        "movement_speed_pct": 8.0
       },
       "passives": [
         "Active",
-        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 60 Max HP."
+        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 60 Max HP.",
+        "Passive - Reward: +400~820 max HP.",
+        "Passive - Up-and-Coming: Every 3s, gain 8 EXP and give 8 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 600 gold, and pull in one coin from anywhere on the map (cooldown 10s).",
+        "Active - Resonance: Unlocks after collecting 600 gold. Target an allied hero; you and the ally gain 200 gold and 200 EXP in total (once per match)."
       ],
       "passives_incomplete": false,
       "stats_raw": [
@@ -2209,22 +2319,31 @@
         "+10% CD reduction",
         "+5% Movement Speed"
       ],
-      "icon_url": "https://rovmeta.com/items/mother-earth-magic-eye.png"
+      "icon_url": "https://rovmeta.com/items/mother-earth-magic-eye.png",
+      "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
+      "sources": [
+        "https://moba.garena.tw/news/show/5423",
+        "https://moba.garena.tw/news/show/5528",
+        "https://moba.garena.tw/news/show/5622"
+      ]
     },
     {
       "name": "Wildfire  Barrier",
       "slug": "wildfire-barrier",
       "category": "support",
       "tier": 3,
-      "price": 1200,
+      "price": 1900,
       "stats": {
         "attack_damage": 30.0,
         "cooldown_reduction": 10.0,
-        "movement_speed_pct": 5.0
+        "movement_speed_pct": 8.0
       },
       "passives": [
         "Active",
-        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 3 AD."
+        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 3 AD.",
+        "Passive - Reward: +400~820 max HP.",
+        "Passive - Up-and-Coming: Every 3s, gain 8 EXP and give 8 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 600 gold, and pull in one coin from anywhere on the map (cooldown 10s).",
+        "Active - Resonance: Unlocks after collecting 600 gold. Target an allied hero; you and the ally gain 200 gold and 200 EXP in total (once per match)."
       ],
       "passives_incomplete": false,
       "stats_raw": [
@@ -2232,22 +2351,31 @@
         "+10% CD reduction",
         "+5% Movement Speed"
       ],
-      "icon_url": "https://rovmeta.com/items/wildfire-barrier.png"
+      "icon_url": "https://rovmeta.com/items/wildfire-barrier.png",
+      "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
+      "sources": [
+        "https://moba.garena.tw/news/show/5423",
+        "https://moba.garena.tw/news/show/5528",
+        "https://moba.garena.tw/news/show/5622"
+      ]
     },
     {
       "name": "Wildfire Cleansing",
       "slug": "wildfire-cleansing",
       "category": "support",
       "tier": 3,
-      "price": 1200,
+      "price": 1900,
       "stats": {
         "attack_damage": 30.0,
         "cooldown_reduction": 10.0,
-        "movement_speed_pct": 5.0
+        "movement_speed_pct": 8.0
       },
       "passives": [
         "Active",
-        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 3 AD."
+        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 3 AD.",
+        "Passive - Reward: +400~820 max HP.",
+        "Passive - Up-and-Coming: Every 3s, gain 8 EXP and give 8 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 600 gold, and pull in one coin from anywhere on the map (cooldown 10s).",
+        "Active - Resonance: Unlocks after collecting 600 gold. Target an allied hero; you and the ally gain 200 gold and 200 EXP in total (once per match)."
       ],
       "passives_incomplete": false,
       "stats_raw": [
@@ -2255,22 +2383,31 @@
         "+10% CD reduction",
         "+5% Movement Speed"
       ],
-      "icon_url": "https://rovmeta.com/items/wildfire-cleansing.png"
+      "icon_url": "https://rovmeta.com/items/wildfire-cleansing.png",
+      "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
+      "sources": [
+        "https://moba.garena.tw/news/show/5423",
+        "https://moba.garena.tw/news/show/5528",
+        "https://moba.garena.tw/news/show/5622"
+      ]
     },
     {
       "name": "Wildfire Eradicate",
       "slug": "wildfire-eradicate",
       "category": "support",
       "tier": 3,
-      "price": 1200,
+      "price": 1900,
       "stats": {
         "attack_damage": 30.0,
         "cooldown_reduction": 10.0,
-        "movement_speed_pct": 5.0
+        "movement_speed_pct": 8.0
       },
       "passives": [
         "Active",
-        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 3 AD."
+        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 3 AD.",
+        "Passive - Reward: +400~820 max HP.",
+        "Passive - Up-and-Coming: Every 3s, gain 8 EXP and give 8 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 600 gold, and pull in one coin from anywhere on the map (cooldown 10s).",
+        "Active - Resonance: Unlocks after collecting 600 gold. Target an allied hero; you and the ally gain 200 gold and 200 EXP in total (once per match)."
       ],
       "passives_incomplete": false,
       "stats_raw": [
@@ -2278,23 +2415,32 @@
         "+10% CD reduction",
         "+5% Movement Speed"
       ],
-      "icon_url": "https://rovmeta.com/items/wildfire-eradicate.png"
+      "icon_url": "https://rovmeta.com/items/wildfire-eradicate.png",
+      "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
+      "sources": [
+        "https://moba.garena.tw/news/show/5423",
+        "https://moba.garena.tw/news/show/5528",
+        "https://moba.garena.tw/news/show/5622"
+      ]
     },
     {
       "name": "Wildfire Genesis",
       "slug": "wildfire-genesis",
       "category": "support",
       "tier": 3,
-      "price": 1200,
+      "price": 1900,
       "stats": {
         "attack_damage": 30.0,
         "cooldown_reduction": 10.0,
-        "movement_speed_pct": 5.0
+        "movement_speed_pct": 8.0
       },
       "passives": [
         "Passive - Elemental Affinity: +5% Damage Dealt.",
         "Passive - Genesis Protection: +88~200 Armor and +66~150 Magic Armor for yourself and nearby allies within 6m.",
-        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 3 AD."
+        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 3 AD.",
+        "Passive - Reward: +400~820 max HP.",
+        "Passive - Up-and-Coming: Every 3s, gain 8 EXP and give 8 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 600 gold, and pull in one coin from anywhere on the map (cooldown 10s).",
+        "Active - Resonance: Unlocks after collecting 600 gold. Target an allied hero; you and the ally gain 200 gold and 200 EXP in total (once per match)."
       ],
       "passives_incomplete": false,
       "stats_raw": [
@@ -2302,22 +2448,31 @@
         "+10% CD reduction",
         "+5% Movement Speed"
       ],
-      "icon_url": "https://rovmeta.com/items/wildfire-genesis.png"
+      "icon_url": "https://rovmeta.com/items/wildfire-genesis.png",
+      "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
+      "sources": [
+        "https://moba.garena.tw/news/show/5423",
+        "https://moba.garena.tw/news/show/5528",
+        "https://moba.garena.tw/news/show/5622"
+      ]
     },
     {
       "name": "Wildfire Magic Eye",
       "slug": "wildfire-magic-eye",
       "category": "support",
       "tier": 3,
-      "price": 1200,
+      "price": 1900,
       "stats": {
         "attack_damage": 30.0,
         "cooldown_reduction": 10.0,
-        "movement_speed_pct": 5.0
+        "movement_speed_pct": 8.0
       },
       "passives": [
         "Active",
-        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 3 AD."
+        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 3 AD.",
+        "Passive - Reward: +400~820 max HP.",
+        "Passive - Up-and-Coming: Every 3s, gain 8 EXP and give 8 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 600 gold, and pull in one coin from anywhere on the map (cooldown 10s).",
+        "Active - Resonance: Unlocks after collecting 600 gold. Target an allied hero; you and the ally gain 200 gold and 200 EXP in total (once per match)."
       ],
       "passives_incomplete": false,
       "stats_raw": [
@@ -2325,7 +2480,13 @@
         "+10% CD reduction",
         "+5% Movement Speed"
       ],
-      "icon_url": "https://rovmeta.com/items/wildfire-magic-eye.png"
+      "icon_url": "https://rovmeta.com/items/wildfire-magic-eye.png",
+      "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
+      "sources": [
+        "https://moba.garena.tw/news/show/5423",
+        "https://moba.garena.tw/news/show/5528",
+        "https://moba.garena.tw/news/show/5622"
+      ]
     }
   ]
 }

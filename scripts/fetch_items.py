@@ -140,24 +140,33 @@ def normalize_item(raw: dict) -> tuple[dict, list[str]]:
 
 
 def apply_overrides(items: list[dict]) -> list[str]:
-    """Merge patch-note corrections into ``items`` in place; returns a log line per change."""
+    """Merge patch-note corrections into ``items`` in place; returns a log line per change.
+
+    Each override targets ``slug`` (or every slug in ``slugs``). Plain keys replace the field;
+    ``stats_update`` merges into ``stats`` and ``passives_add`` appends to ``passives``.
+    """
     if not OVERRIDES_PATH.exists():
         return []
     by_slug = {i["slug"]: i for i in items}
     log = []
     for patch in json.loads(OVERRIDES_PATH.read_text(encoding="utf-8"))["items"]:
-        slug = patch["slug"]
-        if slug in by_slug:
-            item = by_slug[slug]
-            item.update({k: v for k, v in patch.items() if k != "slug"})
-            log.append(f"updated {item['name']} ({patch.get('patch', '?')})")
-        else:
-            item = {"stats_raw": [], "icon_url": None, **patch}
-            items.append(item)
-            by_slug[slug] = item
-            log.append(f"added {item['name']} ({patch.get('patch', '?')})")
-        item["stats"] = {k: float(v) for k, v in sorted(item.get("stats", {}).items())}
-        item["passives_incomplete"] = any(is_truncated(p) for p in item.get("passives", []))
+        stats_update = patch.get("stats_update", {})
+        passives_add = patch.get("passives_add", [])
+        fields = {k: v for k, v in patch.items() if k not in ("slug", "slugs", "stats_update", "passives_add")}
+        for slug in patch.get("slugs", [patch.get("slug")]):
+            if slug in by_slug:
+                item = by_slug[slug]
+                item.update(fields)
+                log.append(f"updated {item['name']} ({patch.get('patch', '?')})")
+            else:
+                item = {"slug": slug, "stats_raw": [], "icon_url": None, "passives": [], **fields}
+                items.append(item)
+                by_slug[slug] = item
+                log.append(f"added {item['name']} ({patch.get('patch', '?')})")
+            item["stats"] = {**item.get("stats", {}), **stats_update}
+            item["stats"] = {k: float(v) for k, v in sorted(item["stats"].items())}
+            item["passives"] = [*item.get("passives", []), *passives_add]
+            item["passives_incomplete"] = any(is_truncated(p) for p in item["passives"])
     return log
 
 

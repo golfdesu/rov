@@ -1,0 +1,228 @@
+{
+  "count": 31,
+  "factions": [
+    "Veda",
+    "Lokheim",
+    "Afata",
+    "League of Humans"
+  ],
+  "enchantments": [
+    {
+      "name": "Mark of Frost",
+      "faction": "League of Humans",
+      "tier": 1,
+      "description": "Gains Freeze 4 minutes into the match. Grants immunity to all damages but renders you immobile and unable to attack, and grants you 540~1100 (+0.5 AP) shield points when it ends. Can only be used once.",
+      "icon_file": "Mark of Frost (ENCHANTMENT).png"
+    },
+    {
+      "name": "Enhanced Restore",
+      "faction": "League of Humans",
+      "tier": 1,
+      "description": "Replaces Restore with Enhanced Restore: immediately recover 660 HP and 210 mana.",
+      "icon_file": "Enhanced Restore (ENCHANT).png"
+    },
+    {
+      "name": "Arcane Whisper",
+      "faction": "League of Humans",
+      "tier": 1,
+      "description": "You receive an additional 15% reduction in talent cooldown time.",
+      "icon_file": "Arcane Whisper (ENCHANTMENT).png"
+    },
+    {
+      "name": "Minion Kill",
+      "faction": "League of Humans",
+      "tier": 2,
+      "description": "For every 25 seconds, the next normal attack/ability kills a minion. After 10 minions were killed by this enchantment effect, instantly receive 200 Gold and reset the kill count (not applicable to Siege Minion and Super Minion).",
+      "icon_file": "Minion Kill (ENCHANTMENT).png"
+    },
+    {
+      "name": "Gunslinger",
+      "faction": "League of Humans",
+      "tier": 2,
+      "description": "Spawn with a stack of Gunslinger. Killing or assisting different heroes will grant an additional stack of Gunslinger, up to max of 6 stacks. Each stack of Gunslinger grants 8 AD and 12 AP.",
+      "icon_file": "Gunslinger (ENCHANTMENT).png"
+    },
+    {
+      "name": "Endless Cycle",
+      "faction": "League of Humans",
+      "tier": 2,
+      "description": "Able to use \"Resurrect\" upon death, and is resurrected immediately after use. Resurrect's cooldown ranges from 100 to 310 seconds, depending on your level. Can be used up to 2 times. Enchantment effect disappears after 12 minutes. For each unused resurrection, 300 gold is returned.",
+      "icon_file": "Endless Cycle (ENCHANTMENT).png"
+    },
+    {
+      "name": "Alchemy",
+      "faction": "League of Humans",
+      "tier": 3,
+      "description": "Every 20s, 1 stack of Alchemy Energy is gained (up to 3 stacks). Normal attacks/abilities that hit an enemy hero or tower will grant additional 16 gold and consume 1 stack of Alchemy Energy (up to 800 gold).",
+      "icon_file": "Alchemy.png"
+    },
+    {
+      "name": "Axe of Sacrifice",
+      "faction": "Veda",
+      "tier": 1,
+      "description": "Deals an extra 3% damage but also receives an extra 2% damage (1% in the case of melee).",
+      "icon_file": "Axe of Sacrifice (ENCHANT).png"
+    },
+    {
+      "name": "Mana Refill",
+      "faction": "Veda",
+      "tier": 1,
+      "description": "Recovers 8% Mana when an ability/normal attack hits an enemy hero. CD: 5s.",
+      "icon_file": "Mana Refill (E).png"
+    },
+    {
+      "name": "Sacred Bead",
+      "faction": "Veda",
+      "tier": 1,
+      "description": "Ultimates gain an additional 10% cooldown reduction (still max up to 40%).",
+      "icon_file": "Sacred Bead (E).png"
+    },
+    {
+      "name": "Blessing",
+      "faction": "Veda",
+      "tier": 2,
+      "description": "+16% Crit Chance bonus from equipment.\n\n+8% Ability Power bonus from equipment.",
+      "icon_file": "Blessing (E).png"
+    },
+    {
+      "name": "Holy Verdict",
+      "faction": "Veda",
+      "tier": 1,
+      "description": "Gains 18~60 Physical and Magic Piercing.",
+      "icon_file": "Holy Verdict (E).png"
+    },
+    {
+      "name": "Holy Summoner",
+      "faction": "Veda",
+      "tier": 3,
+      "description": "Summon a holy spirit for 5 seconds when an enemy hero is hit by 3 consecutive normal attacks. Fairy automatically attacks the enemy that you are attacking, have the same of champion attack speed. Fairy has a range of 9.5m, deal true damage equal to of 2% enemy's Max HP with each hit. CD: 10s.",
+      "icon_file": "Holy Summoner (E).png"
+    },
+    {
+      "name": "Holy Thunder",
+      "faction": "Veda",
+      "tier": 1,
+      "description": "The first normal attack or ability attack that hits an enemy triggers Holy Thunder, dealing 88~200 (+0.3 AP) magic damage. Each subsequent normal attack or ability attack that hits the enemy shortens cooldown by 1 second (need 0.5 seconds to trigger CD). CD: 12s.",
+      "icon_file": "Holy Thunder (E).png"
+    },
+    {
+      "name": "Sacred Protection",
+      "faction": "Veda",
+      "tier": 3,
+      "description": "After taking damage equal to 30% of your max HP within 3 seconds, you will gain 430~850 shield points and 20% Magic Life Steal for 6 seconds. Kills and Assists during this time will extend Magic Life Steal by 3 seconds. Cooldown: 30 seconds.",
+      "icon_file": "Sacred Protection (E).png"
+    },
+    {
+      "name": "Devourer",
+      "faction": "Lokheim",
+      "tier": 1,
+      "description": "Kills or assists Restore HP by 9% of HP lost and Mana by 15%.",
+      "icon_file": "Devourer (E).png"
+    },
+    {
+      "name": "Shadow Blade",
+      "faction": "Lokheim",
+      "tier": 1,
+      "description": "Each use of movement and charge abilities grants a stack of Shadow Blade for 4 seconds. Stacks up to 3 times. Next normal attack against a hero consumes all Shadow Blade stacks, dealing an additional 30~100 (+0.1 bonus AD) physical damage per stack.",
+      "icon_file": "Shadow Blade (E).png"
+    },
+    {
+      "name": "Raging Inferno",
+      "faction": "Lokheim",
+      "tier": 1,
+      "description": "Your normal attack or abilities will inflict 55~125 (+0.15 AP) magic damage on an enemy hero. CD: 8s.",
+      "icon_file": "Raging Inferno HD.png"
+    },
+    {
+      "name": "Deadly Claw",
+      "faction": "Lokheim",
+      "tier": 2,
+      "description": "Gains 10~38 points of Attack Damage and 15~57 points of Ability Power (increases by level).",
+      "icon_file": "Deadly Claw.gif"
+    },
+    {
+      "name": "Bone Cutter",
+      "faction": "Lokheim",
+      "tier": 2,
+      "description": "Provides 12.5% Resistance.",
+      "icon_file": "Bone Cutter.gif"
+    },
+    {
+      "name": "Desperate Duel",
+      "faction": "Lokheim",
+      "tier": 3,
+      "description": "Hitting an enemy hero with normal attacks or abilities increases movement speed by 2 points (1 stack per ranged normal or ability attack, 2 stacks per melee normal or ability attack), last for 3 seconds, stacks up to 10 times. At 10 stacks, restores 10% of lost HP and receives 15% Armor Pierce and Magic Pierce.",
+      "icon_file": "Desperate Duel (ENCHANTMENT).png"
+    },
+    {
+      "name": "Curse of Death",
+      "faction": "Lokheim",
+      "tier": 3,
+      "description": "Each abilities/normal attack that hits an enemy hero imposes a stack of mark on the same enemy which lasts 1.5 seconds. At 3 stacks, the enemy will suffer a curse buff that causes 44~100 (+0.25 bonus AD) (+0.15 AP) magic damage to all targets within a 2.5 meter radius, and, 1 second after that, follows it up with 6% (+1% per 100 bonus AD or 200 AP) lost target's HP magic damage to targets within the same area. CD: 15s.",
+      "icon_file": "Curse of Death (ITEM).png"
+    },
+    {
+      "name": "Devil's Awakening",
+      "faction": "Lokheim",
+      "tier": 3,
+      "description": "After ultimate is used, reduce skills cooldown by 30% and grants 20% cooldown reduction. Kills and assists extend the effect by 3s. CD: 30s.",
+      "icon_file": "Devil's Awakening (ENCHANTMENT).png"
+    },
+    {
+      "name": "River Trader",
+      "faction": "Afata",
+      "tier": 1,
+      "description": "While in riverbed, gains 10 movement speed, and regenerates 20 HP and 10 Mana over 5 seconds.",
+      "icon_file": "River Treader.gif"
+    },
+    {
+      "name": "Backstabbing",
+      "faction": "Afata",
+      "tier": 1,
+      "description": "While in brush, the next normal attack deals additional true damage equal to 4% of enemy's current HP. Effect remains for 4 seconds after leaving brush. CD: 10s.",
+      "icon_file": "Backstabbing.gif"
+    },
+    {
+      "name": "Tower Blessing",
+      "faction": "Afata",
+      "tier": 2,
+      "description": "When you are within 6 meters of a tower, gain an additional 15% Resistance and 10% Damage Reduction against enemy heroes.",
+      "icon_file": "Tower Blessing.gif"
+    },
+    {
+      "name": "Regrowth",
+      "faction": "Afata",
+      "tier": 1,
+      "description": "Gains 10% healing and shield effects. If target HP is less than 50%, increases effect by an additional 10%. (Includes equipment and talents.)",
+      "icon_file": "Regrowth.gif"
+    },
+    {
+      "name": "Nature's Gift",
+      "faction": "Afata",
+      "tier": 2,
+      "description": "Each minion or monster that dies near you gives you a permanent HP buff (1 stack from minions, 2 from small monsters, 3 from large monsters). Each stack grants 8 HP, up to a maximum of 100 stacks.",
+      "icon_file": "Nature's Gift.gif"
+    },
+    {
+      "name": "Nature's Rage",
+      "faction": "Afata",
+      "tier": 1,
+      "description": "When an immobilizing ability (Taunt, Knock Away, Knock Back, Stun, Petrify) hits an enemy hero, inflicts a Burn effect that deals magic damage equal to 2% of self max HP per 0.5 second for 3 seconds. Affected enemies will suffer a 33~75 Magic Defense loss. Cooldown: 20 seconds.",
+      "icon_file": "Nature's Rage HD.png"
+    },
+    {
+      "name": "Explosive Shield",
+      "faction": "Afata",
+      "tier": 1,
+      "description": "Gains a stack when damage is taken from enemy heroes (up to 1 stack per second) for 3s. At 4 stacks, sets off an explosion in a 4 meter radius. Affected enemies take magic damage equal to 2% of self max HP while restoring 5% max HP. Each enemy hit restore an additional 2% max HP. CD: 10s.",
+      "icon_file": "Explosive Shield HD.png"
+    },
+    {
+      "name": "Forest Wanderer",
+      "faction": "Afata",
+      "tier": 3,
+      "description": "After exiting combat, the next normal attack will slow down enemy by 30% for 1 second and mark a Stealth Magic Crystal. Magic Crystal bursts in 3 seconds, dealing magic damage equal to 8% of self max HP.",
+      "icon_file": "Forest Wanderer HD.png"
+    }
+  ]
+}

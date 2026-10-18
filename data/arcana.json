@@ -1,0 +1,1584 @@
+{
+  "count": 90,
+  "tiers": {
+    "I": 30,
+    "II": 30,
+    "III": 30
+  },
+  "colors": [
+    "Red",
+    "Purple",
+    "Green"
+  ],
+  "arcana": [
+    {
+      "name": "Excalibur 1",
+      "name_th": "Excalibur (กายภาพ) 1",
+      "name_zh": "神劍",
+      "tier": 1,
+      "color": "Red",
+      "tags": [
+        "攻擊",
+        "lv1"
+      ],
+      "stats": {
+        "attack_damage": 1.0
+      },
+      "raw_desc": "物理攻擊+1",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40129.png"
+    },
+    {
+      "name": "Atrocity 1",
+      "name_th": "Atrocity (อัตราคริ) 1",
+      "name_zh": "暴怒",
+      "tier": 1,
+      "color": "Red",
+      "tags": [
+        "暴擊",
+        "lv1"
+      ],
+      "stats": {
+        "critical_chance_pct": 0.5
+      },
+      "raw_desc": "暴擊率+0.5%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40123.png"
+    },
+    {
+      "name": "Sage 1",
+      "name_th": "Sage (เวท) 1",
+      "name_zh": "賢者",
+      "tier": 1,
+      "color": "Red",
+      "tags": [
+        "攻擊",
+        "lv1"
+      ],
+      "stats": {
+        "ability_power": 1.6
+      },
+      "raw_desc": "魔法攻擊+1.6",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40124.png"
+    },
+    {
+      "name": "Awake 1",
+      "name_th": "Awake (ตีเร็ว) 1",
+      "name_zh": "覺醒",
+      "tier": 1,
+      "color": "Red",
+      "tags": [
+        "暴擊",
+        "攻速",
+        "lv1"
+      ],
+      "stats": {
+        "attack_speed_pct": 0.5,
+        "critical_chance_pct": 0.2
+      },
+      "raw_desc": "攻擊速度+0.5% 暴擊率+0.2%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40128.png"
+    },
+    {
+      "name": "Colossus 1",
+      "name_th": "Colossus (ยักษ์เลือด) 1",
+      "name_zh": "巨人",
+      "tier": 1,
+      "color": "Purple",
+      "tags": [
+        "生命",
+        "lv1"
+      ],
+      "stats": {
+        "max_hp": 22.5
+      },
+      "raw_desc": "最大生命+22.5",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40146.png"
+    },
+    {
+      "name": "Undying 1",
+      "name_th": "Undying (อมตะฟื้นฟู) 1",
+      "name_zh": "不朽",
+      "tier": 1,
+      "color": "Purple",
+      "tags": [
+        "生命",
+        "lv1"
+      ],
+      "stats": {
+        "max_hp": 18.0,
+        "hp_regen_5s": 1.4
+      },
+      "raw_desc": "最大生命+18 每5秒回血+1.4",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40148.png"
+    },
+    {
+      "name": "Reave 1",
+      "name_th": "Reave (ดูดเลือด) 1",
+      "name_zh": "奪萃",
+      "tier": 1,
+      "color": "Purple",
+      "tags": [
+        "吸血",
+        "lv1"
+      ],
+      "stats": {
+        "life_steal_pct": 0.5
+      },
+      "raw_desc": "物理吸血+0.5%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40150.png"
+    },
+    {
+      "name": "Bloodlust (Magic) 1",
+      "name_th": "Pray (ดูดเลือดเวท) 1",
+      "name_zh": "禱告",
+      "tier": 1,
+      "color": "Purple",
+      "tags": [
+        "吸血",
+        "lv1"
+      ],
+      "stats": {
+        "magic_life_steal_pct": 0.5
+      },
+      "raw_desc": "魔法吸血+0.5%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40144.png"
+    },
+    {
+      "name": "Bastion 1",
+      "name_th": "Bastion (เกราะกำแพง) 1",
+      "name_zh": "長城",
+      "tier": 1,
+      "color": "Green",
+      "tags": [
+        "防禦",
+        "lv1"
+      ],
+      "stats": {
+        "armor": 2.7
+      },
+      "raw_desc": "物理防禦+2.7",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40173.png"
+    },
+    {
+      "name": "Authority 1",
+      "name_th": "Mythril (ต้านเวท) 1",
+      "name_zh": "權柄",
+      "tier": 1,
+      "color": "Green",
+      "tags": [
+        "防禦",
+        "lv1"
+      ],
+      "stats": {
+        "magic_defense": 2.7
+      },
+      "raw_desc": "魔法防禦+2.7",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40167.png"
+    },
+    {
+      "name": "Dragon's Claw 1",
+      "name_th": "Dragon's Claw / Skewer (กรงเล็บ) 1",
+      "name_zh": "龍爪",
+      "tier": 1,
+      "color": "Green",
+      "tags": [
+        "穿透",
+        "攻擊",
+        "lv1"
+      ],
+      "stats": {
+        "attack_damage": 0.3,
+        "armor_pierce": 1.9
+      },
+      "raw_desc": "物理攻擊+0.3 物理穿透+1.9",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40172.png"
+    },
+    {
+      "name": "Flurry 1",
+      "name_th": "Flurry (มลทิน) 1",
+      "name_zh": "玷污",
+      "tier": 1,
+      "color": "Green",
+      "tags": [
+        "穿透",
+        "攻速",
+        "lv1"
+      ],
+      "stats": {
+        "attack_speed_pct": 0.2,
+        "magic_pierce": 1.9
+      },
+      "raw_desc": "攻擊速度+0.2% 魔法穿透+1.9",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40166.png"
+    },
+    {
+      "name": "Onslaught 1",
+      "name_th": "Onslaught (เจาะเกราะ) 1",
+      "name_zh": "猛攻",
+      "tier": 1,
+      "color": "Red",
+      "tags": [
+        "穿透",
+        "攻擊",
+        "lv1"
+      ],
+      "stats": {
+        "attack_damage": 0.6,
+        "armor_pierce": 1.1
+      },
+      "raw_desc": "物理攻擊+0.6 物理穿透+1.1",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40130.png"
+    },
+    {
+      "name": "Bloodlust 1",
+      "name_th": "Bloodlust (ดูดเลือดกายภาพ) 1",
+      "name_zh": "嗜血",
+      "tier": 1,
+      "color": "Red",
+      "tags": [
+        "吸血",
+        "攻擊",
+        "lv1"
+      ],
+      "stats": {
+        "attack_damage": 0.8,
+        "life_steal_pct": 0.2
+      },
+      "raw_desc": "物理攻擊+0.8 物理吸血+0.2%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40131.png"
+    },
+    {
+      "name": "Rampage 1",
+      "name_th": "Rampage (คริแรง) 1",
+      "name_zh": "暴走",
+      "tier": 1,
+      "color": "Red",
+      "tags": [
+        "暴擊",
+        "lv1"
+      ],
+      "stats": {
+        "critical_chance_pct": 0.2,
+        "critical_damage_pct": 1.1
+      },
+      "raw_desc": "暴擊率+0.2% 暴擊效果+1.1%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40122.png"
+    },
+    {
+      "name": "Golden Body 1",
+      "name_th": "Golden Body (ทอง) 1",
+      "name_zh": "金身",
+      "tier": 1,
+      "color": "Red",
+      "tags": [
+        "攻速",
+        "防禦",
+        "生命",
+        "lv1"
+      ],
+      "stats": {
+        "attack_speed_pct": 0.3,
+        "max_hp": 10.1,
+        "armor": 0.7
+      },
+      "raw_desc": "攻擊速度+0.3% 最大生命+10.1 物理防禦+0.7",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40127.png"
+    },
+    {
+      "name": "Violate 1",
+      "name_th": "Violate (เจาะเกราะเวท) 1",
+      "name_zh": "荒蕪",
+      "tier": 1,
+      "color": "Red",
+      "tags": [
+        "穿透",
+        "攻擊",
+        "lv1"
+      ],
+      "stats": {
+        "ability_power": 1.3,
+        "magic_pierce": 0.7
+      },
+      "raw_desc": "魔法攻擊+1.3 魔法穿透+0.7",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40125.png"
+    },
+    {
+      "name": "Scepter 1",
+      "name_th": "Scepter (คทาเวท) 1",
+      "name_zh": "權杖",
+      "tier": 1,
+      "color": "Red",
+      "tags": [
+        "攻速",
+        "攻擊",
+        "lv1"
+      ],
+      "stats": {
+        "ability_power": 1.3,
+        "attack_speed_pct": 0.2
+      },
+      "raw_desc": "魔法攻擊+1.3 攻擊速度+0.2%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40126.png"
+    },
+    {
+      "name": "Throne 1",
+      "name_th": "Throne (บัลลังก์) 1",
+      "name_zh": "王座",
+      "tier": 1,
+      "color": "Purple",
+      "tags": [
+        "暴擊",
+        "生命",
+        "lv1"
+      ],
+      "stats": {
+        "critical_chance_pct": 0.2,
+        "max_hp": 18.0
+      },
+      "raw_desc": "暴擊率+0.2% 最大生命+18",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40147.png"
+    },
+    {
+      "name": "Prosperity 1",
+      "name_th": "Prosperity (รุ่งเรือง) 1",
+      "name_zh": "繁榮",
+      "tier": 1,
+      "color": "Purple",
+      "tags": [
+        "吸血",
+        "防禦",
+        "lv1"
+      ],
+      "stats": {
+        "life_steal_pct": 0.3,
+        "magic_defense": 1.2
+      },
+      "raw_desc": "物理吸血+0.3% 魔法防禦+1.2",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40151.png"
+    },
+    {
+      "name": "Blood Fiend 1",
+      "name_th": "Blood Fiend (ปีศาจเลือด) 1",
+      "name_zh": "血魔",
+      "tier": 1,
+      "color": "Purple",
+      "tags": [
+        "吸血",
+        "攻擊",
+        "lv1"
+      ],
+      "stats": {
+        "ability_power": 0.7,
+        "magic_life_steal_pct": 0.3
+      },
+      "raw_desc": "魔法攻擊+0.7 魔法吸血+0.3%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40145.png"
+    },
+    {
+      "name": "Benevolence 1",
+      "name_th": "Benevolence (พิทักษ์) 1",
+      "name_zh": "庇佑",
+      "tier": 1,
+      "color": "Purple",
+      "tags": [
+        "功能",
+        "生命",
+        "lv1"
+      ],
+      "stats": {
+        "max_hp": 13.5,
+        "hp_regen_5s": 1.6,
+        "movement_speed_pct": 0.1
+      },
+      "raw_desc": "最大生命+13.5 每5秒回血+1.6 跑速+0.1%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40149.png"
+    },
+    {
+      "name": "Assassinate 1",
+      "name_th": "Assassinate (ลอบสังหาร) 1",
+      "name_zh": "刺殺",
+      "tier": 1,
+      "color": "Purple",
+      "tags": [
+        "功能",
+        "攻擊",
+        "lv1"
+      ],
+      "stats": {
+        "attack_damage": 0.5,
+        "movement_speed_pct": 0.3
+      },
+      "raw_desc": "物理攻擊+0.5 跑速+0.3%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40152.png"
+    },
+    {
+      "name": "Spirit 1",
+      "name_th": "Spirit / Guerilla (วิ่งตีเร็ว) 1",
+      "name_zh": "精靈",
+      "tier": 1,
+      "color": "Purple",
+      "tags": [
+        "攻速",
+        "功能",
+        "lv1"
+      ],
+      "stats": {
+        "attack_speed_pct": 0.3,
+        "movement_speed_pct": 0.3
+      },
+      "raw_desc": "攻擊速度+0.3% 跑速+0.3%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40153.png"
+    },
+    {
+      "name": "Hercules 1",
+      "name_th": "Diamond (เกราะสองด้าน) 1",
+      "name_zh": "金剛",
+      "tier": 1,
+      "color": "Green",
+      "tags": [
+        "防禦",
+        "lv1"
+      ],
+      "stats": {
+        "armor": 1.5,
+        "magic_defense": 1.5
+      },
+      "raw_desc": "物理防禦+1.5 魔法防禦+1.5",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40174.png"
+    },
+    {
+      "name": "Valiance 1",
+      "name_th": "Valiance (ผู้กล้า) 1",
+      "name_zh": "英勇",
+      "tier": 1,
+      "color": "Green",
+      "tags": [
+        "功能",
+        "生命",
+        "lv1"
+      ],
+      "stats": {
+        "max_hp": 11.3,
+        "cooldown_reduction_pct": 0.2
+      },
+      "raw_desc": "最大生命+11.3 冷卻縮減+0.2%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40168.png"
+    },
+    {
+      "name": "Crusader 1",
+      "name_th": "Crusader (แสงศักดิ์สิทธิ์) 1",
+      "name_zh": "聖光",
+      "tier": 1,
+      "color": "Green",
+      "tags": [
+        "功能",
+        "防禦",
+        "lv1"
+      ],
+      "stats": {
+        "armor": 0.8,
+        "magic_defense": 0.8,
+        "cooldown_reduction_pct": 0.2
+      },
+      "raw_desc": "物理防禦+0.8 魔法防禦+0.8 冷卻縮減+0.2%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40171.png"
+    },
+    {
+      "name": "Focus 1",
+      "name_th": "Focus (ลดคูลดาวน์เวท) 1",
+      "name_zh": "秘咒",
+      "tier": 1,
+      "color": "Green",
+      "tags": [
+        "功能",
+        "攻擊",
+        "lv1"
+      ],
+      "stats": {
+        "ability_power": 0.7,
+        "cooldown_reduction_pct": 0.2
+      },
+      "raw_desc": "魔法攻擊+0.7 冷卻縮減+0.2%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40169.png"
+    },
+    {
+      "name": "Hex 1",
+      "name_th": "Hex / Purity (ลดคูลดาวน์) 1",
+      "name_zh": "純潔",
+      "tier": 1,
+      "color": "Green",
+      "tags": [
+        "功能",
+        "lv1"
+      ],
+      "stats": {
+        "cooldown_reduction_pct": 0.3
+      },
+      "raw_desc": "冷卻縮減+0.3%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40170.png"
+    },
+    {
+      "name": "Magic Heart 1",
+      "name_th": "Magic Heart (หัวใจเวท) 1",
+      "name_zh": "魔心",
+      "tier": 1,
+      "color": "Green",
+      "tags": [
+        "吸血",
+        "防禦",
+        "lv1"
+      ],
+      "stats": {
+        "magic_life_steal_pct": 0.2,
+        "armor": 1.8
+      },
+      "raw_desc": "魔法吸血+0.2% 物理防禦+1.8",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40175.png"
+    },
+    {
+      "name": "Awake 2",
+      "name_th": "Awake (ตีเร็ว) 2",
+      "name_zh": "覺醒",
+      "tier": 2,
+      "color": "Red",
+      "tags": [
+        "暴擊",
+        "攻速",
+        "lv2"
+      ],
+      "stats": {
+        "attack_speed_pct": 1.0,
+        "critical_chance_pct": 0.3
+      },
+      "raw_desc": "攻擊速度+1% 暴擊率+0.3%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40228.png"
+    },
+    {
+      "name": "Excalibur 2",
+      "name_th": "Excalibur (กายภาพ) 2",
+      "name_zh": "神劍",
+      "tier": 2,
+      "color": "Red",
+      "tags": [
+        "攻擊",
+        "lv2"
+      ],
+      "stats": {
+        "attack_damage": 2.0
+      },
+      "raw_desc": "物理攻擊+2",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40229.png"
+    },
+    {
+      "name": "Bloodlust 2",
+      "name_th": "Bloodlust (ดูดเลือดกายภาพ) 2",
+      "name_zh": "嗜血",
+      "tier": 2,
+      "color": "Red",
+      "tags": [
+        "吸血",
+        "攻擊",
+        "lv2"
+      ],
+      "stats": {
+        "attack_damage": 1.6,
+        "life_steal_pct": 0.3
+      },
+      "raw_desc": "物理攻擊+1.6 物理吸血+0.3%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40231.png"
+    },
+    {
+      "name": "Golden Body 2",
+      "name_th": "Golden Body (ทอง) 2",
+      "name_zh": "金身",
+      "tier": 2,
+      "color": "Red",
+      "tags": [
+        "攻速",
+        "防禦",
+        "生命",
+        "lv2"
+      ],
+      "stats": {
+        "attack_speed_pct": 0.6,
+        "max_hp": 21.1,
+        "armor": 1.4
+      },
+      "raw_desc": "攻擊速度+0.6% 最大生命+21.1 物理防禦+1.4",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40227.png"
+    },
+    {
+      "name": "Scepter 2",
+      "name_th": "Scepter (คทาเวท) 2",
+      "name_zh": "權杖",
+      "tier": 2,
+      "color": "Red",
+      "tags": [
+        "攻速",
+        "攻擊",
+        "lv2"
+      ],
+      "stats": {
+        "ability_power": 2.6,
+        "attack_speed_pct": 0.4
+      },
+      "raw_desc": "魔法攻擊+2.6 攻擊速度+0.4%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40226.png"
+    },
+    {
+      "name": "Violate 2",
+      "name_th": "Violate (เจาะเกราะเวท) 2",
+      "name_zh": "荒蕪",
+      "tier": 2,
+      "color": "Red",
+      "tags": [
+        "穿透",
+        "攻擊",
+        "lv2"
+      ],
+      "stats": {
+        "ability_power": 2.6,
+        "magic_pierce": 1.5
+      },
+      "raw_desc": "魔法攻擊+2.6 魔法穿透+1.5",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40225.png"
+    },
+    {
+      "name": "Atrocity 2",
+      "name_th": "Atrocity (อัตราคริ) 2",
+      "name_zh": "暴怒",
+      "tier": 2,
+      "color": "Red",
+      "tags": [
+        "暴擊",
+        "lv2"
+      ],
+      "stats": {
+        "critical_chance_pct": 1.0
+      },
+      "raw_desc": "暴擊率+1%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40223.png"
+    },
+    {
+      "name": "Rampage 2",
+      "name_th": "Rampage (คริแรง) 2",
+      "name_zh": "暴走",
+      "tier": 2,
+      "color": "Red",
+      "tags": [
+        "暴擊",
+        "lv2"
+      ],
+      "stats": {
+        "critical_chance_pct": 0.4,
+        "critical_damage_pct": 2.3
+      },
+      "raw_desc": "暴擊率+0.4% 暴擊效果+2.3%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40222.png"
+    },
+    {
+      "name": "Colossus 2",
+      "name_th": "Colossus (ยักษ์เลือด) 2",
+      "name_zh": "巨人",
+      "tier": 2,
+      "color": "Purple",
+      "tags": [
+        "生命",
+        "lv2"
+      ],
+      "stats": {
+        "max_hp": 46.9
+      },
+      "raw_desc": "最大生命+46.9",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40246.png"
+    },
+    {
+      "name": "Assassinate 2",
+      "name_th": "Assassinate (ลอบสังหาร) 2",
+      "name_zh": "刺殺",
+      "tier": 2,
+      "color": "Purple",
+      "tags": [
+        "功能",
+        "攻擊",
+        "lv2"
+      ],
+      "stats": {
+        "attack_damage": 1.0,
+        "movement_speed_pct": 0.6
+      },
+      "raw_desc": "物理攻擊+1 跑速+0.6%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40252.png"
+    },
+    {
+      "name": "Undying 2",
+      "name_th": "Undying (อมตะฟื้นฟู) 2",
+      "name_zh": "不朽",
+      "tier": 2,
+      "color": "Purple",
+      "tags": [
+        "生命",
+        "lv2"
+      ],
+      "stats": {
+        "max_hp": 37.5,
+        "hp_regen_5s": 2.8
+      },
+      "raw_desc": "最大生命+37.5 每5秒回血+2.8",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40248.png"
+    },
+    {
+      "name": "Blood Fiend 2",
+      "name_th": "Blood Fiend (ปีศาจเลือด) 2",
+      "name_zh": "血魔",
+      "tier": 2,
+      "color": "Purple",
+      "tags": [
+        "吸血",
+        "攻擊",
+        "lv2"
+      ],
+      "stats": {
+        "ability_power": 1.5,
+        "magic_life_steal_pct": 0.6
+      },
+      "raw_desc": "魔法攻擊+1.5 魔法吸血+0.6%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40245.png"
+    },
+    {
+      "name": "Reave 2",
+      "name_th": "Reave (ดูดเลือด) 2",
+      "name_zh": "奪萃",
+      "tier": 2,
+      "color": "Purple",
+      "tags": [
+        "吸血",
+        "lv2"
+      ],
+      "stats": {
+        "life_steal_pct": 1.0
+      },
+      "raw_desc": "物理吸血+1%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40250.png"
+    },
+    {
+      "name": "Throne 2",
+      "name_th": "Throne (บัลลังก์) 2",
+      "name_zh": "王座",
+      "tier": 2,
+      "color": "Purple",
+      "tags": [
+        "暴擊",
+        "生命",
+        "lv2"
+      ],
+      "stats": {
+        "critical_chance_pct": 0.3,
+        "max_hp": 37.5
+      },
+      "raw_desc": "暴擊率+0.3% 最大生命+37.5",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40247.png"
+    },
+    {
+      "name": "Benevolence 2",
+      "name_th": "Benevolence (พิทักษ์) 2",
+      "name_zh": "庇佑",
+      "tier": 2,
+      "color": "Purple",
+      "tags": [
+        "功能",
+        "生命",
+        "lv2"
+      ],
+      "stats": {
+        "max_hp": 28.1,
+        "hp_regen_5s": 3.3,
+        "movement_speed_pct": 0.3
+      },
+      "raw_desc": "最大生命+28.1 每5秒回血+3.3 跑速+0.3%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40249.png"
+    },
+    {
+      "name": "Spirit 2",
+      "name_th": "Spirit / Guerilla (วิ่งตีเร็ว) 2",
+      "name_zh": "精靈",
+      "tier": 2,
+      "color": "Purple",
+      "tags": [
+        "攻速",
+        "功能",
+        "lv2"
+      ],
+      "stats": {
+        "attack_speed_pct": 0.6,
+        "movement_speed_pct": 0.6
+      },
+      "raw_desc": "攻擊速度+0.6% 跑速+0.6%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40253.png"
+    },
+    {
+      "name": "Bastion 2",
+      "name_th": "Bastion (เกราะกำแพง) 2",
+      "name_zh": "長城",
+      "tier": 2,
+      "color": "Green",
+      "tags": [
+        "防禦",
+        "lv2"
+      ],
+      "stats": {
+        "armor": 5.6
+      },
+      "raw_desc": "物理防禦+5.6",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40273.png"
+    },
+    {
+      "name": "Authority 2",
+      "name_th": "Mythril (ต้านเวท) 2",
+      "name_zh": "權柄",
+      "tier": 2,
+      "color": "Green",
+      "tags": [
+        "防禦",
+        "lv2"
+      ],
+      "stats": {
+        "magic_defense": 5.6
+      },
+      "raw_desc": "魔法防禦+5.6",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40267.png"
+    },
+    {
+      "name": "Valiance 2",
+      "name_th": "Valiance (ผู้กล้า) 2",
+      "name_zh": "英勇",
+      "tier": 2,
+      "color": "Green",
+      "tags": [
+        "功能",
+        "生命",
+        "lv2"
+      ],
+      "stats": {
+        "max_hp": 23.4,
+        "cooldown_reduction_pct": 0.4
+      },
+      "raw_desc": "最大生命+23.4 冷卻縮減+0.4%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40268.png"
+    },
+    {
+      "name": "Hercules 2",
+      "name_th": "Diamond (เกราะสองด้าน) 2",
+      "name_zh": "金剛",
+      "tier": 2,
+      "color": "Green",
+      "tags": [
+        "防禦",
+        "lv2"
+      ],
+      "stats": {
+        "armor": 3.1,
+        "magic_defense": 3.1
+      },
+      "raw_desc": "物理防禦+3.1 魔法防禦+3.1",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40274.png"
+    },
+    {
+      "name": "Magic Heart 2",
+      "name_th": "Magic Heart (หัวใจเวท) 2",
+      "name_zh": "魔心",
+      "tier": 2,
+      "color": "Green",
+      "tags": [
+        "吸血",
+        "防禦",
+        "lv2"
+      ],
+      "stats": {
+        "magic_life_steal_pct": 0.4,
+        "armor": 3.7
+      },
+      "raw_desc": "魔法吸血+0.4% 物理防禦+3.7",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40275.png"
+    },
+    {
+      "name": "Flurry 2",
+      "name_th": "Flurry (มลทิน) 2",
+      "name_zh": "玷污",
+      "tier": 2,
+      "color": "Green",
+      "tags": [
+        "穿透",
+        "攻速",
+        "lv2"
+      ],
+      "stats": {
+        "attack_speed_pct": 0.4,
+        "magic_pierce": 4.0
+      },
+      "raw_desc": "攻擊速度+0.4% 魔法穿透+4",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40266.png"
+    },
+    {
+      "name": "Crusader 2",
+      "name_th": "Crusader (แสงศักดิ์สิทธิ์) 2",
+      "name_zh": "聖光",
+      "tier": 2,
+      "color": "Green",
+      "tags": [
+        "功能",
+        "防禦",
+        "lv2"
+      ],
+      "stats": {
+        "armor": 1.7,
+        "magic_defense": 1.7,
+        "cooldown_reduction_pct": 0.4
+      },
+      "raw_desc": "物理防禦+1.7 魔法防禦+1.7 冷卻縮減+0.4%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40271.png"
+    },
+    {
+      "name": "Dragon's Claw 2",
+      "name_th": "Dragon's Claw / Skewer (กรงเล็บ) 2",
+      "name_zh": "龍爪",
+      "tier": 2,
+      "color": "Green",
+      "tags": [
+        "穿透",
+        "攻擊",
+        "lv2"
+      ],
+      "stats": {
+        "attack_damage": 0.6,
+        "armor_pierce": 4.0
+      },
+      "raw_desc": "物理攻擊+0.6 物理穿透+4",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40272.png"
+    },
+    {
+      "name": "Sage 2",
+      "name_th": "Sage (เวท) 2",
+      "name_zh": "賢者",
+      "tier": 2,
+      "color": "Red",
+      "tags": [
+        "攻擊",
+        "lv2"
+      ],
+      "stats": {
+        "ability_power": 3.3
+      },
+      "raw_desc": "魔法攻擊+3.3",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40224.png"
+    },
+    {
+      "name": "Onslaught 2",
+      "name_th": "Onslaught (เจาะเกราะ) 2",
+      "name_zh": "猛攻",
+      "tier": 2,
+      "color": "Red",
+      "tags": [
+        "穿透",
+        "攻擊",
+        "lv2"
+      ],
+      "stats": {
+        "attack_damage": 1.3,
+        "armor_pierce": 2.3
+      },
+      "raw_desc": "物理攻擊+1.3 物理穿透+2.3",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40230.png"
+    },
+    {
+      "name": "Bloodlust (Magic) 2",
+      "name_th": "Pray (ดูดเลือดเวท) 2",
+      "name_zh": "禱告",
+      "tier": 2,
+      "color": "Purple",
+      "tags": [
+        "吸血",
+        "lv2"
+      ],
+      "stats": {
+        "magic_life_steal_pct": 1.0
+      },
+      "raw_desc": "魔法吸血+1%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40244.png"
+    },
+    {
+      "name": "Prosperity 2",
+      "name_th": "Prosperity (รุ่งเรือง) 2",
+      "name_zh": "繁榮",
+      "tier": 2,
+      "color": "Purple",
+      "tags": [
+        "吸血",
+        "防禦",
+        "lv2"
+      ],
+      "stats": {
+        "life_steal_pct": 0.6,
+        "magic_defense": 2.6
+      },
+      "raw_desc": "物理吸血+0.6% 魔法防禦+2.6",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40251.png"
+    },
+    {
+      "name": "Focus 2",
+      "name_th": "Focus (ลดคูลดาวน์เวท) 2",
+      "name_zh": "秘咒",
+      "tier": 2,
+      "color": "Green",
+      "tags": [
+        "功能",
+        "攻擊",
+        "lv2"
+      ],
+      "stats": {
+        "ability_power": 1.5,
+        "cooldown_reduction_pct": 0.4
+      },
+      "raw_desc": "魔法攻擊+1.5 冷卻縮減+0.4%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40269.png"
+    },
+    {
+      "name": "Hex 2",
+      "name_th": "Hex / Purity (ลดคูลดาวน์) 2",
+      "name_zh": "純潔",
+      "tier": 2,
+      "color": "Green",
+      "tags": [
+        "功能",
+        "lv2"
+      ],
+      "stats": {
+        "cooldown_reduction_pct": 0.6
+      },
+      "raw_desc": "冷卻縮減+0.6%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40270.png"
+    },
+    {
+      "name": "Sage",
+      "name_th": "Sage (เวท)",
+      "name_zh": "賢者",
+      "tier": 3,
+      "color": "Red",
+      "tags": [
+        "攻擊",
+        "lv3"
+      ],
+      "stats": {
+        "ability_power": 5.3
+      },
+      "raw_desc": "魔法攻擊力+5.3",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40024.png"
+    },
+    {
+      "name": "Excalibur",
+      "name_th": "Excalibur (กายภาพ)",
+      "name_zh": "神劍",
+      "tier": 3,
+      "color": "Red",
+      "tags": [
+        "攻擊",
+        "lv3"
+      ],
+      "stats": {
+        "attack_damage": 3.2
+      },
+      "raw_desc": "物理攻擊力+3.2",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40029.png"
+    },
+    {
+      "name": "Onslaught",
+      "name_th": "Onslaught (เจาะเกราะ)",
+      "name_zh": "猛攻",
+      "tier": 3,
+      "color": "Red",
+      "tags": [
+        "穿透",
+        "攻擊",
+        "lv3"
+      ],
+      "stats": {
+        "attack_damage": 2.0,
+        "armor_pierce": 3.6
+      },
+      "raw_desc": "物理攻擊力+2 物理穿透+3.6",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40030.png"
+    },
+    {
+      "name": "Bloodlust",
+      "name_th": "Bloodlust (ดูดเลือดกายภาพ)",
+      "name_zh": "嗜血",
+      "tier": 3,
+      "color": "Red",
+      "tags": [
+        "吸血",
+        "攻擊",
+        "lv3"
+      ],
+      "stats": {
+        "attack_damage": 2.5,
+        "life_steal_pct": 0.5
+      },
+      "raw_desc": "物理攻擊力+2.5 物理吸血+0.5%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40031.png"
+    },
+    {
+      "name": "Rampage",
+      "name_th": "Rampage (คริแรง)",
+      "name_zh": "暴走",
+      "tier": 3,
+      "color": "Red",
+      "tags": [
+        "暴擊",
+        "lv3"
+      ],
+      "stats": {
+        "critical_chance_pct": 0.7,
+        "critical_damage_pct": 3.6
+      },
+      "raw_desc": "暴擊率+0.7% 暴擊效果+3.6%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40022.png"
+    },
+    {
+      "name": "Golden Body",
+      "name_th": "Golden Body (ทอง)",
+      "name_zh": "金身",
+      "tier": 3,
+      "color": "Red",
+      "tags": [
+        "攻速",
+        "防禦",
+        "生命",
+        "lv3"
+      ],
+      "stats": {
+        "attack_speed_pct": 1.0,
+        "max_hp": 33.7,
+        "armor": 2.3
+      },
+      "raw_desc": "攻速加成+1% 最大生命+33.7 物理防禦力+2.3",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40027.png"
+    },
+    {
+      "name": "Violate",
+      "name_th": "Violate (เจาะเกราะเวท)",
+      "name_zh": "荒蕪",
+      "tier": 3,
+      "color": "Red",
+      "tags": [
+        "穿透",
+        "攻擊",
+        "lv3"
+      ],
+      "stats": {
+        "ability_power": 4.2,
+        "magic_pierce": 2.4
+      },
+      "raw_desc": "魔法攻擊力+4.2 魔法穿透+2.4",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40025.png"
+    },
+    {
+      "name": "Scepter",
+      "name_th": "Scepter (คทาเวท)",
+      "name_zh": "權杖",
+      "tier": 3,
+      "color": "Red",
+      "tags": [
+        "攻速",
+        "攻擊",
+        "lv3"
+      ],
+      "stats": {
+        "ability_power": 4.2,
+        "attack_speed_pct": 0.6
+      },
+      "raw_desc": "魔法攻擊力+4.2 攻速加成+0.6%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40026.png"
+    },
+    {
+      "name": "Atrocity",
+      "name_th": "Atrocity (อัตราคริ)",
+      "name_zh": "暴怒",
+      "tier": 3,
+      "color": "Red",
+      "tags": [
+        "暴擊",
+        "lv3"
+      ],
+      "stats": {
+        "critical_chance_pct": 1.6
+      },
+      "raw_desc": "暴擊率+1.6%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40023.png"
+    },
+    {
+      "name": "Awake",
+      "name_th": "Awake (ตีเร็ว)",
+      "name_zh": "覺醒",
+      "tier": 3,
+      "color": "Red",
+      "tags": [
+        "暴擊",
+        "攻速",
+        "lv3"
+      ],
+      "stats": {
+        "attack_speed_pct": 1.6,
+        "critical_chance_pct": 0.5
+      },
+      "raw_desc": "攻速加成+1.6% 暴擊率+0.5%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40028.png"
+    },
+    {
+      "name": "Colossus",
+      "name_th": "Colossus (ยักษ์เลือด)",
+      "name_zh": "巨人",
+      "tier": 3,
+      "color": "Purple",
+      "tags": [
+        "生命",
+        "lv3"
+      ],
+      "stats": {
+        "max_hp": 75.0
+      },
+      "raw_desc": "最大生命+75",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40046.png"
+    },
+    {
+      "name": "Bloodlust (Magic)",
+      "name_th": "Pray (ดูดเลือดเวท)",
+      "name_zh": "禱告",
+      "tier": 3,
+      "color": "Purple",
+      "tags": [
+        "吸血",
+        "lv3"
+      ],
+      "stats": {
+        "magic_life_steal_pct": 1.6
+      },
+      "raw_desc": "魔法吸血+1.6%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40044.png"
+    },
+    {
+      "name": "Reave",
+      "name_th": "Reave (ดูดเลือด)",
+      "name_zh": "奪萃",
+      "tier": 3,
+      "color": "Purple",
+      "tags": [
+        "吸血",
+        "lv3"
+      ],
+      "stats": {
+        "life_steal_pct": 1.6
+      },
+      "raw_desc": "物理吸血+1.6%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40050.png"
+    },
+    {
+      "name": "Throne",
+      "name_th": "Throne (บัลลังก์)",
+      "name_zh": "王座",
+      "tier": 3,
+      "color": "Purple",
+      "tags": [
+        "暴擊",
+        "生命",
+        "lv3"
+      ],
+      "stats": {
+        "critical_chance_pct": 0.5,
+        "max_hp": 60.0
+      },
+      "raw_desc": "暴擊率+0.5% 最大生命+60",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40047.png"
+    },
+    {
+      "name": "Undying",
+      "name_th": "Undying (อมตะฟื้นฟู)",
+      "name_zh": "不朽",
+      "tier": 3,
+      "color": "Purple",
+      "tags": [
+        "生命",
+        "lv3"
+      ],
+      "stats": {
+        "max_hp": 60.0,
+        "hp_regen_5s": 4.5
+      },
+      "raw_desc": "最大生命+60 生命回復+4.5",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40048.png"
+    },
+    {
+      "name": "Prosperity",
+      "name_th": "Prosperity (รุ่งเรือง)",
+      "name_zh": "繁榮",
+      "tier": 3,
+      "color": "Purple",
+      "tags": [
+        "吸血",
+        "防禦",
+        "lv3"
+      ],
+      "stats": {
+        "life_steal_pct": 1.0,
+        "magic_defense": 4.1
+      },
+      "raw_desc": "物理吸血+1% 魔法防禦力+4.1",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40051.png"
+    },
+    {
+      "name": "Blood Fiend",
+      "name_th": "Blood Fiend (ปีศาจเลือด)",
+      "name_zh": "血魔",
+      "tier": 3,
+      "color": "Purple",
+      "tags": [
+        "吸血",
+        "攻擊",
+        "lv3"
+      ],
+      "stats": {
+        "ability_power": 2.4,
+        "magic_life_steal_pct": 1.0
+      },
+      "raw_desc": "魔法攻擊力+2.4 魔法吸血+1%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40045.png"
+    },
+    {
+      "name": "Benevolence",
+      "name_th": "Benevolence (พิทักษ์)",
+      "name_zh": "庇佑",
+      "tier": 3,
+      "color": "Purple",
+      "tags": [
+        "功能",
+        "生命",
+        "lv3"
+      ],
+      "stats": {
+        "max_hp": 45.0,
+        "hp_regen_5s": 5.2,
+        "movement_speed_pct": 0.4
+      },
+      "raw_desc": "最大生命+45 生命回復+5.2 跑速+0.4%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40049.png"
+    },
+    {
+      "name": "Assassinate",
+      "name_th": "Assassinate (ลอบสังหาร)",
+      "name_zh": "刺殺",
+      "tier": 3,
+      "color": "Purple",
+      "tags": [
+        "功能",
+        "攻擊",
+        "lv3"
+      ],
+      "stats": {
+        "attack_damage": 1.6,
+        "movement_speed_pct": 1.0
+      },
+      "raw_desc": "物理攻擊力+1.6 跑速+1%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40052.png"
+    },
+    {
+      "name": "Spirit",
+      "name_th": "Spirit / Guerilla (วิ่งตีเร็ว)",
+      "name_zh": "精靈",
+      "tier": 3,
+      "color": "Purple",
+      "tags": [
+        "攻速",
+        "功能",
+        "lv3"
+      ],
+      "stats": {
+        "attack_speed_pct": 1.0,
+        "movement_speed_pct": 1.0
+      },
+      "raw_desc": "攻速加成+1% 跑速+1%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40053.png"
+    },
+    {
+      "name": "Bastion",
+      "name_th": "Bastion (เกราะกำแพง)",
+      "name_zh": "長城",
+      "tier": 3,
+      "color": "Green",
+      "tags": [
+        "防禦",
+        "lv3"
+      ],
+      "stats": {
+        "armor": 9.0
+      },
+      "raw_desc": "物理防禦力+9",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40073.png"
+    },
+    {
+      "name": "Hercules",
+      "name_th": "Diamond (เกราะสองด้าน)",
+      "name_zh": "金剛",
+      "tier": 3,
+      "color": "Green",
+      "tags": [
+        "防禦",
+        "lv3"
+      ],
+      "stats": {
+        "armor": 5.0,
+        "magic_defense": 5.0
+      },
+      "raw_desc": "物理防禦力+5 魔法防禦力+5",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40074.png"
+    },
+    {
+      "name": "Valiance",
+      "name_th": "Valiance (ผู้กล้า)",
+      "name_zh": "英勇",
+      "tier": 3,
+      "color": "Green",
+      "tags": [
+        "功能",
+        "生命",
+        "lv3"
+      ],
+      "stats": {
+        "max_hp": 37.5,
+        "cooldown_reduction_pct": 0.6
+      },
+      "raw_desc": "最大生命+37.5 冷卻縮減+0.6%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40068.png"
+    },
+    {
+      "name": "Authority",
+      "name_th": "Mythril (ต้านเวท)",
+      "name_zh": "權柄",
+      "tier": 3,
+      "color": "Green",
+      "tags": [
+        "防禦",
+        "lv3"
+      ],
+      "stats": {
+        "magic_defense": 9.0
+      },
+      "raw_desc": "魔法防禦力+9",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40067.png"
+    },
+    {
+      "name": "Focus",
+      "name_th": "Focus (ลดคูลดาวน์เวท)",
+      "name_zh": "秘咒",
+      "tier": 3,
+      "color": "Green",
+      "tags": [
+        "功能",
+        "攻擊",
+        "lv3"
+      ],
+      "stats": {
+        "ability_power": 2.4,
+        "cooldown_reduction_pct": 0.7
+      },
+      "raw_desc": "魔法攻擊力+2.4 冷卻縮減+0.7%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40069.png"
+    },
+    {
+      "name": "Dragon's Claw",
+      "name_th": "Dragon's Claw / Skewer (กรงเล็บ)",
+      "name_zh": "龍爪",
+      "tier": 3,
+      "color": "Green",
+      "tags": [
+        "穿透",
+        "攻擊",
+        "lv3"
+      ],
+      "stats": {
+        "attack_damage": 0.9,
+        "armor_pierce": 6.4
+      },
+      "raw_desc": "物理攻擊力+0.9 物理穿透+6.4",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40072.png"
+    },
+    {
+      "name": "Flurry",
+      "name_th": "Flurry (มลทิน)",
+      "name_zh": "玷污",
+      "tier": 3,
+      "color": "Green",
+      "tags": [
+        "穿透",
+        "攻速",
+        "lv3"
+      ],
+      "stats": {
+        "attack_speed_pct": 0.6,
+        "magic_pierce": 6.4
+      },
+      "raw_desc": "攻速加成+0.6% 魔法穿透+6.4",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40066.png"
+    },
+    {
+      "name": "Hex",
+      "name_th": "Hex / Purity (ลดคูลดาวน์)",
+      "name_zh": "純潔",
+      "tier": 3,
+      "color": "Green",
+      "tags": [
+        "功能",
+        "lv3"
+      ],
+      "stats": {
+        "cooldown_reduction_pct": 1.0
+      },
+      "raw_desc": "冷卻縮減+1%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40070.png"
+    },
+    {
+      "name": "Magic Heart",
+      "name_th": "Magic Heart (หัวใจเวท)",
+      "name_zh": "魔心",
+      "tier": 3,
+      "color": "Green",
+      "tags": [
+        "吸血",
+        "防禦",
+        "lv3"
+      ],
+      "stats": {
+        "magic_life_steal_pct": 0.7,
+        "armor": 5.9
+      },
+      "raw_desc": "魔法吸血+0.7% 物理防禦力+5.9",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40075.png"
+    },
+    {
+      "name": "Crusader",
+      "name_th": "Crusader (แสงศักดิ์สิทธิ์)",
+      "name_zh": "聖光",
+      "tier": 3,
+      "color": "Green",
+      "tags": [
+        "功能",
+        "防禦",
+        "lv3"
+      ],
+      "stats": {
+        "armor": 2.7,
+        "magic_defense": 2.7,
+        "cooldown_reduction_pct": 0.6
+      },
+      "raw_desc": "物理防禦力+2.7 魔法防禦力+2.7 冷卻縮減+0.6%",
+      "icon": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40071.png"
+    }
+  ]
+}
