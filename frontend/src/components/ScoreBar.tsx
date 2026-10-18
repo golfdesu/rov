@@ -97,20 +97,20 @@ export function ScoreBar({
         </div>
 
         {/* Controls */}
-        <div className="flex shrink-0 items-center gap-1.5">
+        <div className="flex shrink-0 items-center gap-2">
           <button
             type="button"
             onClick={() => setUseLookahead(!useLookahead)}
             aria-pressed={useLookahead}
             title="Minimax lookahead search (depth 2)"
-            className={`flex h-8 items-center gap-1.5 border px-2.5 font-display text-xs font-semibold transition-colors ${
+            className={`flex h-10 items-center gap-2 border px-3 font-display text-xs font-bold tracking-wide transition-colors ${
               useLookahead
-                ? "border-gold/60 bg-gold/10 text-gold"
-                : "border-line-strong text-muted hover:border-muted hover:text-ink"
+                ? "border-gold bg-gold text-bg hover:bg-gold/90"
+                : "border-gold/50 bg-gold/10 text-gold hover:bg-gold/20"
             }`}
           >
-            <BrainCircuit className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">LOOKAHEAD</span>
+            <BrainCircuit className="h-4 w-4" />
+            <span className="hidden sm:inline">LOOKAHEAD {useLookahead ? "ON" : "OFF"}</span>
           </button>
           <button
             type="button"
@@ -118,19 +118,23 @@ export function ScoreBar({
             disabled={!canUndo}
             title="Undo (Ctrl+Z)"
             aria-label="Undo"
-            className="grid h-8 w-8 place-items-center border border-line-strong text-muted transition-colors hover:border-muted hover:text-ink disabled:pointer-events-none disabled:opacity-30"
+            className="flex h-10 items-center gap-2 border border-ink/30 bg-panel-2 px-3 font-display text-xs font-bold tracking-wide text-ink transition-colors hover:border-ink hover:bg-line-strong disabled:pointer-events-none disabled:opacity-30"
           >
             <Undo2 className="h-4 w-4" />
+            <span className="hidden sm:inline">UNDO</span>
           </button>
           <button
             type="button"
-            onClick={onReset}
+            onClick={() => {
+              if (window.confirm("เริ่มดราฟต์ใหม่ทั้งหมด?")) onReset();
+            }}
             disabled={!canUndo}
             title="Reset draft"
             aria-label="Reset draft"
-            className="grid h-8 w-8 place-items-center border border-line-strong text-muted transition-colors hover:border-red/60 hover:text-red disabled:pointer-events-none disabled:opacity-30"
+            className="flex h-10 items-center gap-2 border border-red/50 bg-red/10 px-3 font-display text-xs font-bold tracking-wide text-red transition-colors hover:bg-red hover:text-ink disabled:pointer-events-none disabled:opacity-30"
           >
             <RotateCcw className="h-4 w-4" />
+            <span className="hidden sm:inline">RESET</span>
           </button>
         </div>
       </div>

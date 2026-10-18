@@ -1,7 +1,7 @@
-import { Search, X } from "lucide-react";
+import { ArrowDownAZ, Search, Sparkles, X } from "lucide-react";
 import { forwardRef, useMemo, useState } from "react";
 import type { DraftStep, Hero, RoleType } from "../types/draft";
-import { LANE_SHORT, ROLES, TIER_STYLE, laneKey } from "../utils/draft";
+import { LANE_SHORT, ROLES, TIER_STYLE, laneKey, missingLaneKeys } from "../utils/draft";
 import { displayName, matchesHeroQuery } from "../utils/heroNames";
 import { HeroPortrait } from "./HeroPortrait";
 
@@ -9,6 +9,7 @@ interface HeroGridProps {
   heroes: Hero[];
   unavailableHeroes: Set<string>;
   recommendedRanks: Map<string, number>;
+  missingAllyLanes: string[];
   currentStep: DraftStep | null;
   isHeroesLoading: boolean;
   onLockHero: (name: string) => void;
@@ -17,22 +18,37 @@ interface HeroGridProps {
 const LANE_KEYS = Object.keys(LANE_SHORT);
 
 export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function HeroGrid(
-  { heroes, unavailableHeroes, recommendedRanks, currentStep, isHeroesLoading, onLockHero },
+  { heroes, unavailableHeroes, recommendedRanks, missingAllyLanes, currentStep, isHeroesLoading, onLockHero },
   searchRef,
 ) {
   const [query, setQuery] = useState("");
   const [role, setRole] = useState<RoleType | null>(null);
   const [lane, setLane] = useState<string | null>(null);
+  const [sortMode, setSortMode] = useState<"ai" | "az">("ai");
+
+  const isBan = currentStep?.action === "ban";
+  const missing = useMemo(() => {
+    const keys = isBan ? new Set<string>() : missingLaneKeys(missingAllyLanes);
+    return keys.size >= 5 ? new Set<string>() : keys;
+  }, [isBan, missingAllyLanes]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
+    // AI sort: available first, then AI rank, then heroes filling a missing lane, then name
+    const score = (h: Hero) => {
+      if (unavailableHeroes.has(h.name)) return 3000;
+      const rank = recommendedRanks.get(h.name);
+      if (rank) return rank;
+      return missing.has(laneKey(h.lane)) ? 1000 : 2000;
+    };
     return heroes
       .filter((h) => (!q || matchesHeroQuery(h.name, q)) && (!role || h.role === role))
       .filter((h) => !lane || laneKey(h.lane) === lane)
-      .sort((a, b) => displayName(a.name).localeCompare(displayName(b.name)));
-  }, [heroes, query, role, lane]);
-
-  const isBan = currentStep?.action === "ban";
+      .sort(
+        (a, b) =>
+          (sortMode === "ai" ? score(a) - score(b) : 0) || displayName(a.name).localeCompare(displayName(b.name)),
+      );
+  }, [heroes, query, role, lane, sortMode, unavailableHeroes, recommendedRanks, missing]);
   const chip = (active: boolean) =>
     `h-7 shrink-0 border px-2.5 font-display text-[11px] font-semibold tracking-wide transition-colors ${
       active ? "border-gold/60 bg-gold/10 text-gold" : "border-line text-muted hover:border-line-strong hover:text-ink"
@@ -82,6 +98,15 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
               </kbd>
             )}
           </label>
+          <button
+            type="button"
+            onClick={() => setSortMode(sortMode === "ai" ? "az" : "ai")}
+            title={sortMode === "ai" ? "เรียงตามคำแนะนำ AI และเลนที่ขาด" : "เรียงตามชื่อ"}
+            className="flex h-9 shrink-0 items-center gap-1.5 border border-line-strong px-2.5 font-display text-[11px] font-semibold tracking-wide text-ink transition-colors hover:border-gold/60 hover:text-gold"
+          >
+            {sortMode === "ai" ? <Sparkles className="h-3.5 w-3.5 text-gold" /> : <ArrowDownAZ className="h-3.5 w-3.5" />}
+            {sortMode === "ai" ? "AI" : "A–Z"}
+          </button>
           <span className="hidden font-mono text-xs text-dim sm:inline">
             {filtered.length}/{heroes.length}
           </span>
@@ -122,6 +147,7 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
         {filtered.map((hero) => {
           const taken = unavailableHeroes.has(hero.name);
           const rank = recommendedRanks.get(hero.name);
+          const fillsLane = !taken && missing.has(laneKey(hero.lane));
           const disabled = taken || !currentStep;
           return (
             <button
@@ -134,8 +160,10 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
                 taken
                   ? "border-line opacity-25 grayscale"
                   : rank
-                    ? "border-gold/50 hover:border-gold"
-                    : "border-line hover:border-muted"
+                    ? "border-gold/70 ring-1 ring-gold/40 hover:border-gold"
+                    : fillsLane
+                      ? "border-good/40 hover:border-good"
+                      : "border-line hover:border-muted"
               } ${disabled ? "cursor-not-allowed" : "hover:-translate-y-0.5"}`}
             >
               <HeroPortrait
@@ -148,7 +176,9 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
                 <span className="truncate font-display text-[11px] font-bold leading-tight tracking-wide">
                   {displayName(hero.name)}
                 </span>
-                <span className="hidden shrink-0 font-mono text-[9px] font-bold text-muted xl:inline">
+                <span
+                  className={`hidden shrink-0 font-mono text-[9px] font-bold xl:inline ${fillsLane ? "text-good" : "text-muted"}`}
+                >
                   {LANE_SHORT[laneKey(hero.lane)]?.en}
                 </span>
               </div>

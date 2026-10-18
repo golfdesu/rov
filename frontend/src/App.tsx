@@ -42,7 +42,7 @@ export function App() {
   );
 
   const recommendedRanks = useMemo(
-    () => new Map(recommendations.map((r) => [r.hero_name, r.rank])),
+    () => new Map(recommendations.slice(0, 5).map((r) => [r.hero_name, r.rank])),
     [recommendations],
   );
 
@@ -114,6 +114,7 @@ export function App() {
               heroes={heroes}
               unavailableHeroes={unavailableHeroes}
               recommendedRanks={recommendedRanks}
+              missingAllyLanes={missingAllyLanes}
               currentStep={currentStep}
               isHeroesLoading={isHeroesLoading}
               onLockHero={lockHero}

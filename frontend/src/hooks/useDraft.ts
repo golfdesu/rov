@@ -7,6 +7,10 @@ import {
   type Hero,
   type HeroRecommendation,
 } from "../types/draft";
+import { prioritizeMissingLanes } from "../utils/draft";
+
+// Fetch a wider candidate pool so lane-filling heroes can be promoted into the top 5
+const CANDIDATE_POOL = 20;
 
 export function useDraft() {
   const [heroes, setHeroes] = useState<Hero[]>([]);
@@ -178,7 +182,7 @@ export function useDraft() {
           ally_bans: isBlue ? bBans : rBans,
           enemy_bans: isBlue ? rBans : bBans,
           global_bans: globalBans,
-          top_k: 5,
+          top_k: CANDIDATE_POOL,
           use_lookahead: lookahead,
           lookahead_depth: 2,
         };
@@ -195,10 +199,13 @@ export function useDraft() {
         }
 
         const data: DraftPredictionResponse = await res.json();
-        setRecommendations(data.recommendations);
-        setMissingAllyLanes(data.missing_ally_lanes || []);
+        const missing = data.missing_ally_lanes || [];
+        const ranked = step.action === "pick" ? prioritizeMissingLanes(data.recommendations, missing) : data.recommendations;
+        setRecommendations(ranked);
+        setMissingAllyLanes(missing);
 
-        if (data.recommendations && data.recommendations.length > 0) {
+        if (ranked.length > 0) {
+          // Win estimate uses the model's own top choice, not the lane-adjusted one
           const top = data.recommendations[0];
           const recWin = top.lookahead_win_rate_pct ?? top.predicted_win_rate_pct;
           // Calculate Blue Win Rate: if Blue turn, recWin is Blue's; if Red turn, Blue is 100 - recWin

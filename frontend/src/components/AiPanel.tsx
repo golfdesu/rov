@@ -1,6 +1,6 @@
 import { CornerDownLeft, Loader2, Sparkles, Trophy } from "lucide-react";
 import type { DraftStep, Hero, HeroRecommendation } from "../types/draft";
-import { LANE_SHORT, laneKey } from "../utils/draft";
+import { LANE_SHORT, laneKey, missingLaneKeys } from "../utils/draft";
 import { displayName } from "../utils/heroNames";
 import { HeroPortrait } from "./HeroPortrait";
 
@@ -66,7 +66,9 @@ export function AiPanel({
 
   const isBan = currentStep.action === "ban";
   const sideText = currentStep.side === "blue" ? "text-blue" : "text-red";
-  const maxProb = Math.max(...recommendations.map((r) => r.probability_pct), 1);
+  const shown = recommendations.slice(0, 5);
+  const maxProb = Math.max(...shown.map((r) => r.probability_pct), 1);
+  const missing = isBan ? new Set<string>() : missingLaneKeys(missingAllyLanes);
 
   return (
     <section className="flex flex-col border border-line bg-panel clip-chamfer">
@@ -88,13 +90,13 @@ export function AiPanel({
       {/* Missing lanes */}
       {!isBan && missingAllyLanes.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5 border-b border-line px-4 py-2">
-          <span className="text-[11px] text-muted">ยังขาดเลน</span>
+          <span className="text-[11px] font-semibold text-good">ยังขาดเลน</span>
           {missingAllyLanes.map((lane) => {
             const k = laneKey(lane);
             return (
               <span
                 key={lane}
-                className="border border-line-strong bg-panel-2 px-1.5 py-0.5 font-mono text-[10px] font-bold text-ink"
+                className="border border-good/50 bg-good/10 px-1.5 py-0.5 font-mono text-[10px] font-bold text-good"
               >
                 {LANE_SHORT[k]?.en ?? k}
                 <span className="ml-1 font-sans font-normal text-muted">{LANE_SHORT[k]?.th}</span>
@@ -106,17 +108,18 @@ export function AiPanel({
 
       {/* Recommendation list */}
       <ol className={`divide-y divide-line transition-opacity ${isLoading ? "opacity-50" : ""}`}>
-        {recommendations.length === 0 &&
+        {shown.length === 0 &&
           Array.from({ length: 5 }).map((_, i) => (
             <li key={i} className="flex h-[60px] items-center gap-3 px-4">
               <div className="h-9 w-16 animate-pulse bg-panel-2" />
               <div className="h-3 w-32 animate-pulse bg-panel-2" />
             </li>
           ))}
-        {recommendations.map((rec, idx) => {
+        {shown.map((rec, idx) => {
           const hero = heroMap.get(rec.hero_name);
           const win = rec.lookahead_win_rate_pct ?? rec.predicted_win_rate_pct;
           const lane = laneKey(rec.primary_lane);
+          const fillsLane = missing.size < 5 && missing.has(lane);
           return (
             <li key={rec.hero_name}>
               <button
@@ -136,7 +139,11 @@ export function AiPanel({
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline gap-2">
                     <span className="truncate font-display text-[15px] font-bold tracking-wide">{displayName(rec.hero_name)}</span>
-                    <span className="shrink-0 font-mono text-[10px] font-bold text-muted">
+                    <span
+                      className={`shrink-0 font-mono text-[10px] font-bold ${fillsLane ? "border border-good/50 bg-good/10 px-1 text-good" : "text-muted"}`}
+                      title={fillsLane ? `เติมเลนที่ยังขาด: ${LANE_SHORT[lane]?.th ?? lane}` : undefined}
+                    >
+                      {fillsLane && "+ "}
                       {LANE_SHORT[lane]?.en ?? lane}
                     </span>
                     <span className="hidden shrink-0 text-[11px] text-dim sm:inline">{rec.primary_role}</span>

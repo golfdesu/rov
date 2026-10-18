@@ -1,4 +1,4 @@
-import { CANONICAL_DRAFT_STEPS, type RoleType } from "../types/draft";
+import { CANONICAL_DRAFT_STEPS, type HeroRecommendation, type RoleType } from "../types/draft";
 
 export interface DraftState {
   bluePicks: string[];
@@ -44,3 +44,20 @@ export const TIER_STYLE: Record<string, string> = {
   B: "text-muted border-line-strong bg-panel-2",
   C: "text-dim border-line bg-panel",
 };
+
+/** Lane keys the acting team still needs, e.g. ["Dragon_Lane", "Roam"]. */
+export function missingLaneKeys(missingAllyLanes: string[]): Set<string> {
+  return new Set(missingAllyLanes.map(laneKey));
+}
+
+/**
+ * Moves heroes whose main pro lane fills a missing ally lane ahead of the rest, keeping the
+ * model's order inside each group. No-op when every lane is still open (start of draft).
+ */
+export function prioritizeMissingLanes(recs: HeroRecommendation[], missingAllyLanes: string[]): HeroRecommendation[] {
+  const missing = missingLaneKeys(missingAllyLanes);
+  if (missing.size === 0 || missing.size >= 5) return recs;
+  const fits = recs.filter((r) => missing.has(laneKey(r.primary_lane)));
+  const rest = recs.filter((r) => !missing.has(laneKey(r.primary_lane)));
+  return [...fits, ...rest].map((r, i) => ({ ...r, rank: i + 1 }));
+}
