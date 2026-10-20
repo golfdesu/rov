@@ -276,3 +276,30 @@ def test_latest_patch_alignments():
     assert "Turf Dominance" in ench_names
     assert "Vital Aid" in ench_names
     assert len(ench_data["enchantments"]) == 33
+
+
+def test_true_pick_order_matches_liquipedia():
+    path = config.paths.data_dir / "true_pick_order.json"
+    assert path.exists()
+    with open(path, "r", encoding="utf-8") as f:
+        true_games = json.load(f)["games"]
+    with open(config.paths.matches_json_path, "r", encoding="utf-8") as f:
+        matches = {(g["series_id"], g["game_number"]): g for g in json.load(f)}
+
+    assert len(true_games) >= 62
+    seen = set()
+    for t in true_games:
+        key = (t["series_id"], t["game_number"])
+        assert key not in seen, f"Duplicate true-order game: {key}"
+        seen.add(key)
+        assert key in matches, f"True-order game not in matches_draft_full.json: {key}"
+        g = matches[key]
+        assert (t["blue_team"], t["red_team"]) == (g["blue_team"], g["red_team"]), key
+        assert len(t["blue_picks"]) == 5 and len(t["red_picks"]) == 5, key
+        assert sorted(t["blue_picks"]) == sorted(g["blue_picks"]), f"Blue pick set mismatch: {key}"
+        assert sorted(t["red_picks"]) == sorted(g["red_picks"]), f"Red pick set mismatch: {key}"
+        assert t["source"] in {"screenshot", "manual"}, key
+        if t["source"] == "screenshot":
+            assert (config.paths.data_dir / "draft_screenshots" / t["screenshot"]).exists() or not (
+                config.paths.data_dir / "draft_screenshots"
+            ).exists(), f"Missing screenshot for {key}"

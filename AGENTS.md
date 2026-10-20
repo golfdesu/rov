@@ -66,7 +66,9 @@ Every AI agent (including fast models such as `3.8flash`) MUST strictly obey the
 
 11. **Reading True Ban/Pick Order from Draft Screenshots (`data/draft_screenshots/`)**:
     - Screenshots are captured at the moment the LAST hero is locked, before players swap heroes into lanes. The on-screen slot order IS the true chronological order. Never treat them as in-game HUD / lane order.
-    - Filename: `<year>_d<day>_m<match>_g<game>_<season>_<league>_<teamA>_vs_<teamB>.png`, e.g. `2026_d1_m1_g1_win_rpl_kog_vs_bru.png` = RPL 2026 Winter, day 1, match 1, game 1.
+    - Layout: `data/draft_screenshots/week<N>/<year>_w<week>_d<day>_m<match>_g<game>_<season>_<league>_<teamA>_vs_<teamB>.png`, e.g. `week1/2026_w1_d1_m1_g1_win_rpl_kog_vs_bru.png` = RPL 2026 Winter, week 1, day 1, match 1, game 1. Team codes are lowercase (`kog`, `bru`, `gjc`, `hd`, `ten`, `fs`, `bac`, `ea`, `slx`).
+    - Filenames are only a hint. Identify each game by its 10 picked heroes against `data/matches_draft_full.json` (every game's 10-hero set is unique) plus the on-screen title. Unnamed captures (e.g. `Screenshot <date> <time>.png`) must be identified this way, then renamed and moved into the right `week<N>/` folder.
+    - Store results in `data/true_pick_order.json` (`series_id` + `game_number`, `blue_picks`/`red_picks` in true order, `source` = `screenshot`/`manual`, `screenshot` = path relative to `data/draft_screenshots/`). Liquipedia ban order is already chronological; do not "fix" it from the mirrored right side.
     - **Left side (first pick / blue)**: picks and bans read left -> right.
     - **Right side (second pick / red)**: picks and bans read right -> left (mirrored).
     - Teams swap sides between games. Find blue/red per game in `data/matches_draft_full.json` by `series_id` + `game_number`, never assume from the filename.

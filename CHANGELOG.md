@@ -27,6 +27,32 @@
 
 ---
 
+## 📅 2026-10-20 (UTC+7) — บันทึกลำดับ pick จริง 62 เกม (RPL 2026 Winter week 1–2) ลง `data/true_pick_order.json`
+**Agent:** Claude Code (Opus 5.5)
+
+### ✅ สิ่งที่ทำ
+- อ่านภาพ draft 61 เกมใน `data/draft_screenshots/` (ตามกฎข้อ 11) + 1 เกมที่เจ้าของพิมพ์ให้เอง (`S613` g3 กราฟิกถ่ายทอดเสีย) รวม 62 เกม = series `S605`–`S620` ครบทุกเกม
+- สร้าง `data/true_pick_order.json`: ลำดับ pick ตามเวลาจริงของทั้งสองฝั่ง, `source` (`screenshot`/`manual`), ชื่อไฟล์ภาพ; ไม่เก็บ ban เพราะ Liquipedia `blue_bans`/`red_bans` เรียงตามเวลาอยู่แล้ว (ฝั่งขวาบนจอกลับด้านทั้ง ban และ pick)
+- เพิ่ม `test_true_pick_order_matches_liquipedia` ใน `tests/test_data_integrity.py`: ไม่มีเกมซ้ำ, ทีมฝั่งน้ำเงิน/แดงตรง, ชุดฮีโร่ตรงกับ `matches_draft_full.json`
+- วัด `order_team_picks_by_draft_logic()` เทียบลำดับจริง (61 เกมจากภาพ): ตาตรง 54.4%, เฟสตรง 79.3%, B1 ตรง 25/61, ทั้งทีมตรง 20/122
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json` (ใหม่)
+- `tests/test_data_integrity.py`
+- `AGENTS.md`
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- `ruff check --fix .` ผ่าน, `ruff format .` (จัดรูปแบบเฉพาะ test ใหม่)
+- `pytest -q`: 55 passed
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- โมเดลปัจจุบันเทรนบนลำดับ pick ที่เดา (ผิด ~46% ของฮีโร่) — แผนเทรนใหม่ (set-based loss) รอเจ้าของเก็บภาพเพิ่ม
+- ภาพแยกเป็น `data/draft_screenshots/week1/` (24) และ `week2/` (37); ภาพ week 2 day 4 จำนวน 12 ไฟล์ที่เดิมชื่อ `Screenshot 2026-10-20 HHMMSS.png` เปลี่ยนชื่อเป็น `2026_w2_d4_m<m>_g<g>_win_rpl_<a>_vs_<b>.png` แล้ว (ฟิลด์ `screenshot` ใน JSON เป็น path แบบ `week<N>/<file>`)
+- แก้กฎข้อ 11 ใน `AGENTS.md` แล้ว: โฟลเดอร์ `week<N>/`, ชื่อไฟล์ `w<week>`, รหัสทีมตัวเล็ก (`gjc` แทน `gcg`), ระบุเกมจากฮีโร่ 10 ตัว, รูปแบบ `true_pick_order.json`
+
+---
+
 ## 📅 2026-10-20 (UTC+7) — วิธีอ่านลำดับ ban/pick จริงจากภาพ draft + gitignore โฟลเดอร์ภาพ
 **Agent:** Claude Code (Opus 5.5)
 
