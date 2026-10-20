@@ -15,3 +15,26 @@ mlflow.db
 .DS_Store
 Thumbs.db
 node_modules/
+
+# Large media & video files
+*.mp4
+*.avi
+*.mov
+*.mkv
+downloads/
+data/vod_analytics/
+
+# Raw scraped screenshot dumps (all parsed data is in data/*.json)
+heroes/
+item/
+insidepower/
+
+# Temporary scratch and extraction dumps
+scripts/*.png
+scripts/*.txt
+scripts/item_crops/
+scripts/extracted_items_*.json
+scripts/test_write.py
+data/hero_patches/
+data/patches_part*.json
+data/patch_skills_batch1.json

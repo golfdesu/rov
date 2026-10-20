@@ -7,8 +7,15 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from src.combat_calculator import Build, get_engine
 from src.predictor import LANE_LABELS, RoVDraftPredictor
-from src.schemas import DraftPredictionResponse, DraftStateRequest, HealthResponse
+from src.schemas import (
+    CombatDuelRequest,
+    CombatStatsRequest,
+    DraftPredictionResponse,
+    DraftStateRequest,
+    HealthResponse,
+)
 from src.search.draft_mcts import DRAFT_STEPS
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
@@ -112,6 +119,34 @@ def get_draft_steps():
 def predict_draft(request: DraftStateRequest):
     try:
         return predictor.predict(request)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.get("/combat/catalog")
+def combat_catalog():
+    return get_engine().catalog()
+
+
+@app.post("/combat/stats")
+def combat_stats(request: CombatStatsRequest):
+    engine = get_engine()
+    try:
+        build = Build(**request.build.model_dump())
+        result = engine.build_stats(build)
+        if request.target is not None:
+            target = engine.build_stats(Build(**request.target.model_dump()))
+            result["skills"] = engine.skill_damage(result, target, build)
+            result["basic_attack"] = engine.basic_attack(result, target)
+        return result
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.post("/combat/duel")
+def combat_duel(request: CombatDuelRequest):
+    try:
+        return get_engine().duel(Build(**request.a.model_dump()), Build(**request.b.model_dump()))
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 

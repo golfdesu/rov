@@ -1,0 +1,2557 @@
+[
+  [
+    {
+      "name": "Amulet of Longevity",
+      "crops": [
+        "scripts\\item_crops\\Amulet_of_Longevity_0.png"
+      ],
+      "existing": {
+        "name": "Amulet of Longevity",
+        "slug": "amulet-of-longevity",
+        "category": "defense",
+        "tier": 3,
+        "price": 2190,
+        "stats": {
+          "armor": 150.0,
+          "magic_defense": 100.0,
+          "max_hp": 1500.0
+        },
+        "passives": [
+          "Passive - Longevity:"
+        ],
+        "passives_incomplete": true,
+        "stats_raw": [
+          "+150 Armor",
+          "+100 Magic",
+          "+1500 Max HP"
+        ],
+        "icon_url": "https://rovmeta.com/items/amulet-of-longevity.png"
+      }
+    },
+    {
+      "name": "Ancient Scriptures",
+      "crops": [
+        "scripts\\item_crops\\Ancient_Scriptures_0.png"
+      ],
+      "existing": {
+        "name": "Ancient Scriptures",
+        "slug": "ancient-scriptures",
+        "category": "magic",
+        "tier": 2,
+        "price": 540,
+        "stats": {
+          "ability_power": 80.0
+        },
+        "passives": [],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+80 AP"
+        ],
+        "icon_url": "https://rovmeta.com/items/ancient-scriptures.png"
+      }
+    },
+    {
+      "name": "Apocalypse",
+      "crops": [
+        "scripts\\item_crops\\Apocalypse_0.png"
+      ],
+      "existing": {
+        "name": "Apocalypse",
+        "slug": "apocalypse",
+        "category": "magic",
+        "tier": 3,
+        "price": 1800,
+        "stats": {
+          "ability_power": 180.0,
+          "cooldown_reduction": 10.0,
+          "movement_speed_pct": 5.0
+        },
+        "passives": [
+          "Passive - Elemental Power: After using a skill, the next normal attack in 5s deals additional"
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+180 AP",
+          "+10% CD reduction",
+          "+5% Movement Speed"
+        ],
+        "icon_url": "https://rovmeta.com/items/apocalypse.png"
+      }
+    },
+    {
+      "name": "Aquaflame - Accelerate",
+      "crops": [
+        "scripts\\item_crops\\Aquaflame_-_Accelerate_0.png",
+        "scripts\\item_crops\\Aquaflame_-_Accelerate_1.png",
+        "scripts\\item_crops\\Aquaflame_-_Accelerate_2.png",
+        "scripts\\item_crops\\Aquaflame_-_Accelerate_3.png"
+      ],
+      "existing": null
+    },
+    {
+      "name": "Aquaflame - Rejuvenate",
+      "crops": [
+        "scripts\\item_crops\\Aquaflame_-_Rejuvenate_0.png",
+        "scripts\\item_crops\\Aquaflame_-_Rejuvenate_1.png",
+        "scripts\\item_crops\\Aquaflame_-_Rejuvenate_2.png",
+        "scripts\\item_crops\\Aquaflame_-_Rejuvenate_3.png"
+      ],
+      "existing": null
+    },
+    {
+      "name": "Arcane Hammer",
+      "crops": [
+        "scripts\\item_crops\\Arcane_Hammer_0.png"
+      ],
+      "existing": {
+        "name": "Arcane Hammer",
+        "slug": "arcane-hammer",
+        "category": "attack",
+        "tier": 2,
+        "price": 740,
+        "stats": {
+          "attack_damage": 25.0,
+          "attack_speed": 15.0
+        },
+        "passives": [
+          "Unique Passive - Speed Up: Normal attacks increase movement speed by 10%."
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+25 Attack Damage",
+          "+15% Attack Speed"
+        ],
+        "icon_url": "https://rovmeta.com/items/arcane-hammer.png"
+      }
+    },
+    {
+      "name": "Arctic Orb",
+      "crops": [
+        "scripts\\item_crops\\Arctic_Orb_0.png"
+      ],
+      "existing": {
+        "name": "Arctic Orb",
+        "slug": "arctic-orb",
+        "category": "magic",
+        "tier": 3,
+        "price": 2200,
+        "stats": {
+          "ability_power": 220.0,
+          "magic_life_steal": 12.0
+        },
+        "passives": [
+          "Active"
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+220 AP",
+          "+12% Magic Lifesteal"
+        ],
+        "icon_url": "https://rovmeta.com/items/arctic-orb.png"
+      }
+    },
+    {
+      "name": "Astral Spear",
+      "crops": [
+        "scripts\\item_crops\\Astral_Spear_0.png"
+      ],
+      "existing": {
+        "name": "Astral Spear",
+        "slug": "astral-spear",
+        "category": "attack",
+        "tier": 2,
+        "price": 830,
+        "stats": {
+          "attack_damage": 50.0
+        },
+        "passives": [
+          "Unique Passive - Armor Reduction: Armor Pierce +60"
+        ],
+        "passives_incomplete": true,
+        "stats_raw": [
+          "+50 Attack Damage"
+        ],
+        "icon_url": "https://rovmeta.com/items/astral-spear.png"
+      }
+    },
+    {
+      "name": "Belt of Clarity",
+      "crops": [
+        "scripts\\item_crops\\Belt_of_Clarity_0.png"
+      ],
+      "existing": {
+        "name": "Belt of Clarity",
+        "slug": "belt-of-clarity",
+        "category": "defense",
+        "tier": 2,
+        "price": 1100,
+        "stats": {
+          "magic_defense": 110.0,
+          "max_hp": 700.0
+        },
+        "passives": [
+          "Passive - Restore: When taking damage,"
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+110 Magic Armor",
+          "+700 Max HP"
+        ],
+        "icon_url": "https://rovmeta.com/items/belt-of-clarity.png"
+      }
+    },
+    {
+      "name": "Berith's Agony",
+      "crops": [
+        "scripts\\item_crops\\Beriths_Agony_0.png"
+      ],
+      "existing": {
+        "name": "Berith's Agony",
+        "slug": "beriths-agony",
+        "category": "magic",
+        "tier": 3,
+        "price": 1800,
+        "stats": {
+          "ability_power": 140.0,
+          "cooldown_reduction": 10.0,
+          "max_hp": 600.0
+        },
+        "passives": [
+          "Passive - Tortune: Skills deal additional 80 (+2% target's current HP)"
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+140 AP",
+          "+10% CD reduction",
+          "+600 Max HP"
+        ],
+        "icon_url": "https://rovmeta.com/items/beriths-agony.png"
+      }
+    },
+    {
+      "name": "Blade of Eternity",
+      "crops": [
+        "scripts\\item_crops\\Blade_of_Eternity_0.png"
+      ],
+      "existing": {
+        "name": "Blade of Eternity",
+        "slug": "blade-of-eternity",
+        "category": "defense",
+        "tier": 3,
+        "price": 2400,
+        "stats": {
+          "armor": 120.0
+        },
+        "passives": [
+          "Passive - Nirvana: Resurrect 2s after death and return with 2000-3500 HP, CD: 150s.",
+          "Passive - Fighting Spirit: Increase damage dealt by 10%."
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+120 Armor"
+        ],
+        "icon_url": "https://rovmeta.com/items/blade-of-eternity.png"
+      }
+    },
+    {
+      "name": "Blitz Blade",
+      "crops": [
+        "scripts\\item_crops\\Blitz_Blade_0.png"
+      ],
+      "existing": {
+        "name": "Blitz Blade",
+        "slug": "blitz-blade",
+        "category": "attack",
+        "tier": 3,
+        "price": 1840,
+        "stats": {
+          "attack_speed": 35.0,
+          "movement_speed_pct": 8.0
+        },
+        "passives": [
+          "Unique Passive - Chain Lightning: Normal attacks deal 45-87 additional"
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+35% Attack Speed",
+          "+8% Movement Speed"
+        ],
+        "icon_url": "https://rovmeta.com/items/blitz-blade.png"
+      }
+    },
+    {
+      "name": "Bloodied Club",
+      "crops": [
+        "scripts\\item_crops\\Bloodied_Club_0.png"
+      ],
+      "existing": {
+        "name": "Bloodied Club",
+        "slug": "bloodied-club",
+        "category": "attack",
+        "tier": 1,
+        "price": 410,
+        "stats": {
+          "attack_damage": 10.0,
+          "life_steal": 8.0
+        },
+        "passives": [],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+10 Attack Damage",
+          "+8% Life Steal"
+        ],
+        "icon_url": "https://rovmeta.com/items/bloodied-club.png"
+      }
+    },
+    {
+      "name": "Bloodthirsty Blade",
+      "crops": [
+        "scripts\\item_crops\\Bloodthirsty_Blade_0.png"
+      ],
+      "existing": null
+    },
+    {
+      "name": "Boomstick",
+      "crops": [
+        "scripts\\item_crops\\Boomstick_0.png"
+      ],
+      "existing": {
+        "name": "Boomstick",
+        "slug": "boomstick",
+        "category": "magic",
+        "tier": 3,
+        "price": 1800,
+        "stats": {
+          "ability_power": 200.0,
+          "movement_speed_pct": 5.0
+        },
+        "passives": [
+          "Passive - Explosion: Target who is hit by skills takes 120"
+        ],
+        "passives_incomplete": true,
+        "stats_raw": [
+          "+200 AP",
+          "+5% Movement Speed"
+        ],
+        "icon_url": "https://rovmeta.com/items/boomstick.png"
+      }
+    },
+    {
+      "name": "Boots of Speed",
+      "crops": [
+        "scripts\\item_crops\\Boots_of_Speed_0.png"
+      ],
+      "existing": {
+        "name": "Boots of Speed",
+        "slug": "boots-of-speed",
+        "category": "movement",
+        "tier": 1,
+        "price": 250,
+        "stats": {
+          "movement_speed": 30.0
+        },
+        "passives": [],
+        "passives_incomplete": false,
+        "stats_raw": [],
+        "icon_url": "https://rovmeta.com/items/boots-of-speed.png"
+      }
+    },
+    {
+      "name": "Bow of Slaughter",
+      "crops": [
+        "scripts\\item_crops\\Bow_of_Slaughter_0.png"
+      ],
+      "existing": {
+        "name": "Bow of Slaughter",
+        "slug": "bow-of-slaughter",
+        "category": "attack",
+        "tier": 3,
+        "price": 2250,
+        "stats": {
+          "attack_damage": 90.0,
+          "critical_chance": 10.0,
+          "life_steal": 10.0
+        },
+        "passives": [
+          "Unique Active -"
+        ],
+        "passives_incomplete": true,
+        "stats_raw": [
+          "+90 Attack Damage",
+          "+10% Critical Chance",
+          "+10% Lifesteal"
+        ],
+        "icon_url": "https://rovmeta.com/items/bow-of-slaughter.png"
+      }
+    },
+    {
+      "name": "Broken Spears",
+      "crops": [
+        "scripts\\item_crops\\Broken_Spears_0.png"
+      ],
+      "existing": null
+    },
+    {
+      "name": "Carano's Pledge",
+      "crops": [
+        "scripts\\item_crops\\Caranos_Pledge_0.png"
+      ],
+      "existing": null
+    }
+  ],
+  [
+    {
+      "name": "Chain Hammer",
+      "crops": [
+        "scripts\\item_crops\\Chain_Hammer_0.png"
+      ],
+      "existing": {
+        "name": "Chain Hammer",
+        "slug": "chain-hammer",
+        "category": "attack",
+        "tier": 1,
+        "price": 450,
+        "stats": {
+          "attack_damage": 40.0
+        },
+        "passives": [],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+40 Attack Damage"
+        ],
+        "icon_url": "https://rovmeta.com/items/chain-hammer.png"
+      }
+    },
+    {
+      "name": "Chaos Bow",
+      "crops": [
+        "scripts\\item_crops\\Chaos_Bow_0.png"
+      ],
+      "existing": {
+        "name": "Chaos Bow",
+        "slug": "chaos-bow",
+        "category": "attack",
+        "tier": 2,
+        "price": 1100,
+        "stats": {
+          "attack_damage": 40.0,
+          "attack_speed": 10.0
+        },
+        "passives": [
+          "Unique Passive - Stab: Increases armor penetration by 10% (doubled for ranged heroes)"
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+40 Attack Damage",
+          "+10% Attack Speed"
+        ],
+        "icon_url": "https://rovmeta.com/items/chaos-bow.png"
+      }
+    },
+    {
+      "name": "Claves Sancti",
+      "crops": [
+        "scripts\\item_crops\\Claves_Sancti_0.png"
+      ],
+      "existing": {
+        "name": "Claves Sancti",
+        "slug": "claves-sancti",
+        "category": "attack",
+        "tier": 3,
+        "price": 2120,
+        "stats": {
+          "attack_damage": 100.0
+        },
+        "passives": [
+          "Unique Passive - Gift of the Swift: Increases hero's movement speed by 3-45 for 1.5s after landing a critical hit. Only usable by ranged heroes.",
+          "Unique Passive: +25% Critical Chance",
+          "Unique Passive: +40% Critical Damage"
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+100 Attack Damage"
+        ],
+        "icon_url": "https://rovmeta.com/items/claves-sancti.png"
+      }
+    },
+    {
+      "name": "Cleaving Claymore",
+      "crops": [
+        "scripts\\item_crops\\Cleaving_Claymore_0.png"
+      ],
+      "existing": {
+        "name": "Cleaving Claymore",
+        "slug": "cleaving-claymore",
+        "category": "attack",
+        "tier": 2,
+        "price": 910,
+        "stats": {
+          "attack_damage": 80.0
+        },
+        "passives": [],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+80 Attack Damage"
+        ],
+        "icon_url": "https://rovmeta.com/items/cleaving-claymore.png"
+      }
+    },
+    {
+      "name": "Curse of Death",
+      "crops": [
+        "scripts\\item_crops\\Curse_of_Death_0.png"
+      ],
+      "existing": null
+    },
+    {
+      "name": "Dagger",
+      "crops": [
+        "scripts\\item_crops\\Dagger_0.png"
+      ],
+      "existing": {
+        "name": "Dagger",
+        "slug": "dagger",
+        "category": "attack",
+        "tier": 1,
+        "price": 290,
+        "stats": {
+          "attack_speed": 10.0
+        },
+        "passives": [],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+10% Attack Speed"
+        ],
+        "icon_url": "https://rovmeta.com/items/dagger.png"
+      }
+    },
+    {
+      "name": "Death Sickle",
+      "crops": [
+        "scripts\\item_crops\\Death_Sickle_0.png"
+      ],
+      "existing": {
+        "name": "Death Sickle",
+        "slug": "death-sickle",
+        "category": "attack",
+        "tier": 3,
+        "price": 2000,
+        "stats": {
+          "attack_damage": 75.0,
+          "attack_speed": 15.0,
+          "max_hp": 500.0
+        },
+        "passives": [
+          "Unique Passive - Insatiable: Gains invincibility and temporary damage immunity and increases attack and movement speed by 25% for 1.25 seconds. (Cooldown: 120 seconds)"
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+75 Attack Damage",
+          "+15% Attack Speed",
+          "+500 Max HP"
+        ],
+        "icon_url": "https://rovmeta.com/items/death-sickle.png",
+        "patch": "Beta 55 (1.25s from EXP server 4 Sep 2026; TW 24 Sep notice fixes the upgraded Death Sickle duration on live)",
+        "sources": [
+          "https://www.rov.in.th/patch-notes/expserver260904",
+          "https://moba.garena.tw/news/show/5721"
+        ]
+      }
+    },
+    {
+      "name": "Earth Gem",
+      "crops": [
+        "scripts\\item_crops\\Earth_Gem_0.png",
+        "scripts\\item_crops\\Earth_Gem_1.png",
+        "scripts\\item_crops\\Earth_Gem_2.png"
+      ],
+      "existing": {
+        "name": "Earth Gem",
+        "slug": "earth-gem",
+        "category": "support",
+        "tier": 2,
+        "price": 900,
+        "stats": {
+          "cooldown_reduction": 5.0,
+          "max_hp": 400.0,
+          "movement_speed_pct": 5.0
+        },
+        "passives": [
+          "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 40 Max HP.",
+          "Passive - Reward: +200~410 max HP.",
+          "Passive - Up-and-Coming: Every 3s, gain 6 EXP and give 6 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 450 gold, and pull in one coin from anywhere on the map (cooldown 15s)."
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+400 Max HP",
+          "+5% CD reduction",
+          "+5% Movement Speed"
+        ],
+        "icon_url": "https://rovmeta.com/items/earth-gem.png",
+        "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
+        "sources": [
+          "https://moba.garena.tw/news/show/5423",
+          "https://moba.garena.tw/news/show/5528",
+          "https://moba.garena.tw/news/show/5622"
+        ]
+      }
+    },
+    {
+      "name": "Eclipsing Bow",
+      "crops": [
+        "scripts\\item_crops\\Eclipsing_Bow_0.png"
+      ],
+      "existing": {
+        "name": "Eclipsing Bow",
+        "slug": "eclipsing-bow",
+        "category": "attack",
+        "tier": 3,
+        "price": 2000,
+        "stats": {
+          "attack_speed": 30.0,
+          "critical_chance": 10.0,
+          "movement_speed_pct": 5.0
+        },
+        "passives": [
+          "Passive - Aiming: Normal attack deals 50 additional",
+          "Active"
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+30% Attack Speed",
+          "+10% Critical Chance",
+          "+5% Movement Speed"
+        ],
+        "icon_url": "https://rovmeta.com/items/eclipsing-bow.png"
+      }
+    },
+    {
+      "name": "Elemental Stone",
+      "crops": [
+        "scripts\\item_crops\\Elemental_Stone_0.png"
+      ],
+      "existing": null
+    },
+    {
+      "name": "Enchanted Kicks",
+      "crops": [
+        "scripts\\item_crops\\Enchanted_Kicks_0.png"
+      ],
+      "existing": {
+        "name": "Enchanted Kicks",
+        "slug": "enchanted-kicks",
+        "category": "movement",
+        "tier": 2,
+        "price": 700,
+        "stats": {
+          "movement_speed": 60.0
+        },
+        "passives": [
+          "Passive: +100 Magic Pierce."
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [],
+        "icon_url": "https://rovmeta.com/items/enchanted-kicks.png"
+      }
+    },
+    {
+      "name": "Enchanted Scroll",
+      "crops": [
+        "scripts\\item_crops\\Enchanted_Scroll_0.png"
+      ],
+      "existing": {
+        "name": "Enchanted Scroll",
+        "slug": "enchanted-scroll",
+        "category": "magic",
+        "tier": 2,
+        "price": 820,
+        "stats": {
+          "ability_power": 120.0
+        },
+        "passives": [],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+120 AP"
+        ],
+        "icon_url": "https://rovmeta.com/items/enchanted-scroll.png"
+      }
+    },
+    {
+      "name": "Evil Secrets",
+      "crops": [
+        "scripts\\item_crops\\Evil_Secrets_0.png"
+      ],
+      "existing": {
+        "name": "Evil Secrets",
+        "slug": "evil-secrets",
+        "category": "magic",
+        "tier": 3,
+        "price": 1980,
+        "stats": {
+          "ability_power": 180.0
+        },
+        "passives": [
+          "Passive - Extermination: +150 Magic Pierce."
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+180 AP"
+        ],
+        "icon_url": "https://rovmeta.com/items/evil-secrets.png"
+      }
+    },
+    {
+      "name": "Fafnir's Talon",
+      "crops": [
+        "scripts\\item_crops\\Fafnirs_Talon_0.png"
+      ],
+      "existing": {
+        "name": "Fafnir's Talon",
+        "slug": "fafnirs-talon",
+        "category": "attack",
+        "tier": 3,
+        "price": 2040,
+        "stats": {
+          "attack_damage": 60.0,
+          "attack_speed": 30.0,
+          "life_steal": 10.0
+        },
+        "passives": [
+          "Unique Passive - Dragon's Breath: Normal attacks deal additional  physical damage  equal to 8% of target's current HP (max damage dealt to wildings: 80)."
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+60 Attack Damage",
+          "+30% Attack Speed",
+          "+10% Lifesteal"
+        ],
+        "icon_url": "https://rovmeta.com/items/fafnirs-talon.png"
+      }
+    },
+    {
+      "name": "Fenrir's Tooth",
+      "crops": [
+        "scripts\\item_crops\\Fenrirs_Tooth_0.png"
+      ],
+      "existing": {
+        "name": "Fenrir's Tooth",
+        "slug": "fenrirs-tooth",
+        "category": "attack",
+        "tier": 3,
+        "price": 2800,
+        "stats": {
+          "attack_damage": 180.0,
+          "cooldown_reduction": 5.0
+        },
+        "passives": [
+          "Unique Passive - Fenrir's Tooth: Deals an additional 30% damage when the target's HP is below 50%."
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+180 Attack Damage",
+          "+5% Cooldown Reduction"
+        ],
+        "icon_url": "https://rovmeta.com/items/fenrirs-tooth.png"
+      }
+    },
+    {
+      "name": "Fire Gem",
+      "crops": [
+        "scripts\\item_crops\\Fire_Gem_0.png",
+        "scripts\\item_crops\\Fire_Gem_1.png",
+        "scripts\\item_crops\\Fire_Gem_2.png"
+      ],
+      "existing": {
+        "name": "Fire Gem",
+        "slug": "fire-gem",
+        "category": "support",
+        "tier": 2,
+        "price": 900,
+        "stats": {
+          "attack_damage": 20.0,
+          "cooldown_reduction": 5.0,
+          "movement_speed_pct": 5.0
+        },
+        "passives": [
+          "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 2 AD.",
+          "Passive - Reward: +200~410 max HP.",
+          "Passive - Up-and-Coming: Every 3s, gain 6 EXP and give 6 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 450 gold, and pull in one coin from anywhere on the map (cooldown 15s)."
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+20 AD",
+          "+5% CD reduction",
+          "+5% Movement Speed"
+        ],
+        "icon_url": "https://rovmeta.com/items/fire-gem.png",
+        "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
+        "sources": [
+          "https://moba.garena.tw/news/show/5423",
+          "https://moba.garena.tw/news/show/5528",
+          "https://moba.garena.tw/news/show/5622"
+        ]
+      }
+    },
+    {
+      "name": "Firestorm Bow",
+      "crops": [
+        "scripts\\item_crops\\Firestorm_Bow_0.png",
+        "scripts\\item_crops\\Firestorm_Bow_1.png",
+        "scripts\\item_crops\\Firestorm_Bow_2.png"
+      ],
+      "existing": null
+    },
+    {
+      "name": "Flashy Boots",
+      "crops": [
+        "scripts\\item_crops\\Flashy_Boots_0.png"
+      ],
+      "existing": {
+        "name": "Flashy Boots",
+        "slug": "flashy-boots",
+        "category": "movement",
+        "tier": 2,
+        "price": 700,
+        "stats": {
+          "cooldown_reduction": 15.0,
+          "movement_speed": 60.0
+        },
+        "passives": [
+          "Passive: Reduce additional 15% CD of Talents."
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+15% CD Reduction"
+        ],
+        "icon_url": "https://rovmeta.com/items/flashy-boots.png"
+      }
+    },
+    {
+      "name": "Frost Cape",
+      "crops": [
+        "scripts\\item_crops\\Frost_Cape_0.png"
+      ],
+      "existing": {
+        "name": "Frost Cape",
+        "slug": "frost-cape",
+        "category": "defense",
+        "tier": 3,
+        "price": 1970,
+        "stats": {
+          "armor": 200.0,
+          "cooldown_reduction": 10.0,
+          "max_hp": 800.0
+        },
+        "passives": [
+          "Passive - Elemental Power: After using a skill, the next normal attack"
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+10% CD reduction",
+          "+200 Armor",
+          "+800 Max HP"
+        ],
+        "icon_url": "https://rovmeta.com/items/frost-cape.png"
+      }
+    }
+  ],
+  [
+    {
+      "name": "Frost Hammer",
+      "crops": [
+        "scripts\\item_crops\\Frost_Hammer_0.png"
+      ],
+      "existing": {
+        "name": "Frost Hammer",
+        "slug": "frost-hammer",
+        "category": "attack",
+        "tier": 3,
+        "price": null,
+        "stats": {
+          "attack_damage": 60.0,
+          "attack_speed": 30.0,
+          "max_hp": 900.0
+        },
+        "passives": [
+          "Unique Passive - Frostbite: Normal attacks and skills reduce movement speed by 5%-10% for 1.5 seconds. Stacks up to 2 times.",
+          "Unique Passive - Numbling Cold: Normal attacks and skills deal an additional 140-280"
+        ],
+        "passives_incomplete": true,
+        "stats_raw": [
+          "+ 60 Attack Damage",
+          "+ 30% Attack Speed",
+          "+ 900 Max HP"
+        ],
+        "icon_url": "https://rovmeta.com/items/frost-hammer.png"
+      }
+    },
+    {
+      "name": "Frostguard",
+      "crops": [
+        "scripts\\item_crops\\Frostguard_0.png"
+      ],
+      "existing": null
+    },
+    {
+      "name": "Frosty's Revenge",
+      "crops": [
+        "scripts\\item_crops\\Frostys_Revenge_0.png"
+      ],
+      "existing": {
+        "name": "Frosty's Revenge",
+        "slug": "frostys-revenge",
+        "category": "magic",
+        "tier": 3,
+        "price": 2020,
+        "stats": {
+          "ability_power": 140.0,
+          "max_hp": 850.0,
+          "movement_speed_pct": 5.0
+        },
+        "passives": [
+          "Passive - Frozen Heart: Abilities that deal damage will also"
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+140 AP",
+          "+850 Max HP",
+          "+5% Movement Speed"
+        ],
+        "icon_url": "https://rovmeta.com/items/frostys-revenge.png"
+      }
+    },
+    {
+      "name": "Gaia's Standard",
+      "crops": [
+        "scripts\\item_crops\\Gaias_Standard_0.png"
+      ],
+      "existing": {
+        "name": "Gaia's Standard",
+        "slug": "gaias-standard",
+        "category": "defense",
+        "tier": 3,
+        "price": 2180,
+        "stats": {
+          "magic_defense": 200.0,
+          "max_hp": 1200.0
+        },
+        "passives": [
+          "Passive - Restore: When taking damage,",
+          "Unique Passive: For each your 10% lost HP, your healing effect is increased by 5%"
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+200 Magic Armor",
+          "+1200 Max HP"
+        ],
+        "icon_url": "https://rovmeta.com/items/gaias-standard.png"
+      }
+    },
+    {
+      "name": "Gilded Greaves",
+      "crops": [
+        "scripts\\item_crops\\Gilded_Greaves_0.png"
+      ],
+      "existing": {
+        "name": "Gilded Greaves",
+        "slug": "gilded-greaves",
+        "category": "movement",
+        "tier": 2,
+        "price": 700,
+        "stats": {
+          "magic_defense": 90.0,
+          "movement_speed": 60.0
+        },
+        "passives": [
+          "Passive: +35%"
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+90 Magic Armor"
+        ],
+        "icon_url": "https://rovmeta.com/items/gilded-greaves.png"
+      }
+    },
+    {
+      "name": "Gladiator's Gauntlets",
+      "crops": [
+        "scripts\\item_crops\\Gladiators_Gauntlets_0.png"
+      ],
+      "existing": {
+        "name": "Gladiator's Gauntlets",
+        "slug": "gladiators-gauntlets",
+        "category": "defense",
+        "tier": 1,
+        "price": 220,
+        "stats": {
+          "magic_defense": 90.0
+        },
+        "passives": [],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+90 Magic Armor"
+        ],
+        "icon_url": "https://rovmeta.com/items/gladiators-gauntlets.png"
+      }
+    },
+    {
+      "name": "Gloves",
+      "crops": [
+        "scripts\\item_crops\\Gloves_0.png"
+      ],
+      "existing": {
+        "name": "Gloves",
+        "slug": "gloves",
+        "category": "attack",
+        "tier": 1,
+        "price": 300,
+        "stats": {
+          "critical_chance": 8.0
+        },
+        "passives": [],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+8% Critical Chance"
+        ],
+        "icon_url": "https://rovmeta.com/items/gloves.png"
+      }
+    },
+    {
+      "name": "Gnoll Cleaver",
+      "crops": [
+        "scripts\\item_crops\\Gnoll_Cleaver_0.png",
+        "scripts\\item_crops\\Gnoll_Cleaver_1.png",
+        "scripts\\item_crops\\Gnoll_Cleaver_2.png"
+      ],
+      "existing": {
+        "name": "Gnoll Cleaver",
+        "slug": "gnoll-cleaver",
+        "category": "jungling",
+        "tier": 2,
+        "price": 700,
+        "stats": {
+          "max_hp": 400.0
+        },
+        "passives": [
+          "Passive - Burn: Deal 50~78",
+          "Passive - Hunter: Normal attacks / skills hitting the wildling will deal 60~172 additional true damage every 0.5s for 2s, and receive 35% more EXP from killing monsters.",
+          "Passive - Wild: Increase 25 Max HP and 0.2% CD reduction for every monster killed, max stack up to 15 times.",
+          "Smite (jungle): Stores 2 charges (45s per charge, 10s cooldown). Deals true damage and stuns monsters/minions for 1s; against heroes deals 185 (+15/level) true damage.",
+          "Passive - Modest: Damage to minions reduced by 25% for the first 4 minutes."
+        ],
+        "passives_incomplete": true,
+        "stats_raw": [
+          "+400 Max HP"
+        ],
+        "icon_url": "https://rovmeta.com/items/gnoll-cleaver.png",
+        "patch": "Full Element Assault, Apr 2026",
+        "sources": [
+          "https://moba.garena.tw/news/show/5528"
+        ]
+      }
+    },
+    {
+      "name": "Greaves of Protection",
+      "crops": [
+        "scripts\\item_crops\\Greaves_of_Protection_0.png"
+      ],
+      "existing": {
+        "name": "Greaves of Protection",
+        "slug": "greaves-of-protection",
+        "category": "defense",
+        "tier": 2,
+        "price": 900,
+        "stats": {
+          "max_hp": 1000.0
+        },
+        "passives": [],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+1000 Max HP"
+        ],
+        "icon_url": "https://rovmeta.com/items/greaves-of-protection.png"
+      }
+    },
+    {
+      "name": "Heart of Incubus",
+      "crops": [
+        "scripts\\item_crops\\Heart_of_Incubus_0.png"
+      ],
+      "existing": {
+        "name": "Heart of Incubus",
+        "slug": "heart-of-incubus",
+        "category": "defense",
+        "tier": 2,
+        "price": 720,
+        "stats": {
+          "armor": 150.0
+        },
+        "passives": [
+          "Passive - Burn: Deals 50-78"
+        ],
+        "passives_incomplete": true,
+        "stats_raw": [
+          "+150 Armor"
+        ],
+        "icon_url": "https://rovmeta.com/items/heart-of-incubus.png"
+      }
+    },
+    {
+      "name": "Hecate's Diadem",
+      "crops": [
+        "scripts\\item_crops\\Hecates_Diadem_0.png"
+      ],
+      "existing": {
+        "name": "Hecate's Diadem",
+        "slug": "hecates-diadem",
+        "category": "magic",
+        "tier": 3,
+        "price": 2400,
+        "stats": {
+          "ability_power": 240.0
+        },
+        "passives": [
+          "Passive - Warlock: +35% AP."
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+240 AP"
+        ],
+        "icon_url": "https://rovmeta.com/items/hecates-diadem.png"
+      }
+    },
+    {
+      "name": "Hercules's Madness",
+      "crops": [
+        "scripts\\item_crops\\Herculess_Madness_0.png"
+      ],
+      "existing": null
+    },
+    {
+      "name": "Hermes' Select",
+      "crops": [
+        "scripts\\item_crops\\Hermes_Select_0.png"
+      ],
+      "existing": {
+        "name": "Hermes' Select",
+        "slug": "hermes-select",
+        "category": "movement",
+        "tier": 2,
+        "price": 700,
+        "stats": {
+          "max_hp": 300.0,
+          "movement_speed": 70.0
+        },
+        "passives": [
+          "Passive - Swift:"
+        ],
+        "passives_incomplete": true,
+        "stats_raw": [
+          "+300 Max HP"
+        ],
+        "icon_url": "https://rovmeta.com/items/hermes-select.png"
+      }
+    },
+    {
+      "name": "Holy of Holies",
+      "crops": [
+        "scripts\\item_crops\\Holy_of_Holies_0.png"
+      ],
+      "existing": {
+        "name": "Holy of Holies",
+        "slug": "holy-of-holies",
+        "category": "magic",
+        "tier": 3,
+        "price": 2610,
+        "stats": {
+          "ability_power": 350.0,
+          "cooldown_reduction": 10.0
+        },
+        "passives": [
+          "Passive - Enlightenment: For every 100 Magic Power, increases damage dealt by 0.5% and decreases damage taken by 0.5%"
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+350 AP",
+          "+10% Cooldown Speed"
+        ],
+        "icon_url": "https://rovmeta.com/items/holy-of-holies.png"
+      }
+    },
+    {
+      "name": "Hunter's Knife",
+      "crops": [
+        "scripts\\item_crops\\Hunters_Knife_0.png",
+        "scripts\\item_crops\\Hunters_Knife_1.png"
+      ],
+      "existing": null
+    },
+    {
+      "name": "Ifrit's Claw",
+      "crops": [
+        "scripts\\item_crops\\Ifrits_Claw_0.png"
+      ],
+      "existing": null
+    },
+    {
+      "name": "Knight's Plate",
+      "crops": [
+        "scripts\\item_crops\\Knights_Plate_0.png"
+      ],
+      "existing": {
+        "name": "Knight's Plate",
+        "slug": "knights-plate",
+        "category": "defense",
+        "tier": 2,
+        "price": 730,
+        "stats": {
+          "armor": 210.0
+        },
+        "passives": [
+          "Passive - Spirit Bond: When taking damage, reduce the attacker's attack speed by 15%."
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+210 Armor"
+        ],
+        "icon_url": "https://rovmeta.com/items/knights-plate.png"
+      }
+    },
+    {
+      "name": "Lapis Ring",
+      "crops": [
+        "scripts\\item_crops\\Lapis_Ring_0.png"
+      ],
+      "existing": {
+        "name": "Lapis Ring",
+        "slug": "lapis-ring",
+        "category": "magic",
+        "tier": 1,
+        "price": 220,
+        "stats": {
+          "max_mana": 300.0
+        },
+        "passives": [],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+300 Max Mana"
+        ],
+        "icon_url": "https://rovmeta.com/items/lapis-ring.png"
+      }
+    },
+    {
+      "name": "Leviathan",
+      "crops": [
+        "scripts\\item_crops\\Leviathan_0.png",
+        "scripts\\item_crops\\Leviathan_1.png",
+        "scripts\\item_crops\\Leviathan_2.png"
+      ],
+      "existing": {
+        "name": "Leviathan",
+        "slug": "leviathan",
+        "category": "jungling",
+        "tier": 3,
+        "price": 2000,
+        "stats": {
+          "cooldown_reduction": 5.0,
+          "max_hp": 1200.0,
+          "movement_speed_pct": 6.0
+        },
+        "passives": [
+          "Passive - Burn: Deal (+2% self-max HP)",
+          "Passive - Wild: Increase 25 Max HP and 0.2% CD reduction for every monster killed, max stack up to 25 times.",
+          "Smite (jungle): Stores 2 charges (45s per charge, 10s cooldown). Deals true damage and stuns monsters/minions for 1s; against heroes deals 185 (+15/level) true damage.",
+          "Passive - Modest: Damage to minions reduced by 25% for the first 4 minutes."
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+5% CD reduction",
+          "+1200 Max HP",
+          "+6% Movement Speed"
+        ],
+        "icon_url": "https://rovmeta.com/items/leviathan.png",
+        "patch": "Full Element Assault, Apr 2026",
+        "sources": [
+          "https://moba.garena.tw/news/show/5528"
+        ]
+      }
+    }
+  ],
+  [
+    {
+      "name": "Light Armor",
+      "crops": [
+        "scripts\\item_crops\\Light_Armor_0.png"
+      ],
+      "existing": {
+        "name": "Light Armor",
+        "slug": "light-armor",
+        "category": "defense",
+        "tier": 1,
+        "price": 220,
+        "stats": {
+          "armor": 90.0
+        },
+        "passives": [],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+90 Armor"
+        ],
+        "icon_url": "https://rovmeta.com/items/light-armor.png"
+      }
+    },
+    {
+      "name": "Light Shield",
+      "crops": [
+        "scripts\\item_crops\\Light_Shield_0.png"
+      ],
+      "existing": {
+        "slug": "light-shield",
+        "stats_raw": [],
+        "icon_url": null,
+        "passives": [
+          "Passive - Daybreak: Damaging an enemy hero with a normal attack or skill grants a shield of 250~500 (+4% max HP) to yourself and the lowest-HP nearby ally for 3s (+50% shield with no ally nearby). Cooldown 10s melee / 12.5s ranged."
+        ],
+        "name": "Light Shield",
+        "category": "defense",
+        "tier": 3,
+        "price": null,
+        "stats": {
+          "armor": 180.0,
+          "cooldown_reduction": 10.0,
+          "max_hp": 1000.0
+        },
+        "patch": "Beta 55",
+        "sources": [
+          "https://www.rov.in.th/patch-notes/beta55",
+          "https://moba.garena.tw/news/show/5716"
+        ],
+        "passives_incomplete": false
+      }
+    },
+    {
+      "name": "Loki's Curse",
+      "crops": [
+        "scripts\\item_crops\\Lokis_Curse_0.png",
+        "scripts\\item_crops\\Lokis_Curse_1.png",
+        "scripts\\item_crops\\Lokis_Curse_2.png"
+      ],
+      "existing": {
+        "name": "Loki's Curse",
+        "slug": "lokis-curse",
+        "category": "jungling",
+        "tier": 3,
+        "price": 2000,
+        "stats": {
+          "ability_power": 150.0,
+          "cooldown_reduction": 5.0,
+          "movement_speed_pct": 7.0
+        },
+        "passives": [
+          "Passive - Elemental Power: After using a skill, the next normal attack in 5s deals additional",
+          "Passive - Wild: Gain 4 AP and 0.2 CD reduction for every monster killed, max stack up to 25 times.",
+          "Smite (jungle): Stores 2 charges (45s per charge, 10s cooldown). Deals true damage and stuns monsters/minions for 1s; against heroes deals 300 (+20/level) magic damage.",
+          "Passive - Modest: Damage to minions reduced by 25% for the first 4 minutes."
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+150 AP",
+          "+5% CD reduction",
+          "+7% Movement Speed"
+        ],
+        "icon_url": "https://rovmeta.com/items/lokis-curse.png",
+        "patch": "Full Element Assault, Apr 2026",
+        "sources": [
+          "https://moba.garena.tw/news/show/5528"
+        ]
+      }
+    },
+    {
+      "name": "Mage Robe",
+      "crops": [
+        "scripts\\item_crops\\Mage_Robe_0.png"
+      ],
+      "existing": {
+        "name": "Mage Robe",
+        "slug": "mage-robe",
+        "category": "magic",
+        "tier": 3,
+        "price": null,
+        "stats": {
+          "ability_power": 120.0,
+          "max_hp": 900.0
+        },
+        "passives": [
+          "Unique Passive - Replenishment: Grant 26-40",
+          "Passive - Magic Pierce: Gain 32-60"
+        ],
+        "passives_incomplete": true,
+        "stats_raw": [
+          "+120 AP",
+          "+900 Max HP"
+        ],
+        "icon_url": "https://rovmeta.com/items/mage-robe.jpg"
+      }
+    },
+    {
+      "name": "Magic Ring",
+      "crops": [
+        "scripts\\item_crops\\Magic_Ring_0.png"
+      ],
+      "existing": {
+        "name": "Magic Ring",
+        "slug": "magic-ring",
+        "category": "magic",
+        "tier": 1,
+        "price": 300,
+        "stats": {
+          "cooldown_reduction": 5.0
+        },
+        "passives": [],
+        "passives_incomplete": false,
+        "stats_raw": [],
+        "icon_url": "https://rovmeta.com/items/magic-ring.jpg"
+      }
+    },
+    {
+      "name": "Mail of Pain",
+      "crops": [
+        "scripts\\item_crops\\Mail_of_Pain_0.png"
+      ],
+      "existing": {
+        "name": "Mail of Pain",
+        "slug": "mail-of-pain",
+        "category": "defense",
+        "tier": 3,
+        "price": null,
+        "stats": {
+          "armor": 300.0,
+          "attack_damage": 50.0,
+          "max_hp": 700.0
+        },
+        "passives": [
+          "Unique Passive - Backfire: When taking damage, reflect 5% of it to the attacker as true damage (based on the raw damage before damage reduction; decays with distance by up to 50%).",
+          "Active - Counter-stab: Increase Backfire reflection to 25% for 3s. Cooldown 75s."
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+300 Armor",
+          "+1200 Max HP"
+        ],
+        "icon_url": "https://rovmeta.com/items/mail-of-pain.png",
+        "patch": "Beta 55 (rework)",
+        "sources": [
+          "https://www.rov.in.th/patch-notes/beta55",
+          "https://moba.garena.tw/news/show/5716"
+        ]
+      }
+    },
+    {
+      "name": "Mantle of Ra",
+      "crops": [
+        "scripts\\item_crops\\Mantle_of_Ra_0.png"
+      ],
+      "existing": {
+        "name": "Mantle of Ra",
+        "slug": "mantle-of-ra",
+        "category": "defense",
+        "tier": 3,
+        "price": 2060,
+        "stats": {
+          "armor": 225.0,
+          "hp_regen_5s": 60.0,
+          "max_hp": 1000.0
+        },
+        "passives": [
+          "Unique Passive - Burn: Deal (+2% self-max HP)",
+          "Unique Passive - Incinerate: Enemies who was dealt damage on by this item's Burn passive are reduced their healing effects by 40% within 3 seconds."
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+225 Armor",
+          "+1000 Max HP",
+          "+60 HP Regen / 5s"
+        ],
+        "icon_url": "https://rovmeta.com/items/mantle-of-ra.png"
+      }
+    },
+    {
+      "name": "Medallion of Troy",
+      "crops": [
+        "scripts\\item_crops\\Medallion_of_Troy_0.png"
+      ],
+      "existing": {
+        "name": "Medallion of Troy",
+        "slug": "medallion-of-troy",
+        "category": "defense",
+        "tier": 3,
+        "price": 2320,
+        "stats": {
+          "cooldown_reduction": 10.0,
+          "magic_defense": 200.0,
+          "max_hp": 1000.0
+        },
+        "passives": [
+          "Passive - Rispote: Gain a",
+          "Passive - Reconciliation: Gain 8-112 Magic Armor"
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+10% CD reduction",
+          "+200 Magic Armor",
+          "+1000 Max HP"
+        ],
+        "icon_url": "https://rovmeta.com/items/medallion-of-troy.png"
+      }
+    },
+    {
+      "name": "Monsters' Bane",
+      "crops": [
+        "scripts\\item_crops\\Monsters_Bane_0.png",
+        "scripts\\item_crops\\Monsters_Bane_1.png"
+      ],
+      "existing": null
+    },
+    {
+      "name": "Mother Earth - Accelerate",
+      "crops": [
+        "scripts\\item_crops\\Mother_Earth_-_Accelerate_0.png",
+        "scripts\\item_crops\\Mother_Earth_-_Accelerate_1.png",
+        "scripts\\item_crops\\Mother_Earth_-_Accelerate_2.png",
+        "scripts\\item_crops\\Mother_Earth_-_Accelerate_3.png"
+      ],
+      "existing": null
+    },
+    {
+      "name": "Mother Earth - Barrier",
+      "crops": [
+        "scripts\\item_crops\\Mother_Earth_-_Barrier_0.png",
+        "scripts\\item_crops\\Mother_Earth_-_Barrier_1.png",
+        "scripts\\item_crops\\Mother_Earth_-_Barrier_2.png",
+        "scripts\\item_crops\\Mother_Earth_-_Barrier_3.png",
+        "scripts\\item_crops\\Mother_Earth_-_Barrier_4.png"
+      ],
+      "existing": null
+    },
+    {
+      "name": "Mother Earth - Cleansing",
+      "crops": [
+        "scripts\\item_crops\\Mother_Earth_-_Cleansing_0.png",
+        "scripts\\item_crops\\Mother_Earth_-_Cleansing_1.png",
+        "scripts\\item_crops\\Mother_Earth_-_Cleansing_2.png"
+      ],
+      "existing": null
+    },
+    {
+      "name": "Mother Earth - Magic Eye",
+      "crops": [
+        "scripts\\item_crops\\Mother_Earth_-_Magic_Eye_0.png",
+        "scripts\\item_crops\\Mother_Earth_-_Magic_Eye_1.png",
+        "scripts\\item_crops\\Mother_Earth_-_Magic_Eye_2.png",
+        "scripts\\item_crops\\Mother_Earth_-_Magic_Eye_3.png"
+      ],
+      "existing": null
+    },
+    {
+      "name": "Mother Earth - Rejuvenate",
+      "crops": [
+        "scripts\\item_crops\\Mother_Earth_-_Rejuvenate_0.png",
+        "scripts\\item_crops\\Mother_Earth_-_Rejuvenate_1.png",
+        "scripts\\item_crops\\Mother_Earth_-_Rejuvenate_2.png",
+        "scripts\\item_crops\\Mother_Earth_-_Rejuvenate_3.png"
+      ],
+      "existing": null
+    },
+    {
+      "name": "Mr. Stabby",
+      "crops": [
+        "scripts\\item_crops\\Mr_Stabby_0.png",
+        "scripts\\item_crops\\Mr_Stabby_1.png"
+      ],
+      "existing": {
+        "name": "Mr. Stabby",
+        "slug": "mr-stabby",
+        "category": "jungling",
+        "tier": 2,
+        "price": 700,
+        "stats": {
+          "attack_damage": 25.0
+        },
+        "passives": [
+          "Passive - Hunter: Normal attacks / skills hitting the wildling will deal 60~172 additional true damage every 0.5s for 2s, and receive 35% more EXP from killing monsters.",
+          "Passive - Wild: Increase 2 AD and 0.2% CD reduction for every monster killed, max stack up to 15 times.",
+          "Smite (jungle): Stores 2 charges (45s per charge, 10s cooldown). Deals true damage and stuns monsters/minions for 1s; against heroes deals 400 (+30/level) physical damage and steals 30% movement speed for 2s.",
+          "Passive - Modest: Damage to minions reduced by 25% for the first 4 minutes."
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+25 AD"
+        ],
+        "icon_url": "https://rovmeta.com/items/mr-stabby.png",
+        "patch": "Full Element Assault, Apr 2026",
+        "sources": [
+          "https://moba.garena.tw/news/show/5528"
+        ]
+      }
+    },
+    {
+      "name": "Muramasa",
+      "crops": [
+        "scripts\\item_crops\\Muramasa_0.png"
+      ],
+      "existing": {
+        "name": "Muramasa",
+        "slug": "muramasa",
+        "category": "attack",
+        "tier": 3,
+        "price": 2020,
+        "stats": {
+          "attack_damage": 80.0,
+          "cooldown_reduction": 10.0,
+          "max_hp": 500.0
+        },
+        "passives": [
+          "Unique Passive - Stab: Armor Pierce +35%"
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+80 Attack Damage",
+          "+10% CD reduction",
+          "+500 Max HP"
+        ],
+        "icon_url": "https://rovmeta.com/items/muramasa.png"
+      }
+    },
+    {
+      "name": "Necklace of Vitality",
+      "crops": [
+        "scripts\\item_crops\\Necklace_of_Vitality_0.png"
+      ],
+      "existing": {
+        "name": "Necklace of Vitality",
+        "slug": "necklace-of-vitality",
+        "category": "defense",
+        "tier": 1,
+        "price": 540,
+        "stats": {
+          "max_hp": 600.0
+        },
+        "passives": [],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+600 Max HP"
+        ],
+        "icon_url": "https://rovmeta.com/items/necklace-of-vitality.png"
+      }
+    },
+    {
+      "name": "Odin's Will",
+      "crops": [
+        "scripts\\item_crops\\Odins_Will_0.png"
+      ],
+      "existing": {
+        "name": "Odin's Will",
+        "slug": "odins-will",
+        "category": "defense",
+        "tier": 3,
+        "price": 1900,
+        "stats": {
+          "armor": 225.0,
+          "max_hp": 1200.0,
+          "movement_speed_pct": 5.0
+        },
+        "passives": [
+          "Passive - Adrenaline: When taking damage, gain a stack of buff. Each stack"
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+225 Armor",
+          "+1200 Max HP",
+          "+5% Movement Speed"
+        ],
+        "icon_url": "https://rovmeta.com/items/odins-will.png"
+      }
+    },
+    {
+      "name": "Omni Arms",
+      "crops": [
+        "scripts\\item_crops\\Omni_Arms_0.png"
+      ],
+      "existing": {
+        "name": "Omni Arms",
+        "slug": "omni-arms",
+        "category": "attack",
+        "tier": 3,
+        "price": 2150,
+        "stats": {
+          "attack_damage": 70.0,
+          "attack_speed": 15.0,
+          "cooldown_reduction": 10.0,
+          "max_hp": 600.0
+        },
+        "passives": [
+          "Unique Passive - Elemental Power: After using a skill, the next normal attack in 5s deals additional  physical damage  equal to  100% attack damage . Cooldown: 2s.",
+          "Unique Passive - Speed Up: Normal attacks increase movement speed by 10%."
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+70 Attack Damage",
+          "+15% Attack Speed",
+          "+10% Cooldown Reduction",
+          "+600 Max HP"
+        ],
+        "icon_url": "https://rovmeta.com/items/omni-arms.png"
+      }
+    }
+  ],
+  [
+    {
+      "name": "Orb of the Magi",
+      "crops": [
+        "scripts\\item_crops\\Orb_of_the_Magi_0.png"
+      ],
+      "existing": {
+        "name": "Orb of the Magi",
+        "slug": "orb-of-the-magi",
+        "category": "magic",
+        "tier": 3,
+        "price": 1800,
+        "stats": {
+          "ability_power": 140.0,
+          "cooldown_reduction": 10.0
+        },
+        "passives": [
+          "Passive - Bide: Gain 12 AP and 120 max HP every 30s of the match, stack up to 10 times.",
+          "Passive - From the Ashes: Leveling up"
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+140 AP",
+          "+10% CD reduction"
+        ],
+        "icon_url": "https://rovmeta.com/items/orb-of-the-magi.png"
+      }
+    },
+    {
+      "name": "Orrery",
+      "crops": [
+        "scripts\\item_crops\\Orrery_0.png"
+      ],
+      "existing": {
+        "name": "Orrery",
+        "slug": "orrery",
+        "category": "magic",
+        "tier": 2,
+        "price": 800,
+        "stats": {
+          "ability_power": 80.0
+        },
+        "passives": [
+          "Passive - Explosion: Target who is hit by skills takes 180"
+        ],
+        "passives_incomplete": true,
+        "stats_raw": [
+          "+80 AP"
+        ],
+        "icon_url": "https://rovmeta.com/items/orrery.jpg"
+      }
+    },
+    {
+      "name": "Pendant of Faith",
+      "crops": [
+        "scripts\\item_crops\\Pendant_of_Faith_0.png"
+      ],
+      "existing": {
+        "name": "Pendant of Faith",
+        "slug": "pendant-of-faith",
+        "category": "magic",
+        "tier": 1,
+        "price": 120,
+        "stats": {
+          "mana_regen_5s": 10.0
+        },
+        "passives": [],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+10 Mana Regen / 5s"
+        ],
+        "icon_url": "https://rovmeta.com/items/pendant-of-faith.png"
+      }
+    },
+    {
+      "name": "Phoenix Tear",
+      "crops": [
+        "scripts\\item_crops\\Phoenix_Tear_0.png"
+      ],
+      "existing": {
+        "name": "Phoenix Tear",
+        "slug": "phoenix-tear",
+        "category": "magic",
+        "tier": 2,
+        "price": 500,
+        "stats": {
+          "ability_power": 50.0
+        },
+        "passives": [
+          "Passive - From the Ashes: Leveling up"
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+50 AP"
+        ],
+        "icon_url": "https://rovmeta.com/items/phoenix-tear.png"
+      }
+    },
+    {
+      "name": "Platinum Gauntlets",
+      "crops": [
+        "scripts\\item_crops\\Platinum_Gauntlets_0.png"
+      ],
+      "existing": {
+        "name": "Platinum Gauntlets",
+        "slug": "platinum-gauntlets",
+        "category": "defense",
+        "tier": 2,
+        "price": 660,
+        "stats": {
+          "armor": 110.0,
+          "cooldown_reduction": 10.0
+        },
+        "passives": [],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+10% CD reduction",
+          "+110 Armor"
+        ],
+        "icon_url": "https://rovmeta.com/items/platinum-gauntlets.png"
+      }
+    },
+    {
+      "name": "Rhea's Blessing",
+      "crops": [
+        "scripts\\item_crops\\Rheas_Blessing_0.png"
+      ],
+      "existing": {
+        "name": "Rhea's Blessing",
+        "slug": "rheas-blessing",
+        "category": "magic",
+        "tier": 3,
+        "price": 2050,
+        "stats": {
+          "ability_power": 160.0,
+          "magic_life_steal": 25.0,
+          "max_hp": 800.0
+        },
+        "passives": [
+          "Passive - Conversion: Every 2% Magic Life steal is converted into 1% Cooldown Reduction."
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+160 AP",
+          "+25% Magic Lifesteal",
+          "+800 Max HP"
+        ],
+        "icon_url": "https://rovmeta.com/items/rheas-blessing.png"
+      }
+    },
+    {
+      "name": "Ring of Vitality",
+      "crops": [
+        "scripts\\item_crops\\Ring_of_Vitality_0.png"
+      ],
+      "existing": {
+        "name": "Ring of Vitality",
+        "slug": "ring-of-vitality",
+        "category": "defense",
+        "tier": 1,
+        "price": 300,
+        "stats": {
+          "max_hp": 300.0
+        },
+        "passives": [],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+300 Max HP"
+        ],
+        "icon_url": "https://rovmeta.com/items/ring-of-vitality.png"
+      }
+    },
+    {
+      "name": "Rock Shield",
+      "crops": [
+        "scripts\\item_crops\\Rock_Shield_0.png"
+      ],
+      "existing": {
+        "name": "Rock Shield",
+        "slug": "rock-shield",
+        "category": "defense",
+        "tier": 3,
+        "price": 1980,
+        "stats": {
+          "armor": 240.0,
+          "max_hp": 1200.0
+        },
+        "passives": [
+          "Active",
+          "is active, damage dealt is reduced by 70%. CD: 60s."
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+240 Armor",
+          "+1200 Max HP"
+        ],
+        "icon_url": "https://rovmeta.com/items/rock-shield.png"
+      }
+    },
+    {
+      "name": "Shield of the Lost",
+      "crops": [
+        "scripts\\item_crops\\Shield_of_the_Lost_0.png"
+      ],
+      "existing": {
+        "name": "Shield of the Lost",
+        "slug": "shield-of-the-lost",
+        "category": "defense",
+        "tier": 3,
+        "price": 2100,
+        "stats": {
+          "armor": 275.0,
+          "max_hp": 1200.0
+        },
+        "passives": [
+          "Passive - Spirit Bond: When taking damage,"
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+275 Armor",
+          "+1200 Max HP"
+        ],
+        "icon_url": "https://rovmeta.com/items/shield-of-the-lost.png"
+      }
+    },
+    {
+      "name": "Short Sword",
+      "crops": [
+        "scripts\\item_crops\\Short_Sword_0.png"
+      ],
+      "existing": {
+        "name": "Short Sword",
+        "slug": "short-sword",
+        "category": "attack",
+        "tier": 1,
+        "price": 250,
+        "stats": {
+          "attack_damage": 20.0
+        },
+        "passives": [],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+20 Attack Damage"
+        ],
+        "icon_url": "https://rovmeta.com/items/short-sword.png"
+      }
+    },
+    {
+      "name": "Shuriken",
+      "crops": [
+        "scripts\\item_crops\\Shuriken_0.png"
+      ],
+      "existing": {
+        "name": "Shuriken",
+        "slug": "shuriken",
+        "category": "attack",
+        "tier": 2,
+        "price": 750,
+        "stats": {
+          "attack_speed": 20.0
+        },
+        "passives": [
+          "Unique Passive - Vital Point: Normal attacks deal an additional 21~35 (melee) or 42~70 (ranged)"
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+20% Attack Speed"
+        ],
+        "icon_url": "https://rovmeta.com/items/shuriken.png"
+      }
+    },
+    {
+      "name": "Slikk's Sting",
+      "crops": [
+        "scripts\\item_crops\\Slikks_Sting_0.png"
+      ],
+      "existing": {
+        "name": "Slikk's Sting",
+        "slug": "slikks-sting",
+        "category": "attack",
+        "tier": 3,
+        "price": 2150,
+        "stats": {
+          "attack_speed": 35.0,
+          "critical_chance": 25.0,
+          "movement_speed_pct": 7.0
+        },
+        "passives": [
+          "Unique Passive - Wind's Blessing: Increases a hero's resistance by 35% for 2s after landing a critical hit (cannot be stacked with Gilded Greaves)."
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+35% Attack Speed",
+          "+25% Critical Chance",
+          "+7% Movement Speed"
+        ],
+        "icon_url": "https://rovmeta.com/items/slikks-sting.png"
+      }
+    },
+    {
+      "name": "Soaring Aura",
+      "crops": [
+        "scripts\\item_crops\\Soaring_Aura_0.png"
+      ],
+      "existing": {
+        "name": "Soaring Aura",
+        "slug": "soaring-aura",
+        "category": "magic",
+        "tier": 3,
+        "price": 2100,
+        "stats": {
+          "ability_power": 140.0,
+          "cooldown_reduction": 10.0,
+          "max_hp": 600.0
+        },
+        "passives": [
+          "Passive - Extermination: Skills and normal attack hitting the enemy hero will increase 10~24"
+        ],
+        "passives_incomplete": true,
+        "stats_raw": [
+          "+140 AP",
+          "+10% CD reduction",
+          "+600 Max HP"
+        ],
+        "icon_url": "https://rovmeta.com/items/soaring-aura.png"
+      }
+    },
+    {
+      "name": "Sonic Boots",
+      "crops": [
+        "scripts\\item_crops\\Sonic_Boots_0.png"
+      ],
+      "existing": {
+        "name": "Sonic Boots",
+        "slug": "sonic-boots",
+        "category": "movement",
+        "tier": 2,
+        "price": 700,
+        "stats": {
+          "armor": 110.0,
+          "movement_speed": 60.0
+        },
+        "passives": [
+          "Passive: Reduce 10%"
+        ],
+        "passives_incomplete": true,
+        "stats_raw": [
+          "+110 Armor"
+        ],
+        "icon_url": "https://rovmeta.com/items/sonic-boots.png"
+      }
+    },
+    {
+      "name": "Soul Scroll",
+      "crops": [
+        "scripts\\item_crops\\Soul_Scroll_0.png"
+      ],
+      "existing": null
+    },
+    {
+      "name": "Soulreaver",
+      "crops": [
+        "scripts\\item_crops\\Soulreaver_0.png",
+        "scripts\\item_crops\\Soulreaver_1.png"
+      ],
+      "existing": {
+        "name": "Soulreaver",
+        "slug": "soulreaver",
+        "category": "jungling",
+        "tier": 3,
+        "price": 2000,
+        "stats": {
+          "attack_damage": 90.0,
+          "cooldown_reduction": 5.0,
+          "movement_speed_pct": 8.0
+        },
+        "passives": [
+          "Passive - Armor Smasher: +60 Armor Pierce.",
+          "Passive - Wild: Increase 2 AD and 0.2% CD reduction for every monster killed, max stack up to 25 times.",
+          "Smite (jungle): Stores 2 charges (45s per charge, 10s cooldown). Deals true damage and stuns monsters/minions for 1s; against heroes deals 400 (+30/level) physical damage and steals 30% movement speed for 2s.",
+          "Passive - Modest: Damage to minions reduced by 25% for the first 4 minutes."
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+90 AD",
+          "+5% CD reduction",
+          "+8% Movement Speed"
+        ],
+        "icon_url": "https://rovmeta.com/items/soulreaver.png",
+        "patch": "Full Element Assault, Apr 2026",
+        "sources": [
+          "https://moba.garena.tw/news/show/5528"
+        ]
+      }
+    },
+    {
+      "name": "Spear of Longinus",
+      "crops": [
+        "scripts\\item_crops\\Spear_of_Longinus_0.png"
+      ],
+      "existing": null
+    },
+    {
+      "name": "Spell Tome",
+      "crops": [
+        "scripts\\item_crops\\Spell_Tome_0.png"
+      ],
+      "existing": {
+        "name": "Spell Tome",
+        "slug": "spell-tome",
+        "category": "magic",
+        "tier": 1,
+        "price": 300,
+        "stats": {
+          "ability_power": 40.0
+        },
+        "passives": [],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+40 AP"
+        ],
+        "icon_url": "https://rovmeta.com/items/spell-tome.png"
+      }
+    },
+    {
+      "name": "Spooky Mask",
+      "crops": [
+        "scripts\\item_crops\\Spooky_Mask_0.png"
+      ],
+      "existing": null
+    }
+  ],
+  [
+    {
+      "name": "Staff of Nuul",
+      "crops": [
+        "scripts\\item_crops\\Staff_of_Nuul_0.png"
+      ],
+      "existing": {
+        "name": "Staff of Nuul",
+        "slug": "staff-of-nuul",
+        "category": "magic",
+        "tier": 3,
+        "price": 2050,
+        "stats": {
+          "ability_power": 180.0,
+          "cooldown_reduction": 10.0
+        },
+        "passives": [
+          "Passive - Tranquil Soul: +40% Magic Pierce."
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+180 AP",
+          "+10% CD reduction"
+        ],
+        "icon_url": "https://rovmeta.com/items/staff-of-nuul.png"
+      }
+    },
+    {
+      "name": "Stealth Bracer",
+      "crops": [
+        "scripts\\item_crops\\Stealth_Bracer_0.png"
+      ],
+      "existing": {
+        "slug": "stealth-bracer",
+        "stats_raw": [],
+        "icon_url": null,
+        "passives": [
+          "Active - Untrackable: Instantly become invisible for 2.5s (1s for melee heroes), gaining 30% movement speed and restoring 130~260 HP every 0.5s. Using a skill or normal attack ends invisibility. Cooldown 75s."
+        ],
+        "name": "Stealth Bracer",
+        "category": "attack",
+        "tier": 3,
+        "price": null,
+        "stats": {
+          "attack_damage": 40.0,
+          "attack_speed": 20.0,
+          "critical_chance": 20.0,
+          "max_hp": 650.0
+        },
+        "patch": "Beta 55",
+        "sources": [
+          "https://www.rov.in.th/patch-notes/beta55",
+          "https://moba.garena.tw/news/show/5716",
+          "https://www.rov.in.th/patch-notes/expserver260827"
+        ],
+        "passives_incomplete": false
+      }
+    },
+    {
+      "name": "Stormy Bow",
+      "crops": [
+        "scripts\\item_crops\\Stormy_Bow_0.png",
+        "scripts\\item_crops\\Stormy_Bow_1.png"
+      ],
+      "existing": null
+    },
+    {
+      "name": "Talisman of Strength",
+      "crops": [
+        "scripts\\item_crops\\Talisman_of_Strength_0.png"
+      ],
+      "existing": {
+        "name": "Talisman of Strength",
+        "slug": "talisman-of-strength",
+        "category": "defense",
+        "tier": 1,
+        "price": 140,
+        "stats": {
+          "hp_regen_5s": 30.0
+        },
+        "passives": [],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+30 HP Regen / 5s"
+        ],
+        "icon_url": "https://rovmeta.com/items/talisman-of-strength.png"
+      }
+    },
+    {
+      "name": "Tempest Blades",
+      "crops": [
+        "scripts\\item_crops\\Tempest_Blades_0.png"
+      ],
+      "existing": {
+        "name": "Tempest Blades",
+        "slug": "tempest-blades",
+        "category": "attack",
+        "tier": 2,
+        "price": 780,
+        "stats": {
+          "attack_speed": 25.0,
+          "movement_speed_pct": 5.0
+        },
+        "passives": [],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+25% Attack Speed",
+          "+5% Movement Speed"
+        ],
+        "icon_url": "https://rovmeta.com/items/tempest-blades.png"
+      }
+    },
+    {
+      "name": "The Aegis",
+      "crops": [
+        "scripts\\item_crops\\The_Aegis_0.png"
+      ],
+      "existing": {
+        "name": "The Aegis",
+        "slug": "the-aegis",
+        "category": "defense",
+        "tier": 3,
+        "price": 2180,
+        "stats": {
+          "armor": 360.0,
+          "cooldown_reduction": 20.0,
+          "max_mana": 400.0
+        },
+        "passives": [
+          "Passive - Enhanced Spirit Bond: Reduces the attack speed of enemies within 5m by 30%."
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+360 Armor",
+          "+400 Max mana",
+          "+20% CD reduction"
+        ],
+        "icon_url": "https://rovmeta.com/items/the-aegis.png"
+      }
+    },
+    {
+      "name": "The Beast",
+      "crops": [
+        "scripts\\item_crops\\The_Beast_0.png"
+      ],
+      "existing": {
+        "name": "The Beast",
+        "slug": "the-beast",
+        "category": "attack",
+        "tier": 3,
+        "price": 1800,
+        "stats": {
+          "attack_damage": 100.0,
+          "life_steal": 25.0,
+          "max_hp": 600.0
+        },
+        "passives": [
+          "Unique Passive - Blood Curse:"
+        ],
+        "passives_incomplete": true,
+        "stats_raw": [
+          "+100 Attack Damage",
+          "+25% Life steal",
+          "+600 Max"
+        ],
+        "icon_url": "https://rovmeta.com/items/the-beast.png"
+      }
+    },
+    {
+      "name": "The Diminisher",
+      "crops": [
+        "scripts\\item_crops\\The_Diminisher_0.png"
+      ],
+      "existing": {
+        "name": "The Diminisher",
+        "slug": "the-diminisher",
+        "category": "attack",
+        "tier": 3,
+        "price": 2120,
+        "stats": {
+          "attack_damage": 100.0,
+          "cooldown_reduction": 10.0,
+          "max_hp": 500.0
+        },
+        "passives": [
+          "Passive – Disable: Skills hitting a first enemy hero causes their damage dealt reduced by 20% to all targets and also",
+          "Active"
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+100 Attack Damage",
+          "+10% CD reduction",
+          "+500 Max HP"
+        ],
+        "icon_url": "https://rovmeta.com/items/the-diminisher.png"
+      }
+    },
+    {
+      "name": "The Morning Star",
+      "crops": [
+        "scripts\\item_crops\\The_Morning_Star_0.png"
+      ],
+      "existing": null
+    },
+    {
+      "name": "Trick Blade",
+      "crops": [
+        "scripts\\item_crops\\Trick_Blade_0.png"
+      ],
+      "existing": {
+        "name": "Trick Blade",
+        "slug": "trick-blade",
+        "category": "magic",
+        "tier": 2,
+        "price": 820,
+        "stats": {
+          "ability_power": 40.0,
+          "cooldown_reduction": 10.0
+        },
+        "passives": [
+          "Passive - Elemental Power: 5s after using a skill, the next normal attack deals"
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+40 AP",
+          "+10% CD reduction"
+        ],
+        "icon_url": "https://rovmeta.com/items/trick-blade.png"
+      }
+    },
+    {
+      "name": "Uriel's Brand",
+      "crops": [
+        "scripts\\item_crops\\Uriels_Brand_0.png"
+      ],
+      "existing": {
+        "name": "Uriel's Brand",
+        "slug": "uriels-brand",
+        "category": "attack",
+        "tier": 3,
+        "price": 2000,
+        "stats": {
+          "attack_damage": 80.0,
+          "attack_speed": 25.0,
+          "magic_defense": 200.0
+        },
+        "passives": [
+          "Unique Passive - Magic Guardian: When HP falls below 40%, a",
+          "Unique Passive - Speed Up: Normmal attacks increase movement speed by 10%."
+        ],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+80 Attack Damage",
+          "+25% Attack Speed",
+          "+200 Magic Defense"
+        ],
+        "icon_url": "https://rovmeta.com/items/uriels-brand.png"
+      }
+    },
+    {
+      "name": "Virtue's Bracelet",
+      "crops": [
+        "scripts\\item_crops\\Virtues_Bracelet_0.png"
+      ],
+      "existing": {
+        "name": "Virtue's Bracelet",
+        "slug": "virtues-bracelet",
+        "category": "magic",
+        "tier": 2,
+        "price": 720,
+        "stats": {
+          "ability_power": 60.0,
+          "cooldown_reduction": 5.0
+        },
+        "passives": [],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+60 AP",
+          "+5% CD reduction"
+        ],
+        "icon_url": "https://rovmeta.com/items/virtues-bracelet.png"
+      }
+    },
+    {
+      "name": "Virtue's Necklace",
+      "crops": [
+        "scripts\\item_crops\\Virtues_Necklace_0.png"
+      ],
+      "existing": {
+        "name": "Virtue's Necklace",
+        "slug": "virtues-necklace",
+        "category": "magic",
+        "tier": 3,
+        "price": 1800,
+        "stats": {
+          "ability_power": 160.0,
+          "cooldown_reduction": 15.0,
+          "mana_regen_5s": 25.0
+        },
+        "passives": [
+          "Passive - Wise:"
+        ],
+        "passives_incomplete": true,
+        "stats_raw": [
+          "+160 AP",
+          "+15% CD reduction",
+          "+25 Mana Regen / 5s"
+        ],
+        "icon_url": "https://rovmeta.com/items/virtues-necklace.png"
+      }
+    },
+    {
+      "name": "Vlad's Impaler",
+      "crops": [
+        "scripts\\item_crops\\Vlads_Impaler_0.png"
+      ],
+      "existing": {
+        "name": "Vlad's Impaler",
+        "slug": "vlads-impaler",
+        "category": "magic",
+        "tier": 2,
+        "price": 800,
+        "stats": {
+          "ability_power": 80.0,
+          "magic_life_steal": 12.0
+        },
+        "passives": [],
+        "passives_incomplete": false,
+        "stats_raw": [
+          "+80 AP",
+          "+12% Magic Lifesteal."
+        ],
+        "icon_url": "https://rovmeta.com/items/vlads-impaler.png"
+      }
+    },
+    {
+      "name": "War Boots",
+      "crops": [
+        "scripts\\item_crops\\War_Boots_0.png"
+      ],
+      "existing": {
+        "name": "War Boots",
+        "slug": "war-boots",
+        "category": "movement",
+        "tier": 2,
+        "price": 700,
+        "stats": {
+          "attack_speed": 20.0,
+          "movement_speed": 60.0
+        },
+        "passives": [
+          "Passive: Hitting an enemy"
+        ],
+        "passives_incomplete": true,
+        "stats_raw": [
+          "+20% Attack Speed"
+        ],
+        "icon_url": "https://rovmeta.com/items/war-boots.png"
+      }
+    },
+    {
+      "name": "Wildfire - Barrier",
+      "crops": [
+        "scripts\\item_crops\\Wildfire_-_Barrier_0.png",
+        "scripts\\item_crops\\Wildfire_-_Barrier_1.png",
+        "scripts\\item_crops\\Wildfire_-_Barrier_2.png"
+      ],
+      "existing": null
+    },
+    {
+      "name": "Wildfire - Cleansing",
+      "crops": [
+        "scripts\\item_crops\\Wildfire_-_Cleansing_0.png",
+        "scripts\\item_crops\\Wildfire_-_Cleansing_1.png",
+        "scripts\\item_crops\\Wildfire_-_Cleansing_2.png"
+      ],
+      "existing": null
+    },
+    {
+      "name": "Wildfire - Magic Eye",
+      "crops": [
+        "scripts\\item_crops\\Wildfire_-_Magic_Eye_0.png",
+        "scripts\\item_crops\\Wildfire_-_Magic_Eye_1.png",
+        "scripts\\item_crops\\Wildfire_-_Magic_Eye_2.png",
+        "scripts\\item_crops\\Wildfire_-_Magic_Eye_3.png"
+      ],
+      "existing": null
+    },
+    {
+      "name": "Zweihander",
+      "crops": [
+        "scripts\\item_crops\\Zweihander_0.png"
+      ],
+      "existing": {
+        "name": "Zweihander",
+        "slug": "zweihander",
+        "category": "magic",
+        "tier": 3,
+        "price": 1900,
+        "stats": {
+          "ability_power": 160.0,
+          "attack_speed": 20.0,
+          "movement_speed_pct": 8.0
+        },
+        "passives": [
+          "Passive - Rapid Blade: Normal attack hits increase 15% attack speed, stack up to 2 times, lasting for 4s.",
+          "Passive - Twilight: Normal attacks deal additional 40"
+        ],
+        "passives_incomplete": true,
+        "stats_raw": [
+          "+160 AP",
+          "+20% Attack Speed",
+          "+8% Movement Speed"
+        ],
+        "icon_url": "https://rovmeta.com/items/zweihander.png"
+      }
+    }
+  ]
+]

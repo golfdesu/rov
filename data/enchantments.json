@@ -1,228 +1,352 @@
 {
-  "count": 31,
+  "count": 33,
   "factions": [
     "Veda",
     "Lokheim",
     "Afata",
+    "Origin Alliance",
     "League of Humans"
   ],
   "enchantments": [
     {
-      "name": "Mark of Frost",
-      "faction": "League of Humans",
-      "tier": 1,
-      "description": "Gains Freeze 4 minutes into the match. Grants immunity to all damages but renders you immobile and unable to attack, and grants you 540~1100 (+0.5 AP) shield points when it ends. Can only be used once.",
-      "icon_file": "Mark of Frost (ENCHANTMENT).png"
-    },
-    {
-      "name": "Enhanced Restore",
-      "faction": "League of Humans",
-      "tier": 1,
-      "description": "Replaces Restore with Enhanced Restore: immediately recover 660 HP and 210 mana.",
-      "icon_file": "Enhanced Restore (ENCHANT).png"
-    },
-    {
-      "name": "Arcane Whisper",
-      "faction": "League of Humans",
-      "tier": 1,
-      "description": "You receive an additional 15% reduction in talent cooldown time.",
-      "icon_file": "Arcane Whisper (ENCHANTMENT).png"
-    },
-    {
-      "name": "Minion Kill",
-      "faction": "League of Humans",
-      "tier": 2,
-      "description": "For every 25 seconds, the next normal attack/ability kills a minion. After 10 minions were killed by this enchantment effect, instantly receive 200 Gold and reset the kill count (not applicable to Siege Minion and Super Minion).",
-      "icon_file": "Minion Kill (ENCHANTMENT).png"
-    },
-    {
-      "name": "Gunslinger",
-      "faction": "League of Humans",
-      "tier": 2,
-      "description": "Spawn with a stack of Gunslinger. Killing or assisting different heroes will grant an additional stack of Gunslinger, up to max of 6 stacks. Each stack of Gunslinger grants 8 AD and 12 AP.",
-      "icon_file": "Gunslinger (ENCHANTMENT).png"
-    },
-    {
-      "name": "Endless Cycle",
-      "faction": "League of Humans",
-      "tier": 2,
-      "description": "Able to use \"Resurrect\" upon death, and is resurrected immediately after use. Resurrect's cooldown ranges from 100 to 310 seconds, depending on your level. Can be used up to 2 times. Enchantment effect disappears after 12 minutes. For each unused resurrection, 300 gold is returned.",
-      "icon_file": "Endless Cycle (ENCHANTMENT).png"
-    },
-    {
-      "name": "Alchemy",
-      "faction": "League of Humans",
-      "tier": 3,
-      "description": "Every 20s, 1 stack of Alchemy Energy is gained (up to 3 stacks). Normal attacks/abilities that hit an enemy hero or tower will grant additional 16 gold and consume 1 stack of Alchemy Energy (up to 800 gold).",
-      "icon_file": "Alchemy.png"
-    },
-    {
       "name": "Axe of Sacrifice",
       "faction": "Veda",
       "tier": 1,
-      "description": "Deals an extra 3% damage but also receives an extra 2% damage (1% in the case of melee).",
-      "icon_file": "Axe of Sacrifice (ENCHANT).png"
+      "category_th": "เพิ่ม DMG",
+      "description": "สร้างความเสียหายเพิ่มขึ้น 3% และได้รับความเสียหายแรงขึ้น 2% (ฮีโร่ระยะใกล้ 1%)",
+      "description_en": "Increases damage dealt by 3%, but increases damage taken by 2% (1% for melee heroes).",
+      "icon_file": "Axe of Sacrifice (ENCHANT).png",
+      "icon_url": "/enchantments/axe_of_sacrifice.png"
     },
     {
       "name": "Mana Refill",
       "faction": "Veda",
       "tier": 1,
-      "description": "Recovers 8% Mana when an ability/normal attack hits an enemy hero. CD: 5s.",
-      "icon_file": "Mana Refill (E).png"
+      "category_th": "ฟื้นฟู MP",
+      "description": "เมื่อใช้สกิล/โจมตีปกติโดนฮีโร่ศัตรู จะฟื้นฟู 8% ของมานาสูงสุด (คูลดาวน์: 5 วิ)",
+      "description_en": "Hitting an enemy hero with a normal attack or ability restores 8% of max mana (5s cooldown).",
+      "icon_file": "Mana Refill (E).png",
+      "icon_url": "/enchantments/mana_refill.png"
     },
     {
       "name": "Sacred Bead",
       "faction": "Veda",
       "tier": 1,
-      "description": "Ultimates gain an additional 10% cooldown reduction (still max up to 40%).",
-      "icon_file": "Sacred Bead (E).png"
+      "category_th": "ลดคูลดาวน์",
+      "description": "คูลดาวน์สกิลอัลติเมตลดลง 10% (ผลจะลดลง หรือไม่ทำงานหากถึงขีดจำกัดการลดคูลดาวน์สูงสุดแล้ว)",
+      "description_en": "Ultimate ability cooldown reduced by 10% (subject to the maximum cooldown reduction cap).",
+      "icon_file": "Sacred Bead (E).png",
+      "icon_url": "/enchantments/sacred_bead.png"
     },
     {
       "name": "Blessing",
       "faction": "Veda",
       "tier": 2,
-      "description": "+16% Crit Chance bonus from equipment.\n\n+8% Ability Power bonus from equipment.",
-      "icon_file": "Blessing (E).png"
+      "category_th": "คริเวท",
+      "description": "โบนัสอัตราคริติคอลจากไอเทม+12%\nโบนัสพลังเวทจากไอเทม+8%",
+      "description_en": "Increases critical chance from equipment by 12% and ability power from equipment by 8%.",
+      "icon_file": "Blessing (E).png",
+      "icon_url": "/enchantments/blessing.png"
     },
     {
       "name": "Holy Verdict",
       "faction": "Veda",
-      "tier": 1,
-      "description": "Gains 18~60 Physical and Magic Piercing.",
-      "icon_file": "Holy Verdict (E).png"
+      "tier": 2,
+      "category_th": "เจาะเกราะ",
+      "description": "ได้รับเจาะเกราะ/เจาะเกราะเวท 18-60",
+      "description_en": "Gains 18-60 armor pierce and magic pierce (scales with level).",
+      "icon_file": "Holy Verdict (E).png",
+      "icon_url": "/enchantments/holy_verdict.png"
     },
     {
       "name": "Holy Summoner",
       "faction": "Veda",
       "tier": 3,
-      "description": "Summon a holy spirit for 5 seconds when an enemy hero is hit by 3 consecutive normal attacks. Fairy automatically attacks the enemy that you are attacking, have the same of champion attack speed. Fairy has a range of 9.5m, deal true damage equal to of 2% enemy's Max HP with each hit. CD: 10s.",
-      "icon_file": "Holy Summoner (E).png"
+      "category_th": "เพิ่ม DMG",
+      "description": "เมื่อโจมตีโดนศัตรูครบ 3 ครั้งต่อเนื่อง จะเรียกแฟรี่ออกมาช่วยโจมตีเป็นเวลา 5 วิ ซึ่งแฟรี่จะโจมตีศัตรูเป้าหมายเดียวกับคุณในระยะ 9.5m สร้างความเสียหายจริง 2% ของ Max HP (CD: 10 วิ)",
+      "description_en": "Hitting an enemy 3 consecutive times summons a fairy to fight alongside you for 5s, dealing 2% max HP true damage per hit (10s cooldown).",
+      "icon_file": "Holy Summoner (E).png",
+      "icon_url": "/enchantments/holy_summoner.png"
     },
     {
       "name": "Holy Thunder",
       "faction": "Veda",
-      "tier": 1,
-      "description": "The first normal attack or ability attack that hits an enemy triggers Holy Thunder, dealing 88~200 (+0.3 AP) magic damage. Each subsequent normal attack or ability attack that hits the enemy shortens cooldown by 1 second (need 0.5 seconds to trigger CD). CD: 12s.",
-      "icon_file": "Holy Thunder (E).png"
+      "tier": 3,
+      "category_th": "เพิ่ม DMG",
+      "description": "การโจมตีหรือใช้สกิลโดนฮีโร่ศัตรูครั้งแรกจะปล่อยสายฟ้าสร้างความเสียหาย 80 (+8 เมื่อ LV อัพ) (0.3 AP) จากนั้นการโจมตีปกติและสกิลครั้งถัดไปจะลดคูลดาวน์เอฟเฟกต์นี้ลง 1 วิ (คูลดาวน์ 12 วิ)",
+      "description_en": "First attack or ability releases lightning dealing 80 (+8/lv) (+0.3 AP) magic damage; subsequent attacks reduce cooldown by 1s (12s cooldown).",
+      "icon_file": "Holy Thunder (E).png",
+      "icon_url": "/enchantments/holy_thunder.png"
     },
     {
       "name": "Sacred Protection",
       "faction": "Veda",
       "tier": 3,
-      "description": "After taking damage equal to 30% of your max HP within 3 seconds, you will gain 430~850 shield points and 20% Magic Life Steal for 6 seconds. Kills and Assists during this time will extend Magic Life Steal by 3 seconds. Cooldown: 30 seconds.",
-      "icon_file": "Sacred Protection (E).png"
+      "category_th": "เกราะ",
+      "description": "หากได้รับความเสียหายเกิน 30% ของ HP สูงสุดภายใน 3 วิ จะได้รับเกราะ 400 (LV อัพ+30) และเวทแวมไพร์ 20% เป็นเวลา 6 วิ ซึ่งหากได้ Kill/Assist จะได้ขยายเวลาเวทแวมไพร์ขึ้น 3 วิ (คูลดาวน์ 30 วิ)",
+      "description_en": "Taking damage over 30% max HP within 3s grants a 400 (+30/lv) shield and 20% magic life steal for 6s (30s cooldown).",
+      "icon_file": "Sacred Protection (E).png",
+      "icon_url": "/enchantments/sacred_protection.png"
     },
     {
       "name": "Devourer",
       "faction": "Lokheim",
       "tier": 1,
-      "description": "Kills or assists Restore HP by 9% of HP lost and Mana by 15%.",
-      "icon_file": "Devourer (E).png"
+      "category_th": "ฟื้นฟู HP",
+      "description": "หลังจาก Kill หรือ Assist จะฟื้นฟูพลังชีวิต 9% และมานา 15%",
+      "description_en": "Kills or assists restore 9% max HP and 15% max mana.",
+      "icon_file": "Devourer (E).png",
+      "icon_url": "/enchantments/devourer.png"
     },
     {
       "name": "Shadow Blade",
       "faction": "Lokheim",
       "tier": 1,
-      "description": "Each use of movement and charge abilities grants a stack of Shadow Blade for 4 seconds. Stacks up to 3 times. Next normal attack against a hero consumes all Shadow Blade stacks, dealing an additional 30~100 (+0.1 bonus AD) physical damage per stack.",
-      "icon_file": "Shadow Blade (E).png"
+      "category_th": "เคลื่อนที่",
+      "description": "หลังจากใช้สกิลเคลื่อนที่จะได้รับบัฟ 1 ครั้ง เป็นเวลา 2 วิ (สูงสุด 3 ครั้ง) การโจมตีปกติครั้งต่อไปจะใช้งานบัฟที่สะสมอยู่ทั้งหมด โดยบัฟแต่ละครั้งจะสร้างโบนัสความเสียหายกายภาพ 30 (LV อัพ+5)",
+      "description_en": "Using movement abilities grants a stack for 2s (max 3). Next attack consumes stacks to deal 30 (+5/lv) bonus physical damage per stack.",
+      "icon_file": "Shadow Blade (E).png",
+      "icon_url": "/enchantments/shadow_blade.png"
     },
     {
       "name": "Raging Inferno",
       "faction": "Lokheim",
       "tier": 1,
-      "description": "Your normal attack or abilities will inflict 55~125 (+0.15 AP) magic damage on an enemy hero. CD: 8s.",
-      "icon_file": "Raging Inferno HD.png"
+      "category_th": "เพิ่ม DMG",
+      "description": "การโจมตีปกติหรือสกิลจะสร้างความเสียหายเวท 50 (LV อัพ+5) (0.15 AP) แก่ฮีโร่ศัตรู (คูลดาวน์ 8 วิ)",
+      "description_en": "Attacks or abilities deal 50 (+5/lv) (+0.15 AP) magic damage (8s cooldown).",
+      "icon_file": "Raging Inferno HD.png",
+      "icon_url": "/enchantments/raging_inferno.png"
     },
     {
       "name": "Deadly Claw",
       "faction": "Lokheim",
       "tier": 2,
-      "description": "Gains 10~38 points of Attack Damage and 15~57 points of Ability Power (increases by level).",
-      "icon_file": "Deadly Claw.gif"
+      "category_th": "เพิ่ม DMG",
+      "description": "ได้รับโบนัสพลังโจมตี 10-38 และพลังเวท 15-57",
+      "description_en": "Gains 10-38 attack damage and 15-57 ability power (scales with level).",
+      "icon_file": "Deadly Claw.gif",
+      "icon_url": "/enchantments/deadly_claw.png"
     },
     {
       "name": "Bone Cutter",
       "faction": "Lokheim",
       "tier": 2,
-      "description": "Provides 12.5% Resistance.",
-      "icon_file": "Bone Cutter.gif"
+      "category_th": "ต้านสถานะ",
+      "description": "ต้านทานสถานะเพิ่มขึ้น 12.5%",
+      "description_en": "Increases resistance by 12.5%.",
+      "icon_file": "Bone Cutter.gif",
+      "icon_url": "/enchantments/bone_cutter.png"
+    },
+    {
+      "name": "Street Serpent",
+      "alias": "Turf Dominance",
+      "faction": "Lokheim",
+      "tier": 2,
+      "category_th": "บัฟ",
+      "description": "เมื่ออยู่ในพื้นที่ฝ่ายตัวเอง (ป่าหรือป้อมฝ่ายตัวเอง) จะได้รับเอฟเฟกต์ความเร็วเคลื่อนที่ 3% และความเสียหายแรงขึ้น 3% เมื่อออกจากพื้นที่แล้วเอฟเฟกต์จะเลิกทำงาน",
+      "description_en": "While in allied territory (jungle or towers), gains 3% movement speed and 3% increased damage.",
+      "icon_file": "Turf Dominance (ENCHANTMENT).png",
+      "icon_url": "/enchantments/street_serpent.png"
     },
     {
       "name": "Desperate Duel",
       "faction": "Lokheim",
       "tier": 3,
-      "description": "Hitting an enemy hero with normal attacks or abilities increases movement speed by 2 points (1 stack per ranged normal or ability attack, 2 stacks per melee normal or ability attack), last for 3 seconds, stacks up to 10 times. At 10 stacks, restores 10% of lost HP and receives 15% Armor Pierce and Magic Pierce.",
-      "icon_file": "Desperate Duel (ENCHANTMENT).png"
+      "category_th": "โจมตีต่อเนื่อง",
+      "description": "เมื่อโจมตี/สกิลโดนฮีโร่ศัตรู จะได้บัฟและวิ่งเร็วขึ้น 2 หน่วย (ระยะไกลสะสม 1 ครั้ง/ใกล้ 2 ครั้ง) เป็นเวลา 3 วิ เมื่อครบ 10 ครั้งจะฟื้น 10% HPที่เสียไป และได้รับเจาะเกราะ/เจาะเกราะเวท+15%",
+      "description_en": "Attacking enemy heroes builds stacks (ranged 1, melee 2). At 10 stacks, heals 10% lost HP and grants 15% armor & magic pierce.",
+      "icon_file": "Desperate Duel (ENCHANTMENT).png",
+      "icon_url": "/enchantments/desperate_duel.png"
     },
     {
       "name": "Curse of Death",
       "faction": "Lokheim",
       "tier": 3,
-      "description": "Each abilities/normal attack that hits an enemy hero imposes a stack of mark on the same enemy which lasts 1.5 seconds. At 3 stacks, the enemy will suffer a curse buff that causes 44~100 (+0.25 bonus AD) (+0.15 AP) magic damage to all targets within a 2.5 meter radius, and, 1 second after that, follows it up with 6% (+1% per 100 bonus AD or 200 AP) lost target's HP magic damage to targets within the same area. CD: 15s.",
-      "icon_file": "Curse of Death (ITEM).png"
+      "category_th": "ระเบิดพลัง",
+      "description": "เมื่อใช้สกิล/โจมตีโดนฮีโร่ศัตรูจะติดสัญลักษณ์ให้เป้าหมาย 1 ครั้ง เมื่อครบ 3 ครั้งจะสร้างความเสียหายเวท 40 (LV อัพ+4) (+ 0.25 โบนัส AD) (+0.15 AP) เป็นวงกว้าง จากนั้น 1 วิ จะสร้างความเสียหายเวทเท่ากับ 6% HP ที่เสียไปของเป้าหมาย (แรงขึ้น 1% ทุก 100 โบนัส AD หรือ 200AP) (คูลดาวน์ 15 วิ)",
+      "description_en": "Hitting an enemy 3 times triggers an explosion dealing 40 (+4/lv) (+0.25 bonus AD) (+0.15 AP) magic damage, followed by 6% lost HP magic damage after 1s (15s cooldown).",
+      "icon_file": "Curse of Death (ITEM).png",
+      "icon_url": "/enchantments/curse_of_death.png"
     },
     {
       "name": "Devil's Awakening",
       "faction": "Lokheim",
       "tier": 3,
-      "description": "After ultimate is used, reduce skills cooldown by 30% and grants 20% cooldown reduction. Kills and assists extend the effect by 3s. CD: 30s.",
-      "icon_file": "Devil's Awakening (ENCHANTMENT).png"
+      "category_th": "ลดคูลดาวน์",
+      "description": "เมื่อใช้อัลติเมต จะลดคูลดาวน์ของสกิลธรรมดาลง 30% และลดอัตราการนับคูลดาวน์ลงอีก 20% รวมถึงลดความเสียหายที่ได้รับลง 10% (ขยายระยะเวลาเพิ่ม 3 วิ หากได้ Kill หรือ Assist) คูลดาวน์ 30 วิ",
+      "description_en": "Using ultimate reduces normal skill cooldowns by 30% and accelerates cooldown count by 20% (30s cooldown). Note: 10% damage reduction was removed in current balance.",
+      "icon_file": "Devil's Awakening (ENCHANTMENT).png",
+      "icon_url": "/enchantments/devil_s_awakening.png"
     },
     {
-      "name": "River Trader",
+      "name": "River Treader",
+      "alias": "River Trader",
       "faction": "Afata",
       "tier": 1,
-      "description": "While in riverbed, gains 10 movement speed, and regenerates 20 HP and 10 Mana over 5 seconds.",
-      "icon_file": "River Treader.gif"
+      "category_th": "เพิ่มความเร็ว",
+      "description": "เมื่ออยู่บริเวณแม่น้ำ จะได้รับความเร็วเคลื่อนที่ 10 หน่วย พร้อมกับโบนัสฟื้นฟู 20 HP และ 10 MP ทุก 5 วิ",
+      "description_en": "In the river, gains 10 movement speed and restores 20 HP and 10 MP every 5s.",
+      "icon_file": "River Treader.gif",
+      "icon_url": "/enchantments/river_treader.png"
     },
     {
       "name": "Backstabbing",
       "faction": "Afata",
       "tier": 1,
-      "description": "While in brush, the next normal attack deals additional true damage equal to 4% of enemy's current HP. Effect remains for 4 seconds after leaving brush. CD: 10s.",
-      "icon_file": "Backstabbing.gif"
+      "category_th": "เพิ่ม DMG",
+      "description": "หลังจากเข้าพุ่มไม้จะทำให้การโจมตีปกติต่อไปสร้างโบนัสความเสียหายจริง 4% ของ HP ที่เหลืออยู่ โดยเอฟเฟกต์จะมีผล 4 วิ หลังออกจากพุ่มไม้ (คูลดาวน์ 20 วิ)",
+      "description_en": "After leaving brush, next attack within 4s deals 4% current HP true damage (20s cooldown).",
+      "icon_file": "Backstabbing.gif",
+      "icon_url": "/enchantments/backstabbing.png"
     },
     {
       "name": "Tower Blessing",
       "faction": "Afata",
-      "tier": 2,
-      "description": "When you are within 6 meters of a tower, gain an additional 15% Resistance and 10% Damage Reduction against enemy heroes.",
-      "icon_file": "Tower Blessing.gif"
+      "tier": 1,
+      "category_th": "เกราะ",
+      "description": "เมื่ออยู่ในระยะป้อม จะได้รับการต้านทานสถานะเพิ่มขึ้น 15% พร้อมกับลดความเสียหายที่ได้รับลง 10%",
+      "description_en": "Within tower range, increases resistance by 15% and reduces damage taken by 10%.",
+      "icon_file": "Tower Blessing.gif",
+      "icon_url": "/enchantments/tower_blessing.png"
     },
     {
       "name": "Regrowth",
       "faction": "Afata",
-      "tier": 1,
-      "description": "Gains 10% healing and shield effects. If target HP is less than 50%, increases effect by an additional 10%. (Includes equipment and talents.)",
-      "icon_file": "Regrowth.gif"
+      "tier": 2,
+      "category_th": "ฟื้นฟู",
+      "description": "เอฟเฟกต์การฟื้นฟู และโล่เพิ่มขึ้น 10% หาก HP เป้าหมายน้อยกว่า 50% จะทำให้เอฟเฟกต์เพิ่มขึ้น 10%",
+      "description_en": "Increases healing and shielding received by 10% (additional 10% if target is below 50% HP).",
+      "icon_file": "Regrowth.gif",
+      "icon_url": "/enchantments/regrowth.png"
     },
     {
       "name": "Nature's Gift",
       "faction": "Afata",
       "tier": 2,
-      "description": "Each minion or monster that dies near you gives you a permanent HP buff (1 stack from minions, 2 from small monsters, 3 from large monsters). Each stack grants 8 HP, up to a maximum of 100 stacks.",
-      "icon_file": "Nature's Gift.gif"
+      "category_th": "พลังชีวิต",
+      "description": "แต่ละครีป และมอนสเตอร์ป่าที่ตายบริเวณใกล้ๆ จะทำให้ได้รับบัฟ (จำนวนบัฟ: ครีป 1 ครั้ง, มอนสเตอร์ป่า 2 ครั้ง, Epic มอนสเตอร์ 3 ครั้ง) โดยบัฟแต่ละครั้งจะเพิ่ม HP ขึ้น 8 หน่วยจนจบเกม (สูงสุด 100 ครั้ง)",
+      "description_en": "Nearby dying minions/monsters grant stacks (minion 1, jungle 2, epic 3). Each stack permanently grants 8 max HP (max 100 stacks = +800 HP).",
+      "icon_file": "Nature's Gift.gif",
+      "icon_url": "/enchantments/nature_s_gift.png"
+    },
+    {
+      "name": "Vital Aid",
+      "faction": "Afata",
+      "tier": 2,
+      "category_th": "Heal",
+      "description": "ทุก 15 วิจะปล่อยแพ็คฮีลออกไปเพื่อฟื้นฟูพลังชีวิต 210(+LV*15) หน่วยให้กับตัวเองหรือเพื่อนร่วมทีมใกล้ๆ (ขึ้นอยู่กับสัดส่วนพลังชีวิต)",
+      "description_en": "Every 15s emits a heal packet restoring 210 (+15/lv) HP to self or nearby ally with lowest health.",
+      "icon_file": "Vital Aid (ENCHANTMENT).png",
+      "icon_url": "/enchantments/vital_aid.png"
     },
     {
       "name": "Nature's Rage",
       "faction": "Afata",
-      "tier": 1,
-      "description": "When an immobilizing ability (Taunt, Knock Away, Knock Back, Stun, Petrify) hits an enemy hero, inflicts a Burn effect that deals magic damage equal to 2% of self max HP per 0.5 second for 3 seconds. Affected enemies will suffer a 33~75 Magic Defense loss. Cooldown: 20 seconds.",
-      "icon_file": "Nature's Rage HD.png"
+      "tier": 3,
+      "category_th": "ควบคุม",
+      "description": "เมื่อใช้สกิลควบคุม (ยั่วยุ, ลอยขึ้น, ผลัก, สตั๊น, แช่แข็ง ฯลฯ) โดนฮีโร่ จะทำให้ได้รับเอฟเฟกต์เผาไหม้ สร้างความเสียหายเวท 2% HP ทุก 0.5 วิ เป็นเวลา 3 วิ รวมถึงลดเกราะเวทศัตรูที่โดนเผาลง 30 (LV อัพ+3) คูลดาวน์ 20 วิ",
+      "description_en": "Hitting CC abilities burns the enemy for 2% max HP magic damage every 0.5s for 3s (total 12%) and reduces target magic defense by 30 (+3/lv) (20s cooldown).",
+      "icon_file": "Nature's Rage HD.png",
+      "icon_url": "/enchantments/nature_s_rage.png"
     },
     {
       "name": "Explosive Shield",
       "faction": "Afata",
-      "tier": 1,
-      "description": "Gains a stack when damage is taken from enemy heroes (up to 1 stack per second) for 3s. At 4 stacks, sets off an explosion in a 4 meter radius. Affected enemies take magic damage equal to 2% of self max HP while restoring 5% max HP. Each enemy hit restore an additional 2% max HP. CD: 10s.",
-      "icon_file": "Explosive Shield HD.png"
+      "tier": 3,
+      "category_th": "เกราะ",
+      "description": "เมื่อได้รับความเสียหายจากฮีโร่ศัตรูจะได้รับบัฟ 1 ครั้ง (สะสมทุก 1 วิ) เป็นเวลา 3 วิ และเมื่อสะสมครบ 4 ครั้ง จะปล่อยสายฟ้าสร้างความเสียหายเวทเท่ากับ 2% ของ Max HP ตัวเอง พร้อมฟื้นฟู 5% HP โดยแต่ละฮีโร่ที่โจมตีโดนจะทำให้ฟื้นฟู HP เพิ่มขึ้น 2% (คูลดาวน์ 10 วิ)",
+      "description_en": "Taking damage from enemy heroes builds stacks. At 4 stacks, unleashes lightning dealing 2% self max HP magic damage and restores 5% HP (10s cooldown).",
+      "icon_file": "Explosive Shield HD.png",
+      "icon_url": "/enchantments/explosive_shield.png"
     },
     {
       "name": "Forest Wanderer",
       "faction": "Afata",
       "tier": 3,
-      "description": "After exiting combat, the next normal attack will slow down enemy by 30% for 1 second and mark a Stealth Magic Crystal. Magic Crystal bursts in 3 seconds, dealing magic damage equal to 8% of self max HP.",
-      "icon_file": "Forest Wanderer HD.png"
+      "category_th": "ซุ่มโจมตี",
+      "description": "เมื่อไม่ได้ต่อสู้ การโจมตีปกติครั้งต่อไปจะลดความเร็ว 30% เป็นเวลา 1 วิ และติดสัญลักษณ์ให้เป้าหมาย ซึ่งจะระเบิดหลัง 3 วิ สร้างความเสียหายเวทเท่ากับ 8% ของ HP สูงสุด",
+      "description_en": "Out of combat, next attack slows target by 30% for 1s and marks them to explode after 3s dealing 8% max HP magic damage.",
+      "icon_file": "Forest Wanderer HD.png",
+      "icon_url": "/enchantments/forest_wanderer.png"
+    },
+    {
+      "name": "Mark of Frost",
+      "faction": "Origin Alliance",
+      "alias_faction": "League of Humans",
+      "tier": 1,
+      "category_th": "ไอเทมกดใช้",
+      "description": "หลังจากเริ่มเกม 4 นาที จะได้รับเอฟเฟกต์ Freeze ซึ่งจะทำให้คุณเป็น อมตะ แต่จะไม่สามารถขยับ หรือโจมตีได้ จากนั้นเมื่อเอฟเฟกต์สิ้นสุดจะได้รับ โล่ (ใช้ได้เพียง 1 ครั้ง)",
+      "description_en": "After 4 minutes into the match, grants Freeze active item granting invulnerability temporarily (can only be used once).",
+      "icon_file": "Mark of Frost (ENCHANTMENT).png",
+      "icon_url": "/enchantments/mark_of_frost.png"
+    },
+    {
+      "name": "Recovery+",
+      "alias": "Enhanced Restore",
+      "faction": "Origin Alliance",
+      "alias_faction": "League of Humans",
+      "tier": 1,
+      "category_th": "เพิ่มฟื้นฟู",
+      "description": "แทนที่สกิล \"Recovery\" ด้วย \"Recovery+\" ซึ่งจะฟื้นฟู HP 660 และมานา 210 ทันที",
+      "description_en": "Replaces Recovery with Recovery+, instantly restoring 660 HP and 210 mana.",
+      "icon_file": "Enhanced Restore (ENCHANT).png",
+      "icon_url": "/enchantments/recovery.png"
+    },
+    {
+      "name": "Arcane Whisper",
+      "faction": "Origin Alliance",
+      "alias_faction": "League of Humans",
+      "tier": 1,
+      "category_th": "ลดคูลดาวน์",
+      "description": "ลดคูลดาวน์สกิลชาเลนเจอร์ลง 15% (สำหรับ Punish จะลดเวลาสะสมเท่านั้น)",
+      "description_en": "Reduces Challenger talent cooldowns by 15%.",
+      "icon_file": "Arcane Whisper (ENCHANTMENT).png",
+      "icon_url": "/enchantments/arcane_whisper.png"
+    },
+    {
+      "name": "Minion Kill",
+      "faction": "Origin Alliance",
+      "alias_faction": "League of Humans",
+      "tier": 2,
+      "category_th": "โบนัสจากครีป",
+      "description": "ทุก 25 วิ การโจมตี/สกิลจะสังหารครีปในทันที และได้รับบัฟสะสม เมื่อสะสมครบ 10 ครั้ง จะได้รับโบนัส 200 โกลด์ทันที หลังจากนั้นจะเริ่มนับการสะสมใหม่ (ไม่มีผลกับซูเปอร์ครีปและรถถัง)",
+      "description_en": "Every 25s executes a minion. At 10 stacks, instantly grants 200 bonus gold.",
+      "icon_file": "Minion Kill (ENCHANTMENT).png",
+      "icon_url": "/enchantments/minion_kill.png"
+    },
+    {
+      "name": "Gunslinger",
+      "faction": "Origin Alliance",
+      "alias_faction": "League of Humans",
+      "tier": 2,
+      "category_th": "เพิ่มพลัง",
+      "description": "ได้รับบัฟ Gunslinger 1 ครั้ง และสามารถสะสมเพิ่มได้โดยการ Kill หรือ Assist ซึ่งบัฟแต่ละครั้งจะเพิ่มพลังโจมตี 8 หน่วย และพลังเวท 12 หน่วย",
+      "description_en": "Gains 1 Gunslinger stack on spawn (+8 AD, +12 AP) and stacks further with kills or assists.",
+      "icon_file": "Gunslinger (ENCHANTMENT).png",
+      "icon_url": "/enchantments/gunslinger.png"
+    },
+    {
+      "name": "Endless Cycle",
+      "faction": "Origin Alliance",
+      "alias_faction": "League of Humans",
+      "tier": 3,
+      "category_th": "คืนชีพ",
+      "description": "หลังจากตายจะได้รับสกิล Resurrection ซึ่งเมื่อใช้แล้วจะสามารถไปเกิดที่บ่อน้ำพุได้ทันที (ใช้ได้สูงสุด 2 ครั้ง) โดย CD จะขึ้นอยู่กับเวลาในเกม (100-310 วิ)",
+      "description_en": "Grants Resurrection talent upon death to immediately respawn at fountain (max 2 uses, 100-310s cooldown).",
+      "icon_file": "Endless Cycle (ENCHANTMENT).png",
+      "icon_url": "/enchantments/endless_cycle.png"
+    },
+    {
+      "name": "Alchemy",
+      "faction": "Origin Alliance",
+      "alias_faction": "League of Humans",
+      "tier": 3,
+      "category_th": "ท้ายเกม",
+      "description": "ทุก 20 วิ จะได้รับบัฟ 1 ครั้ง (สูงสุด 3 ครั้ง) เมื่อใช้สกิล/โจมตีปกติโดนป้อม/ฮีโร่ศัตรูจะได้รับโกลด์เพิ่มขึ้น 16 และสูญเสียบัฟ 1 ครั้ง (ได้รับสูงสุด 800 โกลด์)",
+      "description_en": "Every 20s gains a stack (max 3). Attacks/skills on enemy hero or tower grant 16 gold per stack consumed (max 800 gold).",
+      "icon_file": "Alchemy.png",
+      "icon_url": "/enchantments/alchemy.png"
     }
   ]
 }

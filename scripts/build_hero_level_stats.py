@@ -42,13 +42,16 @@ HERO_BASE_OVERRIDES = {
     "Jinnar": {"hp": 3250, "armor": 95, "ad": 160, "mdef": 80, "speed": 370},
 }
 
+# Per-level growth measured from in-game Lv.1 vs Lv.15 screenshots of one hero per class
+# (Toro, Lu Bu, Nakroth, Tulen, Valhein, Alice; data/hero_status_lv15.json). Magic defense is
+# 80 -> 269 for all six heroes. Heroes listed in hero_status_lv15.json use their own growth.
 CLASS_GROWTH_RATES = {
-    "Tank": {"hp_growth": 345.0, "armor_growth": 25.5, "ad_growth": 8.5, "mdef_growth": 8.5},
-    "Warrior": {"hp_growth": 290.0, "armor_growth": 21.0, "ad_growth": 12.5, "mdef_growth": 8.5},
-    "Assassin": {"hp_growth": 250.0, "armor_growth": 18.5, "ad_growth": 14.5, "mdef_growth": 8.5},
-    "Mage": {"hp_growth": 210.0, "armor_growth": 16.0, "ad_growth": 9.5, "mdef_growth": 0.0},
-    "Marksman": {"hp_growth": 225.0, "armor_growth": 17.0, "ad_growth": 15.5, "mdef_growth": 0.0},
-    "Support": {"hp_growth": 310.0, "armor_growth": 22.0, "ad_growth": 8.0, "mdef_growth": 8.5},
+    "Tank": {"hp_growth": 350.0, "armor_growth": 28.0, "ad_growth": 10.0, "mdef_growth": 13.5},
+    "Warrior": {"hp_growth": 356.5, "armor_growth": 22.571, "ad_growth": 13.357, "mdef_growth": 13.5},
+    "Assassin": {"hp_growth": 260.0, "armor_growth": 20.0, "ad_growth": 15.286, "mdef_growth": 13.5},
+    "Mage": {"hp_growth": 245.0, "armor_growth": 20.857, "ad_growth": 9.357, "mdef_growth": 13.5},
+    "Marksman": {"hp_growth": 241.286, "armor_growth": 20.857, "ad_growth": 14.786, "mdef_growth": 13.5},
+    "Support": {"hp_growth": 275.0, "armor_growth": 21.0, "ad_growth": 10.857, "mdef_growth": 13.5},
 }
 
 
@@ -67,6 +70,8 @@ def parse_numeric(val, default=0):
 
 
 def get_hero_primary_class(hero):
+    if hero.get("primary_role") in CLASS_GROWTH_RATES:
+        return hero["primary_role"]
     classes = hero.get("classes", [])
     if isinstance(classes, str):
         classes = [c.strip() for c in classes.split("/")]

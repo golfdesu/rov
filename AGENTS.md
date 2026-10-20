@@ -50,6 +50,15 @@ Every AI agent (including fast models such as `3.8flash`) MUST strictly obey the
    - The API, data, and model always use canonical names (`Arthur`, `Brunhilda`, `Richter`). Thai server names are display-only, in `frontend/src/utils/heroNames.ts`. Never rename heroes in `data/` or the checkpoint.
    - Regenerate hero icons only with `python scripts/fetch_hero_icons.py` (keeps filenames in sync with `frontend/public/hero_images.json`).
 
+8. **Combat Calculator Data Gaps (`src/combat_calculator.py`)**:
+   - Mitigation is `600 / (600 + max(0, (def - flat_pierce) * (1 - pct_pierce)))`; pierce is parsed from item passive text.
+   - Only enchantments in `ENCHANTMENT_EFFECTS` affect numbers; values are parsed from descriptions and pending in-game verification. Never invent values for the rest.
+   - `hero_level_stats.json` lacks attack speed/mana; base attack rate is assumed `BASE_ATTACKS_PER_SEC = 1.0`.
+
+9. **Cross-Session Changelog (`CHANGELOG.md`)**:
+   - Before starting work, read the top entries of `CHANGELOG.md` to learn what previous agents already did.
+   - Before finishing any task that modified files, add a new entry at the TOP (date, time, agent, what was done, files, verification, open issues) following the format in that file.
+
 ---
 
 ## 2. Repository Structure & Architecture
@@ -57,6 +66,7 @@ Every AI agent (including fast models such as `3.8flash`) MUST strictly obey the
 ```text
 ROV/
 ├── AGENTS.md                        # Master operational manual & guardrails for AI agents
+├── CHANGELOG.md                     # Cross-session log of what each AI agent did (read first, append on finish)
 ├── CLAUDE.md                        # Pointer to @AGENTS.md
 ├── DESIGN.md                        # Draft UI design system (tokens, typography, layout)
 ├── Dockerfile                       # Multi-stage: builds frontend/, then FastAPI serving image
@@ -89,9 +99,9 @@ ROV/
 │   ├── hero_patch_history.json      # 334 historical balance adjustments across 92 heroes from TW patch notes
 │   ├── hero_level_stats.json        # Exact level 1-15 stats table for all 130 heroes (JSON catalog)
 │   ├── hero_level_stats.csv         # 1,950 row level 1-15 scaling table (130 heroes * 15 levels)
-│   ├── hero_skills_full.json        # 524 structured hero skills with numerical cooldowns, mana costs & scalings
+│   ├── hero_skills_full.json        # 525 structured hero skills with numerical cooldowns, mana costs & scalings
 │   ├── arcana.json                  # 90 official Arcana runes (30 Red, 30 Purple, 30 Green across Tiers I-III)
-│   └── enchantments.json            # 31 official Enchantments (พลังแฝง) across 4 factions (Veda, Lokheim, Afata, Humans)
+│   └── enchantments.json            # 33 official Enchantments (พลังแฝง) across 4 factions (Veda, Lokheim, Afata, Humans)
 ├── frontend/                        # React 19 + Vite + Tailwind 4 draft UI (see frontend/README.md)
 │   ├── src/                         # App, hooks/useDraft.ts, components/, utils/heroNames.ts
 │   └── public/
@@ -105,7 +115,8 @@ ROV/
 │   ├── config.py                    # Centralized OOP configuration (PathConfig, DraftModelConfig)
 │   ├── schemas.py                   # Pydantic V2 request/response validation schemas
 │   ├── predictor.py                 # Production OOP inference engine (RoVDraftPredictor)
-│   ├── api.py                       # FastAPI endpoints (/health, /heroes, /draft/steps, /predict) + serves frontend/dist
+│   ├── api.py                       # FastAPI endpoints (/health, /heroes, /draft/steps, /predict, /combat/*) + serves frontend/dist
+│   ├── combat_calculator.py         # Stat builder (level+items+T3 arcana+enchantments), skill damage w/ mitigation, 1v1 duel sim
 │   ├── train_sota_model.py          # SOTA RoVDraftGNNTransformer model & training pipeline
 │   ├── hpo_sota_optuna.py           # Fast GPU-Resident Optuna HPO engine (saves Top 5 trials)
 │   ├── predict_draft_cli.py         # CLI draft simulator & tournament scenario runner
@@ -119,13 +130,14 @@ ROV/
 │   ├── parse_tw_hero_patches.py     # Crawls Garena TW balance notices -> data/hero_patch_history.json
 │   ├── build_hero_level_stats.py    # Builds 1-15 level stats scaling tables -> data/hero_level_stats.*
 │   ├── download_rov_apk.py          # Garena RoV TH official APK/XAPK inspector & downloader
-│   ├── build_hero_skills_catalog.py # Multi-source scraper/parser for 524 numerical hero skills, cooldowns & scalings
-│   ├── fetch_arcana_and_enchantments.py # Scrapes 90 Arcana & 31 Enchantments from Garena TW & MediaWiki
+│   ├── build_hero_skills_catalog.py # Multi-source scraper/parser for 525 numerical hero skills, cooldowns & scalings
+│   ├── fetch_arcana_and_enchantments.py # Scrapes 90 Arcana & 33 Enchantments from Garena TW & MediaWiki
 │   └── simulate_draft_selfplay.py   # 18-step AI vs AI self-play draft simulation
 └── tests/
     ├── test_data_integrity.py       # Verifies 130 heroes, skills, 4,208 match mappings, and item catalog
     ├── test_model_pipeline.py       # Verifies SOTA checkpoint, masking, and predictor output
-    └── test_api.py                  # Verifies FastAPI endpoints and the served frontend build
+    ├── test_api.py                  # Verifies FastAPI endpoints and the served frontend build
+    └── test_combat_calculator.py    # Verifies mitigation formula, stat stacking, CDR cap, arcana/enchantment rules, duel
 ```
 
 ---

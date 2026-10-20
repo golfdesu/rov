@@ -1,4 +1,4 @@
-import { CornerDownLeft, Loader2, Sparkles, Trophy } from "lucide-react";
+import { CornerDownLeft, Flame, Loader2, Sparkles, Trophy } from "lucide-react";
 import type { DraftStep, Hero, HeroRecommendation } from "../types/draft";
 import { LANE_SHORT, laneKey, missingLaneKeys } from "../utils/draft";
 import { displayName } from "../utils/heroNames";
@@ -6,6 +6,7 @@ import { HeroPortrait } from "./HeroPortrait";
 
 interface AiPanelProps {
   recommendations: HeroRecommendation[];
+  banUnlockedHeroes?: HeroRecommendation[];
   missingAllyLanes: string[];
   currentStep: DraftStep | null;
   heroMap: Map<string, Hero>;
@@ -36,6 +37,7 @@ function Sparkline({ values }: { values: number[] }) {
 
 export function AiPanel({
   recommendations,
+  banUnlockedHeroes = [],
   missingAllyLanes,
   currentStep,
   heroMap,
@@ -87,6 +89,34 @@ export function AiPanel({
         </span>
       </div>
 
+      {/* Ban-Unlocked Heroes strip */}
+      {banUnlockedHeroes.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5 border-b border-line bg-gold/5 px-4 py-2">
+          <span className="flex items-center gap-1 text-[11px] font-semibold text-gold">
+            <Flame className="h-3.5 w-3.5" />
+            ตัวปลดล็อก (เก่งขึ้นทันที):
+          </span>
+          {banUnlockedHeroes.slice(0, 4).map((u) => {
+            const triggers = (u.triggered_by ?? []).map(displayName).join(", ");
+            return (
+              <button
+                type="button"
+                key={u.hero_name}
+                onClick={() => onLockHero(u.hero_name)}
+                title={triggers ? `เก่งขึ้นเพราะแบน ${triggers}` : undefined}
+                className="flex items-center gap-1.5 border border-gold/40 bg-panel px-1.5 py-0.5 text-left transition-colors hover:border-gold hover:bg-panel-2"
+              >
+                <div className="h-4 w-4 shrink-0 overflow-hidden">
+                  <HeroPortrait name={u.hero_name} hero={heroMap.get(u.hero_name)} />
+                </div>
+                <span className="font-display text-[11px] font-bold text-ink">{displayName(u.hero_name)}</span>
+                {triggers && <span className="font-mono text-[9px] text-gold">← แบน {triggers}</span>}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Missing lanes */}
       {!isBan && missingAllyLanes.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5 border-b border-line px-4 py-2">
@@ -120,6 +150,7 @@ export function AiPanel({
           const win = rec.lookahead_win_rate_pct ?? rec.predicted_win_rate_pct;
           const lane = laneKey(rec.primary_lane);
           const fillsLane = missing.size < 5 && missing.has(lane);
+          const triggerNames = (rec.triggered_by ?? []).map(displayName);
           return (
             <li key={rec.hero_name}>
               <button
@@ -137,8 +168,10 @@ export function AiPanel({
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-baseline gap-2">
-                    <span className="truncate font-display text-[15px] font-bold tracking-wide">{displayName(rec.hero_name)}</span>
+                  <div className="flex flex-wrap items-baseline gap-2">
+                    <span className="truncate font-display text-[15px] font-bold tracking-wide">
+                      {displayName(rec.hero_name)}
+                    </span>
                     <span
                       className={`shrink-0 font-mono text-[10px] font-bold ${fillsLane ? "border border-good/50 bg-good/10 px-1 text-good" : "text-muted"}`}
                       title={fillsLane ? `เติมเลนที่ยังขาด: ${LANE_SHORT[lane]?.th ?? lane}` : undefined}
@@ -147,6 +180,11 @@ export function AiPanel({
                       {LANE_SHORT[lane]?.en ?? lane}
                     </span>
                     <span className="hidden shrink-0 text-[11px] text-dim sm:inline">{rec.primary_role}</span>
+                    {triggerNames.length > 0 && (
+                      <span className="border border-gold/40 bg-gold/10 px-1 font-mono text-[9px] text-gold">
+                        {isBan ? `ปกป้อง ${triggerNames.join(", ")}` : `ปลดล็อก (แบน ${triggerNames.join(", ")})`}
+                      </span>
+                    )}
                   </div>
                   {/* Policy probability bar */}
                   <div className="mt-1 flex items-center gap-2">

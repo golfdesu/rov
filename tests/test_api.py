@@ -36,6 +36,70 @@ def test_predict_endpoint():
     rec_names = {r["hero_name"] for r in data["recommendations"]}
     assert "Marja" not in rec_names
     assert "Rouie" not in rec_names
+    assert len(data["blue_next_picks"]) == 2
+    assert len(data["red_next_picks"]) == 2
+
+
+def test_predict_next_picks_ghost_forecast():
+    response = client.post(
+        "/predict",
+        json={
+            "mode": "pick",
+            "side": "red",
+            "phase": 1,
+            "ally_picks": [],
+            "enemy_picks": ["Butterfly"],
+            "ally_bans": ["Goverra", "Dyadia"],
+            "enemy_bans": ["Heino", "Billow"],
+            "top_k": 5,
+        },
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data["blue_next_picks"]) == 2
+    assert len(data["red_next_picks"]) == 2
+    blue_forecast_names = [r["hero_name"] for r in data["blue_next_picks"]]
+    assert len(set(blue_forecast_names)) == 2
+    assert "Butterfly" not in blue_forecast_names
+    blue_forecast_lanes = [r["primary_lane"] for r in data["blue_next_picks"]]
+    assert blue_forecast_lanes[0] != blue_forecast_lanes[1]
+
+
+def test_ban_pick_bidirectional_intelligence():
+    # Direction 1: Ban Mina + Florentino -> predicts/unlocks Omen
+    r1 = client.post(
+        "/predict",
+        json={
+            "mode": "pick",
+            "side": "blue",
+            "phase": 1,
+            "ally_bans": ["Mina", "Florentino"],
+            "top_k": 5,
+        },
+    )
+    assert r1.status_code == 200
+    d1 = r1.json()
+    assert d1["blue_next_picks"][0]["hero_name"] == "Omen"
+    assert set(d1["blue_next_picks"][0]["triggered_by"]) == {"Mina", "Florentino"}
+    assert d1["ban_unlocked_heroes"][0]["hero_name"] == "Omen"
+
+    # Direction 2: Pick Omen -> predicts Phase 2 bans Mina & Florentino
+    r2 = client.post(
+        "/predict",
+        json={
+            "mode": "ban",
+            "side": "blue",
+            "phase": 2,
+            "ally_picks": ["Omen"],
+            "ally_bans": ["Billow", "Dolia"],
+            "top_k": 5,
+        },
+    )
+    assert r2.status_code == 200
+    d2 = r2.json()
+    next_ban_names = [b["hero_name"] for b in d2["blue_next_bans"]]
+    assert next_ban_names == ["Mina", "Florentino"]
+    assert d2["blue_next_bans"][0]["triggered_by"] == ["Omen"]
 
 
 def test_web_ui_served():
@@ -82,3 +146,27 @@ def test_heroes_rich_details():
     assert "role" in first
     assert "lane" in first
     assert "tier" in first
+
+
+def test_combat_catalog():
+    data = client.get("/combat/catalog").json()
+    assert len(data["heroes"]) == 130
+    assert len(data["arcana"]) == 30
+    assert len(data["enchantments"]) == 33
+
+
+def test_combat_duel_endpoint():
+    response = client.post(
+        "/combat/duel",
+        json={
+            "a": {"hero": "Valhein", "level": 12, "items": ["Fenrir's Tooth"], "arcana": {"Excalibur": 10}},
+            "b": {"hero": "Toro", "level": 12, "items": ["Mail of Pain"]},
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["simulation"]["winner"] in {"a", "b", "draw", "timeout"}
+
+
+def test_combat_stats_rejects_bad_build():
+    response = client.post("/combat/stats", json={"build": {"hero": "Valhein", "items": ["Not An Item"]}})
+    assert response.status_code == 422

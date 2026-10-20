@@ -28,6 +28,7 @@ export interface HeroRecommendation {
   synergy_edge_pct: number;
   counter_edge_pct: number;
   capabilities: string[];
+  triggered_by?: string[];
 }
 
 export interface DraftPredictionResponse {
@@ -37,6 +38,11 @@ export interface DraftPredictionResponse {
   phase: number;
   missing_ally_lanes: string[];
   recommendations: HeroRecommendation[];
+  blue_next_picks?: HeroRecommendation[];
+  red_next_picks?: HeroRecommendation[];
+  blue_next_bans?: HeroRecommendation[];
+  red_next_bans?: HeroRecommendation[];
+  ban_unlocked_heroes?: HeroRecommendation[];
 }
 
 export interface DraftHistoryItem {

@@ -12,6 +12,7 @@ export default defineConfig({
       "/predict": "http://127.0.0.1:8000",
       "/draft": "http://127.0.0.1:8000",
       "/health": "http://127.0.0.1:8000",
+      "/combat": "http://127.0.0.1:8000",
       "/hero_images.json": "http://127.0.0.1:8000",
     },
   },

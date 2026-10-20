@@ -74,6 +74,10 @@ class HeroRecommendation(BaseModel):
     synergy_edge_pct: float
     counter_edge_pct: float
     capabilities: list[str]
+    triggered_by: list[str] = Field(
+        default_factory=list,
+        description="Bans or picks that statistically triggered/unlocked this recommendation",
+    )
 
 
 class DraftPredictionResponse(BaseModel):
@@ -83,6 +87,26 @@ class DraftPredictionResponse(BaseModel):
     phase: int
     missing_ally_lanes: list[str]
     recommendations: list[HeroRecommendation]
+    blue_next_picks: list[HeroRecommendation] = Field(
+        default_factory=list,
+        description="Predicted next up to 2 picks for Blue side (ghost slot forecast)",
+    )
+    red_next_picks: list[HeroRecommendation] = Field(
+        default_factory=list,
+        description="Predicted next up to 2 picks for Red side (ghost slot forecast)",
+    )
+    blue_next_bans: list[HeroRecommendation] = Field(
+        default_factory=list,
+        description="Predicted next up to 2 bans for Blue side based on picked heroes",
+    )
+    red_next_bans: list[HeroRecommendation] = Field(
+        default_factory=list,
+        description="Predicted next up to 2 bans for Red side based on picked heroes",
+    )
+    ban_unlocked_heroes: list[HeroRecommendation] = Field(
+        default_factory=list,
+        description="Heroes unlocked / made significantly stronger by current bans on the board",
+    )
 
 
 class HealthResponse(BaseModel):
@@ -91,3 +115,30 @@ class HealthResponse(BaseModel):
     architecture: str
     num_heroes: int
     val_loss: float
+
+
+class CombatBuildRequest(BaseModel):
+    hero: str
+    level: int = Field(default=1, ge=1, le=15)
+    items: list[str] = Field(default_factory=list, max_length=6)
+    arcana: dict[str, int] = Field(default_factory=dict, description="Tier 3 arcana name -> slot count")
+    primary_faction: str | None = None
+    primary_enchantments: list[str] = Field(default_factory=list, max_length=3)
+    secondary_faction: str | None = None
+    secondary_enchantments: list[str] = Field(default_factory=list, max_length=2)
+    skill_levels: dict[str, int] = Field(default_factory=dict, description="Override auto skill point allocation")
+    skill_hits: dict[str, int] = Field(default_factory=dict, description="Hits per cast for multi-hit skills")
+    skill_charges: dict[str, float] = Field(
+        default_factory=dict, description="Charge ratio (0.0 to 1.0) for charging skills"
+    )
+    active_combo_slots: list[str] | None = Field(default=None, description="Active skill slots included in combo/duel")
+
+
+class CombatStatsRequest(BaseModel):
+    build: CombatBuildRequest
+    target: CombatBuildRequest | None = Field(default=None, description="Optional target for skill damage")
+
+
+class CombatDuelRequest(BaseModel):
+    a: CombatBuildRequest
+    b: CombatBuildRequest

@@ -3343,6 +3343,46 @@
       "date": "2026-10-15",
       "version": null,
       "source": "https://moba.garena.tw/news/show/5741"
+    },
+    {
+      "hero": "Preyta",
+      "skill": "Passive",
+      "field": "Hero Rework: Toxic Mutation",
+      "before": "Flying Dragon (+40 flat movement speed)",
+      "after": "Toxic Mutation: Skills apply Plague stacks, explodes at 3 stacks; gains Plague Energy on hit/kill to permanently evolve abilities",
+      "date": "2026-09-24",
+      "version": "Beta 55",
+      "source": "https://moba.garena.tw/news/show/5716"
+    },
+    {
+      "hero": "Preyta",
+      "skill": "Skill 1",
+      "field": "Hero Rework: Plague Enchanting",
+      "before": "Poison Gas Bomb: knockback and slow",
+      "after": "Plague Enchanting: 4s enhanced normal attack state (bonus AS, range, MS); 3rd hit deals AoE magic damage (all hits at 25 energy)",
+      "date": "2026-09-24",
+      "version": "Beta 55",
+      "source": "https://moba.garena.tw/news/show/5716"
+    },
+    {
+      "hero": "Preyta",
+      "skill": "Skill 2",
+      "field": "Hero Rework: Putrid Virus",
+      "before": "Plague Specter: charging breath wave",
+      "after": "Putrid Virus: casts magic dealing damage and slow; after 1s explodes dealing damage and knockup (range increased at 75 energy)",
+      "date": "2026-09-24",
+      "version": "Beta 55",
+      "source": "https://moba.garena.tw/news/show/5716"
+    },
+    {
+      "hero": "Preyta",
+      "skill": "Ultimate",
+      "field": "Hero Rework: Lethal Pathogen",
+      "before": "Disciple of the plague: wyvern fusion buff",
+      "after": "Lethal Pathogen: channels and releases 3 shockwave lines up to 1800 range (cast while moving at 145 energy)",
+      "date": "2026-09-24",
+      "version": "Beta 55",
+      "source": "https://moba.garena.tw/news/show/5716"
     }
   ]
 }

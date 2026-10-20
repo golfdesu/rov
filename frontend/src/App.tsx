@@ -1,11 +1,23 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AiPanel } from "./components/AiPanel";
 import { DraftTimeline } from "./components/DraftTimeline";
 import { HeroGrid } from "./components/HeroGrid";
+import { CombatLab } from "./components/lab/CombatLab";
 import { ScoreBar } from "./components/ScoreBar";
 import { TeamColumn } from "./components/TeamColumn";
 import { useDraft } from "./hooks/useDraft";
 import { heroesByStep } from "./utils/draft";
+
+type Tab = "draft" | "lab";
+
+const TABS: { key: Tab; label: string }[] = [
+  { key: "draft", label: "ดราฟต์" },
+  { key: "lab", label: "Stat & Duel Lab" },
+];
+
+function initialTab(): Tab {
+  return window.location.hash === "#lab" ? "lab" : "draft";
+}
 
 export function App() {
   const {
@@ -22,12 +34,18 @@ export function App() {
     useLookahead,
     setUseLookahead,
     recommendations,
+    blueNextPicks,
+    redNextPicks,
+    blueNextBans,
+    redNextBans,
+    banUnlockedHeroes,
     missingAllyLanes,
     blueWinRate,
     winHistory,
     isLoading,
     isHeroesLoading,
     error,
+    heroesFallback,
     lockHero,
     undo,
     reset,
@@ -35,6 +53,12 @@ export function App() {
   } = useDraft();
 
   const searchRef = useRef<HTMLInputElement>(null);
+  const [tab, setTab] = useState<Tab>(initialTab);
+
+  const selectTab = (next: Tab) => {
+    setTab(next);
+    window.history.replaceState(null, "", next === "lab" ? "#lab" : "#");
+  };
 
   const stepHeroes = useMemo(
     () => heroesByStep({ bluePicks, redPicks, blueBans, redBans }),
@@ -48,6 +72,7 @@ export function App() {
 
   // Keyboard shortcuts: "/" focus search, Enter lock top suggestion, Ctrl/Cmd+Z undo
   useEffect(() => {
+    if (tab !== "draft") return;
     function onKey(e: KeyboardEvent) {
       const typing = e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement;
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
@@ -63,65 +88,115 @@ export function App() {
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [undo, lockHero, recommendations, currentStep, isLoading, unavailableHeroes]);
+  }, [tab, undo, lockHero, recommendations, currentStep, isLoading, unavailableHeroes]);
 
   return (
     <div className="flex min-h-screen flex-col">
-      <ScoreBar
-        blueWinRate={blueWinRate}
-        isLoading={isLoading}
-        currentStep={currentStep}
-        currentStepIndex={currentStepIndex}
-        totalSteps={totalSteps}
-        useLookahead={useLookahead}
-        setUseLookahead={setUseLookahead}
-        onUndo={undo}
-        onReset={reset}
-        canUndo={canUndo}
-      />
-
-      <main className="mx-auto flex w-full max-w-[1680px] flex-1 flex-col gap-4 px-4 py-4">
-        {error && (
-          <div role="alert" className="border border-red/40 bg-red/10 px-3 py-2 text-xs text-red">
-            {error}
-          </div>
-        )}
-
-        <DraftTimeline stepHeroes={stepHeroes} currentStepIndex={currentStepIndex} heroMap={heroMap} />
-
-        <div className="grid grid-cols-2 gap-x-2 gap-y-4 sm:gap-4 xl:grid-cols-[minmax(260px,1fr)_minmax(0,2.3fr)_minmax(260px,1fr)]">
-          <div className="xl:order-1">
-            <TeamColumn side="blue" picks={bluePicks} bans={blueBans} heroMap={heroMap} currentStep={currentStep} />
-          </div>
-          <div className="xl:order-3">
-            <TeamColumn side="red" picks={redPicks} bans={redBans} heroMap={heroMap} currentStep={currentStep} />
-          </div>
-
-          <div className="flex min-w-0 flex-col gap-4 col-span-2 xl:order-2 xl:col-span-1">
-            <AiPanel
-              recommendations={recommendations}
-              missingAllyLanes={missingAllyLanes}
-              currentStep={currentStep}
-              heroMap={heroMap}
-              isLoading={isLoading}
-              useLookahead={useLookahead}
-              blueWinRate={blueWinRate}
-              winHistory={winHistory}
-              onLockHero={lockHero}
-            />
-            <HeroGrid
-              ref={searchRef}
-              heroes={heroes}
-              unavailableHeroes={unavailableHeroes}
-              recommendedRanks={recommendedRanks}
-              missingAllyLanes={missingAllyLanes}
-              currentStep={currentStep}
-              isHeroesLoading={isHeroesLoading}
-              onLockHero={lockHero}
-            />
-          </div>
+      <nav className="border-b border-line bg-bg" aria-label="โหมด">
+        <div className="mx-auto flex max-w-[1680px] gap-1 px-4">
+          {TABS.map((t) => (
+            <button
+              type="button"
+              key={t.key}
+              onClick={() => selectTab(t.key)}
+              aria-current={tab === t.key ? "page" : undefined}
+              className={`border-b-2 px-3 py-2 font-display text-xs font-semibold tracking-wide ${
+                tab === t.key ? "border-gold text-ink" : "border-transparent text-dim hover:text-muted"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
-      </main>
+      </nav>
+
+      {tab === "lab" ? (
+        <main className="mx-auto w-full max-w-[1680px] flex-1 px-4 py-4">
+          <CombatLab heroMap={heroMap} />
+        </main>
+      ) : (
+        <>
+          <ScoreBar
+            blueWinRate={blueWinRate}
+            isLoading={isLoading}
+            currentStep={currentStep}
+            currentStepIndex={currentStepIndex}
+            totalSteps={totalSteps}
+            useLookahead={useLookahead}
+            setUseLookahead={setUseLookahead}
+            onUndo={undo}
+            onReset={reset}
+            canUndo={canUndo}
+          />
+
+          <main className="mx-auto flex w-full max-w-[1680px] flex-1 flex-col gap-4 px-4 py-4">
+            {error && (
+              <div role="alert" className="border border-red/40 bg-red/10 px-3 py-2 text-xs text-red">
+                {error}
+              </div>
+            )}
+            {heroesFallback && (
+              <div role="status" className="border border-yellow-500/40 bg-yellow-500/10 px-3 py-2 text-xs text-yellow-400">
+                โหลดข้อมูลฮีโร่จากเซิร์ฟเวอร์ไม่ได้ — ใช้รายชื่อสำรอง บทบาทและเลนอาจไม่ถูกต้อง
+              </div>
+            )}
+
+            <DraftTimeline stepHeroes={stepHeroes} currentStepIndex={currentStepIndex} heroMap={heroMap} />
+
+            <div className="grid grid-cols-2 gap-x-2 gap-y-4 sm:gap-4 xl:grid-cols-[minmax(260px,1fr)_minmax(0,2.3fr)_minmax(260px,1fr)]">
+              <div className="xl:order-1">
+                <TeamColumn
+                  side="blue"
+                  picks={bluePicks}
+                  bans={blueBans}
+                  heroMap={heroMap}
+                  currentStep={currentStep}
+                  predictedNextPicks={blueNextPicks}
+                  predictedNextBans={blueNextBans}
+                  onLockHero={lockHero}
+                />
+              </div>
+              <div className="xl:order-3">
+                <TeamColumn
+                  side="red"
+                  picks={redPicks}
+                  bans={redBans}
+                  heroMap={heroMap}
+                  currentStep={currentStep}
+                  predictedNextPicks={redNextPicks}
+                  predictedNextBans={redNextBans}
+                  onLockHero={lockHero}
+                />
+              </div>
+
+              <div className="flex min-w-0 flex-col gap-4 col-span-2 xl:order-2 xl:col-span-1">
+                <AiPanel
+                  recommendations={recommendations}
+                  banUnlockedHeroes={banUnlockedHeroes}
+                  missingAllyLanes={missingAllyLanes}
+                  currentStep={currentStep}
+                  heroMap={heroMap}
+                  isLoading={isLoading}
+                  useLookahead={useLookahead}
+                  blueWinRate={blueWinRate}
+                  winHistory={winHistory}
+                  onLockHero={lockHero}
+                />
+                <HeroGrid
+                  ref={searchRef}
+                  heroes={heroes}
+                  unavailableHeroes={unavailableHeroes}
+                  recommendedRanks={recommendedRanks}
+                  missingAllyLanes={missingAllyLanes}
+                  currentStep={currentStep}
+                  isHeroesLoading={isHeroesLoading}
+                  onLockHero={lockHero}
+                />
+              </div>
+            </div>
+          </main>
+        </>
+      )}
 
       <footer className="border-t border-line px-4 py-3">
         <div className="mx-auto flex max-w-[1680px] flex-wrap items-center justify-between gap-2 font-mono text-[10px] text-dim">

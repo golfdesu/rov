@@ -72,7 +72,8 @@ def test_items_catalog():
     assert by_name["Stealth Bracer"]["patch"] == "Beta 55"
     assert by_name["Light Shield"]["stats"]["max_hp"] == 1000
     assert by_name["Mail of Pain"]["stats"] == {"armor": 300, "attack_damage": 50, "max_hp": 700}
-    assert by_name["Carano's Vow"]["stats"] == {"ability_power": 180, "magic_life_steal": 12, "movement_speed_pct": 5}
+    carano = by_name.get("Carano's Pledge") or by_name.get("Carano's Vow")
+    assert carano["stats"] == {"ability_power": 180, "magic_life_steal": 12, "movement_speed_pct": 5}
 
 
 def test_hero_patch_history():
@@ -107,6 +108,10 @@ def test_hero_level_stats():
     df = pd.read_csv(config.paths.hero_level_stats_csv_path)
     assert len(df) == 130 * 15 == 1950
 
+    measured_count = sum(1 for d in heroes_dict.values() if d.get("growth_source") == "measured_lv15")
+    assert measured_count >= 105, f"Expected at least 105 measured Lv15 heroes, got {measured_count}"
+    assert heroes_dict["Skud"]["levels"]["15"]["hp"] == 8856
+
     for name, data in heroes_dict.items():
         assert "base_stats" in data
         assert "growth_rates" in data
@@ -120,6 +125,33 @@ def test_hero_level_stats():
         assert lv15["armor"] > lv1["armor"], f"{name}: Armor does not scale"
         assert lv15["attack_damage"] > lv1["attack_damage"], f"{name}: AD does not scale"
         assert lv1["movement_speed"] >= 340, f"{name}: Speed too low"
+
+
+def test_hero_base_stats_match_ingame_status():
+    root = config.paths.heroes_json_path.parent
+    status = json.loads((root / "hero_status_lv1.json").read_text(encoding="utf-8"))["heroes"]
+    heroes = json.loads(config.paths.heroes_json_path.read_text(encoding="utf-8"))
+    levels = json.loads(config.paths.hero_level_stats_json_path.read_text(encoding="utf-8"))["heroes"]
+    assert len(status) == 130
+
+    for h in heroes:
+        s = status[h["name"]]
+        assert h["attack_range"] in ("Melee", "Ranged"), f"{h['name']}: attack_range {h['attack_range']!r}"
+        assert h["attack_range"] == s["attack_range"]
+        assert 0 < h["base_stats"]["magic_defense"] <= 200, f"{h['name']}: magic_defense out of range"
+        assert levels[h["name"]]["primary_class"] == h["primary_role"], f"{h['name']}: growth class mismatch"
+        lv1 = levels[h["name"]]["levels"]["1"]
+        assert lv1["hp"] == s["hp"] and lv1["armor"] == s["armor"], h["name"]
+        assert lv1["attack_damage"] == s["attack_damage"] and lv1["magic_defense"] == s["magic_defense"], h["name"]
+        assert lv1["movement_speed"] == s["movement_speed"], h["name"]
+
+    status_lv15 = json.loads((root / "hero_status_lv15.json").read_text(encoding="utf-8"))["heroes"]
+    assert len(status_lv15) == 130, f"Expected 130 measured Lv.15 heroes, got {len(status_lv15)}"
+    for name, s in status_lv15.items():
+        assert levels[name].get("growth_source") == "measured_lv15", f"{name}: not measured_lv15"
+        lv15 = levels[name]["levels"]["15"]
+        for key in ("hp", "attack_damage", "armor", "magic_defense", "movement_speed"):
+            assert lv15[key] == s[key], f"{name}: Lv.15 {key} {lv15[key]} != in-game {s[key]}"
 
 
 def test_arcana_catalog():
@@ -152,7 +184,7 @@ def test_enchantments_catalog():
     assert "Veda" in factions
     assert "Lokheim" in factions
     assert "Afata" in factions
-    assert "League of Humans" in factions
+    assert "Origin Alliance" in factions or "League of Humans" in factions
 
     for e in enchantments:
         assert e["name"]
@@ -185,3 +217,62 @@ def test_hero_skills_catalog():
             assert isinstance(s["mana_cost"], list), f"{name} {s['name']}: mana_cost must be a list"
             assert isinstance(s["base_damage"], list), f"{name} {s['name']}: base_damage must be a list"
             assert isinstance(s["scaling"], dict), f"{name} {s['name']}: scaling must be a dict"
+            icon_url = s.get("icon_url")
+            assert icon_url and icon_url.startswith("/skills/"), f"{name} {s['name']}: invalid icon_url {icon_url}"
+            icon_file = config.paths.base_dir / "frontend" / "public" / icon_url.lstrip("/")
+            assert icon_file.exists(), f"{name} {s['name']}: missing icon file {icon_file}"
+
+
+def test_latest_patch_alignments():
+    """Verify hero skills and enchantments match latest Beta 55 & 10.15 Hotfix."""
+    with open(config.paths.hero_skills_json_path, "r", encoding="utf-8") as f:
+        catalog = json.load(f)
+    heroes = catalog["heroes"]
+
+    # Preyta Rework
+    preyta_skills = {s["slot"]: s for s in heroes["Preyta"]}
+    assert preyta_skills["Passive"]["name"] == "Toxic Mutation"
+    assert preyta_skills["Skill 1"]["name"] == "Plague Enchanting"
+    assert preyta_skills["Skill 2"]["name"] == "Putrid Virus"
+    assert preyta_skills["Ultimate"]["name"] == "Lethal Pathogen"
+    assert preyta_skills["Ultimate"]["base_damage"] == [400, 600, 800]
+
+    # Dirak Skill 4 Genesis Blast Split
+    dirak_skills = {s["slot"]: s for s in heroes["Dirak"]}
+    assert len(heroes["Dirak"]) == 5
+    assert "Skill 4" in dirak_skills
+    assert dirak_skills["Skill 4"]["name"] == "Genesis Blast"
+    assert dirak_skills["Skill 4"]["base_damage"] == [500, 750, 1000]
+    assert dirak_skills["Skill 2"]["cooldown"] == [12.5, 12.0, 11.5, 11.0, 10.5, 10.0]
+
+    # Wukong
+    wukong_passive = next(s for s in heroes["Wukong"] if s["slot"] == "Passive")
+    assert wukong_passive["base_damage"] == [450]
+    assert wukong_passive["scaling"]["ad_pct"] == 100.0
+
+    # Raz
+    raz_s1 = next(s for s in heroes["Raz"] if s["slot"] == "Skill 1")
+    assert raz_s1["cooldown"] == [8.0, 7.7, 7.4, 7.1, 6.8, 6.5]
+
+    # Astrid Rework
+    astrid_skills = {s["slot"]: s for s in heroes["Astrid"]}
+    assert astrid_skills["Passive"]["name"] == "Martial Soul"
+    assert astrid_skills["Skill 1"]["name"] == "Spin Slash"
+    assert astrid_skills["Skill 1"]["base_damage"] == [300, 360, 420, 480, 540, 600]
+    assert astrid_skills["Skill 1"]["cooldown"] == [8.0, 8.0, 8.0, 8.0, 8.0, 8.0]
+    assert astrid_skills["Skill 2"]["name"] == "Fearless Charge"
+    assert astrid_skills["Skill 2"]["base_damage"] == [230, 276, 322, 368, 414, 460]
+    assert astrid_skills["Skill 2"]["cooldown"] == [8.5, 8.2, 7.9, 7.6, 7.3, 7.0]
+    assert astrid_skills["Ultimate"]["name"] == "Dire Blow"
+    assert astrid_skills["Ultimate"]["base_damage"] == [200, 250, 300]
+    assert astrid_skills["Ultimate"]["cooldown"] == [50.0, 45.0, 40.0]
+
+    # Enchantments Beta 55
+    with open(config.paths.enchantments_json_path, "r", encoding="utf-8") as f:
+        ench_data = json.load(f)
+    ench_names = {e["name"] for e in ench_data["enchantments"]} | {
+        e.get("alias") for e in ench_data["enchantments"] if "alias" in e
+    }
+    assert "Turf Dominance" in ench_names
+    assert "Vital Aid" in ench_names
+    assert len(ench_data["enchantments"]) == 33

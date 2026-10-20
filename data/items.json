@@ -33,12 +33,15 @@
         "attack_damage": 10.0,
         "life_steal": 8.0
       },
-      "passives": [],
-      "passives_incomplete": false,
       "stats_raw": [
-        "+10 Attack Damage",
-        "+8% Life Steal"
+        "+10 พลังโจมตี",
+        "+8% ดูดเลือด"
       ],
+      "passives": [],
+      "desc_th": [
+        "+10 พลังโจมตี\n+8% ดูดเลือด"
+      ],
+      "passives_incomplete": false,
       "icon_url": "https://rovmeta.com/items/bloodied-club.png"
     },
     {
@@ -50,11 +53,14 @@
       "stats": {
         "attack_damage": 40.0
       },
-      "passives": [],
-      "passives_incomplete": false,
       "stats_raw": [
-        "+40 Attack Damage"
+        "+40 พลังโจมตี"
       ],
+      "passives": [],
+      "desc_th": [
+        "+40 พลังโจมตี"
+      ],
+      "passives_incomplete": false,
       "icon_url": "https://rovmeta.com/items/chain-hammer.png"
     },
     {
@@ -66,11 +72,14 @@
       "stats": {
         "attack_speed": 10.0
       },
-      "passives": [],
-      "passives_incomplete": false,
       "stats_raw": [
-        "+10% Attack Speed"
+        "+10% ความเร็วโจมตี"
       ],
+      "passives": [],
+      "desc_th": [
+        "+10% ความเร็วโจมตี"
+      ],
+      "passives_incomplete": false,
       "icon_url": "https://rovmeta.com/items/dagger.png"
     },
     {
@@ -82,11 +91,14 @@
       "stats": {
         "critical_chance": 8.0
       },
-      "passives": [],
-      "passives_incomplete": false,
       "stats_raw": [
-        "+8% Critical Chance"
+        "+8% อัตราคริติคอล"
       ],
+      "passives": [],
+      "desc_th": [
+        "+8% อัตราคริติคอล"
+      ],
+      "passives_incomplete": false,
       "icon_url": "https://rovmeta.com/items/gloves.png"
     },
     {
@@ -98,11 +110,14 @@
       "stats": {
         "attack_damage": 20.0
       },
-      "passives": [],
-      "passives_incomplete": false,
       "stats_raw": [
-        "+20 Attack Damage"
+        "+20 พลังโจมตี"
       ],
+      "passives": [],
+      "desc_th": [
+        "+20 พลังโจมตี"
+      ],
+      "passives_incomplete": false,
       "icon_url": "https://rovmeta.com/items/short-sword.png"
     },
     {
@@ -115,14 +130,17 @@
         "attack_damage": 25.0,
         "attack_speed": 15.0
       },
+      "stats_raw": [
+        "+25 พลังโจมตี",
+        "+15% ความเร็วโจมตี"
+      ],
       "passives": [
         "Unique Passive - Speed Up: Normal attacks increase movement speed by 10%."
       ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+25 Attack Damage",
-        "+15% Attack Speed"
+      "desc_th": [
+        "สกิลติดตัว - Speed Up:\nเมื่อทำการโจมตีปกติ รับความเร็วเคลื่อนที่ +10%"
       ],
+      "passives_incomplete": false,
       "icon_url": "https://rovmeta.com/items/arcane-hammer.png"
     },
     {
@@ -134,14 +152,43 @@
       "stats": {
         "attack_damage": 50.0
       },
-      "passives": [
-        "Unique Passive - Armor Reduction: Armor Pierce +60"
-      ],
-      "passives_incomplete": true,
       "stats_raw": [
-        "+50 Attack Damage"
+        "+50 พลังโจมตี"
       ],
+      "passives": [
+        "Unique Passive: Armor Pierce +60"
+      ],
+      "desc_th": [
+        "สกิลติดตัว: เจาะเกราะ+60"
+      ],
+      "passives_incomplete": false,
       "icon_url": "https://rovmeta.com/items/astral-spear.png"
+    },
+    {
+      "name": "Bloodthirsty Blade",
+      "slug": "bloodthirsty-blade",
+      "category": "attack",
+      "tier": 2,
+      "price": 830,
+      "stats": {
+        "attack_damage": 30.0,
+        "life_steal": 10.0
+      },
+      "stats_raw": [
+        "+30 พลังโจมตี",
+        "+10% ดูดเลือด"
+      ],
+      "passives": [
+        "Passive - Blood Feast: When HP falls below 30%, recovers 400-610 HP over 5s (20s CD)."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Blood Feast:\nเมื่อพลังชีวิตต่ำกว่า 30% จะฟื้นฟู พลังชีวิต 400 - 610 หน่วยของพลังชีวิตสูงสุด ภายใน 5 วินาที CD 20 วิ"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/bloodthirsty-blade.png",
+      "alias": [
+        "Ancestral Glory"
+      ]
     },
     {
       "name": "Chaos Bow",
@@ -153,14 +200,17 @@
         "attack_damage": 40.0,
         "attack_speed": 10.0
       },
+      "stats_raw": [
+        "+40 พลังโจมตี",
+        "+10% ความเร็วโจมตี"
+      ],
       "passives": [
-        "Unique Passive - Stab: Increases armor penetration by 10% (doubled for ranged heroes)"
+        "Unique Passive - Stab: Increases armor penetration by 10% (doubled for ranged heroes)."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Stab:\nเพิ่มเจาะเกราะ 10%\n(ฮีโร่โจมตีไกลได้รับผล 2 เท่า)"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+40 Attack Damage",
-        "+10% Attack Speed"
-      ],
       "icon_url": "https://rovmeta.com/items/chaos-bow.png"
     },
     {
@@ -172,11 +222,14 @@
       "stats": {
         "attack_damage": 80.0
       },
-      "passives": [],
-      "passives_incomplete": false,
       "stats_raw": [
-        "+80 Attack Damage"
+        "+80 พลังโจมตี"
       ],
+      "passives": [],
+      "desc_th": [
+        "+80 พลังโจมตี"
+      ],
+      "passives_incomplete": false,
       "icon_url": "https://rovmeta.com/items/cleaving-claymore.png"
     },
     {
@@ -188,13 +241,16 @@
       "stats": {
         "attack_speed": 20.0
       },
+      "stats_raw": [
+        "+20% ความเร็วโจมตี"
+      ],
       "passives": [
-        "Unique Passive - Vital Point: Normal attacks deal an additional 21~35 (melee) or 42~70 (ranged)"
+        "Passive - Heel: Normal attacks deal an additional 21-35 (melee) / 42-70 (ranged) physical damage (CD 0.3s)."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Heel: การโจมตีปกติสร้างความเสียหายกายภาพเพิ่มขึ้น 21-35 (ระยะใกล้)/ 42-70 (ระยะไกล) CD 0.3 วิ"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+20% Attack Speed"
-      ],
       "icon_url": "https://rovmeta.com/items/shuriken.png"
     },
     {
@@ -207,12 +263,16 @@
         "attack_speed": 25.0,
         "movement_speed_pct": 5.0
       },
-      "passives": [],
-      "passives_incomplete": false,
       "stats_raw": [
-        "+25% Attack Speed",
-        "+5% Movement Speed"
+        "+25% ความเร็วโจมตี",
+        "+5% ความเร็วเคลื่อนที่"
       ],
+      "passives": [],
+      "desc_th": [
+        "+25% ความเร็วโจมตี",
+        "+5% ความเร็วเคลื่อนที่"
+      ],
+      "passives_incomplete": false,
       "icon_url": "https://rovmeta.com/items/tempest-blades.png"
     },
     {
@@ -225,14 +285,17 @@
         "attack_speed": 35.0,
         "movement_speed_pct": 8.0
       },
+      "stats_raw": [
+        "+35% ความเร็วโจมตี",
+        "+8% ความเร็วเคลื่อนที่"
+      ],
       "passives": [
-        "Unique Passive - Chain Lightning: Normal attacks deal 45-87 additional"
+        "Unique Passive - Chain Lightning: Normal attacks deal 45~87 bonus magic damage. Every 3 normal attacks releases a chain lightning dealing 150~430 magic damage (0.3s CD)."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Chain Lightning:\nการโจมตีปกติสร้างโบนัสความเสียหายเวท 45~87 หน่วย การโจมตีปกติทุก 3 ครั้งจะปล่อย Chain Lightning 1 ครั้งและสร้างความเสียหายเวท 150~430 หน่วย (CD: 0.3 วิ)"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+35% Attack Speed",
-        "+8% Movement Speed"
-      ],
       "icon_url": "https://rovmeta.com/items/blitz-blade.png"
     },
     {
@@ -246,16 +309,45 @@
         "critical_chance": 10.0,
         "life_steal": 10.0
       },
-      "passives": [
-        "Unique Active -"
-      ],
-      "passives_incomplete": true,
       "stats_raw": [
-        "+90 Attack Damage",
-        "+10% Critical Chance",
-        "+10% Lifesteal"
+        "+90 พลังโจมตี",
+        "+10% อัตราคริติคอล",
+        "+10% ดูดเลือด"
       ],
+      "passives": [
+        "Active - Bloodthirst: Increases Life Steal by 60% for 3s (ranged only). Cooldown: 60s."
+      ],
+      "desc_th": [
+        "สกิลพิเศษ - [Bloodthirst]:\nดูดเลือดเพิ่มขึ้น 60% เป็นเวลา 3 วิ (ระยะไกลเท่านั้น) CD 60 วิ"
+      ],
+      "passives_incomplete": false,
       "icon_url": "https://rovmeta.com/items/bow-of-slaughter.png"
+    },
+    {
+      "name": "Broken Spears",
+      "slug": "broken-spears",
+      "category": "attack",
+      "tier": 3,
+      "price": 1900,
+      "stats": {
+        "attack_damage": 110.0
+      },
+      "stats_raw": [
+        "+110 พลังโจมตี"
+      ],
+      "passives": [
+        "Passive - Wind Walk: Increases movement speed by 10% when out of combat.",
+        "Passive - Destroyer: Increases Armor Pierce by 40-180 (+10 per hero level)."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Wind Walk:\nความเร็วเคลื่อนที่เพิ่มขึ้น 10% เมื่อไม่ได้ต่อสู้",
+        "สกิลติดตัว - Destroyer:\nเพิ่มเจาะเกราะ 40-180 (LV อัพ+10)"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/broken-spears.png",
+      "alias": [
+        "Rankbreaker"
+      ]
     },
     {
       "name": "Claves Sancti",
@@ -266,20 +358,25 @@
       "stats": {
         "attack_damage": 100.0
       },
+      "stats_raw": [
+        "+100 พลังโจมตี"
+      ],
       "passives": [
-        "Unique Passive - Gift of the Swift: Increases hero's movement speed by 3-45 for 1.5s after landing a critical hit. Only usable by ranged heroes.",
-        "Unique Passive: +25% Critical Chance",
-        "Unique Passive: +40% Critical Damage"
+        "Unique Passive - Gift of the Swift: Increases movement speed by (3-45) for 1.5s after landing a critical hit (only effective on ranged heroes).",
+        "Unique Passive: +25% Critical Chance.",
+        "Unique Passive: +40% Critical Damage."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Gift of the Swift:\nความเร็วเคลื่อนที่เพิ่มขึ้น (3-45) เป็นเวลา 1.5 วิ (มีผลเฉพาะฮีโร่ระยะไกล)",
+        "สกิลติดตัว: โอกาสคริติคอล +25%",
+        "สกิลติดตัว: ความแรงคริเพิ่มขึ้น 40%"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+100 Attack Damage"
-      ],
       "icon_url": "https://rovmeta.com/items/claves-sancti.png"
     },
     {
-      "name": "Curse of Death (Item)",
-      "slug": "curse-of-death-item",
+      "name": "Curse of Death",
+      "slug": "curse-of-death",
       "category": "attack",
       "tier": 3,
       "price": 1900,
@@ -288,39 +385,22 @@
         "cooldown_reduction": 10.0,
         "max_hp": 800.0
       },
+      "stats_raw": [
+        "+80 พลังโจมตี",
+        "+10% ลดคูลดาวน์",
+        "+800 พลังชีวิต"
+      ],
       "passives": [
-        "Unique Passive - Soul Prison: Damage dealt by normal attacks and skills reduces the target's healing by 40% for 3 seconds."
+        "Passive - Soul Prison: Dealing damage with normal attacks or skills reduces the target's HP recovery by 40% for 3 seconds."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Soul Prison:\nหากการโจมตีปกติหรือใช้สกิลสร้างความเสียหาย การฟื้นฟูพลังชีวิตของเป้าหมายจะลดลง 40% เป็นเวลา 3 วิ"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+80 Attack Damage",
-        "+10% Cooldown Reduction",
-        "+800 Max HP"
-      ],
-      "icon_url": "https://rovmeta.com/items/curse-of-death-item.png"
-    },
-    {
-      "name": "Dawnning Star",
-      "slug": "dawnning-star",
-      "category": "attack",
-      "tier": 3,
-      "price": 2980,
-      "stats": {
-        "attack_damage": 50.0,
-        "attack_speed": 30.0,
-        "critical_chance": 10.0
-      },
-      "passives": [
-        "Unique Passive - Dawning Star: Normal attacks deal an additional 50  physical damage  (doubled for ranged heroes). Cooldown: 0.35s.",
-        "Unique Passive - Stab: Increases armor penetration by 20% (doubled for ranged heroes)."
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+50 Attack Damage",
-        "+30% Attack Speed",
-        "+10% Critical Chance"
-      ],
-      "icon_url": "https://rovmeta.com/items/dawnning-star.png"
+      "icon_url": "https://rovmeta.com/items/curse-of-death.png",
+      "alias": [
+        "Curse of Death (Item)"
+      ]
     },
     {
       "name": "Death Sickle",
@@ -333,43 +413,24 @@
         "attack_speed": 15.0,
         "max_hp": 500.0
       },
+      "stats_raw": [
+        "+75 พลังโจมตี",
+        "+15% ความเร็วโจมตี",
+        "+500 พลังชีวิต"
+      ],
       "passives": [
-        "Unique Passive - Insatiable: Gains invincibility and temporary damage immunity and increases attack and movement speed by 25% for 1.25 seconds. (Cooldown: 120 seconds)"
+        "Unique Passive - The Insatiable: Gains invincibility and temporary damage immunity when HP is low, and increases attack and movement speed by 25% for 0.75 seconds. After accumulating for 4 minutes, the effect increases to 1.25 seconds (Cooldown: 120 seconds)."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - The Insatiable:\nเป็นอมตะเมื่อพลังชีวิตต่ำ สามารถป้องกันความเสียหายในเวลาสั้นๆ ทำให้วิ่งเร็วและโจมตีเร็วขึ้น 25% เป็นเวลา 0.75 วิ หากสะสมครบ 4 นาทีจะเพิ่มเอฟเฟกต์เป็น 1.25 วิ CD 120 วิ"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+75 Attack Damage",
-        "+15% Attack Speed",
-        "+500 Max HP"
-      ],
       "icon_url": "https://rovmeta.com/items/death-sickle.png",
       "patch": "Beta 55 (1.25s from EXP server 4 Sep 2026; TW 24 Sep notice fixes the upgraded Death Sickle duration on live)",
       "sources": [
         "https://www.rov.in.th/patch-notes/expserver260904",
         "https://moba.garena.tw/news/show/5721"
       ]
-    },
-    {
-      "name": "Devil's Handshake",
-      "slug": "devils-handshake",
-      "category": "attack",
-      "tier": 3,
-      "price": 1960,
-      "stats": {
-        "attack_speed": 30.0,
-        "critical_chance": 20.0,
-        "movement_speed_pct": 5.0
-      },
-      "passives": [
-        "Unique Passive - Flame Wraith: Normal attacks increase attack speed by 10% for 2s. Stacks up to 5 times."
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+30% Attack Speed",
-        "+20% Critical Chance",
-        "+5% Movement Speed"
-      ],
-      "icon_url": "https://rovmeta.com/items/devils-handshake.png"
     },
     {
       "name": "Eclipsing Bow",
@@ -382,16 +443,20 @@
         "critical_chance": 10.0,
         "movement_speed_pct": 5.0
       },
+      "stats_raw": [
+        "+30% ความเร็วโจมตี",
+        "+10% อัตราคริติคอล",
+        "+5% ความเร็วเคลื่อนที่"
+      ],
       "passives": [
-        "Passive - Aiming: Normal attack deals 50 additional",
-        "Active"
+        "Active - [Reach]: Increases normal attack range by 150 and movement speed by 20% for 5s (range increase only applies to ranged heroes). Cooldown: 60s.",
+        "Passive - Wound: Normal attacks deal an additional 50 physical damage (doubled for ranged heroes). Cooldown: 0.35s."
+      ],
+      "desc_th": [
+        "สกิลกดใช้ - [Reach]:\nเพิ่มระยะโจมตีปกติ 150 และความเร็วเคลื่อนที่ 20% เป็นเวลา 5 วิ (เอฟเฟกต์เพิ่มระยะจะมีผลแค่กับฮีโร่ระยะไกลเท่านั้น) CD 60 วิ",
+        "สกิลติดตัว - Wound:\nการโจมตีปกติจะสร้างโบนัสความเสียหายกายภาพ 50 (ฮีโร่ระยะไกลจะเพิ่มสองเท่า) CD: 0.35 วิ"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+30% Attack Speed",
-        "+10% Critical Chance",
-        "+5% Movement Speed"
-      ],
       "icon_url": "https://rovmeta.com/items/eclipsing-bow.png"
     },
     {
@@ -405,15 +470,18 @@
         "attack_speed": 30.0,
         "life_steal": 10.0
       },
+      "stats_raw": [
+        "+60 พลังโจมตี",
+        "+30% ความเร็วโจมตี",
+        "+10% ดูดเลือด"
+      ],
       "passives": [
-        "Unique Passive - Dragon's Breath: Normal attacks deal additional  physical damage  equal to 8% of target's current HP (max damage dealt to wildings: 80)."
+        "Unique Passive - Dragon's Breath: Normal attacks deal additional physical damage equal to 8% of target's current HP (Cooldown: 0.35s)."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Dragon's Breath:\nการโจมตีปกติจะสร้างความเสียหายกายภาพ เท่ากับ 8% ของ HP ศัตรู (CD 0.35วิ)"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+60 Attack Damage",
-        "+30% Attack Speed",
-        "+10% Lifesteal"
-      ],
       "icon_url": "https://rovmeta.com/items/fafnirs-talon.png"
     },
     {
@@ -426,14 +494,17 @@
         "attack_damage": 180.0,
         "cooldown_reduction": 5.0
       },
+      "stats_raw": [
+        "+180 พลังโจมตี",
+        "+5% ลดคูลดาวน์"
+      ],
       "passives": [
         "Unique Passive - Fenrir's Tooth: Deals an additional 30% damage when the target's HP is below 50%."
       ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+180 Attack Damage",
-        "+5% Cooldown Reduction"
+      "desc_th": [
+        "สกิลติดตัว - Fenrir's Tooth:\nเมื่อ HP ของเป้าหมายต่ำกว่า 50% จะได้รับความเสียหาย +30%"
       ],
+      "passives_incomplete": false,
       "icon_url": "https://rovmeta.com/items/fenrirs-tooth.png"
     },
     {
@@ -441,46 +512,55 @@
       "slug": "frost-hammer",
       "category": "attack",
       "tier": 3,
-      "price": null,
+      "price": 2060,
       "stats": {
         "attack_damage": 60.0,
         "attack_speed": 30.0,
         "max_hp": 900.0
       },
-      "passives": [
-        "Unique Passive - Frostbite: Normal attacks and skills reduce movement speed by 5%-10% for 1.5 seconds. Stacks up to 2 times.",
-        "Unique Passive - Numbling Cold: Normal attacks and skills deal an additional 140-280"
-      ],
-      "passives_incomplete": true,
       "stats_raw": [
-        "+ 60 Attack Damage",
-        "+ 30% Attack Speed",
-        "+ 900 Max HP"
+        "+60 พลังโจมตี",
+        "+30% ความเร็วโจมตี",
+        "+900 พลังชีวิต"
       ],
+      "passives": [
+        "Passive - Frostbite: Normal attacks and skills reduce movement speed by 5%-10% for 1.5s (stacks up to 2 times).",
+        "Passive - Scar: Normal attacks and skills deal an additional 140-280 (+45% bonus AD) physical damage to the target. CD 3s."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Frostbite:\nการโจมตีปกติและสกิลจะลดความเร็วเคลื่อนที่ 5%-10% เป็นเวลา 1.5 วิ (สะสมสูงสุด 2 ชั้น)",
+        "สกิลติดตัว - Scar:\nการโจมตีปกติและสกิลจะสร้างโบนัสความเสียหายกายภาพ 140 - 280 (+45% โบนัส AD) แก่เป้าหมาย CD 3 วิ"
+      ],
+      "passives_incomplete": false,
       "icon_url": "https://rovmeta.com/items/frost-hammer.png"
     },
     {
-      "name": "Longinus' Spear",
-      "slug": "longinus-spear",
+      "name": "Ifrit's Claw",
+      "slug": "ifrits-claw",
       "category": "attack",
       "tier": 3,
-      "price": 2030,
+      "price": 1960,
       "stats": {
-        "attack_damage": 80.0,
-        "cooldown_reduction": 15.0,
-        "max_hp": 500.0
+        "attack_speed": 30.0,
+        "critical_chance": 20.0,
+        "movement_speed_pct": 5.0
       },
-      "passives": [
-        "Unique Passive - Armor Reduction: Armor Pierce +60",
-        "Unique Passive - Shatter: Each attack reduces target armor by 6% in 5s, up to 4 stacks."
-      ],
-      "passives_incomplete": true,
       "stats_raw": [
-        "+80 Attack Damage",
-        "+15% Cooldown Reduction",
-        "+500 Max HP"
+        "+30% ความเร็วโจมตี",
+        "+20% อัตราคริติคอล",
+        "+5% ความเร็วเคลื่อนที่"
       ],
-      "icon_url": "https://rovmeta.com/items/longinus-spear.png"
+      "passives": [
+        "Passive - Flame's Wrath: Normal attacks hitting targets increase attack speed by 10% for 2s (stacks up to 5 times)."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Flame’s Wrath:\nเมื่อโจมตีปกติโดนเป้าหมาย จะโจมตีเร็วขึ้น 10% เป็นเวลา 2 วิ (5 ครั้ง)"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/ifrits-claw.png",
+      "alias": [
+        "Devil's Handshake"
+      ]
     },
     {
       "name": "Muramasa",
@@ -489,19 +569,22 @@
       "tier": 3,
       "price": 2020,
       "stats": {
-        "attack_damage": 80.0,
-        "cooldown_reduction": 10.0,
-        "max_hp": 500.0
+        "attack_damage": 80,
+        "cooldown_reduction": 10,
+        "max_hp": 500
       },
+      "stats_raw": [
+        "+80 พลังโจมตี",
+        "+10% ลดคูลดาวน์",
+        "+500 พลังชีวิต"
+      ],
       "passives": [
-        "Unique Passive - Stab: Armor Pierce +35%"
+        "Unique Passive: Armor Pierce +40%"
+      ],
+      "desc_th": [
+        "สกิลติดตัว: เจาะเกราะ+40%"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+80 Attack Damage",
-        "+10% CD reduction",
-        "+500 Max HP"
-      ],
       "icon_url": "https://rovmeta.com/items/muramasa.png"
     },
     {
@@ -511,42 +594,27 @@
       "tier": 3,
       "price": 2150,
       "stats": {
-        "attack_damage": 70.0,
-        "attack_speed": 15.0,
-        "cooldown_reduction": 10.0,
-        "max_hp": 600.0
+        "attack_damage": 70,
+        "attack_speed": 15,
+        "cooldown_reduction": 10,
+        "max_hp": 600
       },
+      "stats_raw": [
+        "+70 พลังโจมตี",
+        "+15% ความเร็วโจมตี",
+        "+10% ลดคูลดาวน์",
+        "+600 พลังชีวิต"
+      ],
       "passives": [
-        "Unique Passive - Elemental Power: After using a skill, the next normal attack in 5s deals additional  physical damage  equal to  100% attack damage . Cooldown: 2s.",
-        "Unique Passive - Speed Up: Normal attacks increase movement speed by 10%."
+        "Unique Passive - Five Forces: After using an ability, the next normal attack deals additional physical damage. Cooldown: 2s.",
+        "Unique Passive - Speed Up: Normal attacks grant +10% Movement Speed."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Five Forces: หลังจากฮีโร่ใช้สกิล จะเพิ่มพลังโจมตีให้กับการโจมตีปกติครั้งต่อไป (CD 2 วิ)",
+        "สกิลติดตัว - Speed Up: เมื่อทำการโจมตีปกติ รับความเร็วเคลื่อนที่ +10%"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+70 Attack Damage",
-        "+15% Attack Speed",
-        "+10% Cooldown Reduction",
-        "+600 Max HP"
-      ],
       "icon_url": "https://rovmeta.com/items/omni-arms.png"
-    },
-    {
-      "name": "Rankbreaker",
-      "slug": "rankbreaker",
-      "category": "attack",
-      "tier": 3,
-      "price": 1900,
-      "stats": {
-        "attack_damage": 110.0
-      },
-      "passives": [
-        "Unique Passive - Wildwalk: Increases movement speed by 10% after exiting battle.",
-        "Unique Passive - Break: Gains 40-180 armor penetration."
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+110 Attack Damage"
-      ],
-      "icon_url": "https://rovmeta.com/items/rankbreaker.png"
     },
     {
       "name": "Slikk's Sting",
@@ -559,41 +627,82 @@
         "critical_chance": 25.0,
         "movement_speed_pct": 7.0
       },
+      "stats_raw": [
+        "+35% ความเร็วโจมตี",
+        "+25% อัตราคริติคอล",
+        "+7% ความเร็วเคลื่อนที่"
+      ],
       "passives": [
-        "Unique Passive - Wind's Blessing: Increases a hero's resistance by 35% for 2s after landing a critical hit (cannot be stacked with Gilded Greaves)."
+        "Unique Passive - Wind Bless: Increases resistance by 35% for 2s after landing a critical hit."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Wind Bless: หลังจากติดคริ จะต้านทานสถานะเพิ่มขึ้น 35% เป็นเวลา 2 วิ"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+35% Attack Speed",
-        "+25% Critical Chance",
-        "+7% Movement Speed"
-      ],
       "icon_url": "https://rovmeta.com/items/slikks-sting.png"
     },
     {
-      "slug": "stealth-bracer",
-      "stats_raw": [],
-      "icon_url": null,
-      "passives": [
-        "Active - Untrackable: Instantly become invisible for 2.5s (1s for melee heroes), gaining 30% movement speed and restoring 130~260 HP every 0.5s. Using a skill or normal attack ends invisibility. Cooldown 75s."
-      ],
-      "name": "Stealth Bracer",
+      "name": "Spear of Longinus",
+      "slug": "spear-of-longinus",
       "category": "attack",
       "tier": 3,
-      "price": null,
+      "price": 2030,
+      "stats": {
+        "attack_damage": 80.0,
+        "cooldown_reduction": 15.0,
+        "max_hp": 500.0
+      },
+      "stats_raw": [
+        "+80 พลังโจมตี",
+        "+15% ลดคูลดาวน์",
+        "+500 พลังชีวิต"
+      ],
+      "passives": [
+        "Passive - Armor Break: Armor Pierce +60.",
+        "Passive - Shatter: Attacks reduce enemy armor by 6% (up to 4 stacks) for 5s (CD 0.3s)."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Armor Break: เจาะเกราะ+60",
+        "สกิลติดตัว - Shatter: การโจมตีจะลดเกราะศัตรูลง 6% (สูงสุด 4 ครั้ง) เป็นเวลา 5 วิ (CD 0.3 วิ)"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/spear-of-longinus.png",
+      "alias": [
+        "Longinus' Spear"
+      ]
+    },
+    {
+      "name": "Stealth Bracer",
+      "slug": "stealth-bracer",
+      "category": "attack",
+      "tier": 3,
+      "price": 2040,
       "stats": {
         "attack_damage": 40.0,
         "attack_speed": 20.0,
         "critical_chance": 20.0,
         "max_hp": 650.0
       },
+      "stats_raw": [
+        "+40 พลังโจมตี",
+        "+20% ความเร็วโจมตี",
+        "+20% อัตราคริติคอล",
+        "+650 พลังชีวิต"
+      ],
+      "passives": [
+        "Active - Untrackable: Instantly enter stealth (for 2.5s, melee heroes for 1s): gain 30% movement speed and recover 130~260 HP every 0.5s (using skills or normal attacks immediately ends stealth). Cooldown 75s."
+      ],
+      "desc_th": [
+        "สกิลกดใช้ - Untrackable\nเข้าสู่สถานะล่องหนทันที (เป็นเวลา 2.5 วิ ฮีโร่ระยะประชิดเป็นเวลา 1 วิ): ได้รับความเร็วเคลื่อนที่ 30% และทุกๆ 0.5 วิฟื้นฟู 130~260 (การใช้สกิลหรือโจมตีปกติจะออกจากสถานะล่องหนทันที) (คูลดาวน์ 75 วิ)"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/stealth-bracer.png",
       "patch": "Beta 55",
       "sources": [
         "https://www.rov.in.th/patch-notes/beta55",
         "https://moba.garena.tw/news/show/5716",
         "https://www.rov.in.th/patch-notes/expserver260827"
-      ],
-      "passives_incomplete": false
+      ]
     },
     {
       "name": "The Beast",
@@ -606,15 +715,18 @@
         "life_steal": 25.0,
         "max_hp": 600.0
       },
-      "passives": [
-        "Unique Passive - Blood Curse:"
-      ],
-      "passives_incomplete": true,
       "stats_raw": [
-        "+100 Attack Damage",
-        "+25% Life steal",
-        "+600 Max"
+        "+100 พลังโจมตี",
+        "+25% ดูดเลือด",
+        "+600 พลังชีวิต"
       ],
+      "passives": [
+        "Passive - Blood Feast: When HP drops below 30%, restores 400 - 610 HP over 5s. Cooldown: 20s."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Blood Feast:\nเมื่อพลังชีวิตต่ำกว่า 30% จะฟื้นฟู พลังชีวิต 400 - 610 หน่วยของพลังชีวิตสูงสุด ภายใน 5 วินาที CD 20 วิ"
+      ],
+      "passives_incomplete": false,
       "icon_url": "https://rovmeta.com/items/the-beast.png"
     },
     {
@@ -628,17 +740,51 @@
         "cooldown_reduction": 10.0,
         "max_hp": 500.0
       },
+      "stats_raw": [
+        "+100 พลังโจมตี",
+        "+10% ลดคูลดาวน์",
+        "+500 พลังชีวิต"
+      ],
       "passives": [
-        "Passive – Disable: Skills hitting a first enemy hero causes their damage dealt reduced by 20% to all targets and also",
-        "Active"
+        "Active - Sturdy: Reduces damage taken by 40% for 2s (usable while controlled). Cooldown: 90s.",
+        "Passive - Cripple: After using a skill, the first enemy hero hit is slowed by 30% and has damage reduced by 20% for 3s (Cooldown: 8s)."
+      ],
+      "desc_th": [
+        "สกิลกดใช้ - [Sturdy]:\nลดความเสียหายที่ได้รับลง 40% เป็นเวลา 2 วิ (สามารถใช้ได้ขณะถูกสถานะควบคุม) CD 90 วิ",
+        "สกิลติด - Cripple:\nหากใช้สกิล ฮีโร่ศัตรูตัวแรกที่โดนจะวิ่งช้าลง 30% และความเสียหายลดลง 20% เป็นเวลา 3 วิ (CD: 8 วิ)"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+100 Attack Damage",
-        "+10% CD reduction",
-        "+500 Max HP"
-      ],
       "icon_url": "https://rovmeta.com/items/the-diminisher.png"
+    },
+    {
+      "name": "The Morning Star",
+      "slug": "the-morning-star",
+      "category": "attack",
+      "tier": 3,
+      "price": 2980,
+      "stats": {
+        "attack_damage": 50.0,
+        "attack_speed": 30.0,
+        "critical_chance": 10.0
+      },
+      "stats_raw": [
+        "+50 พลังโจมตี",
+        "+30% ความเร็วโจมตี",
+        "+10% อัตราคริติคอล"
+      ],
+      "passives": [
+        "Passive - Dawning Star: Normal attacks deal an additional 50 physical damage (doubled for ranged heroes).",
+        "Passive - Stab: Increases Armor Pierce by 20% (doubled for ranged heroes)."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Dawning Star:\nการโจมตีปกติจะสร้างโบนัสความเสียหายกายภาพ 50 (2 เท่าหากเป็นฮีโร่โจมตีไกล)",
+        "สกิลติดตัว - Stab:\nเพิ่มเจาะเกราะ 20% (2 เท่าหากเป็นฮีโร่โจมตีไกล)"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/the-morning-star.png",
+      "alias": [
+        "Dawnning Star"
+      ]
     },
     {
       "name": "Uriel's Brand",
@@ -651,17 +797,724 @@
         "attack_speed": 25.0,
         "magic_defense": 200.0
       },
+      "stats_raw": [
+        "+80 พลังโจมตี",
+        "+25% ความเร็วโจมตี",
+        "+200 ต้านทานเวท"
+      ],
       "passives": [
-        "Unique Passive - Magic Guardian: When HP falls below 40%, a",
-        "Unique Passive - Speed Up: Normmal attacks increase movement speed by 10%."
+        "Passive - Savior's Edge: When HP falls below 40%, gains a magic shield (600-2000) for 5s, +25% resistance, and +30% movement speed for 2s. Cooldown: 75s.",
+        "Passive - Speed Up: Normal attacks increase movement speed by 10%."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Savior's Edge:\nเมื่อ HP ต่ำกว่า 40% จะสร้างโล่เวท (600-2000) เป็นเวลา 5 วิ รวมถึงได้รับต้านสถานะ 25% และวิ่งเร็วขึ้น 30% เป็นเวลา 2 วิ (CD 75 วิ)",
+        "สกิลติดตัว - Speed Up:\nเมื่อทำการโจมตีปกติจะวิ่งเร็วขึ้น 10%"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+80 Attack Damage",
-        "+25% Attack Speed",
-        "+200 Magic Defense"
-      ],
       "icon_url": "https://rovmeta.com/items/uriels-brand.png"
+    },
+    {
+      "name": "Lapis Ring",
+      "slug": "lapis-ring",
+      "category": "magic",
+      "tier": 1,
+      "price": 220,
+      "stats": {
+        "max_mana": 300.0
+      },
+      "stats_raw": [
+        "+300 มานาสูงสุด"
+      ],
+      "passives": [],
+      "desc_th": [
+        "+300 มานาสูงสุด"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/lapis-ring.png"
+    },
+    {
+      "name": "Magic Ring",
+      "slug": "magic-ring",
+      "category": "magic",
+      "tier": 1,
+      "price": 300,
+      "stats": {
+        "cooldown_reduction": 5
+      },
+      "stats_raw": [
+        "สกิลติดตัว: ลดคูลดาวน์ +5%"
+      ],
+      "passives": [
+        "Passive: Cooldown Reduction +5%"
+      ],
+      "desc_th": [
+        "สกิลติดตัว: ลดคูลดาวน์ +5%"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/magic-ring.png"
+    },
+    {
+      "name": "Pendant of Faith",
+      "slug": "pendant-of-faith",
+      "category": "magic",
+      "tier": 1,
+      "price": 120,
+      "stats": {
+        "mana_regen_5s": 10.0
+      },
+      "stats_raw": [
+        "+10 ฟื้นฟูมานา/5 วิ"
+      ],
+      "passives": [],
+      "desc_th": [
+        "+10 ฟื้นฟูมานา/5 วิ"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/pendant-of-faith.png"
+    },
+    {
+      "name": "Spell Tome",
+      "slug": "spell-tome",
+      "category": "magic",
+      "tier": 1,
+      "price": 300,
+      "stats": {
+        "ability_power": 40.0
+      },
+      "stats_raw": [
+        "+40 พลังเวท"
+      ],
+      "passives": [],
+      "desc_th": [
+        "+40 พลังเวท"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/spell-tome.png"
+    },
+    {
+      "name": "Ancient Scriptures",
+      "slug": "ancient-scriptures",
+      "category": "magic",
+      "tier": 2,
+      "price": 540,
+      "stats": {
+        "ability_power": 80.0
+      },
+      "stats_raw": [
+        "+80 พลังเวท"
+      ],
+      "passives": [],
+      "desc_th": [
+        "+80 พลังเวท"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/ancient-scriptures.png"
+    },
+    {
+      "name": "Enchanted Scroll",
+      "slug": "enchanted-scroll",
+      "category": "magic",
+      "tier": 2,
+      "price": 820,
+      "stats": {
+        "ability_power": 120.0
+      },
+      "stats_raw": [
+        "+120 พลังเวท"
+      ],
+      "passives": [],
+      "desc_th": [
+        "+120 พลังเวท"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/enchanted-scroll.png"
+    },
+    {
+      "name": "Orrery",
+      "slug": "orrery",
+      "category": "magic",
+      "tier": 2,
+      "price": 800,
+      "stats": {
+        "ability_power": 80.0
+      },
+      "stats_raw": [
+        "+80 พลังเวท"
+      ],
+      "passives": [
+        "Passive - Echo: Dealing skill damage triggers an explosion dealing 180 magic damage (CD: 5s)."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Echo: เมื่อใช้สกิลโจมตีโดนจะเกิดการระเบิดสร้าง ความเสียหายเวท 180 (CD: 5 วิ)"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/orrery.png"
+    },
+    {
+      "name": "Phoenix Tear",
+      "slug": "phoenix-tear",
+      "category": "magic",
+      "tier": 2,
+      "price": 500,
+      "stats": {
+        "ability_power": 50.0
+      },
+      "stats_raw": [
+        "+50 พลังเวท"
+      ],
+      "passives": [
+        "Passive - From the Ashes: When leveling up, restores 10% mana and 20% HP over 3s."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - From the Ashes: เมื่อฮีโร่เลเวลอัพจะฟื้นฟูมานา 10% และ HP 20% ใน 3 วิ"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/phoenix-tear.png"
+    },
+    {
+      "name": "Spooky Mask",
+      "slug": "spooky-mask",
+      "category": "magic",
+      "tier": 2,
+      "price": 960,
+      "stats": {
+        "ability_power": 100.0
+      },
+      "stats_raw": [
+        "+100 พลังเวท"
+      ],
+      "passives": [
+        "Unique Passive: Magic Pierce +75"
+      ],
+      "desc_th": [
+        "สกิลติดตัว: เจาะเกราะเวท+75"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/spooky-mask.png",
+      "alias": [
+        "Spoopy Mask"
+      ]
+    },
+    {
+      "name": "Trick Blade",
+      "slug": "trick-blade",
+      "category": "magic",
+      "tier": 2,
+      "price": 820,
+      "stats": {
+        "ability_power": 40.0,
+        "cooldown_reduction": 10.0
+      },
+      "stats_raw": [
+        "+40 พลังเวท",
+        "+10% ลดคูลดาวน์"
+      ],
+      "passives": [
+        "Passive - Elemental Edge: After using a skill, the next normal attack deals bonus magic damage equal to (30% AD + 18% AP). Cooldown: 3s."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Elemental Edge:\nเมื่อใช้สกิล การโจมตีปกติครั้งถัดไปจะสร้างโบนัส ความเสียหายเวท (30% AD+18% AP) (CD 3 วิ)"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/trick-blade.png"
+    },
+    {
+      "name": "Virtue's Bracelet",
+      "slug": "virtues-bracelet",
+      "category": "magic",
+      "tier": 2,
+      "price": 720,
+      "stats": {
+        "ability_power": 60.0,
+        "cooldown_reduction": 5.0,
+        "mana_regen_5s": 20.0
+      },
+      "stats_raw": [
+        "+60 พลังเวท",
+        "+5% ลดคูลดาวน์",
+        "+20 ฟื้นฟูมานา/5 วิ"
+      ],
+      "passives": [],
+      "desc_th": [
+        "+60 พลังเวท",
+        "+5% ลดคูลดาวน์",
+        "+20 ฟื้นฟูมานา/5 วิ"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/virtues-bracelet.png"
+    },
+    {
+      "name": "Vlad's Impaler",
+      "slug": "vlads-impaler",
+      "category": "magic",
+      "tier": 2,
+      "price": 800,
+      "stats": {
+        "ability_power": 80.0,
+        "magic_life_steal": 12.0
+      },
+      "stats_raw": [
+        "+80 พลังเวท",
+        "+12% เวทแวมไพร์"
+      ],
+      "passives": [],
+      "desc_th": [
+        "+80 พลังเวท",
+        "+12% เวทแวมไพร์"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/vlads-impaler.png"
+    },
+    {
+      "name": "Apocalypse",
+      "slug": "apocalypse",
+      "category": "magic",
+      "tier": 3,
+      "price": 1800,
+      "stats": {
+        "ability_power": 180.0,
+        "cooldown_reduction": 10.0,
+        "movement_speed_pct": 5.0
+      },
+      "stats_raw": [
+        "+180 พลังเวท",
+        "+10% ลดคูลดาวน์",
+        "+5% ความเร็วเคลื่อนที่"
+      ],
+      "passives": [
+        "Passive - Elemental Edge: After using a skill, the next normal attack deals additional magic damage equal to (30% AD + 80% AP). Cooldown: 2s."
+      ],
+      "desc_th": [
+        "Elemental Edge:\nหลังใช้สกิล\nการโจมตีถัดไปจะสร้าง\nความเสียหายเวท (30% โบนัสกายภาพ + 80% โบนัสเวท) CD 2 วิ"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/apocalypse.png"
+    },
+    {
+      "name": "Arctic Orb",
+      "slug": "arctic-orb",
+      "category": "magic",
+      "tier": 3,
+      "price": 2200,
+      "stats": {
+        "ability_power": 200.0,
+        "magic_life_steal": 12.0
+      },
+      "stats_raw": [
+        "+200 พลังเวท",
+        "+12% เวทแวมไพร์"
+      ],
+      "passives": [
+        "Active - Solidify: Gain invulnerability for 2s, during which movement, attacks, and skills are disabled. Afterward, gain a 500 (+40 per hero level) (+0.5 AP) shield for 1s (cooldown 75s)."
+      ],
+      "desc_th": [
+        "สกิลพิเศษ - [Solidify]:\nเป็นอมตะ 2 วิ ระหว่างนั้นจะไม่สามารถเคลื่อนที่, โจมตี หรือใช้สกิลได้ เมื่อสิ้นสุดจะได้โล่ 500 (Lv อัพ+40) (+0.5 AP) 1 วิ (คูลดาวน์ 75 วิ)"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/arctic-orb.png"
+    },
+    {
+      "name": "Berith's Agony",
+      "slug": "beriths-agony",
+      "category": "magic",
+      "tier": 3,
+      "price": 1800,
+      "stats": {
+        "ability_power": 140.0,
+        "cooldown_reduction": 10.0,
+        "max_hp": 600.0
+      },
+      "stats_raw": [
+        "+140 พลังเวท",
+        "+10% ลดคูลดาวน์",
+        "+600 พลังชีวิต"
+      ],
+      "passives": [
+        "Passive - Torture: Dealing ability damage deals 80 (+2% target's max HP) magic damage every second for 3s (capped at 200 vs jungle monsters)."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Torture:\nเมื่อใช้สกิลถูกเป้าหมายจะสร้างความเสียหายเวท80(+2%พลังชีวิตสูงสุดเป้าหมาย)ทุกวินาที นาน 3 วิ (หากโจมตีมอนสเตอร์ป่าจะจำกัดที่ 200 หน่วย)"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/beriths-agony.png"
+    },
+    {
+      "name": "Boomstick",
+      "slug": "boomstick",
+      "category": "magic",
+      "tier": 3,
+      "price": 1800,
+      "stats": {
+        "ability_power": 200.0,
+        "movement_speed_pct": 5.0
+      },
+      "stats_raw": [
+        "+200 พลังเวท",
+        "+5% ความเร็วเคลื่อนที่"
+      ],
+      "passives": [
+        "Passive - Echo: Dealing ability damage triggers an explosion dealing 120 (+40% AP) magic damage (CD 5s)."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Echo:\nเมื่อใช้สกิล จะระเบิดสร้างความเสียหายเวท 120 (+40% โบนัสพลังเวท) (CD 5 วิ)"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/boomstick.png"
+    },
+    {
+      "name": "Carano's Pledge",
+      "slug": "caranos-pledge",
+      "category": "magic",
+      "tier": 3,
+      "price": 2050,
+      "stats": {
+        "ability_power": 180.0,
+        "magic_life_steal": 12.0,
+        "movement_speed_pct": 5.0
+      },
+      "stats_raw": [
+        "+180 พลังเวท",
+        "+12% เวทแวมไพร์",
+        "+5% ความเร็วเคลื่อนที่"
+      ],
+      "passives": [
+        "Passive - Spare Life: When HP falls below 30%, immediately removes all crowd control effects, gains a 510-1000 (+100% AP +8% bonus HP) shield, and increases movement speed by 30% for 4s (75s CD)."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Spare Life:\nเมื่อพลังชีวิตต่ำกว่า 30% จะยกเลิกสถานะควบคุมที่ตัวเองได้รับทันที และได้รับ โล่ 510 - 1000 (+100% โบนัส AP +8% โบนัสพลังชีวิต) พร้อมเพิ่มความเร็วในการเคลื่อนที่ 30% เป็นเวลา 4 วิ CD 75 วิ"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/caranos-pledge.png",
+      "alias": [
+        "Carano's Vow"
+      ],
+      "patch": "Innovation Era version, Jan 2026 (rovmeta merged passive text into stats)",
+      "sources": [
+        "https://moba.garena.tw/news/show/5423"
+      ]
+    },
+    {
+      "name": "Evil Secrets",
+      "slug": "evil-secrets",
+      "category": "magic",
+      "tier": 3,
+      "price": 1980,
+      "stats": {
+        "ability_power": 140.0,
+        "max_hp": 500.0
+      },
+      "stats_raw": [
+        "+140 พลังเวท",
+        "+500 พลังชีวิต"
+      ],
+      "passives": [
+        "Passive - Curse: Hitting a target with a skill reduces their AP by 10% and magic defense by 100 for 3 seconds."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Curse:\nเมื่อใช้สกิลโจมตีโดนเป้าหมายจะลดพลังเวท 10% และเกราะเวท 100 หน่วยของเป้าหมาย เป็นเวลา 3 วิ"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/evil-secrets.png"
+    },
+    {
+      "name": "Frostguard",
+      "slug": "frostguard",
+      "category": "magic",
+      "tier": 3,
+      "price": 2100,
+      "stats": {
+        "ability_power": 140.0,
+        "cooldown_reduction": 5.0,
+        "max_hp": 600.0
+      },
+      "stats_raw": [
+        "+140 พลังเวท",
+        "+5% ลดคูลดาวน์",
+        "+600 พลังชีวิต"
+      ],
+      "passives": [
+        "Passive - Ice Armor: Gain armor and magic defense equal to (+50% bonus AP) (up to 230)."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Ice Armor: ได้รับเกราะ และเกราะเวท (+50% โบนัสพลังเวท) (สูงสุดไม่เกิน 230)"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/frostguard.png",
+      "alias": [
+        "Frost Guard"
+      ]
+    },
+    {
+      "name": "Frosty's Revenge",
+      "slug": "frostys-revenge",
+      "category": "magic",
+      "tier": 3,
+      "price": 2020,
+      "stats": {
+        "ability_power": 140.0,
+        "max_hp": 850.0,
+        "movement_speed_pct": 5.0
+      },
+      "stats_raw": [
+        "+140 พลังเวท",
+        "+850 พลังชีวิต",
+        "+5% ความเร็วเคลื่อนที่"
+      ],
+      "passives": [
+        "Passive - Frost: Abilities that deal damage will reduce enemy movement speed by 20% for 2s."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Frost: สกิลที่สร้างความเสียหายจะลดความเร็วเคลื่อนที่ 20% เป็นเวลา 2 วิ"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/frostys-revenge.png"
+    },
+    {
+      "name": "Hecate's Diadem",
+      "slug": "hecates-diadem",
+      "category": "magic",
+      "tier": 3,
+      "price": 2400,
+      "stats": {
+        "ability_power": 240.0
+      },
+      "stats_raw": [
+        "+240 พลังเวท"
+      ],
+      "passives": [
+        "Passive - Kich: Increases Ability Power by 35%."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Kich : พลังเวทเพิ่มขึ้น 35%"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/hecates-diadem.png"
+    },
+    {
+      "name": "Holy of Holies",
+      "slug": "holy-of-holies",
+      "category": "magic",
+      "tier": 3,
+      "price": 2610,
+      "stats": {
+        "ability_power": 350.0,
+        "cooldown_reduction": 10.0
+      },
+      "stats_raw": [
+        "+350 พลังเวท",
+        "+10% ลดคูลดาวน์"
+      ],
+      "passives": [
+        "Passive - Enlightenment: Every 100 AP increases damage dealt by 0.5% and reduces damage taken by 0.5%."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Enlightenment: พลังเวททุก 100 หน่วยจะเพิ่มสัดส่วนความเสียหายที่สร้าง 0.5% และลดสัดส่วนความเสียหายที่ได้รับ 0.5%"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/holy-of-holies.png"
+    },
+    {
+      "name": "Mage Robe",
+      "slug": "mage-robe",
+      "category": "magic",
+      "tier": 3,
+      "price": 2160,
+      "stats": {
+        "ability_power": 120,
+        "max_hp": 900
+      },
+      "stats_raw": [
+        "+120 พลังเวท",
+        "+900 พลังชีวิต"
+      ],
+      "passives": [
+        "Unique Passive - Replenishment: Gain 26 - 40 (+2% bonus HP) Ability Power, up to a maximum of 100.",
+        "Unique Passive - Magic Pierce: Gain 32 - 60 (+3% bonus HP) Magic Pierce, up to a maximum of 150."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Replenishment: ได้รับพลังเวท 26 - 40 (+2% ของโบนัสพลังชีวิต) หน่วยสูงสุดไม่เกิน 100 หน่วย",
+        "สกิลติดตัว - Magic Pierce: ได้รับเจาะเวท 32 - 60 (+3% ของโบนัสพลังชีวิต) หน่วยสูงสุดไม่เกิน 150 หน่วย"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/mage-robe.png"
+    },
+    {
+      "name": "Orb of the Magi",
+      "slug": "orb-of-the-magi",
+      "category": "magic",
+      "tier": 3,
+      "price": 1800,
+      "stats": {
+        "ability_power": 140.0,
+        "cooldown_reduction": 10.0
+      },
+      "stats_raw": [
+        "+140 พลังเวท",
+        "+10% ลดคูลดาวน์"
+      ],
+      "passives": [
+        "Passive - Bide: Every 30s gains 12 AP and 120 max HP (up to 10 stacks).",
+        "Passive - From the Ashes: When leveling up, restores 10% mana and 20% HP over 3s."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Bide: ทุก 30 วิรับพลังเวท 12 หน่วย พลังชีวิตสูงสุด 120 หน่วย (สูงสุด 10 ครั้ง)",
+        "สกิลติดตัว - From the Ashes: เมื่อฮีโร่เลเวลอัพจะฟื้นฟูมานา 10% และ HP 20% ใน 3 วิ"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/orb-of-the-magi.png"
+    },
+    {
+      "name": "Rhea's Blessing",
+      "slug": "rheas-blessing",
+      "category": "magic",
+      "tier": 3,
+      "price": 2050,
+      "stats": {
+        "ability_power": 160.0,
+        "magic_life_steal": 25.0,
+        "max_hp": 800.0
+      },
+      "stats_raw": [
+        "+160 พลังเวท",
+        "+25% เวทแวมไพร์",
+        "+800 พลังชีวิต"
+      ],
+      "passives": [
+        "Passive - Magic Pierce: Every 2% Magic Life Steal reduces Cooldown by 1%."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Magic Pierce: เวทแวมไพร์ทุก 2 % ลดคูลดาวน์ลง 1%"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/rheas-blessing.png"
+    },
+    {
+      "name": "Soaring Aura",
+      "slug": "soaring-aura",
+      "category": "magic",
+      "tier": 3,
+      "price": 2100,
+      "stats": {
+        "ability_power": 140.0,
+        "cooldown_reduction": 10.0,
+        "max_hp": 600.0
+      },
+      "stats_raw": [
+        "+140 พลังเวท",
+        "+10% ลดคูลดาวน์",
+        "+600 พลังชีวิต"
+      ],
+      "passives": [
+        "Passive - Enchantment: Dealing normal attack or skill damage to enemy heroes increases Magic Pierce by 10-24 (up to 10 stacks) for 3s."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Enchantment : เมื่อโจมตีปกติหรือใช้สกิลโดนฮีโร่ศัตรูจะเพิ่มเจาะเกราะเวท 10~24 แต้ม (สูงสุด 10 ครั้ง) เป็นเวลา 3 วิ"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/soaring-aura.png"
+    },
+    {
+      "name": "Soul Scroll",
+      "slug": "soul-scroll",
+      "category": "magic",
+      "tier": 3,
+      "price": 1900,
+      "stats": {
+        "ability_power": 140.0,
+        "cooldown_reduction": 10.0,
+        "max_hp": 600.0
+      },
+      "stats_raw": [
+        "+140 พลังเวท",
+        "+10% ลดคูลดาวน์",
+        "+600 พลังชีวิต"
+      ],
+      "passives": [
+        "Passive - Soul Prison: Normal attacks or abilities dealing damage reduce target HP recovery by 40% for 3s."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Soul Prison: หากการโจมตีปกติหรือใช้สกิลสร้างความเสียหาย การฟื้นฟูพลังชีวิตของเป้าหมายจะลดลง 40% เป็นเวลา 3 วิ"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/soul-scroll.png",
+      "alias": [
+        "Tome of the Reaper"
+      ]
+    },
+    {
+      "name": "Staff of Nuul",
+      "slug": "staff-of-nuul",
+      "category": "magic",
+      "tier": 3,
+      "price": 2050,
+      "stats": {
+        "ability_power": 180.0,
+        "cooldown_reduction": 10.0
+      },
+      "stats_raw": [
+        "+180 พลังเวท",
+        "+10% ลดคูลดาวน์"
+      ],
+      "passives": [
+        "Passive: Magic Pierce +40%"
+      ],
+      "desc_th": [
+        "สกิลติดตัว: เจาะเกราะเวท +40%"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/staff-of-nuul.png"
+    },
+    {
+      "name": "Virtue's Necklace",
+      "slug": "virtues-necklace",
+      "category": "magic",
+      "tier": 3,
+      "price": 1800,
+      "stats": {
+        "ability_power": 160.0,
+        "cooldown_reduction": 15.0,
+        "mana_regen_5s": 25.0
+      },
+      "stats_raw": [
+        "+160 พลังเวท",
+        "+15% ลดคูลดาวน์",
+        "+25 ฟื้นฟูมานา/5 วิ"
+      ],
+      "passives": [
+        "Passive - Enlightened: Regenerates 1% of maximum mana per second."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Enlightened:\nฟื้นฟูมานา 1% ต่อวิ"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/virtues-necklace.png"
+    },
+    {
+      "name": "Zweihander",
+      "slug": "zweihander",
+      "category": "magic",
+      "tier": 3,
+      "price": 1900,
+      "stats": {
+        "attack_speed": 20.0,
+        "ability_power": 180.0,
+        "movement_speed_pct": 5.0
+      },
+      "stats_raw": [
+        "+20% ความเร็วโจมตี",
+        "+180 พลังเวท",
+        "+5% ความเร็วเคลื่อนที่"
+      ],
+      "passives": [
+        "Passive - Sudden Strike: Normal attacks increase attack speed by 15% for 4s (stacks up to 2 times). Cooldown: 10s.",
+        "Passive - Scorching: Normal attacks deal bonus magic damage equal to 40 (+20% AP). Cooldown: 0.35s."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Sudden Strike:\nเมื่อโจมตีปกติ จะ+ตีเร็ว15% เป็นเวลา 4 วิ (สูงสุด 2 ครั้ง) CD 10 วิ",
+        "สกิลติดตัว - Scorching :\nการโจมตีปกติสร้างโบนัสความเสียหายเวท 40 (20% โบนัสเวท) CD 0.35 วิ"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/zweihander.png"
     },
     {
       "name": "Gladiator's Gauntlets",
@@ -672,11 +1525,14 @@
       "stats": {
         "magic_defense": 90.0
       },
-      "passives": [],
-      "passives_incomplete": false,
       "stats_raw": [
-        "+90 Magic Armor"
+        "+90 ต้านทานเวท"
       ],
+      "passives": [],
+      "desc_th": [
+        "+90 ต้านทานเวท"
+      ],
+      "passives_incomplete": false,
       "icon_url": "https://rovmeta.com/items/gladiators-gauntlets.png"
     },
     {
@@ -686,13 +1542,14 @@
       "tier": 1,
       "price": 220,
       "stats": {
-        "armor": 90.0
+        "armor": 90
       },
-      "passives": [],
-      "passives_incomplete": false,
       "stats_raw": [
-        "+90 Armor"
+        "+90 เกราะ"
       ],
+      "passives": [],
+      "desc_th": [],
+      "passives_incomplete": false,
       "icon_url": "https://rovmeta.com/items/light-armor.png"
     },
     {
@@ -702,13 +1559,14 @@
       "tier": 1,
       "price": 540,
       "stats": {
-        "max_hp": 600.0
+        "max_hp": 600
       },
-      "passives": [],
-      "passives_incomplete": false,
       "stats_raw": [
-        "+600 Max HP"
+        "+600 พลังชีวิต"
       ],
+      "passives": [],
+      "desc_th": [],
+      "passives_incomplete": false,
       "icon_url": "https://rovmeta.com/items/necklace-of-vitality.png"
     },
     {
@@ -720,11 +1578,14 @@
       "stats": {
         "max_hp": 300.0
       },
-      "passives": [],
-      "passives_incomplete": false,
       "stats_raw": [
-        "+300 Max HP"
+        "+300 พลังชีวิต"
       ],
+      "passives": [],
+      "desc_th": [
+        "+300 พลังชีวิต"
+      ],
+      "passives_incomplete": false,
       "icon_url": "https://rovmeta.com/items/ring-of-vitality.png"
     },
     {
@@ -736,11 +1597,14 @@
       "stats": {
         "hp_regen_5s": 30.0
       },
-      "passives": [],
-      "passives_incomplete": false,
       "stats_raw": [
-        "+30 HP Regen / 5s"
+        "+30 ฟื้นฟูพลังชีวิต/5 วิ"
       ],
+      "passives": [],
+      "desc_th": [
+        "+30 ฟื้นฟูพลังชีวิต/5 วิ"
+      ],
+      "passives_incomplete": false,
       "icon_url": "https://rovmeta.com/items/talisman-of-strength.png"
     },
     {
@@ -753,14 +1617,17 @@
         "magic_defense": 110.0,
         "max_hp": 700.0
       },
+      "stats_raw": [
+        "+110 ต้านทานเวท",
+        "+700 พลังชีวิต"
+      ],
       "passives": [
-        "Passive - Restore: When taking damage,"
+        "Passive - Regenerate: When taking damage, restores 4% HP over 2s (CD 15s)."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Regenerate:\nเมื่อโดนโจมตีจะฟื้นฟู HP 4% ภายใน 2 วิ (CD 15 วิ)"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+110 Magic Armor",
-        "+700 Max HP"
-      ],
       "icon_url": "https://rovmeta.com/items/belt-of-clarity.png"
     },
     {
@@ -772,11 +1639,14 @@
       "stats": {
         "max_hp": 1000.0
       },
-      "passives": [],
-      "passives_incomplete": false,
       "stats_raw": [
-        "+1000 Max HP"
+        "+1000 พลังชีวิต"
       ],
+      "passives": [],
+      "desc_th": [
+        "+1000 พลังชีวิต"
+      ],
+      "passives_incomplete": false,
       "icon_url": "https://rovmeta.com/items/greaves-of-protection.png"
     },
     {
@@ -788,13 +1658,16 @@
       "stats": {
         "armor": 150.0
       },
-      "passives": [
-        "Passive - Burn: Deals 50-78"
-      ],
-      "passives_incomplete": true,
       "stats_raw": [
-        "+150 Armor"
+        "+150 เกราะ"
       ],
+      "passives": [
+        "Passive - Incantation: Deals 50~78 magic damage to nearby enemies every 1s (deals 50% more damage to minions and monsters)."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Incantation: สร้าง ความเสียหายเวท 50~78 หน่วย แก่ศัตรูรอบๆ ทุก 1 วิ (ครีปและมอนสเตอร์ป่าโดนแรงขึ้น 50%)"
+      ],
+      "passives_incomplete": false,
       "icon_url": "https://rovmeta.com/items/heart-of-incubus.png"
     },
     {
@@ -806,13 +1679,16 @@
       "stats": {
         "armor": 210.0
       },
+      "stats_raw": [
+        "+210 เกราะ"
+      ],
       "passives": [
-        "Passive - Spirit Bond: When taking damage, reduce the attacker's attack speed by 15%."
+        "Passive - Spirit Bond: When taking damage, reduces attacker's attack speed by 15%."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Spirit Bond: หากฮีโร่ได้รับความเสียหาย จะลดความเร็วโจมตีของผู้ทำการโจมตีลง 15%"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+210 Armor"
-      ],
       "icon_url": "https://rovmeta.com/items/knights-plate.png"
     },
     {
@@ -822,15 +1698,18 @@
       "tier": 2,
       "price": 660,
       "stats": {
-        "armor": 110.0,
-        "cooldown_reduction": 10.0
+        "cooldown_reduction": 10.0,
+        "armor": 110.0
       },
-      "passives": [],
-      "passives_incomplete": false,
       "stats_raw": [
-        "+10% CD reduction",
-        "+110 Armor"
+        "+10% ลดคูลดาวน์",
+        "+110 เกราะ"
       ],
+      "passives": [],
+      "desc_th": [
+        "+10% ลดคูลดาวน์\n+110 เกราะ"
+      ],
+      "passives_incomplete": false,
       "icon_url": "https://rovmeta.com/items/platinum-gauntlets.png"
     },
     {
@@ -844,34 +1723,19 @@
         "magic_defense": 100.0,
         "max_hp": 1500.0
       },
-      "passives": [
-        "Passive - Longevity:"
-      ],
-      "passives_incomplete": true,
       "stats_raw": [
-        "+150 Armor",
-        "+100 Magic",
-        "+1500 Max HP"
+        "+150 เกราะ",
+        "+100 ต้านทานเวท",
+        "+1500 พลังชีวิต"
       ],
-      "icon_url": "https://rovmeta.com/items/amulet-of-longevity.png"
-    },
-    {
-      "name": "Ancestral Glory",
-      "slug": "ancestral-glory",
-      "category": "defense",
-      "tier": 3,
-      "price": null,
-      "stats": {},
       "passives": [
-        "3. Adjusted Growth Passives",
-        "Passive - Modest: Receive 40% → 25~50% gold and EXP.",
-        "Passive - Up-and-Coming: (+1 at 4/7/10/13 minutes of match) → (+1 at 4/8/12/16 minutes of match)",
-        "Name of passive changed from Protection to Extermination.",
-        "#If using items which have the same Passive, Passive is not does not accumulate the effect."
+        "Passive - Longevity: When out of combat, restores 4% HP per second."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Longevity:\nเมื่อไม่ได้ต่อสู้จะฟื้นฟูพลังชีวิต 4% ต่อวินาที"
       ],
       "passives_incomplete": false,
-      "stats_raw": [],
-      "icon_url": "https://rovmeta.com/items/ancestral-glory.png"
+      "icon_url": "https://rovmeta.com/items/amulet-of-longevity.png"
     },
     {
       "name": "Blade of Eternity",
@@ -882,14 +1746,18 @@
       "stats": {
         "armor": 120.0
       },
+      "stats_raw": [
+        "+120 เกราะ"
+      ],
       "passives": [
-        "Passive - Nirvana: Resurrect 2s after death and return with 2000-3500 HP, CD: 150s.",
-        "Passive - Fighting Spirit: Increase damage dealt by 10%."
+        "Passive - Resurrect: Resurrects 2s after death with 2000 + (hero level x 100) HP. CD: 150s (can only be triggered twice per match).",
+        "Passive - War Rage: Increases damage dealt by 10%."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Resurrect:\nหลังจากตายลง 2 วิ ฮีโร่จะคืนชีพด้วย HP 2000 + (LV ฮีโร่ x100) CD 150 วิ (เอฟเฟกต์จะมีผลแค่ 2 ครั้งต่อ 1 เกม)",
+        "สกิลติดตัว - War Rage:\nสร้างความเสียหายเพิ่มขึ้น 10%"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+120 Armor"
-      ],
       "icon_url": "https://rovmeta.com/items/blade-of-eternity.png"
     },
     {
@@ -899,19 +1767,22 @@
       "tier": 3,
       "price": 1970,
       "stats": {
-        "armor": 200.0,
         "cooldown_reduction": 10.0,
+        "armor": 200.0,
         "max_hp": 800.0
       },
+      "stats_raw": [
+        "+10% ลดคูลดาวน์",
+        "+200 เกราะ",
+        "+800 พลังชีวิต"
+      ],
       "passives": [
-        "Passive - Elemental Power: After using a skill, the next normal attack"
+        "Passive - Frost Power: After using a skill, the next normal attack within 5s deals 100 (+30% bonus AD) area physical damage and reduces movement speed by 30% (20% for ranged heroes) for 0.5s (Cooldown: 0.65s)."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Frost Power:\nหลังใช้สกิล การโจมตีปกติภายใน 5 วิ จะสร้างความเสียหายกายภาพ 100 (+30% โบนัส AD) เป็นวงกว้างพร้อมลดความเร็ว 30% (ฮีโร่โจมตีไกล 20%) เป็นเวลา 0.5 วิ (CD 0.65 วิ)"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+10% CD reduction",
-        "+200 Armor",
-        "+800 Max HP"
-      ],
       "icon_url": "https://rovmeta.com/items/frost-cape.png"
     },
     {
@@ -924,80 +1795,102 @@
         "magic_defense": 200.0,
         "max_hp": 1200.0
       },
+      "stats_raw": [
+        "+200 ต้านทานเวท",
+        "+1200 พลังชีวิต"
+      ],
       "passives": [
-        "Passive - Restore: When taking damage,",
-        "Unique Passive: For each your 10% lost HP, your healing effect is increased by 5%"
+        "Passive - Recover: When taking damage, restores 4% of max HP over 2s (CD 10s).",
+        "Passive - Bloodline: For every 10% lost HP, increases healing effect by 5%."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Recover: เมื่อได้รับความเสียหาย จะฟื้นฟู 4% ของ HP สูงสุดภายใน 2 วิ (CD 10 วิ)",
+        "สกิลติดตัว - Bloodline: ทุก 10% ของพลังชีวิตที่เสียไป จะเพิ่มผลฟื้นฟู +5%"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+200 Magic Armor",
-        "+1200 Max HP"
-      ],
       "icon_url": "https://rovmeta.com/items/gaias-standard.png"
     },
     {
-      "name": "Hercules' Madness",
+      "name": "Hercules's Madness",
       "slug": "hercules-madness",
       "category": "defense",
       "tier": 3,
       "price": 2000,
       "stats": {
-        "armor": 240.0,
-        "attack_damage": 80.0
+        "attack_damage": 80.0,
+        "armor": 240.0
       },
+      "stats_raw": [
+        "+80 พลังโจมตี",
+        "+240 เกราะ"
+      ],
       "passives": [
-        "Passive - Berserk: When HP is below 40%, increase 20% lifesteal"
+        "Passive - Berserk: When HP drops below 40%, gain 20% Life Steal and a shield of (800 + Hero LV x 80) for 8s (CD 60s)."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Berserk: เมื่อ HP ต่ำกว่า 40% จะเพิ่มการดูดเลือด 20% และได้รับโล่ (800+LV ฮีโร่x80) 8 วิ (CD 60 วิ)"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+80 AD",
-        "+240 Armor"
-      ],
-      "icon_url": "https://rovmeta.com/items/hercules-madness.png"
+      "icon_url": "https://rovmeta.com/items/hercules-madness.png",
+      "alias": [
+        "Hercules' Madness"
+      ]
     },
     {
-      "slug": "light-shield",
-      "stats_raw": [],
-      "icon_url": null,
-      "passives": [
-        "Passive - Daybreak: Damaging an enemy hero with a normal attack or skill grants a shield of 250~500 (+4% max HP) to yourself and the lowest-HP nearby ally for 3s (+50% shield with no ally nearby). Cooldown 10s melee / 12.5s ranged."
-      ],
       "name": "Light Shield",
+      "slug": "light-shield",
       "category": "defense",
       "tier": 3,
-      "price": null,
+      "price": 2040,
       "stats": {
-        "armor": 180.0,
-        "cooldown_reduction": 10.0,
-        "max_hp": 1000.0
+        "cooldown_reduction": 10,
+        "armor": 180,
+        "max_hp": 1000
       },
+      "stats_raw": [
+        "+10% ลดคูลดาวน์",
+        "+180 เกราะ",
+        "+1000 พลังชีวิต"
+      ],
+      "passives": [
+        "Unique Passive - Daybreak: Dealing damage to enemy heroes with normal attacks or skills grants yourself and the lowest HP nearby ally a shield of 250~500 + 4% max HP for 3s (if no allies nearby, shield is increased by 50%). Cooldown: 10s for melee / 12.5s for ranged."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Daybreak: เมื่อสร้างความเสียหายแก่ฮีโร่ฝ่ายศัตรูด้วยการโจมตีปกติหรือสกิล ตัวเองและฮีโร่ฝ่ายเราที่มีพลังชีวิตต่ำสุดในรอบตัวจะได้รับโล่ 250~500+4% HP สูงสุด (เป็นเวลา 3 วิ หากรอบตัวไม่มีฮีโร่ฝ่ายเรา โล่จะหนาขึ้น 50%) (คูลดาวน์สำหรับฮีโร่ระยะประชิด/ระยะไกล 10/12.5 วิ)"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/light-shield.png",
       "patch": "Beta 55",
       "sources": [
         "https://www.rov.in.th/patch-notes/beta55",
         "https://moba.garena.tw/news/show/5716"
-      ],
-      "passives_incomplete": false
+      ]
     },
     {
       "name": "Mail of Pain",
       "slug": "mail-of-pain",
       "category": "defense",
       "tier": 3,
-      "price": null,
+      "price": 2020,
       "stats": {
-        "armor": 300.0,
-        "attack_damage": 50.0,
-        "max_hp": 700.0
+        "attack_damage": 50,
+        "armor": 300,
+        "max_hp": 700
       },
+      "stats_raw": [
+        "+50 พลังโจมตี",
+        "+300 เกราะ",
+        "+700 พลังชีวิต"
+      ],
       "passives": [
-        "Unique Passive - Backfire: When taking damage, reflect 5% of it to the attacker as true damage (based on the raw damage before damage reduction; decays with distance by up to 50%).",
-        "Active - Counter-stab: Increase Backfire reflection to 25% for 3s. Cooldown 75s."
+        "Active - Counter-stab: Enter Counter-stab state for 3s, increasing reflected damage to 25%. Cooldown: 75s.",
+        "Unique Passive - Backfire: When taking damage, reflects 5% of incoming damage as true damage to the attacker (reduced by distance, up to 50%)."
+      ],
+      "desc_th": [
+        "สกิลกดใช้ - Counter-stab: เข้าสู่สถานะ Counter-stab (เป็นเวลา 3 วิ) ซึ่งความเสียหายที่ถ่ายโอนให้ศัตรูจะเพิ่มขึ้นเป็น 25% (คูลดาวน์ 75 วิ)",
+        "สกิลติดตัว - Backfire เมื่อได้รับความเสียหายจะถ่ายโอนความเสียหายจริงตาม 5% ของความเสียหายที่ได้รับให้แก่ศัตรู(ลดลงตามระยะ สูงสุด 50%)"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+300 Armor",
-        "+1200 Max HP"
-      ],
       "icon_url": "https://rovmeta.com/items/mail-of-pain.png",
       "patch": "Beta 55 (rework)",
       "sources": [
@@ -1012,20 +1905,24 @@
       "tier": 3,
       "price": 2060,
       "stats": {
-        "armor": 225.0,
-        "hp_regen_5s": 60.0,
-        "max_hp": 1000.0
+        "armor": 225,
+        "max_hp": 1000,
+        "hp_regen_5s": 60
       },
+      "stats_raw": [
+        "+225 เกราะ",
+        "+1000 พลังชีวิต",
+        "+60 ฟื้นฟูพลังชีวิต/5 วิ"
+      ],
       "passives": [
-        "Unique Passive - Burn: Deal (+2% self-max HP)",
-        "Unique Passive - Incinerate: Enemies who was dealt damage on by this item's Burn passive are reduced their healing effects by 40% within 3 seconds."
+        "Unique Passive - Incantation: Deals magic damage equal to 2% max HP to nearby enemies every 1s (50% more against minions and jungle monsters).",
+        "Unique Passive - Soul Prison: Unleashes special flames that deal damage and reduce enemy healing effects by 40% for 3s."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Incantation: สร้างความเสียหายเวท เท่ากับ 2% HP สูงสุดแก่ศัตรูรอบๆ ทุก 1 วิ (ครีปและมอนสเตอร์ป่าโดนแรงขึ้น 50%)",
+        "สกิลติดตัว - Soul Prison: ปล่อยเพลิงพิเศษที่สร้างความเสียหาย พร้อมกับลดเอฟเฟกต์ฟื้นฟูพลังชีวิตของศัตรูลง 40% เป็นเวลา 3 วิ"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+225 Armor",
-        "+1000 Max HP",
-        "+60 HP Regen / 5s"
-      ],
       "icon_url": "https://rovmeta.com/items/mantle-of-ra.png"
     },
     {
@@ -1035,20 +1932,24 @@
       "tier": 3,
       "price": 2320,
       "stats": {
-        "cooldown_reduction": 10.0,
-        "magic_defense": 200.0,
-        "max_hp": 1000.0
+        "cooldown_reduction": 10,
+        "magic_defense": 200,
+        "max_hp": 1000
       },
+      "stats_raw": [
+        "+10% ลดคูลดาวน์",
+        "+200 ต้านทานเวท",
+        "+1000 พลังชีวิต"
+      ],
       "passives": [
-        "Passive - Rispote: Gain a",
-        "Passive - Reconciliation: Gain 8-112 Magic Armor"
+        "Unique Passive - Fairy: When out of combat, gains a shield that absorbs (400 + Hero Level * 60) magic damage.",
+        "Unique Passive - Harmony: Gains 8-112 Magic Defense (increases with Hero Level)."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Fairy: เมื่อไม่ได้ต่อสู้จะได้รับโล่ดูดซับความเสียหายเวท (400+LV ฮีโร่x60)",
+        "สกิลติดตัว - Harmony: ได้รับเกราะเวท 8-112 หน่วย (เพิ่มขึ้นตาม LV)"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+10% CD reduction",
-        "+200 Magic Armor",
-        "+1000 Max HP"
-      ],
       "icon_url": "https://rovmeta.com/items/medallion-of-troy.png"
     },
     {
@@ -1058,19 +1959,22 @@
       "tier": 3,
       "price": 1900,
       "stats": {
-        "armor": 225.0,
-        "max_hp": 1200.0,
-        "movement_speed_pct": 5.0
+        "armor": 225,
+        "max_hp": 1200,
+        "movement_speed_pct": 5
       },
+      "stats_raw": [
+        "+225 เกราะ",
+        "+1200 พลังชีวิต",
+        "+5% ความเร็วเคลื่อนที่"
+      ],
       "passives": [
-        "Passive - Adrenaline: When taking damage, gain a stack of buff. Each stack"
+        "Unique Passive - Loyalty: When taking damage, increases movement speed by 1% and damage dealt by 2%, stacking up to 5 times."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Loyalty: เมื่อโดนโจมตี จะเพิ่มความเร็วเคลื่อนที่ 1% และโจมตีแรงขึ้น 2% (สูงสุด 5 ครั้ง)"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+225 Armor",
-        "+1200 Max HP",
-        "+5% Movement Speed"
-      ],
       "icon_url": "https://rovmeta.com/items/odins-will.png"
     },
     {
@@ -1083,15 +1987,17 @@
         "armor": 240.0,
         "max_hp": 1200.0
       },
+      "stats_raw": [
+        "+240 เกราะ",
+        "+1200 พลังชีวิต"
+      ],
       "passives": [
-        "Active",
-        "is active, damage dealt is reduced by 70%. CD: 60s."
+        "Active - Pain Absorb: Gains a shield equal to (30% Max HP + 10% lost HP) for 3s (usable while controlled). After using this skill, own attack damage is reduced by 70% for 3s (CD 60s)."
+      ],
+      "desc_th": [
+        "สกิลพิเศษ - [Pain Absorb]: ได้รับโล่ (HP สูงสุดx30%+HP ที่เสียไปx10%) เป็นเวลา 3 วิ (สามารถใช้ขณะติดสถานะควบคุมได้) หลังจากใช้สกิลนี้ พลังโจมตีตัวเองจะลดลง 70% เป็นเวลา 3 วิ (CD60 วิ)"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+240 Armor",
-        "+1200 Max HP"
-      ],
       "icon_url": "https://rovmeta.com/items/rock-shield.png"
     },
     {
@@ -1104,14 +2010,17 @@
         "armor": 275.0,
         "max_hp": 1200.0
       },
+      "stats_raw": [
+        "+275 เกราะ",
+        "+1200 พลังชีวิต"
+      ],
       "passives": [
-        "Passive - Spirit Bond: When taking damage,"
+        "Passive - Sentinel: Reduces attacker's attack speed by 30% and movement speed by 15% for 2s."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Sentinel: ลดความเร็วโจมตีของผู้ทำการโจมตี 30% และความเร็วเคลื่อนที่ 15% เป็นเวลา 2 วิ"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+275 Armor",
-        "+1200 Max HP"
-      ],
       "icon_url": "https://rovmeta.com/items/shield-of-the-lost.png"
     },
     {
@@ -1121,846 +2030,23 @@
       "tier": 3,
       "price": 2180,
       "stats": {
-        "armor": 360.0,
         "cooldown_reduction": 20.0,
-        "max_mana": 400.0
+        "max_mana": 400.0,
+        "armor": 360.0
       },
+      "stats_raw": [
+        "+20% ลดคูลดาวน์",
+        "+400 มานาสูงสุด",
+        "+360 เกราะ"
+      ],
       "passives": [
-        "Passive - Enhanced Spirit Bond: Reduces the attack speed of enemies within 5m by 30%."
+        "Passive - Sentinel: Reduces the attack speed of enemies within 5m by 30%."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Sentinel:\nลดความเร็วโจมตีของศัตรูในระยะ 5m ลง 30%"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+360 Armor",
-        "+400 Max mana",
-        "+20% CD reduction"
-      ],
       "icon_url": "https://rovmeta.com/items/the-aegis.png"
-    },
-    {
-      "name": "Kukri",
-      "slug": "kukri",
-      "category": "jungling",
-      "tier": 1,
-      "price": 250,
-      "stats": {},
-      "passives": [
-        "Passive - Hunter: Normal attacks / skills hitting the wildling will deal 50-120 additional true damage every 0.5s for 2s, and receive 20% more EXP from killing monsters.",
-        "Passive - Modest: When near an ally hero, the ally hero gains 100% gold and EXP from Minions, while you only gain 50%. This effect is removed after 4 minutes. Also, damage dealt on enemies minions is reduced by 25% ( removed after 4 minutes ).",
-        "Passive - Modest: Damage to minions reduced by 25% for the first 4 minutes."
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [],
-      "icon_url": "https://rovmeta.com/items/kukri.png",
-      "patch": "Full Element Assault, Apr 2026",
-      "sources": [
-        "https://moba.garena.tw/news/show/5528"
-      ]
-    },
-    {
-      "name": "Gnoll Cleaver",
-      "slug": "gnoll-cleaver",
-      "category": "jungling",
-      "tier": 2,
-      "price": 700,
-      "stats": {
-        "max_hp": 400.0
-      },
-      "passives": [
-        "Passive - Burn: Deal 50~78",
-        "Passive - Hunter: Normal attacks / skills hitting the wildling will deal 60~172 additional true damage every 0.5s for 2s, and receive 35% more EXP from killing monsters.",
-        "Passive - Wild: Increase 25 Max HP and 0.2% CD reduction for every monster killed, max stack up to 15 times.",
-        "Smite (jungle): Stores 2 charges (45s per charge, 10s cooldown). Deals true damage and stuns monsters/minions for 1s; against heroes deals 185 (+15/level) true damage.",
-        "Passive - Modest: Damage to minions reduced by 25% for the first 4 minutes."
-      ],
-      "passives_incomplete": true,
-      "stats_raw": [
-        "+400 Max HP"
-      ],
-      "icon_url": "https://rovmeta.com/items/gnoll-cleaver.png",
-      "patch": "Full Element Assault, Apr 2026",
-      "sources": [
-        "https://moba.garena.tw/news/show/5528"
-      ]
-    },
-    {
-      "name": "Monster's Bane",
-      "slug": "monsters-bane",
-      "category": "jungling",
-      "tier": 2,
-      "price": 700,
-      "stats": {
-        "ability_power": 40.0
-      },
-      "passives": [
-        "Passive - Hunter: Normal attacks / skills hitting the wildling will deal 60~172 additional true damage every 0.5s for 2s, and receive 35% more EXP from killing monsters.",
-        "Passive - Wild: Gain 4 AP and 0.2% CD reduction for every monster killed, max stack up to 15 times.",
-        "Smite (jungle): Stores 2 charges (45s per charge, 10s cooldown). Deals true damage and stuns monsters/minions for 1s; against heroes deals 300 (+20/level) magic damage.",
-        "Passive - Modest: Damage to minions reduced by 25% for the first 4 minutes."
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+40 AP"
-      ],
-      "icon_url": "https://rovmeta.com/items/monsters-bane.png",
-      "patch": "Full Element Assault, Apr 2026",
-      "sources": [
-        "https://moba.garena.tw/news/show/5528"
-      ]
-    },
-    {
-      "name": "Mr. Stabby",
-      "slug": "mr-stabby",
-      "category": "jungling",
-      "tier": 2,
-      "price": 700,
-      "stats": {
-        "attack_damage": 25.0
-      },
-      "passives": [
-        "Passive - Hunter: Normal attacks / skills hitting the wildling will deal 60~172 additional true damage every 0.5s for 2s, and receive 35% more EXP from killing monsters.",
-        "Passive - Wild: Increase 2 AD and 0.2% CD reduction for every monster killed, max stack up to 15 times.",
-        "Smite (jungle): Stores 2 charges (45s per charge, 10s cooldown). Deals true damage and stuns monsters/minions for 1s; against heroes deals 400 (+30/level) physical damage and steals 30% movement speed for 2s.",
-        "Passive - Modest: Damage to minions reduced by 25% for the first 4 minutes."
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+25 AD"
-      ],
-      "icon_url": "https://rovmeta.com/items/mr-stabby.png",
-      "patch": "Full Element Assault, Apr 2026",
-      "sources": [
-        "https://moba.garena.tw/news/show/5528"
-      ]
-    },
-    {
-      "name": "Whispering Wind",
-      "slug": "whispering-wind",
-      "category": "jungling",
-      "tier": 2,
-      "price": 700,
-      "stats": {
-        "attack_speed": 12.0
-      },
-      "passives": [
-        "Passive - Hunter: Normal attacks / skills hitting the wildling will deal 60~172 additional true damage every 0.5s for 2s, and receive 35% more EXP from killing monsters.",
-        "Passive - Wild: Increase 0.8% Attack Speed and 0.2 Life Steal for every monster killed, max stack up to 15 times.",
-        "Smite (jungle): Stores 2 charges (45s per charge, 10s cooldown). Deals true damage and stuns monsters/minions for 1s; against heroes deals 400 (+30/level) physical damage and steals 30% movement speed for 2s.",
-        "Passive - Modest: Damage to minions reduced by 25% for the first 4 minutes."
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+12% Attack Speed"
-      ],
-      "icon_url": "https://rovmeta.com/items/whispering-wind.png",
-      "patch": "Full Element Assault, Apr 2026",
-      "sources": [
-        "https://moba.garena.tw/news/show/5528"
-      ]
-    },
-    {
-      "name": "Leviathan",
-      "slug": "leviathan",
-      "category": "jungling",
-      "tier": 3,
-      "price": 2000,
-      "stats": {
-        "cooldown_reduction": 5.0,
-        "max_hp": 1200.0,
-        "movement_speed_pct": 6.0
-      },
-      "passives": [
-        "Passive - Burn: Deal (+2% self-max HP)",
-        "Passive - Wild: Increase 25 Max HP and 0.2% CD reduction for every monster killed, max stack up to 25 times.",
-        "Smite (jungle): Stores 2 charges (45s per charge, 10s cooldown). Deals true damage and stuns monsters/minions for 1s; against heroes deals 185 (+15/level) true damage.",
-        "Passive - Modest: Damage to minions reduced by 25% for the first 4 minutes."
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+5% CD reduction",
-        "+1200 Max HP",
-        "+6% Movement Speed"
-      ],
-      "icon_url": "https://rovmeta.com/items/leviathan.png",
-      "patch": "Full Element Assault, Apr 2026",
-      "sources": [
-        "https://moba.garena.tw/news/show/5528"
-      ]
-    },
-    {
-      "name": "Loki's Curse",
-      "slug": "lokis-curse",
-      "category": "jungling",
-      "tier": 3,
-      "price": 2000,
-      "stats": {
-        "ability_power": 150.0,
-        "cooldown_reduction": 5.0,
-        "movement_speed_pct": 7.0
-      },
-      "passives": [
-        "Passive - Elemental Power: After using a skill, the next normal attack in 5s deals additional",
-        "Passive - Wild: Gain 4 AP and 0.2 CD reduction for every monster killed, max stack up to 25 times.",
-        "Smite (jungle): Stores 2 charges (45s per charge, 10s cooldown). Deals true damage and stuns monsters/minions for 1s; against heroes deals 300 (+20/level) magic damage.",
-        "Passive - Modest: Damage to minions reduced by 25% for the first 4 minutes."
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+150 AP",
-        "+5% CD reduction",
-        "+7% Movement Speed"
-      ],
-      "icon_url": "https://rovmeta.com/items/lokis-curse.png",
-      "patch": "Full Element Assault, Apr 2026",
-      "sources": [
-        "https://moba.garena.tw/news/show/5528"
-      ]
-    },
-    {
-      "name": "Scorching Wind",
-      "slug": "scorching-wind",
-      "category": "jungling",
-      "tier": 3,
-      "price": 2000,
-      "stats": {
-        "attack_speed": 30.0,
-        "life_steal": 15.0,
-        "movement_speed_pct": 7.0
-      },
-      "passives": [
-        "Passive - Fire Storm: Normal attacks place a mark on the target, dealing 15~19",
-        "Passive - Wild: Increase 0.8% Attack Speed and 0.2% Life Steal for every monster killed, max stack up to 25 times.",
-        "Smite (jungle): Stores 2 charges (45s per charge, 10s cooldown). Deals true damage and stuns monsters/minions for 1s; against heroes deals 400 (+30/level) physical damage and steals 30% movement speed for 2s.",
-        "Passive - Modest: Damage to minions reduced by 25% for the first 4 minutes."
-      ],
-      "passives_incomplete": true,
-      "stats_raw": [
-        "+30% Attack Speed",
-        "+15% Lifesteal",
-        "+7% Movement Speed"
-      ],
-      "icon_url": "https://rovmeta.com/items/scorching-wind.png",
-      "patch": "Full Element Assault, Apr 2026",
-      "sources": [
-        "https://moba.garena.tw/news/show/5528"
-      ]
-    },
-    {
-      "name": "Soulreaver",
-      "slug": "soulreaver",
-      "category": "jungling",
-      "tier": 3,
-      "price": 2000,
-      "stats": {
-        "attack_damage": 90.0,
-        "cooldown_reduction": 5.0,
-        "movement_speed_pct": 8.0
-      },
-      "passives": [
-        "Passive - Armor Smasher: +60 Armor Pierce.",
-        "Passive - Wild: Increase 2 AD and 0.2% CD reduction for every monster killed, max stack up to 25 times.",
-        "Smite (jungle): Stores 2 charges (45s per charge, 10s cooldown). Deals true damage and stuns monsters/minions for 1s; against heroes deals 400 (+30/level) physical damage and steals 30% movement speed for 2s.",
-        "Passive - Modest: Damage to minions reduced by 25% for the first 4 minutes."
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+90 AD",
-        "+5% CD reduction",
-        "+8% Movement Speed"
-      ],
-      "icon_url": "https://rovmeta.com/items/soulreaver.png",
-      "patch": "Full Element Assault, Apr 2026",
-      "sources": [
-        "https://moba.garena.tw/news/show/5528"
-      ]
-    },
-    {
-      "name": "Lapis Ring",
-      "slug": "lapis-ring",
-      "category": "magic",
-      "tier": 1,
-      "price": 220,
-      "stats": {
-        "max_mana": 300.0
-      },
-      "passives": [],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+300 Max Mana"
-      ],
-      "icon_url": "https://rovmeta.com/items/lapis-ring.png"
-    },
-    {
-      "name": "Magic Ring",
-      "slug": "magic-ring",
-      "category": "magic",
-      "tier": 1,
-      "price": 300,
-      "stats": {
-        "cooldown_reduction": 5.0
-      },
-      "passives": [],
-      "passives_incomplete": false,
-      "stats_raw": [],
-      "icon_url": "https://rovmeta.com/items/magic-ring.jpg"
-    },
-    {
-      "name": "Pendant of Faith",
-      "slug": "pendant-of-faith",
-      "category": "magic",
-      "tier": 1,
-      "price": 120,
-      "stats": {
-        "mana_regen_5s": 10.0
-      },
-      "passives": [],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+10 Mana Regen / 5s"
-      ],
-      "icon_url": "https://rovmeta.com/items/pendant-of-faith.png"
-    },
-    {
-      "name": "Spell Tome",
-      "slug": "spell-tome",
-      "category": "magic",
-      "tier": 1,
-      "price": 300,
-      "stats": {
-        "ability_power": 40.0
-      },
-      "passives": [],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+40 AP"
-      ],
-      "icon_url": "https://rovmeta.com/items/spell-tome.png"
-    },
-    {
-      "name": "Ancient Scriptures",
-      "slug": "ancient-scriptures",
-      "category": "magic",
-      "tier": 2,
-      "price": 540,
-      "stats": {
-        "ability_power": 80.0
-      },
-      "passives": [],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+80 AP"
-      ],
-      "icon_url": "https://rovmeta.com/items/ancient-scriptures.png"
-    },
-    {
-      "name": "Carano's Vow",
-      "slug": "caranos-vow",
-      "category": "magic",
-      "tier": 2,
-      "price": null,
-      "stats": {
-        "ability_power": 180.0,
-        "magic_life_steal": 12.0,
-        "movement_speed_pct": 5.0
-      },
-      "passives": [
-        "Unique Passive - Urgent Protection: Remove control effects when HP drops below 30%, and grants a 510-1000"
-      ],
-      "passives_incomplete": true,
-      "stats_raw": [
-        "+180 AP",
-        "+12% Magic Lifesteal",
-        "+5% Movement Speed",
-        "+100% magic bonus",
-        "+8% bonus HP"
-      ],
-      "icon_url": "https://rovmeta.com/items/caranos-vow.jpg",
-      "patch": "Innovation Era version, Jan 2026 (rovmeta merged passive text into stats)",
-      "sources": [
-        "https://moba.garena.tw/news/show/5423"
-      ]
-    },
-    {
-      "name": "Enchanted Scroll",
-      "slug": "enchanted-scroll",
-      "category": "magic",
-      "tier": 2,
-      "price": 820,
-      "stats": {
-        "ability_power": 120.0
-      },
-      "passives": [],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+120 AP"
-      ],
-      "icon_url": "https://rovmeta.com/items/enchanted-scroll.png"
-    },
-    {
-      "name": "Orrery",
-      "slug": "orrery",
-      "category": "magic",
-      "tier": 2,
-      "price": 800,
-      "stats": {
-        "ability_power": 80.0
-      },
-      "passives": [
-        "Passive - Explosion: Target who is hit by skills takes 180"
-      ],
-      "passives_incomplete": true,
-      "stats_raw": [
-        "+80 AP"
-      ],
-      "icon_url": "https://rovmeta.com/items/orrery.jpg"
-    },
-    {
-      "name": "Phoenix Tear",
-      "slug": "phoenix-tear",
-      "category": "magic",
-      "tier": 2,
-      "price": 500,
-      "stats": {
-        "ability_power": 50.0
-      },
-      "passives": [
-        "Passive - From the Ashes: Leveling up"
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+50 AP"
-      ],
-      "icon_url": "https://rovmeta.com/items/phoenix-tear.png"
-    },
-    {
-      "name": "Spoopy Mask",
-      "slug": "spoopy-mask",
-      "category": "magic",
-      "tier": 2,
-      "price": 960,
-      "stats": {
-        "ability_power": 100.0
-      },
-      "passives": [
-        "Passive - Extermination: +75 Magic Pierce."
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+100 AP"
-      ],
-      "icon_url": "https://rovmeta.com/items/spoopy-mask.png"
-    },
-    {
-      "name": "Trick Blade",
-      "slug": "trick-blade",
-      "category": "magic",
-      "tier": 2,
-      "price": 820,
-      "stats": {
-        "ability_power": 40.0,
-        "cooldown_reduction": 10.0
-      },
-      "passives": [
-        "Passive - Elemental Power: 5s after using a skill, the next normal attack deals"
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+40 AP",
-        "+10% CD reduction"
-      ],
-      "icon_url": "https://rovmeta.com/items/trick-blade.png"
-    },
-    {
-      "name": "Virtue's Bracelet",
-      "slug": "virtues-bracelet",
-      "category": "magic",
-      "tier": 2,
-      "price": 720,
-      "stats": {
-        "ability_power": 60.0,
-        "cooldown_reduction": 5.0
-      },
-      "passives": [],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+60 AP",
-        "+5% CD reduction"
-      ],
-      "icon_url": "https://rovmeta.com/items/virtues-bracelet.png"
-    },
-    {
-      "name": "Vlad's Impaler",
-      "slug": "vlads-impaler",
-      "category": "magic",
-      "tier": 2,
-      "price": 800,
-      "stats": {
-        "ability_power": 80.0,
-        "magic_life_steal": 12.0
-      },
-      "passives": [],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+80 AP",
-        "+12% Magic Lifesteal."
-      ],
-      "icon_url": "https://rovmeta.com/items/vlads-impaler.png"
-    },
-    {
-      "name": "Apocalypse",
-      "slug": "apocalypse",
-      "category": "magic",
-      "tier": 3,
-      "price": 1800,
-      "stats": {
-        "ability_power": 180.0,
-        "cooldown_reduction": 10.0,
-        "movement_speed_pct": 5.0
-      },
-      "passives": [
-        "Passive - Elemental Power: After using a skill, the next normal attack in 5s deals additional"
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+180 AP",
-        "+10% CD reduction",
-        "+5% Movement Speed"
-      ],
-      "icon_url": "https://rovmeta.com/items/apocalypse.png"
-    },
-    {
-      "name": "Arctic Orb",
-      "slug": "arctic-orb",
-      "category": "magic",
-      "tier": 3,
-      "price": 2200,
-      "stats": {
-        "ability_power": 220.0,
-        "magic_life_steal": 12.0
-      },
-      "passives": [
-        "Active"
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+220 AP",
-        "+12% Magic Lifesteal"
-      ],
-      "icon_url": "https://rovmeta.com/items/arctic-orb.png"
-    },
-    {
-      "name": "Berith's Agony",
-      "slug": "beriths-agony",
-      "category": "magic",
-      "tier": 3,
-      "price": 1800,
-      "stats": {
-        "ability_power": 140.0,
-        "cooldown_reduction": 10.0,
-        "max_hp": 600.0
-      },
-      "passives": [
-        "Passive - Tortune: Skills deal additional 80 (+2% target's current HP)"
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+140 AP",
-        "+10% CD reduction",
-        "+600 Max HP"
-      ],
-      "icon_url": "https://rovmeta.com/items/beriths-agony.png"
-    },
-    {
-      "name": "Boomstick",
-      "slug": "boomstick",
-      "category": "magic",
-      "tier": 3,
-      "price": 1800,
-      "stats": {
-        "ability_power": 200.0,
-        "movement_speed_pct": 5.0
-      },
-      "passives": [
-        "Passive - Explosion: Target who is hit by skills takes 120"
-      ],
-      "passives_incomplete": true,
-      "stats_raw": [
-        "+200 AP",
-        "+5% Movement Speed"
-      ],
-      "icon_url": "https://rovmeta.com/items/boomstick.png"
-    },
-    {
-      "name": "Evil Secrets",
-      "slug": "evil-secrets",
-      "category": "magic",
-      "tier": 3,
-      "price": 1980,
-      "stats": {
-        "ability_power": 180.0
-      },
-      "passives": [
-        "Passive - Extermination: +150 Magic Pierce."
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+180 AP"
-      ],
-      "icon_url": "https://rovmeta.com/items/evil-secrets.png"
-    },
-    {
-      "name": "Frost Guard",
-      "slug": "frost-guard",
-      "category": "magic",
-      "tier": 3,
-      "price": 2100,
-      "stats": {
-        "ability_power": 140.0,
-        "cooldown_reduction": 5.0,
-        "max_hp": 600.0
-      },
-      "passives": [
-        "Passive - Ice Armor: Increase"
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+140 AP",
-        "+5% CD reduction",
-        "+600 Max HP"
-      ],
-      "icon_url": "https://rovmeta.com/items/frost-guard.png"
-    },
-    {
-      "name": "Frosty's Revenge",
-      "slug": "frostys-revenge",
-      "category": "magic",
-      "tier": 3,
-      "price": 2020,
-      "stats": {
-        "ability_power": 140.0,
-        "max_hp": 850.0,
-        "movement_speed_pct": 5.0
-      },
-      "passives": [
-        "Passive - Frozen Heart: Abilities that deal damage will also"
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+140 AP",
-        "+850 Max HP",
-        "+5% Movement Speed"
-      ],
-      "icon_url": "https://rovmeta.com/items/frostys-revenge.png"
-    },
-    {
-      "name": "Hecate's Diadem",
-      "slug": "hecates-diadem",
-      "category": "magic",
-      "tier": 3,
-      "price": 2400,
-      "stats": {
-        "ability_power": 240.0
-      },
-      "passives": [
-        "Passive - Warlock: +35% AP."
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+240 AP"
-      ],
-      "icon_url": "https://rovmeta.com/items/hecates-diadem.png"
-    },
-    {
-      "name": "Holy of Holies",
-      "slug": "holy-of-holies",
-      "category": "magic",
-      "tier": 3,
-      "price": 2610,
-      "stats": {
-        "ability_power": 350.0,
-        "cooldown_reduction": 10.0
-      },
-      "passives": [
-        "Passive - Enlightenment: For every 100 Magic Power, increases damage dealt by 0.5% and decreases damage taken by 0.5%"
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+350 AP",
-        "+10% Cooldown Speed"
-      ],
-      "icon_url": "https://rovmeta.com/items/holy-of-holies.png"
-    },
-    {
-      "name": "Mage Robe",
-      "slug": "mage-robe",
-      "category": "magic",
-      "tier": 3,
-      "price": null,
-      "stats": {
-        "ability_power": 120.0,
-        "max_hp": 900.0
-      },
-      "passives": [
-        "Unique Passive - Replenishment: Grant 26-40",
-        "Passive - Magic Pierce: Gain 32-60"
-      ],
-      "passives_incomplete": true,
-      "stats_raw": [
-        "+120 AP",
-        "+900 Max HP"
-      ],
-      "icon_url": "https://rovmeta.com/items/mage-robe.jpg"
-    },
-    {
-      "name": "Orb of the Magi",
-      "slug": "orb-of-the-magi",
-      "category": "magic",
-      "tier": 3,
-      "price": 1800,
-      "stats": {
-        "ability_power": 140.0,
-        "cooldown_reduction": 10.0
-      },
-      "passives": [
-        "Passive - Bide: Gain 12 AP and 120 max HP every 30s of the match, stack up to 10 times.",
-        "Passive - From the Ashes: Leveling up"
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+140 AP",
-        "+10% CD reduction"
-      ],
-      "icon_url": "https://rovmeta.com/items/orb-of-the-magi.png"
-    },
-    {
-      "name": "Rhea's Blessing",
-      "slug": "rheas-blessing",
-      "category": "magic",
-      "tier": 3,
-      "price": 2050,
-      "stats": {
-        "ability_power": 160.0,
-        "magic_life_steal": 25.0,
-        "max_hp": 800.0
-      },
-      "passives": [
-        "Passive - Conversion: Every 2% Magic Life steal is converted into 1% Cooldown Reduction."
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+160 AP",
-        "+25% Magic Lifesteal",
-        "+800 Max HP"
-      ],
-      "icon_url": "https://rovmeta.com/items/rheas-blessing.png"
-    },
-    {
-      "name": "Soaring Aura",
-      "slug": "soaring-aura",
-      "category": "magic",
-      "tier": 3,
-      "price": 2100,
-      "stats": {
-        "ability_power": 140.0,
-        "cooldown_reduction": 10.0,
-        "max_hp": 600.0
-      },
-      "passives": [
-        "Passive - Extermination: Skills and normal attack hitting the enemy hero will increase 10~24"
-      ],
-      "passives_incomplete": true,
-      "stats_raw": [
-        "+140 AP",
-        "+10% CD reduction",
-        "+600 Max HP"
-      ],
-      "icon_url": "https://rovmeta.com/items/soaring-aura.png"
-    },
-    {
-      "name": "Staff of Nuul",
-      "slug": "staff-of-nuul",
-      "category": "magic",
-      "tier": 3,
-      "price": 2050,
-      "stats": {
-        "ability_power": 180.0,
-        "cooldown_reduction": 10.0
-      },
-      "passives": [
-        "Passive - Tranquil Soul: +40% Magic Pierce."
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+180 AP",
-        "+10% CD reduction"
-      ],
-      "icon_url": "https://rovmeta.com/items/staff-of-nuul.png"
-    },
-    {
-      "name": "Tome of the Reaper",
-      "slug": "tome-of-the-reaper",
-      "category": "magic",
-      "tier": 3,
-      "price": 1900,
-      "stats": {
-        "ability_power": 140.0,
-        "cooldown_reduction": 10.0,
-        "max_hp": 600.0
-      },
-      "passives": [
-        "Passive - Soul Prison: Dealing damage with basic attacks or skills reduces the target's healing recovery by 40% for 3 seconds."
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+140 AP",
-        "+10% CD reduction",
-        "+600 Max HP"
-      ],
-      "icon_url": "https://rovmeta.com/items/tome-of-the-reaper.png"
-    },
-    {
-      "name": "Virtue's Necklace",
-      "slug": "virtues-necklace",
-      "category": "magic",
-      "tier": 3,
-      "price": 1800,
-      "stats": {
-        "ability_power": 160.0,
-        "cooldown_reduction": 15.0,
-        "mana_regen_5s": 25.0
-      },
-      "passives": [
-        "Passive - Wise:"
-      ],
-      "passives_incomplete": true,
-      "stats_raw": [
-        "+160 AP",
-        "+15% CD reduction",
-        "+25 Mana Regen / 5s"
-      ],
-      "icon_url": "https://rovmeta.com/items/virtues-necklace.png"
-    },
-    {
-      "name": "Zweihander",
-      "slug": "zweihander",
-      "category": "magic",
-      "tier": 3,
-      "price": 1900,
-      "stats": {
-        "ability_power": 160.0,
-        "attack_speed": 20.0,
-        "movement_speed_pct": 8.0
-      },
-      "passives": [
-        "Passive - Rapid Blade: Normal attack hits increase 15% attack speed, stack up to 2 times, lasting for 4s.",
-        "Passive - Twilight: Normal attacks deal additional 40"
-      ],
-      "passives_incomplete": true,
-      "stats_raw": [
-        "+160 AP",
-        "+20% Attack Speed",
-        "+8% Movement Speed"
-      ],
-      "icon_url": "https://rovmeta.com/items/zweihander.png"
     },
     {
       "name": "Boots of Speed",
@@ -1971,9 +2057,16 @@
       "stats": {
         "movement_speed": 30.0
       },
-      "passives": [],
+      "stats_raw": [
+        "สกิลติดตัว: ความเร็วเคลื่อนที่ +30"
+      ],
+      "passives": [
+        "Unique Passive: Movement Speed +30"
+      ],
+      "desc_th": [
+        "สกิลติดตัว: ความเร็วเคลื่อนที่ +30"
+      ],
       "passives_incomplete": false,
-      "stats_raw": [],
       "icon_url": "https://rovmeta.com/items/boots-of-speed.png"
     },
     {
@@ -1985,11 +2078,18 @@
       "stats": {
         "movement_speed": 60.0
       },
+      "stats_raw": [],
       "passives": [
-        "Passive: +100 Magic Pierce."
+        "Passive: +60 Movement Speed.",
+        "Passive: +100 Magic Pierce.",
+        "Can switch to other LV2 boots for free (Cooldown: 3 minutes)."
+      ],
+      "desc_th": [
+        "สกิลติดตัว: ความเร็วเคลื่อนที่ +60",
+        "สกิลติดตัว: เจาะเกราะเวท +100",
+        "สามารถสลับไปใช้รองเท้า LV2 อื่นได้ฟรี CD 3 นาที"
       ],
       "passives_incomplete": false,
-      "stats_raw": [],
       "icon_url": "https://rovmeta.com/items/enchanted-kicks.png"
     },
     {
@@ -2002,13 +2102,20 @@
         "cooldown_reduction": 15.0,
         "movement_speed": 60.0
       },
+      "stats_raw": [
+        "+15% ลดคูลดาวน์"
+      ],
       "passives": [
-        "Passive: Reduce additional 15% CD of Talents."
+        "Passive: +60 Movement Speed.",
+        "Passive: Reduces Challenger Talent cooldown by 15%.",
+        "Can switch to other LV2 boots for free (Cooldown: 3 minutes)."
+      ],
+      "desc_th": [
+        "สกิลติดตัว: ความเร็วเคลื่อนที่ +60",
+        "สกิลติดตัว: ลดเวลาคูลดาวน์สูงสุดของสกิลชาเลนเจอร์ลง 15%",
+        "สามารถสลับไปใช้รองเท้า LV2 อื่นได้ฟรี CD 3 นาที"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+15% CD Reduction"
-      ],
       "icon_url": "https://rovmeta.com/items/flashy-boots.png"
     },
     {
@@ -2021,13 +2128,20 @@
         "magic_defense": 90.0,
         "movement_speed": 60.0
       },
+      "stats_raw": [
+        "+90 ต้านทานเวท"
+      ],
       "passives": [
-        "Passive: +35%"
+        "Passive: Movement Speed +60",
+        "Passive: Resistance +35% (reduces the duration of debuffs such as slows, silences, roots, knockups, knockbacks, stuns, taunts, petrifies, and freezes).",
+        "Can switch to another LV2 boots for free with a 3-minute cooldown."
+      ],
+      "desc_th": [
+        "สกิลติดตัว: ความเร็วเคลื่อนที่ +60",
+        "สกิลติดตัว: ต้านทานสถานะ+35% (ต้านทานสถานะ: ลดเวลาดีบัฟ เช่น เคลื่อนที่ช้าลง ใบ้ ล็อกตัว ลอยขึ้น ผลักถอยหลัง สตั๊น ยั่วยุ กลายเป็นหิน และแช่แข็ง)",
+        "สามารถสลับไปใช้รองเท้า LV2 อื่นได้ฟรี CD 3 นาที"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+90 Magic Armor"
-      ],
       "icon_url": "https://rovmeta.com/items/gilded-greaves.png"
     },
     {
@@ -2040,13 +2154,20 @@
         "max_hp": 300.0,
         "movement_speed": 70.0
       },
-      "passives": [
-        "Passive - Swift:"
-      ],
-      "passives_incomplete": true,
       "stats_raw": [
-        "+300 Max HP"
+        "+300 พลังชีวิต"
       ],
+      "passives": [
+        "Passive - Swift: Movement speed increases by 60 when out of combat.",
+        "Passive: Movement Speed +70",
+        "Can switch to another LV2 boots for free with a 3-minute cooldown."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Swift: ความเร็วเคลื่อนที่เพิ่มขึ้น 60 หน่วย เมื่อไม่ได้ต่อสู้",
+        "สกิลติดตัว: ความเร็วเคลื่อนที่ +70",
+        "สามารถสลับไปใช้รองเท้า LV2 อื่นได้ฟรี CD 3 นาที"
+      ],
+      "passives_incomplete": false,
       "icon_url": "https://rovmeta.com/items/hermes-select.png"
     },
     {
@@ -2059,13 +2180,23 @@
         "armor": 110.0,
         "movement_speed": 60.0
       },
-      "passives": [
-        "Passive: Reduce 10%"
-      ],
-      "passives_incomplete": true,
       "stats_raw": [
-        "+110 Armor"
+        "+110 เกราะ",
+        "สกิลติดตัว: ความเร็วเคลื่อนที่ +60",
+        "สกิลติดตัว: ลดความเสียหายกายภาพที่ได้รับ 10%",
+        "สามารถสลับไปใช้รองเท้า LV2 อื่นได้ฟรี CD 3 นาที"
       ],
+      "passives": [
+        "Unique Passive: Movement Speed +60",
+        "Unique Passive: Reduces physical damage taken by 10%.",
+        "Passive: Can switch to other Tier 2 boots for free (Cooldown: 3 min)."
+      ],
+      "desc_th": [
+        "สกิลติดตัว: ความเร็วเคลื่อนที่ +60",
+        "สกิลติดตัว: ลดความเสียหายกายภาพที่ได้รับ 10%",
+        "สามารถสลับไปใช้รองเท้า LV2 อื่นได้ฟรี CD 3 นาที"
+      ],
+      "passives_incomplete": false,
       "icon_url": "https://rovmeta.com/items/sonic-boots.png"
     },
     {
@@ -2078,33 +2209,348 @@
         "attack_speed": 20.0,
         "movement_speed": 60.0
       },
-      "passives": [
-        "Passive: Hitting an enemy"
-      ],
-      "passives_incomplete": true,
       "stats_raw": [
-        "+20% Attack Speed"
+        "+20% ความเร็วโจมตี"
       ],
+      "passives": [
+        "Passive: Movement Speed +60",
+        "Passive: Normal attacks restore 20 HP (CD: 0.3s) (half effect if target is non-hero).",
+        "Can freely switch to other Tier 2 boots for free (Cooldown: 3 min)."
+      ],
+      "desc_th": [
+        "สกิลติดตัว: ความเร็วเคลื่อนที่ +60",
+        "สกิลติดตัว:\nการโจมตีปกติจะฟื้นฟูพลังชีวิต 20 หน่วย (CD: 0.3 วิ) (มีผลแค่ครึ่งเดียวหากเป้าหมายไม่ใช่ฮีโร่)",
+        "สามารถสลับไปใช้รองเท้า LV2 อื่นได้ฟรี CD 3 นาที"
+      ],
+      "passives_incomplete": false,
       "icon_url": "https://rovmeta.com/items/war-boots.png"
     },
     {
-      "name": "Elemental Gem",
-      "slug": "elemental-gem",
+      "name": "Hunter's Knife",
+      "slug": "hunters-knife",
+      "category": "jungle",
+      "tier": 1,
+      "price": 250,
+      "stats": {},
+      "stats_raw": [],
+      "passives": [
+        "When upgraded, Hunter's Knife inflicts Frostbite, dealing damage and slowing enemies.",
+        "Passive - Hunt: Gain 20% more XP from killing monsters. Normal attacks or skills hitting monsters deal 50~120 true damage every 0.5s for 2s.",
+        "Passive - Modest: When nearby allied heroes are present, they receive all gold and XP from minions while you receive 50% (expires at 4 min). Damage to minions is reduced by 25% (expires at 4 min)."
+      ],
+      "desc_th": [
+        "(Hunter's Knife เมื่ออัพเกรดสามารถสร้างสถานะ Frostbite ทำให้ศัตรูได้รับความเสียหายและเคลื่อนที่ช้าลง)",
+        "สกิลติดตัว - Hunt: สังหารมอนสเตอร์ป่า จะได้รับ XP เพิ่มขึ้น 20% หากการโจมตีปกติหรือสกิลโจมตีโดนมอนสเตอร์ป่า ทุก 0.5 วิจะสร้างความเสียหายจริง 50~120 หน่วย เป็นเวลา 2 วิ",
+        "สกิลติดตัว - Modest: เมื่อมีฮีโร่พันธมิตรอยู่ใกล้ๆ ฮีโร่พันธมิตรจะได้รับเหรียญทองและ XP ทั้งหมดจากครีป ส่วนตนเองจะได้รับเพียง 50% เอฟเฟกต์จะหายไปในนาทีที่ 4 ความเสียหายต่อครีปลดลง 25% และเอฟเฟกต์นี้จะหายไปในนาทีที่ 4"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/hunters-knife.png",
+      "alias": [
+        "Kukri"
+      ],
+      "patch": "Full Element Assault, Apr 2026",
+      "sources": [
+        "https://moba.garena.tw/news/show/5528"
+      ]
+    },
+    {
+      "name": "Gnoll Cleaver",
+      "slug": "gnoll-cleaver",
+      "category": "jungle",
+      "tier": 2,
+      "price": 700,
+      "stats": {
+        "max_hp": 400.0
+      },
+      "stats_raw": [
+        "+400 พลังชีวิต"
+      ],
+      "passives": [
+        "Acquire Frostbite: Upgrades talent to Frostbite.",
+        "Passive - Incantation: Deals 50~78 magic damage to nearby enemies every 1s (deals 100% more damage to minions and monsters).",
+        "Passive - Hunting: Gain 35% more XP from killing monsters. Normal attacks/skills hitting monsters deal 60~172 additional true damage every 0.5s for 2s.",
+        "Passive - Hunt: Killing or assisting in killing monsters increases max HP by 25 and cooldown reduction by 0.2% (stacks up to 15 times).",
+        "Passive - Modest: When nearby allied heroes are present, they receive all gold and XP from minions while you receive 50% (expires at 4 min). Damage to minions is reduced by 25% (expires at 4 min)."
+      ],
+      "desc_th": [
+        "Acquire Frostbite",
+        "สกิลติดตัว - Incantation: สร้าง ความเสียหายเวท 50~78 หน่วย แก่ศัตรูรอบๆ ทุก 1 วิ (ครีปและมอนสเตอร์ป่าโดนแรงขึ้น 100%)",
+        "สกิลติดตัว - Hunting : ได้รับ XP เมื่อฆ่ามอนสเตอร์ป่าเพิ่มขึ้น 35% และเมื่อโจมตีปกติ/ใช้สกิลโดนมอนสเตอร์ป่าจะสร้างความเสียหายจริง 60~172 แก่เป้าหมายดังกล่าวทุก 0.5 วิ เป็นเวลา 2 วิ",
+        "สกิลติดตัว - Hunt: หากตัวเองหรือฮีโร่พันธมิตรรอบๆ สังหารมอนสเตอร์ป่า จะได้รับพลังชีวิตสูงสุดเพิ่มขึ้น 25 หน่วยและลดคูลดาวน์ 0.2% สะสมได้สูงสุด 15 ครั้ง",
+        "สกิลติดตัว - Modest: เมื่อมีฮีโร่พันธมิตรอยู่ใกล้ๆ ฮีโร่พันธมิตรจะได้รับเหรียญทองและ XP ทั้งหมดจากครีป ส่วนตนเองจะได้รับเพียง 50% เอฟเฟกต์จะหายไปในนาทีที่ 4 ความเสียหายต่อครีปลดลง 25% และเอฟเฟกต์นี้จะหายไปในนาทีที่ 4"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/gnoll-cleaver.png",
+      "patch": "Full Element Assault, Apr 2026",
+      "sources": [
+        "https://moba.garena.tw/news/show/5528"
+      ]
+    },
+    {
+      "name": "Monsters' Bane",
+      "slug": "monsters-bane",
+      "category": "jungle",
+      "tier": 2,
+      "price": 700,
+      "stats": {
+        "ability_power": 40
+      },
+      "stats_raw": [
+        "+40 พลังเวท"
+      ],
+      "passives": [
+        "Acquire Frostbite",
+        "Unique Passive - Hunting: Gain 35% more XP from monsters. Normal attacks or skills dealing damage to jungle monsters deal 60~172 True Damage every 0.5s for 2s.",
+        "Unique Passive - Hunt: When you or nearby allies kill a monster, gain 4 AP and 0.2% Cooldown Reduction, stacking up to 15 times.",
+        "Unique Passive - Modest: When nearby allies are present, they receive all gold and XP from minions while you receive 50% (lasts until min 4). Damage to minions is reduced by 25% (lasts until min 4)."
+      ],
+      "desc_th": [
+        "Acquire Frostbite",
+        "สกิลติดตัว - Hunting : ได้รับ XP เมื่อฆ่ามอนสเตอร์ป่าเพิ่มขึ้น 35% และเมื่อโจมตีปกติ/ใช้สกิลโดนมอนสเตอร์ป่าจะสร้างความเสียหายจริง 60~172 แก่เป้าหมายดังกล่าวทุก 0.5 วิ เป็นเวลา 2 วิ",
+        "สกิลติดตัว - Hunt: หากตัวเองหรือฮีโร่พันธมิตรรอบๆ สังหารมอนสเตอร์ป่า จะได้รับพลังเวทเพิ่มขึ้น 4 หน่วยและลดคูลดาวน์ 0.2% สะสมได้สูงสุด 15 ครั้ง",
+        "สกิลติดตัว - Modest: เมื่อมีฮีโร่พันธมิตรอยู่ใกล้ๆ ฮีโร่พันธมิตรจะได้รับเหรียญทองและ XP ทั้งหมดจากครีป ส่วนตนเองจะได้รับเพียง 50% เอฟเฟกต์จะหายไปในนาทีที่ 4 ความเสียหายต่อครีปลดลง 25% และเอฟเฟกต์นี้จะหายไปในนาทีที่ 4"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/monsters-bane.png",
+      "alias": [
+        "Monster's Bane"
+      ],
+      "patch": "Full Element Assault, Apr 2026",
+      "sources": [
+        "https://moba.garena.tw/news/show/5528"
+      ]
+    },
+    {
+      "name": "Mr. Stabby",
+      "slug": "mr-stabby",
+      "category": "jungle",
+      "tier": 2,
+      "price": 700,
+      "stats": {
+        "attack_damage": 25
+      },
+      "stats_raw": [
+        "+25 พลังโจมตี"
+      ],
+      "passives": [
+        "Acquire Frostbite",
+        "Unique Passive - Hunting: Gain 35% more XP from monsters. Normal attacks or skills dealing damage to jungle monsters deal 60~172 True Damage every 0.5s for 2s.",
+        "Unique Passive - Hunt: When you or nearby allies kill a monster, gain 2 AD and 0.2% Cooldown Reduction, stacking up to 15 times.",
+        "Unique Passive - Modest: When nearby allies are present, they receive all gold and XP from minions while you receive 50% (lasts until min 4). Damage to minions is reduced by 25% (lasts until min 4)."
+      ],
+      "desc_th": [
+        "Acquire Frostbite",
+        "สกิลติดตัว - Hunting : ได้รับ XP เมื่อฆ่ามอนสเตอร์ป่าเพิ่มขึ้น 35% และเมื่อโจมตีปกติ/ใช้สกิลโดนมอนสเตอร์ป่าจะสร้างความเสียหายจริง 60~172 แก่เป้าหมายดังกล่าวทุก 0.5 วิ เป็นเวลา 2 วิ",
+        "สกิลติดตัว - Hunt: หากตัวเองหรือฮีโร่พันธมิตรรอบๆ สังหารมอนสเตอร์ป่า จะได้รับพลังโจมตีเพิ่มขึ้น 2 หน่วยและลดคูลดาวน์ 0.2% สะสมได้สูงสุด 15 ครั้ง",
+        "สกิลติดตัว - Modest: เมื่อมีฮีโร่พันธมิตรอยู่ใกล้ๆ ฮีโร่พันธมิตรจะได้รับเหรียญทองและ XP ทั้งหมดจากครีป ส่วนตนเองจะได้รับเพียง 50% เอฟเฟกต์จะหายไปในนาทีที่ 4 ความเสียหายต่อครีปลดลง 25% และเอฟเฟกต์นี้จะหายไปในนาทีที่ 4"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/mr-stabby.png",
+      "patch": "Full Element Assault, Apr 2026",
+      "sources": [
+        "https://moba.garena.tw/news/show/5528"
+      ]
+    },
+    {
+      "name": "Stormy Bow",
+      "slug": "stormy-bow",
+      "category": "jungle",
+      "tier": 2,
+      "price": 700,
+      "stats": {
+        "attack_speed": 12.0
+      },
+      "stats_raw": [
+        "+12% ความเร็วโจมตี",
+        "(ได้รับสกิล Frostbite)"
+      ],
+      "passives": [
+        "Passive - Hunting: Increases EXP gained from killing jungle monsters by 35%. Normal attacks and skills dealing damage to jungle monsters deal 60~172 true damage every 0.5s for 2s.",
+        "Passive - Hunt: Whenever self or nearby allied heroes kill a jungle monster, grants +0.8% attack speed and +0.2% life steal (stacks up to 15 times).",
+        "Passive - Modest: When nearby allied heroes are present, allies receive 100% of gold and EXP from lane creeps while self receives only 50% (effect expires at 4 min). Damage dealt to lane creeps is reduced by 25% (effect expires at 4 min)."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Hunting :\nได้รับ XP เมื่อฆ่ามอนสเตอร์ป่าเพิ่มขึ้น 35% และเมื่อโจมตีปกติ/ใช้สกิลโดนมอนสเตอร์ป่าจะสร้างความเสียหายจริง 60~172 แก่เป้าหมายดังกล่าวทุก 0.5 วิ เป็นเวลา 2 วิ",
+        "สกิลติดตัว - Hunt:\nหากตัวเองหรือฮีโร่พันธมิตรรอบๆ สังหารมอนสเตอร์ป่า จะได้รับความเร็วโจมตี 0.8% และดูดเลือด 0.2% สะสมได้สูงสุด 15 ครั้ง",
+        "สกิลติดตัว - Modest:\nเมื่อมีฮีโร่พันธมิตรอยู่ใกล้ๆ ฮีโร่พันธมิตรจะได้รับเหรียญทองและ XP ทั้งหมดจากครีป ส่วนตนเองจะได้รับเพียง 50% เอฟเฟกต์จะหายไปในนาทีที่ 4 ความเสียหายต่อครีปลดลง 25% และเอฟเฟกต์นี้จะหายไปในนาทีที่ 4"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/stormy-bow.png"
+    },
+    {
+      "name": "Firestorm Bow",
+      "slug": "firestorm-bow",
+      "category": "jungle",
+      "tier": 3,
+      "price": 2000,
+      "stats": {
+        "attack_speed": 30.0,
+        "life_steal": 15.0,
+        "movement_speed_pct": 7.0
+      },
+      "stats_raw": [
+        "+30% ความเร็วโจมตี",
+        "+15% ดูดเลือด",
+        "+7% ความเร็วเคลื่อนที่"
+      ],
+      "passives": [
+        "(Obtains talent Frostbite)",
+        "Passive - Firestorm: Normal attacks apply a mark to the target, each mark dealing 15 (+1 every 3 levels) magic damage, stacking up to 6 times (Cooldown: 0.3s).",
+        "Passive - Hunting: Increases EXP gained from killing jungle monsters by 35%. Normal attacks and skills dealing damage to jungle monsters deal 60~172 true damage every 0.5s for 2s.",
+        "Passive - Hunt: When self or nearby allied heroes kill a jungle monster, gain 0.8% attack speed and 0.2% life steal, stacking up to 25 times.",
+        "Passive - Modest: When nearby allied heroes are present, they receive all gold and EXP from minions while self receives only 50% (effect expires at minute 4). Damage to minions reduced by 25% (effect expires at minute 4)."
+      ],
+      "desc_th": [
+        "(ได้รับสกิล Frostbite)",
+        "สกิลติดตัว - Firestorm:\nการโจมตีปกติจะทำให้เป้าหมายติดขั้นสัญลักษณ์ โดยแต่ละขั้นจะสร้างความเสียหายเวท 15 (เพิ่มขึ้น 1 ทุกๆ 3 LV) หน่วย สูงสุด 6 ขั้น (CD 0.3 วิ)",
+        "สกิลติดตัว - Hunting :\nได้รับ XP เมื่อฆ่ามอนสเตอร์ป่าเพิ่มขึ้น 35% และเมื่อโจมตีปกติ/ใช้สกิลโดนมอนสเตอร์ป่าจะสร้างความเสียหายจริง 60~172 แก่เป้าหมายดังกล่าวทุก 0.5 วิ เป็นเวลา 2 วิ",
+        "สกิลติดตัว - Hunt:\nหากตัวเองหรือฮีโร่พันธมิตรรอบๆ สังหารมอนสเตอร์ป่า จะได้รับความเร็วโจมตี 0.8% และดูดเลือด 0.2% สะสมได้สูงสุด 25 ครั้ง",
+        "สกิลติดตัว - Modest:\nเมื่อมีฮีโร่พันธมิตรอยู่ใกล้ๆ ฮีโร่พันธมิตรจะได้รับเหรียญทองและ XP ทั้งหมดจากครีป ส่วนตนเองจะได้รับเพียง 50% เอฟเฟกต์จะหายไปในนาทีที่ 4 ความเสียหายต่อครีปลดลง 25% และเอฟเฟกต์นี้จะหายไปในนาทีที่ 4"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/firestorm-bow.png"
+    },
+    {
+      "name": "Leviathan",
+      "slug": "leviathan",
+      "category": "jungle",
+      "tier": 3,
+      "price": 2000,
+      "stats": {
+        "cooldown_reduction": 5.0,
+        "max_hp": 1200.0,
+        "movement_speed_pct": 6.0
+      },
+      "stats_raw": [
+        "+5% ลดคูลดาวน์",
+        "+1200 พลังชีวิต",
+        "+6% ความเร็วเคลื่อนที่"
+      ],
+      "passives": [
+        "Acquire Frostbite: Upgrades talent to Frostbite.",
+        "Passive - Incantation: Deals magic damage equal to 2% max HP to nearby enemies every 1s (deals 100% more damage to minions and monsters).",
+        "Passive - Hunting: Gain 35% more XP from killing monsters. Normal attacks/skills hitting monsters deal 60~172 additional true damage every 0.5s for 2s.",
+        "Passive - Hunt: Killing or assisting in killing monsters increases max HP by 25 and cooldown reduction by 0.2% (stacks up to 25 times).",
+        "Passive - Modest: When nearby allied heroes are present, they receive all gold and XP from minions while you receive 50% (expires at 4 min). Damage to minions is reduced by 25% (expires at 4 min)."
+      ],
+      "desc_th": [
+        "Acquire Frostbite",
+        "สกิลติดตัว - Incantation: สร้างความเสียหายเวทเท่ากับ 2% HP สูงสุดแก่ศัตรูรอบๆ ทุก 1 วิ (ครีปและมอนสเตอร์ป่าโดนแรงขึ้น 100%)",
+        "สกิลติดตัว - Hunting : ได้รับ XP เมื่อฆ่ามอนสเตอร์ป่าเพิ่มขึ้น 35% และเมื่อโจมตีปกติ/ใช้สกิลโดนมอนสเตอร์ป่าจะสร้างความเสียหายจริง 60~172 แก่เป้าหมายดังกล่าวทุก 0.5 วิ เป็นเวลา 2 วิ",
+        "สกิลติดตัว - Hunt: หากตัวเองหรือฮีโร่พันธมิตรรอบๆ สังหารมอนสเตอร์ป่า จะได้รับพลังชีวิตสูงสุดเพิ่มขึ้น 25 หน่วยและลดคูลดาวน์ 0.2% สะสมได้สูงสุด 25 ครั้ง",
+        "สกิลติดตัว - Modest: เมื่อมีฮีโร่พันธมิตรอยู่ใกล้ๆ ฮีโร่พันธมิตรจะได้รับเหรียญทองและ XP ทั้งหมดจากครีป ส่วนตนเองจะได้รับเพียง 50% เอฟเฟกต์จะหายไปในนาทีที่ 4 ความเสียหายต่อครีปลดลง 25% และเอฟเฟกต์นี้จะหายไปในนาทีที่ 4"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/leviathan.png",
+      "patch": "Full Element Assault, Apr 2026",
+      "sources": [
+        "https://moba.garena.tw/news/show/5528"
+      ]
+    },
+    {
+      "name": "Loki's Curse",
+      "slug": "lokis-curse",
+      "category": "jungle",
+      "tier": 3,
+      "price": 2000,
+      "stats": {
+        "ability_power": 150,
+        "cooldown_reduction": 5,
+        "movement_speed_pct": 7
+      },
+      "stats_raw": [
+        "+150 พลังเวท",
+        "+5% ลดคูลดาวน์",
+        "+7% ความเร็วเคลื่อนที่"
+      ],
+      "passives": [
+        "Acquire Frostbite",
+        "Unique Passive - Curse Power: After using a skill, the next normal attack deals additional 35% AD (+50% bonus AP) Magic Damage. Cooldown: 2s.",
+        "Unique Passive - Hunting: Gain 35% more XP from monsters. Normal attacks or skills dealing damage to jungle monsters deal 60~172 True Damage every 0.5s for 2s.",
+        "Unique Passive - Hunt: When you or nearby allies kill a monster, gain 4 AP and 0.2% Cooldown Reduction, stacking up to 25 times.",
+        "Unique Passive - Modest: When nearby allies are present, they receive all gold and XP from minions while you receive 50% (lasts until min 4). Damage to minions is reduced by 25% (lasts until min 4)."
+      ],
+      "desc_th": [
+        "Acquire Frostbite",
+        "สกิลติดตัว - Curse Power: หลังใช้สกิล การโจมตีถัดไปจะ+ATK35% (+50% โบนัสเวท) ของ เวท CD 2 วิ",
+        "สกิลติดตัว - Hunting : ได้รับ XP เมื่อฆ่ามอนสเตอร์ป่าเพิ่มขึ้น 35% และเมื่อโจมตีปกติ/ใช้สกิลโดนมอนสเตอร์ป่าจะสร้างความเสียหายจริง 60~172 แก่เป้าหมายดังกล่าวทุก 0.5 วิ เป็นเวลา 2 วิ",
+        "สกิลติดตัว - Hunt: หากตัวเองหรือฮีโร่พันธมิตรรอบๆ สังหารมอนสเตอร์ป่า จะได้รับพลังเวทเพิ่มขึ้น 4 หน่วยและลดคูลดาวน์ 0.2% สะสมได้สูงสุด 25 ครั้ง",
+        "สกิลติดตัว - Modest: เมื่อมีฮีโร่พันธมิตรอยู่ใกล้ๆ ฮีโร่พันธมิตรจะได้รับเหรียญทองและ XP ทั้งหมดจากครีป ส่วนตนเองจะได้รับเพียง 50% เอฟเฟกต์จะหายไปในนาทีที่ 4 ความเสียหายต่อครีปลดลง 25% และเอฟเฟกต์นี้จะหายไปในนาทีที่ 4"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/lokis-curse.png",
+      "patch": "Full Element Assault, Apr 2026",
+      "sources": [
+        "https://moba.garena.tw/news/show/5528"
+      ]
+    },
+    {
+      "name": "Soulreaver",
+      "slug": "soulreaver",
+      "category": "jungle",
+      "tier": 3,
+      "price": 2000,
+      "stats": {
+        "attack_damage": 90.0,
+        "cooldown_reduction": 5.0,
+        "movement_speed_pct": 8.0
+      },
+      "stats_raw": [
+        "+90 พลังโจมตี",
+        "+5% ลดคูลดาวน์",
+        "+8% ความเร็วเคลื่อนที่",
+        "Acquire Frostbite",
+        "สกิลติดตัว - Hunting : ได้รับ XP เมื่อฆ่ามอนสเตอร์ป่าเพิ่มขึ้น 35% และเมื่อโจมตีปกติ/ใช้สกิลโดนมอนสเตอร์ป่าจะสร้างความเสียหายจริง 60~172 แก่เป้าหมายดังกล่าวทุก 0.5 วิ เป็นเวลา 2 วิ",
+        "สกิลติดตัว : เจาะเกราะ+60",
+        "สกิลติดตัว - Hunt: หากตัวเองหรือฮีโร่พันธมิตรรอบๆ สังหารมอนสเตอร์ป่า จะได้รับพลังโจมตีเพิ่มขึ้น 2 หน่วยและลดคูลดาวน์ 0.2% สะสมได้สูงสุด 25 ครั้ง",
+        "สกิลติดตัว - Modest: เมื่อมีฮีโร่พันธมิตรอยู่ใกล้ๆ ฮีโร่พันธมิตรจะได้รับเหรียญทองและ XP ทั้งหมดจากครีป ส่วนตนเองจะได้รับเพียง 50% เอฟเฟกต์จะหายไปในนาทีที่ 4 ความเสียหายต่อครีปลดลง 25% และเอฟเฟกต์นี้จะหายไปในนาทีที่ 4"
+      ],
+      "passives": [
+        "Acquire Frostbite (Upgrades Punish).",
+        "Passive - Hunting: Gain 35% extra EXP from jungle monsters. Dealing normal attack or skill damage to jungle monsters deals 60~172 true damage every 0.5s for 2s.",
+        "Unique Passive: Armor Pierce +60.",
+        "Passive - Hunt: When self or nearby allies kill jungle monsters, gain 2 Attack Damage and 0.2% Cooldown Reduction (stacks up to 25 times).",
+        "Passive - Modest: When nearby allies are present, allies gain full gold and EXP from minions while self receives only 50% (effect expires at 4 min). Damage to minions reduced by 25% (expires at 4 min)."
+      ],
+      "desc_th": [
+        "Acquire Frostbite",
+        "สกิลติดตัว - Hunting : ได้รับ XP เมื่อฆ่ามอนสเตอร์ป่าเพิ่มขึ้น 35% และเมื่อโจมตีปกติ/ใช้สกิลโดนมอนสเตอร์ป่าจะสร้างความเสียหายจริง 60~172 แก่เป้าหมายดังกล่าวทุก 0.5 วิ เป็นเวลา 2 วิ",
+        "สกิลติดตัว : เจาะเกราะ+60",
+        "สกิลติดตัว - Hunt: หากตัวเองหรือฮีโร่พันธมิตรรอบๆ สังหารมอนสเตอร์ป่า จะได้รับพลังโจมตีเพิ่มขึ้น 2 หน่วยและลดคูลดาวน์ 0.2% สะสมได้สูงสุด 25 ครั้ง",
+        "สกิลติดตัว - Modest: เมื่อมีฮีโร่พันธมิตรอยู่ใกล้ๆ ฮีโร่พันธมิตรจะได้รับเหรียญทองและ XP ทั้งหมดจากครีป ส่วนตนเองจะได้รับเพียง 50% เอฟเฟกต์จะหายไปในนาทีที่ 4 ความเสียหายต่อครีปลดลง 25% และเอฟเฟกต์นี้จะหายไปในนาทีที่ 4"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/soulreaver.png",
+      "patch": "Full Element Assault, Apr 2026",
+      "sources": [
+        "https://moba.garena.tw/news/show/5528"
+      ]
+    },
+    {
+      "name": "Elemental Stone",
+      "slug": "elemental-stone",
       "category": "support",
       "tier": 1,
       "price": 300,
       "stats": {
         "movement_speed_pct": 5.0
       },
+      "stats_raw": [
+        "+5% ความเร็วเคลื่อนที่"
+      ],
       "passives": [
-        "Passive - Up-and-Coming: Every 3 seconds, grants 6 experience and 6 gold to the teammate with the lowest gold on the team.",
-        "Passive - Modest: The ally hero nearby earns 100% Gold and EXP from minions and monsters while you only get 30~50%"
+        "Passive - Up-and-Coming: Gain 6 EXP every 3s and give 6 gold to the teammate with the lowest gold.",
+        "Passive - Modest: Nearby allied heroes gain full gold and EXP from killing minions and monsters, while the bearer of this item only receives 25%~50% (scales over time, reaching maximum at minute 15)."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Up-and-Coming:\nได้รับ 6 XP ทุก 3 วิ และมอบ 6 เหรียญทองให้แก่ฮีโร่ที่ได้รับเหรียญทองน้อยที่สุดในทีม",
+        "สกิลติดตัว - Modest:\nฮีโร่พันธมิตรที่อยู่รอบๆ จะได้รับโกลด์ และ XP จากการสังหารครีป และมอนสเตอร์เต็มจำนวน ส่วนเจ้าของไอเทมนี้จะได้รับเพียง 25%~50%(ค่อยเพิ่มขึ้นตามเวลา สูงสุดนาทีที่ 15)"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+5% Movement Speed"
-      ],
-      "icon_url": "https://rovmeta.com/items/elemental-gem.png"
+      "icon_url": "https://rovmeta.com/items/elemental-stone.png",
+      "alias": [
+        "Elemental Gem"
+      ]
     },
     {
       "name": "Earth Gem",
@@ -2113,21 +2559,26 @@
       "tier": 2,
       "price": 900,
       "stats": {
-        "cooldown_reduction": 5.0,
-        "max_hp": 400.0,
+        "max_hp": 600.0,
         "movement_speed_pct": 5.0
       },
+      "stats_raw": [
+        "+600 พลังชีวิต",
+        "+5% ความเร็วเคลื่อนที่"
+      ],
       "passives": [
-        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 40 Max HP.",
-        "Passive - Reward: +200~410 max HP.",
-        "Passive - Up-and-Coming: Every 3s, gain 6 EXP and give 6 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 450 gold, and pull in one coin from anywhere on the map (cooldown 15s)."
+        "Passive - Reward: Increases primary attack stat by 16~30 (1 primary stat = 1 AD or 2 AP), and increases max HP by 200~410.",
+        "Passive - Up-and-Coming: Every 3s, gain 6 EXP and give 6 gold to the teammate with the lowest gold. Unfarmed lane minions drop 50% gold on the ground, which can be collected up to 450 gold, and can absorb 1 coin from the map (Cooldown: 15s).",
+        "Passive - Modest: Nearby allied heroes gain full gold and EXP from killing minions and monsters, while the bearer of this item only receives 25%~50% (scales over time, reaching maximum at minute 15).",
+        "Passive - Genesis: Increases physical defense and magic defense by 32~60 for self and nearby allies."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Reward:\nเพิ่มสเตตัสโจมตีหลัก 16~30 หน่วย (1 สเตตัสโจมตีหลัก = AD 1 หรือ AP 2) เพิ่มพลังชีวิตสูงสุด 200~410 หน่วย",
+        "สกิลติดตัว - Up-and-Coming:\nทุกๆ 3 วิ ได้รับ 6 XP และฮีโร่ที่มีการเงินน้อยที่สุดในทีมจะได้รับ 6 เหรียญทอง ครีปเลนที่ไม่มีผู้เล่นฟาร์ม จะดรอปเหรียญทอง 50% ลงพื้น ซึ่งสามารถเก็บเหรียญทองได้มากสุด 450 เหรียญ และสามารถดูดเหรียญทอง 1 เหรียญจากแผนที่ CD 15 วิ",
+        "สกิลติดตัว - Modest:\nฮีโร่พันธมิตรที่อยู่รอบๆ จะได้รับโกลด์ และ XP จากการสังหารครีป และมอนสเตอร์เต็มจำนวน ส่วนเจ้าของไอเทมนี้จะได้รับเพียง 25%~50%(ค่อยเพิ่มขึ้นตามเวลา สูงสุดนาทีที่ 15)",
+        "สกิลติดตัว Genesis:\nเพิ่มพลังป้องกันกายภาพและพลังป้องกันเวท 32~60 ให้ตัวเองและพันธมิตรรอบๆ"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+400 Max HP",
-        "+5% CD reduction",
-        "+5% Movement Speed"
-      ],
       "icon_url": "https://rovmeta.com/items/earth-gem.png",
       "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
       "sources": [
@@ -2143,21 +2594,26 @@
       "tier": 2,
       "price": 900,
       "stats": {
-        "attack_damage": 20.0,
-        "cooldown_reduction": 5.0,
+        "max_hp": 600.0,
         "movement_speed_pct": 5.0
       },
+      "stats_raw": [
+        "+600 พลังชีวิต",
+        "+5% ความเร็วเคลื่อนที่"
+      ],
       "passives": [
-        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 2 AD.",
-        "Passive - Reward: +200~410 max HP.",
-        "Passive - Up-and-Coming: Every 3s, gain 6 EXP and give 6 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 450 gold, and pull in one coin from anywhere on the map (cooldown 15s)."
+        "Passive - Reward: Increases primary attack stat by 16~30 (1 primary stat = 1 AD or 2 AP), and increases max HP by 200~410.",
+        "Passive - Up-and-Coming: Every 3s, gain 6 EXP and give 6 gold to the teammate with the lowest gold. Unfarmed lane minions drop 50% gold on the ground, which can be collected up to 450 gold, and can absorb 1 coin from the map (Cooldown: 15s).",
+        "Passive - Modest: Nearby allied heroes gain full gold and EXP from killing minions and monsters, while the bearer of this item only receives 25%~50% (scales over time, reaching maximum at minute 15).",
+        "Passive - Magical Shadow: Increases cooldown reduction by 5% and attack speed by 5% for self and nearby allies."
+      ],
+      "desc_th": [
+        "สกิลติดตัว - Reward:\nเพิ่มสเตตัสโจมตีหลัก 16~30 หน่วย (1 สเตตัสโจมตีหลัก = AD 1 หรือ AP 2) เพิ่มพลังชีวิตสูงสุด 200~410 หน่วย",
+        "สกิลติดตัว - Up-and-Coming:\nทุกๆ 3 วิ ได้รับ 6 XP และฮีโร่ที่มีการเงินน้อยที่สุดในทีมจะได้รับ 6 เหรียญทอง ครีปเลนที่ไม่มีผู้เล่นฟาร์ม จะดรอปเหรียญทอง 50% ลงพื้น ซึ่งสามารถเก็บเหรียญทองได้มากสุด 450 เหรียญ และสามารถดูดเหรียญทอง 1 เหรียญจากแผนที่ CD 15 วิ",
+        "สกิลติดตัว - Modest:\nฮีโร่พันธมิตรที่อยู่รอบๆ จะได้รับโกลด์ และ XP จากการสังหารครีป และมอนสเตอร์เต็มจำนวน ส่วนเจ้าของไอเทมนี้จะได้รับเพียง 25%~50%(ค่อยเพิ่มขึ้นตามเวลา สูงสุดนาทีที่ 15)",
+        "สกิลติดตัว-Magical Shadow:\nเพิ่มลดคูลดาวน์ 5% และความเร็วโจมตี 5% ให้แก่ตัวเองและพันธมิตรรอบๆ"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+20 AD",
-        "+5% CD reduction",
-        "+5% Movement Speed"
-      ],
       "icon_url": "https://rovmeta.com/items/fire-gem.png",
       "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
       "sources": [
@@ -2167,29 +2623,127 @@
       ]
     },
     {
-      "name": "Mother Earth Barrier",
+      "name": "Aquaflame - Accelerate",
+      "slug": "aquaflame-accelerate",
+      "category": "support",
+      "tier": 3,
+      "price": 1900,
+      "stats": {
+        "max_hp": 1200.0,
+        "movement_speed_pct": 8.0
+      },
+      "stats_raw": [
+        "+1200 พลังชีวิต",
+        "+8% ความเร็วเคลื่อนที่"
+      ],
+      "passives": [
+        "Active - Accelerate: Grants nearby allied heroes gradually increasing movement speed over 5s, up to 20%~100% for 4s. Moving through allies without speed boost grants them the current effect. When dealing or taking damage from enemy heroes, the speed boost is reduced to 20%. Cooldown: 75s.",
+        "Passive - Reward: Increases primary attack stat by 32~60 (1 primary attack stat = 1 AD or 2 AP), and increases max HP by 400~820.",
+        "Passive - Up-and-Coming: Every 3s, gain 8 EXP and grant 8 gold to the lowest-gold ally. Minions dying without an ally nearby drop 50% gold on the ground (up to 600 gold), and pulls 1 gold from the map every 10s. Collecting 600 gold unlocks Resonance (active): grants large amount of gold and EXP to self and 1 ally (once per match).",
+        "Passive - Modest: Nearby allies gain full gold and EXP from minions and monsters, while the user gains only 25%~50% (scales with time, max at 15 min).",
+        "Passive - Magical Shadow: Grants +5% Cooldown Reduction and +5% Attack Speed to self and nearby allies."
+      ],
+      "desc_th": [
+        "สกิลกดใช้ - Accerelate:\nฮีโร่พันธมิตรที่อยู่ในระยะจะค่อยๆ เพิ่มความเร็วเคลื่อนที่ภายใน 5 วินาที สูงสุดเพิ่มขึ้น 20%~100% เป็นเวลา 4 วินาที\nเมื่อวิ่งผ่านฮีโร่พันธมิตรที่ไม่ได้เร่งความเร็ว จะมอบเอฟเฟกต์ปัจจุบันให้กับฮีโร่พันธมิตร\nเมื่อโจมตีหรือถูกโจมตีโดยฮีโร่ศัตรู ผลเร่งความเร็วจะส่งผลเพียง 20% โดยมีคูลดาวน์ 75 วินาที",
+        "สกิลติดตัว - Reward:\nเพิ่มสเตตัสโจมตีหลัก 32~60 (1 สเตตัสโจมตีหลัก = AD 1 หรือ AP 2) เพิ่ม HP สูงสุด 400~820",
+        "สกิลติดตัว - Up-and-Coming:\nทุกๆ 3 วิ ได้รับ 8 XP และฮีโร่ที่มีการเงินน้อยที่สุดในทีมจะได้รับ 8 เหรียญทอง ครีปเลนที่ไม่มีผู้เล่นฟาร์ม จะดรอปเหรียญทอง 50% ลงพื้น ซึ่งสามารถเก็บเหรียญทองได้มากสุด 600 เหรียญ และสามารถดูดเหรียญทอง 1 เหรียญจากแผนที่ CD 10 วิ เมื่อเก็บเหรียญทองครบ 600 เหรียญจะปลดล็อคสกิล Resonance กดใช้งานเพื่อมอบเหรียญทองและ XP จำนวนมากให้กับตัวเองและฮีโร่ฝ่ายเรา 1 ตัว (ใช้ได้ 1 ครั้ง/เกม)",
+        "สกิลติดตัว - Modest:\nฮีโร่พันธมิตรที่อยู่รอบๆ จะได้รับโกลด์ และ XP จากการสังหารครีป และมอนสเตอร์เต็มจำนวน ส่วนเจ้าของไอเทมนี้จะได้รับเพียง 25%~50%(ค่อยเพิ่มขึ้นตามเวลา สูงสุดนาทีที่ 15)",
+        "สกิลติดตัว-Magical Shadow:\nเพิ่มลดคูลดาวน์ 5% และความเร็วโจมตี 5% ให้แก่ตัวเองและพันธมิตรรอบๆ"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/aquaflame-accelerate.png"
+    },
+    {
+      "name": "Aquaflame - Rejuvenate",
+      "slug": "aquaflame-rejuvenate",
+      "category": "support",
+      "tier": 3,
+      "price": 1900,
+      "stats": {
+        "max_hp": 1200.0,
+        "movement_speed_pct": 8.0
+      },
+      "stats_raw": [
+        "+1200 พลังชีวิต",
+        "+8% ความเร็วเคลื่อนที่"
+      ],
+      "passives": [
+        "Active - Rejuvenate: Tethers to a nearby ally (defaults to lowest HP) for 5s, restoring 500~1000 + 20% max HP and 25% max MP to both. Tether breaks if distance is exceeded. When dealing or taking damage from enemy heroes, healing effect is reduced to 20%. Recharges every 50s, up to 2 charges.",
+        "Passive - Reward: Increases primary attack stat by 32~60 units (1 primary stat = 1 AD or 2 AP), and increases max HP by 400~820 units.",
+        "Passive - Up-and-Coming: Every 3s, gain 8 EXP and grant 8 gold to the lowest-gold ally. Minions dying without an ally nearby drop 50% gold on the ground (up to 600 gold), and pulls 1 gold from the map every 10s. Collecting 600 gold unlocks Resonance (active): grants large amount of gold and EXP to self and 1 ally (once per match).",
+        "Passive - Modest: Nearby allies gain full gold and EXP from minions and monsters, while the user gains only 25%~50% (scales with time, max at 15 min).",
+        "Passive - Magical Shadow: Grants +5% Cooldown Reduction and +5% Attack Speed to self and nearby allies."
+      ],
+      "desc_th": [
+        "สกิลกดใช้ - Rejuvenate:\nเชื่อมต่อฮีโร่พันธมิตรในระยะ (ค่าเริ่มต้น: ฮีโร่ที่มี HP ต่ำที่สุด) ภายใน 5 วิ โดยจะฟื้นฟูพลังชีวิตทั้งสอง 500~1000 +20% HP สูงสุด และ 25% MP สูงสุด เมื่อการเชื่อมต่อเกินระยะที่กำหนดจะถูกตัด หากโจมตีหรือโดนฮีโร่ศัตรูโจมตี เอฟเฟกต์ฟื้นฟูมีผลเพียง 20% เท่านั้น เอฟเฟกต์นี้จะเริ่มทำงานทุก 50 วิ และสามารถสะสมได้สูงสุด 2 ครั้ง",
+        "สกิลติดตัว - Reward:\nเพิ่มสเตตัสโจมตีหลัก 32~60 หน่วย (1 สเตตัสโจมตีหลัก = AD 1 หรือ AP 2) เพิ่มพลังชีวิตสูงสุด 400~820 หน่วย",
+        "สกิลติดตัว - Up-and-Coming:\nทุกๆ 3 วิ ได้รับ 8 XP และฮีโร่ที่มีการเงินน้อยที่สุดในทีมจะได้รับ 8 เหรียญทอง ครีปเลนที่ไม่มีผู้เล่นฟาร์ม จะดรอปเหรียญทอง 50% ลงพื้น ซึ่งสามารถเก็บเหรียญทองได้มากสุด 600 เหรียญ และสามารถดูดเหรียญทอง 1 เหรียญจากแผนที่ CD 10 วิ เมื่อเก็บเหรียญทองครบ 600 เหรียญจะปลดล็อคสกิล Resonance กดใช้งานเพื่อมอบเหรียญทองและ XP จำนวนมากให้กับตัวเองและฮีโร่ฝ่ายเรา 1 ตัว (ใช้ได้ 1 ครั้ง/เกม)",
+        "สกิลติดตัว - Modest:\nฮีโร่พันธมิตรที่อยู่รอบๆ จะได้รับโกลด์ และ XP จากการสังหารครีป และมอนสเตอร์เต็มจำนวน ส่วนเจ้าของไอเทมนี้จะได้รับเพียง 25%~50%(ค่อยเพิ่มขึ้นตามเวลา สูงสุดนาทีที่ 15)",
+        "สกิลติดตัว-Magical Shadow:\nเพิ่มลดคูลดาวน์ 5% และความเร็วโจมตี 5% ให้แก่ตัวเองและพันธมิตรรอบๆ"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/aquaflame-rejuvenate.png"
+    },
+    {
+      "name": "Mother Earth - Accelerate",
+      "slug": "mother-earth-accelerate",
+      "category": "support",
+      "tier": 3,
+      "price": 1900,
+      "stats": {
+        "max_hp": 1200,
+        "movement_speed_pct": 8
+      },
+      "stats_raw": [
+        "+1200 พลังชีวิต",
+        "+8% ความเร็วเคลื่อนที่"
+      ],
+      "passives": [
+        "Active - Accelerate: Gradually increases nearby allies' movement speed over 5s by up to 20%~100% for 4s. Moving past allies who have not accelerated grants them the current acceleration effect. When attacking or being attacked by enemy heroes, acceleration is reduced to 20%. Cooldown: 75s.",
+        "Unique Passive - Reward: Increases primary attack stat by 32~60 (1 primary stat = 1 AD or 2 AP), and increases max HP by 400~820.",
+        "Unique Passive - Up-and-Coming: Every 3s, gain 8 XP and the teammate with lowest gold gains 8 gold. Unfarmed lane minions drop 50% gold on the ground (can collect up to 600 gold; absorbs 1 gold from map every 10s). Upon collecting 600 gold, unlocks Resonance active skill to grant substantial gold and XP to yourself and 1 ally (once per game).",
+        "Unique Passive - Modest: Nearby allies receive full gold and XP from minions and monsters while wearer receives 25%~50% (scaling over time up to min 15).",
+        "Unique Passive - Genesis: Grants 32~60 Armor and Magic Defense to yourself and nearby allies."
+      ],
+      "desc_th": [
+        "สกิลกดใช้ - Accerelate: ฮีโร่พันธมิตรที่อยู่ในระยะจะค่อยๆ เพิ่มความเร็วเคลื่อนที่ภายใน 5 วินาที สูงสุดเพิ่มขึ้น 20%~100% เป็นเวลา 4 วินาที เมื่อวิ่งผ่านฮีโร่พันธมิตรที่ไม่ได้เร่งความเร็ว จะมอบเอฟเฟกต์ปัจจุบันให้กับฮีโร่พันธมิตร เมื่อโจมตีหรือถูกโจมตีโดยฮีโร่ศัตรู ผลเร่งความเร็วจะส่งผลเพียง 20% โดยมีคูลดาวน์ 75 วินาที",
+        "สกิลติดตัว - Reward: เพิ่มสเตตัสโจมตีหลัก 32~60 หน่วย (1 สเตตัสโจมตีหลัก = AD 1 หรือ AP 2) เพิ่มพลังชีวิตสูงสุด 400~820 หน่วย",
+        "สกิลติดตัว - Up-and-Coming: ทุกๆ 3 วิ ได้รับ 8 XP และฮีโร่ที่มีการเงินน้อยที่สุดในทีมจะได้รับ 8 เหรียญทอง ครีปเลนที่ไม่มีผู้เล่นฟาร์ม จะดรอปเหรียญทอง 50% ลงพื้น ซึ่งสามารถเก็บเหรียญทองได้มากสุด 600 เหรียญ และสามารถดูดเหรียญทอง 1 เหรียญจากแผนที่ CD 10 วิ เมื่อเก็บเหรียญทองครบ 600 เหรียญจะปลดล็อคสกิล Resonance กดใช้งานเพื่อมอบเหรียญทองและ XP จำนวนมากให้กับตัวเองและฮีโร่ฝ่ายเรา 1 ตัว (ใช้ได้ 1 ครั้ง/เกม)",
+        "สกิลติดตัว - Modest: ฮีโร่พันธมิตรที่อยู่รอบๆ จะได้รับโกลด์ และ XP จากการสังหารครีป และมอนสเตอร์เต็มจำนวน ส่วนเจ้าของไอเทมนี้จะได้รับเพียง 25%~50%(ค่อยเพิ่มขึ้นตามเวลา สูงสุดนาทีที่ 15)",
+        "สกิลติดตัว Genesis: เพิ่มพลังป้องกันกายภาพและพลังป้องกันเวท 32~60 ให้ตัวเองและพันธมิตรรอบๆ"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/mother-earth-accelerate.png"
+    },
+    {
+      "name": "Mother Earth - Barrier",
       "slug": "mother-earth-barrier",
       "category": "support",
       "tier": 3,
       "price": 1900,
       "stats": {
-        "cooldown_reduction": 10.0,
-        "max_hp": 400.0,
-        "movement_speed_pct": 8.0
+        "max_hp": 1200,
+        "movement_speed_pct": 8
       },
+      "stats_raw": [
+        "+1200 พลังชีวิต",
+        "+8% ความเร็วเคลื่อนที่"
+      ],
       "passives": [
-        "Active",
-        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 60 Max HP.",
-        "Passive - Reward: +400~820 max HP.",
-        "Passive - Up-and-Coming: Every 3s, gain 8 EXP and give 8 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 600 gold, and pull in one coin from anywhere on the map (cooldown 10s).",
-        "Active - Resonance: Unlocks after collecting 600 gold. Target an allied hero; you and the ally gain 200 gold and 200 EXP in total (once per match)."
+        "Active - Barrier: Grants a shield that absorbs 680~1800 damage to yourself and nearby allies for 3s. Cooldown: 60s.",
+        "Unique Passive - Reward: Increases primary attack stat by 32~60 (1 primary stat = 1 AD or 2 AP), and increases max HP by 400~820.",
+        "Unique Passive - Up-and-Coming: Every 3s, gain 8 XP and the teammate with lowest gold gains 8 gold. Unfarmed lane minions drop 50% gold on the ground (can collect up to 600 gold; absorbs 1 gold from map every 10s). Upon collecting 600 gold, unlocks Resonance active skill to grant substantial gold and XP to yourself and 1 ally (once per game).",
+        "Unique Passive - Modest: Nearby allies receive full gold and XP from minions and monsters while wearer receives 25%~50% (scaling over time up to min 15).",
+        "Unique Passive - Genesis: Grants 32~60 Armor and Magic Defense to yourself and nearby allies."
+      ],
+      "desc_th": [
+        "สกิลกดใช้ Barrier: สร้างโล่ที่จะดูดซับความเสียหาย 680~1800 ให้ตัวเองและพันธมิตรในระยะเป็นเวลา 3 วิ (CD: 60 วิ)",
+        "สกิลติดตัว - Reward: เพิ่มสเตตัสโจมตีหลัก 32~60 หน่วย (1 สเตตัสโจมตีหลัก = AD 1 หรือ AP 2) เพิ่มพลังชีวิตสูงสุด 400~820 หน่วย",
+        "สกิลติดตัว - Up-and-Coming: ทุกๆ 3 วิ ได้รับ 8 XP และฮีโร่ที่มีการเงินน้อยที่สุดในทีมจะได้รับ 8 เหรียญทอง ครีปเลนที่ไม่มีผู้เล่นฟาร์ม จะดรอปเหรียญทอง 50% ลงพื้น ซึ่งสามารถเก็บเหรียญทองได้มากสุด 600 เหรียญ และสามารถดูดเหรียญทอง 1 เหรียญจากแผนที่ CD 10 วิ เมื่อเก็บเหรียญทองครบ 600 เหรียญจะปลดล็อคสกิล Resonance กดใช้งานเพื่อมอบเหรียญทองและ XP จำนวนมากให้กับตัวเองและฮีโร่ฝ่ายเรา 1 ตัว (ใช้ได้ 1 ครั้ง/เกม)",
+        "สกิลติดตัว - Modest: ฮีโร่พันธมิตรที่อยู่รอบๆ จะได้รับโกลด์ และ XP จากการสังหารครีป และมอนสเตอร์เต็มจำนวน ส่วนเจ้าของไอเทมนี้จะได้รับเพียง 25%~50%(ค่อยเพิ่มขึ้นตามเวลา สูงสุดนาทีที่ 15)",
+        "สกิลติดตัว Genesis: เพิ่มพลังป้องกันกายภาพและพลังป้องกันเวท 32~60 ให้ตัวเองและพันธมิตรรอบๆ"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+400 Max HP",
-        "+10% CD reduction",
-        "+5% Movement Speed"
-      ],
       "icon_url": "https://rovmeta.com/items/mother-earth-barrier.png",
       "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
       "sources": [
@@ -2199,29 +2753,34 @@
       ]
     },
     {
-      "name": "Mother Earth Cleansing",
+      "name": "Mother Earth - Cleansing",
       "slug": "mother-earth-cleansing",
       "category": "support",
       "tier": 3,
       "price": 1900,
       "stats": {
-        "cooldown_reduction": 10.0,
-        "max_hp": 400.0,
-        "movement_speed_pct": 8.0
+        "max_hp": 1200,
+        "movement_speed_pct": 8
       },
+      "stats_raw": [
+        "+1200 พลังชีวิต",
+        "+8% ความเร็วเคลื่อนที่"
+      ],
       "passives": [
-        "Active",
-        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 60 Max HP.",
-        "Passive - Reward: +400~820 max HP.",
-        "Passive - Up-and-Coming: Every 3s, gain 8 EXP and give 8 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 600 gold, and pull in one coin from anywhere on the map (cooldown 10s).",
-        "Active - Resonance: Unlocks after collecting 600 gold. Target an allied hero; you and the ally gain 200 gold and 200 EXP in total (once per match)."
+        "Active - Cleansing: Removes all control effects from nearby allies and grants immunity to control effects for 0.5s. Cooldown: 90s.",
+        "Unique Passive - Reward: Increases primary attack stat by 32~60 (1 primary stat = 1 AD or 2 AP), and increases max HP by 400~820.",
+        "Unique Passive - Up-and-Coming: Every 3s, gain 8 XP and the teammate with lowest gold gains 8 gold. Unfarmed lane minions drop 50% gold on the ground (can collect up to 600 gold; absorbs 1 gold from map every 10s). Upon collecting 600 gold, unlocks Resonance active skill to grant substantial gold and XP to yourself and 1 ally (once per game).",
+        "Unique Passive - Modest: Nearby allies receive full gold and XP from minions and monsters while wearer receives 25%~50% (scaling over time up to min 15).",
+        "Unique Passive - Genesis: Grants 32~60 Armor and Magic Defense to yourself and nearby allies."
+      ],
+      "desc_th": [
+        "สกิลกดใช้ Cleansing: ลบสถานะผิดปกติทั้งหมดออกจากพันธมิตรรอบตัว พร้อมใส่เอฟเฟกต์ป้องกันสถานะ 0.5 วิ คูลดาวน์ 90 วิ",
+        "สกิลติดตัว - Reward: เพิ่มสเตตัสโจมตีหลัก 32~60 หน่วย (1 สเตตัสโจมตีหลัก = AD 1 หรือ AP 2) เพิ่มพลังชีวิตสูงสุด 400~820 หน่วย",
+        "สกิลติดตัว - Up-and-Coming: ทุกๆ 3 วิ ได้รับ 8 XP และฮีโร่ที่มีการเงินน้อยที่สุดในทีมจะได้รับ 8 เหรียญทอง ครีปเลนที่ไม่มีผู้เล่นฟาร์ม จะดรอปเหรียญทอง 50% ลงพื้น ซึ่งสามารถเก็บเหรียญทองได้มากสุด 600 เหรียญ และสามารถดูดเหรียญทอง 1 เหรียญจากแผนที่ CD 10 วิ เมื่อเก็บเหรียญทองครบ 600 เหรียญจะปลดล็อคสกิล Resonance กดใช้งานเพื่อมอบเหรียญทองและ XP จำนวนมากให้กับตัวเองและฮีโร่ฝ่ายเรา 1 ตัว (ใช้ได้ 1 ครั้ง/เกม)",
+        "สกิลติดตัว - Modest: ฮีโร่พันธมิตรที่อยู่รอบๆ จะได้รับโกลด์ และ XP จากการสังหารครีป และมอนสเตอร์เต็มจำนวน ส่วนเจ้าของไอเทมนี้จะได้รับเพียง 25%~50%(ค่อยเพิ่มขึ้นตามเวลา สูงสุดนาทีที่ 15)",
+        "สกิลติดตัว Genesis: เพิ่มพลังป้องกันกายภาพและพลังป้องกันเวท 32~60 ให้ตัวเองและพันธมิตรรอบๆ"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+400 Max HP",
-        "+10% CD reduction",
-        "+5% Movement Speed"
-      ],
       "icon_url": "https://rovmeta.com/items/mother-earth-cleansing.png",
       "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
       "sources": [
@@ -2231,94 +2790,34 @@
       ]
     },
     {
-      "name": "Mother Earth Eradicate",
-      "slug": "mother-earth-eradicate",
-      "category": "support",
-      "tier": 3,
-      "price": 1900,
-      "stats": {
-        "cooldown_reduction": 10.0,
-        "max_hp": 400.0,
-        "movement_speed_pct": 8.0
-      },
-      "passives": [
-        "Active",
-        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 60 Max HP.",
-        "Passive - Reward: +400~820 max HP.",
-        "Passive - Up-and-Coming: Every 3s, gain 8 EXP and give 8 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 600 gold, and pull in one coin from anywhere on the map (cooldown 10s).",
-        "Active - Resonance: Unlocks after collecting 600 gold. Target an allied hero; you and the ally gain 200 gold and 200 EXP in total (once per match)."
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+400 Max HP",
-        "+10% CD reduction",
-        "+5% Movement Speed"
-      ],
-      "icon_url": "https://rovmeta.com/items/mother-earth-eradicate.png",
-      "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
-      "sources": [
-        "https://moba.garena.tw/news/show/5423",
-        "https://moba.garena.tw/news/show/5528",
-        "https://moba.garena.tw/news/show/5622"
-      ]
-    },
-    {
-      "name": "Mother Earth Genesis",
-      "slug": "mother-earth-genesis",
-      "category": "support",
-      "tier": 3,
-      "price": 1900,
-      "stats": {
-        "cooldown_reduction": 10.0,
-        "max_hp": 400.0,
-        "movement_speed_pct": 8.0
-      },
-      "passives": [
-        "Passive - Elemental Affinity: +50 Armor.",
-        "Passive - Genesis Protection: +88~200 Armor and +66~150 Magic Armor for yourself and nearby allies within 6m.",
-        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 60 Max HP.",
-        "Passive - Reward: +400~820 max HP.",
-        "Passive - Up-and-Coming: Every 3s, gain 8 EXP and give 8 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 600 gold, and pull in one coin from anywhere on the map (cooldown 10s).",
-        "Active - Resonance: Unlocks after collecting 600 gold. Target an allied hero; you and the ally gain 200 gold and 200 EXP in total (once per match)."
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+400 Max HP",
-        "+10% CD reduction",
-        "+5% Movement Speed"
-      ],
-      "icon_url": "https://rovmeta.com/items/mother-earth-genesis.png",
-      "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
-      "sources": [
-        "https://moba.garena.tw/news/show/5423",
-        "https://moba.garena.tw/news/show/5528",
-        "https://moba.garena.tw/news/show/5622"
-      ]
-    },
-    {
-      "name": "Mother Earth Magic Eye",
+      "name": "Mother Earth - Magic Eye",
       "slug": "mother-earth-magic-eye",
       "category": "support",
       "tier": 3,
       "price": 1900,
       "stats": {
-        "cooldown_reduction": 10.0,
-        "max_hp": 400.0,
-        "movement_speed_pct": 8.0
+        "max_hp": 1200,
+        "movement_speed_pct": 8
       },
+      "stats_raw": [
+        "+1200 พลังชีวิต",
+        "+8% ความเร็วเคลื่อนที่"
+      ],
       "passives": [
-        "Active",
-        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 60 Max HP.",
-        "Passive - Reward: +400~820 max HP.",
-        "Passive - Up-and-Coming: Every 3s, gain 8 EXP and give 8 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 600 gold, and pull in one coin from anywhere on the map (cooldown 10s).",
-        "Active - Resonance: Unlocks after collecting 600 gold. Target an allied hero; you and the ally gain 200 gold and 200 EXP in total (once per match)."
+        "Active - Magic Eye: Reveals nearby vision for 4s, during which it attacks nearby enemies 2 times in 2s dealing magic damage equal to 8% current HP each time and slowing them by 50%. Cooldown: 45s.",
+        "Unique Passive - Reward: Increases primary attack stat by 32~60 (1 primary stat = 1 AD or 2 AP), and increases max HP by 400~820.",
+        "Unique Passive - Up-and-Coming: Every 3s, gain 8 XP and the teammate with lowest gold gains 8 gold. Unfarmed lane minions drop 50% gold on the ground (can collect up to 600 gold; absorbs 1 gold from map every 10s). Upon collecting 600 gold, unlocks Resonance active skill to grant substantial gold and XP to yourself and 1 ally (once per game).",
+        "Unique Passive - Modest: Nearby allies receive full gold and XP from minions and monsters while wearer receives 25%~50% (scaling over time up to min 15).",
+        "Unique Passive - Genesis: Grants 32~60 Armor and Magic Defense to yourself and nearby allies."
+      ],
+      "desc_th": [
+        "สกิลกดใช้ Magic Eye: เปิดวิสัยทัศน์รอบตัวเป็นเวลา 4 วิ ระหว่างนั้นจะโจมตีศัตรูที่อยู่รอบๆ สร้างความเสียหายเวท 2 ครั้ง ใน 2 วิ แต่ละครั้งจะสร้างความเสียหายเวทเท่ากับ 8% ของพลังชีวิตปัจจุบันของเป้าหมาย พร้อมกับลดความเร็วเคลื่อนที่ 50% คูลดาวน์ 45 วิ",
+        "สกิลติดตัว - Reward: เพิ่มสเตตัสโจมตีหลัก 32~60 หน่วย (1 สเตตัสโจมตีหลัก = AD 1 หรือ AP 2) เพิ่มพลังชีวิตสูงสุด 400~820 หน่วย",
+        "สกิลติดตัว - Up-and-Coming: ทุกๆ 3 วิ ได้รับ 8 XP และฮีโร่ที่มีการเงินน้อยที่สุดในทีมจะได้รับ 8 เหรียญทอง ครีปเลนที่ไม่มีผู้เล่นฟาร์ม จะดรอปเหรียญทอง 50% ลงพื้น ซึ่งสามารถเก็บเหรียญทองได้มากสุด 600 เหรียญ และสามารถดูดเหรียญทอง 1 เหรียญจากแผนที่ CD 10 วิ เมื่อเก็บเหรียญทองครบ 600 เหรียญจะปลดล็อคสกิล Resonance กดใช้งานเพื่อมอบเหรียญทองและ XP จำนวนมากให้กับตัวเองและฮีโร่ฝ่ายเรา 1 ตัว (ใช้ได้ 1 ครั้ง/เกม)",
+        "สกิลติดตัว - Modest: ฮีโร่พันธมิตรที่อยู่รอบๆ จะได้รับโกลด์ และ XP จากการสังหารครีป และมอนสเตอร์เต็มจำนวน ส่วนเจ้าของไอเทมนี้จะได้รับเพียง 25%~50%(ค่อยเพิ่มขึ้นตามเวลา สูงสุดนาทีที่ 15)",
+        "สกิลติดตัว Genesis: เพิ่มพลังป้องกันกายภาพและพลังป้องกันเวท 32~60 ให้ตัวเองและพันธมิตรรอบๆ"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+400 Max HP",
-        "+10% CD reduction",
-        "+5% Movement Speed"
-      ],
       "icon_url": "https://rovmeta.com/items/mother-earth-magic-eye.png",
       "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
       "sources": [
@@ -2328,29 +2827,65 @@
       ]
     },
     {
-      "name": "Wildfire  Barrier",
+      "name": "Mother Earth - Rejuvenate",
+      "slug": "mother-earth-rejuvenate",
+      "category": "support",
+      "tier": 3,
+      "price": 1900,
+      "stats": {
+        "max_hp": 1200,
+        "movement_speed_pct": 8
+      },
+      "stats_raw": [
+        "+1200 พลังชีวิต",
+        "+8% ความเร็วเคลื่อนที่"
+      ],
+      "passives": [
+        "Active - Rejuvenate: Connects with a nearby ally (default: lowest HP ally) for 5s, regenerating both targets for 500~1000 + 20% max HP and 25% max MP. Connection breaks if distance is exceeded. If attacking or damaged by enemy heroes, healing is reduced to 20%. Recharges every 50s, storing up to 2 charges.",
+        "Unique Passive - Reward: Increases primary attack stat by 32~60 (1 primary stat = 1 AD or 2 AP), and increases max HP by 400~820.",
+        "Unique Passive - Up-and-Coming: Every 3s, gain 8 XP and the teammate with lowest gold gains 8 gold. Unfarmed lane minions drop 50% gold on the ground (can collect up to 600 gold; absorbs 1 gold from map every 10s). Upon collecting 600 gold, unlocks Resonance active skill to grant substantial gold and XP to yourself and 1 ally (once per game).",
+        "Unique Passive - Modest: Nearby allies receive full gold and XP from minions and monsters while wearer receives 25%~50% (scaling over time up to min 15).",
+        "Unique Passive - Genesis: Grants 32~60 Armor and Magic Defense to yourself and nearby allies."
+      ],
+      "desc_th": [
+        "สกิลกดใช้ - Rejuvenate: เชื่อมต่อฮีโร่พันธมิตรในระยะ (ค่าเริ่มต้น: ฮีโร่ที่มี HP ต่ำที่สุด) ภายใน 5 วิ โดยจะฟื้นฟูพลังชีวิตทั้งสอง 500~1000 +20% HP สูงสุด และ 25% MP สูงสุด เมื่อการเชื่อมต่อเกินระยะที่กำหนดจะถูกตัด หากโจมตีหรือโดนฮีโร่ศัตรูโจมตี เอฟเฟกต์ฟื้นฟูมีผลเพียง 20% เท่านั้น เอฟเฟกต์นี้จะเริ่มทำงานทุก 50 วิ และสามารถสะสมได้สูงสุด 2 ครั้ง",
+        "สกิลติดตัว - Reward: เพิ่มสเตตัสโจมตีหลัก 32~60 หน่วย (1 สเตตัสโจมตีหลัก = AD 1 หรือ AP 2) เพิ่มพลังชีวิตสูงสุด 400~820 หน่วย",
+        "สกิลติดตัว - Up-and-Coming: ทุกๆ 3 วิ ได้รับ 8 XP และฮีโร่ที่มีการเงินน้อยที่สุดในทีมจะได้รับ 8 เหรียญทอง ครีปเลนที่ไม่มีผู้เล่นฟาร์ม จะดรอปเหรียญทอง 50% ลงพื้น ซึ่งสามารถเก็บเหรียญทองได้มากสุด 600 เหรียญ และสามารถดูดเหรียญทอง 1 เหรียญจากแผนที่ CD 10 วิ เมื่อเก็บเหรียญทองครบ 600 เหรียญจะปลดล็อคสกิล Resonance กดใช้งานเพื่อมอบเหรียญทองและ XP จำนวนมากให้กับตัวเองและฮีโร่ฝ่ายเรา 1 ตัว (ใช้ได้ 1 ครั้ง/เกม)",
+        "สกิลติดตัว - Modest: ฮีโร่พันธมิตรที่อยู่รอบๆ จะได้รับโกลด์ และ XP จากการสังหารครีป และมอนสเตอร์เต็มจำนวน ส่วนเจ้าของไอเทมนี้จะได้รับเพียง 25%~50%(ค่อยเพิ่มขึ้นตามเวลา สูงสุดนาทีที่ 15)",
+        "สกิลติดตัว Genesis: เพิ่มพลังป้องกันกายภาพและพลังป้องกันเวท 32~60 ให้ตัวเองและพันธมิตรรอบๆ"
+      ],
+      "passives_incomplete": false,
+      "icon_url": "https://rovmeta.com/items/mother-earth-rejuvenate.png"
+    },
+    {
+      "name": "Wildfire - Barrier",
       "slug": "wildfire-barrier",
       "category": "support",
       "tier": 3,
       "price": 1900,
       "stats": {
-        "attack_damage": 30.0,
-        "cooldown_reduction": 10.0,
+        "max_hp": 1200.0,
         "movement_speed_pct": 8.0
       },
+      "stats_raw": [
+        "+1200 พลังชีวิต",
+        "+8% ความเร็วเคลื่อนที่"
+      ],
       "passives": [
-        "Active",
-        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 3 AD.",
-        "Passive - Reward: +400~820 max HP.",
-        "Passive - Up-and-Coming: Every 3s, gain 8 EXP and give 8 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 600 gold, and pull in one coin from anywhere on the map (cooldown 10s).",
-        "Active - Resonance: Unlocks after collecting 600 gold. Target an allied hero; you and the ally gain 200 gold and 200 EXP in total (once per match)."
+        "Active - Barrier: Generates a shield that absorbs 680~1800 damage for self and nearby allies for 3s. Cooldown: 60s.",
+        "Passive - Reward: Increases primary attack stat by 32~60 (1 primary stat = 1 AD or 2 AP), and increases max HP by 400~820.",
+        "Passive - Up-and-Coming: Every 3s, gain 8 EXP and grant 8 gold to the lowest-gold ally. Minions dying without an ally nearby drop 50% gold on the ground (up to 600 gold), and pulls 1 gold from the map every 10s. Collecting 600 gold unlocks Resonance (active): grants large amount of gold and EXP to self and 1 ally (once per match).",
+        "Passive - Modest: Nearby allies gain full gold and EXP from minions and monsters, while the user gains only 25%~50% (scales with time, max at 15 min).",
+        "Passive - Magical Shadow: Grants +5% Cooldown Reduction and +5% Attack Speed to self and nearby allies."
+      ],
+      "desc_th": [
+        "สกิลกดใช้ Barrier:\nสร้างโล่ที่จะดูดซับความเสียหาย 680~1800 ให้ตัวเองและพันธมิตรในระยะเป็นเวลา 3 วิ (CD: 60 วิ)",
+        "สกิลติดตัว - Reward:\nเพิ่มสเตตัสโจมตีหลัก 32~60 หน่วย (1 สเตตัสโจมตีหลัก = AD 1 หรือ AP 2) เพิ่มพลังชีวิตสูงสุด 400~820 หน่วย",
+        "สกิลติดตัว - Up-and-Coming:\nทุกๆ 3 วิ ได้รับ 8 XP และฮีโร่ที่มีการเงินน้อยที่สุดในทีมจะได้รับ 8 เหรียญทอง ครีปเลนที่ไม่มีผู้เล่นฟาร์ม จะดรอปเหรียญทอง 50% ลงพื้น ซึ่งสามารถเก็บเหรียญทองได้มากสุด 600 เหรียญ และสามารถดูดเหรียญทอง 1 เหรียญจากแผนที่ CD 10 วิ เมื่อเก็บเหรียญทองครบ 600 เหรียญจะปลดล็อคสกิล Resonance กดใช้งานเพื่อมอบเหรียญทองและ XP จำนวนมากให้กับตัวเองและฮีโร่ฝ่ายเรา 1 ตัว (ใช้ได้ 1 ครั้ง/เกม)",
+        "สกิลติดตัว - Modest:\nฮีโร่พันธมิตรที่อยู่รอบๆ จะได้รับโกลด์ และ XP จากการสังหารครีป และมอนสเตอร์เต็มจำนวน ส่วนเจ้าของไอเทมนี้จะได้รับเพียง 25%~50%(ค่อยเพิ่มขึ้นตามเวลา สูงสุดนาทีที่ 15)",
+        "สกิลติดตัว-Magical Shadow:\nเพิ่มลดคูลดาวน์ 5% และความเร็วโจมตี 5% ให้แก่ตัวเองและพันธมิตรรอบๆ"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+30 AD",
-        "+10% CD reduction",
-        "+5% Movement Speed"
-      ],
       "icon_url": "https://rovmeta.com/items/wildfire-barrier.png",
       "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
       "sources": [
@@ -2360,29 +2895,34 @@
       ]
     },
     {
-      "name": "Wildfire Cleansing",
+      "name": "Wildfire - Cleansing",
       "slug": "wildfire-cleansing",
       "category": "support",
       "tier": 3,
       "price": 1900,
       "stats": {
-        "attack_damage": 30.0,
-        "cooldown_reduction": 10.0,
+        "max_hp": 1200.0,
         "movement_speed_pct": 8.0
       },
+      "stats_raw": [
+        "+1200 พลังชีวิต",
+        "+8% ความเร็วเคลื่อนที่"
+      ],
       "passives": [
-        "Active",
-        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 3 AD.",
-        "Passive - Reward: +400~820 max HP.",
-        "Passive - Up-and-Coming: Every 3s, gain 8 EXP and give 8 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 600 gold, and pull in one coin from anywhere on the map (cooldown 10s).",
-        "Active - Resonance: Unlocks after collecting 600 gold. Target an allied hero; you and the ally gain 200 gold and 200 EXP in total (once per match)."
+        "Active - Cleansing: Immediately removes all crowd control effects from nearby allies and grants immunity to control effects for 0.5s. Cooldown: 90s.",
+        "Passive - Reward: Increases primary attack stat by 32~60 (1 primary stat = 1 AD or 2 AP), and increases max HP by 400~820.",
+        "Passive - Up-and-Coming: Every 3s, gain 8 EXP and grant 8 gold to the lowest-gold ally. Minions dying without an ally nearby drop 50% gold on the ground (up to 600 gold), and pulls 1 gold from the map every 10s. Collecting 600 gold unlocks Resonance (active): grants large amount of gold and EXP to self and 1 ally (once per match).",
+        "Passive - Modest: Nearby allies gain full gold and EXP from minions and monsters, while the user gains only 25%~50% (scales with time, max at 15 min).",
+        "Passive - Magical Shadow: Grants +5% Cooldown Reduction and +5% Attack Speed to self and nearby allies."
+      ],
+      "desc_th": [
+        "สกิลกดใช้ Cleansing:\nลบสถานะผิดปกติทั้งหมดออกจากพันธมิตรรอบตัว พร้อมใส่เอฟเฟกต์ป้องกันสถานะ 0.5 วิ คูลดาวน์ 90 วิ",
+        "สกิลติดตัว - Reward:\nเพิ่มสเตตัสโจมตีหลัก 32~60 หน่วย (1 สเตตัสโจมตีหลัก = AD 1 หรือ AP 2) เพิ่มพลังชีวิตสูงสุด 400~820 หน่วย",
+        "สกิลติดตัว - Up-and-Coming:\nทุกๆ 3 วิ ได้รับ 8 XP และฮีโร่ที่มีการเงินน้อยที่สุดในทีมจะได้รับ 8 เหรียญทอง ครีปเลนที่ไม่มีผู้เล่นฟาร์ม จะดรอปเหรียญทอง 50% ลงพื้น ซึ่งสามารถเก็บเหรียญทองได้มากสุด 600 เหรียญ และสามารถดูดเหรียญทอง 1 เหรียญจากแผนที่ CD 10 วิ เมื่อเก็บเหรียญทองครบ 600 เหรียญจะปลดล็อคสกิล Resonance กดใช้งานเพื่อมอบเหรียญทองและ XP จำนวนมากให้กับตัวเองและฮีโร่ฝ่ายเรา 1 ตัว (ใช้ได้ 1 ครั้ง/เกม)",
+        "สกิลติดตัว - Modest:\nฮีโร่พันธมิตรที่อยู่รอบๆ จะได้รับโกลด์ และ XP จากการสังหารครีป และมอนสเตอร์เต็มจำนวน ส่วนเจ้าของไอเทมนี้จะได้รับเพียง 25%~50%(ค่อยเพิ่มขึ้นตามเวลา สูงสุดนาทีที่ 15)",
+        "สกิลติดตัว-Magical Shadow:\nเพิ่มลดคูลดาวน์ 5% และความเร็วโจมตี 5% ให้แก่ตัวเองและพันธมิตรรอบๆ"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+30 AD",
-        "+10% CD reduction",
-        "+5% Movement Speed"
-      ],
       "icon_url": "https://rovmeta.com/items/wildfire-cleansing.png",
       "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
       "sources": [
@@ -2392,94 +2932,34 @@
       ]
     },
     {
-      "name": "Wildfire Eradicate",
-      "slug": "wildfire-eradicate",
-      "category": "support",
-      "tier": 3,
-      "price": 1900,
-      "stats": {
-        "attack_damage": 30.0,
-        "cooldown_reduction": 10.0,
-        "movement_speed_pct": 8.0
-      },
-      "passives": [
-        "Active",
-        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 3 AD.",
-        "Passive - Reward: +400~820 max HP.",
-        "Passive - Up-and-Coming: Every 3s, gain 8 EXP and give 8 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 600 gold, and pull in one coin from anywhere on the map (cooldown 10s).",
-        "Active - Resonance: Unlocks after collecting 600 gold. Target an allied hero; you and the ally gain 200 gold and 200 EXP in total (once per match)."
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+30 AD",
-        "+10% CD reduction",
-        "+5% Movement Speed"
-      ],
-      "icon_url": "https://rovmeta.com/items/wildfire-eradicate.png",
-      "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
-      "sources": [
-        "https://moba.garena.tw/news/show/5423",
-        "https://moba.garena.tw/news/show/5528",
-        "https://moba.garena.tw/news/show/5622"
-      ]
-    },
-    {
-      "name": "Wildfire Genesis",
-      "slug": "wildfire-genesis",
-      "category": "support",
-      "tier": 3,
-      "price": 1900,
-      "stats": {
-        "attack_damage": 30.0,
-        "cooldown_reduction": 10.0,
-        "movement_speed_pct": 8.0
-      },
-      "passives": [
-        "Passive - Elemental Affinity: +5% Damage Dealt.",
-        "Passive - Genesis Protection: +88~200 Armor and +66~150 Magic Armor for yourself and nearby allies within 6m.",
-        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 3 AD.",
-        "Passive - Reward: +400~820 max HP.",
-        "Passive - Up-and-Coming: Every 3s, gain 8 EXP and give 8 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 600 gold, and pull in one coin from anywhere on the map (cooldown 10s).",
-        "Active - Resonance: Unlocks after collecting 600 gold. Target an allied hero; you and the ally gain 200 gold and 200 EXP in total (once per match)."
-      ],
-      "passives_incomplete": false,
-      "stats_raw": [
-        "+30 AD",
-        "+10% CD reduction",
-        "+5% Movement Speed"
-      ],
-      "icon_url": "https://rovmeta.com/items/wildfire-genesis.png",
-      "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
-      "sources": [
-        "https://moba.garena.tw/news/show/5423",
-        "https://moba.garena.tw/news/show/5528",
-        "https://moba.garena.tw/news/show/5622"
-      ]
-    },
-    {
-      "name": "Wildfire Magic Eye",
+      "name": "Wildfire - Magic Eye",
       "slug": "wildfire-magic-eye",
       "category": "support",
       "tier": 3,
       "price": 1900,
       "stats": {
-        "attack_damage": 30.0,
-        "cooldown_reduction": 10.0,
+        "max_hp": 1200.0,
         "movement_speed_pct": 8.0
       },
+      "stats_raw": [
+        "+1200 พลังชีวิต",
+        "+8% ความเร็วเคลื่อนที่"
+      ],
       "passives": [
-        "Active",
-        "Passive - Elemental Harvest: Carry 1 Elemental Crystal around and gain 1 additional Elemental Crystal every 30s, up to 20 Elemental Crystals. Each Elemental Crystal grants 3 AD.",
-        "Passive - Reward: +400~820 max HP.",
-        "Passive - Up-and-Coming: Every 3s, gain 8 EXP and give 8 gold to the lowest-gold hero on your team. Uncollected minion gold drops 50% on the ground; collect up to 600 gold, and pull in one coin from anywhere on the map (cooldown 10s).",
-        "Active - Resonance: Unlocks after collecting 600 gold. Target an allied hero; you and the ally gain 200 gold and 200 EXP in total (once per match)."
+        "Active - Mesmerize: Reveals surrounding area for 4s, attacking surrounding enemies dealing magic damage 2 times over 2s (each hit deals magic damage equal to 8% current HP) and slows them by 50%. Cooldown: 45s.",
+        "Passive - Reward: Increases primary attack stat by 32~60 (1 primary stat = 1 AD or 2 AP), and increases max HP by 400~820.",
+        "Passive - Up-and-Coming: Every 3s, gain 8 EXP and grant 8 gold to the lowest-gold ally. Minions dying without an ally nearby drop 50% gold on the ground (up to 600 gold), and pulls 1 gold from the map every 10s. Collecting 600 gold unlocks Resonance (active): grants large amount of gold and EXP to self and 1 ally (once per match).",
+        "Passive - Modest: Nearby allies gain full gold and EXP from minions and monsters, while the user gains only 25%~50% (scales with time, max at 15 min).",
+        "Passive - Magical Shadow: Grants +5% Cooldown Reduction and +5% Attack Speed to self and nearby allies."
+      ],
+      "desc_th": [
+        "สกิลกดใช้ - Mesmerize:\nเปิดวิสัยทัศน์รอบตัวเป็นเวลา 4 วิ ระหว่างนั้นจะโจมตีศัตรูที่อยู่รอบๆ สร้างความเสียหายเวท 2 ครั้ง ใน 2 วิ แต่ละครั้งจะสร้างความเสียหายเวทเท่ากับ 8% ของพลังชีวิตปัจจุบันของเป้าหมาย พร้อมกับลดความเร็วเคลื่อนที่ 50% คูลดาวน์ 45 วิ",
+        "สกิลติดตัว - Reward:\nเพิ่มสเตตัสโจมตีหลัก 32~60 หน่วย (1 สเตตัสโจมตีหลัก = AD 1 หรือ AP 2) เพิ่มพลังชีวิตสูงสุด 400~820 หน่วย",
+        "สกิลติดตัว - Up-and-Coming:\nทุกๆ 3 วิ ได้รับ 8 XP และฮีโร่ที่มีการเงินน้อยที่สุดในทีมจะได้รับ 8 เหรียญทอง ครีปเลนที่ไม่มีผู้เล่นฟาร์ม จะดรอปเหรียญทอง 50% ลงพื้น ซึ่งสามารถเก็บเหรียญทองได้มากสุด 600 เหรียญ และสามารถดูดเหรียญทอง 1 เหรียญจากแผนที่ CD 10 วิ เมื่อเก็บเหรียญทองครบ 600 เหรียญจะปลดล็อคสกิล Resonance กดใช้งานเพื่อมอบเหรียญทองและ XP จำนวนมากให้กับตัวเองและฮีโร่ฝ่ายเรา 1 ตัว (ใช้ได้ 1 ครั้ง/เกม)",
+        "สกิลติดตัว - Modest:\nฮีโร่พันธมิตรที่อยู่รอบๆ จะได้รับโกลด์ และ XP จากการสังหารครีป และมอนสเตอร์เต็มจำนวน ส่วนเจ้าของไอเทมนี้จะได้รับเพียง 25%~50%(ค่อยเพิ่มขึ้นตามเวลา สูงสุดนาทีที่ 15)",
+        "สกิลติดตัว-Magical Shadow:\nเพิ่มลดคูลดาวน์ 5% และความเร็วโจมตี 5% ให้แก่ตัวเองและพันธมิตรรอบๆ"
       ],
       "passives_incomplete": false,
-      "stats_raw": [
-        "+30 AD",
-        "+10% CD reduction",
-        "+5% Movement Speed"
-      ],
       "icon_url": "https://rovmeta.com/items/wildfire-magic-eye.png",
       "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
       "sources": [

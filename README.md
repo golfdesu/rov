@@ -11,16 +11,17 @@
 * `data/hero_draft_stats.csv`, `data/synergy_matrix.csv`, `data/counter_matrix.csv` — ตารางสถิติการเล่นแยกตาม 5 เลนหลัก, คู่หู Synergy (2,605 คู่) และตัวแก้ทาง Counter (6,234 คู่)
 * `src/train_sota_model.py` — โมเดล SOTA **`RoVDraftGNNTransformer`** (Multi-Relational Hero GNN + Multi-Head Draft Transformer + Dual Policy & Win-Value Heads)
 * `src/predict_draft_cli.py` — ระบบจำลองและทำนายการดราฟต์ผ่าน CLI
-* `src/api.py` — FastAPI (`/health`, `/heroes`, `/draft/steps`, `/predict`) และเสิร์ฟหน้าเว็บจาก `frontend/dist`
+* `src/api.py` — FastAPI (`/health`, `/heroes`, `/draft/steps`, `/predict`, `/combat/catalog`, `/combat/stats`, `/combat/duel`) และเสิร์ฟหน้าเว็บจาก `frontend/dist`
+* `src/combat_calculator.py` — คำนวณสเตตัสฮีโร่ (เลเวล + ไอเทม + รูน Lv3 + พลังแฝง), ดาเมจสกิลหลังหักเกราะ/ต้านเวท/เจาะ และจำลองดวล 1v1 (แท็บ **Stat & Duel Lab** บนหน้าเว็บ, เปิดตรงด้วย `/#lab`)
 * `frontend/` — หน้าเว็บดราฟต์ (React + Vite + Tailwind) ธีมถ่ายทอดสด แสดงชื่อฮีโร่ตามเซิร์ฟไทย (เช่น Mortos, Celica, Riktor)
 * `scripts/fetch_hero_icons.py` — ดาวน์โหลดไอคอนฮีโร่สี่เหลี่ยม 130 ตัวลง `frontend/public/avatars/`
 * `data/items.json` — ไอเทม 114 ชิ้น (สเตตัสเป็นตัวเลข, ราคา, passive) จาก rovmeta.com แล้วแก้ทับด้วย `data/items_overrides.json` ที่อ้างอิง Patch Note ทางการ (rov.in.th) สร้างด้วย `python scripts/fetch_items.py`
 * `data/hero_patch_history.json` — ประวัติการปรับสมดุลตัวเลขฮีโร่ 334 รายการ ครอบคลุม 92 ตัวละคร แปลเป็นภาษาอังกฤษจาก Patch Note ทางการไต้หวัน (Garena TW) ผ่าน `scripts/parse_tw_hero_patches.py`
 * `data/hero_level_stats.json` & `data/hero_level_stats.csv` — ตารางสเตตัสเป๊ะๆ ครบทุกเลเวล 1–15 ของฮีโร่ทั้ง 130 ตัว (1,950 แถว) สร้างด้วย `scripts/build_hero_level_stats.py`
-* `data/hero_skills_full.json` — แคตตาล็อกสกิลแบบตัวเลขเป๊ะๆ ทั้ง 524 สกิลของฮีโร่ครบ 130 ตัว (คูลดาวน์, การใช้มานา, Base Damage และอัตราส่วน AD/AP/HP scaling ทุกเลเวล) สร้างด้วย `scripts/build_hero_skills_catalog.py`
+* `data/hero_skills_full.json` — แคตตาล็อกสกิลแบบตัวเลขเป๊ะๆ ทั้ง 525 สกิลของฮีโร่ครบ 130 ตัว (คูลดาวน์, การใช้มานา, Base Damage และอัตราส่วน AD/AP/HP scaling ทุกเลเวล) สร้างด้วย `scripts/build_hero_skills_catalog.py`
 * `data/arcana.json` — รูน Arcana ทางการครบ 90 ชนิด (แดง/ม่วง/เขียว เลเวล 1–3) พร้อมค่าสเตตัสตัวเลขเป๊ะๆ และไอคอน
-* `data/enchantments.json` — พลังแฝงทางการ 31 ชนิด ครบทั้ง 4 ฝ่าย (Veda, Lokheim, Afata, League of Humans)
-* `scripts/fetch_arcana_and_enchantments.py` — สคริปต์ดึงและ parse รูน Arcana 90 ชนิด และพลังแฝง 31 ชนิด
+* `data/enchantments.json` — พลังแฝงทางการ 33 ชนิด ครบทั้ง 4 ฝ่าย (Veda, Lokheim, Afata, League of Humans)
+* `scripts/fetch_arcana_and_enchantments.py` — สคริปต์ดึงและ parse รูน Arcana 90 ชนิด และพลังแฝง 33 ชนิด
 * `scripts/build_hero_skills_catalog.py` — สคริปต์ multi-source parser ดึงและคำนวณตัวเลขความแรงสกิล, คูลดาวน์ และสเกลลิ่งครบทุกเลเวล 130 ตัวละคร
 * `scripts/download_rov_apk.py` — สคริปต์สแกนโครงสร้างและดาวน์โหลดไฟล์ติดตั้งทางการ (Official APK/XAPK) ของ Garena RoV (v1.64.1.7) ผ่าน HTTP Range Request
 * `run_sota_rov_h100.sbatch` — สคริปต์ SLURM สำหรับส่งงานเทรนสเกลใหญ่บนโหนดการ์ดจอ **NVIDIA H100 (`gpu-h100`)** ของ **ERAWAN HPC**
@@ -75,6 +76,8 @@ uvicorn src.api:app --port 8000
 ```
 
 แล้วเปิด http://localhost:8000
+
+แท็บ **Stat & Duel Lab**: เลือกฮีโร่ 2 ฝั่ง ปรับเลเวล ไอเทม 6 ช่อง รูน Lv3 (สีละ 10 ช่อง) และพลังแฝง (ฝ่ายหลัก ขั้น 1-3 + ฝ่ายรอง ขั้น 1-2) แล้วดูสเตตัส ดาเมจสกิลเข้าจริง EHP คอมโบตามเลเวล และผลดวล — ตัวเลขพลังแฝงที่ใส่ไว้มาจากคำอธิบาย ต้องตรวจกับในเกมอีกครั้ง (`ENCHANTMENT_EFFECTS` ใน `src/combat_calculator.py`)
 
 คีย์ลัด: `/` ค้นหาฮีโร่, `Enter` ล็อกตัวที่ AI แนะนำอันดับ 1, `Ctrl+Z` ย้อนกลับ
 

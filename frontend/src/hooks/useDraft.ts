@@ -24,6 +24,11 @@ export function useDraft() {
   const [history, setHistory] = useState<DraftHistoryItem[]>([]);
 
   const [recommendations, setRecommendations] = useState<HeroRecommendation[]>([]);
+  const [blueNextPicks, setBlueNextPicks] = useState<HeroRecommendation[]>([]);
+  const [redNextPicks, setRedNextPicks] = useState<HeroRecommendation[]>([]);
+  const [blueNextBans, setBlueNextBans] = useState<HeroRecommendation[]>([]);
+  const [redNextBans, setRedNextBans] = useState<HeroRecommendation[]>([]);
+  const [banUnlockedHeroes, setBanUnlockedHeroes] = useState<HeroRecommendation[]>([]);
   const [missingAllyLanes, setMissingAllyLanes] = useState<string[]>([]);
   const [blueWinRate, setBlueWinRate] = useState<number>(50.0);
   // Blue win-rate estimate recorded at each draft step (index = step), used for trend + deltas
@@ -31,6 +36,7 @@ export function useDraft() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isHeroesLoading, setIsHeroesLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [heroesFallback, setHeroesFallback] = useState<boolean>(false);
 
   // Active step (or null if draft completed)
   const currentStep: DraftStep | null = useMemo(() => {
@@ -90,6 +96,7 @@ export function useDraft() {
         }));
         if (isMounted) {
           setHeroes(fallbackHeroes);
+          setHeroesFallback(true);
         }
       } catch {
         if (isMounted) setError("Failed to load hero database");
@@ -124,6 +131,11 @@ export function useDraft() {
       rBans: string[],
       lookahead: boolean
     ) => {
+      // Cancel any in-flight request first so stale responses can never overwrite newer state
+      abortControllerRef.current?.abort();
+      const ctrl = new AbortController();
+      abortControllerRef.current = ctrl;
+
       if (stepIdx >= CANONICAL_DRAFT_STEPS.length) {
         // Draft is complete! Evaluate final matchup win rate
         try {
@@ -143,31 +155,34 @@ export function useDraft() {
               top_k: 1,
               use_lookahead: false,
             }),
+            signal: ctrl.signal,
           });
           if (res.ok) {
             const data: DraftPredictionResponse = await res.json();
-            if (data.recommendations.length > 0) {
+            if (data.recommendations.length > 0 && !ctrl.signal.aborted) {
               const finalWin = data.recommendations[0].predicted_win_rate_pct;
               setBlueWinRate(finalWin);
               recordWin(stepIdx, finalWin);
             }
           }
         } catch (e) {
-          console.error("Final prediction error:", e);
+          if (!ctrl.signal.aborted) console.error("Final prediction error:", e);
         } finally {
-          setIsLoading(false);
+          if (abortControllerRef.current === ctrl) setIsLoading(false);
         }
-        setRecommendations([]);
+        if (!ctrl.signal.aborted) {
+          setRecommendations([]);
+          setBlueNextPicks([]);
+          setRedNextPicks([]);
+          setBlueNextBans([]);
+          setRedNextBans([]);
+          setBanUnlockedHeroes([]);
+        }
         return;
       }
 
       const step = CANONICAL_DRAFT_STEPS[stepIdx];
       const isBlue = step.side === "blue";
-
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-      abortControllerRef.current = new AbortController();
 
       try {
         setIsLoading(true);
@@ -191,7 +206,7 @@ export function useDraft() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
-          signal: abortControllerRef.current.signal,
+          signal: ctrl.signal,
         });
 
         if (!res.ok) {
@@ -202,6 +217,11 @@ export function useDraft() {
         const missing = data.missing_ally_lanes || [];
         const ranked = step.action === "pick" ? prioritizeMissingLanes(data.recommendations, missing) : data.recommendations;
         setRecommendations(ranked);
+        setBlueNextPicks(data.blue_next_picks || []);
+        setRedNextPicks(data.red_next_picks || []);
+        setBlueNextBans(data.blue_next_bans || []);
+        setRedNextBans(data.red_next_bans || []);
+        setBanUnlockedHeroes(data.ban_unlocked_heroes || []);
         setMissingAllyLanes(missing);
 
         if (ranked.length > 0) {
@@ -214,13 +234,13 @@ export function useDraft() {
           recordWin(stepIdx, Number(blueWin.toFixed(1)));
         }
       } catch (err: unknown) {
-        if (err instanceof Error && err.name === "AbortError") {
+        if (ctrl.signal.aborted || (err instanceof Error && err.name === "AbortError")) {
           return;
         }
         console.error("Predict error:", err);
         setError(err instanceof Error ? err.message : "Draft AI service error");
       } finally {
-        setIsLoading(false);
+        if (abortControllerRef.current === ctrl) setIsLoading(false);
       }
     },
     [globalBans, recordWin]
@@ -291,7 +311,17 @@ export function useDraft() {
     setBlueBans(last.blueBans);
     setRedBans(last.redBans);
     setHistory((prev) => prev.slice(0, -1));
-  }, [history]);
+    // Drop stale derived state; the effect refetches for the restored step
+    setRecommendations([]);
+    setBlueNextPicks([]);
+    setRedNextPicks([]);
+    setBlueNextBans([]);
+    setRedNextBans([]);
+    setBanUnlockedHeroes([]);
+    setMissingAllyLanes([]);
+    setWinHistory((prev) => prev.slice(0, last.stepIndex));
+    setBlueWinRate(winHistory[last.stepIndex - 1] ?? 50.0);
+  }, [history, winHistory]);
 
   const reset = useCallback(() => {
     setCurrentStepIndex(0);
@@ -301,6 +331,11 @@ export function useDraft() {
     setRedBans([]);
     setHistory([]);
     setRecommendations([]);
+    setBlueNextPicks([]);
+    setRedNextPicks([]);
+    setBlueNextBans([]);
+    setRedNextBans([]);
+    setBanUnlockedHeroes([]);
     setMissingAllyLanes([]);
     setBlueWinRate(50.0);
     setWinHistory([]);
@@ -323,12 +358,18 @@ export function useDraft() {
     useLookahead,
     setUseLookahead,
     recommendations,
+    blueNextPicks,
+    redNextPicks,
+    blueNextBans,
+    redNextBans,
+    banUnlockedHeroes,
     missingAllyLanes,
     blueWinRate,
     winHistory,
     isLoading,
     isHeroesLoading,
     error,
+    heroesFallback,
     lockHero,
     undo,
     reset,
