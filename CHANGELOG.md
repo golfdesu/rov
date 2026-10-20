@@ -27,6 +27,49 @@
 
 ---
 
+## 📅 2026-10-20 (UTC+7) — วิธีอ่านลำดับ ban/pick จริงจากภาพ draft + gitignore โฟลเดอร์ภาพ
+**Agent:** Claude Code (Opus 5.5)
+
+### ✅ สิ่งที่ทำ
+- เพิ่มกฎข้อ 11 ใน `AGENTS.md`: ภาพใน `data/draft_screenshots/` แคปตอนล็อกตัวสุดท้าย ลำดับบนจอ = ลำดับจริง (ฝั่งซ้าย ซ้าย→ขวา, ฝั่งขวา ขวา→ซ้าย), รูปแบบชื่อไฟล์, ลำดับตา B1 | R1 R2 | B2 B3 | R3 | R4 | B4 B5 | R5
+- เพิ่ม `data/draft_screenshots/` ใน `.gitignore`; โฟลเดอร์ `data/vod_analytics/draft_screenshots/` ไม่มีอยู่แล้ว จึงลบเฉพาะการอ้างถึงในกฎข้อ 10
+- อ่านภาพ RPL 2026 Winter KOG vs BRU (`Group_Stage_S605`) เกม 1–4 เทียบกับ `order_team_picks_by_draft_logic()`: ตาตรง 24/40 (60%), เฟสตรง 36/40 (90%), B1 ตรง 1/4
+
+### 📁 ไฟล์ที่แก้
+- `AGENTS.md`
+- `.gitignore`
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- แก้เฉพาะ markdown/.gitignore ไม่ต้องรัน ruff/pytest; `git status` ไม่แสดง `data/draft_screenshots/` แล้ว
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- ยังไม่มีไฟล์เก็บลำดับจริง (เสนอ `data/true_pick_order.json` + test วัดความแม่น รออนุมัติ)
+- ตัวอย่างแค่ 4 เกม ยังสรุปความแม่นของการเดาไม่ได้
+- `CHANGELOG.md` มี entry "14:18 แก้ไขบั๊กวงแท็กฮีโร่หลุด" ซ้ำ 2 ครั้ง (ยังไม่ได้ลบ)
+
+---
+
+## 📅 2026-10-20 (UTC+7) — ห้าม agent แตะโฟลเดอร์ `data/vod_analytics/` จนกว่าเจ้าของจะพูดถึงเอง
+**Agent:** Claude Code (Opus 5.5)
+
+### ✅ สิ่งที่ทำ
+- เพิ่มกฎข้อ 10 "Off-Limits Folder" ใน `AGENTS.md`: ห้ามอ่าน/แก้/ลบ/ย้าย/เสนองานใน `data/vod_analytics/` จนกว่าผู้ใช้จะพูดถึงเองใน session นั้น
+- สร้างโฟลเดอร์ `data/vod_analytics/draft_screenshots/` (gitignored) สำหรับภาพหน้าจอ draft เพื่ออ่านลำดับ ban/pick จริง
+
+### 📁 ไฟล์ที่แก้
+- `AGENTS.md`
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- แก้เฉพาะ markdown ไม่ต้องรัน ruff/pytest
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- งาน rotation tracking ใน `data/vod_analytics/` พักไว้ (รอ label รูปและทำโมเดล)
+- ลำดับ pick ใน `matches_draft_full.json` เป็นค่าประมาณจาก `order_team_picks_by_draft_logic()` ไม่ใช่ลำดับจริง (Liquipedia `t1h1..t1h5` เรียงตามเลน)
+
+---
+
 ## 📅 2026-10-20 14:18 (UTC+7) — แก้ไขบั๊กวงแท็กฮีโร่หลุดและปรับเทียบหลอดเลือด/อัลติเมทด้วย HSV บน Minimap & Sidebars
 **Agent:** Gemini 3.8 Flash (High)
 

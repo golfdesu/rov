@@ -23,6 +23,7 @@ node_modules/
 *.mkv
 downloads/
 data/vod_analytics/
+data/draft_screenshots/
 
 # Raw scraped screenshot dumps (all parsed data is in data/*.json)
 heroes/

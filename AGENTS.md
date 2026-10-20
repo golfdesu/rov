@@ -59,6 +59,20 @@ Every AI agent (including fast models such as `3.8flash`) MUST strictly obey the
    - Before starting work, read the top entries of `CHANGELOG.md` to learn what previous agents already did.
    - Before finishing any task that modified files, add a new entry at the TOP (date, time, agent, what was done, files, verification, open issues) following the format in that file.
 
+10. **Off-Limits Folder (`data/vod_analytics/`)**:
+    - This is the owner's paused WIP (VOD minimap rotation tracking).
+    - **NEVER** read, modify, delete, move, clean up, or propose work on anything inside `data/vod_analytics/` unless the user explicitly mentions it first in the current session.
+    - Do not "tidy" its large files (`*.mp4`, frame dumps); they are intentional and gitignored.
+
+11. **Reading True Ban/Pick Order from Draft Screenshots (`data/draft_screenshots/`)**:
+    - Screenshots are captured at the moment the LAST hero is locked, before players swap heroes into lanes. The on-screen slot order IS the true chronological order. Never treat them as in-game HUD / lane order.
+    - Filename: `<year>_d<day>_m<match>_g<game>_<season>_<league>_<teamA>_vs_<teamB>.png`, e.g. `2026_d1_m1_g1_win_rpl_kog_vs_bru.png` = RPL 2026 Winter, day 1, match 1, game 1.
+    - **Left side (first pick / blue)**: picks and bans read left -> right.
+    - **Right side (second pick / red)**: picks and bans read right -> left (mirrored).
+    - Teams swap sides between games. Find blue/red per game in `data/matches_draft_full.json` by `series_id` + `game_number`, never assume from the filename.
+    - Pick turn order: B1 | R1 R2 | B2 B3 | R3 | (phase-2 bans) | R4 | B4 B5 | R5.
+    - Identify heroes by comparing against `frontend/public/avatars/` (via `frontend/public/hero_images.json`). The hero set must match Liquipedia exactly. If it does not match, flag it instead of guessing.
+
 ---
 
 ## 2. Repository Structure & Architecture
