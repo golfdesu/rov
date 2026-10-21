@@ -27,6 +27,39 @@
 
 ---
 
+## 📅 2026-10-21 (UTC+7) — ปรับ data structure / algorithm ของ predictor (`/predict` เร็วขึ้น 2–3 เท่า ผลลัพธ์เหมือนเดิมทุกตัว)
+**Agent:** Claude Code (Opus 5.5)
+
+### ✅ สิ่งที่ทำ
+- `_build_ban_pick_intel_tables`: แปลงทุกเกมเป็น one-hot matrix (1 แถวต่อทีมต่อเกม) แล้วนับ co-occurrence ด้วย matmul (`bans.T @ picks` ฯลฯ) และคำนวณ lift/score ด้วย numpy mask ทั้งตาราง แทนลูป Python 130×130 สองชุด
+- `_sum_contributions`: ใช้แทน `_compute_ban_unlocked_scores`/`_compute_pick_to_ban_scores` ดึงแถวของฮีโร่ต้นเหตุมาเรียงด้วย `lexsort` แล้วรวมทั้งแกน (ลำดับบวกและการเลือก trigger เท่าเดิม รวมถึงกรณีคะแนนเท่ากัน)
+- `_build_hero_tables`: เตรียม lane, role และ capability เป็น list ตาม hero id ตอนโหลด แทน pandas `.loc` ที่เคยกินราว 22% ของเวลา predict
+- รวมการทำนายฝั่งน้ำเงิน/แดง (ตำแหน่งหลัก, next bans ×2, next pick ตาแรก ×2) เป็น batch เดียว ตาที่สองเป็นอีก batch: forward pass จาก 5 ครั้งเหลือ 2
+- `draft_mcts.py`: เพิ่ม `ModelInput` + `encode_batch` + `run_model` ใช้ร่วมกันแทนโค้ด one-hot/sequence-token ที่ซ้ำ 4 ที่, `find_matching_step` เปลี่ยนเป็น dict ที่สร้างครั้งเดียว และย้ายการสร้าง unavailable set ออกนอกลูป
+- เพิ่ม golden test: เล่น 4 เกมจริง × 9 step × เปิด/ปิด lookahead = 72 สถานการณ์ เทียบผล `predict()` ทุกค่า
+
+### 📊 ผลวัด (CPU, best of 30)
+- ไม่เปิด lookahead: ban p1 4.7 → 2.1 ms, pick p1 19.6 → 6.2 ms, pick p2 14.7 → 5.7 ms
+- เปิด lookahead: 12.1 → 9.8 ms, 32.5 → 14.9 ms, 29.8 → 16.7 ms
+- โหลด predictor ~270 → ~190 ms
+
+### 📁 ไฟล์ที่แก้
+- `src/predictor.py`, `src/search/draft_mcts.py`
+- ใหม่: `tests/golden_scenarios.py`, `tests/test_predictor_golden.py`, `tests/fixtures/predict_golden.json` (บันทึกจากโค้ดเดิมก่อนแก้)
+
+### 🧪 การตรวจสอบ
+- ตาราง ban→pick / pick→ban ตรงกับของเดิม bit ต่อ bit (diff 0.0)
+- ทั้ง 72 สถานการณ์ตรงกับ golden โดยไม่มีค่าคลาดเลย (max float diff 0.0)
+- ทดลองทำให้โค้ดผิด 4 แบบ (ยกกำลังตาราง, กลับลำดับ trigger, ล้างตาราง, เลื่อน lane) golden test จับได้ทุกแบบ
+- `pytest` 56 passed, `ruff check`/`ruff format` ผ่าน, `predict_draft_cli.py --demo` รันได้
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- ถ้าเปลี่ยน checkpoint, data หรือสูตร scoring โดยตั้งใจ ต้อง regenerate golden (คำสั่งอยู่ใน docstring ของ `tests/test_predictor_golden.py`) ห้าม regenerate เพื่อให้ refactor ผ่าน
+- `build_draft_stats.py` (`iterrows`) และ combat calculator ยังไม่ได้แตะ เพราะเป็นงาน offline หรือเร็วพออยู่แล้ว
+- ยังไม่ได้ commit
+
+---
+
 ## 📅 2026-10-21 (UTC+7) — Refactor frontend ตาม React best practice (branch `refactor/frontend-best-practices`)
 **Agent:** Claude Code (Opus 5.5)
 

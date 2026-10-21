@@ -10,7 +10,8 @@ This module implements sequential multi-step draft planning for RoV Pro Draft:
 from __future__ import annotations
 
 import dataclasses
-from typing import TYPE_CHECKING
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, NamedTuple
 
 import numpy as np
 import torch
@@ -42,6 +43,94 @@ DRAFT_STEPS = [
 ]
 
 MAX_HISTORY_LEN = 17
+
+
+def _build_step_lookup() -> dict[tuple[int, int, int, int, int, int, int], int]:
+    """Maps (phase, action, side, blue_picks, red_picks, blue_bans, red_bans) -> step index."""
+    lookup: dict[tuple[int, int, int, int, int, int, int], int] = {}
+    done = {(side, act): 0 for side in (0, 1) for act in (0, 1)}
+    for step_idx, phase, act, side in DRAFT_STEPS:
+        key = (phase, act, side, done[(0, 1)], done[(1, 1)], done[(0, 0)], done[(1, 0)])
+        lookup.setdefault(key, step_idx)
+        done[(side, act)] += 1
+    return lookup
+
+
+_STEP_LOOKUP = _build_step_lookup()
+
+
+class ModelInput(NamedTuple):
+    """One draft position from the acting team's point of view (hero ids, not names)."""
+
+    ally_picks: Sequence[int]
+    enemy_picks: Sequence[int]
+    ally_bans: Sequence[int]
+    enemy_bans: Sequence[int]
+    global_bans: Sequence[int]
+    meta: Sequence[float]
+    act_type: int
+    phase: int
+
+
+def sequence_events(inp: ModelInput) -> list[tuple[int, int]]:
+    """(hero_id, token_type) in the order the model was trained on: phase-1 bans/picks, then phase 2."""
+    return (
+        [(h, 3) for h in inp.ally_bans[:2]]
+        + [(h, 4) for h in inp.enemy_bans[:2]]
+        + [(h, 1) for h in inp.ally_picks[:3]]
+        + [(h, 2) for h in inp.enemy_picks[:3]]
+        + [(h, 3) for h in inp.ally_bans[2:]]
+        + [(h, 4) for h in inp.enemy_bans[2:]]
+        + [(h, 1) for h in inp.ally_picks[3:]]
+        + [(h, 2) for h in inp.enemy_picks[3:]]
+    )
+
+
+def encode_batch(inputs: Sequence[ModelInput], num_heroes: int) -> tuple[np.ndarray, ...]:
+    """Builds the 12 model input arrays (one row per position) in RoVDraftGNNTransformer.forward order."""
+    n = len(inputs)
+    ap = np.zeros((n, num_heroes), dtype=np.float32)
+    ep = np.zeros((n, num_heroes), dtype=np.float32)
+    ab = np.zeros((n, num_heroes), dtype=np.float32)
+    eb = np.zeros((n, num_heroes), dtype=np.float32)
+    unavail = np.zeros((n, num_heroes), dtype=np.bool_)
+    tok_heroes = np.zeros((n, MAX_HISTORY_LEN), dtype=np.int64)
+    tok_types = np.zeros((n, MAX_HISTORY_LEN), dtype=np.int64)
+    tok_steps = np.zeros((n, MAX_HISTORY_LEN), dtype=np.int64)
+    tok_pad = np.ones((n, MAX_HISTORY_LEN), dtype=np.bool_)
+    meta = np.zeros((n, 7), dtype=np.float32)
+    act_types = np.zeros(n, dtype=np.int64)
+    phases = np.zeros(n, dtype=np.int64)
+
+    for row, inp in enumerate(inputs):
+        # list() matters: a tuple index would be read as a multi-dimensional index
+        ap[row, list(inp.ally_picks)] = 1.0
+        ep[row, list(inp.enemy_picks)] = 1.0
+        ab[row, list(inp.ally_bans)] = 1.0
+        eb[row, list(inp.enemy_bans)] = 1.0
+        unavail[row, [*inp.ally_picks, *inp.enemy_picks, *inp.ally_bans, *inp.enemy_bans, *inp.global_bans]] = True
+
+        events = sequence_events(inp)[:MAX_HISTORY_LEN]
+        if events:
+            k = len(events)
+            tok_heroes[row, :k], tok_types[row, :k] = zip(*events)
+            tok_steps[row, :k] = np.arange(k)
+            tok_pad[row, :k] = False
+
+        meta[row] = inp.meta
+        act_types[row] = inp.act_type
+        phases[row] = inp.phase
+
+    return ap, ep, ab, eb, unavail, tok_heroes, tok_types, tok_steps, tok_pad, meta, act_types, phases
+
+
+def run_model(
+    model: torch.nn.Module, arrays: tuple[np.ndarray, ...], device: torch.device
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Runs one batched forward pass; returns (policy probs, acting-team win probs), each (batch, heroes)."""
+    with torch.no_grad():
+        logits, q_win_logits = model(*(torch.from_numpy(a).to(device) for a in arrays))
+    return torch.softmax(logits, dim=-1), torch.sigmoid(q_win_logits)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -125,102 +214,21 @@ class DraftMinimaxSearch:
         self.device = predictor.device
         self.num_heroes = len(predictor.hero_names)
 
-    def _build_batch_tensors(self, states: list[DraftSearchState]):
-        """Construct batched GNN-Transformer input tensors for a list of states."""
-        batch_size = len(states)
-        ap_vec = np.zeros((batch_size, self.num_heroes), dtype=np.float32)
-        ep_vec = np.zeros((batch_size, self.num_heroes), dtype=np.float32)
-        ab_vec = np.zeros((batch_size, self.num_heroes), dtype=np.float32)
-        eb_vec = np.zeros((batch_size, self.num_heroes), dtype=np.float32)
-        unavail = np.zeros((batch_size, self.num_heroes), dtype=np.bool_)
-
-        tok_heroes = np.zeros((batch_size, MAX_HISTORY_LEN), dtype=np.int64)
-        tok_types = np.zeros((batch_size, MAX_HISTORY_LEN), dtype=np.int64)
-        tok_steps = np.zeros((batch_size, MAX_HISTORY_LEN), dtype=np.int64)
-        tok_pad_mask = np.ones((batch_size, MAX_HISTORY_LEN), dtype=np.bool_)
-
-        meta_ctx = np.zeros((batch_size, 7), dtype=np.float32)
-        act_types = np.zeros(batch_size, dtype=np.int64)
-        phases = np.zeros(batch_size, dtype=np.int64)
-
-        for b_idx, s in enumerate(states):
-            side = s.acting_side
-            act_type = s.action_type
-            phase = s.phase
-
-            if side == 0:  # Blue acting
-                ally_picks, enemy_picks = list(s.blue_picks), list(s.red_picks)
-                ally_bans, enemy_bans = list(s.blue_bans), list(s.red_bans)
-            else:  # Red acting
-                ally_picks, enemy_picks = list(s.red_picks), list(s.blue_picks)
-                ally_bans, enemy_bans = list(s.red_bans), list(s.blue_bans)
-
-            for h in ally_picks:
-                ap_vec[b_idx, h] = 1.0
-                unavail[b_idx, h] = True
-            for h in enemy_picks:
-                ep_vec[b_idx, h] = 1.0
-                unavail[b_idx, h] = True
-            for h in ally_bans:
-                ab_vec[b_idx, h] = 1.0
-                unavail[b_idx, h] = True
-            for h in enemy_bans:
-                eb_vec[b_idx, h] = 1.0
-                unavail[b_idx, h] = True
-            for h in s.global_bans:
-                unavail[b_idx, h] = True
-
-            step_idx = min(s.step_idx, 17)
-            meta_ctx[b_idx] = [
-                step_idx / 17.0,
-                float(phase == 2),
-                float(act_type == 1),
-                float(side == 1),
-                1.0,
-                len(ally_picks) / 5.0,
-                len(enemy_picks) / 5.0,
-            ]
-            act_types[b_idx] = act_type
-            phases[b_idx] = phase
-
-            events = []
-            for h in ally_bans[:2]:
-                events.append((h, 3))
-            for h in enemy_bans[:2]:
-                events.append((h, 4))
-            for h in ally_picks[:3]:
-                events.append((h, 1))
-            for h in enemy_picks[:3]:
-                events.append((h, 2))
-            for h in ally_bans[2:]:
-                events.append((h, 3))
-            for h in enemy_bans[2:]:
-                events.append((h, 4))
-            for h in ally_picks[3:]:
-                events.append((h, 1))
-            for h in enemy_picks[3:]:
-                events.append((h, 2))
-
-            for idx, (hid, ttype) in enumerate(events[:MAX_HISTORY_LEN]):
-                tok_heroes[b_idx, idx] = hid
-                tok_types[b_idx, idx] = ttype
-                tok_steps[b_idx, idx] = idx
-                tok_pad_mask[b_idx, idx] = False
-
-        return (
-            torch.from_numpy(ap_vec).to(self.device),
-            torch.from_numpy(ep_vec).to(self.device),
-            torch.from_numpy(ab_vec).to(self.device),
-            torch.from_numpy(eb_vec).to(self.device),
-            torch.from_numpy(unavail).to(self.device),
-            torch.from_numpy(tok_heroes).to(self.device),
-            torch.from_numpy(tok_types).to(self.device),
-            torch.from_numpy(tok_steps).to(self.device),
-            torch.from_numpy(tok_pad_mask).to(self.device),
-            torch.from_numpy(meta_ctx).to(self.device),
-            torch.from_numpy(act_types).to(self.device),
-            torch.from_numpy(phases).to(self.device),
+    def _to_model_input(self, s: DraftSearchState) -> ModelInput:
+        if s.acting_side == 0:  # Blue acting
+            ally_picks, enemy_picks, ally_bans, enemy_bans = s.blue_picks, s.red_picks, s.blue_bans, s.red_bans
+        else:  # Red acting
+            ally_picks, enemy_picks, ally_bans, enemy_bans = s.red_picks, s.blue_picks, s.red_bans, s.blue_bans
+        meta = (
+            min(s.step_idx, 17) / 17.0,
+            float(s.phase == 2),
+            float(s.action_type == 1),
+            float(s.acting_side == 1),
+            1.0,
+            len(ally_picks) / 5.0,
+            len(enemy_picks) / 5.0,
         )
+        return ModelInput(ally_picks, enemy_picks, ally_bans, enemy_bans, s.global_bans, meta, s.action_type, s.phase)
 
     def evaluate_batch(self, states: list[DraftSearchState]) -> tuple[torch.Tensor, torch.Tensor]:
         """Evaluate a batch of draft states through the neural network.
@@ -232,13 +240,8 @@ class DraftMinimaxSearch:
         if not states:
             return torch.empty(0), torch.empty(0)
 
-        tensors = self._build_batch_tensors(states)
-        with torch.no_grad():
-            logits, q_win_logits = self.model(*tensors)
-            probs = torch.softmax(logits, dim=-1)
-            win_probs = torch.sigmoid(q_win_logits)
-
-        return probs, win_probs
+        arrays = encode_batch([self._to_model_input(s) for s in states], self.num_heroes)
+        return run_model(self.model, arrays, self.device)
 
     def find_matching_step(
         self,
@@ -251,24 +254,11 @@ class DraftMinimaxSearch:
         r_bans_len: int,
     ) -> int:
         """Find the exact step index (0..17) matching current draft configuration."""
-        for step_idx, s_phase, s_act, s_side in DRAFT_STEPS:
-            if s_phase == phase and s_act == act_type and s_side == side_val:
-                expected_b_bans = sum(1 for i in range(step_idx) if DRAFT_STEPS[i][2] == 0 and DRAFT_STEPS[i][3] == 0)
-                expected_r_bans = sum(1 for i in range(step_idx) if DRAFT_STEPS[i][2] == 0 and DRAFT_STEPS[i][3] == 1)
-                expected_b_picks = sum(1 for i in range(step_idx) if DRAFT_STEPS[i][2] == 1 and DRAFT_STEPS[i][3] == 0)
-                expected_r_picks = sum(1 for i in range(step_idx) if DRAFT_STEPS[i][2] == 1 and DRAFT_STEPS[i][3] == 1)
-
-                if (
-                    expected_b_bans == b_bans_len
-                    and expected_r_bans == r_bans_len
-                    and expected_b_picks == b_picks_len
-                    and expected_r_picks == r_picks_len
-                ):
-                    return step_idx
-
+        key = (phase, act_type, side_val, b_picks_len, r_picks_len, b_bans_len, r_bans_len)
+        if key in _STEP_LOOKUP:
+            return _STEP_LOOKUP[key]
         # Fallback to total completed actions
-        total_done = b_picks_len + r_picks_len + b_bans_len + r_bans_len
-        return min(total_done, 17)
+        return min(b_picks_len + r_picks_len + b_bans_len + r_bans_len, 17)
 
     def search_lookahead_win_rates(
         self,
@@ -307,8 +297,9 @@ class DraftMinimaxSearch:
         child_states: list[DraftSearchState] = []
         valid_candidates: list[int] = []
 
+        unavailable = root_state.get_unavailable_set()
         for hid in candidate_hero_indices:
-            if hid in root_state.get_unavailable_set():
+            if hid in unavailable:
                 continue
             child_states.append(root_state.transition(hid))
             valid_candidates.append(hid)

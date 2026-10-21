@@ -1,8 +1,7 @@
-import collections
 import json
-import math
 import re
 from pathlib import Path
+from typing import NamedTuple
 
 import numpy as np
 import pandas as pd
@@ -14,8 +13,8 @@ from src.schemas import (
     DraftStateRequest,
     HeroRecommendation,
 )
-from src.search.draft_mcts import DraftMinimaxSearch, DraftSearchState
-from src.train_sota_model import MAX_HISTORY_LEN, RoVDraftGNNTransformer
+from src.search.draft_mcts import DraftMinimaxSearch, DraftSearchState, ModelInput, encode_batch, run_model
+from src.train_sota_model import RoVDraftGNNTransformer
 
 LANE_LABELS = [
     "DS_Lane (ออฟเลน)",
@@ -24,6 +23,16 @@ LANE_LABELS = [
     "Dragon_Lane (แครี่)",
     "Roam (โรมมิ่ง)",
 ]
+
+
+class TeamDraft(NamedTuple):
+    """One team's view of the board (canonical hero names)."""
+
+    side: str
+    picks: list[str]
+    opp_picks: list[str]
+    bans: list[str]
+    opp_bans: list[str]
 
 
 class RoVDraftPredictor:
@@ -66,9 +75,34 @@ class RoVDraftPredictor:
 
         self.heroes_df = pd.read_csv(config.paths.heroes_csv_path).set_index("name")
         self.stats_df = pd.read_csv(config.paths.hero_stats_csv_path).set_index("name")
+        self._build_hero_tables()
         self._lookup = self._build_alias_lookup()
         self.ban_to_pick_score, self.pick_to_ban_score = self._build_ban_pick_intel_tables()
         self.search_engine = DraftMinimaxSearch(self)
+
+    def _build_hero_tables(self) -> None:
+        """Per-hero display fields as lists indexed by hero id, so hot paths avoid pandas row lookups."""
+        heroes = self.heroes_df.loc[self.hero_names]
+        stats = self.stats_df.loc[self.hero_names]
+        self._main_lane: list[str] = [str(v) for v in stats["main_pro_lane"]]
+        self._lane_key: list[str] = [lane.split(" ")[0] for lane in self._main_lane]
+        self._primary_role: list[str] = [str(v) for v in heroes["primary_role"]]
+        self._capabilities: list[list[str]] = []
+        for row in heroes.itertuples():
+            caps = []
+            if row.has_suppress:
+                caps.append("Suppress")
+            elif row.has_hard_cc:
+                caps.append("Hard CC")
+            if row.has_mobility:
+                caps.append("Mobility")
+            if row.has_true_damage:
+                caps.append("True Dmg")
+            if row.has_immunity:
+                caps.append("Iron Body/Immune")
+            if row.has_heal_sustain or row.has_shield:
+                caps.append("Sustain/Shield")
+            self._capabilities.append(caps)
 
     def _build_ban_pick_intel_tables(self) -> tuple[np.ndarray, np.ndarray]:
         """Build statistical Ban->Pick Lift and Pick->Phase2-Ban Lift matrices from pro matches."""
@@ -83,72 +117,87 @@ class RoVDraftPredictor:
         matches = json.loads(matches_path.read_text(encoding="utf-8"))
         n_team_games = max(1, len(matches) * 2)
 
-        ban_cnt: collections.Counter[int] = collections.Counter()
-        p2ban_cnt: collections.Counter[int] = collections.Counter()
-        pick_cnt: collections.Counter[int] = collections.Counter()
-        co_ban_pick = np.zeros((num_heroes, num_heroes), dtype=np.int32)
-        co_pick_p2ban = np.zeros((num_heroes, num_heroes), dtype=np.int32)
-        vs_wins = np.zeros((num_heroes, num_heroes), dtype=np.int32)
-        vs_games = np.zeros((num_heroes, num_heroes), dtype=np.int32)
+        # One row per (game, team): one-hot matrices turn every pairwise count into a matrix product
+        n_rows = len(matches) * 2
+        bans = np.zeros((n_rows, num_heroes), dtype=np.float32)
+        p2_bans = np.zeros((n_rows, num_heroes), dtype=np.float32)
+        picks = np.zeros((n_rows, num_heroes), dtype=np.float32)
+        opp_picks = np.zeros((n_rows, num_heroes), dtype=np.float32)
+        won = np.zeros(n_rows, dtype=np.bool_)
+        ids = self.hero_to_id
 
-        for m in matches:
-            for side, opp in (("blue", "red"), ("red", "blue")):
-                won = bool(m.get("blue_win")) if side == "blue" else not bool(m.get("blue_win"))
-                bans = [self.hero_to_id[h] for h in set(m.get(f"{side}_bans", [])) if h in self.hero_to_id]
-                p2_bans = [self.hero_to_id[h] for h in set(m.get(f"{side}_bans", [])[2:4]) if h in self.hero_to_id]
-                picks = [self.hero_to_id[h] for h in set(m.get(f"{side}_picks", [])) if h in self.hero_to_id]
-                opp_picks = [self.hero_to_id[h] for h in set(m.get(f"{opp}_picks", [])) if h in self.hero_to_id]
+        for g, m in enumerate(matches):
+            for row, side, opp in ((2 * g, "blue", "red"), (2 * g + 1, "red", "blue")):
+                won[row] = bool(m.get("blue_win")) == (side == "blue")
+                side_bans = m.get(f"{side}_bans", [])
+                bans[row, [ids[h] for h in side_bans if h in ids]] = 1.0
+                p2_bans[row, [ids[h] for h in side_bans[2:4] if h in ids]] = 1.0
+                picks[row, [ids[h] for h in m.get(f"{side}_picks", []) if h in ids]] = 1.0
+                opp_picks[row, [ids[h] for h in m.get(f"{opp}_picks", []) if h in ids]] = 1.0
 
-                for b in bans:
-                    ban_cnt[b] += 1
-                for b in p2_bans:
-                    p2ban_cnt[b] += 1
-                for p in picks:
-                    pick_cnt[p] += 1
+        # float32 sums of 0/1 values are exact well past this dataset's size (< 2**24)
+        ban_cnt = bans.sum(axis=0).astype(np.int64)
+        p2ban_cnt = p2_bans.sum(axis=0).astype(np.int64)
+        pick_cnt = picks.sum(axis=0).astype(np.int64)
+        co_ban_pick = (bans.T @ picks).astype(np.int64)  # [b, p] = team games with ban b and pick p
+        co_pick_p2ban = (picks.T @ p2_bans).astype(np.int64)
+        vs_games = (picks.T @ opp_picks).astype(np.int64)  # [p, e] = games where p faced e
+        vs_wins = (picks[won].T @ opp_picks[won]).astype(np.int64)
 
-                for b in bans:
-                    for p in picks:
-                        co_ban_pick[b, p] += 1
-                for p in picks:
-                    for b in p2_bans:
-                        co_pick_p2ban[p, b] += 1
-                for p in picks:
-                    for e in opp_picks:
-                        vs_games[p, e] += 1
-                        if won:
-                            vs_wins[p, e] += 1
+        not_self = ~np.eye(num_heroes, dtype=np.bool_)
 
-        for b in range(num_heroes):
-            if ban_cnt[b] < 20:
-                continue
-            for p in range(num_heroes):
-                if b == p or pick_cnt[p] < 30:
-                    continue
-                co = int(co_ban_pick[b, p])
-                if co < 5:
-                    continue
-                lift = (co * n_team_games) / float(pick_cnt[p] * ban_cnt[b])
-                if lift < 1.15:
-                    continue
-                g = int(vs_games[p, b])
-                loss_rate = 1.0 - (vs_wins[p, b] / g) if g >= 5 else 0.5
-                ban_to_pick[b, p] = float(lift * (1.0 + max(0.0, loss_rate - 0.48) * 3.0) * math.log1p(co))
+        # Ban b -> pick p: teams pick p more often after banning b; boosted when p tends to lose to b
+        co = co_ban_pick.astype(np.float64)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            lift = co * n_team_games / (ban_cnt[:, None] * pick_cnt[None, :])
+            games_vs_ban = vs_games.T  # [b, p] = games where p faced b
+            loss_rate = np.where(games_vs_ban >= 5, 1.0 - vs_wins.T / np.maximum(games_vs_ban, 1), 0.5)
+        keep = (ban_cnt[:, None] >= 20) & (pick_cnt[None, :] >= 30) & (co_ban_pick >= 5) & not_self & (lift >= 1.15)
+        score = lift * (1.0 + np.maximum(0.0, loss_rate - 0.48) * 3.0) * np.log1p(co)
+        ban_to_pick[keep] = score[keep]
 
-        for p in range(num_heroes):
-            if pick_cnt[p] < 25:
-                continue
-            for b in range(num_heroes):
-                if p == b or p2ban_cnt[b] < 20:
-                    continue
-                co_p2 = int(co_pick_p2ban[p, b])
-                if co_p2 < 5:
-                    continue
-                lift_p2 = (co_p2 * n_team_games) / float(pick_cnt[p] * p2ban_cnt[b])
-                if lift_p2 < 1.15:
-                    continue
-                pick_to_ban[p, b] = float((co_p2**0.75) * lift_p2)
+        # Pick p -> phase-2 ban b: what teams that picked p go on to ban in phase 2
+        co_p2 = co_pick_p2ban.astype(np.float64)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            lift_p2 = co_p2 * n_team_games / (pick_cnt[:, None] * p2ban_cnt[None, :])
+        keep = (
+            (pick_cnt[:, None] >= 25) & (p2ban_cnt[None, :] >= 20) & (co_pick_p2ban >= 5) & not_self & (lift_p2 >= 1.15)
+        )
+        score = (co_p2**0.75) * lift_p2
+        pick_to_ban[keep] = score[keep]
 
         return ban_to_pick, pick_to_ban
+
+    def _sum_contributions(
+        self,
+        table: np.ndarray,
+        source_names: list[str],
+        unavail_row: np.ndarray,
+    ) -> tuple[np.ndarray, dict[int, list[str]]]:
+        """Sums table[source, target] over the source heroes for every available target.
+
+        Returns per-target scores plus, for each scored target, its top-2 source heroes
+        (largest contribution first, ties broken by name descending).
+        """
+        num_heroes = len(self.hero_names)
+        scores = np.zeros(num_heroes, dtype=np.float32)
+        triggers: dict[int, list[str]] = {}
+        sources = list(dict.fromkeys(source_names))
+        if not sources:
+            return scores, triggers
+
+        rows = table[[self.hero_to_id[h] for h in sources]].astype(np.float64)  # (sources, targets)
+        rows[:, unavail_row] = 0.0
+        name_rank = np.argsort(np.argsort(sources))[:, None]  # alphabetical position of each source
+        order = np.lexsort((np.broadcast_to(-name_rank, rows.shape), -rows), axis=0)
+        sorted_rows = np.take_along_axis(rows, order, axis=0)
+        scores[:] = sorted_rows.sum(axis=0)
+
+        for target in np.flatnonzero(sorted_rows[0] > 0):
+            triggers[int(target)] = [
+                sources[i] for i, v in zip(order[:2, target], sorted_rows[:2, target], strict=True) if v > 0
+            ]
+        return scores, triggers
 
     def _compute_ban_unlocked_scores(
         self,
@@ -156,28 +205,7 @@ class RoVDraftPredictor:
         unavail_row: np.ndarray,
     ) -> tuple[np.ndarray, dict[int, list[str]]]:
         """Compute statistical unlock/pick scores and triggering bans for each available hero."""
-        num_heroes = len(self.hero_names)
-        scores = np.zeros(num_heroes, dtype=np.float32)
-        triggers: dict[int, list[str]] = {}
-        unique_bans = list(dict.fromkeys(bans))
-        if not unique_bans:
-            return scores, triggers
-
-        for p_idx in range(num_heroes):
-            if unavail_row[p_idx]:
-                continue
-            contribs: list[tuple[float, str]] = []
-            for b_name in unique_bans:
-                b_idx = self.hero_to_id[b_name]
-                val = float(self.ban_to_pick_score[b_idx, p_idx])
-                if val > 0:
-                    contribs.append((val, b_name))
-            if contribs:
-                contribs.sort(reverse=True)
-                scores[p_idx] = sum(v for v, _ in contribs)
-                triggers[p_idx] = [name for _, name in contribs[:2]]
-
-        return scores, triggers
+        return self._sum_contributions(self.ban_to_pick_score, bans, unavail_row)
 
     def _compute_pick_to_ban_scores(
         self,
@@ -185,28 +213,7 @@ class RoVDraftPredictor:
         unavail_row: np.ndarray,
     ) -> tuple[np.ndarray, dict[int, list[str]]]:
         """Compute statistical Phase-2 target ban scores and triggering picks for each available hero."""
-        num_heroes = len(self.hero_names)
-        scores = np.zeros(num_heroes, dtype=np.float32)
-        triggers: dict[int, list[str]] = {}
-        unique_picks = list(dict.fromkeys(picks))
-        if not unique_picks:
-            return scores, triggers
-
-        for b_idx in range(num_heroes):
-            if unavail_row[b_idx]:
-                continue
-            contribs: list[tuple[float, str]] = []
-            for p_name in unique_picks:
-                p_idx = self.hero_to_id[p_name]
-                val = float(self.pick_to_ban_score[p_idx, b_idx])
-                if val > 0:
-                    contribs.append((val, p_name))
-            if contribs:
-                contribs.sort(reverse=True)
-                scores[b_idx] = sum(v for v, _ in contribs)
-                triggers[b_idx] = [name for _, name in contribs[:2]]
-
-        return scores, triggers
+        return self._sum_contributions(self.pick_to_ban_score, picks, unavail_row)
 
     def _build_alias_lookup(self) -> dict[str, str]:
         lookup = {k.lower(): k for k in self.hero_to_id}
@@ -238,43 +245,40 @@ class RoVDraftPredictor:
                 raise ValueError(f"Unknown hero name: '{raw}'")
         return resolved
 
-    def _build_sequence_tokens(
+    def _model_input(
         self,
         ally_picks: list[str],
         enemy_picks: list[str],
         ally_bans: list[str],
         enemy_bans: list[str],
-    ):
-        events = []
-        for h in ally_bans[:2]:
-            events.append((self.hero_to_id[h], 3))
-        for h in enemy_bans[:2]:
-            events.append((self.hero_to_id[h], 4))
-        for h in ally_picks[:3]:
-            events.append((self.hero_to_id[h], 1))
-        for h in enemy_picks[:3]:
-            events.append((self.hero_to_id[h], 2))
-        for h in ally_bans[2:]:
-            events.append((self.hero_to_id[h], 3))
-        for h in enemy_bans[2:]:
-            events.append((self.hero_to_id[h], 4))
-        for h in ally_picks[3:]:
-            events.append((self.hero_to_id[h], 1))
-        for h in enemy_picks[3:]:
-            events.append((self.hero_to_id[h], 2))
-
-        tok_heroes = np.zeros((1, MAX_HISTORY_LEN), dtype=np.int64)
-        tok_types = np.zeros((1, MAX_HISTORY_LEN), dtype=np.int64)
-        tok_steps = np.zeros((1, MAX_HISTORY_LEN), dtype=np.int64)
-        tok_pad_mask = np.ones((1, MAX_HISTORY_LEN), dtype=np.bool_)
-
-        for idx, (hid, ttype) in enumerate(events[:MAX_HISTORY_LEN]):
-            tok_heroes[0, idx] = hid
-            tok_types[0, idx] = ttype
-            tok_steps[0, idx] = idx
-            tok_pad_mask[0, idx] = False
-
-        return tok_heroes, tok_types, tok_steps, tok_pad_mask
+        global_bans: list[str],
+        *,
+        is_pick: bool,
+        is_red: bool,
+        phase: int,
+    ) -> ModelInput:
+        """Encodes one draft position from the acting team's point of view."""
+        step_idx = min(len(ally_picks) + len(enemy_picks) + len(ally_bans) + len(enemy_bans), 17)
+        meta = (
+            step_idx / 17.0,
+            float(phase == 2),
+            float(is_pick),
+            float(is_red),
+            1.0,
+            len(ally_picks) / 5.0,
+            len(enemy_picks) / 5.0,
+        )
+        ids = self.hero_to_id
+        return ModelInput(
+            [ids[h] for h in ally_picks],
+            [ids[h] for h in enemy_picks],
+            [ids[h] for h in ally_bans],
+            [ids[h] for h in enemy_bans],
+            [ids[h] for h in global_bans],
+            meta,
+            int(is_pick),
+            phase,
+        )
 
     def _build_hero_recommendation(
         self,
@@ -287,272 +291,139 @@ class RoVDraftPredictor:
         lookahead_val: float | None = None,
         triggered_by: list[str] | None = None,
     ) -> HeroRecommendation:
-        h_name = self.hero_names[h_idx]
-        h_info = self.heroes_df.loc[h_name]
-        s_info = self.stats_df.loc[h_name]
         syn_mat = self.ckpt["graphs"]["synergy_mat"]
         cnt_mat = self.ckpt["graphs"]["counter_mat"]
 
         syn_edge = float(ap_row @ syn_mat[h_idx]) * 100.0
         cnt_edge = float(ep_row @ cnt_mat[h_idx]) * 100.0
 
-        caps = []
-        if h_info["has_suppress"]:
-            caps.append("Suppress")
-        elif h_info["has_hard_cc"]:
-            caps.append("Hard CC")
-        if h_info["has_mobility"]:
-            caps.append("Mobility")
-        if h_info["has_true_damage"]:
-            caps.append("True Dmg")
-        if h_info["has_immunity"]:
-            caps.append("Iron Body/Immune")
-        if h_info["has_heal_sustain"] or h_info["has_shield"]:
-            caps.append("Sustain/Shield")
-
         return HeroRecommendation(
             rank=rank_idx,
-            hero_name=h_name,
+            hero_name=self.hero_names[h_idx],
             probability_pct=round(float(probs[h_idx] * 100.0), 2),
             predicted_win_rate_pct=round(float(win_probs[h_idx] * 100.0), 2),
             lookahead_win_rate_pct=lookahead_val,
-            primary_lane=str(s_info["main_pro_lane"]),
-            primary_role=str(h_info["primary_role"]),
+            primary_lane=self._main_lane[h_idx],
+            primary_role=self._primary_role[h_idx],
             synergy_edge_pct=round(syn_edge, 2),
             counter_edge_pct=round(cnt_edge, 2),
-            capabilities=caps,
+            capabilities=list(self._capabilities[h_idx]),
             triggered_by=triggered_by or [],
         )
 
-    def _predict_team_next_picks(
-        self,
-        team_side: str,
-        team_picks: list[str],
-        opp_picks: list[str],
-        team_bans: list[str],
-        opp_bans: list[str],
-        global_bans: list[str],
-        max_slots: int = 2,
-    ) -> list[HeroRecommendation]:
-        """Autoregressively forecast up to `max_slots` upcoming picks for `team_side` (starts from Ban 1)."""
-        if (len(team_picks) == 0 and len(team_bans) == 0) or len(team_picks) >= 5:
-            return []
+    # ------------------------------------------------------------------
+    # Next-pick / next-ban forecasts for both teams
+    # ------------------------------------------------------------------
 
-        steps_to_predict = min(max_slots, 5 - len(team_picks))
-        sim_team_picks = list(team_picks)
-        num_heroes = len(self.hero_names)
-        lane_probs = self.ckpt["lane_probs"]
-        syn_mat = self.ckpt["graphs"]["synergy_mat"]
-        side_val = 0 if team_side == "blue" else 1
-        forecast: list[HeroRecommendation] = []
+    @staticmethod
+    def _next_pick_slots(team: TeamDraft, max_slots: int) -> int:
+        """Picks to forecast; starts once the team has acted (Ban 1) and stops at 5 picks."""
+        if (not team.picks and not team.bans) or len(team.picks) >= 5:
+            return 0
+        return min(max_slots, 5 - len(team.picks))
 
-        for step_offset in range(steps_to_predict):
-            ap_vec = np.zeros((1, num_heroes), dtype=np.float32)
-            ep_vec = np.zeros((1, num_heroes), dtype=np.float32)
-            ab_vec = np.zeros((1, num_heroes), dtype=np.float32)
-            eb_vec = np.zeros((1, num_heroes), dtype=np.float32)
-            unavail = np.zeros((1, num_heroes), dtype=np.bool_)
+    @staticmethod
+    def _next_ban_slots(team: TeamDraft, max_slots: int) -> int:
+        """Bans to forecast; needs at least one pick to reason from and stops at 4 bans."""
+        if not team.picks or len(team.bans) >= 4:
+            return 0
+        return min(max_slots, 4 - len(team.bans))
 
-            for h in sim_team_picks:
-                idx = self.hero_to_id[h]
-                ap_vec[0, idx] = 1.0
-                unavail[0, idx] = True
-            for h in opp_picks:
-                idx = self.hero_to_id[h]
-                ep_vec[0, idx] = 1.0
-                unavail[0, idx] = True
-            for h in team_bans:
-                idx = self.hero_to_id[h]
-                ab_vec[0, idx] = 1.0
-                unavail[0, idx] = True
-            for h in opp_bans:
-                idx = self.hero_to_id[h]
-                eb_vec[0, idx] = 1.0
-                unavail[0, idx] = True
-            for h in global_bans:
-                idx = self.hero_to_id[h]
-                unavail[0, idx] = True
-
-            sim_phase = 1 if len(sim_team_picks) < 3 else 2
-            total_done = len(sim_team_picks) + len(opp_picks) + len(team_bans) + len(opp_bans)
-            step_idx = min(total_done, 17)
-
-            meta_ctx = np.array(
-                [
-                    [
-                        step_idx / 17.0,
-                        float(sim_phase == 2),
-                        1.0,
-                        float(side_val == 1),
-                        1.0,
-                        len(sim_team_picks) / 5.0,
-                        len(opp_picks) / 5.0,
-                    ]
-                ],
-                dtype=np.float32,
-            )
-
-            th, tt, ts, tpad = self._build_sequence_tokens(sim_team_picks, opp_picks, team_bans, opp_bans)
-            with torch.no_grad():
-                logits, q_win_logits = self.model(
-                    torch.from_numpy(ap_vec),
-                    torch.from_numpy(ep_vec),
-                    torch.from_numpy(ab_vec),
-                    torch.from_numpy(eb_vec),
-                    torch.from_numpy(unavail),
-                    torch.from_numpy(th),
-                    torch.from_numpy(tt),
-                    torch.from_numpy(ts),
-                    torch.from_numpy(tpad),
-                    torch.from_numpy(meta_ctx),
-                    torch.tensor([1], dtype=torch.int64),
-                    torch.tensor([sim_phase], dtype=torch.int64),
-                )
-                probs = torch.softmax(logits[0], dim=-1).numpy()
-                win_probs = torch.sigmoid(q_win_logits[0]).numpy()
-
-            ban_scores, ban_triggers = self._compute_ban_unlocked_scores(team_bans, unavail[0])
-            if ban_scores.max() > 0:
-                sharpened = np.power(ban_scores / float(ban_scores.max()), 2.5)
-                ban_dist = sharpened / float(sharpened.sum())
-                blend_w = 0.75 if len(team_picks) == 0 else 0.35
-                blended_probs = (1.0 - blend_w) * probs + blend_w * ban_dist
-            else:
-                blended_probs = probs
-
-            ally_lane_cov = ap_vec[0] @ lane_probs
-            open_lanes = {LANE_LABELS[i].split(" ")[0] for i in range(5) if ally_lane_cov[i] < 0.65}
-            taken_primary_lanes = {str(self.stats_df.loc[h]["main_pro_lane"]).split(" ")[0] for h in sim_team_picks}
-            needed_lanes = open_lanes - taken_primary_lanes
-
-            sorted_indices = np.argsort(blended_probs)[::-1]
-            chosen_idx: int | None = None
-            for cand_idx in sorted_indices[:25]:
-                if blended_probs[cand_idx] <= 0:
-                    break
-                cand_name = self.hero_names[int(cand_idx)]
-                cand_lane = str(self.stats_df.loc[cand_name]["main_pro_lane"]).split(" ")[0]
-                if not needed_lanes or cand_lane in needed_lanes:
-                    chosen_idx = int(cand_idx)
-                    break
-
-            if chosen_idx is None:
-                chosen_idx = int(sorted_indices[0])
-
-            triggers = list(ban_triggers.get(chosen_idx, []))
-            if not triggers and sim_team_picks:
-                best_ally = max(
-                    sim_team_picks,
-                    key=lambda a: float(syn_mat[self.hero_to_id[a], chosen_idx]),
-                )
-                if float(syn_mat[self.hero_to_id[best_ally], chosen_idx]) > 0:
-                    triggers = [best_ally]
-
-            rec = self._build_hero_recommendation(
-                rank_idx=step_offset + 1,
-                h_idx=chosen_idx,
-                probs=blended_probs,
-                win_probs=win_probs,
-                ap_row=ap_vec[0],
-                ep_row=ep_vec[0],
-                triggered_by=triggers,
-            )
-            forecast.append(rec)
-            sim_team_picks.append(rec.hero_name)
-
-        return forecast
-
-    def _predict_team_next_bans(
-        self,
-        team_side: str,
-        team_picks: list[str],
-        opp_picks: list[str],
-        team_bans: list[str],
-        opp_bans: list[str],
-        global_bans: list[str],
-        max_slots: int = 2,
-    ) -> list[HeroRecommendation]:
-        """Forecast up to `max_slots` upcoming bans for `team_side` based on their picked heroes."""
-        if len(team_picks) == 0 or len(team_bans) >= 4:
-            return []
-
-        steps_to_predict = min(max_slots, 4 - len(team_bans))
-        num_heroes = len(self.hero_names)
-        ap_vec = np.zeros((1, num_heroes), dtype=np.float32)
-        ep_vec = np.zeros((1, num_heroes), dtype=np.float32)
-        ab_vec = np.zeros((1, num_heroes), dtype=np.float32)
-        eb_vec = np.zeros((1, num_heroes), dtype=np.float32)
-        unavail = np.zeros((1, num_heroes), dtype=np.bool_)
-
-        for h in team_picks:
-            idx = self.hero_to_id[h]
-            ap_vec[0, idx] = 1.0
-            unavail[0, idx] = True
-        for h in opp_picks:
-            idx = self.hero_to_id[h]
-            ep_vec[0, idx] = 1.0
-            unavail[0, idx] = True
-        for h in team_bans:
-            idx = self.hero_to_id[h]
-            ab_vec[0, idx] = 1.0
-            unavail[0, idx] = True
-        for h in opp_bans:
-            idx = self.hero_to_id[h]
-            eb_vec[0, idx] = 1.0
-            unavail[0, idx] = True
-        for h in global_bans:
-            idx = self.hero_to_id[h]
-            unavail[0, idx] = True
-
-        side_val = 0 if team_side == "blue" else 1
-        sim_phase = 1 if len(team_bans) < 2 else 2
-        total_done = len(team_picks) + len(opp_picks) + len(team_bans) + len(opp_bans)
-        step_idx = min(total_done, 17)
-
-        meta_ctx = np.array(
-            [
-                [
-                    step_idx / 17.0,
-                    float(sim_phase == 2),
-                    0.0,
-                    float(side_val == 1),
-                    1.0,
-                    len(team_picks) / 5.0,
-                    len(opp_picks) / 5.0,
-                ]
-            ],
-            dtype=np.float32,
+    def _next_pick_input(self, team: TeamDraft, sim_picks: list[str], global_bans: list[str]) -> ModelInput:
+        return self._model_input(
+            sim_picks,
+            team.opp_picks,
+            team.bans,
+            team.opp_bans,
+            global_bans,
+            is_pick=True,
+            is_red=team.side == "red",
+            phase=1 if len(sim_picks) < 3 else 2,
         )
 
-        th, tt, ts, tpad = self._build_sequence_tokens(team_picks, opp_picks, team_bans, opp_bans)
-        with torch.no_grad():
-            logits, q_win_logits = self.model(
-                torch.from_numpy(ap_vec),
-                torch.from_numpy(ep_vec),
-                torch.from_numpy(ab_vec),
-                torch.from_numpy(eb_vec),
-                torch.from_numpy(unavail),
-                torch.from_numpy(th),
-                torch.from_numpy(tt),
-                torch.from_numpy(ts),
-                torch.from_numpy(tpad),
-                torch.from_numpy(meta_ctx),
-                torch.tensor([0], dtype=torch.int64),
-                torch.tensor([sim_phase], dtype=torch.int64),
-            )
-            probs = torch.softmax(logits[0], dim=-1).numpy()
-            win_probs = torch.sigmoid(q_win_logits[0]).numpy()
+    def _next_ban_input(self, team: TeamDraft, global_bans: list[str]) -> ModelInput:
+        return self._model_input(
+            team.picks,
+            team.opp_picks,
+            team.bans,
+            team.opp_bans,
+            global_bans,
+            is_pick=False,
+            is_red=team.side == "red",
+            phase=1 if len(team.bans) < 2 else 2,
+        )
 
-        p2b_scores, p2b_triggers = self._compute_pick_to_ban_scores(team_picks, unavail[0])
-        if p2b_scores.max() > 0:
-            p2b_dist = p2b_scores / float(p2b_scores.sum())
-            blended_probs = 0.25 * probs + 0.75 * p2b_dist
+    def _choose_next_pick(
+        self,
+        team: TeamDraft,
+        sim_picks: list[str],
+        rank: int,
+        probs: np.ndarray,
+        win_probs: np.ndarray,
+        ap_row: np.ndarray,
+        ep_row: np.ndarray,
+        unavail_row: np.ndarray,
+    ) -> HeroRecommendation:
+        """Picks the likeliest hero that fills a still-open lane, blending in ban-unlock statistics."""
+        ban_scores, ban_triggers = self._compute_ban_unlocked_scores(team.bans, unavail_row)
+        if ban_scores.max() > 0:
+            sharpened = np.power(ban_scores / float(ban_scores.max()), 2.5)
+            ban_dist = sharpened / float(sharpened.sum())
+            blend_w = 0.75 if len(team.picks) == 0 else 0.35
+            blended_probs = (1.0 - blend_w) * probs + blend_w * ban_dist
         else:
             blended_probs = probs
 
+        ally_lane_cov = ap_row @ self.ckpt["lane_probs"]
+        open_lanes = {LANE_LABELS[i].split(" ")[0] for i in range(5) if ally_lane_cov[i] < 0.65}
+        taken_primary_lanes = {self._lane_key[self.hero_to_id[h]] for h in sim_picks}
+        needed_lanes = open_lanes - taken_primary_lanes
+
         sorted_indices = np.argsort(blended_probs)[::-1]
+        chosen_idx = int(sorted_indices[0])
+        for cand_idx in sorted_indices[:25]:
+            if blended_probs[cand_idx] <= 0:
+                break
+            if not needed_lanes or self._lane_key[cand_idx] in needed_lanes:
+                chosen_idx = int(cand_idx)
+                break
+
+        triggers = list(ban_triggers.get(chosen_idx, []))
+        if not triggers and sim_picks:
+            syn_mat = self.ckpt["graphs"]["synergy_mat"]
+            best_ally = max(sim_picks, key=lambda a: float(syn_mat[self.hero_to_id[a], chosen_idx]))
+            if float(syn_mat[self.hero_to_id[best_ally], chosen_idx]) > 0:
+                triggers = [best_ally]
+
+        return self._build_hero_recommendation(
+            rank_idx=rank,
+            h_idx=chosen_idx,
+            probs=blended_probs,
+            win_probs=win_probs,
+            ap_row=ap_row,
+            ep_row=ep_row,
+            triggered_by=triggers,
+        )
+
+    def _forecast_bans(
+        self,
+        team: TeamDraft,
+        slots: int,
+        probs: np.ndarray,
+        win_probs: np.ndarray,
+        ap_row: np.ndarray,
+        ep_row: np.ndarray,
+        unavail_row: np.ndarray,
+    ) -> list[HeroRecommendation]:
+        """Top `slots` ban targets, blending the policy with pick -> phase-2 ban statistics."""
+        p2b_scores, p2b_triggers = self._compute_pick_to_ban_scores(team.picks, unavail_row)
+        if p2b_scores.max() > 0:
+            blended_probs = 0.25 * probs + 0.75 * (p2b_scores / float(p2b_scores.sum()))
+        else:
+            blended_probs = probs
+
         forecast: list[HeroRecommendation] = []
-        for rank_idx, cand_idx in enumerate(sorted_indices[:steps_to_predict], start=1):
+        for rank_idx, cand_idx in enumerate(np.argsort(blended_probs)[::-1][:slots], start=1):
             if blended_probs[cand_idx] <= 0:
                 break
             c_idx = int(cand_idx)
@@ -562,13 +433,75 @@ class RoVDraftPredictor:
                     h_idx=c_idx,
                     probs=blended_probs,
                     win_probs=win_probs,
-                    ap_row=ap_vec[0],
-                    ep_row=ep_vec[0],
-                    triggered_by=p2b_triggers.get(c_idx, list(team_picks[:1])),
+                    ap_row=ap_row,
+                    ep_row=ep_row,
+                    triggered_by=p2b_triggers.get(c_idx, list(team.picks[:1])),
                 )
             )
-
         return forecast
+
+    def _evaluate_with_forecasts(
+        self,
+        main_input: ModelInput,
+        teams: list[TeamDraft],
+        global_bans: list[str],
+        max_slots: int = 2,
+    ) -> tuple[tuple[np.ndarray, ...], np.ndarray, np.ndarray, dict[str, list[HeroRecommendation]]]:
+        """Runs the main position and every team's pick/ban forecasts in as few batched passes as possible.
+
+        Bans and the first forecast pick of each team only depend on the current board, so they share
+        one batch with the main position; each later pick depends on the previous one and gets its own
+        batch (shared between teams). Returns (main arrays, main probs, main win probs, forecasts).
+        """
+        forecasts: dict[str, list[HeroRecommendation]] = {}
+        sim_picks = {t.side: list(t.picks) for t in teams}
+        pick_slots = {t.side: self._next_pick_slots(t, max_slots) for t in teams}
+
+        inputs = [main_input]
+        jobs: list[tuple[str, TeamDraft]] = []
+        for t in teams:
+            forecasts[f"{t.side}_next_bans"] = []
+            if self._next_ban_slots(t, max_slots):
+                inputs.append(self._next_ban_input(t, global_bans))
+                jobs.append(("ban", t))
+        main_arrays: tuple[np.ndarray, ...] | None = None
+        main_probs = main_win = np.empty(0)
+
+        for rank in range(1, max_slots + 1):
+            for t in teams:
+                if rank == 1:
+                    forecasts[f"{t.side}_next_picks"] = []
+                if pick_slots[t.side] >= rank:
+                    inputs.append(self._next_pick_input(t, sim_picks[t.side], global_bans))
+                    jobs.append(("pick", t))
+            if not inputs:
+                break
+
+            arrays = encode_batch(inputs, len(self.hero_names))
+            probs_t, win_t = run_model(self.model, arrays, self.device)
+            probs, win = probs_t.cpu().numpy(), win_t.cpu().numpy()
+            ap, ep, unavail = arrays[0], arrays[1], arrays[4]
+
+            offset = 0
+            if main_arrays is None:
+                main_arrays = tuple(a[:1] for a in arrays)
+                main_probs, main_win = probs[0], win[0]
+                offset = 1
+            for row, (kind, t) in enumerate(jobs, start=offset):
+                if kind == "ban":
+                    forecasts[f"{t.side}_next_bans"] = self._forecast_bans(
+                        t, self._next_ban_slots(t, max_slots), probs[row], win[row], ap[row], ep[row], unavail[row]
+                    )
+                else:
+                    rec = self._choose_next_pick(
+                        t, sim_picks[t.side], rank, probs[row], win[row], ap[row], ep[row], unavail[row]
+                    )
+                    forecasts[f"{t.side}_next_picks"].append(rec)
+                    sim_picks[t.side].append(rec.hero_name)
+            inputs, jobs = [], []
+
+        assert main_arrays is not None
+        return main_arrays, main_probs, main_win, forecasts
 
     def _compute_ban_unlocked_heroes(
         self,
@@ -586,6 +519,7 @@ class RoVDraftPredictor:
             return [], {}
 
         ban_dist = ban_scores / float(ban_scores.sum())
+        blended_probs = 0.30 * probs + 0.70 * ban_dist
         sorted_indices = np.argsort(ban_scores)[::-1]
         unlocked: list[HeroRecommendation] = []
         for rank_idx, cand_idx in enumerate(sorted_indices[:top_n], start=1):
@@ -596,7 +530,7 @@ class RoVDraftPredictor:
                 self._build_hero_recommendation(
                     rank_idx=rank_idx,
                     h_idx=c_idx,
-                    probs=0.30 * probs + 0.70 * ban_dist,
+                    probs=blended_probs,
                     win_probs=win_probs,
                     ap_row=ap_row,
                     ep_row=ep_row,
@@ -612,110 +546,64 @@ class RoVDraftPredictor:
         enemy_bans = self.resolve_heroes(req.enemy_bans)
         global_bans = self.resolve_heroes(req.global_bans)
 
-        num_heroes = len(self.hero_names)
-        ap_vec = np.zeros((1, num_heroes), dtype=np.float32)
-        ep_vec = np.zeros((1, num_heroes), dtype=np.float32)
-        ab_vec = np.zeros((1, num_heroes), dtype=np.float32)
-        eb_vec = np.zeros((1, num_heroes), dtype=np.float32)
-        unavail = np.zeros((1, num_heroes), dtype=np.bool_)
-
-        for h in ally_picks:
-            idx = self.hero_to_id[h]
-            ap_vec[0, idx] = 1.0
-            unavail[0, idx] = True
-        for h in enemy_picks:
-            idx = self.hero_to_id[h]
-            ep_vec[0, idx] = 1.0
-            unavail[0, idx] = True
-        for h in ally_bans:
-            idx = self.hero_to_id[h]
-            ab_vec[0, idx] = 1.0
-            unavail[0, idx] = True
-        for h in enemy_bans:
-            idx = self.hero_to_id[h]
-            eb_vec[0, idx] = 1.0
-            unavail[0, idx] = True
-        for h in global_bans:
-            idx = self.hero_to_id[h]
-            unavail[0, idx] = True
-
         act_type = 1 if req.mode == "pick" else 0
         side_val = 0 if req.side == "blue" else 1
-        total_done = len(ally_picks) + len(enemy_picks) + len(ally_bans) + len(enemy_bans)
-        step_idx = min(total_done, 17)
 
-        meta_ctx = np.array(
-            [
-                [
-                    step_idx / 17.0,
-                    float(req.phase == 2),
-                    float(act_type == 1),
-                    float(side_val == 1),
-                    1.0,
-                    len(ally_picks) / 5.0,
-                    len(enemy_picks) / 5.0,
-                ]
-            ],
-            dtype=np.float32,
+        if req.side == "blue":
+            blue_picks, red_picks = ally_picks, enemy_picks
+            blue_bans, red_bans = ally_bans, enemy_bans
+        else:
+            blue_picks, red_picks = enemy_picks, ally_picks
+            blue_bans, red_bans = enemy_bans, ally_bans
+        teams = [
+            TeamDraft("blue", blue_picks, red_picks, blue_bans, red_bans),
+            TeamDraft("red", red_picks, blue_picks, red_bans, blue_bans),
+        ]
+
+        main_input = self._model_input(
+            ally_picks,
+            enemy_picks,
+            ally_bans,
+            enemy_bans,
+            global_bans,
+            is_pick=act_type == 1,
+            is_red=side_val == 1,
+            phase=req.phase,
         )
+        arrays, probs, win_probs, forecasts = self._evaluate_with_forecasts(main_input, teams, global_bans)
+        ap_row, ep_row, unavail_row = arrays[0][0], arrays[1][0], arrays[4][0]
 
-        th, tt, ts, tpad = self._build_sequence_tokens(ally_picks, enemy_picks, ally_bans, enemy_bans)
-
-        with torch.no_grad():
-            logits, q_win_logits = self.model(
-                torch.from_numpy(ap_vec),
-                torch.from_numpy(ep_vec),
-                torch.from_numpy(ab_vec),
-                torch.from_numpy(eb_vec),
-                torch.from_numpy(unavail),
-                torch.from_numpy(th),
-                torch.from_numpy(tt),
-                torch.from_numpy(ts),
-                torch.from_numpy(tpad),
-                torch.from_numpy(meta_ctx),
-                torch.tensor([act_type], dtype=torch.int64),
-                torch.tensor([req.phase], dtype=torch.int64),
-            )
-            probs = torch.softmax(logits[0], dim=-1).numpy()
-            win_probs = torch.sigmoid(q_win_logits[0]).numpy()
-
-        lane_probs = self.ckpt["lane_probs"]
-        ally_lane_cov = ap_vec[0] @ lane_probs
+        ally_lane_cov = ap_row @ self.ckpt["lane_probs"]
         missing_lanes = [LANE_LABELS[i] for i in range(5) if ally_lane_cov[i] < 0.65]
 
-        all_bans = ally_bans + enemy_bans
         ban_unlocked_heroes, unlocked_triggers = self._compute_ban_unlocked_heroes(
-            all_bans=all_bans,
-            unavail_row=unavail[0],
+            all_bans=ally_bans + enemy_bans,
+            unavail_row=unavail_row,
             probs=probs,
             win_probs=win_probs,
-            ap_row=ap_vec[0],
-            ep_row=ep_vec[0],
+            ap_row=ap_row,
+            ep_row=ep_row,
             top_n=5,
         )
-        _, p2b_triggers = self._compute_pick_to_ban_scores(ally_picks, unavail[0]) if req.mode == "ban" else (None, {})
+        _, p2b_triggers = self._compute_pick_to_ban_scores(ally_picks, unavail_row) if req.mode == "ban" else (None, {})
 
         lookahead_win_rates: dict[int, float] = {}
         if req.use_lookahead:
-            b_p = (
-                [self.hero_to_id[h] for h in ally_picks] if side_val == 0 else [self.hero_to_id[h] for h in enemy_picks]
-            )
-            r_p = (
-                [self.hero_to_id[h] for h in enemy_picks] if side_val == 0 else [self.hero_to_id[h] for h in ally_picks]
-            )
-            b_b = [self.hero_to_id[h] for h in ally_bans] if side_val == 0 else [self.hero_to_id[h] for h in enemy_bans]
-            r_b = [self.hero_to_id[h] for h in enemy_bans] if side_val == 0 else [self.hero_to_id[h] for h in ally_bans]
-            g_b = [self.hero_to_id[h] for h in global_bans]
+            ids = self.hero_to_id
+            b_p = tuple(ids[h] for h in blue_picks)
+            r_p = tuple(ids[h] for h in red_picks)
+            b_b = tuple(ids[h] for h in blue_bans)
+            r_b = tuple(ids[h] for h in red_bans)
 
             step_idx = self.search_engine.find_matching_step(
                 side_val, act_type, req.phase, len(b_p), len(r_p), len(b_b), len(r_b)
             )
             root_state = DraftSearchState(
-                blue_picks=tuple(b_p),
-                red_picks=tuple(r_p),
-                blue_bans=tuple(b_b),
-                red_bans=tuple(r_b),
-                global_bans=tuple(g_b),
+                blue_picks=b_p,
+                red_picks=r_p,
+                blue_bans=b_b,
+                red_bans=r_b,
+                global_bans=tuple(ids[h] for h in global_bans),
                 step_idx=step_idx,
             )
             candidate_pool = np.argsort(probs)[::-1][: max(req.top_k * 2, 8)].tolist()
@@ -746,59 +634,15 @@ class RoVDraftPredictor:
             recs.append(
                 self._build_hero_recommendation(
                     rank_idx=rank_idx,
-                    h_idx=h_idx,
+                    h_idx=int(h_idx),
                     probs=probs,
                     win_probs=win_probs,
-                    ap_row=ap_vec[0],
-                    ep_row=ep_vec[0],
+                    ap_row=ap_row,
+                    ep_row=ep_row,
                     lookahead_val=lookahead_val,
                     triggered_by=triggers,
                 )
             )
-
-        if req.side == "blue":
-            blue_picks, red_picks = ally_picks, enemy_picks
-            blue_bans, red_bans = ally_bans, enemy_bans
-        else:
-            blue_picks, red_picks = enemy_picks, ally_picks
-            blue_bans, red_bans = enemy_bans, ally_bans
-
-        blue_next_picks = self._predict_team_next_picks(
-            team_side="blue",
-            team_picks=blue_picks,
-            opp_picks=red_picks,
-            team_bans=blue_bans,
-            opp_bans=red_bans,
-            global_bans=global_bans,
-            max_slots=2,
-        )
-        red_next_picks = self._predict_team_next_picks(
-            team_side="red",
-            team_picks=red_picks,
-            opp_picks=blue_picks,
-            team_bans=red_bans,
-            opp_bans=blue_bans,
-            global_bans=global_bans,
-            max_slots=2,
-        )
-        blue_next_bans = self._predict_team_next_bans(
-            team_side="blue",
-            team_picks=blue_picks,
-            opp_picks=red_picks,
-            team_bans=blue_bans,
-            opp_bans=red_bans,
-            global_bans=global_bans,
-            max_slots=2,
-        )
-        red_next_bans = self._predict_team_next_bans(
-            team_side="red",
-            team_picks=red_picks,
-            opp_picks=blue_picks,
-            team_bans=red_bans,
-            opp_bans=blue_bans,
-            global_bans=global_bans,
-            max_slots=2,
-        )
 
         return DraftPredictionResponse(
             architecture=self.architecture,
@@ -807,9 +651,6 @@ class RoVDraftPredictor:
             phase=req.phase,
             missing_ally_lanes=missing_lanes,
             recommendations=recs,
-            blue_next_picks=blue_next_picks,
-            red_next_picks=red_next_picks,
-            blue_next_bans=blue_next_bans,
-            red_next_bans=red_next_bans,
             ban_unlocked_heroes=ban_unlocked_heroes,
+            **forecasts,
         )

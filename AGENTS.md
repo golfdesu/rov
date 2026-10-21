@@ -153,7 +153,8 @@ ROV/
     ├── test_data_integrity.py       # Verifies 130 heroes, skills, 4,208 match mappings, and item catalog
     ├── test_model_pipeline.py       # Verifies SOTA checkpoint, masking, and predictor output
     ├── test_api.py                  # Verifies FastAPI endpoints and the served frontend build
-    └── test_combat_calculator.py    # Verifies mitigation formula, stat stacking, CDR cap, arcana/enchantment rules, duel
+    ├── test_combat_calculator.py    # Verifies mitigation formula, stat stacking, CDR cap, arcana/enchantment rules, duel
+    └── test_predictor_golden.py     # Pins predict() output on 72 replayed pro-game states (fixtures/predict_golden.json)
 ```
 
 ---
