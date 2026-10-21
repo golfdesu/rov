@@ -27,6 +27,28 @@
 
 ---
 
+## 📅 2026-10-20 (UTC+7) — เพิ่มลำดับ pick จริง RPL 2026 Winter week 3 (39 เกม ครบ) → รวม 101 เกม
+**Agent:** Claude Code (Opus 5.5)
+
+### ✅ สิ่งที่ทำ
+- อ่านภาพ 39 ไฟล์ใน `data/draft_screenshots/week3/` (เดิมชื่อ `Screenshot 2026-10-20 HHMMSS.png`) ระบุเกมจากหัวข้อบนจอ + ฮีโร่ 10 ตัว ตรงกับ Liquipedia ครบทุกเกม
+- เปลี่ยนชื่อเป็น `2026_w3_d<d>_m<m>_g<g>_win_rpl_<a>_vs_<b>.png` และเพิ่ม 39 เกม (`S621`–`S630` ครบทุกเกม) ลง `data/true_pick_order.json` (รวม 101 เกม: 100 screenshot + 1 manual)
+- วัด `order_team_picks_by_draft_logic()` เทียบลำดับจริง 97 เกม: ตาตรง 53.7%, เฟสตรง 79.0%, B1 ตรง 40/97, ทั้งทีมตรง 29/194 (week 3 อย่างเดียว: 52.5% / 78.3%)
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json`
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- `pytest tests/test_data_integrity.py`: 11 passed
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- ตัวเลขความแม่นด้านบนวัดก่อนเติม 3 เกมสุดท้าย (`S623` g3, `S624` g1–g2)
+- มีภาพ week 4 อีก 18 ไฟล์ (`S631`–`S634`) วางไว้ที่ราก `data/draft_screenshots/` ยังไม่ได้ประมวลผล
+- `order_team_picks_by_draft_logic()` ต้องได้ input ตามลำดับเลนของ Liquipedia (ใช้ index เป็นเลน) ห้ามส่งลำดับจริงเข้าไปตอนวัดผล ไม่งั้นตัวเลขต่ำผิดปกติ
+
+---
+
 ## 📅 2026-10-20 (UTC+7) — บันทึกลำดับ pick จริง 62 เกม (RPL 2026 Winter week 1–2) ลง `data/true_pick_order.json`
 **Agent:** Claude Code (Opus 5.5)
 

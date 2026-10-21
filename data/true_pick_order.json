@@ -1427,6 +1427,903 @@
       ],
       "source": "screenshot",
       "screenshot": "week2/2026_w2_d4_m3_g3_win_rpl_bac_vs_ten.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S621",
+      "game_number": 1,
+      "date": "September 3, 2026 - 16:00",
+      "blue_team": "KOG",
+      "red_team": "SOLYX",
+      "blue_picks": [
+        "Astrid",
+        "Eland'orr",
+        "Zata",
+        "Krizzix",
+        "Qi"
+      ],
+      "red_picks": [
+        "Tamyn",
+        "Dolia",
+        "Stuart",
+        "Liliana",
+        "Mina"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d1_m1_g1_win_rpl_kog_vs_slx.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S621",
+      "game_number": 2,
+      "date": "September 3, 2026 - 16:00",
+      "blue_team": "KOG",
+      "red_team": "SOLYX",
+      "blue_picks": [
+        "Rouie",
+        "Capheny",
+        "Chaugnar",
+        "Murad",
+        "Skud"
+      ],
+      "red_picks": [
+        "Y'bneth",
+        "Eland'orr",
+        "Edras",
+        "Lorion",
+        "Biron"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d1_m1_g2_win_rpl_kog_vs_slx.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S621",
+      "game_number": 3,
+      "date": "September 3, 2026 - 16:00",
+      "blue_team": "KOG",
+      "red_team": "SOLYX",
+      "blue_picks": [
+        "Sinestrea",
+        "Toro",
+        "Hayate",
+        "Biron",
+        "Iggy"
+      ],
+      "red_picks": [
+        "Thane",
+        "Marja",
+        "Valhein",
+        "Aoi",
+        "Zata"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d1_m1_g3_win_rpl_kog_vs_slx.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S622",
+      "game_number": 1,
+      "date": "September 3, 2026 - 19:00",
+      "blue_team": "HD",
+      "red_team": "BAC",
+      "blue_picks": [
+        "Astrid",
+        "Violet",
+        "Cresht",
+        "Heino",
+        "Airi"
+      ],
+      "red_picks": [
+        "Valhein",
+        "Tachi",
+        "Maloch",
+        "Lorion",
+        "Murad"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d1_m2_g1_win_rpl_hd_vs_bac.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S622",
+      "game_number": 2,
+      "date": "September 3, 2026 - 19:00",
+      "blue_team": "BAC",
+      "red_team": "HD",
+      "blue_picks": [
+        "Rouie",
+        "Chaugnar",
+        "Capheny",
+        "Airi",
+        "Sinestrea"
+      ],
+      "red_picks": [
+        "Y'bneth",
+        "Wisp",
+        "Ignis",
+        "Florentino",
+        "Butterfly"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d1_m2_g2_win_rpl_hd_vs_bac.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S622",
+      "game_number": 3,
+      "date": "September 3, 2026 - 19:00",
+      "blue_team": "BAC",
+      "red_team": "HD",
+      "blue_picks": [
+        "Marja",
+        "Billow",
+        "Violet",
+        "Annette",
+        "Y'bneth"
+      ],
+      "red_picks": [
+        "Taara",
+        "Eland'orr",
+        "Rouie",
+        "Wiro",
+        "Elsu"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d1_m2_g3_win_rpl_hd_vs_bac.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S623",
+      "game_number": 1,
+      "date": "September 4, 2026 - 16:00",
+      "blue_team": "BRU",
+      "red_team": "TENACITY",
+      "blue_picks": [
+        "Tamyn",
+        "Y'bneth",
+        "Wisp",
+        "Marja",
+        "Iggy"
+      ],
+      "red_picks": [
+        "Dolia",
+        "Annette",
+        "Sinestrea",
+        "Violet",
+        "Biron"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d2_m1_g1_win_rpl_bru_vs_ten.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S623",
+      "game_number": 2,
+      "date": "September 4, 2026 - 16:00",
+      "blue_team": "TENACITY",
+      "red_team": "BRU",
+      "blue_picks": [
+        "Astrid",
+        "Hayate",
+        "Alice",
+        "Cresht",
+        "Ryoma"
+      ],
+      "red_picks": [
+        "Violet",
+        "Zephys",
+        "Dyadia",
+        "Toro",
+        "Richter"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d2_m1_g2_win_rpl_bru_vs_ten.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S623",
+      "game_number": 3,
+      "date": "September 4, 2026 - 16:00",
+      "blue_team": "TENACITY",
+      "red_team": "BRU",
+      "blue_picks": [
+        "Wisp",
+        "Toro",
+        "Yue",
+        "Nakroth",
+        "Maloch"
+      ],
+      "red_picks": [
+        "Capheny",
+        "Zata",
+        "Cresht",
+        "Tachi",
+        "Airi"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d2_m1_g3_win_rpl_bru_vs_ten.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S624",
+      "game_number": 1,
+      "date": "September 4, 2026 - 19:00",
+      "blue_team": "FS",
+      "red_team": "GODJI CHECK",
+      "blue_picks": [
+        "Astrid",
+        "Krizzix",
+        "Liliana",
+        "Violet",
+        "Richter"
+      ],
+      "red_picks": [
+        "Dolia",
+        "Sinestrea",
+        "Fennik",
+        "Ilumia",
+        "Skud"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d2_m2_g1_win_rpl_fs_vs_gjc.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S624",
+      "game_number": 2,
+      "date": "September 4, 2026 - 19:00",
+      "blue_team": "FS",
+      "red_team": "GODJI CHECK",
+      "blue_picks": [
+        "Zata",
+        "Dolia",
+        "Sinestrea",
+        "Wisp",
+        "Maloch"
+      ],
+      "red_picks": [
+        "Liliana",
+        "Eland'orr",
+        "Cresht",
+        "Billow",
+        "Yena"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d2_m2_g2_win_rpl_fs_vs_gjc.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S624",
+      "game_number": 3,
+      "date": "September 4, 2026 - 19:00",
+      "blue_team": "FS",
+      "red_team": "GODJI CHECK",
+      "blue_picks": [
+        "Alice",
+        "Flowborn (Marksman)",
+        "Marja",
+        "Butterfly",
+        "Toro"
+      ],
+      "red_picks": [
+        "Lorion",
+        "Tachi",
+        "Hayate",
+        "Ryoma",
+        "Thane"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d2_m2_g3_win_rpl_fs_vs_gjc.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S624",
+      "game_number": 4,
+      "date": "September 4, 2026 - 19:00",
+      "blue_team": "GODJI CHECK",
+      "red_team": "FS",
+      "blue_picks": [
+        "Y'bneth",
+        "Capheny",
+        "Annette",
+        "Mina",
+        "Zuka"
+      ],
+      "red_picks": [
+        "Rouie",
+        "Tamyn",
+        "Valhein",
+        "Wiro",
+        "Biron"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d2_m2_g4_win_rpl_fs_vs_gjc.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S625",
+      "game_number": 1,
+      "date": "September 5, 2026 - 12:00",
+      "blue_team": "KOG",
+      "red_team": "TENACITY",
+      "blue_picks": [
+        "Tamyn",
+        "Violet",
+        "Y'bneth",
+        "Yue",
+        "Ryoma"
+      ],
+      "red_picks": [
+        "Annette",
+        "Astrid",
+        "Hayate",
+        "Baldum",
+        "Biron"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d3_m1_g1_win_rpl_kog_vs_ten.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S625",
+      "game_number": 2,
+      "date": "September 5, 2026 - 12:00",
+      "blue_team": "TENACITY",
+      "red_team": "KOG",
+      "blue_picks": [
+        "Rouie",
+        "Billow",
+        "Toro",
+        "Eland'orr",
+        "Mina"
+      ],
+      "red_picks": [
+        "Lorion",
+        "Sinestrea",
+        "Hayate",
+        "TeeMee",
+        "Skud"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d3_m1_g2_win_rpl_kog_vs_ten.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S625",
+      "game_number": 3,
+      "date": "September 5, 2026 - 12:00",
+      "blue_team": "TENACITY",
+      "red_team": "KOG",
+      "blue_picks": [
+        "Alice",
+        "Cresht",
+        "Violet",
+        "Edras",
+        "Airi"
+      ],
+      "red_picks": [
+        "Annette",
+        "Flowborn (Marksman)",
+        "Tachi",
+        "Thane",
+        "Marja"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d3_m1_g3_win_rpl_kog_vs_ten.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S625",
+      "game_number": 4,
+      "date": "September 5, 2026 - 12:00",
+      "blue_team": "TENACITY",
+      "red_team": "KOG",
+      "blue_picks": [
+        "Maloch",
+        "Sinestrea",
+        "Stuart",
+        "Lorion",
+        "Omen"
+      ],
+      "red_picks": [
+        "Dolia",
+        "Astrid",
+        "Iggy",
+        "Wisp",
+        "Taara"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d3_m1_g4_win_rpl_kog_vs_ten.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S625",
+      "game_number": 5,
+      "date": "September 5, 2026 - 12:00",
+      "blue_team": "KOG",
+      "red_team": "TENACITY",
+      "blue_picks": [
+        "Zata",
+        "Nakroth",
+        "Toro",
+        "Stuart",
+        "Florentino"
+      ],
+      "red_picks": [
+        "Yue",
+        "Dolia",
+        "Tachi",
+        "Valhein",
+        "Richter"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d3_m1_g5_win_rpl_kog_vs_ten.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S626",
+      "game_number": 1,
+      "date": "September 5, 2026 - 15:00",
+      "blue_team": "SOLYX",
+      "red_team": "GODJI CHECK",
+      "blue_picks": [
+        "Rouie",
+        "Edras",
+        "Capheny",
+        "Biron",
+        "Toro"
+      ],
+      "red_picks": [
+        "Annette",
+        "Astrid",
+        "Stuart",
+        "Mina",
+        "Thane"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d3_m2_g1_win_rpl_slx_vs_gjc.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S626",
+      "game_number": 2,
+      "date": "September 5, 2026 - 15:00",
+      "blue_team": "GODJI CHECK",
+      "red_team": "SOLYX",
+      "blue_picks": [
+        "Eland'orr",
+        "Cresht",
+        "Liliana",
+        "Billow",
+        "Skud"
+      ],
+      "red_picks": [
+        "Zata",
+        "Dolia",
+        "Valhein",
+        "Zuka",
+        "Marja"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d3_m2_g2_win_rpl_slx_vs_gjc.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S626",
+      "game_number": 3,
+      "date": "September 5, 2026 - 15:00",
+      "blue_team": "SOLYX",
+      "red_team": "GODJI CHECK",
+      "blue_picks": [
+        "Astrid",
+        "Flowborn (Marksman)",
+        "TeeMee",
+        "Yena",
+        "Lorion"
+      ],
+      "red_picks": [
+        "Y'bneth",
+        "Sinestrea",
+        "Elsu",
+        "Iggy",
+        "Richter"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d3_m2_g3_win_rpl_slx_vs_gjc.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S626",
+      "game_number": 4,
+      "date": "September 5, 2026 - 15:00",
+      "blue_team": "GODJI CHECK",
+      "red_team": "SOLYX",
+      "blue_picks": [
+        "Hayate",
+        "Dolia",
+        "Zata",
+        "Nakroth",
+        "Biron"
+      ],
+      "red_picks": [
+        "Wisp",
+        "Iggy",
+        "Thane",
+        "Keera",
+        "Airi"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d3_m2_g4_win_rpl_slx_vs_gjc.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S626",
+      "game_number": 5,
+      "date": "September 5, 2026 - 15:00",
+      "blue_team": "SOLYX",
+      "red_team": "GODJI CHECK",
+      "blue_picks": [
+        "Liliana",
+        "Y'bneth",
+        "Eland'orr",
+        "Sephera",
+        "Florentino"
+      ],
+      "red_picks": [
+        "Mganga",
+        "Tachi",
+        "Wisp",
+        "Toro",
+        "Murad"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d3_m2_g5_win_rpl_slx_vs_gjc.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S627",
+      "game_number": 1,
+      "date": "September 5, 2026 - 18:00",
+      "blue_team": "HD",
+      "red_team": "EA",
+      "blue_picks": [
+        "Astrid",
+        "Chaugnar",
+        "Iggy",
+        "Qi",
+        "Slimz"
+      ],
+      "red_picks": [
+        "Y'bneth",
+        "Sinestrea",
+        "Hayate",
+        "Liliana",
+        "Skud"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d3_m3_g1_win_rpl_hd_vs_ea.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S627",
+      "game_number": 2,
+      "date": "September 5, 2026 - 18:00",
+      "blue_team": "HD",
+      "red_team": "EA",
+      "blue_picks": [
+        "Eland'orr",
+        "Cresht",
+        "Zata",
+        "Marja",
+        "Butterfly"
+      ],
+      "red_picks": [
+        "Mina",
+        "Capheny",
+        "Annette",
+        "Billow",
+        "Ryoma"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d3_m3_g2_win_rpl_hd_vs_ea.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S627",
+      "game_number": 3,
+      "date": "September 5, 2026 - 18:00",
+      "blue_team": "EA",
+      "red_team": "HD",
+      "blue_picks": [
+        "Rouie",
+        "Eland'orr",
+        "Toro",
+        "Stuart",
+        "Qi"
+      ],
+      "red_picks": [
+        "TeeMee",
+        "Wisp",
+        "Lorion",
+        "Billow",
+        "Skud"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d3_m3_g3_win_rpl_hd_vs_ea.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S627",
+      "game_number": 4,
+      "date": "September 5, 2026 - 18:00",
+      "blue_team": "EA",
+      "red_team": "HD",
+      "blue_picks": [
+        "Dolia",
+        "Edras",
+        "Mganga",
+        "Valhein",
+        "Marja"
+      ],
+      "red_picks": [
+        "Annette",
+        "Sinestrea",
+        "Wiro",
+        "Flowborn (Marksman)",
+        "Taara"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d3_m3_g4_win_rpl_hd_vs_ea.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S627",
+      "game_number": 5,
+      "date": "September 5, 2026 - 18:00",
+      "blue_team": "EA",
+      "red_team": "HD",
+      "blue_picks": [
+        "TeeMee",
+        "Wisp",
+        "Iggy",
+        "Florentino",
+        "Aoi"
+      ],
+      "red_picks": [
+        "Toro",
+        "Tachi",
+        "Elsu",
+        "Ignis",
+        "Airi"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d3_m3_g5_win_rpl_hd_vs_ea.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S628",
+      "game_number": 1,
+      "date": "September 6, 2026 - 12:00",
+      "blue_team": "BRU",
+      "red_team": "BAC",
+      "blue_picks": [
+        "Rouie",
+        "Astrid",
+        "Chaugnar",
+        "Hayate",
+        "Skud"
+      ],
+      "red_picks": [
+        "Y'bneth",
+        "Capheny",
+        "Ignis",
+        "Billow",
+        "Marja"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d4_m1_g1_win_rpl_bru_vs_bac.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S628",
+      "game_number": 2,
+      "date": "September 6, 2026 - 12:00",
+      "blue_team": "BRU",
+      "red_team": "BAC",
+      "blue_picks": [
+        "Sinestrea",
+        "Cresht",
+        "Capheny",
+        "Alice",
+        "Marja"
+      ],
+      "red_picks": [
+        "Annette",
+        "Zephys",
+        "Stuart",
+        "Mina",
+        "Omega"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d4_m1_g2_win_rpl_bru_vs_bac.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S628",
+      "game_number": 3,
+      "date": "September 6, 2026 - 12:00",
+      "blue_team": "BAC",
+      "red_team": "BRU",
+      "blue_picks": [
+        "Tamyn",
+        "Violet",
+        "TeeMee",
+        "Ryoma",
+        "Lorion"
+      ],
+      "red_picks": [
+        "Eland'orr",
+        "Toro",
+        "Annette",
+        "D'Arcy",
+        "Biron"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d4_m1_g3_win_rpl_bru_vs_bac.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S629",
+      "game_number": 1,
+      "date": "September 6, 2026 - 15:00",
+      "blue_team": "EA",
+      "red_team": "FS",
+      "blue_picks": [
+        "Dolia",
+        "Tachi",
+        "Eland'orr",
+        "Ignis",
+        "Yena"
+      ],
+      "red_picks": [
+        "Annette",
+        "Astrid",
+        "Valhein",
+        "Maloch",
+        "Florentino"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d4_m2_g1_win_rpl_ea_vs_fs.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S629",
+      "game_number": 2,
+      "date": "September 6, 2026 - 15:00",
+      "blue_team": "FS",
+      "red_team": "EA",
+      "blue_picks": [
+        "Zata",
+        "Sinestrea",
+        "Cresht",
+        "Stuart",
+        "Marja"
+      ],
+      "red_picks": [
+        "Liliana",
+        "Tamyn",
+        "Hayate",
+        "TeeMee",
+        "Qi"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d4_m2_g2_win_rpl_ea_vs_fs.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S629",
+      "game_number": 3,
+      "date": "September 6, 2026 - 15:00",
+      "blue_team": "FS",
+      "red_team": "EA",
+      "blue_picks": [
+        "Y'bneth",
+        "Hayate",
+        "Liliana",
+        "Taara",
+        "Skud"
+      ],
+      "red_picks": [
+        "Stuart",
+        "Enzo",
+        "Sinestrea",
+        "Yue",
+        "Airi"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d4_m2_g3_win_rpl_ea_vs_fs.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S630",
+      "game_number": 1,
+      "date": "September 6, 2026 - 18:00",
+      "blue_team": "HD",
+      "red_team": "SOLYX",
+      "blue_picks": [
+        "Astrid",
+        "Eland'orr",
+        "Taara",
+        "Yue",
+        "Arum"
+      ],
+      "red_picks": [
+        "Marja",
+        "Tamyn",
+        "Capheny",
+        "Enzo",
+        "Gildur"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d4_m3_g1_win_rpl_hd_vs_slx.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S630",
+      "game_number": 2,
+      "date": "September 6, 2026 - 18:00",
+      "blue_team": "HD",
+      "red_team": "SOLYX",
+      "blue_picks": [
+        "Wiro",
+        "Tamyn",
+        "Capheny",
+        "Annette",
+        "Skud"
+      ],
+      "red_picks": [
+        "Eland'orr",
+        "Thane",
+        "Sinestrea",
+        "Liliana",
+        "Omen"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d4_m3_g2_win_rpl_hd_vs_slx.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S630",
+      "game_number": 3,
+      "date": "September 6, 2026 - 18:00",
+      "blue_team": "SOLYX",
+      "red_team": "HD",
+      "blue_picks": [
+        "Hayate",
+        "Cresht",
+        "Lorion",
+        "Airi",
+        "Tachi"
+      ],
+      "red_picks": [
+        "Rouie",
+        "Flowborn (Marksman)",
+        "Maloch",
+        "Zephys",
+        "Murad"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d4_m3_g3_win_rpl_hd_vs_slx.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S630",
+      "game_number": 4,
+      "date": "September 6, 2026 - 18:00",
+      "blue_team": "SOLYX",
+      "red_team": "HD",
+      "blue_picks": [
+        "Zata",
+        "Flowborn (Marksman)",
+        "Maloch",
+        "Edras",
+        "Florentino"
+      ],
+      "red_picks": [
+        "Dolia",
+        "Alice",
+        "Tachi",
+        "Violet",
+        "Richter"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d4_m3_g4_win_rpl_hd_vs_slx.png"
+    },
+    {
+      "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S630",
+      "game_number": 5,
+      "date": "September 6, 2026 - 18:00",
+      "blue_team": "HD",
+      "red_team": "SOLYX",
+      "blue_picks": [
+        "Iggy",
+        "Billow",
+        "Marja",
+        "Hayate",
+        "Cresht"
+      ],
+      "red_picks": [
+        "Toro",
+        "Ignis",
+        "Valhein",
+        "Biron",
+        "Keera"
+      ],
+      "source": "screenshot",
+      "screenshot": "week3/2026_w3_d4_m3_g5_win_rpl_hd_vs_slx.png"
     }
   ]
 }
