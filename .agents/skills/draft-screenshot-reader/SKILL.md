@@ -55,6 +55,8 @@ Turns broadcast draft screenshots into ground-truth pick order (`data/true_pick_
 ## 3. Guardrails
 
 - Use canonical hero names (`Arthur`, `Brunhilda`, `Richter`), not Thai display names (`Mortos`, `Celica`, `Riktor`).
+- `Flowborn (Marksman)` and `Flowborn (Mage)` share one portrait, so the image cannot tell them apart. Take the role from the Liquipedia record for that game (Mage is rare: 9 of 4,208 games).
+- Screenshot timestamps do not always follow game order. Always match each image by its 10-hero set, never by file order.
 - Hero set mismatch, unreadable portrait, or ambiguous title: stop and ask. Never fill a slot by elimination unless the other 9 are certain and the set check passes.
 - Do not touch `data/vod_analytics/` (owner's paused WIP).
 - Retraining on true pick order is on hold until more games are collected; do not start it unless asked.

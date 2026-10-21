@@ -27,6 +27,72 @@
 
 ---
 
+## 📅 2026-10-21 (UTC+7) — เพิ่มลำดับ pick จริง RPL 2026 Winter week 6 (41 เกม ครบ) → รวม 207 เกม
+**Agent:** Claude Code (Opus 5.5)
+
+### ✅ สิ่งที่ทำ
+- อ่านภาพ 41 ไฟล์ใน `data/draft_screenshots/week6/` (S647–S656, 24–28 ก.ย.) จับคู่ด้วยชุดฮีโร่ 10 ตัว ตรงกับ Liquipedia ครบทุกเกม ทีมฝั่งซ้ายเป็นฝั่ง blue ทุกเกม
+- เปลี่ยนชื่อเป็น `2026_w6_d<d>_m<m>_g<g>_win_rpl_<a>_vs_<b>.png` และเพิ่ม 41 เกมลง `data/true_pick_order.json` (รวม 207 เกม: 206 screenshot + 1 manual)
+- S647 g2 (KOG vs GJC): Liquipedia บันทึกว่าเป็น `Flowborn (Mage)` ภาพแยกสองร่างไม่ได้เพราะใช้ portrait เดียวกัน จึงใช้ role ตาม Liquipedia (ตัวตรวจชุดฮีโร่จับได้ตอนผมใส่เป็น Marksman)
+- เพิ่มหมายเหตุใน skill `draft-screenshot-reader`: Flowborn สองร่างใช้รูปเดียวกัน และลำดับเวลาของไฟล์ไม่ได้เรียงตามเกมเสมอ (sync ไป `.claude/skills/` แล้ว)
+- วัด `order_team_picks_by_draft_logic()` เทียบลำดับจริง 206 เกม: ตาตรง 53.2%, เฟสตรง 79.1%, B1 ตรง 89/206, ทั้งทีมตรง 61/412 (week 6 อย่างเดียว: 54.9% / 78.5%)
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json`
+- `.agents/skills/draft-screenshot-reader/SKILL.md`, `.claude/skills/draft-screenshot-reader/SKILL.md`
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- `audit_rov_data.py` ผ่าน (207 เกม), `pytest` ผ่าน
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- week 7 ใน Liquipedia เริ่มที่ S657 (1 ต.ค.)
+- ยังไม่ได้ commit (week 4–6)
+
+---
+
+## 📅 2026-10-21 (UTC+7) — เพิ่มลำดับ pick จริง RPL 2026 Winter week 5 (22 เกม ครบ) → รวม 166 เกม
+**Agent:** Claude Code (Opus 5.5)
+
+### ✅ สิ่งที่ทำ
+- อ่านภาพ 22 ไฟล์ใน `data/draft_screenshots/week5/` (S641–S646, 19–20 ก.ย.) จับคู่ด้วยชุดฮีโร่ 10 ตัว ตรงกับ Liquipedia ครบทุกเกม ทีมฝั่งซ้ายตรงกับฝั่ง blue ทุกเกม
+- เปลี่ยนชื่อเป็น `2026_w5_d<d>_m<m>_g<g>_win_rpl_<a>_vs_<b>.png` และเพิ่ม 22 เกมลง `data/true_pick_order.json` (รวม 166 เกม: 165 screenshot + 1 manual)
+- ภาพ `Screenshot 2026-10-21 115525.png` ที่เคยค้างไว้คือ S641 g1 ถูกย้ายมาอยู่ใน week5 แล้ว
+- วัด `order_team_picks_by_draft_logic()` เทียบลำดับจริง 165 เกม: ตาตรง 52.7%, เฟสตรง 79.3%, B1 ตรง 67/165, ทั้งทีมตรง 46/330 (week 5 อย่างเดียว: 50.5% / 83.6%)
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json`
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- `audit_rov_data.py` ผ่าน (166 เกม)
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- ยังไม่ได้ commit
+
+---
+
+## 📅 2026-10-21 (UTC+7) — เพิ่มลำดับ pick จริง RPL 2026 Winter week 4 (43 เกม ครบ) → รวม 144 เกม
+**Agent:** Claude Code (Opus 5.5)
+
+### ✅ สิ่งที่ทำ
+- อ่านภาพ 43 ไฟล์ใน `data/draft_screenshots/week4/` (เดิมชื่อ `Screenshot 2026-10-2x HHMMSS.png`) ระบุเกมจากชุดฮีโร่ 10 ตัว + หัวข้อบนจอ ตรงกับ Liquipedia ครบทุกเกม (S631–S640)
+- ภาพไม่ได้เรียงตามลำดับเกมทั้งหมด (เช่น BAC vs KOG g2 ถูกจับภาพก่อน EA vs TEN g2) จึงจับคู่ด้วยชุดฮีโร่ ไม่ใช้ลำดับไฟล์
+- เปลี่ยนชื่อเป็น `2026_w4_d<d>_m<m>_g<g>_win_rpl_<a>_vs_<b>.png` และเพิ่ม 43 เกมลง `data/true_pick_order.json` (รวม 144 เกม: 143 screenshot + 1 manual)
+- วัด `order_team_picks_by_draft_logic()` เทียบลำดับจริง 143 เกม: ตาตรง 53.1%, เฟสตรง 78.6%, B1 ตรง 58/143, ทั้งทีมตรง 41/286 (week 4 อย่างเดียว: 51.6% / 77.7%)
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json`
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- `audit_rov_data.py` ผ่าน (144 เกม: ชุดฮีโร่ตรง Liquipedia, ไม่ซ้ำ, ไฟล์ภาพมีจริง)
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- ยังไม่ได้ commit
+
+---
+
 ## 📅 2026-10-21 (UTC+7) — อัปเดต skills ใน `.agents/` + เพิ่ม skill อ่าน screenshot + mirror ไป `.claude/skills/`
 **Agent:** Claude Code (Opus 5.5)
 
