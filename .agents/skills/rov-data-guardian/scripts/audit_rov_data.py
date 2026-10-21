@@ -6,6 +6,39 @@ import pandas as pd
 
 ROOT_DIR = Path(__file__).resolve().parents[4]
 DATA_DIR = ROOT_DIR / "data"
+TRUE_ORDER_JSON = DATA_DIR / "true_pick_order.json"
+SCREENSHOT_DIR = DATA_DIR / "draft_screenshots"
+
+
+def audit_true_pick_order(matches: list[dict]) -> list[str]:
+    """Checks each true-order game against Liquipedia: same 10 heroes, same sides, screenshot exists."""
+    if not TRUE_ORDER_JSON.exists():
+        return []
+    games = json.loads(TRUE_ORDER_JSON.read_text(encoding="utf-8")).get("games", [])
+    by_key = {(m["series_id"], m["game_number"]): m for m in matches}
+    errors = []
+    seen = set()
+    for g in games:
+        key = (g.get("series_id"), g.get("game_number"))
+        label = f"{key[0]} game {key[1]}"
+        if key in seen:
+            errors.append(f"{label}: duplicate entry")
+        seen.add(key)
+        m = by_key.get(key)
+        if m is None:
+            errors.append(f"{label}: not found in matches_draft_full.json")
+            continue
+        for side in ("blue", "red"):
+            picks = g.get(f"{side}_picks", [])
+            if len(picks) != 5 or sorted(picks) != sorted(m[f"{side}_picks"]):
+                errors.append(f"{label}: {side}_picks {picks} is not a reordering of Liquipedia {m[f'{side}_picks']}")
+        if g.get("source") not in ("screenshot", "manual"):
+            errors.append(f"{label}: source must be 'screenshot' or 'manual', got {g.get('source')!r}")
+        shot = g.get("screenshot")
+        if g.get("source") == "screenshot" and not (shot and (SCREENSHOT_DIR / shot).exists()):
+            errors.append(f"{label}: screenshot file missing: {shot}")
+    print(f"[INFO] true_pick_order.json: {len(games)} games checked")
+    return errors
 
 
 def main():
@@ -48,6 +81,13 @@ def main():
 
     if unmapped or invalid_games > 0:
         print(f"[FAIL] Unmapped heroes: {unmapped} | Invalid games: {invalid_games}")
+        sys.exit(1)
+
+    order_errors = audit_true_pick_order(matches)
+    if order_errors:
+        print(f"[FAIL] true_pick_order.json has {len(order_errors)} problem(s):")
+        for e in order_errors:
+            print(f"  - {e}")
         sys.exit(1)
 
     min_skills = min(len(h.get("skills", [])) for h in heroes)

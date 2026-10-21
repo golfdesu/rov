@@ -75,6 +75,10 @@ Every AI agent (including fast models such as `3.8flash`) MUST strictly obey the
     - Pick turn order: B1 | R1 R2 | B2 B3 | R3 | (phase-2 bans) | R4 | B4 B5 | R5.
     - Identify heroes by comparing against `frontend/public/avatars/` (via `frontend/public/hero_images.json`). The hero set must match Liquipedia exactly. If it does not match, flag it instead of guessing.
 
+12. **Skills Live in `.agents/skills/` (Mirrored to `.claude/skills/`)**:
+    - Edit skills only in `.agents/skills/`, then copy them over with `cp -r .agents/skills/. .claude/skills/`. `tests/test_skills_sync.py` fails if the two differ.
+    - Quote model metrics from `python .agents/skills/hpo-parsimony-selector/scripts/select_parsimonious_params.py`, not from the status table above. As of 2026-10-21 the table and `configs/selected_production_params.json` describe an older run than the served checkpoint.
+
 ---
 
 ## 2. Repository Structure & Architecture
@@ -90,11 +94,14 @@ ROV/
 ├── run_hpo_rov_h100.sbatch          # SLURM job: Fast GPU-Resident Optuna HPO (40 trials) + Training
 ├── run_sota_rov_h100.sbatch         # SLURM job: Direct SOTA training on ERAWAN H100
 ├── .agents/
-│   └── skills/                      # Progressive-disclosure workspace skills
-│       ├── rov-data-guardian/       # Data integrity & 130-hero / 4,208-match audit skill
-│       ├── hpo-parsimony-selector/  # Top-5 HPO parsimony & overfit-gap selector skill
-│       ├── erawan-hpc-ops/          # ERAWAN HPC H100 SLURM & Git sync runbook
-│       └── rov-draft-serving/       # CLI simulation, FastAPI serving & pytest runbook
+│   └── skills/                      # Progressive-disclosure workspace skills (SOURCE OF TRUTH)
+│       ├── rov-data-guardian/       # Data integrity: 130 heroes, 4,208 matches, true_pick_order.json audit
+│       ├── hpo-parsimony-selector/  # Top-5 HPO parsimony selector + served-checkpoint vs config check
+│       ├── erawan-hpc-ops/          # ERAWAN HPC H100 SLURM, MLflow & Git sync runbook
+│       ├── rov-draft-serving/       # CLI, FastAPI + web UI, golden test & pytest runbook
+│       └── draft-screenshot-reader/ # Read true pick order from broadcast screenshots
+├── .claude/
+│   └── skills/                      # Copy of .agents/skills/ for Claude Code (kept in sync by tests/test_skills_sync.py)
 ├── configs/
 │   └── selected_production_params.json  # Curated production hyperparameters (Safest & Compact)
 ├── best_params/
@@ -154,7 +161,8 @@ ROV/
     ├── test_model_pipeline.py       # Verifies SOTA checkpoint, masking, and predictor output
     ├── test_api.py                  # Verifies FastAPI endpoints and the served frontend build
     ├── test_combat_calculator.py    # Verifies mitigation formula, stat stacking, CDR cap, arcana/enchantment rules, duel
-    └── test_predictor_golden.py     # Pins predict() output on 72 replayed pro-game states (fixtures/predict_golden.json)
+    ├── test_predictor_golden.py     # Pins predict() output on 72 replayed pro-game states (fixtures/predict_golden.json)
+    └── test_skills_sync.py          # Fails if .claude/skills/ drifts from .agents/skills/
 ```
 
 ---

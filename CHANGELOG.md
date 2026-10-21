@@ -27,6 +27,33 @@
 
 ---
 
+## 📅 2026-10-21 (UTC+7) — อัปเดต skills ใน `.agents/` + เพิ่ม skill อ่าน screenshot + mirror ไป `.claude/skills/`
+**Agent:** Claude Code (Opus 5.5)
+
+### ✅ สิ่งที่ทำ
+- `rov-draft-serving`: เพิ่ม endpoint `/combat/*`, คำสั่ง frontend (build/lint/dev), กติกา golden test (ห้าม regenerate เพื่อให้ refactor ผ่าน), โครงสร้าง predictor ใหม่ (`ModelInput`/`encode_batch`/batching) และขั้นตอนเทสต์ UI ด้วย Playwright
+- `rov-data-guardian`: เพิ่ม `true_pick_order.json` + ความแม่นของการเดาลำดับ pick (~54% ต่อช่อง / 79% เฟส) และขยาย `audit_rov_data.py` ให้เช็กว่าแต่ละเกมมีอยู่ใน Liquipedia, ฮีโร่ตรงกันทั้ง 5+5 ตัว, ไม่ซ้ำ, `source` ถูก และไฟล์ screenshot มีอยู่จริง (ทดลองใส่ข้อมูลผิด 2 แบบ จับได้ทั้งคู่)
+- `hpo-parsimony-selector`: เลิกเขียนตัวเลข model ลงไฟล์ตรง ๆ สคริปต์พิมพ์ค่าของ checkpoint ที่ใช้งานจริงเทียบกับที่ config เขียนไว้ และระบุชัดว่าไม่ตรงกัน
+- `erawan-hpc-ops`: แก้เรื่อง `.gitattributes` (ตอนนี้บังคับ LF ให้ `*.py` ด้วย), เพิ่มเรื่อง MLflow, `GPUTensorBatcher` และขั้นตอนหลังดึง checkpoint ใหม่
+- skill ใหม่ `draft-screenshot-reader`: ขั้นตอน 9 ข้อ อ่านภาพ → หาเกม → ตรวจชุดฮีโร่ → เปลี่ยนชื่อไฟล์ → บันทึก → audit
+- สร้าง `.claude/skills/` (copy จาก `.agents/skills/`) + `tests/test_skills_sync.py` (fail ถ้าสองฝั่งต่างกัน หรือ `name` ใน frontmatter ไม่ตรงกับชื่อโฟลเดอร์)
+- `AGENTS.md`: อัปเดตส่วนโครงสร้าง และเพิ่มกติกาข้อ 12 (แก้ skill ที่ `.agents` แล้ว copy, ตัวเลข model ให้เอาจากสคริปต์)
+
+### 📁 ไฟล์ที่แก้
+- `.agents/skills/*/SKILL.md` (4 ไฟล์), `.agents/skills/hpo-parsimony-selector/scripts/select_parsimonious_params.py`, `.agents/skills/rov-data-guardian/scripts/audit_rov_data.py` (แปลงเป็น LF ด้วย)
+- ใหม่: `.agents/skills/draft-screenshot-reader/SKILL.md`, `.claude/skills/**`, `tests/test_skills_sync.py`
+- `AGENTS.md`, `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- audit ผ่าน (101 เกมใน true_pick_order), selector รันได้และแสดงความไม่ตรงกัน, `pytest` ผ่านทั้งหมด, `ruff` ผ่าน
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- **ตัวเลข model ไม่ตรงกัน:** checkpoint ที่ใช้งาน (cb10223) val_loss 2.936 / WinAcc 53.1% / dropout 0.22 / neural_scale 0.68 แต่ตารางใน `AGENTS.md` และ `configs/selected_production_params.json` ยังเป็น Trial #10/#21 (val_loss ~2.747) และข้อ 3 ของ AGENTS (dropout 0.27–0.30) ไม่ตรงกับ checkpoint จริง เจ้าของยังไม่ได้เลือกว่าจะยึดตัวไหน
+- ยังมี screenshot ที่ยังไม่ได้อ่าน 18 ไฟล์ใน `data/draft_screenshots/` (ยังไม่ได้แตะ)
+- ยังไม่ได้ commit
+
+---
+
 ## 📅 2026-10-21 (UTC+7) — ปรับ data structure / algorithm ของ predictor (`/predict` เร็วขึ้น 2–3 เท่า ผลลัพธ์เหมือนเดิมทุกตัว)
 **Agent:** Claude Code (Opus 5.5)
 
