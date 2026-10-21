@@ -27,6 +27,52 @@
 
 ---
 
+## 📅 2026-10-22 (UTC+7) — เพิ่มลำดับ pick จริง RPL 2026 Winter week 7 ครบ 100% (41/41 เกม) → รวม 248 เกม
+**Agent:** Claude Code (Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- นำเข้าภาพครบทุกคู่ใน RPL 2026 Winter Week 7 (Day 1–4, S657–S666, 1–4 ต.ค. 2026, รวม 41 เกม) โดยล่าสุดอ่านภาพ S663 Game 1 (SOLYX vs KOG) ตรวจสอบชุดฮีโร่และลำดับ Blue (ซ้ายไปขวา: Wiro, Wisp, Ryoma, Goverra, Zuka) และ Red (ขวาไปซ้าย: Marja, Y'bneth, Hayate, Liliana, Zephys) ตรงกับ Liquipedia 100%
+- เปลี่ยนชื่อภาพครบเป็น `2026_w7_d<d>_m<m>_g<g>_win_rpl_<a>_vs_<b>.png` และบันทึกลง `data/true_pick_order.json` (สัปดาห์ที่ 7 ครบสมบูรณ์ 41/41 เกม; ทั้งดาต้าเซ็ตมี 248 เกม: 247 screenshot + 1 manual)
+- วัด `order_team_picks_by_draft_logic()` เทียบลำดับจริง 247 screenshot games: ตาตรง 53.4%, เฟสตรง 79.4%, B1 ตรง 105/247, ทั้งทีมตรง 79/494 (week 7 อย่างเดียว 41 เกม: ตาตรง 54.9%, เฟสตรง 80.5%, B1 ตรง 16/41, ทั้งทีมตรง 18/82)
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json`
+- `data/draft_screenshots/week7/` (41 ไฟล์)
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- `audit_rov_data.py` ผ่าน (248 เกม), `pytest` ผ่าน (58 tests)
+- `ruff check` และ `ruff format` ผ่าน
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- สัปดาห์ที่ 7 เก็บครบ 100% เรียบร้อยแล้ว (41/41 เกม)
+- สัปดาห์ที่ 8 ใน Liquipedia จะเริ่มที่ S667 (8 ต.ค. 2026)
+
+---
+
+## 📅 2026-10-21 (UTC+7) — เพิ่มลำดับ pick จริง RPL 2026 Winter week 7 Day 1–2 (17 เกม) → รวม 224 เกม
+**Agent:** Claude Code (Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- อ่านภาพ 17 ไฟล์ใน `data/draft_screenshots/week7/` (S657–S660, 1–2 ต.ค. 2026) จับคู่ด้วยชุดฮีโร่ 10 ตัว ตรงกับ Liquipedia ครบทุกเกม ฝั่งซ้ายจอคือ Blue (First pick) และฝั่งขวาคือ Red (Second pick กลับด้านขวาไปซ้าย)
+- เปลี่ยนชื่อเป็น `2026_w7_d<d>_m<m>_g<g>_win_rpl_<a>_vs_<b>.png` และเพิ่ม 17 เกมลง `data/true_pick_order.json` (รวม 224 เกม: 223 screenshot + 1 manual)
+- ตรวจสอบชื่อฮีโร่ทุกตัวเป็น canonical name (`Bolt Baron`, `Flowborn (Marksman)`, etc.)
+- วัด `order_team_picks_by_draft_logic()` เทียบลำดับจริง 223 screenshot games: ตาตรง 53.1%, เฟสตรง 79.0%, B1 ตรง 96/223 (week 7 อย่างเดียว: ตาตรง 52.9%, เฟสตรง 77.6%, B1 ตรง 7/17)
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json`
+- `data/draft_screenshots/week7/` (เปลี่ยนชื่อ 17 ไฟล์)
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- `audit_rov_data.py` ผ่าน (224 เกม), `pytest` ผ่าน (58 tests)
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- week 7 Day 3–4 (S661–S666) ยังไม่มีภาพถ่ายทอดสด
+- ยังไม่ได้ commit (week 7)
+
+---
+
 ## 📅 2026-10-21 (UTC+7) — เพิ่มลำดับ pick จริง RPL 2026 Winter week 6 (41 เกม ครบ) → รวม 207 เกม
 **Agent:** Claude Code (Opus 5.5)
 
