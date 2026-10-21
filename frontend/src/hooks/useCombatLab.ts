@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { getJson, isAbortError, postJson } from "../api/client";
 import { type CombatBuild, type CombatCatalog, type DuelResult, type Side, emptyBuild } from "../types/combat";
 
 const STORAGE_KEY = "rov-combat-lab-v1";
@@ -32,9 +33,9 @@ export function useCombatLab() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    fetch("/combat/catalog")
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
-      .then((cat: CombatCatalog) => {
+    const ctrl = new AbortController();
+    getJson<CombatCatalog>("/combat/catalog", ctrl.signal)
+      .then((cat) => {
         setCatalog(cat);
         // Saved heroes may no longer exist; reset those to defaults
         const known = new Set(cat.heroes.map((h) => h.name));
@@ -43,7 +44,10 @@ export function useCombatLab() {
           b: known.has(prev.b.hero) ? prev.b : emptyBuild("Toro"),
         }));
       })
-      .catch((e) => setError(`โหลดข้อมูลไม่สำเร็จ: ${e.message}`));
+      .catch((e: unknown) => {
+        if (!isAbortError(e)) setError(`โหลดข้อมูลไม่สำเร็จ: ${e instanceof Error ? e.message : String(e)}`);
+      });
+    return () => ctrl.abort();
   }, []);
 
   useEffect(() => {
@@ -56,18 +60,10 @@ export function useCombatLab() {
     const timer = setTimeout(async () => {
       setIsLoading(true);
       try {
-        const res = await fetch("/combat/duel", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(builds),
-          signal: ctrl.signal,
-        });
-        const body = await res.json();
-        if (!res.ok) throw new Error(typeof body.detail === "string" ? body.detail : JSON.stringify(body.detail));
-        setResult(body);
+        setResult(await postJson<DuelResult>("/combat/duel", builds, ctrl.signal));
         setError(null);
       } catch (e) {
-        if ((e as Error).name !== "AbortError") setError((e as Error).message);
+        if (!isAbortError(e)) setError(e instanceof Error ? e.message : String(e));
       } finally {
         if (!ctrl.signal.aborted) setIsLoading(false);
       }

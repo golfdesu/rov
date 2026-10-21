@@ -119,7 +119,7 @@ ROV/
 │   ├── arcana.json                  # 90 official Arcana runes (30 Red, 30 Purple, 30 Green across Tiers I-III)
 │   └── enchantments.json            # 33 official Enchantments (พลังแฝง) across 4 factions (Veda, Lokheim, Afata, Humans)
 ├── frontend/                        # React 19 + Vite + Tailwind 4 draft UI (see frontend/README.md)
-│   ├── src/                         # App, hooks/useDraft.ts, components/, utils/heroNames.ts
+│   ├── src/                         # App, api/client.ts, hooks/useDraft.ts, components/ (Modal, Alert), utils/draft.ts (reducer)
 │   └── public/
 │       ├── avatars/                 # 130 square 160x160 hero icons
 │       └── hero_images.json         # Hero name -> /avatars/<file> (also read by src/api.py)

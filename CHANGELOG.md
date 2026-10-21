@@ -27,6 +27,35 @@
 
 ---
 
+## 📅 2026-10-21 (UTC+7) — Refactor frontend ตาม React best practice (branch `refactor/frontend-best-practices`)
+**Agent:** Claude Code (Opus 5.5)
+
+### ✅ สิ่งที่ทำ
+- `src/api/client.ts`: `getJson`/`postJson` มี type, ดึง error จาก `detail` ของ FastAPI, รองรับ `AbortSignal` ทั้ง 2 hooks เรียก API ผ่านตัวนี้
+- `useDraft.ts`: เปลี่ยน `useState` ~20 ตัวเป็น `useReducer` (`draftReducer` ใน `utils/draft.ts` เป็น pure function), undo/reset เหลือ dispatch เดียว, ทิ้ง response เก่าตาม `stepIndex`, สร้าง payload ด้วย `buildPredictPayload` ค่าที่คืนให้ `App` เหมือนเดิม
+- `Modal.tsx` (Escape, คลิก backdrop, focus trap, ล็อก scroll, คืน focus, `aria-labelledby`) ใช้ใน `HeroPickerModal` และ `HeroSkillsModal`
+- `Alert.tsx` แทนกล่อง error ที่ซ้ำ, `ErrorBoundary.tsx` ครอบแต่ละแท็บ
+- ย้าย `getFormBadge` ที่ซ้ำ 2 ไฟล์ไป `utils/heroForms.ts` และแตก `EnchantmentBoard.tsx` เป็น `enchantmentFactions.ts` + `EnchantmentSocket.tsx`
+- เปิด `"strict": true` (ไม่มี type error) และยุบ dev proxy 6 รายการเป็น regex เดียว
+
+### 📁 ไฟล์ที่แก้
+- ใหม่: `frontend/src/api/client.ts`, `frontend/src/components/{Modal,Alert,ErrorBoundary}.tsx`, `frontend/src/utils/heroForms.ts`, `frontend/src/components/lab/{enchantmentFactions.ts,EnchantmentSocket.tsx}`
+- `frontend/src/hooks/{useDraft,useCombatLab}.ts`, `frontend/src/utils/draft.ts`, `frontend/src/App.tsx`
+- `frontend/src/components/lab/{CombatLab,HeroPickerModal,HeroSkillsModal,SkillDamageTable,EnchantmentBoard}.tsx`
+- `frontend/tsconfig.{app,node}.json`, `frontend/vite.config.ts`, `frontend/README.md`, `AGENTS.md`
+
+### 🧪 การตรวจสอบ
+- `tsc -b`, `npm run lint`, `npm run build` ผ่าน, `pytest tests/test_api.py` 13 passed, `ruff check` ผ่าน
+- สคริปต์ชั่วคราวเช็ก reducer 9 กรณี (18 step, ห้ามฮีโร่ซ้ำ, response เก่า, undo, reset, payload ฝั่งแดง) ผ่าน
+- Playwright: ดราฟต์ครบ 18 step ด้วย Enter, Ctrl+Z, หน้า Lab, modal ทั้งสอง (focus trap / Escape / backdrop / คืน focus) ไม่มี console error
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- frontend ยังไม่มีชุดเทสต์อัตโนมัติ (ถ้าจะเพิ่ม Vitest ควรเริ่มที่ `draftReducer`)
+- `SkillDamageTable.tsx` (510 บรรทัด) และ `HeroSkillsModal.tsx` (473 บรรทัด) ยังใหญ่ ยังไม่ได้แตก
+- ยังไม่ได้ commit
+
+---
+
 ## 📅 2026-10-20 (UTC+7) — เพิ่มลำดับ pick จริง RPL 2026 Winter week 3 (39 เกม ครบ) → รวม 101 เกม
 **Agent:** Claude Code (Opus 5.5)
 

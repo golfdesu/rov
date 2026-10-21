@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AiPanel } from "./components/AiPanel";
+import { Alert } from "./components/Alert";
 import { DraftTimeline } from "./components/DraftTimeline";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { HeroGrid } from "./components/HeroGrid";
 import { CombatLab } from "./components/lab/CombatLab";
 import { ScoreBar } from "./components/ScoreBar";
@@ -110,6 +112,7 @@ export function App() {
         </div>
       </nav>
 
+      <ErrorBoundary resetKey={tab}>
       {tab === "lab" ? (
         <main className="mx-auto w-full max-w-[1680px] flex-1 px-4 py-4">
           <CombatLab heroMap={heroMap} />
@@ -130,15 +133,9 @@ export function App() {
           />
 
           <main className="mx-auto flex w-full max-w-[1680px] flex-1 flex-col gap-4 px-4 py-4">
-            {error && (
-              <div role="alert" className="border border-red/40 bg-red/10 px-3 py-2 text-xs text-red">
-                {error}
-              </div>
-            )}
+            {error && <Alert>{error}</Alert>}
             {heroesFallback && (
-              <div role="status" className="border border-yellow-500/40 bg-yellow-500/10 px-3 py-2 text-xs text-yellow-400">
-                โหลดข้อมูลฮีโร่จากเซิร์ฟเวอร์ไม่ได้ — ใช้รายชื่อสำรอง บทบาทและเลนอาจไม่ถูกต้อง
-              </div>
+              <Alert tone="warning">โหลดข้อมูลฮีโร่จากเซิร์ฟเวอร์ไม่ได้ — ใช้รายชื่อสำรอง บทบาทและเลนอาจไม่ถูกต้อง</Alert>
             )}
 
             <DraftTimeline stepHeroes={stepHeroes} currentStepIndex={currentStepIndex} heroMap={heroMap} />
@@ -197,6 +194,7 @@ export function App() {
           </main>
         </>
       )}
+      </ErrorBoundary>
 
       <footer className="border-t border-line px-4 py-3">
         <div className="mx-auto flex max-w-[1680px] flex-wrap items-center justify-between gap-2 font-mono text-[10px] text-dim">

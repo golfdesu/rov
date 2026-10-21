@@ -1,378 +1,176 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
+import { getJson, isAbortError, postJson } from "../api/client";
+import { CANONICAL_DRAFT_STEPS, type DraftPredictionResponse, type Hero } from "../types/draft";
 import {
-  CANONICAL_DRAFT_STEPS,
-  type DraftHistoryItem,
-  type DraftPredictionResponse,
-  type DraftStep,
-  type Hero,
-  type HeroRecommendation,
-} from "../types/draft";
-import { prioritizeMissingLanes } from "../utils/draft";
+  buildPredictPayload,
+  draftReducer,
+  EMPTY_PREDICTION,
+  INITIAL_DRAFT_STATE,
+  type PredictionState,
+  prioritizeMissingLanes,
+  unavailableSet,
+} from "../utils/draft";
 
 // Fetch a wider candidate pool so lane-filling heroes can be promoted into the top 5
 const CANDIDATE_POOL = 20;
+const GLOBAL_BANS: readonly string[] = [];
 
-export function useDraft() {
+function useHeroCatalog() {
   const [heroes, setHeroes] = useState<Hero[]>([]);
-  const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
-  const [bluePicks, setBluePicks] = useState<string[]>([]);
-  const [redPicks, setRedPicks] = useState<string[]>([]);
-  const [blueBans, setBlueBans] = useState<string[]>([]);
-  const [redBans, setRedBans] = useState<string[]>([]);
-  const [globalBans] = useState<string[]>([]);
-  const [useLookahead, setUseLookahead] = useState<boolean>(false);
-  const [history, setHistory] = useState<DraftHistoryItem[]>([]);
-
-  const [recommendations, setRecommendations] = useState<HeroRecommendation[]>([]);
-  const [blueNextPicks, setBlueNextPicks] = useState<HeroRecommendation[]>([]);
-  const [redNextPicks, setRedNextPicks] = useState<HeroRecommendation[]>([]);
-  const [blueNextBans, setBlueNextBans] = useState<HeroRecommendation[]>([]);
-  const [redNextBans, setRedNextBans] = useState<HeroRecommendation[]>([]);
-  const [banUnlockedHeroes, setBanUnlockedHeroes] = useState<HeroRecommendation[]>([]);
-  const [missingAllyLanes, setMissingAllyLanes] = useState<string[]>([]);
-  const [blueWinRate, setBlueWinRate] = useState<number>(50.0);
-  // Blue win-rate estimate recorded at each draft step (index = step), used for trend + deltas
-  const [winHistory, setWinHistory] = useState<number[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isHeroesLoading, setIsHeroesLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isFallback, setIsFallback] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [heroesFallback, setHeroesFallback] = useState<boolean>(false);
 
-  // Active step (or null if draft completed)
-  const currentStep: DraftStep | null = useMemo(() => {
-    if (currentStepIndex < CANONICAL_DRAFT_STEPS.length) {
-      return CANONICAL_DRAFT_STEPS[currentStepIndex];
-    }
-    return null;
-  }, [currentStepIndex]);
-
-  // Fast hero lookup map
-  const heroMap = useMemo(() => {
-    const map = new Map<string, Hero>();
-    heroes.forEach((h) => map.set(h.name, h));
-    return map;
-  }, [heroes]);
-
-  // Set of all unavailable heroes (picked or banned)
-  const unavailableHeroes = useMemo(() => {
-    return new Set<string>([
-      ...bluePicks,
-      ...redPicks,
-      ...blueBans,
-      ...redBans,
-      ...globalBans,
-    ]);
-  }, [bluePicks, redPicks, blueBans, redBans, globalBans]);
-
-  // 1. Initial Load: Fetch Hero Catalog
   useEffect(() => {
-    let isMounted = true;
-    async function loadHeroes() {
+    const ctrl = new AbortController();
+    async function load() {
       try {
-        setIsHeroesLoading(true);
-        const res = await fetch("/heroes");
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        if (isMounted && data.hero_details) {
+        const data = await getJson<{ hero_details?: Hero[] }>("/heroes", ctrl.signal);
+        if (data.hero_details) {
           setHeroes(data.hero_details);
-          setIsHeroesLoading(false);
           return;
         }
       } catch (err) {
+        if (isAbortError(err)) return;
         console.warn("Could not fetch /heroes from FastAPI, falling back to local images:", err);
       }
 
-      // Fallback: try loading /hero_images.json directly
+      // Fallback: build a minimal catalog from /hero_images.json
       try {
-        const res = await fetch("/hero_images.json");
-        const images: Record<string, string> = await res.json();
-        const fallbackHeroes: Hero[] = Object.keys(images).map((name, idx) => ({
-          id: idx,
-          name,
-          role: "Warrior",
-          lane: "DS_Lane (ออฟเลน)",
-          tier: "A",
-          image_url: images[name],
-        }));
-        if (isMounted) {
-          setHeroes(fallbackHeroes);
-          setHeroesFallback(true);
+        const images = await getJson<Record<string, string>>("/hero_images.json", ctrl.signal);
+        setHeroes(
+          Object.entries(images).map(([name, image_url], idx) => ({
+            id: idx,
+            name,
+            role: "Warrior",
+            lane: "DS_Lane (ออฟเลน)",
+            tier: "A",
+            image_url,
+          })),
+        );
+        setIsFallback(true);
+      } catch (err) {
+        if (!isAbortError(err)) setError("Failed to load hero database");
+      }
+    }
+    load().finally(() => {
+      if (!ctrl.signal.aborted) setIsLoading(false);
+    });
+    return () => ctrl.abort();
+  }, []);
+
+  return { heroes, isLoading, isFallback, error };
+}
+
+export function useDraft() {
+  const catalog = useHeroCatalog();
+  const [state, dispatch] = useReducer(draftReducer, INITIAL_DRAFT_STATE);
+  const [useLookahead, setUseLookahead] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [predictError, setPredictError] = useState<string | null>(null);
+
+  const { stepIndex, bluePicks, redPicks, blueBans, redBans } = state;
+  const currentStep = CANONICAL_DRAFT_STEPS[stepIndex] ?? null;
+
+  const heroMap = useMemo(() => new Map(catalog.heroes.map((h) => [h.name, h])), [catalog.heroes]);
+
+  const unavailableHeroes = useMemo(
+    () => unavailableSet({ bluePicks, redPicks, blueBans, redBans }, GLOBAL_BANS),
+    [bluePicks, redPicks, blueBans, redBans],
+  );
+
+  // Fetch AI recommendations whenever the draft or lookahead setting changes.
+  // Aborting on cleanup guarantees stale responses never overwrite newer state.
+  useEffect(() => {
+    const ctrl = new AbortController();
+    const draft = { bluePicks, redPicks, blueBans, redBans };
+    const step = CANONICAL_DRAFT_STEPS[stepIndex];
+
+    async function run() {
+      setIsLoading(true);
+      setPredictError(null);
+      try {
+        const data = await postJson<DraftPredictionResponse>(
+          "/predict",
+          buildPredictPayload(stepIndex, draft, GLOBAL_BANS, useLookahead, CANDIDATE_POOL),
+          ctrl.signal,
+        );
+
+        if (!step) {
+          // Draft is complete: only the final matchup win rate matters
+          const finalWin = data.recommendations[0]?.predicted_win_rate_pct ?? null;
+          dispatch({ type: "predicted", stepIndex, prediction: EMPTY_PREDICTION, blueWinRate: finalWin });
+          return;
         }
-      } catch {
-        if (isMounted) setError("Failed to load hero database");
+
+        const missing = data.missing_ally_lanes ?? [];
+        const prediction: PredictionState = {
+          recommendations:
+            step.action === "pick" ? prioritizeMissingLanes(data.recommendations, missing) : data.recommendations,
+          blueNextPicks: data.blue_next_picks ?? [],
+          redNextPicks: data.red_next_picks ?? [],
+          blueNextBans: data.blue_next_bans ?? [],
+          redNextBans: data.red_next_bans ?? [],
+          banUnlockedHeroes: data.ban_unlocked_heroes ?? [],
+          missingAllyLanes: missing,
+        };
+
+        // Win estimate uses the model's own top choice, not the lane-adjusted one
+        const top = data.recommendations[0];
+        let blueWin: number | null = null;
+        if (top) {
+          const recWin = top.lookahead_win_rate_pct ?? top.predicted_win_rate_pct;
+          blueWin = Number((step.side === "blue" ? recWin : 100.0 - recWin).toFixed(1));
+        }
+        dispatch({ type: "predicted", stepIndex, prediction, blueWinRate: blueWin });
+      } catch (err) {
+        if (isAbortError(err)) return;
+        console.error("Predict error:", err);
+        if (step) {
+          setPredictError(err instanceof Error ? err.message : "Draft AI service error");
+        } else {
+          // A failed final evaluation keeps the last estimate but clears the step suggestions
+          dispatch({ type: "predicted", stepIndex, prediction: EMPTY_PREDICTION, blueWinRate: null });
+        }
       } finally {
-        if (isMounted) setIsHeroesLoading(false);
+        if (!ctrl.signal.aborted) setIsLoading(false);
       }
     }
 
-    loadHeroes();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+    run();
+    return () => ctrl.abort();
+  }, [stepIndex, bluePicks, redPicks, blueBans, redBans, useLookahead]);
 
-  // 2. Fetch AI Recommendations when draft state changes
-  const abortControllerRef = useRef<AbortController | null>(null);
-
-  const recordWin = useCallback((stepIdx: number, value: number) => {
-    setWinHistory((prev) => {
-      const next = prev.slice(0, stepIdx);
-      next[stepIdx] = value;
-      return next;
-    });
-  }, []);
-
-  const fetchRecommendations = useCallback(
-    async (
-      stepIdx: number,
-      bPicks: string[],
-      rPicks: string[],
-      bBans: string[],
-      rBans: string[],
-      lookahead: boolean
-    ) => {
-      // Cancel any in-flight request first so stale responses can never overwrite newer state
-      abortControllerRef.current?.abort();
-      const ctrl = new AbortController();
-      abortControllerRef.current = ctrl;
-
-      if (stepIdx >= CANONICAL_DRAFT_STEPS.length) {
-        // Draft is complete! Evaluate final matchup win rate
-        try {
-          setIsLoading(true);
-          const res = await fetch("/predict", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              mode: "pick",
-              side: "blue",
-              phase: 2,
-              ally_picks: bPicks,
-              enemy_picks: rPicks,
-              ally_bans: bBans,
-              enemy_bans: rBans,
-              global_bans: globalBans,
-              top_k: 1,
-              use_lookahead: false,
-            }),
-            signal: ctrl.signal,
-          });
-          if (res.ok) {
-            const data: DraftPredictionResponse = await res.json();
-            if (data.recommendations.length > 0 && !ctrl.signal.aborted) {
-              const finalWin = data.recommendations[0].predicted_win_rate_pct;
-              setBlueWinRate(finalWin);
-              recordWin(stepIdx, finalWin);
-            }
-          }
-        } catch (e) {
-          if (!ctrl.signal.aborted) console.error("Final prediction error:", e);
-        } finally {
-          if (abortControllerRef.current === ctrl) setIsLoading(false);
-        }
-        if (!ctrl.signal.aborted) {
-          setRecommendations([]);
-          setBlueNextPicks([]);
-          setRedNextPicks([]);
-          setBlueNextBans([]);
-          setRedNextBans([]);
-          setBanUnlockedHeroes([]);
-        }
-        return;
-      }
-
-      const step = CANONICAL_DRAFT_STEPS[stepIdx];
-      const isBlue = step.side === "blue";
-
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        const payload = {
-          mode: step.action,
-          side: step.side,
-          phase: step.phase,
-          ally_picks: isBlue ? bPicks : rPicks,
-          enemy_picks: isBlue ? rPicks : bPicks,
-          ally_bans: isBlue ? bBans : rBans,
-          enemy_bans: isBlue ? rBans : bBans,
-          global_bans: globalBans,
-          top_k: CANDIDATE_POOL,
-          use_lookahead: lookahead,
-          lookahead_depth: 2,
-        };
-
-        const res = await fetch("/predict", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-          signal: ctrl.signal,
-        });
-
-        if (!res.ok) {
-          throw new Error(`Server returned ${res.status}: ${await res.text()}`);
-        }
-
-        const data: DraftPredictionResponse = await res.json();
-        const missing = data.missing_ally_lanes || [];
-        const ranked = step.action === "pick" ? prioritizeMissingLanes(data.recommendations, missing) : data.recommendations;
-        setRecommendations(ranked);
-        setBlueNextPicks(data.blue_next_picks || []);
-        setRedNextPicks(data.red_next_picks || []);
-        setBlueNextBans(data.blue_next_bans || []);
-        setRedNextBans(data.red_next_bans || []);
-        setBanUnlockedHeroes(data.ban_unlocked_heroes || []);
-        setMissingAllyLanes(missing);
-
-        if (ranked.length > 0) {
-          // Win estimate uses the model's own top choice, not the lane-adjusted one
-          const top = data.recommendations[0];
-          const recWin = top.lookahead_win_rate_pct ?? top.predicted_win_rate_pct;
-          // Calculate Blue Win Rate: if Blue turn, recWin is Blue's; if Red turn, Blue is 100 - recWin
-          const blueWin = isBlue ? recWin : 100.0 - recWin;
-          setBlueWinRate(Number(blueWin.toFixed(1)));
-          recordWin(stepIdx, Number(blueWin.toFixed(1)));
-        }
-      } catch (err: unknown) {
-        if (ctrl.signal.aborted || (err instanceof Error && err.name === "AbortError")) {
-          return;
-        }
-        console.error("Predict error:", err);
-        setError(err instanceof Error ? err.message : "Draft AI service error");
-      } finally {
-        if (abortControllerRef.current === ctrl) setIsLoading(false);
-      }
-    },
-    [globalBans, recordWin]
-  );
-
-  // Trigger prediction fetch on state or lookahead change
-  // Deferred to a timer so rapid state changes collapse into one request
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchRecommendations(currentStepIndex, bluePicks, redPicks, blueBans, redBans, useLookahead);
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [
-    currentStepIndex,
-    bluePicks,
-    redPicks,
-    blueBans,
-    redBans,
-    useLookahead,
-    fetchRecommendations,
-  ]);
-
-  // 3. Draft Actions
-  const lockHero = useCallback(
-    (heroName: string) => {
-      if (currentStepIndex >= CANONICAL_DRAFT_STEPS.length) return;
-      if (unavailableHeroes.has(heroName)) return;
-
-      const step = CANONICAL_DRAFT_STEPS[currentStepIndex];
-
-      // Save history for undo
-      setHistory((prev) => [
-        ...prev,
-        {
-          stepIndex: currentStepIndex,
-          bluePicks: [...bluePicks],
-          redPicks: [...redPicks],
-          blueBans: [...blueBans],
-          redBans: [...redBans],
-        },
-      ]);
-
-      if (step.action === "ban") {
-        if (step.side === "blue") {
-          setBlueBans((prev) => [...prev, heroName]);
-        } else {
-          setRedBans((prev) => [...prev, heroName]);
-        }
-      } else {
-        if (step.side === "blue") {
-          setBluePicks((prev) => [...prev, heroName]);
-        } else {
-          setRedPicks((prev) => [...prev, heroName]);
-        }
-      }
-
-      setCurrentStepIndex((prev) => prev + 1);
-    },
-    [currentStepIndex, unavailableHeroes, bluePicks, redPicks, blueBans, redBans]
-  );
-
-  const undo = useCallback(() => {
-    if (history.length === 0) return;
-    const last = history[history.length - 1];
-    setCurrentStepIndex(last.stepIndex);
-    setBluePicks(last.bluePicks);
-    setRedPicks(last.redPicks);
-    setBlueBans(last.blueBans);
-    setRedBans(last.redBans);
-    setHistory((prev) => prev.slice(0, -1));
-    // Drop stale derived state; the effect refetches for the restored step
-    setRecommendations([]);
-    setBlueNextPicks([]);
-    setRedNextPicks([]);
-    setBlueNextBans([]);
-    setRedNextBans([]);
-    setBanUnlockedHeroes([]);
-    setMissingAllyLanes([]);
-    setWinHistory((prev) => prev.slice(0, last.stepIndex));
-    setBlueWinRate(winHistory[last.stepIndex - 1] ?? 50.0);
-  }, [history, winHistory]);
-
+  const lockHero = useCallback((hero: string) => dispatch({ type: "lock", hero }), []);
+  const undo = useCallback(() => dispatch({ type: "undo" }), []);
   const reset = useCallback(() => {
-    setCurrentStepIndex(0);
-    setBluePicks([]);
-    setRedPicks([]);
-    setBlueBans([]);
-    setRedBans([]);
-    setHistory([]);
-    setRecommendations([]);
-    setBlueNextPicks([]);
-    setRedNextPicks([]);
-    setBlueNextBans([]);
-    setRedNextBans([]);
-    setBanUnlockedHeroes([]);
-    setMissingAllyLanes([]);
-    setBlueWinRate(50.0);
-    setWinHistory([]);
-    setError(null);
+    dispatch({ type: "reset" });
+    setPredictError(null);
   }, []);
 
   return {
-    heroes,
+    heroes: catalog.heroes,
     heroMap,
-    currentStepIndex,
+    currentStepIndex: stepIndex,
     currentStep,
     totalSteps: CANONICAL_DRAFT_STEPS.length,
-    isDraftComplete: currentStepIndex >= CANONICAL_DRAFT_STEPS.length,
     bluePicks,
     redPicks,
     blueBans,
     redBans,
-    globalBans,
     unavailableHeroes,
     useLookahead,
     setUseLookahead,
-    recommendations,
-    blueNextPicks,
-    redNextPicks,
-    blueNextBans,
-    redNextBans,
-    banUnlockedHeroes,
-    missingAllyLanes,
-    blueWinRate,
-    winHistory,
+    ...state.prediction,
+    blueWinRate: state.blueWinRate,
+    winHistory: state.winHistory,
     isLoading,
-    isHeroesLoading,
-    error,
-    heroesFallback,
+    isHeroesLoading: catalog.isLoading,
+    error: predictError ?? catalog.error,
+    heroesFallback: catalog.isFallback,
     lockHero,
     undo,
     reset,
-    canUndo: history.length > 0,
+    canUndo: state.history.length > 0,
   };
 }

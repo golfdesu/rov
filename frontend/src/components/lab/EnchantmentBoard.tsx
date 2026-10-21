@@ -1,6 +1,8 @@
-﻿import { Check, Lock, Sparkles, X } from "lucide-react";
+import { Check, Lock, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { CatalogEnchantment, CombatCatalog } from "../../types/combat";
+import { FACTION_INFO, ROMAN } from "./enchantmentFactions";
+import { SocketItem } from "./EnchantmentSocket";
 
 interface EnchantmentBoardProps {
   catalog: CombatCatalog;
@@ -16,45 +18,6 @@ interface EnchantmentBoardProps {
   }) => void;
 }
 
-const FACTION_INFO: Record<
-  string,
-  { nameTh: string; color: string; border: string; bg: string; activeBg: string; ring: string }
-> = {
-  Veda: {
-    nameTh: "เวด้า (แครี่, เมจ)",
-    color: "text-[#f1c40f]",
-    border: "border-[#f1c40f]",
-    bg: "bg-[#f1c40f]/10",
-    activeBg: "bg-[#f1c40f]/20",
-    ring: "ring-[#f1c40f]",
-  },
-  Lokheim: {
-    nameTh: "ล็อคไฮม์ (ไฟต์เตอร์, แอสซาซิน)",
-    color: "text-[#e74c3c]",
-    border: "border-[#e74c3c]",
-    bg: "bg-[#e74c3c]/10",
-    activeBg: "bg-[#e74c3c]/20",
-    ring: "ring-[#e74c3c]",
-  },
-  Afata: {
-    nameTh: "อัฟฟาต้า (แทงค์, ซัพพอร์ต)",
-    color: "text-[#2ecc71]",
-    border: "border-[#2ecc71]",
-    bg: "bg-[#2ecc71]/10",
-    activeBg: "bg-[#2ecc71]/20",
-    ring: "ring-[#2ecc71]",
-  },
-  "Origin Alliance": {
-    nameTh: "พันธมิตรแห่งกำเนิด (อเนกประสงค์)",
-    color: "text-[#3498db]",
-    border: "border-[#3498db]",
-    bg: "bg-[#3498db]/10",
-    activeBg: "bg-[#3498db]/20",
-    ring: "ring-[#3498db]",
-  },
-};
-
-const ROMAN: Record<number, string> = { 1: "I", 2: "II", 3: "III" };
 export function EnchantmentBoard({
   catalog,
   primaryFaction,
@@ -674,68 +637,6 @@ export function EnchantmentBoard({
           )}
         </div>
       )}
-    </div>
-  );
-}
-
-function SocketItem({
-  tier,
-  name,
-  ench,
-  isMajor,
-  factionColor,
-  onClear,
-}: {
-  tier: number;
-  name?: string;
-  ench?: CatalogEnchantment;
-  isMajor: boolean;
-  factionColor?: string;
-  onClear: () => void;
-}) {
-  const sizeClass = isMajor ? "h-14 w-14" : "h-11 w-11";
-
-  if (!ench || !name) {
-    return (
-      <div className="flex flex-col items-center">
-        <div
-          className={`flex ${sizeClass} items-center justify-center rounded-full border-2 border-dashed border-line bg-panel text-[11px] font-mono text-dim`}
-        >
-          {ROMAN[tier]}
-        </div>
-        <span className="mt-1 text-[9px] text-dim">ขั้น {tier}</span>
-      </div>
-    );
-  }
-
-  return (
-    <div className="group relative flex flex-col items-center">
-      <div
-        className={`relative ${sizeClass} rounded-full ring-2 ${
-          factionColor || (isMajor ? "ring-gold shadow-md shadow-gold/20" : "ring-line-strong")
-        }`}
-      >
-        <img
-          src={ench.icon_url}
-          alt={name}
-          className="h-full w-full rounded-full object-contain"
-          loading="lazy"
-        />
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onClear();
-          }}
-          className="absolute -right-1 -top-1 hidden h-4 w-4 place-items-center rounded-full bg-red text-bg shadow group-hover:grid"
-          title={`ลบ ${name}`}
-        >
-          <X size={10} />
-        </button>
-      </div>
-      <span className="mt-1 max-w-[65px] truncate text-center text-[10px] font-medium text-ink">
-        {ench.category || name}
-      </span>
     </div>
   );
 }
