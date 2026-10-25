@@ -63,7 +63,7 @@ def row_normalize_adj(mat: np.ndarray) -> np.ndarray:
     return (pos / np.maximum(row_sum, 1e-6)).astype(np.float32)
 
 
-def load_sota_data_and_graphs():
+def load_sota_data_and_graphs(dataset_path: Path | str | None = None):
     """Load 130 heroes, build multi-relational GNN adjacency matrices, and split train/val."""
     heroes_df = pd.read_csv(DATA_DIR / "heroes_130_summary.csv").sort_values("name").reset_index(drop=True)
     stats_df = pd.read_csv(DATA_DIR / "hero_draft_stats.csv").sort_values("name").reset_index(drop=True)
@@ -142,8 +142,16 @@ def load_sota_data_and_graphs():
     lane_probs = np.stack(lane_probs_list, axis=0)  # (130, 5)
     skill_matrix = np.array(skill_flags_list, dtype=np.float32)  # (130, 10)
 
-    with open(DATA_DIR / "matches_draft_full.json", "r", encoding="utf-8") as f:
+    if dataset_path is None:
+        training_file = DATA_DIR / "matches_training.json"
+        dataset_path = training_file if training_file.exists() else DATA_DIR / "matches_draft_full.json"
+    else:
+        dataset_path = Path(dataset_path)
+
+    with open(dataset_path, "r", encoding="utf-8") as f:
         games = json.load(f)
+
+    print(f"Loaded {len(games)} draft games from {dataset_path.name}", flush=True)
 
     # Chronological sort (2024 -> 2025 -> 2026) so validation set is strictly current 2026 pro meta
     games = sorted(
@@ -344,7 +352,8 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
     ph_arr = np.zeros(total_steps, dtype=np.int64)
     target_arr = np.zeros(total_steps, dtype=np.int64)
     win_arr = np.zeros(total_steps, dtype=np.float32)
-    weight_arr = np.zeros(total_steps, dtype=np.float32)
+    pol_weight_arr = np.zeros(total_steps, dtype=np.float32)
+    win_weight_arr = np.zeros(total_steps, dtype=np.float32)
 
     row_idx = 0
     for g, b_picks_raw, r_picks_raw, b_bans, r_bans in valid_games:
@@ -353,9 +362,14 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
         year_val = int(g.get("year", 2026)) if str(g.get("year", "2026")).isdigit() else 2026
         recency_w = 1.0 if year_val >= 2026 else (0.5 if year_val == 2025 else 0.2)
         blue_win = 1 if int(g.get("blue_win", 1)) == 1 else 0
+        is_true_order = bool(g.get("is_true_order", False))
 
-        bp_canonical = order_team_picks_by_draft_logic(b_picks_raw, r_bans[2:4], lane_probs, priority_scores)
-        rp_canonical = order_team_picks_by_draft_logic(r_picks_raw, b_bans[2:4], lane_probs, priority_scores)
+        if is_true_order:
+            bp_canonical = list(b_picks_raw)
+            rp_canonical = list(r_picks_raw)
+        else:
+            bp_canonical = order_team_picks_by_draft_logic(b_picks_raw, r_bans[2:4], lane_probs, priority_scores)
+            rp_canonical = order_team_picks_by_draft_logic(r_picks_raw, b_bans[2:4], lane_probs, priority_scores)
 
         orderings = [(bp_canonical, rp_canonical)]
         if eff_aug >= 2:
@@ -446,7 +460,18 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
                 ph_arr[row_idx] = phase
                 target_arr[row_idx] = target_hero
                 win_arr[row_idx] = acting_win
-                weight_arr[row_idx] = recency_w
+
+                # Decoupled supervision:
+                # 1. Win-value loss applies to all actions across all games
+                win_weight_arr[row_idx] = recency_w
+
+                # 2. Policy loss applies to all bans (chronological on Liquipedia) and verified picks only
+                if action_type == 0:
+                    pol_weight_arr[row_idx] = recency_w
+                elif is_true_order:
+                    pol_weight_arr[row_idx] = recency_w
+                else:
+                    pol_weight_arr[row_idx] = 0.0
 
                 history_events.append((target_hero, action_type, side, step_idx))
                 if action_type == 0:
@@ -476,7 +501,8 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
         torch.from_numpy(ph_arr),
         torch.from_numpy(target_arr),
         torch.from_numpy(win_arr),
-        torch.from_numpy(weight_arr),
+        torch.from_numpy(pol_weight_arr),
+        torch.from_numpy(win_weight_arr),
     )
 
 
@@ -836,12 +862,17 @@ def evaluate_sota_model(model, loader, device):
             if batch[0].device != device:
                 batch = [x.to(device, non_blocking=True) for x in batch]
             ap, ep, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph, target, win_lbl = batch[:14]
+            pol_w = batch[14] if len(batch) > 14 else torch.ones_like(win_lbl)
 
             policy_logits, q_win_logits = model(ap, ep, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph)
-            loss = F.cross_entropy(policy_logits, target, reduction="sum")
-            total_loss += loss.item()
-            bsz = target.size(0)
-            total_count += bsz
+
+            # Evaluate policy loss and top-k on clean ground-truth steps (pol_w > 0)
+            eval_mask = pol_w > 0
+            n_eval = int(eval_mask.sum().item())
+            if n_eval > 0:
+                loss = F.cross_entropy(policy_logits[eval_mask], target[eval_mask], reduction="sum")
+                total_loss += loss.item()
+                total_count += n_eval
 
             chosen_q = q_win_logits.gather(1, target.unsqueeze(1)).squeeze(1)
             pred_win = (torch.sigmoid(chosen_q) >= 0.5).float()
@@ -854,19 +885,19 @@ def evaluate_sota_model(model, loader, device):
 
             top10_preds = torch.topk(policy_logits, k=10, dim=-1).indices
             hits = top10_preds == target.unsqueeze(1)
-            h1 = hits[:, :1].any(dim=1)
-            h3 = hits[:, :3].any(dim=1)
-            h5 = hits[:, :5].any(dim=1)
-            h10 = hits.any(dim=1)
+            h1 = hits[:, :1].any(dim=1) & eval_mask
+            h3 = hits[:, :3].any(dim=1) & eval_mask
+            h5 = hits[:, :5].any(dim=1) & eval_mask
+            h10 = hits.any(dim=1) & eval_mask
 
-            metrics["overall"]["total"] += bsz
+            metrics["overall"]["total"] += n_eval
             metrics["overall"]["top1"] += int(h1.sum().item())
             metrics["overall"]["top3"] += int(h3.sum().item())
             metrics["overall"]["top5"] += int(h5.sum().item())
             metrics["overall"]["top10"] += int(h10.sum().item())
 
             for b_key, a_val, p_val in bucket_defs:
-                b_mask = (act == a_val) & (ph == p_val)
+                b_mask = (act == a_val) & (ph == p_val) & eval_mask
                 cnt = int(b_mask.sum().item())
                 if cnt > 0:
                     metrics[b_key]["total"] += cnt
@@ -903,6 +934,12 @@ def parse_args():
         help="Select rank 1..5 from sota_rov_top5_trials.json",
     )
     parser.add_argument("--use-safest", action="store_true", help="Automatically use safest_recommended_trial from HPO")
+    parser.add_argument(
+        "--dataset-path",
+        type=Path,
+        default=None,
+        help="Path to training matches JSON (default: data/matches_training.json or data/matches_draft_full.json)",
+    )
     return parser.parse_args()
 
 
@@ -1004,7 +1041,7 @@ def main():
         priors,
         train_games,
         val_games,
-    ) = load_sota_data_and_graphs()
+    ) = load_sota_data_and_graphs(args.dataset_path)
 
     print(
         f"[{args.preset.upper()}] Building vectorized SOTA tensors (augment_factor={augment_factor}) "
@@ -1090,36 +1127,39 @@ def main():
             if batch[0].device != device:
                 batch = [x.to(device, non_blocking=True) for x in batch]
             ap, ep, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph, target, win_lbl = batch[:14]
-            sw = batch[14] if len(batch) > 14 else torch.ones_like(win_lbl)
+            sw_pol = batch[14] if len(batch) > 14 else torch.ones_like(win_lbl)
+            sw_win = batch[15] if len(batch) > 15 else sw_pol
             optimizer.zero_grad(set_to_none=True)
 
             if use_amp:
                 with torch.amp.autocast("cuda", dtype=torch.bfloat16):
                     policy_logits, q_win_logits = model(ap, ep, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph)
                     pol_raw = F.cross_entropy(policy_logits, target, label_smoothing=label_smoothing, reduction="none")
-                    pol_loss = (pol_raw * sw).sum() / torch.clamp(sw.sum(), min=1e-5)
+                    pol_loss = (pol_raw * sw_pol).sum() / torch.clamp(sw_pol.sum(), min=1e-5)
                     chosen_q = q_win_logits.gather(1, target.unsqueeze(1)).squeeze(1)
                     win_raw = F.binary_cross_entropy_with_logits(chosen_q, win_lbl, reduction="none")
-                    win_loss = (win_raw * sw).sum() / torch.clamp(sw.sum(), min=1e-5)
+                    win_loss = (win_raw * sw_win).sum() / torch.clamp(sw_win.sum(), min=1e-5)
                     loss = pol_loss + win_loss_weight * win_loss
             else:
                 policy_logits, q_win_logits = model(ap, ep, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph)
                 pol_raw = F.cross_entropy(policy_logits, target, label_smoothing=label_smoothing, reduction="none")
-                pol_loss = (pol_raw * sw).sum() / torch.clamp(sw.sum(), min=1e-5)
+                pol_loss = (pol_raw * sw_pol).sum() / torch.clamp(sw_pol.sum(), min=1e-5)
                 chosen_q = q_win_logits.gather(1, target.unsqueeze(1)).squeeze(1)
                 win_raw = F.binary_cross_entropy_with_logits(chosen_q, win_lbl, reduction="none")
-                win_loss = (win_raw * sw).sum() / torch.clamp(sw.sum(), min=1e-5)
+                win_loss = (win_raw * sw_win).sum() / torch.clamp(sw_win.sum(), min=1e-5)
                 loss = pol_loss + win_loss_weight * win_loss
 
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()
 
-            # Track unsmoothed cross-entropy for apples-to-apples comparison with Val Loss
+            # Track unsmoothed cross-entropy on verified steps for apples-to-apples comparison with Val Loss
             with torch.no_grad():
-                raw_ce = F.cross_entropy(policy_logits, target)
-            train_pol_loss += raw_ce.item() * target.size(0)
-            train_n += target.size(0)
+                train_mask = sw_pol > 0
+                if train_mask.any():
+                    raw_ce = F.cross_entropy(policy_logits[train_mask], target[train_mask], reduction="sum")
+                    train_pol_loss += raw_ce.item()
+                    train_n += int(train_mask.sum().item())
 
         scheduler.step()
 

@@ -3,6 +3,7 @@ import copy
 import json
 import random
 import time
+from pathlib import Path
 
 import numpy as np
 import optuna
@@ -45,6 +46,12 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Fast GPU-Resident Optuna HPO for RoVDraftGNNTransformer")
     parser.add_argument("--n-trials", type=int, default=40, help="Number of Optuna HPO trials")
     parser.add_argument("--trial-epochs", type=int, default=14, help="Max epochs per HPO trial")
+    parser.add_argument(
+        "--dataset-path",
+        type=Path,
+        default=None,
+        help="Path to training matches JSON (default: data/matches_training.json or data/matches_draft_full.json)",
+    )
     return parser.parse_args()
 
 
@@ -79,7 +86,7 @@ def main():
         priors,
         train_games,
         val_games,
-    ) = load_sota_data_and_graphs()
+    ) = load_sota_data_and_graphs(args.dataset_path)
 
     print("Pre-building and caching 1x and 2x datasets in memory/VRAM...", flush=True)
     train_ds_1x = build_tensor_dataset(train_games, hero_to_id, lane_probs, priority_scores, augment_factor=1)
@@ -177,7 +184,8 @@ def main():
                 if batch[0].device != device:
                     batch = [x.to(device, non_blocking=True) for x in batch]
                 ap, ep_v, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph, target, win_lbl = batch[:14]
-                sw = batch[14] if len(batch) > 14 else torch.ones_like(win_lbl)
+                sw_pol = batch[14] if len(batch) > 14 else torch.ones_like(win_lbl)
+                sw_win = batch[15] if len(batch) > 15 else sw_pol
                 optimizer.zero_grad(set_to_none=True)
 
                 if use_amp:
@@ -186,28 +194,31 @@ def main():
                         pol_raw = F.cross_entropy(
                             policy_logits, target, label_smoothing=label_smoothing, reduction="none"
                         )
-                        pol_loss = (pol_raw * sw).sum() / torch.clamp(sw.sum(), min=1e-5)
+                        pol_loss = (pol_raw * sw_pol).sum() / torch.clamp(sw_pol.sum(), min=1e-5)
                         chosen_q = q_win_logits.gather(1, target.unsqueeze(1)).squeeze(1)
                         win_raw = F.binary_cross_entropy_with_logits(chosen_q, win_lbl, reduction="none")
-                        win_loss = (win_raw * sw).sum() / torch.clamp(sw.sum(), min=1e-5)
+                        win_loss = (win_raw * sw_win).sum() / torch.clamp(sw_win.sum(), min=1e-5)
                         loss = pol_loss + win_loss_weight * win_loss
                 else:
                     policy_logits, q_win_logits = model(ap, ep_v, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph)
                     pol_raw = F.cross_entropy(policy_logits, target, label_smoothing=label_smoothing, reduction="none")
-                    pol_loss = (pol_raw * sw).sum() / torch.clamp(sw.sum(), min=1e-5)
+                    pol_loss = (pol_raw * sw_pol).sum() / torch.clamp(sw_pol.sum(), min=1e-5)
                     chosen_q = q_win_logits.gather(1, target.unsqueeze(1)).squeeze(1)
                     win_raw = F.binary_cross_entropy_with_logits(chosen_q, win_lbl, reduction="none")
-                    win_loss = (win_raw * sw).sum() / torch.clamp(sw.sum(), min=1e-5)
+                    win_loss = (win_raw * sw_win).sum() / torch.clamp(sw_win.sum(), min=1e-5)
                     loss = pol_loss + win_loss_weight * win_loss
 
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
                 optimizer.step()
 
+                # Track cross-entropy on verified steps for apples-to-apples comparison with Val Loss
                 with torch.no_grad():
-                    raw_ce = F.cross_entropy(policy_logits, target)
-                ep_train_loss += raw_ce.item() * target.size(0)
-                ep_train_n += target.size(0)
+                    train_mask = sw_pol > 0
+                    if train_mask.any():
+                        raw_ce = F.cross_entropy(policy_logits[train_mask], target[train_mask], reduction="sum")
+                        ep_train_loss += raw_ce.item()
+                        ep_train_n += int(train_mask.sum().item())
 
             scheduler.step()
             cur_train_ce = ep_train_loss / max(1, ep_train_n)

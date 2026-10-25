@@ -27,7 +27,36 @@
 
 ---
 
-## 📅 2026-10-25 15:30 (UTC+7) — อัปเดตข้อมูลการแข่ง Liquipedia ให้ Up-to-date (4,293 เกม, +85 เกมใหม่)
+## 📅 2026-10-25 16:15 (UTC+7) — แยก Dataset สำหรับเทรนโมเดล + Decoupled Multi-Task Representation & Sequence Policy
+**Agent:** Claude Fable 5 (ag/gemini-3.8-flash-high)
+
+### ✅ สิ่งที่ทำ
+- **สร้างเครื่องมือตัดช่วงข้อมูลการเทรน (`src/build_training_dataset.py`)**:
+  - รองรับการ slice ข้อมูลตามช่วงปี (`--min-year`, `--max-year`), ลีก (`--leagues`), และสถานะการมี screenshot (`--only-true-order`)
+  - รวม ground-truth chronological pick sequence จาก `data/true_pick_order.json` เข้ากับ `data/matches_draft_full.json` พร้อมแท็ก `is_true_order`
+  - สร้างไฟล์ชุดเทรนเริ่มต้น `data/matches_training.json` (4,271 เกม: 1,716 verified true order games, 2,555 heuristic games)
+- **สถาปัตยกรรม Decoupled Multi-Task Training (`src/train_sota_model.py` & `src/hpo_sota_optuna.py`)**:
+  - แยก supervision weights ระหว่าง `pol_weight_arr` กับ `win_weight_arr`:
+    1. **Representation & Win-Value Learning (`win_weight_arr`)**: ใช้ทุกเกมและทุกขั้นตอน (4,271 เกม) ในการเทรน GNN node embeddings, synergy/counter matrix, และ Win-Value head
+    2. **Ban Policy Learning (`pol_weight_arr`)**: ใช้ทุกเกมสำหรับ Ban Phase 1 และ Phase 2 เนื่องจากลำดับแบนบน Liquipedia เป็น chronological 100% อยู่แล้ว
+    3. **Pick Policy Learning (`pol_weight_arr`)**: ให้ weight = 0.0 สำหรับเกมที่ยังไม่มี screenshot (`is_true_order == False`) เพื่อตัด heuristic label noise (64.1% turn error จาก lane sorting) ออกจากการเทรน sequence policy ของ Transformer
+  - เพิ่มพารามิเตอร์ `--dataset-path` ให้เลือกไฟล์ dataset ได้อย่างยืดหยุ่น โดย default จะโหลด `data/matches_training.json` อัตโนมัติถ้ามีอยู่
+  - อัปเดต `evaluate_sota_model` ให้คำนวณ policy loss และ top-k pick accuracy เฉพาะสเต็ปที่มี clean ground truth (`pol_w > 0`)
+
+### 📁 ไฟล์ที่แก้
+- `src/build_training_dataset.py` (สร้างใหม่)
+- `data/matches_training.json` (สร้างใหม่)
+- `src/train_sota_model.py`
+- `src/hpo_sota_optuna.py`
+
+### 🧪 การตรวจสอบ
+- `audit_rov_data.py`: ผ่าน 100% (1,727 verified games, 130 heroes, 4,271 draft games)
+- ทดสอบ dry-run เทรน `train_sota_model.py`: โหลด `matches_training.json` ถูกต้อง, สร้าง vectorized tensors 65,340 steps ใน 0.9s, คำนวณ decoupled loss และประเมินผลผ่านฉลุย
+- `pytest -v`: 58/58 tests passed
+- `ruff check --fix .` & `ruff format .`: 0 lint errors, formatted
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- เมื่อรันงานบน ERAWAN HPC (`sbatch run_hpo_rov_h100.sbatch` หรือ `sbatch run_sota_rov_h100.sbatch`) สคริปต์จะใช้ `matches_training.json` ที่มี decoupled policy weighting โดยอัตโนมัติ
 **Agent:** Claude Fable 5 (ag/gemini-3.8-flash-high)
 
 ### ✅ สิ่งที่ทำ
