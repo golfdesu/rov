@@ -316,75 +316,138 @@ def parse_match_block(match_wt: str, tournament_page: str, series_idx: int, norm
     return series_games
 
 
+def format_flat_row(g: dict) -> dict:
+    """Format a single game record into a flattened CSV row."""
+    b_bans = g["blue_bans"] + [""] * (4 - len(g["blue_bans"]))
+    r_bans = g["red_bans"] + [""] * (4 - len(g["red_bans"]))
+    b_picks = g["blue_picks"] + [""] * (5 - len(g["blue_picks"]))
+    r_picks = g["red_picks"] + [""] * (5 - len(g["red_picks"]))
+
+    return {
+        "series_id": g["series_id"],
+        "league": g["league"],
+        "year": g["year"],
+        "stage": g["stage"],
+        "date": g["date"],
+        "bestof": g["bestof"],
+        "game_number": g["game_number"],
+        "is_ultimate_battle": g["is_ultimate_battle"],
+        "length": g["length"],
+        "blue_team": g["blue_team"],
+        "red_team": g["red_team"],
+        "blue_win": g["blue_win"],
+        # Phase 1 Bans
+        "blue_ban_1": b_bans[0],
+        "red_ban_1": r_bans[0],
+        "blue_ban_2": b_bans[1],
+        "red_ban_2": r_bans[1],
+        # Phase 2 Bans
+        "red_ban_3": r_bans[2],
+        "blue_ban_3": b_bans[2],
+        "red_ban_4": r_bans[3],
+        "blue_ban_4": b_bans[3],
+        # Blue Picks (1-5)
+        "blue_pick_1": b_picks[0],
+        "blue_pick_2": b_picks[1],
+        "blue_pick_3": b_picks[2],
+        "blue_pick_4": b_picks[3],
+        "blue_pick_5": b_picks[4],
+        # Red Picks (1-5)
+        "red_pick_1": r_picks[0],
+        "red_pick_2": r_picks[1],
+        "red_pick_3": r_picks[2],
+        "red_pick_4": r_picks[3],
+        "red_pick_5": r_picks[4],
+        # Global Bans (previously used heroes in same series)
+        "blue_global_bans_count": len(g["blue_global_bans"]),
+        "red_global_bans_count": len(g["red_global_bans"]),
+        "blue_global_bans": "|".join(g["blue_global_bans"]),
+        "red_global_bans": "|".join(g["red_global_bans"]),
+    }
+
+
 def main():
     normalize_hero = build_hero_normalizer()
+    json_path = DATA_DIR / "matches_draft_full.json"
+    csv_path = DATA_DIR / "matches_draft_flat.csv"
+
+    existing_games = []
+    existing_keys = set()
+    max_series_idx = 0
+    if json_path.exists():
+        with open(json_path, "r", encoding="utf-8") as f:
+            existing_games = json.load(f)
+        existing_keys = {
+            (
+                m.get("league"),
+                m.get("stage"),
+                m.get("date"),
+                frozenset([m.get("blue_team"), m.get("red_team")]),
+                m.get("game_number"),
+            )
+            for m in existing_games
+        }
+        for m in existing_games:
+            sid = m.get("series_id", "")
+            if "_S" in sid:
+                try:
+                    s_num = int(sid.split("_S")[-1])
+                    if s_num > max_series_idx:
+                        max_series_idx = s_num
+                except ValueError:
+                    pass
+        print(f"Loaded {len(existing_games)} existing games. Highest series index: {max_series_idx}")
+
     raw_pages = fetch_liquipedia_wikitext_batches(TOURNAMENT_PAGES)
 
-    all_games = []
-    flat_rows = []
-    series_counter = 0
+    all_games = list(existing_games)
+    new_games_count = 0
+    series_counter = max_series_idx
 
     for page_title, wt in raw_pages.items():
         match_blocks = extract_balanced_templates(wt, "Match")
-        page_game_count = 0
+        page_new_count = 0
         for m_block in match_blocks:
-            series_counter += 1
-            games = parse_match_block(m_block, page_title, series_counter, normalize_hero)
-            page_game_count += len(games)
-            for g in games:
-                all_games.append(g)
-                b_bans = g["blue_bans"] + [""] * (4 - len(g["blue_bans"]))
-                r_bans = g["red_bans"] + [""] * (4 - len(g["red_bans"]))
-                b_picks = g["blue_picks"] + [""] * (5 - len(g["blue_picks"]))
-                r_picks = g["red_picks"] + [""] * (5 - len(g["red_picks"]))
+            # Probe games
+            probe_games = parse_match_block(m_block, page_title, series_counter + 1, normalize_hero)
+            if not probe_games:
+                continue
 
-                flat_rows.append(
-                    {
-                        "series_id": g["series_id"],
-                        "league": g["league"],
-                        "year": g["year"],
-                        "stage": g["stage"],
-                        "date": g["date"],
-                        "bestof": g["bestof"],
-                        "game_number": g["game_number"],
-                        "is_ultimate_battle": g["is_ultimate_battle"],
-                        "length": g["length"],
-                        "blue_team": g["blue_team"],
-                        "red_team": g["red_team"],
-                        "blue_win": g["blue_win"],
-                        # Phase 1 Bans
-                        "blue_ban_1": b_bans[0],
-                        "red_ban_1": r_bans[0],
-                        "blue_ban_2": b_bans[1],
-                        "red_ban_2": r_bans[1],
-                        # Phase 2 Bans
-                        "red_ban_3": r_bans[2],
-                        "blue_ban_3": b_bans[2],
-                        "red_ban_4": r_bans[3],
-                        "blue_ban_4": b_bans[3],
-                        # Blue Picks (1-5)
-                        "blue_pick_1": b_picks[0],
-                        "blue_pick_2": b_picks[1],
-                        "blue_pick_3": b_picks[2],
-                        "blue_pick_4": b_picks[3],
-                        "blue_pick_5": b_picks[4],
-                        # Red Picks (1-5)
-                        "red_pick_1": r_picks[0],
-                        "red_pick_2": r_picks[1],
-                        "red_pick_3": r_picks[2],
-                        "red_pick_4": r_picks[3],
-                        "red_pick_5": r_picks[4],
-                        # Global Bans (previously used heroes in same series)
-                        "blue_global_bans_count": len(g["blue_global_bans"]),
-                        "red_global_bans_count": len(g["red_global_bans"]),
-                        "blue_global_bans": "|".join(g["blue_global_bans"]),
-                        "red_global_bans": "|".join(g["red_global_bans"]),
-                    }
+            # Check if any games in this match block are new
+            new_in_block = [
+                g
+                for g in probe_games
+                if (
+                    g.get("league"),
+                    g.get("stage"),
+                    g.get("date"),
+                    frozenset([g.get("blue_team"), g.get("red_team")]),
+                    g.get("game_number"),
                 )
-        print(f"  {page_title}: {page_game_count} complete draft games")
+                not in existing_keys
+            ]
 
-    json_path = DATA_DIR / "matches_draft_full.json"
-    csv_path = DATA_DIR / "matches_draft_flat.csv"
+            if new_in_block:
+                series_counter += 1
+                actual_games = parse_match_block(m_block, page_title, series_counter, normalize_hero)
+                for g in actual_games:
+                    gk = (
+                        g.get("league"),
+                        g.get("stage"),
+                        g.get("date"),
+                        frozenset([g.get("blue_team"), g.get("red_team")]),
+                        g.get("game_number"),
+                    )
+                    if gk not in existing_keys:
+                        all_games.append(g)
+                        existing_keys.add(gk)
+                        new_games_count += 1
+                        page_new_count += 1
+
+        if page_new_count > 0:
+            print(f"  {page_title}: added {page_new_count} new draft games")
+
+    flat_rows = [format_flat_row(g) for g in all_games]
 
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(all_games, f, ensure_ascii=False, indent=2)
@@ -392,7 +455,7 @@ def main():
     df = pd.DataFrame(flat_rows)
     df.to_csv(csv_path, index=False, encoding="utf-8-sig")
 
-    print(f"\nTotal complete professional draft games collected: {len(all_games)}")
+    print(f"\nTotal complete professional draft games collected: {len(all_games)} (+{new_games_count} new)")
     print(f"Saved JSON to: {json_path}")
     print(f"Saved CSV to:  {csv_path}")
 

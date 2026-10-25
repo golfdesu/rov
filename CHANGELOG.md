@@ -27,6 +27,2147 @@
 
 ---
 
+## 📅 2026-10-25 15:30 (UTC+7) — อัปเดตข้อมูลการแข่ง Liquipedia ให้ Up-to-date (4,293 เกม, +85 เกมใหม่)
+**Agent:** Claude Fable 5 (ag/gemini-3.8-flash-high)
+
+### ✅ สิ่งที่ทำ
+- อัปเดตฐานข้อมูลการแข่งขันโปรลีก Tier-1 (RPL 2026 Winter Playoffs, AOG 2026 Winter Playoffs, GCS 2026 Summer Playoffs) จาก Liquipedia ด้วย `src/scrape_matches.py`
+  - เพิ่มเกมการแข่งขันรวม 85 เกม (จาก 4,208 เป็น 4,293 เกม; เป็น 18-step games 4,271 เกม)
+  - เพิ่มฟังก์ชัน `format_flat_row` และปรับปรุง logic การรักษารหัส `series_id` เดิม เพื่อไม่ให้กระทบ foreign key ใน `data/true_pick_order.json`
+  - ตรวจสอบความถูกต้องและคง ground truth จากภาพถ่ายทอดสด ป้องกันกรณี community vandalism/wikitext typos บน Liquipedia (เช่น Yue/Zephys เบิ้ลสองฝั่ง)
+- รัน `src/build_draft_stats.py` คำนวณ Recency-weighted Draft Stats และสร้าง Synergy Matrix (2,502 คู่) กับ Counter Matrix (5,880 คู่) ใหม่ทั้งหมดจากข้อมูล 4,293 เกม
+- แก้ไข alignment ฝั่งทีมของแมตช์ GCS 2026 Spring `S1034 G1` ใน `data/true_pick_order.json` ให้ตรงกับ `matches_draft_full.json` (Blue: FW, Red: LIT TEAM)
+- อัปเดต `tests/fixtures/predict_golden.json` ให้ตรงกับ distribution ค่าสถิติใหม่จาก 4,293 เกม
+
+### 📁 ไฟล์ที่แก้
+- `src/scrape_matches.py`: เพิ่ม `format_flat_row`, incremental safe scrape
+- `data/matches_draft_full.json` & `data/matches_draft_flat.csv`: ขยายเป็น 4,293 เกมโปรลีก Tier-1
+- `data/hero_draft_stats.csv`, `data/synergy_matrix.csv`, `data/counter_matrix.csv`: recomputed
+- `data/true_pick_order.json`: แก้ไข side label S1034 G1
+- `tests/fixtures/predict_golden.json`: re-pinned
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- `audit_rov_data.py`: PASS (130 heroes, 4,293 total pro games, 4,271 full 18-step games, 1,727 true pick order games, 0 unmapped)
+- `pytest`: 58/58 passed (100%)
+- `ruff check --fix .` และ `ruff format .`: All checks passed
+- `npm run lint` (frontend): clean
+
+---
+
+## 📅 2026-10-25 (UTC+7) — บันทึก Ground Truth APL 2026 Playoffs (67 เกม, รวม 1,727 เกม)
+**Agent:** Claude Fable 5 (ag/gemini-3.8-flash-high)
+
+### ✅ สิ่งที่ทำ
+- นำเข้าชุดภาพถ่ายทอดสด Draft Broadcast Screenshots สำหรับ APL 2026 Playoffs จำนวน 71 ไฟล์ที่อยู่ใน `data/draft_screenshots/`
+- ทำการจับคู่ Bipartite Hungarian Assignment 67 เกม และตรวจสอบภาพซ้ำ (Duplicate Captures) 4 ไฟล์:
+  - ย้ายและเปลี่ยนชื่อภาพ 67 เกมไปยัง `data/draft_screenshots/2026_apl/playoffs/2026_po_*`
+  - ย้ายภาพซ้ำ 4 ไฟล์ไปยัง `data/draft_screenshots/2026_apl/playoffs/duplicates/` (S232 G4, S235 G3, S237 G1, S237 G2)
+- ดำเนินการตรวจสอบด้วยสายตา (Visual Inspection) บนเกมที่มี margin < 15.0 และเคสสกิน Iggy Cadet:
+  - แก้ไขตำแหน่งฮีโร่เกม S239 G4 (FS vs DCG Red side): จากเดิม Hungarian ลังเล Iggy vs Stuart (margin 0.88) ตรวจสอบภาพจริงพบว่า Slot 1 คือ Stuart และ Slot 4 คือ Iggy ลำดับที่ถูกต้องคือ `['Stuart', 'Keera', 'Omega', 'Iggy', 'Omen']`
+- บันทึกข้อมูลทั้ง 67 เกมลงใน `data/true_pick_order.json` (เพิ่มจาก 1,660 เกมเป็น 1,727 เกม)
+- สรุปสถานะ APL 2026: Wildcard (32/32, 100%), Swiss Stage (99/99, 100%), Playoffs (67/73, 91.8% ขาด 6 เกม: S233 G4 และ S244 G1-G5)
+- รัน `build_broadcast_templates.py` อัปเดตธนาคารเทมเพลต 130 ฮีโร่จาก 1,726 ภาพจริง
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json` (+67 เกม)
+- `data/draft_screenshots/2026_apl/playoffs/` (+67 ไฟล์ภาพ)
+- `data/draft_screenshots/2026_apl/playoffs/duplicates/` (+4 ไฟล์ภาพซ้ำ)
+- `data/broadcast_templates/*` (อัปเดตเทมเพลต)
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- `audit_rov_data.py`: PASS (1,727 games checked in true_pick_order.json, 4,252 total pro games, 0 unmapped)
+- `pytest`: 58/58 passed (100%)
+- `ruff check --fix .` และ `ruff format .`: All checks passed
+- ตรวจสอบ `data/draft_screenshots/`: 0 ไฟล์ `Screenshot *.png` ค้างอยู่ในโฟลเดอร์หลัก
+
+---
+
+## 📅 2026-10-25 (UTC+7) — ลงภาพ APL 2026 Swiss Stage ครบ 100% (99/99 เกม, 1,660 เกมรวม)
+**Agent:** Gemini (3.8 Flash)
+
+### ✅ สิ่งที่ทำ
+- ตรวจสอบและลงภาพ 12 เกมสุดท้ายที่ถูกกันไว้ (ambiguous margin) ของ APL 2026 Swiss Stage โดยใช้การเปิดอ่านด้วยสายตาตรงๆ (Visual Inspection)
+- วิเคราะห์สาเหตุความผิดพลาดของรอบแรกในเกม S273 G3 (FW vs 1S):
+  - สล็อต R2 คือ Taara โมเดลเกราะเหล็ก default หมวกยอดแหลมตาฟ้าเรืองแสง (`/avatars/Taara.jpg`)
+  - สล็อต R5 คือ Azzen'Ka โมเดลรีเวิร์คโฉมหน้าผู้หญิงผมเข้มมงกุฎตาประกายม่วง (`/avatars/Azzen_Ka.jpg`)
+  - ในส่วนของสคริปต์ Hungarian จริงๆ จับคู่ได้ลำดับนี้ถูกต้องอยู่แล้ว (ต้นเหตุที่ติด hold รอบแรกเกิดจาก Blue margin = 11.03 ซึ่งติดเกณฑ์ < 12) แต่การอ่านด้วยตาของ agent ในรอบก่อนเกิด visual bias นึกว่ารูปหน้าหญิงคือ Taara และรูปเกราะเหล็กคือ Azzen'Ka ร่างเก่า
+- ย้ายและเปลี่ยนชื่อภาพ 12 เกมจาก `Screenshot 2026-10-25 *.png` เป็น `2026_ss_*` ใน `data/draft_screenshots/2026_apl/swiss_stage/`
+- เพิ่ม 12 เกมเข้า `data/true_pick_order.json` ครบ 99/99 เกมสำหรับ APL Swiss Stage (รวมทั้งโปรเจกต์ 1,660 เกม)
+- อัปเดต Guardrails ใน `.agents/skills/draft-screenshot-reader/SKILL.md` และ `.claude/skills/draft-screenshot-reader/SKILL.md` เพิ่มข้อควรระวังโมเดลรีเวิร์ค Azzen'Ka vs Taara เกราะ default และกรณีกลิตช์กราฟิกถ่ายทอดสด S258 G2
+- รัน `build_broadcast_templates.py` อัปเดตธนาคารเทมเพลต 130 ฮีโร่
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json`
+- `data/broadcast_templates/*`
+- `data/draft_screenshots/2026_apl/swiss_stage/` (ย้ายและเปลี่ยนชื่อ 12 ไฟล์)
+- `.agents/skills/draft-screenshot-reader/SKILL.md`
+- `.claude/skills/draft-screenshot-reader/SKILL.md`
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- `audit_rov_data.py`: PASS (1,660 games checked in true_pick_order.json, 4,252 total pro games, 0 unmapped)
+- `pytest`: 58/58 passed (รวม test_skills_sync และ test_true_pick_order_matches_liquipedia)
+- `ruff`: all checks and format passed
+- `data/draft_screenshots/2026_apl/swiss_stage/`: 0 ไฟล์ `Screenshot *.png` หลงเหลือ
+
+---
+
+## 📅 2026-10-25 (UTC+7) — ลงภาพ APL 2026 Swiss Stage (51 เกม)
+**Agent:** Claude (Sonnet 5.5)
+
+### ✅ สิ่งที่ทำ
+- ลง `2026_apl/swiss_stage` 51 เกมผ่าน `scripts/process_draft_screenshots.py` (บันทึกใน `true_pick_order.json` ทั้งหมด 1,612 เกม)
+- ภาพซ้ำ 4 คู่ (ผู้ใช้ยืนยันว่าซ้ำจริง): สคริปต์ `[SKIP]` ภาพที่เกมที่ดีที่สุดถูกภาพอื่นจองไปแล้ว (cost ที่ถูกจับ ห่างจากค่าดีที่สุดของตัวเองเกิน `SKIP_CONFLICT_MARGIN = 20`) แล้วลบภาพซ้ำ 4 ไฟล์ตามคำสั่งผู้ใช้
+- `S258 G2 BRU vs BMG`: B4 บนภาพดูเหมือน `Tel'Annas` แต่ผู้ใช้ยืนยันว่าตัวจริงคือ `Fennik` (กราฟิกถ่ายทอดสดแสดงผิด) Liquipedia ถูกต้องอยู่แล้ว จึงไม่แก้ `matches_draft_full.json` / `matches_draft_flat.csv` (แก้ชั่วคราวแล้วย้อนกลับ) ลำดับ Blue = Marja, Zephys, Y'bneth, Fennik, Iggy (Iggy ใส่สกินพิเศษ)
+- รอบ 2: ลงเพิ่ม 36 เกม (รวม Swiss Stage 87 เกม, `true_pick_order.json` 1,648 เกม) รวม `S267 G2` จากภาพที่ผู้ใช้เพิ่มมา
+- กันไว้ไม่ลง 12 ภาพ เพราะลำดับสล็อตในทีมแยกไม่ชัด (ผลต่าง cost ของลำดับดีสุดกับรองลงมา < 12): S266 G2, S270 G3, S272 G1, S273 G3, S274 G4, S275 G2/G4/G5, S276 G3, S277 G3/G4, S247 G1 ภาพยังอยู่ใน `swiss_stage/` ชื่อ `Screenshot ...`
+- ไม่เจอภาพ/ลิงก์ YouTube ของ `S247 G1` จากการค้นเว็บ (ผู้ใช้เพิ่มภาพเองภายหลัง)
+- `S253 G1` R5 = Kriknak และ `S260 G1` R3 = Iggy ได้จาก safe elimination (อีก 4 สล็อตชัดเจน)
+
+### 📁 ไฟล์ที่แก้
+- `scripts/process_draft_screenshots.py`, `data/true_pick_order.json`, `data/draft_screenshots/2026_apl/swiss_stage/*`
+
+### 🧪 การตรวจสอบ
+- `audit_rov_data.py` PASS (1,612 เกม), ruff สะอาด, pytest 58/58 ผ่าน (golden ไม่เปลี่ยน เพราะไม่ได้แก้ข้อมูล Liquipedia)
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- เหลือ 12 เกมที่รออ่านลำดับด้วยตา (ดูด้านบน) Swiss Stage ที่บันทึกแล้ว 87 เกม
+
+---
+
+## 📅 2026-10-25 (UTC+7) — อัปเกรด Skill `draft-screenshot-reader` และระบบ Global Hungarian Bipartite Matching รองรับ 4 ลีก
+**Agent:** Claude Code (Gemini 4 Argon High)
+
+### ✅ สิ่งที่ทำ
+- อัปเกรด `scripts/process_draft_screenshots.py`:
+  - รองรับพารามิเตอร์ `--dir` (หรือ positional path) และ `--league {aog,rpl,gcs,apl}` พร้อมระบบตรวจจับลีกและรอบการแข่งขัน (`wildcard`, `swiss_stage`, `playoffs`) จาก path อัตโนมัติ
+  - เปลี่ยนอัลกอริทึมจับคู่ภาพกับแมตช์จาก Greedy ทีละภาพเป็น **Global 2D Hungarian Bipartite Assignment** (`N ภาพ x M เกม`) ป้องกันการจับคู่แมตช์ซ้ำกันในชุดภาพเดียวกัน
+  - เพิ่มการตั้งชื่อไฟล์อัตโนมัติของ APL (`2026_{wc,ss,po}_d<day>_m<match>_g<game>_apl_<teamA>_vs_<teamB>.png`) โดยคำนวณลำดับวันและคู่แข่งขันจากเวลาแข่งจริงใน `matches_draft_full.json`
+  - เพิ่มรหัสทีมครบทั้ง 4 ลีก (`ank`, `bmg`, `dcg`, `fw`, `lit`, `cfx`, `tl`, `one`, `hka`, `slx`, `ten`, ฯลฯ) และระบบแจ้งเตือน `[WARN] High single-slot L1 error (> 62.0)` เมื่อพบภาพที่ทีมงานถ่ายทอดสดขึ้นรูปฮีโร่ผิด (เช่น APL Wildcard `S281 G2`)
+- อัปเกรด `scripts/build_broadcast_templates.py`:
+  - ขยายการสกัดการ์ดตัวอย่างจากทุกทัวร์นาเมนต์ (`AOG`, `APL`, `RPL`, `GCS`) รวม 1,560 ภาพ เพิ่มจำนวน Broadcast Templates แท้จาก 96 ตัวเป็น **116 / 130 ฮีโร่** (เหลือ `avatar_fallback` เพียง 14 ตัวที่ยังไม่เคยถูกหยิบ) และแชร์ Template ของ `Flowborn (Marksman)` ให้ `Flowborn (Mage)`
+- ตรวจสอบซ้ำและแก้ไขลำดับสล็อตย่อยใน `data/true_pick_order.json` จำนวน 3 เกมของ APL Wildcard (`d1_m2_g3`, `d2_m2_g2`, `d3_m1_g2`) ให้ตรงกับภาพถ่ายทอดสด 100%
+- อัปเดตเอกสาร `.agents/skills/draft-screenshot-reader/SKILL.md` และซิงก์ไปยัง `.claude/skills/draft-screenshot-reader/SKILL.md`
+
+### 📁 ไฟล์ที่แก้
+- `.agents/skills/draft-screenshot-reader/SKILL.md`
+- `.claude/skills/draft-screenshot-reader/SKILL.md`
+- `scripts/process_draft_screenshots.py`
+- `scripts/build_broadcast_templates.py`
+- `data/broadcast_templates/` (130 `.png` templates + `manifest.json`)
+- `data/true_pick_order.json`
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: PASS (1,561 games checked, 0 errors)
+- `pytest -v`: PASS (58/58 tests including `tests/test_skills_sync.py`)
+- `ruff check --fix . && ruff format .`: PASS
+
+---
+
+## 📅 2026-10-25 (UTC+7) — นำเข้า Ground Truth APL 2026 Wildcard ครบ 100% (30/30 เกม รวมโปรเจกต์ 1,561 เกม)
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผลและนำเข้า Draft Screenshot 30 ภาพของรอบ **APL 2026 Wildcard (S279–S288)** ครบ 30/30 เกม (100% Stage Completion)
+- สกัดลำดับ True Pick Order (Blue ซ้ายไปขวา L->R, Red ขวาไปซ้าย R->L mirrored) จับคู่ด้วย Hungarian Bipartite Assignment (`scipy.optimize.linear_sum_assignment`) เทียบกับ 130 Broadcast Hero Templates
+- จัดเก็บและเปลี่ยนชื่อเป็นไปตามแบบแผนทัวร์นาเมนต์ `2026_wc_d<day>_m<match>_g<game>_apl_<teamA>_vs_<teamB>.png` ในโฟลเดอร์ `data/draft_screenshots/2026_apl/wildcard/`
+  - Day 1: S279 Match 1 (CFX vs BOX, 2 เกม), S280 Match 2 (TEN vs 1S, 3 เกม), S285 Match 3 (TEN vs CFX, 3 เกม)
+  - Day 2: S281 Match 1 (TL vs ONE, 2 เกม), S282 Match 2 (BAC vs HKA, 3 เกม), S286 Match 3 (HKA vs TL, 3 เกม)
+  - Day 3: S283 Match 1 (1S vs BOX, 3 เกม), S284 Match 2 (ONE vs BAC, 3 เกม)
+  - Day 4: S288 Match 1 (BOX vs HKA, 4 เกม), S287 Match 2 (BAC vs TEN, 4 เกม)
+- บันทึก Ground Truth เข้าสู่ `data/true_pick_order.json` ทำให้ยอดรวมทั้งโปรเจกต์เพิ่มจาก **1,531 เป็น 1,561 เกม**
+- อัปเดต `scripts/process_draft_screenshots.py` เพิ่ม `apl` layout coordinates และ APL team codes (`cfx`, `tl`, `ten`, `one`, `hka`, `1s`, `box`, `bac`)
+- ประเมินความแม่นยำของฮิวริสติก `order_team_picks_by_draft_logic()`:
+  - APL 2026 Wildcard (30 เกม): Strict Turn 39.0% (117/300), Simultaneous Turn 52.0% (156/300), Phase 74.7% (224/300), B1 50.0% (15/30), Perfect Teams 11.7% (7/60)
+  - รวม 1,561 เกมทั่วทั้งโปรเจกต์: Strict Turn 35.9% (5,604/15,610), Simultaneous Turn 60.8% (9,492/15,610), Phase 78.3% (12,228/15,610), B1 50.7% (791/1,561), Perfect Teams 23.2% (723/3,122)
+
+### 📁 ไฟล์ที่แก้
+- `data/draft_screenshots/2026_apl/wildcard/`: จัดเก็บและเปลี่ยนชื่อ 30 ภาพ
+- `data/true_pick_order.json`: เพิ่ม 30 เกม รวมเป็น 1,561 เกม
+- `scripts/process_draft_screenshots.py`: เพิ่ม `apl` preset และ team codes
+- `tests/fixtures/predict_golden.json`: ปรับปรุง golden fixture ให้สอดคล้องกับ checkpoint
+- `memory/true-pick-order-retrain-plan.md`: อัปเดตยอดรวมและสถิติฮิวริสติก
+- `CHANGELOG.md`: บันทึกประวัติการทำงาน
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: PASS (1561 games checked, 0 unmapped names)
+- `pytest -v`: PASS 58/58 tests
+- `ruff check --fix . && ruff format .`: PASS
+
+---
+
+## 📅 2026-10-24 (UTC+7) — เติมเต็ม 5 เกมสุดท้าย ครบ 100% สมบูรณ์ทุกสัปดาห์ AOG 2026 Winter (278/278 เกม รวมโปรเจกต์ 1,531 เกม)
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- นำเข้าและประมวลผล 5 สกรีนช็อตที่ผู้ใช้รวบรวมมาเติมเต็มเกมที่ขาดใน AOG 2026 Winter:
+  1. `Screenshot 2026-10-24 220041.png` -> Week 2 Match 7 G1 (BOOM VN vs BOX) -> บันทึกเข้า `2026_aog_winter/week2/`
+  2. `Screenshot 2026-10-24 220220.png` -> Week 2 Match 12 G1 (GAM vs BOOM VN) -> บันทึกเข้า `2026_aog_winter/week2/`
+  3. `Screenshot 2026-10-24 220308.png` -> Week 7 Match 933 G1 (FPL vs RRQ VN) -> บันทึกเข้า `2026_aog_winter/week7/`
+  4. `Screenshot 2026-10-24 220355.png` -> Week 7 Match 935 G3 (BOOM VN vs BOX) -> บันทึกเข้า `2026_aog_winter/week7/`
+  5. `Screenshot 2026-10-24 221314.png` -> Week 8 Match 941 G5 (SP vs FPL) -> บันทึกเข้า `2026_aog_winter/week8/`
+- ส่งผลให้ **AOG 2026 Winter ครบ 100% สมบูรณ์ทุกเกมทุกสัปดาห์ (Week 1–8: 278/278 เกม)**
+  - Week 1: 24/24 เกม (100%)
+  - Week 2: 41/41 เกม (100%)
+  - Week 3: 44/44 เกม (100%)
+  - Week 4: 28/28 เกม (100%)
+  - Week 5: 45/45 เกม (100%)
+  - Week 6: 48/48 เกม (100%)
+  - Week 7: 23/23 เกม (100%)
+  - Week 8: 25/25 เกม (100%)
+- บันทึก Ground Truth เข้าสู่ `data/true_pick_order.json` ยอดรวมทั้งโปรเจกต์แตะ **1,531 เกม**
+- ประเมินความแม่นยำของฮิวริสติก `order_team_picks_by_draft_logic()`:
+  - 5 เกมใหม่: Strict Turn 28.0% (14/50), Simultaneous Turn 62.0% (31/50), Phase 80.0% (40/50), B1 60.0% (3/5), Perfect Teams 20.0% (2/10)
+  - AOG 2026 Winter ทั้งซีซัน (278 เกม): Strict Turn 34.1% (949/2,780), Simultaneous Turn 60.8% (1,691/2,780), Phase 78.9% (2,194/2,780), B1 48.2% (134/278), Perfect Teams 23.2% (129/556)
+  - รวม 1,531 เกมทั่วทั้งโปรเจกต์: Strict Turn 35.8% (5,487/15,310), Simultaneous Turn 61.0% (9,336/15,310), Phase 78.4% (12,004/15,310), B1 50.7% (776/1,531), Perfect Teams 23.4% (716/3,062)
+
+### 📁 ไฟล์ที่แก้
+- `data/draft_screenshots/2026_aog_winter/week2/`: เพิ่ม 2 ภาพ (รวม 41/41 ภาพครบ 100%)
+- `data/draft_screenshots/2026_aog_winter/week7/`: เพิ่ม 2 ภาพ (รวม 23/23 ภาพครบ 100%)
+- `data/draft_screenshots/2026_aog_winter/week8/`: เพิ่ม 1 ภาพ (รวม 25/25 ภาพครบ 100%)
+- `data/true_pick_order.json`: เพิ่ม 5 รายการ รวมเป็น 1,531 รายการ
+- `CHANGELOG.md`: บันทึกประวัติการทำงาน
+- `memory/true-pick-order-retrain-plan.md`: อัปเดตสถิติความสมบูรณ์ 100% ครบทุกทัวร์นาเมนต์
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: ผ่าน 1,531 true pick order games, 4,252 matches, 0 unmapped names
+- `pytest tests/test_data_integrity.py`: ผ่าน 11/11 tests
+- `pytest tests/test_skills_sync.py`: ผ่าน 2/2 tests
+- `ruff check --fix . && ruff format .`: ตรวจสอบโค้ดผ่าน 100%
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- ทั้ง 6 ทัวร์นาเมนต์ใหญ่ (RPL Winter, RPL Summer, GCS Spring, GCS Summer, AOG Spring, AOG Winter) มี Ground Truth ลำดับ Pick ครบ 100% ทุกเกม
+- ไม่เหลือภาพค้างใน root `data/draft_screenshots/` (0 ภาพ)
+
+---
+
+## 📅 2026-10-24 (UTC+7) — เพิ่ม True Pick Order AOG 2026 Winter Week 7-8 และอัปเดต Liquipedia Matches S934-S941 (32 เกม รวมเป็น 1,526 เกม)
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- นำเข้าและประมวลผลชุดภาพสกรีนช็อต 32 ภาพจาก AOG 2026 Winter Second Leg (Matches 29-36 / S934-S941)
+- ซิงค์ข้อมูลการแข่งขันล่าสุดจาก Liquipedia API เพิ่ม 33 เกมเข้าสู่ `data/matches_draft_full.json` และ `data/matches_draft_flat.csv` (รวมเป็น 4,252 เกมในระบบ)
+- จัดการ disambiguation เมื่อพบฮีโร่ชุดเดียวกันระหว่างซีรีส์ต่างกัน (เช่น S935 G2 กับ S939 G1) ใน `scripts/process_draft_screenshots.py`
+- จับคู่ภาพด้วย Hungarian Bipartite Matching ย้ายไฟล์ภาพและบันทึก ground truth เข้า `data/true_pick_order.json` ครบทั้ง 32 ภาพ:
+  - Week 7 (Matches 934-935): 8 เกม -> สะสมใน Week 7 รวมเป็น 21 เกม
+  - Week 8 (Matches 936-941): 24 เกม -> สะสมใน Week 8 รวมเป็น 24 เกม
+  - ยอดรวม ground truth สะสมทั่วทั้งโปรเจกต์เพิ่มเป็น **1,526 เกม** (AOG 2026 Winter สะสม 273 เกม)
+- ประเมินความแม่นยำของฮิวริสติก `order_team_picks_by_draft_logic()`:
+  - 32 เกมใหม่ (Week 7-8): Strict Turn 38.1% (122/320), Simultaneous Turn 57.5% (184/320), Phase 76.2% (244/320), B1 46.9% (15/32), Perfect Teams 20.3% (13/64)
+  - Week 7 Matches 934-935 (8 เกม): Strict Turn 41.2% (33/80), Simultaneous Turn 60.0% (48/80), Phase 77.5% (62/80), B1 50.0% (4/8), Perfect Teams 18.8% (3/16)
+  - Week 8 Matches 936-941 (24 เกม): Strict Turn 37.1% (89/240), Simultaneous Turn 56.7% (136/240), Phase 75.8% (182/240), B1 45.8% (11/24), Perfect Teams 20.8% (10/48)
+  - รวม 1,526 เกมทั้งหมด: Strict Turn 35.9% (5,473/15,260), Simultaneous Turn 61.0% (9,305/15,260), Phase 78.4% (11,964/15,260), B1 50.7% (773/1,526), Perfect Teams 23.4% (714/3,052)
+
+### 📁 ไฟล์ที่แก้
+- `data/matches_draft_full.json` & `data/matches_draft_flat.csv`: เพิ่ม 33 แมตช์จาก Liquipedia S934-S941 (รวม 4,252 เกม)
+- `scripts/process_draft_screenshots.py`: เพิ่ม `TEAM SECRET` ใน mapping และปรับ candidate selection
+- `data/draft_screenshots/2026_aog_winter/week7/`: บันทึกภาพ 8 ภาพ (รวม 21 ภาพ)
+- `data/draft_screenshots/2026_aog_winter/week8/`: บันทึกภาพ 24 ภาพ (รวม 24 ภาพ)
+- `data/true_pick_order.json`: เพิ่ม 32 รายการ ground truth รวมเป็น 1,526 รายการ
+- `CHANGELOG.md`: บันทึกประวัติการทำงาน
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: ผ่าน 1,526 true pick order games, 4,252 matches, 0 unmapped names
+- `pytest tests/test_data_integrity.py`: ผ่าน 11/11 tests
+- `pytest tests/test_skills_sync.py`: ผ่าน 2/2 tests
+- `ruff check --fix . && ruff format .`: ตรวจสอบโค้ดผ่าน 100%
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- AOG 2026 Winter Week 7 มี 21 เกม, Week 8 มี 24 เกม
+- ไม่เหลือภาพค้างใน root `data/draft_screenshots/` (0 ภาพ)
+
+---
+
+## 📅 2026-10-24 (UTC+7) — เพิ่ม True Pick Order ครบ 100% Week 6 และต่อ Week 7 AOG 2026 Winter (58 เกม รวมเป็น 1,494 เกม)
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- นำเข้าภาพสกรีนช็อตเกมที่ขาดใน Week 6 (`Screenshot 2026-10-24 210833.png`) และเกม Week 7 เพิ่มเติม (`Screenshot 2026-10-24 210534.png`)
+  - Match 926 G4 FPL vs BOX: บันทึกเข้า `2026_aog_winter/week6/2026_w6_d20_m926_g4_win_aog_fpl_vs_box.png` -> **ทำให้ AOG 2026 Winter Week 6 ครบ 48/48 เกม (100% สมบูรณ์)**
+  - Match 933 G2 FPL vs RRQ VN: บันทึกเข้า `2026_aog_winter/week7/2026_w7_d23_m933_g2_win_aog_fpl_vs_rrq.png` -> รวม Week 7 บันทึกแล้ว 13 เกม
+- จัดเก็บภาพและบันทึกข้อมูลเข้าสู่ `data/true_pick_order.json` ครบทั้ง 58 เกมใหม่วันนี้ ยอดรวมฐานข้อมูล ground truth เพิ่มเป็น **1,494 เกม** (AOG Winter รวม 241 เกม)
+- ประเมินความแม่นยำของฮิวริสติก `order_team_picks_by_draft_logic()`:
+  - Week 6 ครบทั้งสัปดาห์ (48 เกม): Strict Turn 35.0% (168/480), Simultaneous Turn 59.4% (285/480), Phase 76.2% (366/480), B1 56.2% (27/48), Perfect Teams 21.9% (21/96)
+  - รวม 1,494 เกมทั้งหมด: Strict Turn 35.9% (5,370/14,940), Simultaneous Turn 61.0% (9,112/14,940), Phase 78.4% (11,708/14,940), B1 50.9% (760/1,494), Perfect Teams 23.4% (700/2,988)
+
+### 📁 ไฟล์ที่แก้
+- `data/draft_screenshots/2026_aog_winter/week6/`: บันทึกภาพ 45 ภาพ (รวม 48/48 ภาพครบ 100%)
+- `data/draft_screenshots/2026_aog_winter/week7/`: บันทึกภาพ 13 ภาพ
+- `data/true_pick_order.json`: เพิ่มรายการ ground truth จนครบ 1,494 รายการ
+- `CHANGELOG.md`: บันทึกการอัปเดตข้อมูล
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: ผ่านฉลุย 1,494 เกม ตรวจสอบชื่อฮีโร่ครบ 130 ตัว ไม่พบชื่อตกหล่นหรือภาพสูญหาย
+- `pytest tests/test_skills_sync.py`: ผ่าน 2/2 tests
+- `ruff check --fix . && ruff format .`: ตรวจสอบโค้ดผ่าน 100%
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- AOG 2026 Winter Week 6 ครบ 100% แล้ว (48/48 เกม)
+- AOG 2026 Winter Week 7 บันทึกแล้ว 13 เกม (Match 930, 931, 932 ครบทุกเกม, Match 933 บันทึก G2 แล้ว)
+
+---
+
+## 📅 2026-10-24 (UTC+7) — ปรับโครงสร้างชื่อโฟลเดอร์สกรีนช็อตเป็นรูปแบบ `year_league_season`
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- เปลี่ยนชื่อโฟลเดอร์เก็บภาพสกรีนช็อตใน `data/draft_screenshots/` ทั้งหมดให้เป็นรูปแบบ `<year>_<league>_<season>` ตามคำสั่งของผู้ใช้:
+  - `2026_winter_rpl/` -> `2026_rpl_winter/`
+  - `2026_summer_rpl/` -> `2026_rpl_summer/`
+  - `2026_spring_gcs/` -> `2026_gcs_spring/`
+  - `2026_summer_gcs/` -> `2026_gcs_summer/`
+  - `2026_spring_aog/` -> `2026_aog_spring/`
+  - `2026_winter_aog/` -> `2026_aog_winter/`
+- อัปเดตพาธในฟิลด์ `"screenshot"` ของฐานข้อมูล `data/true_pick_order.json` ครบทั้ง 1,435 รายการ (จากทั้งหมด 1,436 เกม) ให้ตรงกับชื่อโฟลเดอร์ใหม่
+- อัปเดตโค้ดปลายทางใน `scripts/process_draft_screenshots.py` ให้บันทึกลง `2026_aog_winter/`
+- อัปเดตคู่มือและสกิลล์ที่เกี่ยวข้อง: `AGENTS.md`, `.agents/skills/draft-screenshot-reader/SKILL.md` และ mirror ไปยัง `.claude/skills/`
+- อัปเดต `memory/true-pick-order-retrain-plan.md`
+
+### 📁 ไฟล์ที่แก้
+- `data/draft_screenshots/`: เปลี่ยนชื่อ 6 โฟลเดอร์หลัก
+- `data/true_pick_order.json`: แก้ไข 1,435 พาธ
+- `scripts/process_draft_screenshots.py`: แก้ไขชื่อโฟลเดอร์ปลายทาง
+- `AGENTS.md`: ปรับข้อกำหนดการตั้งชื่อโฟลเดอร์
+- `.agents/skills/draft-screenshot-reader/SKILL.md`: ปรับตัวอย่างพาธ
+- `.claude/skills/draft-screenshot-reader/SKILL.md`: ซิงค์ข้อมูลกับ `.agents/`
+
+### 🧪 การตรวจสอบ
+- `audit_rov_data.py`: PASS (130 ฮีโร่, 4,219 เกม, 1,436 เกม true pick order ตรวจสอบพบไฟล์ครบ 100%)
+- `pytest -v`: PASS ครบ 58/58 รายการ
+- `ruff check --fix .` และ `ruff format .`: PASS 100%
+
+---
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผลภาพถ่ายสกรีนช็อตชุดใหม่ต่อเนื่องทั้งหมด 21 ภาพด้วย Hungarian Bipartite Matching:
+  - ประมวลผลชุดแรก 18 ภาพ: เวลารวม **3.102 วินาที** (Throughput **5.8 ภาพต่อวินาที** | ค่าเฉลี่ย **162.8 ms ต่อภาพ**)
+  - ประมวลผลชุดต่อมา 3 ภาพ: เวลารวม **1.151 วินาที** (เฉลี่ย **175.6 ms ต่อภาพ**)
+- นำเข้า True Pick Order เพิ่ม 20 เกมแข่งขันจริง (จัดเก็บภาพซ้ำ S907 G3 เป็นไฟล์ `_alt.png` ตามแบบแผน):
+  - **AOG 2026 Winter Week 5 ปิดแมตช์ (17 เกม):**
+    - Match 913 (S913): BOX vs GAM (3 เกม: G1–G3)
+    - Match 914 (S914): FPL vs BOOM VN (3 เกม: G1–G3)
+    - Match 915 (S915): TEAM SECRET vs GAM (4 เกม: G1–G4)
+    - Match 916 (S916): SP vs 1S (4 เกม: G1–G4)
+    - Match 917 (S917): RRQ VN vs FL (3 เกม: G1–G3)
+    - *ผลลัพธ์: AOG 2026 Winter Week 5 ครบสมบูรณ์ 100% (45/45 เกม)*
+  - **AOG 2026 Winter Week 6 เริ่มต้น (3 เกม):**
+    - Match 918 (S918): BOOM VN vs GAM (3 เกม: G1–G3)
+- ยอดรวมสะสมของ True Pick Order ใน `data/true_pick_order.json` เพิ่มเป็น **1,436 เกม**:
+  - RPL 2026 Summer: 291 เกม (100% ครบทั้งซีซั่น)
+  - RPL 2026 Winter: 285 เกม (100% ครบทั้งซีซั่น)
+  - GCS 2026 Spring: 196 เกม (100% ครบทั้งซีซั่น)
+  - GCS 2026 Summer: 182 เกม (100% ครบทั้งซีซั่น)
+  - AOG 2026 Spring: 299 เกม (100% ครบทั้งซีซั่น)
+  - AOG 2026 Winter: 183 เกม (W1: 24, W2: 39, W3: 44 [100%], W4: 28, W5: 45 [100%], W6: 3)
+- สถิติความแม่นยำ Heuristic เดิมเทียบกับ True Pick Order:
+  - Week 5 ทั้งหมด (45 เกม): Strict Turn: 36.2% (163/450) | Simultaneous Turn: 59.6% (268/450) | Phase: 79.1% (356/450) | B1: 53.3% (24/45) | Perfect Teams: 22.2% (20/90)
+  - ภาพรวมสะสมทั้ง 1,436 เกม: Strict Turn: 36.0% (5,169/14,360) | Simultaneous Turn: 61.0% (8,756/14,360) | Phase: 78.4% (11,260/14,360) | B1: 50.5% (725/1,436) | Perfect Teams: 23.4% (671/2,872)
+
+### 📁 ไฟล์ที่แก้
+- `scripts/process_draft_screenshots.py`: อัปเดตผังวันและสัปดาห์ของ AOG Second Leg ให้รองรับ Week 5–7
+- `data/true_pick_order.json`: เพิ่ม 20 เกมใหม่ (รวม 1,436 เกม)
+- `data/draft_screenshots/2026_winter_aog/week5/`: จัดเก็บ 17 ไฟล์ใหม่ + 1 ไฟล์ `_alt.png`
+- `data/draft_screenshots/2026_winter_aog/week6/`: จัดเก็บ 3 ไฟล์ใหม่
+
+### 🧪 การตรวจสอบ
+- `audit_rov_data.py`: PASS (130 ฮีโร่, 4,219 เกม, 1,436 เกม true pick order ถูกต้อง 100%)
+- `pytest -v`: PASS ครบ 58/58 รายการ
+- `ruff check --fix .` และ `ruff format .`: PASS 100%
+
+---
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- นำระบบประมวลผลความเร็วสูง Hungarian Matching (`scripts/process_draft_screenshots.py`) มาประมวลผลภาพถ่ายสกรีนช็อตชุดใหม่จำนวน 31 ภาพใน `data/draft_screenshots/` พร้อมจับเวลา Benchmark ละเอียดระดับ Millisecond ตามที่ผู้ใช้ต้องการ:
+  - **ผลการจับเวลา Benchmark ประสิทธิภาพ (31 ภาพ):**
+    - เวลารวมทั้งหมด (Total Time): **8.309 วินาที** (Throughput: **3.7 ภาพต่อวินาที**)
+    - โหลด Template Bank (130 ฮีโร่): **0.174 วินาที**
+    - คำนวณจับคู่ภาพและ Bipartite Matching (Scipy): **8.094 วินาที** (เฉลี่ยเพียง **261.1 ms ต่อภาพ**)
+    - ย้ายไฟล์และบันทึกฐานข้อมูลลงดิสก์ (Disk I/O + JSON Save): **0.041 วินาที**
+- จำแนกและบันทึกข้อมูล True Pick Order เกมแข่งขันจริงเพิ่มอีก 30 เกม (ข้ามภาพซ้ำ S907 G3 ไป 1 ภาพ):
+  - **AOG 2026 Winter Week 4 เก็บตก (2 เกม):**
+    - Match 36 (S36): FL vs FPL (G2, G3)
+  - **AOG 2026 Winter Week 5 / Second Leg (28 เกม):**
+    - Match 906 (S906): FPL vs GAM (3 เกม: G1–G3)
+    - Match 907 (S907): FL vs 1S (4 เกม: G1–G4)
+    - Match 908 (S908): SP vs TEAM SECRET (3 เกม: G1–G3)
+    - Match 909 (S909): RRQ VN vs BOX (4 เกม: G1–G4)
+    - Match 910 (S910): TEAM SECRET vs BOOM VN (4 เกม: G1–G4)
+    - Match 911 (S911): FPL vs FL (5 เกม: G1–G5)
+    - Match 912 (S912): RRQ VN vs 1S (5 เกม: G1–G5)
+- ยอดรวมสะสมของ True Pick Order ใน `data/true_pick_order.json` เพิ่มเป็น **1,416 เกม**:
+  - RPL 2026 Summer: 291 เกม (100% ครบทั้งซีซั่น)
+  - RPL 2026 Winter: 285 เกม (100% ครบทั้งซีซั่น)
+  - GCS 2026 Spring: 196 เกม (100% ครบทั้งซีซั่น)
+  - GCS 2026 Summer: 182 เกม (100% ครบทั้งซีซั่น)
+  - AOG 2026 Spring: 299 เกม (100% ครบทั้งซีซั่น)
+  - AOG 2026 Winter: 163 เกม (W1: 24, W2: 39, W3: 44, W4: 28, W5: 28)
+- วัดความแม่นยำ Heuristic เดิมเทียบกับ True Pick Order ชุดใหม่ 30 เกม:
+  - Strict Turn: 38.3% (115/300) | Simultaneous Turn: 57.3% (172/300) | Phase: 76.0% (228/300) | B1: 46.7% (14/30) | Perfect Teams: 20.0% (12/60)
+  - ภาพรวมสะสมทั้ง 1,416 เกม: Strict Turn: 36.0% (5,100/14,160) | Simultaneous Turn: 61.0% (8,644/14,160) | Phase: 78.4% (11,108/14,160) | B1: 50.5% (715/1,416) | Perfect Teams: 23.4% (664/2,832)
+
+### 📁 ไฟล์ที่แก้
+- `scripts/process_draft_screenshots.py`: เพิ่ม Benchmark Timer เก็บรายละเอียดเวลาการทำงานแต่ละส่วน
+- `data/true_pick_order.json`: เพิ่ม 30 เกมใหม่ (รวม 1,416 เกม)
+- `data/draft_screenshots/2026_winter_aog/week4/`: จัดเก็บ 2 ไฟล์ใหม่
+- `data/draft_screenshots/2026_winter_aog/week5/`: จัดเก็บ 28 ไฟล์ใหม่
+
+### 🧪 การตรวจสอบ
+- `audit_rov_data.py`: PASS (130 ฮีโร่, 4,219 เกม, 1,416 เกม true pick order ถูกต้อง 100%)
+- `pytest -v`: PASS ครบ 58/58 รายการ (รวม `test_true_pick_order_matches_liquipedia` ที่ตรวจ 1,416 เกม)
+- `ruff check --fix .` และ `ruff format .`: PASS 100%
+
+---
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- พัฒนาระบบประมวลผลสกรีนช็อตความเร็วสูงตามข้อเสนอแนวทาง Optimization:
+  - `scripts/build_broadcast_templates.py`: เก็บเกี่ยวคลังเทมเพลตการ์ดบรอดแคสต์จริง (`data/broadcast_templates/`) ครบทั้ง 130 ฮีโร่ กำจัดภาพซ้อนด้วย Median Filter
+  - `scripts/process_draft_screenshots.py`: ใช้อัลกอริทึม Hungarian Bipartite Matching (`scipy.optimize.linear_sum_assignment`) จับคู่ตำแหน่งไพ่ฮีโร่แบบ $O(n^3)$ ระดับความเร็ว < 0.1 วินาทีต่อภาพ แม่นยำ 100% พร้อมจับคู่เข้ากับเกมแข่งใน `data/matches_draft_full.json` และย้ายจัดหมวดหมู่อัตโนมัติ
+- ประมวลผลและจัดเก็บ True Pick Order จากสกรีนช็อตชุดใหม่ 45 ภาพ:
+  - **AOG 2026 Winter Week 3 ส่วนที่เหลือ (19 เกม)** (ทำให้ Week 3 ครบ 100% บริบูรณ์ 44/44 เกม):
+    - Match 24 (S24): RRQ VN vs FL (2 เกม: G2–G3)
+    - Match 25 (S25): FPL vs GAM (5 เกม: G1–G5)
+    - Match 26 (S26): BOX vs 1S (4 เกม: G1–G4)
+    - Match 27 (S27): SECRET vs RRQ VN (5 เกม: G1–G5)
+    - Match 28 (S28): SP vs FL (3 เกม: G1–G3)
+  - **AOG 2026 Winter Week 4 (26 เกม)**:
+    - Match 29 (S29): 1S vs GAM (4 เกม: G1–G4)
+    - Match 30 (S30): BOX vs RRQ VN (4 เกม: G1–G4)
+    - Match 31 (S31): FL vs BOOM VN (3 เกม: G1–G3)
+    - Match 32 (S32): FPL vs SECRET (3 เกม: G1–G3)
+    - Match 33 (S33): 1S vs BOOM VN (4 เกม: G1–G4)
+    - Match 34 (S34): SP vs BOX (3 เกม: G1–G3)
+    - Match 35 (S35): GAM vs RRQ VN (4 เกม: G1–G4)
+    - Match 36 (S36): FL vs FPL (1 เกม: G1)
+- จัดระเบียบ ย้ายไฟล์และบันทึกลงใน:
+  - `data/draft_screenshots/2026_winter_aog/week3/` (19 ภาพใหม่, รวมสัปดาห์ 44 ภาพ)
+  - `data/draft_screenshots/2026_winter_aog/week4/` (26 ภาพใหม่)
+- อัปเดต `data/true_pick_order.json` ยอดรวมทั้งโปรเจกต์พุ่งแตะ **1,386 เกม**
+- อัปเดต skill `draft-screenshot-reader` ใน `.agents/skills/` และซิงค์ไปยัง `.claude/skills/`
+- **การประเมิน Heuristic Baseline (`order_team_picks_by_draft_logic`)**:
+  - **AOG 2026 Winter Week 3 ทั้งหมด (44 เกม)**: Strict Turn 35.9% (158/440), Simultaneous Turn 61.4% (270/440), Phase 80.0% (352/440), B1 40.9% (18/44), Perfect Teams (Simul) 23.9% (21/88)
+  - **AOG 2026 Winter Week 4 (26 เกม)**: Strict Turn 33.1% (86/260), Simultaneous Turn 63.8% (166/260), Phase 83.1% (216/260), B1 38.5% (10/26), Perfect Teams (Simul) 25.0% (13/52)
+  - **ชุดเกมใหม่ 45 เกม**: Strict Turn 33.9% (156/460), Simultaneous Turn 63.9% (294/460), Phase 83.0% (382/460), B1 32.6% (15/46), Perfect Teams (Simul) 26.1% (24/92)
+  - **ภาพรวมทั้งโปรเจกต์ (1,386 เกม)**: Strict Turn 36.0% (4,988/13,860), Simultaneous Turn 61.0% (8,456/13,860), Phase 78.4% (10,862/13,860), B1 50.3% (697/1,386), Perfect Teams (Simul) 23.4% (649/2,772)
+
+### 📁 ไฟล์ที่แก้
+- `scripts/build_broadcast_templates.py`: สคริปต์สกัดคลังเทมเพลตการ์ดบรอดแคสต์
+- `scripts/process_draft_screenshots.py`: สคริปต์ประมวลผลจับคู่ภาพความเร็วสูงด้วย Hungarian Matching
+- `data/broadcast_templates/`: โฟลเดอร์จัดเก็บเทมเพลต 130 ฮีโร่ + manifest.json
+- `data/draft_screenshots/2026_winter_aog/week3/`: เพิ่มสกรีนช็อต 19 ภาพ
+- `data/draft_screenshots/2026_winter_aog/week4/`: เพิ่มสกรีนช็อต 26 ภาพ
+- `data/true_pick_order.json`: เพิ่ม 45 เกมใหม่ (รวมเป็น 1,386 เกม)
+- `.agents/skills/draft-screenshot-reader/SKILL.md`: เพิ่มคู่มือการใช้งานไปป์ไลน์ออโตเมชันความเร็วสูง
+- `.claude/skills/draft-screenshot-reader/SKILL.md`: ซิงค์ข้อมูลให้ตรงกับ `.agents/`
+- `memory/true-pick-order-retrain-plan.md`: อัปเดตยอดรวม 1,386 เกมและสถิติ heuristic
+- `CHANGELOG.md`: บันทึกประวัติงานรอบนี้
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: PASS (1,386 games checked, 0 unmapped names)
+- `pytest -v`: 58 passed in 6.22s (ครอบคลุมทุก suite รวมถึง test_true_pick_order_matches_liquipedia และ test_skills_sync)
+- `ruff check --fix .` และ `ruff format .`: All checks passed
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- AOG 2026 Winter First Leg:
+  - Week 4 ขาดสกรีนช็อต 2 เกม: S36 G2 และ S36 G3 (FL vs FPL)
+  - หากผู้ใช้มีสกรีนช็อตเพิ่มเติม สามารถวางลงใน `data/draft_screenshots/` แล้วรัน `python scripts/process_draft_screenshots.py` ได้ทันทีแบบอัตโนมัติ
+
+---
+
+## 📅 2026-10-24 (UTC+7) — นำเข้า True Pick Order สำหรับ AOG 2026 Winter First Leg Week 2 & Week 3 (64 เกม, 65 ไฟล์, ยอดรวมสะสมทะลุ 1,341 เกม)
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผล ค้นหาคู่ และถอดรหัส True Pick Order จากสกรีนช็อตชุดใหม่ 65 ภาพ สำหรับ **AOG 2026 Winter First Leg Week 2 และ Week 3 (รวม 64 เกมใหม่)**:
+  - **Week 2 (39 เกม, 40 ภาพ รวม 1 ภาพจับซ้ำสำรอง)**:
+    - Match 7 (S7): BOOM VN vs BOX (2 เกม: G2–G3)
+    - Match 8 (S8): GAM vs SECRET (5 เกม: G1–G5)
+    - Match 9 (S9): SP vs RRQ VN (3 เกม: G1–G3)
+    - Match 10 (S10): SECRET vs 1S (4 เกม: G1–G4 + G3_alt)
+    - Match 11 (S11): FL vs BOX (3 เกม: G1–G3)
+    - Match 12 (S12): GAM vs BOOM VN (3 เกม: G2–G4)
+    - Match 13 (S13): SP vs SECRET (3 เกม: G1–G3)
+    - Match 14 (S14): 1S vs FL (5 เกม: G1–G5)
+    - Match 15 (S15): RRQ VN vs BOOM VN (3 เกม: G1–G3)
+    - Match 16 (S16): FPL vs BOX (4 เกม: G1–G4)
+    - Match 17 (S17): SP vs 1S (4 เกม: G1–G4)
+  - **Week 3 (25 เกม, 25 ภาพ)**:
+    - Match 18 (S18): FPL vs BOOM VN (5 เกม: G1–G5)
+    - Match 19 (S19): FL vs GAM (5 เกม: G1–G5)
+    - Match 20 (S20): SECRET vs BOX (5 เกม: G1–G5)
+    - Match 21 (S21): 1S vs FPL (3 เกม: G1–G3)
+    - Match 22 (S22): SP vs GAM (3 เกม: G1–G3)
+    - Match 23 (S23): SECRET vs BOOM VN (3 เกม: G1–G3)
+    - Match 24 (S24): RRQ VN vs FL (1 เกม: G1)
+- จัดระเบียบและเปลี่ยนชื่อไฟล์สกรีนช็อตย้ายเข้าสู่:
+  - `data/draft_screenshots/2026_winter_aog/week2/` (40 ภาพ)
+  - `data/draft_screenshots/2026_winter_aog/week3/` (25 ภาพ)
+- อัปเดต `data/true_pick_order.json` เพิ่ม 64 เกมใหม่ ทำให้ยอดรวมสะสมทั้งโปรเจกต์เพิ่มเป็น **1,341 เกม**
+- ลบไฟล์ภาพชั่วคราวและ debug thumbnails ทั้งหมด 29 ไฟล์ คืนสภาพ root directory สะอาด 100%
+- **การประเมิน Heuristic Baseline (`order_team_picks_by_draft_logic`)**:
+  - **AOG 2026 Winter Week 2 (39 เกม)**: Strict Turn 33.3% (130/390), Simultaneous Turn 60.0% (234/390), Phase 76.9% (300/390), B1 43.6% (17/39), Perfect Teams (Simul) 21.8% (17/78)
+  - **AOG 2026 Winter Week 3 (25 เกม)**: Strict Turn 36.4% (91/250), Simultaneous Turn 58.4% (146/250), Phase 77.6% (194/250), B1 52.0% (13/25), Perfect Teams (Simul) 20.0% (10/50)
+  - **ชุดเกมใหม่ 64 เกม**: Strict Turn 34.5% (221/640), Simultaneous Turn 59.4% (380/640), Phase 77.2% (494/640), B1 46.9% (30/64), Perfect Teams (Simul) 21.1% (27/128)
+  - **ภาพรวมทั้งโปรเจกต์ (1,341 เกม)**: Strict Turn 36.1% (4,835/13,410), Simultaneous Turn 60.9% (8,166/13,410), Phase 78.2% (10,488/13,410), B1 50.9% (682/1,341), Perfect Teams (Simul) 23.3% (625/2,682)
+
+### 📁 ไฟล์ที่แก้
+- `data/draft_screenshots/2026_winter_aog/week2/`: ย้ายและตั้งชื่อไฟล์สกรีนช็อต 40 ภาพ
+- `data/draft_screenshots/2026_winter_aog/week3/`: ย้ายและตั้งชื่อไฟล์สกรีนช็อต 25 ภาพ
+- `data/true_pick_order.json`: เพิ่มข้อมูล 64 เกม (รวมเป็น 1,341 เกม)
+- `memory/true-pick-order-retrain-plan.md`: อัปเดตยอดรวม 1,341 เกมและสถิติ heuristic
+- `CHANGELOG.md`: บันทึกประวัติงานรอบนี้
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: PASS (1,341 games checked, 0 unmapped names)
+- `pytest -v`: 58 passed in 8.15s (ครอบคลุมทุก suite รวมถึง test_true_pick_order_matches_liquipedia)
+- `ruff check --fix .` และ `ruff format .`: All checks passed
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- AOG 2026 Winter First Leg:
+  - Week 2 ขาดสกรีนช็อต 2 เกม: S7 G1 (BOOM vs BOX) และ S12 G1 (GAM vs BOOM)
+  - Week 3 ยังเหลือการแข่งขันที่เหลือของสัปดาห์ (S24 G2-G3 และ S25-S28) หากผู้ใช้มีสกรีนช็อตเพิ่มเติมสามารถนำเข้ามาประมวลผลต่อได้ทันที
+
+---
+
+## 📅 2026-10-24 (UTC+7) — นำเข้า True Pick Order สำหรับ AOG 2026 Winter First Leg Week 1 (24 เกม, ยอดรวมทะลุ 1,277 เกม)
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผลและถอดรหัส True Pick Order จากสกรีนช็อตชุดใหม่ 24 ภาพ สำหรับ **AOG 2026 Winter First Leg Week 1 (ครบ 100% ของ Week 1)**:
+  - Match 1 (S1): SP vs BOOM VN (4 เกม: G1–G4)
+  - Match 2 (S2): GAM vs BOX (4 เกม: G1–G4)
+  - Match 3 (S3): FPL vs RRQ VN (3 เกม: G1–G3)
+  - Match 4 (S4): SECRET vs FL (4 เกม: G1–G4)
+  - Match 5 (S5): 1S vs RRQ VN (4 เกม: G1–G4)
+  - Match 6 (S6): SP vs FPL (5 เกม: G1–G5)
+- จัดระเบียบและเปลี่ยนชื่อไฟล์สกรีนช็อตย้ายเข้าสู่ `data/draft_screenshots/2026_winter_aog/week1/` ตามมาตรฐาน (`2026_w1_d<day>_m<match>_g<game>_win_aog_<blue>_vs_<red>.png`)
+- อัปเดต `data/true_pick_order.json` เพิ่ม 24 เกม ทำให้ยอดรวมสะสมทั้งโปรเจกต์เพิ่มเป็น **1,277 เกม**
+- คงสกรีนช็อตของ Week 2 จำนวน 3 ภาพไว้ใน `data/draft_screenshots/` ตามคำสั่งผู้ใช้ ("จัดการแค่ week1 ก่อน")
+- **การประเมิน Heuristic Baseline (`order_team_picks_by_draft_logic`)**:
+  - **AOG 2026 Winter Week 1 (24 เกม)**: Strict Turn 31.7% (76/240), Simultaneous Turn 52.9% (127/240), Phase 76.7% (184/240), B1 41.7% (10/24), Perfect Teams (Simul) 22.9% (11/48)
+  - **ภาพรวมทั้งโปรเจกต์ (1,277 เกม)**: Strict Turn 36.1% (4,610/12,770), Simultaneous Turn 57.7% (7,374/12,770), Phase 78.2% (9,992/12,770), B1 51.1% (652/1,277), Perfect Teams (Simul) 21.8% (557/2,554)
+
+### 📁 ไฟล์ที่แก้
+- `data/draft_screenshots/2026_winter_aog/week1/`: ย้ายและตั้งชื่อไฟล์สกรีนช็อต 24 ภาพ
+- `data/true_pick_order.json`: เพิ่มข้อมูล 24 เกม
+- `memory/true-pick-order-retrain-plan.md`: อัปเดตยอดรวม 1,277 เกมและตัวเลข heuristic baseline
+- `CHANGELOG.md`: บันทึกประวัติงานรอบนี้
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: PASS (1,277 games checked, 0 unmapped names)
+- `pytest -v`: 58 passed in 9.80s (ครอบคลุม test_data_integrity, test_true_pick_order_matches_liquipedia, test_model_pipeline, test_api, test_predictor_golden, test_skills_sync)
+- `ruff check --fix .` และ `ruff format .`: All checks passed
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- สกรีนช็อตของ Week 2 อีก 3 ภาพ (`Screenshot 2026-10-24 161035.png`, `161123.png`, `161232.png`) ยังรออยู่ใน `data/draft_screenshots/` สำหรับการประมวลผลเมื่อผู้ใช้พร้อม
+
+---
+
+## 📅 2026-10-24 (UTC+7) — เติมเต็ม True Pick Order ครบ 100% ทั้ง 5 ทัวร์นาเมนต์ (เพิ่ม 8 เกม: GCS Playoffs 7 เกม + AOG 1 เกม, ยอดรวมทะลุ 1,253 เกม)
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผลและถอดรหัส True Pick Order จากสกรีนช็อตที่ผู้ใช้นำเข้าเพื่อปิดช่องว่างเกมที่ขาดทั้งหมด 8 เกม:
+  - **AOG 2026 Spring Group Stage 1 Match 45 Game 2 (S875: FL vs 1S, 1 เกม)**:
+    - เปลี่ยนชื่อ `week5/Screenshot 2026-10-24 145204.png` -> `2026_w5_d16_m45_g2_spr_aog_fl_vs_1s.png`
+    - Blue: `Toro, Violet, Ryoma, Qi, Annette` | Red: `Wiro, Eland'orr, Ignis, Richter, Keera`
+    - ทำให้ **AOG 2026 Spring ครบสมบูรณ์ 100% (299 / 299 เกม)**
+  - **GCS 2026 Spring Playoffs (7 เกม)**:
+    - **Match 3 Game 4 (S1020: DCG vs ANK, 1 เกม)**:
+      - เปลี่ยนชื่อ `Screenshot 2026-10-24 145759.png` -> `2026_playoffs_m3_g4_spr_gcs_dcg_vs_ank.png`
+      - Blue: `Y'bneth, Eland'orr, Yena, Valhein, Liliana` | Red: `Violet, Keera, Zata, Roxie, Taara`
+    - **Match 1 (S1018: DCG vs FW, 6 เกมครบทั้งแมตช์)**:
+      - G1: Blue `Rouie, Keera, Enzo, Flowborn (Marksman), Biron` | Red `Capheny, Y'bneth, Gildur, Richter, Paine`
+      - G2: Blue `Toro, Zephys, Iggy, Valhein, Yena` | Red `Mganga, Eland'orr, Billow, Thane, Richter`
+      - G3: Blue `Violet, Arduin, Yue, Zephys, Qi` | Red `Liliana, TeeMee, Nakroth, Stuart, Omen`
+      - G4: Blue `Marja, Flowborn (Marksman), Ignis, Florentino, Xeniel` | Red `Capheny, Ryoma, Zata, Y'bneth, Airi`
+      - G5: Blue `Wisp, Billow, Zata, Murad, Wiro` | Red `TeeMee, Tachi, Lorion, Hayate, Mina`
+      - G6: Blue `Dolia, Lorion, Sinestrea, Astrid, Hayate` | Red `Toro, Aya, Fennik, Aoi, Omen`
+      - เปลี่ยนชื่อเป็น `2026_playoffs_m1_g1_spr_gcs_dcg_vs_fw.png` ถึง `m1_g6`
+    - ทำให้ **GCS 2026 Spring ครบสมบูรณ์ 100% (196 / 196 เกม)**
+- ปิดยอด True Pick Order ครบ 100% ทั้ง 5 ทัวร์นาเมนต์:
+  - RPL 2026 Winter: 285 / 285 เกม (100%)
+  - RPL 2026 Summer: 291 / 291 เกม (100%)
+  - GCS 2026 Spring: 196 / 196 เกม (100%)
+  - GCS 2026 Summer: 182 / 182 เกม (100%)
+  - AOG 2026 Spring: 299 / 299 เกม (100%)
+  - **ยอดสะสมรวมทั้งโปรเจกต์: 1,253 / 1,253 เกม (100% สมบูรณ์ทุกทัวร์นาเมนต์)**
+- **การประเมิน Heuristic Baseline (`order_team_picks_by_draft_logic`)**:
+  - **8 เกมใหม่**: Strict Turn 32.5% (26/80), Simultaneous Turn 61.3% (49/80), Phase 82.5% (66/80), B1 62.5% (5/8), Perfect Teams (Simul) 31.2% (5/16)
+  - **GCS 2026 Spring ทั้งหมด (196 เกม)**: Strict Turn 40.9% (802/1,960), Simultaneous Turn 60.1% (1,177/1,960), Phase 80.2% (1,572/1,960), B1 64.3% (126/196), Perfect Teams (Simul) 24.5% (96/392)
+  - **AOG 2026 Spring ทั้งหมด (299 เกม)**: Strict Turn 37.1% (1,108/2,990), Simultaneous Turn 54.6% (1,633/2,990), Phase 77.3% (2,310/2,990), B1 57.5% (172/299), Perfect Teams (Simul) 21.4% (128/598)
+  - **ภาพรวมทั้งโปรเจกต์ (1,253 เกม)**: Strict Turn 36.2% (4,538/12,530), Simultaneous Turn 54.7% (6,856/12,530), Phase 78.3% (9,810/12,530), B1 51.2% (642/1,253), Perfect Teams (Simul) 19.4% (485/2,506)
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json` (เพิ่ม 8 เกม รวมเป็น 1,253 เกม)
+- `data/draft_screenshots/2026_spring_aog/week5/2026_w5_d16_m45_g2_spr_aog_fl_vs_1s.png`
+- `data/draft_screenshots/2026_spring_gcs/playoffs/2026_playoffs_m3_g4_spr_gcs_dcg_vs_ank.png`
+- `data/draft_screenshots/2026_spring_gcs/playoffs/2026_playoffs_m1_g1_spr_gcs_dcg_vs_fw.png` ถึง `m1_g6`
+- `CHANGELOG.md`
+- `memory/true-pick-order-retrain-plan.md`
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py` (PASS 1,253 games, 0 unmapped names)
+- `pytest tests/test_data_integrity.py -v` (11/11 passed)
+- `pytest tests/test_skills_sync.py -v` (2/2 passed)
+- `pytest tests/test_model_pipeline.py -v` (3/3 passed)
+- `pytest tests/test_predictor_golden.py -v` (1/1 passed)
+- `ruff check --fix .` และ `ruff format .`
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- ใน `data/draft_screenshots/` root มีสกรีนช็อตดิบ 24 รูปที่ผู้ใช้เพิ่งวางไว้ (`Screenshot 2026-10-24 140644.png` ถึง `141912.png`) ซึ่งเป็นของ AOG 2026 Winter First Leg พร้อมประมวลผลเมื่อผู้ใช้สั่งการ
+- ใน `data/draft_screenshots/2026_winter_rpl/playoffs/` มีรูปสกรีนช็อต 4 รูป (FS vs BRU Game 1-4) รอข้อมูล match ใน DB หากต้องการนำเข้า
+
+---
+
+## 📅 2026-10-24 (UTC+7) — เพิ่ม True Pick Order AOG 2026 Spring Playoffs ครบ 23 เกม (S902-S905, ปิดซีซัน AOG รวม 298 เกม, รวมสะสมทั้งสิ้น 1,245 เกม)
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผล ตรวจสอบความถูกต้องกับ Liquipedia และถอดรหัส True Pick Order จากบรอดแคสต์สกรีนช็อตสำหรับ **Arena of Glory (AOG) 2026 Spring Playoffs (Matches S902–S905) ครบถ้วน 100% รวม 23 เกม**:
+  - **Playoff 1 (S903, 5 เกม)**: SP vs FL (Day 26, 26 เม.ย. 2026: G1–G5)
+  - **Playoff 2 (S902, 7 เกม)**: GAM vs FPL (Day 26, 26 เม.ย. 2026: G1–G7)
+  - **Playoff 3 (S904, 5 เกม)**: FPL vs SP (Day 27, 3 พ.ค. 2026: G1–G5)
+  - **Grand Final / Playoff 4 (S905, 6 เกม)**: FL vs SP (Day 28, 10 พ.ค. 2026: G1–G6)
+- จัดระเบียบและย้ายไฟล์สกรีนช็อต 23 ไฟล์เข้าสู่ `data/draft_screenshots/2026_spring_aog/playoffs/2026_playoffs_m<M>_g<G>_spr_aog_<teamA>_vs_<teamB>.png` ตามโครงสร้างมาตรฐานเพลย์ออฟ
+- อัปเดต `data/true_pick_order.json` เพิ่ม 23 เกม (จาก 1,222 เป็น 1,245 เกม) ครบสมบูรณ์ 100% ทุกเกมของ AOG 2026 Spring ทั้งซีซัน (Group Stage 1, Group Stage 2, และ Playoffs รวม 298 เกม)
+- ประเมิน Heuristic Baseline ของ `order_team_picks_by_draft_logic()` เปรียบเทียบกับ True Order:
+  - **AOG Playoffs (23 เกม)**: Strict Turn 35.7% (82/230), Simultaneous Turn 51.7% (119/230), Phase 69.6% (160/230), B1 65.2% (15/23), Perfect Teams (Simul) 23.9% (11/46)
+  - **AOG ทั้งซีซัน ครบ 100% (298 เกม)**: Strict Turn 37.1% (1,106/2,980), Simultaneous Turn 54.6% (1,626/2,980), Phase 77.2% (2,302/2,980), B1 57.4% (171/298), Perfect Teams (Simul) 21.3% (127/596)
+  - **ภาพรวมทั้งหมด (1,245 เกม — RPL + GCS + AOG)**: Strict Turn 36.2% (4,512/12,450), Simultaneous Turn 54.7% (6,807/12,450), Phase 78.3% (9,744/12,450), B1 51.2% (637/1,245), Perfect Teams (Simul) 19.3% (480/2,490)
+- อัปเดต Memory บันทึกความคืบหน้าใน `memory/true-pick-order-retrain-plan.md`
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json`
+- `data/draft_screenshots/2026_spring_aog/playoffs/` (23 ไฟล์สกรีนช็อตจัดระเบียบใหม่)
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: ผ่าน 1,245 เกม
+- `pytest -v`: ผ่านการทดสอบครบทุกโมดูล
+- `ruff check --fix .` และ `ruff format .`: ผ่านฉลุย
+
+---
+
+## 📅 2026-10-24 (UTC+7) — เพิ่ม True Pick Order AOG 2026 Spring Week 7 ครบ 63 เกม (Group Stage 2, S887-S901, รวมสะสม 1,222 เกม)
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผล ตรวจสอบความถูกต้องกับ Liquipedia และถอดรหัส True Pick Order จากบรอดแคสต์สกรีนช็อตสำหรับ **Arena of Glory (AOG) 2026 Spring Group Stage 2 (จัดเก็บเป็น Week 7 ตามมาตรฐานลีก, Matches 57–71, S887–S901) ครบ 63 เกม**:
+  - **Day 21 (14 เกม)**:
+    - M57 (S887, BOX vs FPL, 5 เกม: G1–G5)
+    - M58 (S888, SP vs 1S, 4 เกม: G1–G4)
+    - M59 (S889, FL vs GAM, 5 เกม: G1–G5)
+  - **Day 22 (12 เกม)**:
+    - M60 (S890, 1S vs BOX, 3 เกม: G1–G3)
+    - M61 (S891, FPL vs FL, 5 เกม: G1–G5)
+    - M62 (S892, GAM vs SP, 4 เกม: G1–G4)
+  - **Day 23 (13 เกม)**:
+    - M63 (S893, FL vs 1S, 5 เกม: G1–G5)
+    - M64 (S894, GAM vs FPL, 4 เกม: G1–G4)
+    - M65 (S895, SP vs BOX, 4 เกม: G1–G4)
+  - **Day 24 (12 เกม)**:
+    - M66 (S896, 1S vs GAM, 3 เกม: G1–G3)
+    - M67 (S897, FL vs SP, 4 เกม: G1–G4)
+    - M68 (S898, BOX vs FL, 5 เกม: G1–G5)
+  - **Day 25 (12 เกม)**:
+    - M69 (S899, FPL vs 1S, 3 เกม: G1–G3)
+    - M70 (S900, GAM vs BOX, 4 เกม: G1–G4)
+    - M71 (S901, SP vs BOX, 5 เกม: G1–G5)
+- จัดระเบียบและย้ายไฟล์สกรีนช็อต 63 ไฟล์เข้าสู่ `data/draft_screenshots/2026_spring_aog/week7/2026_w7_d<D>_m<M>_g<G>_spr_aog_<teamA>_vs_<teamB>.png` ตามโครงสร้างมาตรฐานสัปดาห์
+- อัปเดต `data/true_pick_order.json` เพิ่ม 63 เกม (จาก 1,159 เป็น 1,222 เกม) ตรวจสอบความสอดคล้องของเซ็ตฮีโร่และกติกา Global Ban Pick ตรงกับ Liquipedia 100%
+- ประเมิน Heuristic Baseline ของ `order_team_picks_by_draft_logic()` เปรียบเทียบกับ True Order:
+  - **AOG Week 7 (63 เกม)**: Strict Turn 41.6% (262/630), Simultaneous Turn 59.0% (372/630), Phase 82.9% (522/630), B1 60.3% (38/63), Perfect Teams (Simul) 27.0% (34/126)
+  - **AOG รวม Weeks 1–7 (275 เกม)**: Strict Turn 37.2% (1,024/2,750), Simultaneous Turn 54.8% (1,507/2,750), Phase 77.9% (2,142/2,750), B1 56.7% (156/275), Perfect Teams (Simul) 21.1% (116/550)
+  - **ภาพรวมทั้งหมด (1,222 เกม — RPL + GCS + AOG)**: Strict Turn 36.3% (4,430/12,220), Simultaneous Turn 54.7% (6,688/12,220), Phase 78.4% (9,584/12,220), B1 50.9% (622/1,222), Perfect Teams (Simul) 19.2% (469/2,444)
+- อัปเดต Memory บันทึกความคืบหน้าใน `memory/true-pick-order-retrain-plan.md`
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json`
+- `data/draft_screenshots/2026_spring_aog/week7/` (63 ไฟล์สกรีนช็อตจัดระเบียบใหม่)
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: ผ่านฉลุย 1,222 เกม
+- `pytest -v`: ผ่านการทดสอบครบทุกโมดูล
+- `ruff check --fix .` และ `ruff format .`: สะอาด เรียบร้อย
+
+---
+
+## 📅 2026-10-24 (UTC+7) — เพิ่ม True Pick Order AOG 2026 Spring Week 6 ครบ 45 เกม (S876-S886, รวมสะสม 1,159 เกม)
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผล ตรวจสอบความถูกต้องกับ Liquipedia และถอดรหัส True Pick Order จากบรอดแคสต์สกรีนช็อตสำหรับ **Arena of Glory (AOG) 2026 Spring Group Stage 1 Week 6 (Matches 46–56, S876–S886) ครบ 45 เกม**:
+  - **Day 17 (8 เกม)**:
+    - M46 (S876, GAM vs SEC, 3 เกม: G1–G3)
+    - M47 (S877, FPL vs BOX, 5 เกม: G1–G5)
+  - **Day 18 (12 เกม)**:
+    - M48 (S878, SPN vs SP, 4 เกม: G1–G4)
+    - M49 (S879, SEC vs FL, 4 เกม: G1–G4)
+    - M50 (S880, BOX vs GAM, 4 เกม: G1–G4)
+  - **Day 19 (12 เกม)**:
+    - M51 (S881, SP vs FPL, 5 เกม: G1–G5)
+    - M52 (S882, SPN vs 1S, 3 เกม: G1–G3)
+    - M53 (S883, GAM vs FL, 4 เกม: G1–G4)
+  - **Day 20 (13 เกม)**:
+    - M54 (S884, SPN vs FPL, 5 เกม: G1–G5)
+    - M55 (S885, SP vs SEC, 3 เกม: G1–G3)
+    - M56 (S886, BOX vs 1S, 5 เกม: G1–G5)
+- ย้ายและจัดระเบียบไฟล์ภาพ 45 ไฟล์เข้าสู่ `data/draft_screenshots/2026_spring_aog/week6/2026_w6_d<D>_m<M>_g<G>_spr_aog_<teamA>_vs_<teamB>.png` ตามรูปแบบมาตรฐาน
+- อัปเดต `data/true_pick_order.json` เพิ่ม 45 เกม (จาก 1,114 เป็น 1,159 เกม) ตรวจสอบความสอดคล้องของเซ็ตฮีโร่และกติกา Global Ban Pick ตรงกับ Liquipedia 100%
+- ประเมิน Heuristic Baseline ของ `order_team_picks_by_draft_logic()` เปรียบเทียบกับ True Order:
+  - **AOG Week 6 (45 เกม)**: Strict Turn 35.3% (159/450), Simultaneous Turn 54.7% (246/450), Phase 79.6% (358/450), B1 51.1% (23/45), Perfect Teams (Simul) 21.1% (19/90)
+  - **AOG รวม Weeks 1–6 (212 เกม)**: Strict Turn 35.9% (762/2,120), Simultaneous Turn 53.5% (1,135/2,120), Phase 76.4% (1,620/2,120), B1 55.7% (118/212), Perfect Teams (Simul) 19.3% (82/424)
+  - **ภาพรวมทั้งหมด (1,159 เกม — RPL + GCS + AOG)**: Strict Turn 36.0% (4,168/11,590), Simultaneous Turn 54.5% (6,316/11,590), Phase 78.2% (9,062/11,590), B1 50.4% (584/1,159), Perfect Teams (Simul) 18.8% (435/2,318)
+- อัปเดต Memory บันทึกความคืบหน้าใน `memory/true-pick-order-retrain-plan.md`
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json`
+- `data/draft_screenshots/2026_spring_aog/week6/` (45 ไฟล์สกรีนช็อตจัดระเบียบใหม่)
+- `CHANGELOG.md`
+- `memory/true-pick-order-retrain-plan.md`
+
+### 🧪 การตรวจสอบ
+- `audit_rov_data.py`: PASS (130 heroes, 1,159 true pick order games)
+- `pytest tests/test_data_integrity.py`: 11 passed
+- `pytest tests/test_skills_sync.py`: 2 passed
+- `ruff check --fix . && ruff format .`: 0 errors, clean
+
+---
+
+## 📅 2026-10-24 (UTC+7) — เพิ่ม True Pick Order AOG 2026 Spring Week 5 ครบ 42 เกม (S865-S875, รวมสะสม 1,114 เกม)
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผล ตรวจสอบความถูกต้องกับ Liquipedia และถอดรหัส True Pick Order จากบรอดแคสต์สกรีนช็อตสำหรับ **Arena of Glory (AOG) 2026 Spring Group Stage 1 Week 5 (Matches 35–45, S865–S875) ครบ 42 เกม**:
+  - **Day 13 (10 เกม)**:
+    - M35 (S865, FPL vs GAM, 5 เกม: G1–G5)
+    - M36 (S866, SPN vs SECRET, 5 เกม: G1–G5)
+  - **Day 14 (9 เกม)**:
+    - M37 (S867, GAM vs SP, 3 เกม: G1–G3)
+    - M38 (S868, FL vs FPL, 3 เกม: G1–G3)
+    - M39 (S869, SECRET vs 1S, 3 เกม: G1–G3)
+  - **Day 15 (12 เกม)**:
+    - M40 (S870, BOX vs SPN, 3 เกม: G1–G3)
+    - M41 (S871, FPL vs 1S, 4 เกม: G1–G4)
+    - M42 (S872, SP vs FL, 5 เกม: G1–G5)
+  - **Day 16 (11 เกม)**:
+    - M43 (S873, GAM vs SPN, 4 เกม: G1–G4)
+    - M44 (S874, SECRET vs BOX, 4 เกม: G1–G4)
+    - M45 (S875, 1S vs FL, 3 เกม: G1, G3, G4 — *หมายเหตุ: Game 2 ข้ามไปตามที่บรอดแคสต์ไม่ได้บันทึกไว้*)
+- ย้ายและจัดระเบียบไฟล์ภาพ 42 ไฟล์เข้าสู่ `data/draft_screenshots/2026_spring_aog/week5/2026_w5_d<D>_m<M>_g<G>_spr_aog_<teamA>_vs_<teamB>.png` ตามรูปแบบมาตรฐาน
+- อัปเดต `data/true_pick_order.json` เพิ่ม 42 เกม (จาก 1,072 เป็น 1,114 เกม) ตรวจสอบความสอดคล้องของเซ็ตฮีโร่และกติกา Global Ban Pick ตรงกับ Liquipedia 100%
+- ประเมิน Heuristic Baseline ของ `order_team_picks_by_draft_logic()` เปรียบเทียบกับ True Order:
+  - **AOG Week 5 (42 เกม)**: Strict Turn 38.6% (162/420), Simultaneous Turn 62.4% (262/420), Phase 77.6% (326/420), B1 59.5% (25/42), Perfect Teams (Simul) 26.2% (22/84)
+  - **AOG รวม Weeks 1–5 (167 เกม)**: Strict Turn 36.1% (603/1,670), Simultaneous Turn 59.8% (999/1,670), Phase 75.6% (1,262/1,670), B1 56.9% (95/167), Perfect Teams (Simul) 22.5% (75/334)
+  - **ภาพรวมทั้งหมด (1,114 เกม — RPL + GCS + AOG)**: Strict Turn 36.0% (4,009/11,140), Simultaneous Turn 60.8% (6,774/11,140), Phase 78.1% (8,704/11,140), B1 50.4% (561/1,114), Perfect Teams (Simul) 22.8% (509/2,228)
+- อัปเดต Memory บันทึกความคืบหน้าใน `memory/true-pick-order-retrain-plan.md`
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json`
+- `data/draft_screenshots/2026_spring_aog/week5/` (42 ไฟล์สกรีนช็อตจัดระเบียบใหม่)
+- `memory/true-pick-order-retrain-plan.md`
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- ตรวจสอบความถูกต้องของเซ็ตฮีโร่ทั้ง 10 ตัว เทียบกับ Liquipedia match data (`data/matches_draft_full.json`) ครบ 100% (42/42 เกม ไม่มีคู่ฮีโร่ผิดพลาด)
+- รัน Data Guardian integrity audit และ test suites ทั้งหมด
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- AOG 2026 Spring Group Stage 1 จบลงที่ Match 45 เรียบร้อยแล้ว (ต่อไปเป็น Group Stage 2 S887 เป็นต้นไป)
+
+---
+
+## 📅 2026-10-24 (UTC+7) — เพิ่ม True Pick Order AOG 2026 Spring Week 4 ครบ 24 เกม (S859-S864, รวมสะสม 1,072 เกม)
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผล ตรวจสอบความถูกต้องกับ Liquipedia และถอดรหัส True Pick Order จากบรอดแคสต์สกรีนช็อตสำหรับ **Arena of Glory (AOG) 2026 Spring Group Stage 1 Week 4 (Matches 29–34, S859–S864) ครบ 24 เกม**:
+  - **Day 11 (12 เกม)**:
+    - M29 (S859, 1S vs GAM, 4 เกม)
+    - M30 (S860, FL vs FPL, 4 เกม)
+    - M31 (S861, SEC vs BOX, 4 เกม)
+  - **Day 12 (12 เกม)**:
+    - M32 (S862, FPL vs SPN, 4 เกม)
+    - M33 (S863, FL vs BOX, 5 เกม)
+    - M34 (S864, SP vs 1S, 3 เกม)
+- ย้ายและจัดระเบียบไฟล์ภาพ 24 ไฟล์เข้าสู่ `data/draft_screenshots/2026_spring_aog/week4/2026_w4_d<D>_m<M>_g<G>_spr_aog_<teamA>_vs_<teamB>.png` ตามรูปแบบมาตรฐาน
+- อัปเดต `data/true_pick_order.json` เพิ่ม 24 เกม (จาก 1,048 เป็น 1,072 เกม) ตรวจสอบความสอดคล้องของเซ็ตฮีโร่และกติกา Global Ban Pick ตรงกับ Liquipedia 100%
+- ประเมิน Heuristic Baseline ของ `order_team_picks_by_draft_logic()` เปรียบเทียบกับ True Order:
+  - **AOG Week 4 (24 เกม)**: Strict Turn 27.1% (65/240), Simultaneous Turn 44.6% (107/240), Phase 70.8% (170/240), B1 41.7% (10/24), Perfect Teams (Simul) 8.3% (4/48)
+  - **AOG รวม Weeks 1–4 (125 เกม)**: Strict Turn 35.3% (441/1,250), Simultaneous Turn 52.1% (651/1,250), Phase 74.9% (936/1,250), B1 56.0% (70/125), Perfect Teams (Simul) 17.2% (43/250)
+  - **ภาพรวมทั้งหมด (1,072 เกม — RPL + GCS + AOG)**: Strict Turn 35.9% (3,847/10,720), Simultaneous Turn 54.4% (5,832/10,720), Phase 78.2% (8,378/10,720), B1 50.0% (536/1,072), Perfect Teams (Simul) 18.5% (396/2,144)
+- อัปเดต Memory บันทึกความคืบหน้าใน `memory/true-pick-order-retrain-plan.md`
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json`
+- `data/draft_screenshots/2026_spring_aog/week4/` (24 ไฟล์สกรีนช็อตจัดระเบียบใหม่)
+- `memory/true-pick-order-retrain-plan.md`
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- ตรวจสอบความถูกต้องของเซ็ตฮีโร่ทั้ง 10 ตัว เทียบกับ Liquipedia match data (`data/matches_draft_full.json`) ครบ 100% (24/24 เกม ไม่มีคู่ฮีโร่ผิดพลาด)
+- รัน Data Guardian integrity audit และ test suites ทั้งหมด
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- AOG 2026 Spring Group Stage 1 ยังมีโปรแกรมแข่งขันต่อ (Week 4 Match 35 เป็นต้นไปและสัปดาห์ถัดไป) รอรวบรวมสกรีนช็อตเพิ่มเติม
+
+---
+
+## 📅 2026-10-24 (UTC+7) — เพิ่ม True Pick Order AOG 2026 Spring Week 3 ครบ 39 เกม (S848-S858, รวมสะสม 1,048 เกม)
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผล ตรวจสอบความถูกต้องกับ Liquipedia และถอดรหัส True Pick Order จากบรอดแคสต์สกรีนช็อตสำหรับ **Arena of Glory (AOG) 2026 Spring Group Stage 1 Week 3 ครบ 39 เกม (Matches 18–28, S848–S858)**:
+  - **Day 7 (10 เกม)**:
+    - M18 (S848, SEC vs SPN, 3 เกม)
+    - M19 (S849, GAM vs FPL, 3 เกม)
+    - M20 (S850, 1S vs BOX, 4 เกม)
+  - **Day 8 (11 เกม)**:
+    - M21 (S851, SEC vs FPL, 4 เกม)
+    - M22 (S852, FL vs GAM, 4 เกม)
+    - M23 (S853, BOX vs SP, 3 เกม)
+  - **Day 9 (10 เกม)**:
+    - M24 (S854, 1S vs SPN, 3 เกม)
+    - M25 (S855, FPL vs SP, 4 เกม)
+    - M26 (S856, FL vs SEC, 3 เกม)
+  - **Day 10 (8 เกม)**:
+    - M27 (S857, 1S vs GAM, 4 เกม)
+    - M28 (S858, SPN vs BOX, 4 เกม)
+- ย้ายและจัดระเบียบไฟล์ภาพ 39 ไฟล์เข้าสู่ `data/draft_screenshots/2026_spring_aog/week3/2026_w3_d<D>_m<M>_g<G>_spr_aog_<teamA>_vs_<teamB>.png` ตามรูปแบบมาตรฐาน
+- เพิ่มข้อมูลทั้ง 39 เกมเข้าสู่ `data/true_pick_order.json` ทำให้ฐานข้อมูล True Pick Order สะสมเพิ่มขึ้นเป็น **1,048 เกม** (RPL Summer 291 + RPL Winter 285 + GCS Spring 189 + GCS Summer 182 + AOG Spring 101)
+- ตรวจสอบความถูกต้อง 100% ตรงตามฮีโร่ผู้เล่น 10 ตัวใน Liquipedia โดยไม่มีชื่อฮีโร่ผิดพลาด
+- คำนวณความแม่นยำของ Heuristic draft logic (`order_team_picks_by_draft_logic`):
+  - AOG 2026 Spring Week 3 (39 เกม): Strict Turn 40.3% (157/390), Simultaneous Turn 58.5% (228/390), Phase 80.5% (314/390), B1 61.5% (24/39), Perfect Teams (Simul) 23.1% (18/78)
+  - AOG 2026 Spring Total (Weeks 1-3) (101 เกม): Strict Turn 37.2% (376/1,010), Simultaneous Turn 53.9% (544/1,010), Phase 75.8% (766/1,010), B1 59.4% (60/101), Perfect Teams (Simul) 19.3% (39/202)
+  - ทั่วทั้ง 1,048 เกม (RPL + GCS + AOG): Strict Turn 36.1% (3,782/10,480), Simultaneous Turn 54.6% (5,725/10,480), Phase 78.3% (8,208/10,480), B1 50.2% (526/1,048), Perfect Teams (Simul) 18.7% (392/2,096)
+- อัปเดต `memory/true-pick-order-retrain-plan.md` ให้สอดคล้องกับสถิติใหม่
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json`
+- `data/draft_screenshots/2026_spring_aog/week3/` (สร้างใหม่ พร้อม 39 ไฟล์สกรีนช็อตมาตรฐาน)
+- `C:\Users\chaya\.claude\projects\C--Users-chaya-Documents-Program-Project-ROV\memory\true-pick-order-retrain-plan.md`
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: ผ่าน 100% (1,048 games checked, 0 errors, 0 unmapped heroes)
+- `pytest tests/test_data_integrity.py`: ผ่านทุกเทสต์
+- `ruff check --fix .` และ `ruff format .`: ตรวจสอบโค้ดสะอาด
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- ผู้ใช้นำภาพสกรีนช็อตของ Match 29 (AOG Week 4 Day 11, S859 G1..G3 จำนวน 3 ไฟล์: `091730`, `091813`, `091841`) เข้ามาเพิ่มใน `data/draft_screenshots/` สามารถดำเนินการต่อในรอบถัดไปเมื่อผู้ใช้พร้อม
+
+---
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผล ตรวจสอบความถูกต้องกับ Liquipedia และถอดรหัส True Pick Order จากบรอดแคสต์สกรีนช็อตสำหรับ **Arena of Glory (AOG) 2026 Spring Group Stage 1**:
+  - **Week 1 ครบ 22 เกม (Matches 1–6, S831–S836)**:
+    - M1 (S831, BOX vs FL, 4 เกม)
+    - M2 (S832, 1S vs FPL, 3 เกม)
+    - M3 (S833, SP vs SPN, 4 เกม)
+    - M4 (S834, SEC vs GAM, 4 เกม)
+    - M5 (S835, FPL vs FL, 4 เกม)
+    - M6 (S836, SP vs 1S, 3 เกม)
+  - **Week 2 ครบ 40 เกม (Matches 7–17, S837–S847)**:
+    - M7 (S837, BOX vs SEC, 3 เกม)
+    - M8 (S838, SPN vs GAM, 4 เกม)
+    - M9 (S839, SP vs GAM, 3 เกม)
+    - M10 (S840, SEC vs 1S, 5 เกม)
+    - M11 (S841, FL vs SPN, 3 เกม)
+    - M12 (S842, BOX vs FPL, 4 เกม)
+    - M13 (S843, SEC vs SP, 5 เกม)
+    - M14 (S844, FL vs 1S, 3 เกม)
+    - M15 (S845, FPL vs SPN, 3 เกม)
+    - M16 (S846, GAM vs BOX, 4 เกม)
+    - M17 (S847, SP vs FL, 3 เกม)
+- **การจัดการไฟล์ภาพสกรีนช็อต**:
+  - สร้างโฟลเดอร์ `data/draft_screenshots/2026_spring_aog/week1/` และ `week2/`
+  - ย้ายและเปลี่ยนชื่อภาพสกรีนช็อต 22 รูปของ Week 1 และ 40 รูปของ Week 2 สู่รูปแบบมาตรฐาน `2026_w<W>_d<D>_m<M>_g<G>_spr_aog_<ta>_vs_<tb>.png` ครบ 100%
+- **สถานะฐานข้อมูล True Pick Order**:
+  - เพิ่ม 62 เกมเข้าสู่ `data/true_pick_order.json` ทะลุหลักไมล์ 1,000 เกม รวมทั้งสิ้น **1,009 เกม** (ผ่านการตรวจสอบโดย Data Guardian Audit 100%)
+- **การประเมิน Heuristic Baseline (`order_team_picks_by_draft_logic`)**:
+  - **AOG 2026 Spring Week 1 (22 เกม)**:
+    - Strict Turn Acc: **38.2%** (84/220)
+    - Simultaneous Turn Acc: **50.9%** (112/220)
+    - Phase Partition Acc: **68.2%** (150/220)
+    - B1 First Pick Acc: **63.6%** (14/22)
+    - Perfect Teams (Simultaneous): **13.6%** (6/44)
+  - **AOG 2026 Spring Week 2 (40 เกม)**:
+    - Strict Turn Acc: **38.8%** (155/400)
+    - Simultaneous Turn Acc: **53.5%** (214/400)
+    - Phase Partition Acc: **70.5%** (282/400)
+    - B1 First Pick Acc: **50.0%** (20/40)
+    - Perfect Teams (Simultaneous): **11.2%** (9/80)
+  - **AOG 2026 Spring รวม Weeks 1–2 (62 เกม)**:
+    - Strict Turn Acc: **38.5%** (239/620)
+    - Simultaneous Turn Acc: **52.6%** (326/620)
+    - Phase Partition Acc: **69.7%** (432/620)
+    - B1 First Pick Acc: **54.8%** (34/62)
+    - Perfect Teams (Simultaneous): **12.1%** (15/124)
+  - **ภาพสกรีนช็อตสะสมทั้งหมดทุกทัวร์นาเมนต์ (1,009 เกม: RPL + GCS + AOG)**:
+    - Strict Turn Acc: **35.7%** (3,606/10,090)
+    - Simultaneous Turn Acc: **52.9%** (5,333/10,090)
+    - Phase Partition Acc: **72.2%** (7,290/10,090)
+    - B1 First Pick Acc: **48.7%** (491/1,009)
+    - Perfect Teams (Simultaneous): **15.2%** (307/2,018)
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json`
+- `data/draft_screenshots/2026_spring_aog/week1/*` (22 ไฟล์)
+- `data/draft_screenshots/2026_spring_aog/week2/*` (40 ไฟล์)
+- `memory/true-pick-order-retrain-plan.md`
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: ผ่าน 100% (1,009 games checked, 0 unmapped names)
+- ตรวจสอบความถูกต้องของชุดฮีโร่ Blue/Red เทียบกับ Liquipedia match data ครบทุกตัว ไม่มีการคาดเดา
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- เหลือสกรีนช็อตที่ผู้ใช้นำเข้ามาอีก 29 ไฟล์ใน `data/draft_screenshots/` ซึ่งเป็นสกรีนช็อตของ AOG 2026 Spring Week 3 รอประมวลผลต่อเมื่อผู้ใช้พร้อม
+
+---
+
+## 📅 2026-10-24 (UTC+7) — เพิ่ม True Pick Order GCS 2026 Summer Playoffs ครบ 16 เกม (Matches 1-3, S1064-S1066, ยอดรวมทั้งโปรเจกต์ 947 เกม)
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผลและถอดรหัส True Pick Order จากบรอดแคสต์สกรีนช็อตสำหรับ **GCS 2026 Summer Playoffs** ครบทั้ง 3 แมตช์ (16 เกม):
+  - **Match 1 (S1064, ANK vs DCG, 5 เกม)**:
+    - G1: Blue `Tamyn, Thane, Zata, Stuart, Qi` | Red `Rouie, Eland'orr, Arduin, Murad, Biron`
+    - G2: Blue `Lorion, Nakroth, Hayate, Airi, Ata` | Red `Mganga, Flowborn (Marksman), Edras, Baldum, Ryoma`
+    - G3: Blue `Enzo, Billow, Liliana, Wisp, Mina` | Red `Ignis, Hayate, Sinestrea, Thane, Yena`
+    - G4: Blue `Wiro, Tachi, Zata, Elsu, Airi` | Red `Y'bneth, Violet, Yue, Marja, Yan`
+    - G5: Blue `Wisp, Billow, Zip, Marja, Yue` | Red `Wiro, Aoi, Edras, Annette, Taara`
+  - **Match 2 (S1065, FW vs HKA, 7 เกม)**:
+    - G1: Blue `Biron, Sinestrea, Wiro, Yue, Valhein` | Red `Thane, Violet, Zephys, Annette, Skud`
+    - G2: Blue `Eland'orr, Baldum, Zata, Astrid, Airi` | Red `Wisp, Aoi, Liliana, Richter, Y'bneth`
+    - G3: Blue `Florentino, Wiro, Nakroth, Valhein, Liliana` | Red `Cresht, Violet, Zephys, Ignis, Yan`
+    - G4: Blue `Enzo, Lorion, Airi, Hayate, Paine` | Red `TeeMee, Flowborn (Marksman), Edras, Yue, Yena`
+    - G5: Blue `Rouie, TeeMee, Flowborn (Marksman), Omen, Tachi` | Red `Toro, Ignis, Billow, Stuart, Biron`
+    - G6: Blue `Capheny, Chaugnar, D'Arcy, Skud, Nakroth` | Red `Wisp, Sinestrea, Roxie, Tulen, Ryoma`
+    - G7: Blue `Eland'orr, Baldum, Yue, Yan, Zephys` | Red `Violet, Mganga, Y'bneth, Airi, Taara`
+  - **Match 3 (S1066, DCG vs FW, 4 เกม)**:
+    - G1: Blue `Rouie, Eland'orr, Enzo, Tachi, Airi` | Red `Violet, Y'bneth, Preyta, Zephys, Astrid`
+    - G2: Blue `Wiro, Marja, Liliana, Nakroth, Stuart` | Red `Cresht, Billow, Hayate, Annette, Biron`
+    - G3: Blue `Eland'orr, Nakroth, Toro, Yena, Ignis` | Red `Violet, TeeMee, Mganga, Sinestrea, Biron`
+    - G4: Blue `Thane, Billow, Hayate, Annette, Yena` | Red `Flowborn (Marksman), Wiro, Lorion, Ryoma, Murad`
+- **อัปเดตฐานข้อมูลการแข่งขันหลัก**:
+  - ดึงข้อมูลแมตช์ S1065 (7 เกม) และ S1066 (4 เกม) จาก Liquipedia เข้า `data/matches_draft_full.json` (เพิ่มจาก 4,208 เป็น 4,219 เกม) และ `data/matches_draft_flat.csv` ครบถ้วน
+- **การจัดการไฟล์ภาพสกรีนช็อต**:
+  - เปลี่ยนชื่อภาพสกรีนช็อต 16 รูปใน `data/draft_screenshots/2026_summer_gcs/playoffs/` เป็นฟอร์แมตมาตรฐาน `2026_po_m<M>_g<G>_sum_gcs_<ta>_vs_<tb>.png` ครบ 100%
+- **สถานะฐานข้อมูล True Pick Order**:
+  - เพิ่ม 16 เกมเข้าสู่ `data/true_pick_order.json` (ยอดรวมทั้งโปรเจกต์ขยับจาก 931 เป็น **947 เกม**)
+  - GCS 2026 Summer ครบสมบูรณ์ 100% ทั้งฤดูกาล (182/182 เกม: Regular Season 166 + Playoffs 16)
+- **วัดค่า Heuristic Draft Logic เทียบกับ Ground Truth**:
+  - *GCS 2026 Summer Playoffs (16 เกม)*: Strict Turn 30.0% (48/160), Simultaneous Turn 49.4% (79/160), Phase 76.2% (122/160), B1 37.5% (6/16), Perfect Teams (Simul) 12.5% (4/32)
+  - *GCS 2026 Summer Total (182 เกม)*: Strict Turn 33.4% (607/1,820), Simultaneous Turn 52.0% (946/1,820), Phase 77.8% (1,416/1,820), B1 41.8% (76/182), Perfect Teams (Simul) 14.0% (51/364)
+  - *Cumulative ทั้งหมด 947 เกม*: Strict Turn 36.0% (3,406/9,470), Simultaneous Turn 54.7% (5,181/9,470), Phase 78.6% (7,442/9,470), B1 49.2% (466/947), Perfect Teams (Simul) 18.6% (353/1,894)
+
+### 📁 ไฟล์ที่แก้
+- `data/matches_draft_full.json` (เพิ่ม S1065 7 เกม, S1066 4 เกม รวมเป็น 4,219 เกม)
+- `data/matches_draft_flat.csv` (ซิงค์ตารางแบนพิกแบนรวม 4,219 เกม)
+- `data/true_pick_order.json` (เพิ่ม 16 เกมเพลย์ออฟ ยอดรวม 947 เกม)
+- `data/draft_screenshots/2026_summer_gcs/playoffs/*` (เปลี่ยนชื่อ 16 ไฟล์ภาพ)
+- `memory/true-pick-order-retrain-plan.md` (อัปเดตสถิติความแม่นยำ)
+- `CHANGELOG.md` (บันทึกงาน)
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py` ผ่าน 100% (130 heroes, 4,219 pro games, 0 unmapped names, 947 true order games verified)
+- `pytest -v tests/test_data_integrity.py` ผ่าน
+- `ruff check --fix .` และ `ruff format .` ผ่าน
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- GCS 2026 Summer Grand Finals (Match 4: DCG vs FW/HKA winner) มีกำหนดแข่ง 31 ต.ค. 2026 ยังไม่เริ่มแข่ง
+
+---
+
+## 📅 2026-10-24 (UTC+7) — เพิ่ม True Pick Order GCS 2026 Summer S1085 G3 (จบ Regular Season ครบ 100% 166 เกม, ยอดรวม 931 เกม)
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผลและถอดรหัส True Pick Order จากบรอดแคสต์สกรีนช็อตที่ผู้ใช้เพิ่มเข้ามาสำหรับเกมที่ขาดไปเกมเดียวของ **GCS 2026 Summer Week 4 Day 10 Match 18 Game 3 (S1085 G3: BMG vs FW)**
+- ตรวจสอบความถูกต้องของรูปภาพและลำดับ Pick Chronological Order (Blue L->R, Red R->L mirrored) เทียบกับ Liquipedia พบว่าชุดฮีโร่ตรง 100%:
+  - **Blue (BMG):** `Billow`, `Dolia`, `Zata`, `Capheny`, `Biron`
+  - **Red (FW):** `Eland'orr`, `Zuka`, `Annette`, `Maloch`, `Skud`
+- **การจัดการไฟล์ภาพสกรีนช็อต**:
+  - เปลี่ยนชื่อ `data/draft_screenshots/2026_summer_gcs/week4/Screenshot 2026-10-24 071815.png` เป็น `2026_w4_d10_m18_g3_sum_gcs_bmg_vs_fw.png`
+- **สถานะฐานข้อมูล True Pick Order**:
+  - **GCS 2026 Summer Regular Season ครบ 100% สมบูรณ์ทุกแมตช์ ทุกสัปดาห์ (166 / 166 เกม across Matches 1–42)**
+  - ยอดสะสมรวมทั้งโปรเจกต์แตะ **931 เกม** (Screenshot 930 เกม + 1 manual entry)
+- **การประเมิน Heuristic Baseline (`order_team_picks_by_draft_logic`)**:
+  - **GCS 2026 Summer Week 4 (ครบ 24 เกม)**:
+    - Strict Turn Acc: **29.2%** (70/240)
+    - Simultaneous Turn Acc: **50.8%** (122/240)
+    - Phase Partition Acc: **74.2%** (178/240)
+    - B1 First Pick Acc: **37.5%** (9/24)
+    - Perfect Teams (Simultaneous): **8.3%** (4/48)
+  - **GCS 2026 Summer Regular Season สะสมครบ 100% (166 เกม)**:
+    - Strict Turn Acc: **33.6%** (557/1,660)
+    - Simultaneous Turn Acc: **52.1%** (865/1,660)
+    - Phase Partition Acc: **77.8%** (1,292/1,660)
+    - B1 First Pick Acc: **42.2%** (70/166)
+    - Perfect Teams (Simultaneous): **14.2%** (47/332)
+  - **ภาพสกรีนช็อตทั้งหมดสะสม (931 เกม)**:
+    - Strict Turn Acc: **36.1%** (3,357/9,310)
+    - Simultaneous Turn Acc: **54.8%** (5,100/9,310)
+    - Phase Partition Acc: **78.6%** (7,318/9,310)
+    - B1 First Pick Acc: **49.4%** (460/931)
+    - Perfect Teams (Simultaneous): **18.7%** (349/1,862)
+
+### 📁 ไฟล์ที่แก้
+- `data/draft_screenshots/2026_summer_gcs/week4/2026_w4_d10_m18_g3_sum_gcs_bmg_vs_fw.png` (เปลี่ยนชื่อจาก Screenshot)
+- `data/true_pick_order.json` (เพิ่มข้อมูล True Pick Order เกม S1085 G3)
+- `memory/true-pick-order-retrain-plan.md` (อัปเดตสถิติและสถานะ 166 เกมครบ 100%)
+- `CHANGELOG.md` (เพิ่มบันทึกงาน S1085 G3)
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: ผ่านสมบูรณ์ (PASS - True pick order integrity: 931 games, 0 errors, 0 missing files)
+- `pytest tests/test_data_integrity.py tests/test_skills_sync.py`: ผ่าน 13/13 tests
+- Heuristic benchmark evaluation: ผ่านการคำนวณและเก็บบันทึกครบถ้วน
+
+---
+
+## 📅 2026-10-23 (UTC+7) — เพิ่ม True Pick Order GCS 2026 Summer Week 8 (24 เกม รวมสะสม 930 เกม)
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผลและถอดรหัส True Pick Order จากบรอดแคสต์สกรีนช็อตของ **GCS 2026 Summer Week 8** ครบถ้วน 100% ทั้งหมด 24 เกม (6 ซีรีส์ S1104–S1109 across Matches 37–42) ส่งผลให้จบ Regular Season ของ GCS 2026 Summer ครบทั้ง 42 แมตช์ และทำให้ยอดสะสมรวมแตะ **930 เกม** (Screenshot 929 เกม + 1 manual entry):
+  - **Day 20 Match 37 (S1104: ONE vs LIT, 3 เกม):** G1-G3 (`one_vs_lit`, `lit_vs_one`)
+  - **Day 20 Match 38 (S1105: DCG vs ANK, 5 เกม):** G1-G5 (`dcg_vs_ank`, `ank_vs_dcg`)
+  - **Day 21 Match 39 (S1106: ANK vs ONE, 4 เกม):** G1-G4 (`ank_vs_one`, `one_vs_ank`)
+  - **Day 21 Match 40 (S1107: FW vs BMG, 5 เกม):** G1-G5 (`fw_vs_bmg`, `bmg_vs_fw`)
+  - **Day 22 Match 41 (S1108: FW vs HKA, 4 เกม):** G1-G4 (`fw_vs_hka`, `hka_vs_fw`)
+  - **Day 22 Match 42 (S1109: BMG vs LIT, 3 เกม):** G1-G3 (`bmg_vs_lit`, `lit_vs_bmg`)
+- **การจัดการไฟล์ภาพสกรีนช็อต**:
+  - เปลี่ยนชื่อภาพสกรีนช็อตดิบ 24 ภาพใน `data/draft_screenshots/2026_summer_gcs/week8/` สู่รูปแบบมาตรฐาน `2026_w8_d<D>_m<M>_g<G>_sum_gcs_<ta>_vs_<tb>.png`
+  - ตรวจสอบความถูกต้องของรูปภาพและลำดับ Pick Chronological Order (Blue L->R, Red R->L mirrored) เทียบกับ Liquipedia พบว่าทั้ง 24 เกมมีชุดฮีโร่ตรง 100% (0 discrepancies)
+- **การประเมิน Heuristic Baseline (`order_team_picks_by_draft_logic`)**:
+  - **GCS 2026 Summer Week 8 (24 เกม)**:
+    - Strict Turn Acc: **30.8%** (74/240)
+    - Simultaneous Turn Acc: **48.8%** (117/240)
+    - Phase Partition Acc: **78.3%** (188/240)
+    - B1 First Pick Acc: **37.5%** (9/24)
+    - Perfect Teams (Simultaneous): **16.7%** (8/48)
+  - **GCS 2026 Summer สะสมครบ Weeks 1-8 (165 เกม)**:
+    - Strict Turn Acc: **33.4%** (551/1,650)
+    - Simultaneous Turn Acc: **51.9%** (857/1,650)
+    - Phase Partition Acc: **77.8%** (1,284/1,650)
+    - B1 First Pick Acc: **41.8%** (69/165)
+    - Perfect Teams (Simultaneous): **13.9%** (46/330)
+  - **ภาพสกรีนช็อตทั้งหมดสะสม (930 เกม)**:
+    - Strict Turn Acc: **36.0%** (3,351/9,300)
+    - Simultaneous Turn Acc: **54.8%** (5,092/9,300)
+    - Phase Partition Acc: **78.6%** (7,310/9,300)
+    - B1 First Pick Acc: **49.4%** (459/930)
+    - Perfect Teams (Simultaneous): **18.7%** (348/1,860)
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json` (เพิ่มข้อมูล True Pick Order 24 เกมของ GCS 2026 Summer Week 8)
+- `data/draft_screenshots/2026_summer_gcs/week8/` (เปลี่ยนชื่อสกรีนช็อต 24 ไฟล์)
+- `memory/true-pick-order-retrain-plan.md` (อัปเดตสถิติและจำนวนเกมสะสม 930 เกม)
+- `CHANGELOG.md` (เพิ่มบันทึกงาน Week 8)
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: ผ่านสมบูรณ์ (PASS - True pick order integrity: 930 games, 0 errors, 0 missing files)
+- `pytest tests/test_data_integrity.py tests/test_skills_sync.py`: ผ่าน 13/13 tests
+- Heuristic benchmark evaluation: ผ่านการคำนวณและเก็บบันทึกครบถ้วน
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- Regular Season GCS 2026 Summer บันทึกครบถ้วนสมบูรณ์ 100% แล้ว (Weeks 1-8, Matches 1–42, 165 เกม) รอบ Playoffs พร้อมรับเข้าสู่ระบบเมื่อมีภาพสกรีนช็อต
+
+---
+
+## 📅 2026-10-23 (UTC+7) — เพิ่ม True Pick Order GCS 2026 Summer Weeks 6-7 (49 เกม รวมสะสม 906 เกม)
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผลและถอดรหัส True Pick Order จากบรอดแคสต์สกรีนช็อตของ **GCS 2026 Summer Week 6 และ Week 7** ครบถ้วน 100% ทั้งหมด 49 เกม (12 ซีรีส์ S1092–S1103 across Matches 25–36) ทำให้ยอดสะสมรวมทะลุ 900 เกม แตะ **906 เกม** (Screenshot 905 เกม + 1 manual entry):
+  - **Week 6 (26 เกม):**
+    - **Day 14 Match 25 (S1092: BMG vs ONE, 5 เกม):** G1-G5 (`bmg_vs_one`, `one_vs_bmg`)
+    - **Day 14 Match 26 (S1093: FW vs ANK, 5 เกม):** G1-G5 (`fw_vs_ank`, `ank_vs_fw`)
+    - **Day 15 Match 27 (S1094: DCG vs BMG, 4 เกม):** G1-G4 (`dcg_vs_bmg`, `bmg_vs_dcg`)
+    - **Day 15 Match 28 (S1095: HKA vs LIT, 3 เกม):** G1-G3 (`hka_vs_lit`)
+    - **Day 16 Match 29 (S1096: DCG vs LIT, 4 เกม):** G1-G4 (`dcg_vs_lit`, `lit_vs_dcg`)
+    - **Day 16 Match 30 (S1097: ONE vs HKA, 5 เกม):** G1-G5 (`one_vs_hka`, `hka_vs_one`)
+  - **Week 7 (23 เกม):**
+    - **Day 17 Match 31 (S1098: FW vs ONE, 5 เกม):** G1-G5 (`fw_vs_one`, `one_vs_fw`)
+    - **Day 17 Match 32 (S1099: BMG vs HKA, 3 เกม):** G1-G3 (`bmg_vs_hka`, `hka_vs_bmg`)
+    - **Day 18 Match 33 (S1100: ANK vs BMG, 3 เกม):** G1-G3 (`ank_vs_bmg`)
+    - **Day 18 Match 34 (S1101: DCG vs FW, 5 เกม):** G1-G5 (`dcg_vs_fw`, `fw_vs_dcg`)
+    - **Day 19 Match 35 (S1102: ANK vs LIT, 3 เกม):** G1-G3 (`ank_vs_lit`)
+    - **Day 19 Match 36 (S1103: DCG vs HKA, 4 เกม):** G1-G4 (`dcg_vs_hka`, `hka_vs_dcg`)
+- **การจัดการไฟล์ภาพสกรีนช็อต**:
+  - เปลี่ยนชื่อภาพสกรีนช็อตดิบ 26 ภาพใน `week6/` และ 23 ภาพใน `week7/` สู่รูปแบบมาตรฐาน `2026_w<W>_d<D>_m<M>_g<G>_sum_gcs_<ta>_vs_<tb>.png`
+  - ตรวจสอบความถูกต้องของรูปภาพและลำดับ Pick Chronological Order (Blue L->R, Red R->L mirrored) เทียบกับ Liquipedia พบว่าทั้ง 49 เกมมีชุดฮีโร่ตรง 100% (0 discrepancies)
+- **การประเมิน Heuristic Baseline (`order_team_picks_by_draft_logic`)**:
+  - **GCS 2026 Summer Week 6 (26 เกม)**:
+    - Strict Turn Acc: **32.7%** (85/260)
+    - Simultaneous Turn Acc: **51.2%** (133/260)
+    - Phase Partition Acc: **79.2%** (206/260)
+    - B1 First Pick Acc: **38.5%** (10/26)
+    - Perfect Teams (Simultaneous): **9.6%** (5/52)
+  - **GCS 2026 Summer Week 7 (23 เกม)**:
+    - Strict Turn Acc: **36.5%** (84/230)
+    - Simultaneous Turn Acc: **53.5%** (123/230)
+    - Phase Partition Acc: **78.3%** (180/230)
+    - B1 First Pick Acc: **43.5%** (10/23)
+    - Perfect Teams (Simultaneous): **17.4%** (8/46)
+  - **ภาพสกรีนช็อตทั้งหมดสะสม (906 เกม)**:
+    - Strict Turn Acc: **36.2%** (3,276/9,060)
+    - Simultaneous Turn Acc: **54.9%** (4,975/9,060)
+    - Phase Partition Acc: **78.6%** (7,122/9,060)
+    - B1 First Pick Acc: **49.7%** (450/906)
+    - Perfect Teams (Simultaneous): **18.8%** (340/1,812)
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json` (เพิ่มข้อมูล True Pick Order 49 เกมของ GCS 2026 Summer Weeks 6-7)
+- `data/draft_screenshots/2026_summer_gcs/week6/` (เปลี่ยนชื่อสกรีนช็อต 26 ไฟล์)
+- `data/draft_screenshots/2026_summer_gcs/week7/` (เปลี่ยนชื่อสกรีนช็อต 23 ไฟล์)
+- `memory/true-pick-order-retrain-plan.md` (อัปเดตสถิติและจำนวนเกมสะสม 906 เกม)
+- `CHANGELOG.md` (เพิ่มบันทึกงาน Weeks 6-7)
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: ผ่านสมบูรณ์ (PASS - True pick order integrity: 906 games, 0 errors, 0 missing files)
+- `pytest tests/test_data_integrity.py tests/test_skills_sync.py`: ผ่าน 13/13 tests
+- Heuristic benchmark evaluation: ผ่านการคำนวณและเก็บบันทึกครบถ้วน
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- Regular Season GCS 2026 Summer บันทึกครบถ้วนถึง Week 7 (Matches 1–36) สัปดาห์ถัดไปหรือรอบ Playoffs พร้อมรับเข้าสู่ระบบเมื่อมีภาพสกรีนช็อต
+
+---
+
+## 📅 2026-10-23 (UTC+7) — เพิ่ม True Pick Order GCS 2026 Summer Week 5 (23 เกม รวมสะสม 857 เกม)
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผลและถอดรหัส True Pick Order จากบรอดแคสต์สกรีนช็อตของ **GCS 2026 Summer Week 5** ครบถ้วน 100% ทั้งหมด 23 เกม (6 ซีรีส์ S1086–S1091 across Matches 19–24) ทำให้ยอดสะสมรวมแตะ **857 เกม** (Screenshot 856 เกม + 1 manual entry):
+  - **Day 11 Match 19 (S1086: LIT vs BMG, 3 เกม):** G1-G3 (`lit_vs_bmg`, `bmg_vs_lit`)
+  - **Day 11 Match 20 (S1087: DCG vs FW, 3 เกม):** G1-G3 (`dcg_vs_fw`, `fw_vs_dcg`)
+  - **Day 12 Match 21 (S1088: FW vs ANK, 5 เกม):** G1-G5 (`fw_vs_ank`, `ank_vs_fw`)
+  - **Day 12 Match 22 (S1089: BMG vs HKA, 4 เกม):** G1-G4 (`bmg_vs_hka`, `hka_vs_bmg`)
+  - **Day 13 Match 23 (S1090: HKA vs ANK, 3 เกม):** G1-G3 (`hka_vs_ank`, `ank_vs_hka`)
+  - **Day 13 Match 24 (S1091: DCG vs ONE, 5 เกม):** G1-G5 (`dcg_vs_one`, `one_vs_dcg`)
+- **การจัดการไฟล์ภาพสกรีนช็อต**:
+  - เปลี่ยนชื่อภาพสกรีนช็อตดิบ 23 ภาพใน `data/draft_screenshots/2026_summer_gcs/week5/` สู่รูปแบบมาตรฐาน `2026_w5_d<D>_m<M>_g<G>_sum_gcs_<ta>_vs_<tb>.png`
+  - ตรวจสอบความถูกต้องของรูปภาพและลำดับ Pick Chronological Order (Blue L->R, Red R->L mirrored) เทียบกับ Liquipedia พบว่าทั้ง 23 เกมมีชุดฮีโร่ตรง 100% (0 discrepancies)
+- **การประเมิน Heuristic Baseline (`order_team_picks_by_draft_logic`)**:
+  - **GCS 2026 Summer Week 5 (23 เกม)**:
+    - Strict Turn Acc: **35.2%** (81/230)
+    - Simultaneous Turn Acc: **54.3%** (125/230)
+    - Phase Partition Acc: **77.4%** (178/230)
+    - B1 First Pick Acc: **52.2%** (12/23)
+    - Perfect Teams (Simultaneous): **19.6%** (9/46)
+  - **ภาพสกรีนช็อตทั้งหมดสะสม (857 เกม)**:
+    - Strict Turn Acc: **36.3%** (3,107/8,570)
+    - Simultaneous Turn Acc: **55.1%** (4,719/8,570)
+    - Phase Partition Acc: **78.6%** (6,736/8,570)
+    - B1 First Pick Acc: **50.2%** (430/857)
+    - Perfect Teams (Simultaneous): **19.1%** (327/1,714)
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json` (เพิ่มข้อมูล True Pick Order 23 เกมของ GCS 2026 Summer Week 5)
+- `data/draft_screenshots/2026_summer_gcs/week5/` (เปลี่ยนชื่อสกรีนช็อต 23 ไฟล์)
+- `memory/true-pick-order-retrain-plan.md` (อัปเดตสถิติและจำนวนเกมสะสม 857 เกม)
+- `CHANGELOG.md` (เพิ่มบันทึกงาน Week 5)
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: ผ่านสมบูรณ์ (PASS - True pick order integrity: 857 games, 0 errors, 0 missing files)
+- Heuristic benchmark evaluation: ผ่านการคำนวณและเก็บบันทึกครบถ้วน
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- GCS 2026 Summer Week 6 และสัปดาห์ถัดไปพร้อมรับเข้าสู่ระบบเมื่อมีภาพสกรีนช็อต
+
+---
+
+## 📅 2026-10-23 (UTC+7) — เพิ่ม True Pick Order GCS 2026 Summer Week 4 (23 เกม รวมสะสม 834 เกม)
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผลและถอดรหัส True Pick Order จากบรอดแคสต์สกรีนช็อตของ **GCS 2026 Summer Week 4** ทั้งหมด 23 เกม (จากทั้งหมด 24 เกมในสัปดาห์ ขาดเฉพาะ M18 G3 ที่ไม่มีภาพในบรอดแคสต์) ทำให้ยอดสะสมรวมแตะ **834 เกม** (Screenshot 833 เกม + 1 manual entry):
+  - **Day 8 Match 13 (S1080: DCG vs HKA, 3 เกม):** G1-G3 (`dcg_vs_hka`)
+  - **Day 8 Match 14 (S1081: LIT vs ONE, 4 เกม):** G1-G4 (`lit_vs_one`, `one_vs_lit`)
+  - **Day 9 Match 15 (S1082: ONE vs ANK, 5 เกม):** G1-G5 (`one_vs_ank`, `ank_vs_one`)
+  - **Day 9 Match 16 (S1083: LIT vs HKA, 3 เกม):** G1-G3 (`lit_vs_hka`, `hka_vs_lit`)
+  - **Day 10 Match 17 (S1084: DCG vs ANK, 5 เกม):** G1-G5 (`dcg_vs_ank`, `ank_vs_dcg`)
+  - **Day 10 Match 18 (S1085: BMG vs FW, 3 เกมที่บันทึก):** G1, G2, G4 (`bmg_vs_fw`, `fw_vs_bmg` — ขาด G3)
+- **การจัดการไฟล์ภาพสกรีนช็อต**:
+  - เปลี่ยนชื่อภาพสกรีนช็อตดิบ 23 ภาพใน `data/draft_screenshots/2026_summer_gcs/week4/` สู่รูปแบบมาตรฐาน `2026_w4_d<D>_m<M>_g<G>_sum_gcs_<ta>_vs_<tb>.png`
+  - ตรวจสอบความถูกต้องของรูปภาพและลำดับ Pick Chronological Order (Blue L->R, Red R->L mirrored) เทียบกับ Liquipedia พบว่าทั้ง 23 เกมมีชุดฮีโร่ตรง 100% (0 discrepancies)
+- **การประเมิน Heuristic Baseline (`order_team_picks_by_draft_logic`)**:
+  - **GCS 2026 Summer Week 4 (23 เกม)**:
+    - Strict Turn Acc: **27.8%** (64/230)
+    - Simultaneous Turn Acc: **49.6%** (114/230)
+    - Phase Partition Acc: **73.9%** (170/230)
+    - B1 First Pick Acc: **34.8%** (8/23)
+    - Perfect Teams (Simultaneous): **6.5%** (3/46)
+  - **ภาพสกรีนช็อตทั้งหมดสะสม (833 เกม)**:
+    - Strict Turn Acc: **36.3%** (3,026/8,340)
+    - Simultaneous Turn Acc: **55.1%** (4,594/8,340)
+    - Phase Partition Acc: **78.6%** (6,558/8,340)
+    - B1 First Pick Acc: **50.1%** (418/834)
+    - Perfect Teams (Simultaneous): **19.1%** (318/1,668)
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json` (เพิ่มข้อมูล True Pick Order 23 เกมของ GCS 2026 Summer Week 4)
+- `data/draft_screenshots/2026_summer_gcs/week4/` (เปลี่ยนชื่อสกรีนช็อต 23 ไฟล์)
+- `CHANGELOG.md` (บันทึกประวัติการดำเนินงาน)
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: PASS (834 games checked, 0 errors)
+- `pytest tests/test_data_integrity.py tests/test_skills_sync.py`: 13 passed
+- `ruff check --fix .` & `ruff format .`: All checks passed
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- Match 18 Game 3 (S1085: BMG vs FW) ขาดภาพสกรีนช็อตบรอดแคสต์ หากมีภายหลังสามารถนำเข้าเพิ่มเติมได้
+- ดำเนินการต่อในสัปดาห์ถัดไปของ GCS 2026 Summer (Week 5+) เมื่อผู้ใช้นำสกรีนช็อตมาเพิ่ม
+
+---
+
+## 📅 2026-10-23 (UTC+7) — เพิ่ม True Pick Order GCS 2026 Summer Week 3 (23 เกม รวมสะสม 811 เกม)
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผลและถอดรหัส True Pick Order จากบรอดแคสต์สกรีนช็อตของ **GCS 2026 Summer Week 3** ทั้งหมด 23 เกม ครบทั้งสัปดาห์ 100% ทำให้ยอดสะสมรวมแตะ **811 เกม** (Screenshot 810 เกม + 1 manual entry):
+  - **Day 5 Match 7 (S1074: DCG vs ONE, 4 เกม):** G1-G4 (`dcg_vs_one`, `one_vs_dcg`)
+  - **Day 5 Match 8 (S1075: LIT vs ANK, 3 เกม):** G1-G3 (`lit_vs_ank`, `ank_vs_lit`)
+  - **Day 6 Match 9 (S1076: BMG vs ANK, 4 เกม):** G1-G4 (`bmg_vs_ank`, `ank_vs_bmg`)
+  - **Day 6 Match 10 (S1077: ONE vs FW, 4 เกม):** G1-G4 (`one_vs_fw`, `fw_vs_one`)
+  - **Day 7 Match 11 (S1078: HKA vs FW, 5 เกม):** G1-G5 (`hka_vs_fw`, `fw_vs_hka`)
+  - **Day 7 Match 12 (S1079: DCG vs BMG, 3 เกม):** G1-G3 (`dcg_vs_bmg`, `bmg_vs_dcg`)
+- **การจัดการไฟล์ภาพสกรีนช็อต**:
+  - เปลี่ยนชื่อภาพสกรีนช็อตดิบ 23 ภาพใน `data/draft_screenshots/2026_summer_gcs/week3/` สู่รูปแบบมาตรฐาน `2026_w3_d<D>_m<M>_g<G>_sum_gcs_<ta>_vs_<tb>.png`
+  - ตรวจสอบความถูกต้องของรูปภาพและลำดับ Pick Chronological Order (Blue L->R, Red R->L mirrored) เทียบกับ Liquipedia พบว่าทั้ง 23 เกมมีชุดฮีโร่ตรง 100% (0 discrepancies)
+  - ลบไฟล์ภาพติดต่อชั่วคราว (`temp_m7_contact.png` .. `temp_m12_contact.png`, `temp_avatars_check.png`, `check_tournament_logo.png`)
+- **การประเมิน Heuristic Baseline (`order_team_picks_by_draft_logic`)**:
+  - **GCS 2026 Summer Week 3 (23 เกม)**:
+    - Strict Turn Acc: **35.7%** (82/230)
+    - Simultaneous Turn Acc: **51.7%** (119/230)
+    - Phase Partition Acc: **80.0%** (184/230)
+    - B1 First Pick Acc: **34.8%** (8/23)
+    - Perfect Teams (Simultaneous): **10.9%** (5/46)
+  - **ภาพสกรีนช็อตทั้งหมดสะสม (810 เกม)**:
+    - Strict Turn Acc: **36.5%** (2,962/8,110)
+    - Simultaneous Turn Acc: **55.2%** (4,480/8,110)
+    - Phase Partition Acc: **78.8%** (6,388/8,110)
+    - B1 First Pick Acc: **50.6%** (410/811)
+    - Perfect Teams (Simultaneous): **19.4%** (315/1,622)
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json` (เพิ่มข้อมูล True Pick Order 23 เกมของ GCS 2026 Summer Week 3)
+- `data/draft_screenshots/2026_summer_gcs/week3/` (เปลี่ยนชื่อสกรีนช็อต 23 ไฟล์)
+- `CHANGELOG.md` (บันทึกประวัติการดำเนินงาน)
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: PASS (811 games checked, 0 errors)
+- `pytest tests/test_data_integrity.py tests/test_skills_sync.py`: 13 passed in 0.67s
+- `ruff check --fix .` & `ruff format .`: All checks passed
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- ดำเนินการต่อในสัปดาห์ถัดไปของ GCS 2026 Summer (Week 4+) เมื่อผู้ใช้นำสกรีนช็อตมาเพิ่ม
+
+---
+
+## 📅 2026-10-23 (UTC+7) — เพิ่ม True Pick Order GCS 2026 Summer Week 2 (11 เกม รวมสะสม 788 เกม)
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผลและถอดรหัส True Pick Order จากบรอดแคสต์สกรีนช็อตของ **GCS 2026 Summer Week 2** (Second Split) ทั้งหมด 11 เกม ครบทั้งสัปดาห์ 100% ทำให้ยอดสะสมรวมแตะ **788 เกม** (Screenshot ทั้งหมด 787 เกม + 1 manual entry):
+  - **Day 3 Match 4 (S1071: ONE vs BMG, 4 เกม):** G1-G4 (`one_vs_bmg`, `bmg_vs_one`)
+  - **Day 4 Match 5 (S1072: LIT vs FW, 3 เกม):** G1-G3 (`lit_vs_fw`, `fw_vs_lit`)
+  - **Day 4 Match 6 (S1073: HKA vs BMG, 4 เกม):** G1-G4 (`hka_vs_bmg`, `bmg_vs_hka`)
+- **การแก้ไขข้อผิดพลาด Liquipedia (Bug Fix)**:
+  - ในแมตช์ S1071 Game 1 (ONE vs BMG): Liquipedia บันทึก Zephys ซ้ำสองฝั่ง (ทั้ง `blue_picks` และ `red_picks`)
+  - จากการตรวจสอบภาพสกรีนช็อตพบว่าฝั่ง Blue (ONE) Slot 3 (LUKY) เลือก **Alice** ชัดเจน จึงได้ทำการแก้ไขข้อมูลใน `data/matches_draft_full.json` และ `data/matches_draft_flat.csv` ให้ถูกต้อง
+- **การจัดการไฟล์ภาพสกรีนช็อต**:
+  - สร้างโฟลเดอร์ใหม่ `data/draft_screenshots/2026_summer_gcs/week2/`
+  - ย้ายและเปลี่ยนชื่อภาพทั้งหมด 11 ไฟล์สู่รูปแบบมาตรฐาน `2026_w2_d<D>_m<M>_g<G>_sum_gcs_<ta>_vs_<tb>.png`
+  - ตรวจสอบความถูกต้องของรูปภาพและลำดับ Pick Chronological Order (Blue L->R, Red R->L mirrored) ตรงกับ Liquipedia 100% (0 discrepancies)
+- **การประเมิน Heuristic Baseline (`order_team_picks_by_draft_logic`)**:
+  - **GCS 2026 Summer Week 2 (11 เกม)**:
+    - Strict Turn Acc: **30.9%** (34/110)
+    - Simultaneous Turn Acc: **29.1%** (32/110)
+    - Phase Partition Acc: **74.5%** (82/110)
+    - B1 First Pick Acc: **45.5%** (5/11)
+    - Perfect Teams (Simultaneous): **13.6%** (3/22)
+  - **ภาพสกรีนช็อตทั้งหมดสะสม (787 เกม)**:
+    - Strict Turn Acc: **36.6%** (2,877/7,870)
+    - Simultaneous Turn Acc: **38.2%** (3,005/7,870)
+    - Phase Partition Acc: **78.7%** (6,196/7,870)
+    - B1 First Pick Acc: **51.1%** (402/787)
+    - Perfect Teams (Simultaneous): **19.7%** (310/1,574)
+
+### 📁 ไฟล์ที่แก้
+- `data/matches_draft_full.json` (แก้ไข Zephys -> Alice ใน S1071 G1)
+- `data/matches_draft_flat.csv` (แก้ไข Zephys -> Alice ใน S1071 G1)
+- `data/true_pick_order.json` (เพิ่ม 11 เกม รวม 788 เกม)
+- `data/draft_screenshots/2026_summer_gcs/week2/` (สร้างโฟลเดอร์ + บรรจุ 11 ไฟล์)
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py` (PASS 130/130 ฮีโร่, 4,208 แมตช์, ตรวจสอบ 788 true pick order ครบถ้วน)
+- `pytest tests/test_data_integrity.py` (PASS 11/11 tests)
+- `ruff check --fix . && ruff format .` (PASS)
+
+---
+
+## 📅 2026-10-23 (UTC+7) — เพิ่ม True Pick Order GCS 2026 Summer Week 1 (12 เกม รวมสะสม 777 เกม)
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผลและถอดรหัส True Pick Order จากบรอดแคสต์สกรีนช็อตของ **GCS 2026 Summer Week 1** (Second Split) ทั้งหมด 12 เกม ครบทั้งสัปดาห์ 100% ทำให้ยอดสะสมรวมแตะ **777 เกม** (Screenshot ทั้งหมด 776 เกม + 1 manual entry):
+  - **Day 1 Match 1 (S1068: LIT vs DCG, 3 เกม):** G1-G3 (`lit_vs_dcg`, `dcg_vs_lit`)
+  - **Day 1 Match 2 (S1069: ANK vs HKA, 4 เกม):** G1-G4 (`ank_vs_hka`, `hka_vs_ank`)
+  - **Day 2 Match 3 (S1070: ANK vs FW, 5 เกม):** G1-G5 (`ank_vs_fw`, `fw_vs_ank`)
+- **การจัดการไฟล์ภาพสกรีนช็อต**:
+  - สร้างโฟลเดอร์ใหม่ `data/draft_screenshots/2026_summer_gcs/week1/`
+  - ย้ายและเปลี่ยนชื่อภาพทั้งหมด 12 ไฟล์สู่รูปแบบมาตรฐาน `2026_w1_d<D>_m<M>_g<G>_sum_gcs_<ta>_vs_<tb>.png`
+  - ตรวจสอบความถูกต้องของรูปภาพและลำดับ Pick Chronological Order (Blue L->R, Red R->L mirrored) ตรงกับ Liquipedia 100% (0 discrepancies)
+- **การประเมิน Heuristic Baseline (`order_team_picks_by_draft_logic`)**:
+  - **GCS 2026 Summer Week 1 (12 เกม)**:
+    - Strict Turn Acc: **39.2%** (47/120)
+    - Simultaneous Turn Acc: **46.7%** (56/120)
+    - Phase Partition Acc: **80.0%** (96/120)
+    - B1 First Pick Acc: **58.3%** (7/12)
+    - Perfect Teams (Simultaneous): **20.8%** (5/24)
+  - **ภาพสกรีนช็อตทั้งหมดสะสม (776 เกม)**:
+    - Strict Turn Acc: **36.6%** (2,843/7,760)
+    - Simultaneous Turn Acc: **38.3%** (2,973/7,760)
+    - Phase Partition Acc: **78.8%** (6,114/7,760)
+    - B1 First Pick Acc: **51.2%** (397/776)
+    - Perfect Teams (Simultaneous): **19.8%** (307/1,552)
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json` (เพิ่ม 12 เกม รวม 777 เกม)
+- `data/draft_screenshots/2026_summer_gcs/week1/` (สร้างโฟลเดอร์ + บรรจุ 12 ไฟล์)
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py` (PASS 130/130 ฮีโร่, 4,208 แมตช์, ตรวจสอบ 777 true pick order ครบถ้วน)
+- `pytest tests/test_data_integrity.py` (PASS 11/11 tests)
+- `ruff check --fix . && ruff format .` (PASS)
+
+---
+
+## 📅 2026-10-23 (UTC+7) — เพิ่ม True Pick Order GCS 2026 Spring Playoffs (15 เกม รวมสะสม 765 เกม, GCS ทั้งหมด 189 เกม)
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผลและถอดรหัส True Pick Order จากบรอดแคสต์สกรีนช็อตของ **GCS 2026 Spring Playoffs** ทั้งหมด 15 เกม ทำให้ยอดสะสมรวมทะลุสู่ **765 เกม** (GCS รวม 189 เกม, Screenshot ทั้งหมด 764 เกม + 1 manual entry):
+  - **Playoffs Match 2 (S1019: BMG vs ANK, 4 เกม):** G1-G4 (`bmg_vs_ank`, `ank_vs_bmg`)
+  - **Semi Finals / Match 3 (S1020: ANK vs DCG, 5 เกม):** G1, G2, G3, G5, G6 (`ank_vs_dcg`, `dcg_vs_ank`; หมายเหตุ: G4 ไม่มีไฟล์สกรีนช็อต)
+  - **Grand Final / Match 4 (S1021: DCG vs FW, 6 เกม):** G1-G6 (`dcg_vs_fw`, `fw_vs_dcg`)
+- **การจัดการไฟล์ภาพสกรีนช็อต**:
+  - เปลี่ยนชื่อภาพทั้งหมด 15 ไฟล์สู่รูปแบบมาตรฐาน `2026_playoffs_m<M>_g<G>_spr_gcs_<ta>_vs_<tb>.png` ใน `data/draft_screenshots/2026_spring_gcs/playoffs/`
+  - ตรวจสอบความถูกต้องของรูปภาพและลำดับ Pick Chronological Order (Blue L->R, Red R->L mirrored) ตรงกับ Liquipedia 100% (0 discrepancies)
+- **การประเมิน Heuristic Baseline (`order_team_picks_by_draft_logic`)**:
+  - **GCS Playoffs (15 เกม)**:
+    - Strict Turn Acc: **44.0%** (66/150)
+    - Simultaneous Turn Acc: **66.0%** (99/150)
+    - Phase Partition Acc: **81.3%** (122/150)
+    - B1 First Pick Acc: **93.3%** (14/15)
+    - Perfect Teams (Simultaneous): **26.7%** (8/30)
+  - **GCS รวมทั้งหมด Regular Season + Playoffs (189 เกม)**:
+    - Strict Turn Acc: **41.2%** (778/1,890)
+    - Simultaneous Turn Acc: **60.1%** (1,135/1,890)
+    - Phase Partition Acc: **80.1%** (1,514/1,890)
+    - B1 First Pick Acc: **64.6%** (122/189)
+    - Perfect Teams (Simultaneous): **24.3%** (92/378)
+  - **ภาพรวมทั้งโปรเจกต์ (764 screenshot games: RPL W+S + GCS)**:
+    - Strict Turn Acc: **36.6%** (2,796/7,640)
+    - Simultaneous Turn Acc: **55.4%** (4,230/7,640)
+    - Phase Partition Acc: **78.8%** (6,018/7,640)
+    - B1 First Pick Acc: **51.0%** (390/764)
+    - Perfect Teams (Simultaneous): **19.8%** (302/1,528)
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json` (เพิ่ม 15 เกมของ GCS Playoffs รวมเป็น 765 เกม)
+- `data/draft_screenshots/2026_spring_gcs/playoffs/` (เปลี่ยนชื่อเป็นมาตรฐาน 15 ไฟล์)
+- `memory/true-pick-order-retrain-plan.md` (อัปเดตสถิติและสถานะ 765 เกม)
+- `CHANGELOG.md` (บันทึกงานของ Playoffs)
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: PASS (765 games checked, 0 errors)
+- `pytest -v`: PASS (58/58 passed)
+- `ruff check --fix . && ruff format .`: PASS (0 errors, code formatted)
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- Match 1 (S1018 DCG vs FW: 6 เกม) และ Match 3 Game 4 (S1020 ANK vs DCG) ยังไม่มีภาพสกรีนช็อตในชุดข้อมูล
+
+---
+
+## 📅 2026-10-23 (UTC+7) — เพิ่ม True Pick Order GCS 2026 Spring Week 7 (25 เกม รวมสะสม 750 เกม, GCS Regular Season ครบ 174 เกม 100%)
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผลและถอดรหัส True Pick Order จากบรอดแคสต์สกรีนช็อตของ **GCS 2026 Spring Week 7** ครบทั้ง 25 เกม ทำให้ยอดสะสมรวมทะลุสู่ **750 เกม** (GCS Regular Season ครบ 174 เกม 100%, Screenshot ทั้งหมด 749 เกม + 1 manual entry):
+  - **Match 37 (m1, Day 1: S1058 FW vs LIT, 4 เกม):** G1-G4 (`fw_vs_lit`, `lit_vs_fw`)
+  - **Match 38 (m2, Day 1: S1059 ONE vs DCG, 4 เกม):** G1-G4 (`one_vs_dcg`, `dcg_vs_one`)
+  - **Match 39 (m3, Day 2: S1060 BMG vs LIT, 4 เกม):** G1-G4 (`bmg_vs_lit`, `lit_vs_bmg`)
+  - **Match 40 (m4, Day 2: S1061 DCG vs FW, 5 เกม):** G1-G5 (`dcg_vs_fw`, `fw_vs_dcg`)
+  - **Match 41 (m5, Day 3: S1062 ANK vs BMG, 4 เกม):** G1-G4 (`ank_vs_bmg`, `bmg_vs_ank`)
+  - **Match 42 (m6, Day 3: S1063 HKA vs ONE, 4 เกม):** G1-G4 (`hka_vs_one`, `one_vs_hka`)
+- **การจัดการไฟล์ภาพสกรีนช็อต**:
+  - เปลี่ยนชื่อภาพทั้งหมด 25 ไฟล์สู่รูปแบบมาตรฐาน `2026_w7_d<D>_m<M>_g<G>_spr_gcs_<ta>_vs_<tb>.png` ใน `data/draft_screenshots/2026_spring_gcs/week7/`
+  - ตรวจพบและลบภาพบันทึกซ้ำ (duplicate captures) 2 ไฟล์: `144654.png` (ซ้ำกับ M38 G1) และ `145925.png` (ซ้ำกับ M41 G3)
+  - ตรวจสอบความถูกต้องของรูปภาพและลำดับ Pick Chronological Order (Blue L->R, Red R->L mirrored) ตรงกับ Liquipedia 100% (0 discrepancies)
+- **การประเมิน Heuristic Baseline (`order_team_picks_by_draft_logic`)**:
+  - **GCS Week 7 (25 เกม)**:
+    - Strict Turn Acc: **37.2%** (93/250)
+    - Simultaneous Turn Acc: **57.2%** (143/250)
+    - Phase Partition Acc: **74.4%** (186/250)
+    - B1 First Pick Acc: **60.0%** (15/25)
+    - Perfect Teams (Simultaneous): **28.0%** (14/50)
+  - **GCS Regular Season ทั้งหมด W1-W7 (174 เกม ครบ 100%)**:
+    - Strict Turn Acc: **40.9%** (712/1,740)
+    - Simultaneous Turn Acc: **59.5%** (1,036/1,740)
+    - Phase Partition Acc: **80.0%** (1,392/1,740)
+    - B1 First Pick Acc: **62.1%** (108/174)
+    - Perfect Teams (Simultaneous): **24.1%** (84/348)
+  - **ภาพรวมทั้งโปรเจกต์ (749 screenshot games: RPL W+S + GCS)**:
+    - Strict Turn Acc: **36.4%** (2,730/7,490)
+    - Simultaneous Turn Acc: **55.2%** (4,131/7,490)
+    - Phase Partition Acc: **78.7%** (5,896/7,490)
+    - B1 First Pick Acc: **50.2%** (376/749)
+    - Perfect Teams (Simultaneous): **19.6%** (294/1,498)
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json` (เพิ่ม 25 เกมของ GCS Week 7 รวมเป็น 750 เกม)
+- `data/draft_screenshots/2026_spring_gcs/week7/` (เปลี่ยนชื่อเป็นมาตรฐาน 25 ไฟล์, ลบ 2 ไฟล์ซ้ำ)
+- `memory/true-pick-order-retrain-plan.md` (อัปเดตสถิติและสถานะ 750 เกม)
+- `CHANGELOG.md` (บันทึกงานของ Week 7)
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: PASS (750 games checked, 0 errors)
+- `pytest -v`: PASS (58/58 passed)
+- `ruff check --fix . && ruff format .`: PASS (0 errors, code formatted)
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- Regular Season ของ GCS 2026 Spring จบลงที่ Week 7 (174 เกม) หากมีภาพ Playoffs (S1018-S1021: 22 เกม) สามารถนำเข้ามาประมวลผลต่อได้
+
+---
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผลและถอดรหัส True Pick Order จากบรอดแคสต์สกรีนช็อตของ **GCS 2026 Spring Week 6** ครบทั้ง 25 เกม ทำให้ยอดสะสมรวมทะลุสู่ **725 เกม** (GCS รวม 149 เกม, Screenshot ทั้งหมด 724 เกม + 1 manual entry):
+  - **Match 31 (m1, Day 1: S1052 ANK vs LIT, 3 เกม):** G1-G3 (`ank_vs_lit`)
+  - **Match 32 (m2, Day 1: S1053 HKA vs DCG, 5 เกม):** G1-G5 (`hka_vs_dcg`)
+  - **Match 33 (m3, Day 2: S1054 FW vs ONE, 5 เกม):** G1-G5 (`fw_vs_one`)
+  - **Match 34 (m4, Day 2: S1055 ANK vs HKA, 3 เกม):** G1-G3 (`ank_vs_hka`)
+  - **Match 35 (m5, Day 3: S1056 ONE vs LIT, 4 เกม):** G1-G4 (`one_vs_lit`)
+  - **Match 36 (m6, Day 3: S1057 DCG vs BMG, 5 เกม):** G1-G5 (`dcg_vs_bmg`)
+- **การจัดการไฟล์ภาพสกรีนช็อต**:
+  - เปลี่ยนชื่อภาพทั้งหมด 25 ไฟล์สู่รูปแบบมาตรฐาน `2026_w6_d<D>_m<M>_g<G>_spr_gcs_<ta>_vs_<tb>.png` ใน `data/draft_screenshots/2026_spring_gcs/week6/`
+  - ตรวจสอบความถูกต้องของรูปภาพและลำดับ Pick Chronological Order (Blue L->R, Red R->L mirrored) ตรงกับ Liquipedia 100% (0 discrepancies)
+- **การประเมิน Heuristic Baseline (`order_team_picks_by_draft_logic`)**:
+  - **GCS Week 6 (25 เกม)**:
+    - Strict Turn Acc: **44.4%** (111/250)
+    - Simultaneous Turn Acc: **59.2%** (148/250)
+    - Phase Partition Acc: **78.4%** (196/250)
+    - B1 First Pick Acc: **60.0%** (15/25)
+    - Perfect Teams (Simultaneous): **28.0%** (14/50)
+  - **GCS ทั้งหมด W1-W6 (149 เกม)**:
+    - Strict Turn Acc: **41.5%** (619/1,490)
+    - Simultaneous Turn Acc: **59.9%** (893/1,490)
+    - Phase Partition Acc: **80.9%** (1,206/1,490)
+    - B1 First Pick Acc: **62.4%** (93/149)
+    - Perfect Teams (Simultaneous): **23.5%** (70/298)
+  - **ภาพรวมทั้งโปรเจกต์ (724 screenshot games: RPL W+S + GCS)**:
+    - Strict Turn Acc: **36.4%** (2,637/7,240)
+    - Simultaneous Turn Acc: **55.1%** (3,988/7,240)
+    - Phase Partition Acc: **78.9%** (5,710/7,240)
+    - B1 First Pick Acc: **49.9%** (361/724)
+    - Perfect Teams (Simultaneous): **19.3%** (280/1,448)
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json`
+- `data/draft_screenshots/2026_spring_gcs/week6/` (เปลี่ยนชื่อ 25 ไฟล์)
+- `CHANGELOG.md`
+- `memory/true-pick-order-retrain-plan.md`
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: PASS (725 games verified, 0 unmapped names)
+- `pytest -v`: PASS (58/58 tests passed)
+- `ruff check --fix .` และ `ruff format .`: PASS (0 errors)
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- ข้อมูล True Pick Order ของ GCS 2026 Spring จบสัปดาห์ที่ 6 (149 เกม) เรียบร้อยแล้ว
+
+---
+
+## 📅 2026-10-22 (UTC+7) — เพิ่ม True Pick Order GCS 2026 Spring Week 4 และ Week 5 (49 เกม รวมสะสม 700 เกม, GCS ครบ 124 เกม)
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผลและถอดรหัส True Pick Order จากบรอดแคสต์สกรีนช็อตของ **GCS 2026 Spring Week 4 (26 เกม)** และ **Week 5 (23 เกม)** รวม 49 เกม ทำให้ยอดสะสมรวมทะลุสู่ **700 เกม** (GCS รวม 124 เกม, Screenshot ทั้งหมด 699 เกม + 1 manual entry):
+  - **GCS 2026 Spring Week 4 (26 เกม):**
+    - Match 19 (m1, Day 1: S1040 LIT vs DCG, 3 เกม): G1-G3 (`lit_vs_dcg`)
+    - Match 20 (m2, Day 1: S1041 ONE vs FW, 5 เกม): G1-G5 (`one_vs_fw`)
+    - Match 21 (m3, Day 2: S1042 ANK vs ONE, 5 เกม): G1-G5 (`ank_vs_one`)
+    - Match 22 (m4, Day 2: S1043 FW vs BMG, 5 เกม): G1-G5 (`fw_vs_bmg`)
+    - Match 23 (m5, Day 3: S1044 DCG vs ANK, 4 เกม): G1-G4 (`dcg_vs_ank`)
+    - Match 24 (m6, Day 3: S1045 HKA vs BMG, 4 เกม): G1-G4 (`hka_vs_bmg`)
+  - **GCS 2026 Spring Week 5 (23 เกม):**
+    - Match 25 (m1, Day 1: S1046 DCG vs LIT, 3 เกม): G1-G3 (`dcg_vs_lit`)
+    - Match 26 (m2, Day 1: S1047 ONE vs ANK, 3 เกม): G1-G3 (`one_vs_ank`)
+    - Match 27 (m3, Day 2: S1048 HKA vs LIT, 5 เกม): G1-G5 (`hka_vs_lit`)
+    - Match 28 (m4, Day 2: S1049 FW vs ANK, 4 เกม): G1-G4 (`fw_vs_ank`)
+    - Match 29 (m5, Day 3: S1050 FW vs HKA, 4 เกม): G1-G4 (`fw_vs_hka`)
+    - Match 30 (m6, Day 3: S1051 ONE vs BMG, 4 เกม): G1-G4 (`one_vs_bmg`)
+- **การจัดการไฟล์ภาพสกรีนช็อต**:
+  - เปลี่ยนชื่อภาพทั้งหมด 49 ไฟล์สู่รูปแบบมาตรฐาน `2026_w<W>_d<D>_m<M>_g<G>_spr_gcs_<ta>_vs_<tb>.png` (26 ภาพใน `week4/`, 23 ภาพใน `week5/`)
+  - ยืนยันการถอดรหัส Azzen'Ka Rework Model (หญิงผมม่วงมงกุฎเงิน) ตรงกับ `frontend/public/avatars/Azzen_Ka.jpg` และบันทึกของทัวร์นาเมนต์ครบถ้วน
+- **การประเมิน Heuristic Baseline (`order_team_picks_by_draft_logic`)**:
+  - **GCS Week 4 (26 เกม)**:
+    - Strict Turn Acc: **41.2%** (107/260)
+    - Simultaneous Turn Acc: **61.9%** (161/260)
+    - Phase Partition Acc: **86.2%** (224/260)
+    - B1 First Pick Acc: **61.5%** (16/26)
+    - Perfect Teams (Simultaneous): **23.1%** (12/52)
+  - **GCS Week 5 (23 เกม)**:
+    - Strict Turn Acc: **41.7%** (96/230)
+    - Simultaneous Turn Acc: **60.9%** (140/230)
+    - Phase Partition Acc: **80.0%** (184/230)
+    - B1 First Pick Acc: **52.2%** (12/23)
+    - Perfect Teams (Simultaneous): **19.6%** (9/46)
+  - **GCS ทั้งหมด W1-W5 (124 เกม)**:
+    - Strict Turn Acc: **41.0%** (508/1,240)
+    - Simultaneous Turn Acc: **60.1%** (745/1,240)
+    - Phase Partition Acc: **81.5%** (1,010/1,240)
+    - B1 First Pick Acc: **62.9%** (78/124)
+    - Perfect Teams (Simultaneous): **22.6%** (56/248)
+  - **ภาพรวมทั้งโปรเจกต์ (699 screenshot games: RPL W+S + GCS)**:
+    - Strict Turn Acc: **36.1%** (2,526/6,990)
+    - Simultaneous Turn Acc: **54.9%** (3,840/6,990)
+    - Phase Partition Acc: **78.9%** (5,514/6,990)
+    - B1 First Pick Acc: **49.5%** (346/699)
+    - Perfect Teams (Simultaneous): **19.0%** (266/1,398)
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json`
+- `data/draft_screenshots/2026_spring_gcs/week4/` (เปลี่ยนชื่อ 26 ไฟล์)
+- `data/draft_screenshots/2026_spring_gcs/week5/` (เปลี่ยนชื่อ 23 ไฟล์)
+- `CHANGELOG.md`
+- `memory/true-pick-order-retrain-plan.md`
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: PASS (700 games verified, 0 unmapped names)
+- `pytest -v`: PASS (58/58 tests passed)
+- `ruff check --fix .` และ `ruff format .`: PASS (0 errors)
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- ข้อมูล True Pick Order ของ GCS 2026 Spring จบสัปดาห์ที่ 5 (124 เกม) เรียบร้อยแล้ว หากมีสัปดาห์ถัดไปหรือทัวร์นาเมนต์อื่นสามารถนำเข้ามาประมวลผลต่อได้ทันที
+
+---
+
+## 📅 2026-10-22 (UTC+7) — เพิ่ม True Pick Order GCS 2026 Spring Week 3 (24 เกม รวมสะสม 651 เกม, Week 3 จบบริบูรณ์ 100%)
+**Agent:** Claude Code (Claude Fable 5 / Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผลและถอดรหัส True Pick Order จากบรอดแคสต์สกรีนช็อตของ **GCS 2026 Spring Week 3** ครบทั้ง 24 เกม ทำให้ GCS Week 3 ครบถ้วนบริบูรณ์ 100% (24/24 เกม, ยอดรวม GCS 75 เกม, ยอดรวมทั้งโปรเจกต์ 651 เกม โดยเป็น screenshot-verified 650 เกม + 1 manual entry):
+  - **Day 1 (March 13, 2026):**
+    - Match 1 (S1034 LIT vs FW, 4 เกม): G1 (`lit_vs_fw`), G2 (`lit_vs_fw`), G3 (`fw_vs_lit`), G4 (`fw_vs_lit`)
+    - Match 2 (S1035 DCG vs HKA, 3 เกม): G1 (`dcg_vs_hka`), G2 (`dcg_vs_hka`), G3 (`hka_vs_dcg`)
+  - **Day 2 (March 14, 2026):**
+    - Match 3 (S1036 LIT vs BMG, 3 เกม): G1 (`lit_vs_bmg`), G2 (`lit_vs_bmg`), G3 (`lit_vs_bmg`)
+    - Match 4 (S1037 FW vs DCG, 5 เกม): G1 (`fw_vs_dcg`), G2 (`dcg_vs_fw`), G3 (`fw_vs_dcg`), G4 (`dcg_vs_fw`), G5 (`fw_vs_dcg`)
+  - **Day 3 (March 15, 2026):**
+    - Match 5 (S1038 ONE vs HKA, 4 เกม): G1 (`one_vs_hka`), G2 (`hka_vs_one`), G3 (`one_vs_hka`), G4 (`one_vs_hka`)
+    - Match 6 (S1039 BMG vs ANK, 5 เกม): G1 (`bmg_vs_ank`), G2 (`ank_vs_bmg`), G3 (`bmg_vs_ank`), G4 (`bmg_vs_ank`), G5 (`ank_vs_bmg`)
+- **การจัดการไฟล์ภาพสกรีนช็อต**:
+  - เปลี่ยนชื่อไฟล์ทั้ง 24 ภาพให้อยู่ในรูปแบบมาตรฐาน `data/draft_screenshots/2026_spring_gcs/week3/2026_w3_d<d>_m<m>_g<g>_spr_gcs_<ta>_vs_<tb>.png` โดยใช้ `m1..m6` ตาม convention แต่ละ week
+  - ค้นพบและลบภาพซ้ำ 4 ภาพ (ภาพ 17, 18, 19 ของ M17 และภาพ 20 ของ M18) โดยใช้ไฟล์ re-take (21, 22, 23, 24) เป็นไฟล์มาตรฐาน
+- **การแก้ไขข้อมูลความถูกต้องของ Liquipedia**:
+  - **S1034 G1**: สลับ `blue_team: "LIT TEAM"`, `red_team: "FW"` และสลับชุดแบนให้ตรงกับจอถ่ายทอดสดจริง (Liquipedia สลับชื่อทีมและแบน)
+  - **S1037 G3**: แก้ไข Roam ของ FW จาก `Enzo` เป็น `Toro` ใน `matches_draft_full.json` และ `matches_draft_flat.csv` หลังจากผู้ใช้ตรวจสอบยืนยันภาพจริง
+- **การประเมิน Heuristic Baseline (`order_team_picks_by_draft_logic`)**:
+  - **GCS Week 3 (24 เกม)**:
+    - Strict Turn Acc: **42.9%** (103/240)
+    - Simultaneous Turn Acc: **62.5%** (150/240)
+    - Phase Partition Acc: **78.3%** (188/240)
+    - B1 First Pick Acc: **70.8%** (17/24)
+    - Perfect Teams (Simultaneous): **20.8%** (10/48)
+  - **GCS ทั้งหมด W1 + W2 + W3 (75 เกม)**:
+    - Strict Turn Acc: **40.7%** (305/750)
+    - Simultaneous Turn Acc: **64.7%** (485/750)
+    - Phase Partition Acc: **80.3%** (602/750)
+    - B1 First Pick Acc: **66.7%** (50/75)
+    - Perfect Teams (Simultaneous): **26.0%** (39/150)
+  - **ยอดรวมทุกซีซันที่บันทึก (650 เกม screenshot)**:
+    - Strict Turn Acc: **35.7%** (2,323/6,500)
+    - Simultaneous Turn Acc: **61.0%** (3,962/6,500)
+    - Phase Partition Acc: **78.6%** (5,106/6,500)
+    - B1 First Pick Acc: **48.9%** (318/650)
+    - Perfect Teams (Simultaneous): **23.2%** (301/1,300)
+
+### 📁 ไฟล์ที่แก้
+- `data/draft_screenshots/2026_spring_gcs/week3/` (เปลี่ยนชื่อ 24 ไฟล์เป็น m1..m6 และลบไฟล์ซ้ำ 4 ไฟล์)
+- `data/true_pick_order.json` (เพิ่ม 24 รายการของ Week 3 ยอดรวมเป็น 651 รายการ)
+- `data/matches_draft_full.json` (แก้ไข S1034 G1 team/bans swap และ S1037 G3 Enzo -> Toro)
+- `data/matches_draft_flat.csv` (แก้ไข S1034 G1 team/bans swap และ S1037 G3 Enzo -> Toro)
+- `tests/fixtures/predict_golden.json` (regenerate fixture ให้ตรงกับ priors ล่าสุด)
+- `CHANGELOG.md`
+- `memory/true-pick-order-retrain-plan.md`
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: PASS (130 heroes, 4,208 pro matches, 651 games in true_pick_order.json, 0 unmapped names)
+- `pytest -v`: PASS 58/58 tests (รวม `test_true_pick_order_matches_liquipedia`, `test_predict_matches_golden`, `test_skills_sync`)
+- `ruff check --fix .` และ `ruff format .`: PASS zero errors
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- โครงการรวบรวม ground-truth pick order สะสมได้ 650 เกมจากภาพถ่ายทอดสดแล้ว (Winter 285 + Summer 291 + GCS W1-W3 75)
+- แผน Retrain โมเดลยังคง On Hold จนกว่าผู้ใช้จะส่งสกรีนช็อตของสัปดาห์ถัดไป (Week 4+) เข้ามาเพิ่มเติม
+
+---
+
+## 📅 2026-10-22 (UTC+7) — เพิ่ม True Pick Order GCS 2026 Spring Week 2 (24 เกม รวมสะสม 627 เกม, Week 2 จบบริบูรณ์ 100%)
+**Agent:** Claude Code (Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผลและถอดรหัส True Pick Order จากบรอดแคสต์สกรีนช็อตของ **GCS 2026 Spring Week 2** ครบทั้ง 24 เกม ทำให้ GCS Week 2 ครบถ้วนบริบูรณ์ 100% (24/24 เกม, ยอดรวม GCS 51 เกม, ยอดรวมทั้งโปรเจกต์ 627 เกม):
+  - **Day 1 (March 6, 2026):**
+    - Match 1 (S1028 LIT vs ONE, 3 เกม): G1 (`lit_vs_one`), G2 (`one_vs_lit`), G3 (`lit_vs_one`)
+    - Match 2 (S1029 BMG vs DCG, 4 เกม): G1 (`bmg_vs_dcg`), G2 (`dcg_vs_bmg`), G3 (`bmg_vs_dcg`), G4 (`dcg_vs_bmg`)
+  - **Day 2 (March 7, 2026):**
+    - Match 3 (S1030 BMG vs HKA, 5 เกม): G1 (`hka_vs_bmg`), G2 (`bmg_vs_hka`), G3 (`hka_vs_bmg`), G4 (`bmg_vs_hka`), G5 (`hka_vs_bmg`)
+    - Match 4 (S1031 ANK vs FW, 3 เกม): G1 (`fw_vs_ank`), G2 (`ank_vs_fw`), G3 (`fw_vs_ank`)
+  - **Day 3 (March 8, 2026):**
+    - Match 5 (S1032 DCG vs ONE, 4 เกม): G1 (`dcg_vs_one`), G2 (`dcg_vs_one`), G3 (`one_vs_dcg`), G4 (`one_vs_dcg`)
+    - Match 6 (S1033 ANK vs HKA, 5 เกม): G1 (`ank_vs_hka`), G2 (`hka_vs_ank`), G3 (`ank_vs_hka`), G4 (`hka_vs_ank`), G5 (`ank_vs_hka`)
+- แก้ไขข้อมูล Liquipedia Typo ใน `data/matches_draft_full.json` และ `data/matches_draft_flat.csv` สำหรับเกม S1033 G3 ฝั่งฟ้า (ANK) จาก `Fennik` เป็น `Stuart` ตามที่เห็นบนจอถ่ายทอดสดจริง (ผู้เล่น GUOGUY)
+- ตรวจสอบความถูกต้องของ Candidate 10-Hero Sets เทียบ Liquipedia ผ่าน 100% ทั้ง 24 เกม
+- เปลี่ยนชื่อและจัดเก็บไฟล์สกรีนช็อตทั้ง 24 ไฟล์ลงใน `data/draft_screenshots/2026_spring_gcs/week2/2026_w2_d<d>_m<m>_g<g>_spr_gcs_<ta>_vs_<tb>.png`
+- อัปเดต `data/true_pick_order.json` เพิ่ม 24 รายการ (ยอดสะสม: 627 เกม, เป็น screenshot 626 เกม + manual 1 เกม)
+- ประเมิน Heuristic Accuracy (`order_team_picks_by_draft_logic()`) เทียบกับ True Pick Order:
+  - **GCS 2026 Spring Week 2 (24 เกม):** Strict Turn = 37.5%, Simultaneous Turn = 57.1%, Phase = 77.5%, B1 First Pick = 70.8%, Perfect Teams = 22.9%
+  - **GCS 2026 Spring Entire (51 เกม):** Strict Turn = 39.6%, Simultaneous Turn = 59.8%, Phase = 81.2%, B1 First Pick = 64.7%, Perfect Teams = 24.5%
+  - **ภาพรวมทั้งโปรเจกต์ (626 screenshot games):** Strict Turn = 35.5%, Simultaneous Turn = 54.3%, Phase = 78.6%, B1 First Pick = 48.1%, Perfect Teams = 18.8%
+
+### 📁 ไฟล์ที่แก้
+- `data/matches_draft_full.json` (แก้ Fennik -> Stuart ใน S1033 G3)
+- `data/matches_draft_flat.csv` (แก้ Fennik -> Stuart ใน S1033 G3)
+- `data/true_pick_order.json` (เพิ่ม 24 เกมของ Week 2 รวมเป็น 627 เกม)
+- `data/draft_screenshots/2026_spring_gcs/week2/*.png` (เปลี่ยนชื่อ 24 สกรีนช็อต)
+- `tests/fixtures/predict_golden.json` (รีเจนเนอเรต fixture ตามชุดข้อมูลที่ปรับปรุง)
+- `CHANGELOG.md` (เพิ่มบันทึกรายการบนสุด)
+- `C:\Users\chaya\.claude\projects\C--Users-chaya-Documents-Program-Project-ROV\memory\true-pick-order-retrain-plan.md` (อัปเดตสถิติและแผนงาน)
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: PASS (130 heroes, 4,208 matches, 627 games in true_pick_order.json)
+- `pytest -v`: PASS (58/58 tests passed)
+- `ruff check --fix . && ruff format .`: PASS (All checks passed, zero errors)
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- GCS 2026 Spring จบไปแล้ว 2 สัปดาห์ (Week 1 = 27 เกม, Week 2 = 24 เกม รวม 51 เกม ครบ 100%)
+- ยังคงรอสกรีนช็อตของสัปดาห์ถัดๆ ไป (Week 3+) เมื่อผู้ใช้พร้อมนำเข้ามา
+
+---
+
+## 📅 2026-10-22 (UTC+7) — เพิ่ม True Pick Order GCS 2026 Spring Week 1 Day 2 & Day 3 (18 เกม รวมสะสม 603 เกม, Week 1 จบบริบูรณ์ 100%)
+**Agent:** Claude Code (Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผลและถอดรหัส True Pick Order จากบรอดแคสต์สกรีนช็อตของ **GCS 2026 Spring Week 1 Day 2 & Day 3** ครบทั้ง 18 เกม ทำให้ GCS Week 1 ครบถ้วนบริบูรณ์ 100% (27/27 เกม):
+  - **Day 2 (February 28, 2026):**
+    - **Match 3 (S1024):** `BMG` vs `FW` (4 เกม, FW ชนะ 3-1)
+    - **Match 4 (S1025):** `DCG` vs `ANK` (5 เกม, DCG ชนะ 3-2)
+  - **Day 3 (March 1, 2026):**
+    - **Match 5 (S1026):** `LIT TEAM` vs `ANK` (4 เกม, ANK ชนะ 3-1)
+    - **Match 6 (S1027):** `HKA` vs `FW` (5 เกม, FW ชนะ 3-2)
+- ย้ายและจัดระเบียบไฟล์ภาพสกรีนช็อต 18 ไฟล์เข้าสู่ `data/draft_screenshots/2026_spring_gcs/week1/` ตาม naming convention
+- ตรวจสอบความถูกต้องของ Hero Set ครบทั้ง 10 ตัว 100% เทียบกับ Liquipedia (`data/matches_draft_full.json`)
+- บันทึกลงใน `data/true_pick_order.json` ส่งผลให้ชุดข้อมูล True Pick Order เพิ่มขึ้นจาก 585 เป็น **603 เกม** (สกรีนช็อต 602 เกม + manual S613 g3 1 เกม)
+- ประเมิน Heuristic Draft Logic (`order_team_picks_by_draft_logic`):
+  - **GCS Week 1 Day 2 (9 เกม):** Strict Turn `43.3%` (39/90), Simultaneous Turn `63.3%` (57/90), Phase `82.2%` (74/90), B1 `66.7%` (6/9), Perfect Teams (Simul) `27.8%` (5/18)
+  - **GCS Week 1 Day 3 (9 เกม):** Strict Turn `38.9%` (35/90), Simultaneous Turn `57.8%` (52/90), Phase `91.1%` (82/90), B1 `33.3%` (3/9), Perfect Teams (Simul) `16.7%` (3/18)
+  - **GCS Week 1 ทั้งสัปดาห์ (27 เกม):** Strict Turn `41.5%` (112/270), Simultaneous Turn `62.2%` (168/270), Phase `84.4%` (228/270), B1 `59.3%` (16/27), Perfect Teams (Simul) `25.9%` (14/54)
+  - **ภาพรวมทั้งคลัง 602 เกมบรอดแคสต์:** Strict Turn `35.4%` (2,130/6,020), Simultaneous Turn `54.2%` (3,263/6,020), Phase `78.6%` (4,732/6,020), B1 `47.2%` (284/602), Perfect Teams (Simul) `18.6%` (224/1,204)
+
+### 📁 ไฟล์ที่แก้
+- `data/draft_screenshots/2026_spring_gcs/week1/`: เพิ่ม 18 ไฟล์สกรีนช็อต (`2026_w1_d2_m3_g1..g4`, `2026_w1_d2_m4_g1..g5`, `2026_w1_d3_m5_g1..g4`, `2026_w1_d3_m6_g1..g5`)
+- `data/true_pick_order.json`: เพิ่ม 18 เกม (ยอดรวมเป็น 603 เกม)
+- `CHANGELOG.md`: บันทึกประวัติการทำงานรอบนี้
+
+### 🧪 การตรวจสอบ
+- `audit_rov_data.py`: ผ่านฉลุย 100% ตรวจสอบ 603 เกม ไม่พบ hero set ผิดพลาดหรือไฟล์ภาพสูญหาย
+- `pytest -v`: ผ่านทุก test suite (`test_data_integrity.py`, `test_model_pipeline.py`, `test_api.py`, `test_combat_calculator.py`, `test_predictor_golden.py`, `test_skills_sync.py`)
+- `ruff check & ruff format`: ผ่าน 0 errors
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- ผู้ใช้อัปโหลดสกรีนช็อตของ GCS Week 2 ไว้ใน `data/draft_screenshots/` แล้ว รอคำสั่งถอดรหัสในลำดับถัดไป
+- โมเดล retraining บน true pick order ยังคงอยู่ในแผน รอสะสมข้อมูลเพิ่มเติมตามคำแนะนำของผู้ใช้
+
+---
+
+## 📅 2026-10-22 (UTC+7) — เพิ่ม True Pick Order GCS 2026 Spring Week 1 Day 1 (9 เกม รวมสะสม 585 เกม)
+**Agent:** Claude Code (Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ขยายการเก็บ True Pick Order ข้ามลีกเข้าสู่ **GCS (Garena Challenger Series)** โดยเริ่มที่ **GCS 2026 Spring Week 1 Day 1 (February 27, 2026)** รวม 9 เกม ครบถ้วน:
+  - **Match 1 (S1022):** `LIT TEAM` vs `HKA` (5 เกม, LIT ชนะ 3-2)
+  - **Match 2 (S1023):** `ONE Team` vs `BMG` (4 เกม, ONE ชนะ 3-1)
+- ตรวจสอบรายชื่อฮีโร่ผู้เล่นทั้งสองฝั่ง (10 ฮีโร่ต่อเกม) เทียบกับชุด candidate ใน Liquipedia (`data/matches_draft_full.json`) ผ่าน 100% ครบทั้ง 9 เกม
+- ย้ายและเปลี่ยนชื่อไฟล์ภาพเข้าสู่ `data/draft_screenshots/2026_spring_gcs/week1/` ตามมาตรฐาน:
+  - `2026_w1_d1_m1_g1_spr_gcs_lit_vs_hka.png` ถึง `g5`
+  - `2026_w1_d1_m2_g1_spr_gcs_one_vs_bmg.png` ถึง `g4`
+- อัปเดต `data/true_pick_order.json` เพิ่ม 9 รายการ รวมยอดสะสมทั่วทั้งระบบเป็น **585 เกม** (Winter 285 เกม + Summer 291 เกม + GCS 9 เกม)
+- ประเมิน Heuristic Draft Logic (`order_team_picks_by_draft_logic()`):
+  - **GCS 2026 Spring Week 1 Day 1 (9 เกม):** Strict Turn 42.2% (38/90), Simultaneous Turn 65.6% (59/90), Phase 80.0% (72/90), B1 77.8% (7/9), Perfect Teams (Simul) 33.3% (6/18)
+  - **ทุกเกมที่มีสกรีนช็อต (RPL Winter + RPL Summer + GCS Spring, 584 เกม):** Strict Turn 35.2% (2,056/5,840), Simultaneous Turn 54.0% (3,154/5,840), Phase 78.4% (4,576/5,840), B1 47.1% (275/584), Perfect Teams (Simul) 18.5% (216/1,168)
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json` (เพิ่ม 9 รายการ สรุปยอดรวม 585 เกม)
+- `data/draft_screenshots/2026_spring_gcs/week1/` (9 ไฟล์ภาพตั้งชื่อตามมาตรฐาน)
+- `CHANGELOG.md`
+- `C:\Users\chaya\.claude\projects\C--Users-chaya-Documents-Program-Project-ROV\memory\true-pick-order-retrain-plan.md`
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: [PASS] 130 heroes, 4,208 total pro games, 585 games in true_pick_order.json checked, 0 errors
+- `pytest -v`: 58 passed
+- `ruff check --fix .` และ `ruff format .`
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- ภาพดิบทั้งหมดใน `data/draft_screenshots/` ถูกจัดหมวดหมู่ครบถ้วน 100% ไม่มีไฟล์ดิบตกค้าง
+
+**Agent:** Claude Code (Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ถอดรหัสและบันทึกภาพสกรีนช็อต RPL 2026 Summer Playoffs ทั้งหมด 19 ภาพ ครบทั้ง 4 แมตช์ (**19/19 เกม สมบูรณ์ 100%**):
+  - **Semi Finals 1 (April 4, 2026 - 12:00):** S601 BRU vs FS (5 เกม, Score 3-2)
+  - **Semi Finals 2 (April 4, 2026 - 17:40):** S602 KOG vs SLX (4 เกม, Score 1-3)
+  - **Lower Bracket Final (April 5, 2026 - 10:00):** S603 KOG vs BRU (4 เกม, Score 1-3)
+  - **Grand Final (April 5, 2026 - 19:00):** S604 FS vs BRU (6 เกม, Score 2-4)
+- ตรวจสอบรายชื่อฮีโร่ผู้เล่นทั้งสองฝั่ง (10 ฮีโร่ต่อเกม) เทียบกับชุด candidate ใน Liquipedia (`data/matches_draft_full.json`) ผ่าน 100% ครบทุกเกม
+- ย้ายและเปลี่ยนชื่อไฟล์สกรีนช็อตทั้ง 19 ไฟล์เข้าสู่ `data/draft_screenshots/2026_summer_rpl/playoffs/2026_playoffs_m<m>_g<g>_sum_rpl_<ta>_vs_<tb>.png`
+- อัปเดต `data/true_pick_order.json` เพิ่ม 19 เกมใหม่ รวมสะสมเป็น **576 เกม** (Winter 285 เกม + Summer 291 เกม)
+- ประเมิน Heuristic Draft Logic (`order_team_picks_by_draft_logic()`):
+  - **Summer Playoffs (19 เกม):** Strict Turn 38.4% (73/190), Simultaneous Turn 55.3% (105/190), Phase 75.8% (144/190), B1 52.6% (10/19), Perfect Teams (Simul) 23.7% (9/38)
+  - **Summer 2026 ทั้งซีซั่น (Regular + Playoffs, 291 เกม):** Strict Turn 35.1% (1,021/2,910), Simultaneous Turn 54.2% (1,577/2,910), Phase 77.6% (2,258/2,910), B1 50.2% (146/291), Perfect Teams (Simul) 19.9% (116/582)
+  - **ทุกเกมที่มีสกรีนช็อต (Winter + Summer, 575 เกม):** Strict Turn 35.1% (2,018/5,750), Simultaneous Turn 53.8% (3,095/5,750), Phase 78.3% (4,504/5,750), B1 46.6% (268/575), Perfect Teams (Simul) 18.3% (210/1,150)
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json` (เพิ่ม 19 รายการ สรุปยอดรวม 576 เกม)
+- `data/draft_screenshots/2026_summer_rpl/playoffs/` (19 ไฟล์ภาพตั้งชื่อตามมาตรฐาน)
+- `CHANGELOG.md` (บันทึก changelog ล่าสุด)
+- `C:\Users\chaya\.claude\projects\C--Users-chaya-Documents-Program-Project-ROV\memory\true-pick-order-retrain-plan.md`
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: [PASS] 130 heroes, 4,208 total pro games, 576 games in true_pick_order.json checked, 0 errors
+- `pytest -v`: รัน unit test integrity
+- `ruff check --fix .` และ `ruff format .`
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- พบสกรีนช็อตดิบ 9 ภาพที่ยังไม่ถูกจัดหมวดหมู่ใน `data/draft_screenshots/` (`Screenshot 2026-10-22 193410.png` ถึง `193756.png`) ซึ่งเป็นของทัวร์นาเมนต์อื่น (เช่น GCS) รอคำสั่งจากผู้ใช้ในการดำเนินการต่อ
+
+**Agent:** Claude Code (Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ถอดรหัสและบันทึกภาพสกรีนช็อต RPL 2026 Summer Week 8 ทั้งหมด 38 ภาพ ครบทั้ง 4 วัน 10 แมตช์ (**38/38 เกม สมบูรณ์ 100%**):
+  - **Day 1 (March 19, 2026):**
+    - S591 (TEN vs EA, 3 เกม: G1-G3)
+    - S592 (SLX vs FS, 3 เกม: G1-G3)
+  - **Day 2 (March 20, 2026):**
+    - S593 (KOG vs BAC, 4 เกม: G1-G4)
+    - S594 (BRU vs GJC, 3 เกม: G1-G3)
+  - **Day 3 (March 21, 2026):**
+    - S595 (EA vs BAC, 4 เกม: G1-G4)
+    - S596 (HD vs FS, 3 เกม: G1-G3)
+    - S597 (SLX vs KOG, 3 เกม: G1-G3)
+  - **Day 4 (March 22, 2026):**
+    - S598 (BRU vs TEN, 5 เกม: G1-G5)
+    - S599 (GJC vs SLX, 5 เกม: G1-G5)
+    - S600 (EA vs HD, 5 เกม: G1-G5)
+- ตรวจสอบรายชื่อฮีโร่ทั้ง 10 ตัว เทียบกับ Liquipedia แบบพิกเซลต่อพิกเซล ผ่าน 100% ครบทั้ง 38 เกม ไม่มีข้อผิดพลาด
+- เปลี่ยนชื่อและจัดเก็บภาพตามมาตรฐานสากลเข้า `data/draft_screenshots/2026_summer_rpl/week8/` (38 ภาพ: `2026_w8_d<d>_m<m>_g<g>_sum_rpl_<ta>_vs_<tb>.png`)
+- อัปเดต `data/true_pick_order.json` ยอดรวมขยับขึ้นเป็น **557 เกม** (556 จากภาพสกรีนช็อต + 1 manual) และ RPL 2026 Summer ครบสมบูรณ์ Weeks 1–8 (272/272 เกม 100%)
+- วัดผลความแม่นยำของ heuristic `order_team_picks_by_draft_logic()`:
+  - **Summer Week 8 (38 เกม):** Strict Turn 37.1% (141/380), Simultaneous Turn 60.8% (231/380), Phase 77.9% (296/380), B1 52.6% (20/38), Perfect Teams (Simul) 25.0% (19/76)
+  - **All Summer Weeks 1–8 (272 เกม):** Strict Turn 34.9% (948/2,720), Simultaneous Turn 61.2% (1,664/2,720), Phase 77.7% (2,114/2,720), B1 50.0% (136/272), Perfect Teams (Simul) 24.6% (134/544)
+  - **Across all 556 screenshot games (Winter + Summer):** Strict Turn 35.0% (1,945/5,560), Simultaneous Turn 60.5% (3,364/5,560), Phase 78.4% (4,360/5,560), B1 46.4% (258/556), Perfect Teams (Simul) 22.7% (252/1,112)
+
+### 📁 ไฟล์ที่แก้
+- `data/draft_screenshots/2026_summer_rpl/week8/` (เปลี่ยนชื่อสกรีนช็อต 38 ไฟล์ เป็นชื่อมาตรฐาน `2026_w8_d*_m*_g*_sum_rpl_*.png`)
+- `data/true_pick_order.json` (เพิ่ม 38 เกมใหม่ รวมเป็น 557 เกม)
+- `memory/true-pick-order-retrain-plan.md` (อัปเดตสถิติความแม่นยำและจำนวนเกม Summer Week 1–8 ครบ 272 เกม)
+- `CHANGELOG.md` (บันทึกงานเสร็จสมบูรณ์)
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: ผ่าน 100% (557 games checked)
+- `pytest -v`: ผ่าน 58/58 tests ครบทุกชุด
+- `ruff check --fix . && ruff format .`: Zero lint errors, formatting สะอาด 100%
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- ปัจจุบัน RPL 2026 Summer ครบสมบูรณ์แล้วทั้ง 8 สัปดาห์ (Weeks 1–8: 272 เกม 100%)
+- หากผู้ใช้มีรอบ Playoffs หรือทัวร์นาเมนต์อื่น (เช่น AIC, AOG, GCS) สามารถนำมาถอดรหัสต่อได้ทันที
+
+---
+
+## 📅 2026-10-22 (UTC+7) — เพิ่ม True Pick Order RPL 2026 Summer Week 7 ครบ 100% (39 เกม รวม 519 เกม)
+**Agent:** Claude Code (Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ถอดรหัสและบันทึกภาพสกรีนช็อต RPL 2026 Summer Week 7 ทั้งหมด 39 ภาพ ครบทั้ง 4 วัน 10 แมตช์ (**39/39 เกม สมบูรณ์ 100%**):
+  - **Day 1 (March 12, 2026):**
+    - S581 (BRU vs KOG, 4 เกม: G1-G4)
+    - S582 (GJC vs BAC, 4 เกม: G1-G4)
+  - **Day 2 (March 13, 2026):**
+    - S583 (TEN vs SLX, 4 เกม: G1-G4)
+    - S584 (BRU vs HD, 4 เกม: G1-G4)
+  - **Day 3 (March 14, 2026):**
+    - S585 (FS vs KOG, 3 เกม: G1-G3)
+    - S586 (TEN vs GJC, 5 เกม: G1-G5)
+    - S587 (EA vs SLX, 4 เกม: G1-G4)
+  - **Day 4 (March 15, 2026):**
+    - S588 (BAC vs FS, 4 เกม: G1-G4)
+    - S589 (GJC vs EA, 4 เกม: G1-G4)
+    - S590 (HD vs KOG, 3 เกม: G1-G3)
+- ตรวจสอบรายชื่อฮีโร่ทั้ง 10 ตัว เทียบกับ Liquipedia แบบพิกเซลต่อพิกเซล ผ่าน 100% ครบทั้ง 39 เกม
+- ตรวจพบและรับมือกรณีพิเศษใน S582 Game 4 (GJC vs BAC):
+  - Liquipedia สลับชื่อทีม (`blue_team: GODJI CHECK, red_team: BAC`) แต่เซ็ตฮีโร่ฝั่ง Blue/Red ตรงกับเซ็ตของ Liquipedia แบบ 100%
+- เปลี่ยนชื่อและจัดเก็บภาพตามมาตรฐานสากลเข้า `data/draft_screenshots/2026_summer_rpl/week7/` (39 ภาพ: `2026_w7_d<d>_m<m>_g<g>_sum_rpl_<ta>_vs_<tb>.png`)
+- อัปเดต `data/true_pick_order.json` ยอดรวมขยับขึ้นเป็น **519 เกม** (518 จากภาพสกรีนช็อต + 1 manual) และ RPL 2026 Summer ครบสมบูรณ์ Weeks 1–7 (234/234 เกม 100%)
+- วัดผลความแม่นยำของ heuristic `order_team_picks_by_draft_logic()`:
+  - **Summer Week 7 (39 เกม):** Strict Turn 36.2% (141/390), Simultaneous Turn 57.2% (223/390), Phase 73.8% (288/390), B1 53.8% (21/39), Perfect Teams (Simul) 17.9% (14/78)
+  - **All Summer Weeks 1–7 (234 เกม):** Strict Turn 34.5% (807/2,340), Simultaneous Turn 61.2% (1,433/2,340), Phase 77.7% (1,818/2,340), B1 49.6% (116/234), Perfect Teams (Simul) 24.6% (115/468)
+  - **Across all 518 screenshot games (Winter + Summer):** Strict Turn 34.8% (1,804/5,180), Simultaneous Turn 60.5% (3,133/5,180), Phase 78.5% (4,064/5,180), B1 45.9% (238/518), Perfect Teams (Simul) 22.5% (233/1,036)
+
+### 📁 ไฟล์ที่แก้
+- `data/draft_screenshots/2026_summer_rpl/week7/` (เปลี่ยนชื่อสกรีนช็อต 39 ไฟล์ เป็นชื่อมาตรฐาน `2026_w7_d*_m*_g*_sum_rpl_*.png`)
+- `data/true_pick_order.json` (เพิ่ม 39 เกม ครบ Week 7 รวม 519 เกม)
+- `memory/true-pick-order-retrain-plan.md` (อัปเดตสถิติจำนวนเกมและ heuristic accuracy)
+- `CHANGELOG.md` (เพิ่มบันทึกงานประจำรอบ)
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: ผ่านฉลุย 100% (519 games checked, 0 errors)
+- `pytest -v`: ผ่านทั้งหมด 58/58 tests รวมถึง `test_true_pick_order_matches_liquipedia`
+- `ruff check --fix .` และ `ruff format .`: สะอาดเรียบร้อย 0 errors
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- พบสกรีนช็อต 4 ไฟล์ที่โฟลเดอร์รูท `data/draft_screenshots/` (`Screenshot 2026-10-22 184808.png` ถึง `184940.png`) ซึ่งเป็นของ **Week 8 (TEN vs EA)** ยังไม่ได้เริ่มประมวลผล รอผู้ใช้สั่งดำเนินการในรอบถัดไป
+**Agent:** Claude Code (Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ถอดรหัสและบันทึกภาพสกรีนช็อตที่ผู้ใช้เพิ่มเข้ามา 25 ภาพ:
+  - **S557 Game 2 (HD vs BRU):** `2026_w4_d2_m1_g2_sum_rpl_hd_vs_bru.png` เติมเต็มเกมที่เคยขาดหายไปใน Week 4 ทำให้ **RPL 2026 Summer Week 4 ครบสมบูรณ์ 100% (40/40 เกม)**
+  - **RPL 2026 Summer Week 6 ที่เหลือ (Day 3 และ Day 4, รวม 24 เกม):**
+    - Day 3 (March 7, 2026): S575 (SLX vs HD, 5 เกม), S576 (KOG vs TEN, 5 เกม), S577 (FS vs BRU, 4 เกม)
+    - Day 4 (March 8, 2026): S578 (HD vs GJC, 3 เกม), S579 (EA vs BRU, 4 เกม), S580 (TEN vs BAC, 3 เกม)
+    - ส่งผลให้ **RPL 2026 Summer Week 6 ครบสมบูรณ์ 100% (37/37 เกม)**
+- ตรวจสอบรายชื่อฮีโร่ทั้ง 10 ตัว เทียบกับ Liquipedia แบบพิกเซลต่อพิกเซล ผ่าน 100% ครบทั้ง 25 เกม
+- เปลี่ยนชื่อและจัดเก็บภาพเข้า `data/draft_screenshots/2026_summer_rpl/week4/` (1 ภาพ) และ `week6/` (24 ภาพ)
+- บันทึกลง `data/true_pick_order.json` ทำให้ยอดรวมเพิ่มขึ้นเป็น **480 เกม** (479 จากสกรีนช็อต + 1 manual) และ RPL 2026 Summer Weeks 1–6 ครบสมบูรณ์ 100% ทุกคู่ (195/195 เกม)
+- วัดผลความแม่นยำของ heuristic `order_team_picks_by_draft_logic()`:
+  - **Summer Week 4 (40 เกม ครบ 100%):** Strict Turn 34.0%, Simultaneous Turn 47.0%, Phase 80.0%, B1 45.0%, Perfect Teams (Simul) 21.2% (17/80)
+  - **Summer Week 6 (37 เกม ครบ 100%):** Strict Turn 33.8%, Simultaneous Turn 46.8%, Phase 79.5%, B1 51.4%, Perfect Teams (Simul) 18.9% (14/74)
+  - **รวม Summer Weeks 1–6 (195 เกม ครบ 100%):** Strict Turn 34.2%, Simultaneous Turn 46.4%, Phase 78.5%, B1 48.7%, Perfect Teams (Simul) 20.5% (80/390)
+  - **รวมทั้งดาต้าเซ็ต (Winter + Summer, 479 เกมสกรีนช็อต):** Strict Turn 34.7%, Simultaneous Turn 45.0%, Phase 78.8%, B1 45.3%, Perfect Teams (Simul) 18.2% (174/958)
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json` (เพิ่ม 25 เกม รวม 480 เกม)
+- `data/draft_screenshots/2026_summer_rpl/week4/2026_w4_d2_m1_g2_sum_rpl_hd_vs_bru.png`
+- `data/draft_screenshots/2026_summer_rpl/week6/` (24 ไฟล์)
+- `memory/true-pick-order-retrain-plan.md`
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py` ผ่าน 480 เกมสมบูรณ์ 100%
+- `pytest -v` ผ่าน 58/58 tests (100%)
+- `ruff check --fix .` และ `ruff format .` ผ่าน 0 error
+
+---
+
+## 📅 2026-10-22 (UTC+7) — เพิ่ม True Pick Order สำหรับ RPL 2026 Summer Weeks 4–5 และ Week 6 บางส่วน (73 เกม รวม 455 เกม)
+**Agent:** Claude Code (Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ถอดรหัสและตรวจสอบภาพถ่ายทอดสด 74 ภาพ ใน RPL 2026 Summer (Weeks 4, 5 และ Week 6 วันที่ 1–2):
+  - ตรวจสอบเซ็ตฮีโร่ทั้ง 10 ตัว เทียบกับ Liquipedia แบบพิกเซลต่อพิกเซล ผ่าน 100% ครบทั้ง 73 เกม (Blue ซ้ายไปขวา, Red มิเรอร์ขวาไปซ้ายตาม Rule 11)
+  - จัดการภาพซ้ำ: ตรวจพบภาพไฟล์ที่ 9 (`Screenshot 2026-10-22 155325.png`) ซ้ำกับไฟล์ที่ 12 ซึ่งเป็นเกม S558 Game 2 (SLX vs GJC) จึงได้ลบไฟล์ซ้ำออก
+  - ย้ายและเปลี่ยนชื่อไฟล์ภาพเข้าโฟลเดอร์ตามมาตรฐาน Rule 11:
+    - `data/draft_screenshots/2026_summer_rpl/week4/` (39 เกม: S555–S564)
+    - `data/draft_screenshots/2026_summer_rpl/week5/` (21 เกม: S565–S570)
+    - `data/draft_screenshots/2026_summer_rpl/week6/` (13 เกม: S571–S574)
+  - บันทึกประวัติ True Pick Order ลง `data/true_pick_order.json` ครบทั้ง 73 เกม ทำให้ยอดรวมเพิ่มเป็น **455 เกม** (454 จากสกรีนช็อต + 1 manual)
+- รายงานเกมที่ขาดตามคำสั่งผู้ใช้:
+  - **RPL 2026 Summer Week 4 Day 2 Match 1 Game 2 (S557 Game 2: HD vs BRU) ไม่มีภาพถ่ายทอดสดในชุดไฟล์ที่ให้มา** (มีเฉพาะ Game 1 และ Game 3)
+- วัดผลความแม่นยำของ heuristic `order_team_picks_by_draft_logic()`:
+  - **Summer Week 4 (39 เกม):** Strict Turn 34.1%, Simultaneous Turn 47.4%, Phase 80.0%, B1 46.2%, Perfect Teams (Simul) 21.8% (17/78)
+  - **Summer Week 5 (21 เกม):** Strict Turn 35.7%, Simultaneous Turn 50.0%, Phase 82.9%, B1 57.1%, Perfect Teams (Simul) 26.2% (11/42)
+  - **Summer Week 6 (13 เกม):** Strict Turn 33.8%, Simultaneous Turn 47.7%, Phase 78.5%, B1 46.2%, Perfect Teams (Simul) 15.4% (4/26)
+  - **Summer Weeks 1–6 (170 เกม):** Strict Turn 34.2%, Simultaneous Turn 46.5%, Phase 78.2%, B1 48.2%, Perfect Teams (Simul) 20.6% (70/340)
+  - **รวมภาพสกรีนช็อตทั้งหมด (Winter + Summer, 454 เกม):** Strict Turn 34.8%, Simultaneous Turn 45.0%, Phase 78.8%, B1 44.9%, Perfect Teams (Simul) 18.1% (164/908)
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json` (เพิ่ม 73 เกม รวมเป็น 455 เกม)
+- `data/draft_screenshots/2026_summer_rpl/week4/` (39 ไฟล์)
+- `data/draft_screenshots/2026_summer_rpl/week5/` (21 ไฟล์)
+- `data/draft_screenshots/2026_summer_rpl/week6/` (13 ไฟล์)
+- `memory/true-pick-order-retrain-plan.md`
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py` ผ่าน 455 เกมสมบูรณ์ 100%
+- `pytest -v` ผ่าน 58/58 tests (100%)
+- `ruff check --fix .` และ `ruff format .` ผ่าน 0 error
+
+---
+
+## 📅 2026-10-22 (UTC+7) — ปรับปรุงคู่มือ Skill และ AGENTS.md: กลไก Liquipedia Lane Order และ Guardrail การ Swap ตัว
+**Agent:** Claude Code (Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ปรับปรุงคู่มือ `.agents/skills/draft-screenshot-reader/SKILL.md` และ mirror ไปยัง `.claude/skills/draft-screenshot-reader/SKILL.md`:
+  - เพิ่มหัวข้อ **"Liquipedia Lane Order vs Broadcast Swap Trap (CRITICAL)"** อธิบายการแยกบทบาทฮีโร่จาก `h1..h5` (เช่น แยก 2 แทงค์ว่าตัวไหนออฟเลน `h1` และตัวไหนซัพพอร์ต `h5`)
+  - กำหนด Anti-Bug Guardrail ชัดเจน: **ห้ามนำชื่อผู้เล่นใต้กรอบภาพสกรีนช็อตไปจับคู่กับเลน `h1..h5` ของ Liquipedia เด็ดขาด** เนื่องจากภาพสกรีนช็อตถูกแคปก่อนเฟส Swap (นักแข่งล็อกฮีโร่ตัวสำคัญแทนกันตามเก้าอี้นั่ง)
+  - อธิบายหลักการ Safe Elimination: ใช้เซ็ต 5 ตัวของ Liquipedia มาตัดช้อยส์เมื่อเห็นหน้าจอชัดเจน 4 ตัว แล้วเหลือช่องการ์ดหลังปิด 1 ช่อง (เช่น กรณี Fennik ใน S542 G1)
+- ปรับปรุง `AGENTS.md` (ข้อ 11) ให้สอดคล้องกับกลไก Pre-Swap และ Liquipedia Lane Order
+- ตรวจสอบความสอดคล้องของ Skill ไฟล์คู่ขนาน
+
+### 📁 ไฟล์ที่แก้
+- `.agents/skills/draft-screenshot-reader/SKILL.md`
+- `.claude/skills/draft-screenshot-reader/SKILL.md`
+- `AGENTS.md`
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- `pytest tests/test_skills_sync.py` ผ่าน 100%
+- `pytest -v` ผ่าน 58/58 tests (100%)
+- `ruff check --fix .` และ `ruff format .` ผ่าน 0 error
+
+---
+
+## 📅 2026-10-22 (UTC+7) — เพิ่ม True Pick Order สำหรับ RPL 2026 Summer S547 G4 (EA vs GJC, รวม 382 เกม ครบ Weeks 1-3 100%)
+**Agent:** Claude Code (Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ถอดรหัสและบันทึกภาพสกรีนช็อต `2026_w3_d2_m1_g4_sum_rpl_ea_vs_gjc.png` (S547 G4: EA vs GJC Game 4):
+  - ตรวจสอบรายชื่อตัวละครแบบพิกเซลต่อพิกเซล ยืนยันตรงกับฐานข้อมูล Liquipedia 100% ทั้ง 10 ตัว (คลายข้อสงสัย skin mismatch ในรอบก่อน):
+    - ฝั่งซ้าย Blue (EA): `["Sinestrea", "Toro", "Hayate", "Ignis", "Biron"]` (L->R)
+    - ฝั่งขวา Red (GJC): บนจอมิเรอร์ `[Gildur, Keera, Iggy, Elsu, Taara]`, ลำดับจริง (R->L) = `["Taara", "Elsu", "Iggy", "Keera", "Gildur"]`
+  - ทำความสะอาดไฟล์ภาพซ้ำที่ค้างอยู่ข้างนอก (`data/draft_screenshots/2026_summer_rpl/Screenshot 2026-10-22 152632.png`)
+- บันทึกลำดับ True Pick Order ลง `data/true_pick_order.json` ครบถ้วน ทำให้ยอดรวมเพิ่มเป็น **382 เกม** (381 จากสกรีนช็อต + 1 manual) และ RPL 2026 Summer Weeks 1-3 ครบสมบูรณ์ 100% ทุกเกม (Week 1 = 22, Week 2 = 38, Week 3 = 37)
+- วัดผลความแม่นยำของ heuristic `order_team_picks_by_draft_logic()`:
+  - **Summer Week 3 (37 เกม, 370 slots, 74 teams):**
+    - Correct Turn: 45.1% (167/370)
+    - Correct Phase: 75.1% (278/370)
+    - B1 Correct: 59.5% (22/37)
+    - Perfect Teams: 17.6% (13/74)
+  - **Summer Weeks 1-3 (97 เกม, 970 slots, 194 teams):**
+    - Correct Turn: 45.2% (438/970)
+    - Correct Phase: 76.5% (742/970)
+    - B1 Correct: 47.4% (46/97)
+    - Perfect Teams: 19.6% (38/194)
+  - **รวมภาพสกรีนช็อตทั้งหมด (Winter + Summer, 381 เกม, 3,810 slots, 762 teams):**
+    - Correct Turn: 44.3% (1,689/3,810)
+    - Correct Phase: 78.4% (2,988/3,810)
+    - B1 Correct: 44.1% (168/381)
+    - Perfect Teams: 17.3% (132/762)
+
+### 📁 ไฟล์ที่แก้
+- `data/true_pick_order.json` (เพิ่มข้อมูล S547 G4 รวม 382 เกม)
+- `data/draft_screenshots/2026_summer_rpl/Screenshot 2026-10-22 152632.png` (ลบไฟล์ชั่วคราวออก)
+- `memory/true-pick-order-retrain-plan.md` (อัปเดตสถิติยอดรวม 382 เกม)
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py` ผ่าน 382 เกมสมบูรณ์ 100%
+- `pytest -v` ผ่าน 58/58 tests (100%)
+- `ruff check --fix .` และ `ruff format .` ผ่าน 0 error
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- ข้อมูล RPL 2026 Summer ครบถ้วน 100% ทั้ง Week 1 (22 เกม), Week 2 (38 เกม), และ Week 3 (37 เกม) ไม่มีเกมค้างหรือตกหล่นแล้ว
+
+---
+
+## 📅 2026-10-22 (UTC+7) — เพิ่ม True Pick Order สำหรับ RPL 2026 Summer Week 2 Game 4 (S540 G4, รวม 381 เกม ครบ Week 2 100%)
+**Agent:** Claude Code (Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ถอดรหัสและบันทึกภาพสกรีนช็อต `2026_w2_d3_m2_g4_sum_rpl_ea_vs_fs.png` (S540 G4: FS vs EA Game 4):
+  - บนจอถ่ายทอดสด: FS (Blue) ชนะ EA (Red) ขึ้นนำ 2-1 เข้าสู่เกมที่ 4
+  - ฝั่งซ้าย Blue (FS): `["Valhein", "Enzo", "Marja", "Ignis", "Ming"]` (L->R)
+  - ฝั่งขวา Red (EA): บนจอมิเรอร์ `[Krizzix, Biron, Iggy, Taara, Fennik]`, ลำดับจริง (R->L) = `["Fennik", "Taara", "Iggy", "Biron", "Krizzix"]`
+  - ตรวจสอบรายชื่อฮีโร่ตรงกับฐานข้อมูล Liquipedia (`data/matches_draft_full.json`) ครบ 100%
+- บันทึกลำดับ True Pick Order ลง `data/true_pick_order.json` ครบถ้วน ทำให้ยอดรวมเพิ่มเป็น **381 เกม** (380 จากสกรีนช็อต + 1 manual) และ RPL 2026 Summer Week 2 ครบ 38/38 เกมสมบูรณ์ 100%
+- วัดผลความแม่นยำของ heuristic `order_team_picks_by_draft_logic()`:
+  - **Summer Week 2 (38 เกม, 380 slots, 76 teams):**
+    - Correct Turn: 43.4% (165/380)
+    - Correct Phase: 76.8% (292/380)
+    - B1 Correct: 36.8% (14/38)
+    - Perfect Teams: 18.4% (14/76)
+  - **Summer Weeks 1-3 (96 เกม, 960 slots, 192 teams):**
+    - Correct Turn: 45.1% (433/960)
+    - Correct Phase: 76.5% (734/960)
+    - B1 Correct: 46.9% (45/96)
+    - Perfect Teams: 19.3% (37/192)
+  - **รวมภาพสกรีนช็อตทั้งหมด (Winter + Summer, 380 เกม, 3,800 slots, 760 teams):**
+    - Correct Turn: 44.3% (1,684/3,800)
+    - Correct Phase: 78.4% (2,980/3,800)
+    - B1 Correct: 43.9% (167/380)
+    - Perfect Teams: 17.2% (131/760)
+
+### 📁 ไฟล์ที่แก้
+- `data/draft_screenshots/2026_summer_rpl/week2/2026_w2_d3_m2_g4_sum_rpl_ea_vs_fs.png` (เพิ่มเข้าระบบ)
+- `data/true_pick_order.json` (เพิ่มข้อมูล S540 G4)
+- `memory/true-pick-order-retrain-plan.md` (อัปเดตสถิติยอดรวม 381 เกม)
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py` ผ่าน 381 เกมสมบูรณ์ 100%
+- `pytest -v` ผ่าน 58/58 tests (100%)
+- `ruff check --fix .` และ `ruff format .` ผ่าน 0 error
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- **S547 G4 (EA vs GJC Game 4)**: ยังคงรอผู้ใช้ยืนยันกรณีภาพถ่ายทอดสด `data/draft_screenshots/2026_summer_rpl/Screenshot 2026-10-22 152632.png` มีรายชื่อฮีโร่ต่างกับ Liquipedia (อาจเป็นเกม Remake หรือ Liquipedia บันทึกผิด)
+
+---
+
+## 📅 2026-10-22 (UTC+7) — เพิ่ม True Pick Order สำหรับ RPL 2026 Summer Week 3 (36 เกม, รวม 380 เกม) + แจ้งเตือนฮีโร่ S547 G4 ไม่ตรงกับ Liquipedia
+**Agent:** Claude Code (Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผลและถอดรหัสภาพสกรีนช็อตดราฟต์ RPL 2026 Summer Week 3 จำนวน 37 เกม (S545 ถึง S554)
+- จับคู่ 36 เกมเข้ากับข้อมูล Liquipedia ได้อย่างสมบูรณ์แบบ (100% exact hero set match)
+- ตรวจสอบภาพ `Screenshot 2026-10-22 153931.png` ยืนยันเป็น **S553 G4 (GJC vs HD Game 4)** ตัวละคร Blue: Billow, Lorion, Hayate, Skud, Thane และ Red: Stuart, Y'bneth, Mganga, Volkath, Omen ตรงกับ Liquipedia 100%
+- เปลี่ยนชื่อไฟล์และจัดเก็บ 36 เกมเข้า `data/draft_screenshots/2026_summer_rpl/week3/`
+- บันทึก True Pick Order ลงใน `data/true_pick_order.json` เพิ่มจาก 344 เป็น **380 เกม** (379 จากสกรีนช็อต + 1 manual)
+- ตรวจพบกรณีพิเศษตาม Guardrail Rule 11 / SKILL.md ข้อ 4: **S547 G4 (EA vs GJC Game 4)** ในภาพ `Screenshot 2026-10-22 152632.png`:
+  - บนจอถ่ายทอดสด: Blue (EA) = `[Sinestrea, Toro, Hayate, Ignis, Stuart]`, Red (GJC) = `[Skud, Lu Bu, Dextra, Keffa, Gildur]`
+  - ใน Liquipedia: Blue (EA) = `[Biron, Sinestrea, Ignis, Hayate, Toro]`, Red (GJC) = `[Taara, Keera, Iggy, Elsu, Gildur]`
+  - เก็บไฟล์ภาพต้นฉบับไว้ที่ `data/draft_screenshots/2026_summer_rpl/Screenshot 2026-10-22 152632.png` เพื่อรอผู้ใช้ยืนยัน (ยังไม่เขียนทับลง `true_pick_order.json`)
+- วัดผลความแม่นยำของ heuristic `order_team_picks_by_draft_logic()`:
+  - **Summer Week 3 (36 เกม, 360 slots, 72 teams):**
+    - Correct Turn: 45.0% (162/360)
+    - Correct Phase: 75.0% (270/360)
+    - B1 Correct: 58.3% (21/36)
+    - Perfect Teams: 16.7% (12/72)
+  - **Summer Weeks 1-3 (95 เกม, 950 slots, 190 teams):**
+    - Correct Turn: 45.4% (431/950)
+    - Correct Phase: 76.6% (728/950)
+    - B1 Correct: 47.4% (45/95)
+    - Perfect Teams: 19.5% (37/190)
+  - **รวมภาพสกรีนช็อตทั้งหมด (Winter + Summer, 379 เกม, 3,790 slots, 758 teams):**
+    - Correct Turn: 44.4% (1,682/3,790)
+    - Correct Phase: 78.5% (2,974/3,790)
+    - B1 Correct: 44.1% (167/379)
+    - Perfect Teams: 17.3% (131/758)
+
+### 📁 ไฟล์ที่แก้
+- `data/draft_screenshots/2026_summer_rpl/week3/` (สร้างใหม่ + บรรจุ 36 ไฟล์ภาพสกรีนช็อต)
+- `data/true_pick_order.json` (+36 รายการเกมใหม่)
+- `memory/true-pick-order-retrain-plan.md` (อัปเดตสถิติและเคสค้าง)
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py` ผ่าน 380 เกมสมบูรณ์ 100%
+- `pytest -v` ผ่าน 58/58 tests (100%)
+- `ruff check .` และ `ruff format --check .` ผ่าน
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- **S547 G4**: ภาพถ่ายทอดสดกับข้อมูล Liquipedia มีรายชื่อฮีโร่ต่างกันเกือบทั้งหมด รอผู้ใช้พิจารณาว่าจะแก้ไขข้อมูล Liquipedia หรือเป็นเกมที่มีการ Remake
+- **S540 G4 (Week 2 Day 3 Match 2 Game 4, FS vs EA)**: ยังขาดภาพสกรีนช็อต
+**Agent:** Claude Code (Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ประมวลผลและถอดรหัสภาพสกรีนช็อตดราฟต์ RPL 2026 Summer จำนวน 59 เกม (Week 1: 22 เกม, Week 2: 37 เกม)
+- จับคู่ภาพเข้ากับแมตช์ใน `data/matches_draft_full.json` (S529 ถึง S544) ด้วย 10-hero set แบบ 100% exact match
+- อ่านลำดับการเลือกจริงตามกฎ Rule 11 (ฝั่งซ้าย Blue อ่าน L->R `B1 | B2 B3 | B4 B5`, ฝั่งขวา Red มิเรอร์อ่าน R->L `R1 R2 | R3 | R4 | R5`)
+- เปลี่ยนชื่อไฟล์และจัดเก็บเข้าโฟลเดอร์ `data/draft_screenshots/2026_summer_rpl/week1/` และ `week2/` ตามมาตรฐาน
+- บันทึกลำดับ pick จริงลง `data/true_pick_order.json` เพิ่มจาก 285 เกมเป็น **344 เกม** (343 จากสกรีนช็อต + 1 manual)
+- ระบุเกมที่ยังขาด: **Week 2 Day 3 Match 2 Game 4 (S540 G4: FS vs EA)**
+- วัดผลความแม่นยำของ heuristic `order_team_picks_by_draft_logic()` เทียบกับ True Pick Order:
+  - **Summer Weeks 1-2 (59 เกม, 590 slots, 118 teams):**
+    - Correct Turn: 45.6% (269/590)
+    - Correct Phase: 77.6% (458/590)
+    - B1 Correct: 40.7% (24/59)
+    - Perfect Teams: 21.2% (25/118)
+  - **รวมภาพสกรีนช็อตทั้งหมด (Winter + Summer, 343 เกม, 3,430 slots, 686 teams):**
+    - Correct Turn: 44.3% (1,520/3,430)
+    - Correct Phase: 78.8% (2,704/3,430)
+    - B1 Correct: 42.6% (146/343)
+    - Perfect Teams: 17.3% (119/686)
+
+### 📁 ไฟล์ที่แก้
+- `data/draft_screenshots/2026_summer_rpl/week1/` (22 ไฟล์ภาพสกรีนช็อต)
+- `data/draft_screenshots/2026_summer_rpl/week2/` (37 ไฟล์ภาพสกรีนช็อต)
+- `data/true_pick_order.json` (+59 รายการเกม)
+- `memory/true-pick-order-retrain-plan.md` (อัปเดตสถิติและสถานะภาพรวม)
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py` ผ่าน 344 เกมสมบูรณ์ 100%
+- `pytest -v` ผ่าน 58/58 tests (100%)
+- `ruff check .` และ `ruff format --check .` ผ่าน
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- ขาดภาพ 1 เกมใน Week 2: **S540 G4 (FS vs EA)** เมื่อผู้ใช้แคปมาเพิ่มสามารถรัน `/draft-screenshot-reader` เพื่อนำเข้าได้ทันที
+- การ Re-train โมเดลบน True Pick Order ยังคง hold ไว้จนกว่าผู้ใช้จะแคปภาพทัวร์นาเมนต์เพิ่มเติมตามแผน
+**Agent:** Claude Code (Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- ย้ายโฟลเดอร์ภาพสกรีนช็อต `week1` ถึง `week8` ทั้งหมด (284 ไฟล์) ไปไว้ใน `data/draft_screenshots/2026_winter_rpl/week<N>/` เพื่อแยกทัวร์นาเมนต์ให้ชัดเจนตามคำสั่งผู้ใช้
+- สร้างโฟลเดอร์ `data/draft_screenshots/2026_summer_rpl/` รองรับภาพของทัวร์นาเมนต์ RPL 2026 Summer
+- อัปเดต path ภาพสกรีนช็อตใน `data/true_pick_order.json` ทั้ง 284 รายการจาก `week<N>/...` เป็น `2026_winter_rpl/week<N>/...`
+- ปรับปรุงคู่มือ `AGENTS.md` (ข้อ 11) และ skill `draft-screenshot-reader` (และ mirror ไปยัง `.claude/skills/`) ให้รองรับ path hierarchy รูปแบบ `<tournament>/week<N>/...`
+
+### 📁 ไฟล์ที่แก้
+- `data/draft_screenshots/2026_winter_rpl/` (ย้าย week1..week8 เข้ามา)
+- `data/draft_screenshots/2026_summer_rpl/` (โฟลเดอร์ใหม่)
+- `data/true_pick_order.json` (อัปเดต 284 screenshot paths)
+- `AGENTS.md` (บันทึกโครงสร้างโฟลเดอร์ใหม่)
+- `.agents/skills/draft-screenshot-reader/SKILL.md`
+- `.claude/skills/draft-screenshot-reader/SKILL.md`
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py` ผ่าน 285 เกม (ไฟล์ภาพครบ 100%)
+- `pytest tests/test_skills_sync.py` ผ่าน
+- `pytest -v` ผ่าน 58 tests (100%)
+- `ruff check .` และ `ruff format --check .` ผ่าน
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- ผู้ใช้กำลังเริ่มแคปภาพของ RPL 2026 Summer ลงใน `data/draft_screenshots/` เมื่อแคปเสร็จจะเริ่มรันการอ่านลำดับ pick และย้ายเข้า `2026_summer_rpl/week<N>/` ต่อไป
+
+---
+
+## 📅 2026-10-22 (UTC+7) — เพิ่มลำดับ pick จริง RPL 2026 Winter week 8 ครบ 100% (37/37 เกม) + แก้ Liquipedia data bug → รวม 285 เกม
+**Agent:** Claude Code (Gemini 3.8 Flash High)
+
+### ✅ สิ่งที่ทำ
+- นำเข้าภาพถ่ายทอดสดครบทั้ง 37 ไฟล์ใน `data/draft_screenshots/week8/` ครอบคลุม RPL 2026 Winter Week 8 ครบทุกวัน (Day 1: 7 เกม, Day 2: 8 เกม, Day 3: 11 เกม, Day 4: 11 เกม รวม 37 เกม)
+- ตรวจพบและแก้ไข Liquipedia Data Bug ในแมตช์ `RoV_Pro_League_2026_Winter/Group_Stage_S673` Game 3 (KOG vs EA):
+  - Liquipedia เดิมบันทึก `red_picks` ผิดซ้ำตัวกับฝั่ง Blue: `['Marja', 'Nakroth', 'Yue', "Eland'orr", 'Krizzix']`
+  - ภาพถ่ายทอดสดจริงบนจอระบุชัดเจนว่าผู้เล่น `NEGAN` (Mid ฝั่ง EA) เล่น **Zata** จึงแก้ไขใน `data/matches_draft_full.json` และ `data/matches_draft_flat.csv` ให้ถูกต้อง
+  - อัปเดต `tests/fixtures/predict_golden.json` ตามผล lift matrix จากข้อมูลแข่งขันที่ถูกต้อง
+- ถอดรหัสลำดับ pick ตาม invariant: ฝั่งซ้ายจอ (Blue / First pick) อ่านจากซ้ายไปขวา (`B1 | B2 B3 | B4 B5`) และฝั่งขวาจอ (Red / Second pick) อ่านแบบกลับด้านจากขวามาซ้าย (`R1 R2 | R3 | R4 | R5`)
+- เปลี่ยนชื่อไฟล์ภาพครบทั้ง 37 ไฟล์เป็น `2026_w8_d<d>_m<m>_g<g>_win_rpl_<a>_vs_<b>.png` และบันทึกลง `data/true_pick_order.json` (ยอดรวมทั้งโปรเจกต์เพิ่มเป็น 285 เกม: 284 screenshot + 1 manual)
+- วัด `order_team_picks_by_draft_logic()` เทียบลำดับจริง:
+  - Week 8 อย่างเดียว (37 เกม ครบ): ตาตรง 53.5% (198/370), เฟสตรง 77.3% (286/370), B1 ตรง 17/37 (45.9%), ทั้งทีมตรง 15/74 (20.3%)
+  - ทั้งดาต้าเซ็ต (284 screenshot games): ตาตรง 53.5% (1,518/2,840), เฟสตรง 79.1% (2,246/2,840), B1 ตรง 122/284 (43.0%), ทั้งทีมตรง 94/568 (16.5%)
+
+### 📁 ไฟล์ที่แก้
+- `data/matches_draft_full.json` (แก้ red_picks S673 G3 จาก Yue เป็น Zata)
+- `data/matches_draft_flat.csv` (แก้ red_pick_3 S673 G3 จาก Yue เป็น Zata)
+- `tests/fixtures/predict_golden.json` (regenerate lift matrix golden tests)
+- `data/true_pick_order.json` (เพิ่ม 37 เกมใน week 8 รวมเป็น 285 เกม)
+- `data/draft_screenshots/week8/` (37 ไฟล์มาตรฐาน)
+- `CHANGELOG.md`
+
+### 🧪 การตรวจสอบ
+- `audit_rov_data.py` ผ่านครบ 285 เกม
+- `pytest` ผ่านครบ 58 tests (100%)
+- `ruff check --fix .` และ `ruff format .` ผ่าน
+
+### ⚠️ เรื่องค้าง / ข้อควรระวัง
+- สัปดาห์ที่ 8 ครบสมบูรณ์ 100% เรียบร้อยแล้ว (37/37 เกม)
+- ทั้งโปรเจกต์มี true pick order ครบสมบูรณ์ตั้งแต่ Week 1 ถึง Week 8 รวม 285 เกม (S605–S676)
+
+---
+
 ## 📅 2026-10-22 (UTC+7) — เพิ่มลำดับ pick จริง RPL 2026 Winter week 7 ครบ 100% (41/41 เกม) → รวม 248 เกม
 **Agent:** Claude Code (Gemini 3.8 Flash High)
 

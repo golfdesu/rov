@@ -1,0 +1,522 @@
+{
+  "Airi": {
+    "source": "broadcast_median",
+    "sample_count": 351
+  },
+  "Aleister": {
+    "source": "broadcast_median",
+    "sample_count": 3
+  },
+  "Alice": {
+    "source": "broadcast_median",
+    "sample_count": 139
+  },
+  "Allain": {
+    "source": "avatar_fallback",
+    "sample_count": 0
+  },
+  "Amily": {
+    "source": "broadcast_median",
+    "sample_count": 5
+  },
+  "Annette": {
+    "source": "broadcast_median",
+    "sample_count": 279
+  },
+  "Aoi": {
+    "source": "broadcast_median",
+    "sample_count": 81
+  },
+  "Arduin": {
+    "source": "broadcast_median",
+    "sample_count": 36
+  },
+  "Arthur": {
+    "source": "broadcast_median",
+    "sample_count": 8
+  },
+  "Arum": {
+    "source": "broadcast_median",
+    "sample_count": 4
+  },
+  "Astrid": {
+    "source": "broadcast_median",
+    "sample_count": 232
+  },
+  "Ata": {
+    "source": "broadcast_median",
+    "sample_count": 16
+  },
+  "Aya": {
+    "source": "broadcast_median",
+    "sample_count": 69
+  },
+  "Azzen'Ka": {
+    "source": "broadcast_median",
+    "sample_count": 37
+  },
+  "Baldum": {
+    "source": "broadcast_median",
+    "sample_count": 100
+  },
+  "Bijan": {
+    "source": "broadcast_median",
+    "sample_count": 3
+  },
+  "Billow": {
+    "source": "broadcast_median",
+    "sample_count": 472
+  },
+  "Biron": {
+    "source": "broadcast_median",
+    "sample_count": 264
+  },
+  "Bolt Baron": {
+    "source": "broadcast_median",
+    "sample_count": 37
+  },
+  "Bonnie": {
+    "source": "avatar_fallback",
+    "sample_count": 0
+  },
+  "Bright": {
+    "source": "broadcast_single",
+    "sample_count": 2
+  },
+  "Brunhilda": {
+    "source": "broadcast_single",
+    "sample_count": 1
+  },
+  "Butterfly": {
+    "source": "broadcast_median",
+    "sample_count": 80
+  },
+  "Capheny": {
+    "source": "broadcast_median",
+    "sample_count": 429
+  },
+  "Charlotte": {
+    "source": "broadcast_median",
+    "sample_count": 7
+  },
+  "Chaugnar": {
+    "source": "broadcast_median",
+    "sample_count": 66
+  },
+  "Cresht": {
+    "source": "broadcast_median",
+    "sample_count": 195
+  },
+  "D'Arcy": {
+    "source": "broadcast_median",
+    "sample_count": 37
+  },
+  "Dextra": {
+    "source": "avatar_fallback",
+    "sample_count": 0
+  },
+  "Diao Chan": {
+    "source": "broadcast_median",
+    "sample_count": 6
+  },
+  "Dirak": {
+    "source": "avatar_fallback",
+    "sample_count": 0
+  },
+  "Dolia": {
+    "source": "broadcast_median",
+    "sample_count": 330
+  },
+  "Dyadia": {
+    "source": "broadcast_median",
+    "sample_count": 60
+  },
+  "Edras": {
+    "source": "broadcast_median",
+    "sample_count": 227
+  },
+  "Eland'orr": {
+    "source": "broadcast_median",
+    "sample_count": 533
+  },
+  "Elsu": {
+    "source": "broadcast_median",
+    "sample_count": 82
+  },
+  "Enzo": {
+    "source": "broadcast_median",
+    "sample_count": 275
+  },
+  "Erin": {
+    "source": "broadcast_median",
+    "sample_count": 6
+  },
+  "Errol": {
+    "source": "broadcast_median",
+    "sample_count": 22
+  },
+  "Evita": {
+    "source": "avatar_fallback",
+    "sample_count": 0
+  },
+  "Fennik": {
+    "source": "broadcast_median",
+    "sample_count": 189
+  },
+  "Florentino": {
+    "source": "broadcast_median",
+    "sample_count": 177
+  },
+  "Flowborn (Mage)": {
+    "source": "broadcast_median",
+    "sample_count": 9
+  },
+  "Flowborn (Marksman)": {
+    "source": "broadcast_median",
+    "sample_count": 302
+  },
+  "Gildur": {
+    "source": "broadcast_median",
+    "sample_count": 92
+  },
+  "Goverra": {
+    "source": "broadcast_median",
+    "sample_count": 42
+  },
+  "Grakk": {
+    "source": "broadcast_median",
+    "sample_count": 13
+  },
+  "Hayate": {
+    "source": "broadcast_median",
+    "sample_count": 437
+  },
+  "Heino": {
+    "source": "broadcast_median",
+    "sample_count": 34
+  },
+  "Helen": {
+    "source": "broadcast_median",
+    "sample_count": 4
+  },
+  "Iggy": {
+    "source": "broadcast_median",
+    "sample_count": 308
+  },
+  "Ignis": {
+    "source": "broadcast_median",
+    "sample_count": 233
+  },
+  "Ilumia": {
+    "source": "broadcast_median",
+    "sample_count": 3
+  },
+  "Ishar": {
+    "source": "avatar_fallback",
+    "sample_count": 0
+  },
+  "Jinnar": {
+    "source": "broadcast_median",
+    "sample_count": 11
+  },
+  "Kahlii": {
+    "source": "broadcast_median",
+    "sample_count": 10
+  },
+  "Kaine": {
+    "source": "avatar_fallback",
+    "sample_count": 0
+  },
+  "Keera": {
+    "source": "broadcast_median",
+    "sample_count": 225
+  },
+  "Kil'Groth": {
+    "source": "broadcast_median",
+    "sample_count": 4
+  },
+  "Kriknak": {
+    "source": "broadcast_median",
+    "sample_count": 11
+  },
+  "Krixi": {
+    "source": "broadcast_median",
+    "sample_count": 3
+  },
+  "Krizzix": {
+    "source": "broadcast_median",
+    "sample_count": 87
+  },
+  "Lauriel": {
+    "source": "avatar_fallback",
+    "sample_count": 0
+  },
+  "Laville": {
+    "source": "broadcast_median",
+    "sample_count": 3
+  },
+  "Liliana": {
+    "source": "broadcast_median",
+    "sample_count": 364
+  },
+  "Lindis": {
+    "source": "avatar_fallback",
+    "sample_count": 0
+  },
+  "Lorion": {
+    "source": "broadcast_median",
+    "sample_count": 485
+  },
+  "Lu Bu": {
+    "source": "broadcast_median",
+    "sample_count": 5
+  },
+  "Lumburr": {
+    "source": "avatar_fallback",
+    "sample_count": 0
+  },
+  "Maloch": {
+    "source": "broadcast_median",
+    "sample_count": 195
+  },
+  "Marja": {
+    "source": "broadcast_median",
+    "sample_count": 532
+  },
+  "Max": {
+    "source": "broadcast_median",
+    "sample_count": 11
+  },
+  "Mganga": {
+    "source": "broadcast_median",
+    "sample_count": 260
+  },
+  "Mina": {
+    "source": "broadcast_median",
+    "sample_count": 182
+  },
+  "Ming": {
+    "source": "broadcast_median",
+    "sample_count": 13
+  },
+  "Moren": {
+    "source": "broadcast_median",
+    "sample_count": 97
+  },
+  "Murad": {
+    "source": "broadcast_median",
+    "sample_count": 183
+  },
+  "Nakroth": {
+    "source": "broadcast_median",
+    "sample_count": 217
+  },
+  "Natalya": {
+    "source": "broadcast_median",
+    "sample_count": 50
+  },
+  "Omega": {
+    "source": "broadcast_median",
+    "sample_count": 14
+  },
+  "Omen": {
+    "source": "broadcast_median",
+    "sample_count": 100
+  },
+  "Ormarr": {
+    "source": "broadcast_median",
+    "sample_count": 9
+  },
+  "Paine": {
+    "source": "broadcast_median",
+    "sample_count": 4
+  },
+  "Preyta": {
+    "source": "broadcast_median",
+    "sample_count": 16
+  },
+  "Qi": {
+    "source": "broadcast_median",
+    "sample_count": 353
+  },
+  "Quillen": {
+    "source": "broadcast_single",
+    "sample_count": 1
+  },
+  "Raz": {
+    "source": "broadcast_median",
+    "sample_count": 24
+  },
+  "Richter": {
+    "source": "broadcast_median",
+    "sample_count": 205
+  },
+  "Rouie": {
+    "source": "broadcast_median",
+    "sample_count": 373
+  },
+  "Rourke": {
+    "source": "broadcast_median",
+    "sample_count": 18
+  },
+  "Roxie": {
+    "source": "broadcast_median",
+    "sample_count": 14
+  },
+  "Ryoma": {
+    "source": "broadcast_median",
+    "sample_count": 371
+  },
+  "Sephera": {
+    "source": "broadcast_median",
+    "sample_count": 6
+  },
+  "Sinestrea": {
+    "source": "broadcast_median",
+    "sample_count": 315
+  },
+  "Skud": {
+    "source": "broadcast_median",
+    "sample_count": 324
+  },
+  "Slimz": {
+    "source": "broadcast_median",
+    "sample_count": 27
+  },
+  "Stuart": {
+    "source": "broadcast_median",
+    "sample_count": 335
+  },
+  "Superman": {
+    "source": "avatar_fallback",
+    "sample_count": 0
+  },
+  "Taara": {
+    "source": "broadcast_median",
+    "sample_count": 269
+  },
+  "Tachi": {
+    "source": "broadcast_median",
+    "sample_count": 380
+  },
+  "Tamyn": {
+    "source": "broadcast_median",
+    "sample_count": 112
+  },
+  "TeeMee": {
+    "source": "broadcast_median",
+    "sample_count": 382
+  },
+  "Teeri": {
+    "source": "avatar_fallback",
+    "sample_count": 0
+  },
+  "Tel'Annas": {
+    "source": "broadcast_median",
+    "sample_count": 30
+  },
+  "Thane": {
+    "source": "broadcast_median",
+    "sample_count": 332
+  },
+  "The Flash": {
+    "source": "avatar_fallback",
+    "sample_count": 0
+  },
+  "Thorne": {
+    "source": "broadcast_median",
+    "sample_count": 3
+  },
+  "Toro": {
+    "source": "broadcast_median",
+    "sample_count": 540
+  },
+  "Tulen": {
+    "source": "broadcast_median",
+    "sample_count": 14
+  },
+  "Valhein": {
+    "source": "broadcast_median",
+    "sample_count": 269
+  },
+  "Veera": {
+    "source": "avatar_fallback",
+    "sample_count": 0
+  },
+  "Veres": {
+    "source": "broadcast_median",
+    "sample_count": 5
+  },
+  "Violet": {
+    "source": "broadcast_median",
+    "sample_count": 399
+  },
+  "Volkath": {
+    "source": "broadcast_median",
+    "sample_count": 100
+  },
+  "Wiro": {
+    "source": "broadcast_median",
+    "sample_count": 200
+  },
+  "Wisp": {
+    "source": "broadcast_median",
+    "sample_count": 394
+  },
+  "Wonder Woman": {
+    "source": "broadcast_median",
+    "sample_count": 22
+  },
+  "Wukong": {
+    "source": "broadcast_single",
+    "sample_count": 2
+  },
+  "Xeniel": {
+    "source": "broadcast_median",
+    "sample_count": 17
+  },
+  "Y'bneth": {
+    "source": "broadcast_median",
+    "sample_count": 541
+  },
+  "Yan": {
+    "source": "broadcast_median",
+    "sample_count": 50
+  },
+  "Yena": {
+    "source": "broadcast_median",
+    "sample_count": 281
+  },
+  "Yorn": {
+    "source": "broadcast_single",
+    "sample_count": 1
+  },
+  "Yue": {
+    "source": "broadcast_median",
+    "sample_count": 200
+  },
+  "Zanis": {
+    "source": "broadcast_median",
+    "sample_count": 10
+  },
+  "Zata": {
+    "source": "broadcast_median",
+    "sample_count": 393
+  },
+  "Zephys": {
+    "source": "broadcast_median",
+    "sample_count": 385
+  },
+  "Zill": {
+    "source": "broadcast_single",
+    "sample_count": 1
+  },
+  "Zip": {
+    "source": "broadcast_median",
+    "sample_count": 9
+  },
+  "Zuka": {
+    "source": "broadcast_median",
+    "sample_count": 125
+  }
+}
