@@ -444,7 +444,7 @@ class RoVDraftPredictor:
         self,
         main_input: ModelInput,
         teams: list[TeamDraft],
-        global_bans: list[str],
+        global_bans: list[str] | dict[str, list[str]],
         max_slots: int = 2,
     ) -> tuple[tuple[np.ndarray, ...], np.ndarray, np.ndarray, dict[str, list[HeroRecommendation]]]:
         """Runs the main position and every team's pick/ban forecasts in as few batched passes as possible.
@@ -456,13 +456,15 @@ class RoVDraftPredictor:
         forecasts: dict[str, list[HeroRecommendation]] = {}
         sim_picks = {t.side: list(t.picks) for t in teams}
         pick_slots = {t.side: self._next_pick_slots(t, max_slots) for t in teams}
+        gb_by_side = global_bans if isinstance(global_bans, dict) else {t.side: global_bans for t in teams}
 
         inputs = [main_input]
         jobs: list[tuple[str, TeamDraft]] = []
         for t in teams:
             forecasts[f"{t.side}_next_bans"] = []
             if self._next_ban_slots(t, max_slots):
-                inputs.append(self._next_ban_input(t, global_bans))
+                opp_side = "red" if t.side == "blue" else "blue"
+                inputs.append(self._next_ban_input(t, gb_by_side.get(opp_side, [])))
                 jobs.append(("ban", t))
         main_arrays: tuple[np.ndarray, ...] | None = None
         main_probs = main_win = np.empty(0)
@@ -472,7 +474,7 @@ class RoVDraftPredictor:
                 if rank == 1:
                     forecasts[f"{t.side}_next_picks"] = []
                 if pick_slots[t.side] >= rank:
-                    inputs.append(self._next_pick_input(t, sim_picks[t.side], global_bans))
+                    inputs.append(self._next_pick_input(t, sim_picks[t.side], gb_by_side.get(t.side, [])))
                     jobs.append(("pick", t))
             if not inputs:
                 break
@@ -545,9 +547,19 @@ class RoVDraftPredictor:
         ally_bans = self.resolve_heroes(req.ally_bans)
         enemy_bans = self.resolve_heroes(req.enemy_bans)
         global_bans = self.resolve_heroes(req.global_bans)
+        blue_gb = self.resolve_heroes(req.blue_global_bans)
+        red_gb = self.resolve_heroes(req.red_global_bans)
+
+        blue_effective_gb = list(dict.fromkeys([*global_bans, *blue_gb]))
+        red_effective_gb = list(dict.fromkeys([*global_bans, *red_gb]))
 
         act_type = 1 if req.mode == "pick" else 0
         side_val = 0 if req.side == "blue" else 1
+
+        if act_type == 0:  # ban mode: unavailable to ban are opponent's used heroes
+            acting_gb = red_effective_gb if req.side == "blue" else blue_effective_gb
+        else:  # pick mode: unavailable to pick are acting team's used heroes
+            acting_gb = blue_effective_gb if req.side == "blue" else red_effective_gb
 
         if req.side == "blue":
             blue_picks, red_picks = ally_picks, enemy_picks
@@ -565,12 +577,14 @@ class RoVDraftPredictor:
             enemy_picks,
             ally_bans,
             enemy_bans,
-            global_bans,
+            acting_gb,
             is_pick=act_type == 1,
             is_red=side_val == 1,
             phase=req.phase,
         )
-        arrays, probs, win_probs, forecasts = self._evaluate_with_forecasts(main_input, teams, global_bans)
+        arrays, probs, win_probs, forecasts = self._evaluate_with_forecasts(
+            main_input, teams, {"blue": blue_effective_gb, "red": red_effective_gb}
+        )
         ap_row, ep_row, unavail_row = arrays[0][0], arrays[1][0], arrays[4][0]
 
         ally_lane_cov = ap_row @ self.ckpt["lane_probs"]
@@ -604,6 +618,8 @@ class RoVDraftPredictor:
                 blue_bans=b_b,
                 red_bans=r_b,
                 global_bans=tuple(ids[h] for h in global_bans),
+                blue_global_bans=tuple(ids[h] for h in blue_gb),
+                red_global_bans=tuple(ids[h] for h in red_gb),
                 step_idx=step_idx,
             )
             candidate_pool = np.argsort(probs)[::-1][: max(req.top_k * 2, 8)].tolist()

@@ -170,3 +170,87 @@ def test_combat_duel_endpoint():
 def test_combat_stats_rejects_bad_build():
     response = client.post("/combat/stats", json={"build": {"hero": "Valhein", "items": ["Not An Item"]}})
     assert response.status_code == 422
+
+
+def test_draft_session_persistence_endpoints(tmp_path, monkeypatch):
+    from src.config import config
+
+    temp_session_file = tmp_path / "draft_session_state.json"
+    monkeypatch.setattr(config.paths, "draft_session_path", temp_session_file)
+
+    # 1. Initial GET returns clean default state
+    r_init = client.get("/draft/session")
+    assert r_init.status_code == 200
+    assert r_init.json()["stepIndex"] == 0
+    assert r_init.json()["bluePicks"] == []
+
+    # 2. PUT saves active board, global bans, and recorded series games to disk
+    payload = {
+        "stepIndex": 5,
+        "bluePicks": ["Rouie"],
+        "redPicks": [],
+        "blueBans": ["Florentino", "Liliana"],
+        "redBans": ["Billow", "Dolia"],
+        "history": [
+            {
+                "stepIndex": 4,
+                "bluePicks": [],
+                "redPicks": [],
+                "blueBans": ["Florentino", "Liliana"],
+                "redBans": ["Billow", "Dolia"],
+            }
+        ],
+        "winHistory": [50.0, 51.2, 49.8, 52.1, 54.5],
+        "blueWinRate": 54.5,
+        "useLookahead": True,
+        "globalBans": {
+            "seriesName": "BAC vs BRU",
+            "teamAName": "BAC",
+            "teamBName": "BRU",
+            "teamAUsed": ["Toro", "Hayate"],
+            "teamBUsed": ["Thane", "Capheny"],
+            "universalBans": [],
+            "blueSideTeam": "A",
+            "gameNumber": 2,
+        },
+        "seriesGames": [
+            {
+                "id": "g1-test",
+                "gameNumber": 1,
+                "timestamp": "18:00:00",
+                "seriesName": "BAC vs BRU",
+                "blueTeamName": "BRU",
+                "redTeamName": "BAC",
+                "blueSideTeam": "B",
+                "blueBans": ["Marja", "Keera", "Aoi", "Stuart"],
+                "redBans": ["Eland'orr", "TeeMee", "Richter", "Yena"],
+                "bluePicks": ["Thane", "Capheny", "Krixi", "Nakroth", "Skud"],
+                "redPicks": ["Toro", "Hayate", "Raz", "Biron", "Kriknak"],
+                "blueWinRate": 47.8,
+            }
+        ],
+        "updatedAt": 1761650000000,
+    }
+    r_put = client.put("/draft/session", json=payload)
+    assert r_put.status_code == 200
+    assert temp_session_file.exists()
+
+    # 3. Subsequent GET retrieves persisted state from disk (simulating host restart)
+    r_get = client.get("/draft/session")
+    assert r_get.status_code == 200
+    saved = r_get.json()
+    assert saved["stepIndex"] == 5
+    assert saved["bluePicks"] == ["Rouie"]
+    assert saved["globalBans"]["teamAName"] == "BAC"
+    assert saved["globalBans"]["seriesName"] == "BAC vs BRU"
+    assert saved["globalBans"]["gameNumber"] == 2
+    assert len(saved["seriesGames"]) == 1
+    assert saved["seriesGames"][0]["seriesName"] == "BAC vs BRU"
+    assert saved["seriesGames"][0]["blueTeamName"] == "BRU"
+    assert saved["updatedAt"] == 1761650000000
+
+    # 4. DELETE clears persisted session
+    r_del = client.delete("/draft/session")
+    assert r_del.status_code == 200
+    assert not temp_session_file.exists()
+    assert client.get("/draft/session").json()["stepIndex"] == 0

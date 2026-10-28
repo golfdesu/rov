@@ -39,6 +39,24 @@ export async function postJson<T>(url: string, payload: unknown, signal?: AbortS
   return parseResponse<T>(res);
 }
 
+export async function putJson<T>(url: string, payload: unknown, signal?: AbortSignal): Promise<T> {
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+    signal,
+  });
+  return parseResponse<T>(res);
+}
+
+export async function deleteJson<T>(url: string, signal?: AbortSignal): Promise<T> {
+  const res = await fetch(url, {
+    method: "DELETE",
+    signal,
+  });
+  return parseResponse<T>(res);
+}
+
 export function isAbortError(err: unknown): boolean {
   return err instanceof DOMException && err.name === "AbortError";
 }

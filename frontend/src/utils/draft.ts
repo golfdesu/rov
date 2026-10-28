@@ -1,4 +1,11 @@
-import { CANONICAL_DRAFT_STEPS, type DraftHistoryItem, type HeroRecommendation, type RoleType } from "../types/draft";
+import {
+  CANONICAL_DRAFT_STEPS,
+  type DraftHistoryItem,
+  type GlobalBanState,
+  type HeroRecommendation,
+  type RecordedDraftGame,
+  type RoleType,
+} from "../types/draft";
 
 export interface DraftState {
   bluePicks: string[];
@@ -89,6 +96,19 @@ export type DraftAction =
   | { type: "lock"; hero: string }
   | { type: "undo" }
   | { type: "reset" }
+  | {
+      type: "hydrate";
+      payload: {
+        stepIndex: number;
+        bluePicks: string[];
+        redPicks: string[];
+        blueBans: string[];
+        redBans: string[];
+        history: DraftHistoryItem[];
+        blueWinRate: number;
+        winHistory: number[];
+      };
+    }
   | { type: "predicted"; stepIndex: number; prediction: PredictionState; blueWinRate: number | null };
 
 export const DEFAULT_WIN_RATE = 50.0;
@@ -115,8 +135,85 @@ export const INITIAL_DRAFT_STATE: DraftMachineState = {
   winHistory: [],
 };
 
-export function unavailableSet(state: DraftState, globalBans: readonly string[] = []): Set<string> {
-  return new Set([...state.bluePicks, ...state.redPicks, ...state.blueBans, ...state.redBans, ...globalBans]);
+export const EMPTY_GLOBAL_BANS: GlobalBanState = {
+  teamAName: "TEAM A",
+  teamBName: "TEAM B",
+  teamAUsed: [],
+  teamBUsed: [],
+  universalBans: [],
+  blueSideTeam: "A",
+  gameNumber: 1,
+};
+
+export function blueUsedHeroes(gb: GlobalBanState): string[] {
+  if (gb.gameNumber === 7) return [];
+  return gb.blueSideTeam === "A" ? gb.teamAUsed : gb.teamBUsed;
+}
+
+export function redUsedHeroes(gb: GlobalBanState): string[] {
+  if (gb.gameNumber === 7) return [];
+  return gb.blueSideTeam === "A" ? gb.teamBUsed : gb.teamAUsed;
+}
+
+export function blueTeamName(gb: GlobalBanState): string {
+  return gb.blueSideTeam === "A" ? gb.teamAName : gb.teamBName;
+}
+
+export function redTeamName(gb: GlobalBanState): string {
+  return gb.blueSideTeam === "A" ? gb.teamBName : gb.teamAName;
+}
+
+export function resolveSeriesName(gb: GlobalBanState): string {
+  if (gb.seriesName && gb.seriesName.trim()) {
+    return gb.seriesName.trim();
+  }
+  const a = gb.teamAName?.trim() || "TEAM A";
+  const b = gb.teamBName?.trim() || "TEAM B";
+  return `${a} vs ${b}`;
+}
+
+export function getGameSeriesGroup(game: RecordedDraftGame): string {
+  if (game.seriesName && game.seriesName.trim()) {
+    return game.seriesName.trim();
+  }
+  const b = game.blueTeamName?.trim() || "BLUE";
+  const r = game.redTeamName?.trim() || "RED";
+  if (game.blueSideTeam === "A") {
+    return `${b} vs ${r}`;
+  }
+  if (game.blueSideTeam === "B") {
+    return `${r} vs ${b}`;
+  }
+  const sorted = [b, r].sort((x, y) => x.localeCompare(y));
+  return `${sorted[0]} vs ${sorted[1]}`;
+}
+
+export function activeGlobalBansForStep(globalBans: GlobalBanState, stepIndex?: number): string[] {
+  const bUsed = blueUsedHeroes(globalBans);
+  const rUsed = redUsedHeroes(globalBans);
+  if (stepIndex === undefined) {
+    return [...bUsed, ...rUsed, ...globalBans.universalBans];
+  }
+  const step = CANONICAL_DRAFT_STEPS[stepIndex];
+  if (!step) {
+    return [...bUsed, ...rUsed, ...globalBans.universalBans];
+  }
+  const restrictedHeroes =
+    step.action === "ban"
+      ? (step.side === "blue" ? rUsed : bUsed)
+      : (step.side === "blue" ? bUsed : rUsed);
+  return [...restrictedHeroes, ...globalBans.universalBans];
+}
+
+export function unavailableSet(
+  state: DraftState,
+  globalBans: readonly string[] | GlobalBanState = [],
+  stepIndex?: number,
+): Set<string> {
+  const gbList = Array.isArray(globalBans)
+    ? globalBans
+    : activeGlobalBansForStep(globalBans as GlobalBanState, stepIndex);
+  return new Set([...state.bluePicks, ...state.redPicks, ...state.blueBans, ...state.redBans, ...gbList]);
 }
 
 export function draftReducer(state: DraftMachineState, action: DraftAction): DraftMachineState {
@@ -154,6 +251,12 @@ export function draftReducer(state: DraftMachineState, action: DraftAction): Dra
     }
     case "reset":
       return INITIAL_DRAFT_STATE;
+    case "hydrate":
+      return {
+        ...state,
+        ...action.payload,
+        prediction: EMPTY_PREDICTION,
+      };
     case "predicted": {
       // Ignore responses for a step the draft has already moved past
       if (action.stepIndex !== state.stepIndex) return state;
@@ -165,14 +268,50 @@ export function draftReducer(state: DraftMachineState, action: DraftAction): Dra
   }
 }
 
+/** Reconstructs step-by-step undo history and stepIndex from a saved DraftState. */
+export function reconstructDraftHistory(draft: DraftState): {
+  stepIndex: number;
+  history: DraftHistoryItem[];
+} {
+  const history: DraftHistoryItem[] = [];
+  const cur: DraftState = { bluePicks: [], redPicks: [], blueBans: [], redBans: [] };
+  const idx = { bluePicks: 0, redPicks: 0, blueBans: 0, redBans: 0 };
+
+  let stepIndex = 0;
+  for (let i = 0; i < CANONICAL_DRAFT_STEPS.length; i++) {
+    const s = CANONICAL_DRAFT_STEPS[i];
+    const key = `${s.side}${s.action === "pick" ? "Picks" : "Bans"}` as keyof DraftState;
+    const hero = draft[key][idx[key]];
+    if (!hero) break;
+    history.push({
+      stepIndex: i,
+      bluePicks: [...cur.bluePicks],
+      redPicks: [...cur.redPicks],
+      blueBans: [...cur.blueBans],
+      redBans: [...cur.redBans],
+    });
+    cur[key] = [...cur[key], hero];
+    idx[key]++;
+    stepIndex = i + 1;
+  }
+  return { stepIndex, history };
+}
+
 /** Builds the /predict request for a draft step; past the last step it asks for the final blue win rate. */
 export function buildPredictPayload(
   stepIndex: number,
   state: DraftState,
-  globalBans: readonly string[],
+  globalBans: readonly string[] | GlobalBanState,
   lookahead: boolean,
   candidatePool: number,
 ) {
+  const gbState: GlobalBanState = Array.isArray(globalBans)
+    ? { ...EMPTY_GLOBAL_BANS, universalBans: [...globalBans] }
+    : (globalBans as GlobalBanState);
+
+  const bUsed = blueUsedHeroes(gbState);
+  const rUsed = redUsedHeroes(gbState);
+
   const step = CANONICAL_DRAFT_STEPS[stepIndex];
   if (!step) {
     return {
@@ -183,7 +322,9 @@ export function buildPredictPayload(
       enemy_picks: state.redPicks,
       ally_bans: state.blueBans,
       enemy_bans: state.redBans,
-      global_bans: globalBans,
+      global_bans: gbState.universalBans,
+      blue_global_bans: bUsed,
+      red_global_bans: rUsed,
       top_k: 1,
       use_lookahead: false,
     };
@@ -197,7 +338,9 @@ export function buildPredictPayload(
     enemy_picks: isBlue ? state.redPicks : state.bluePicks,
     ally_bans: isBlue ? state.blueBans : state.redBans,
     enemy_bans: isBlue ? state.redBans : state.blueBans,
-    global_bans: globalBans,
+    global_bans: gbState.universalBans,
+    blue_global_bans: bUsed,
+    red_global_bans: rUsed,
     top_k: candidatePool,
     use_lookahead: lookahead,
     lookahead_depth: 2,

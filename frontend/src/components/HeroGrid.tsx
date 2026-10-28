@@ -8,6 +8,11 @@ import { HeroPortrait } from "./HeroPortrait";
 interface HeroGridProps {
   heroes: Hero[];
   unavailableHeroes: Set<string>;
+  blueUsedHeroes?: string[];
+  redUsedHeroes?: string[];
+  universalBans?: string[];
+  blueTeamName?: string;
+  redTeamName?: string;
   recommendedRanks: Map<string, number>;
   missingAllyLanes: string[];
   currentStep: DraftStep | null;
@@ -18,7 +23,20 @@ interface HeroGridProps {
 const LANE_KEYS = Object.keys(LANE_SHORT);
 
 export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function HeroGrid(
-  { heroes, unavailableHeroes, recommendedRanks, missingAllyLanes, currentStep, isHeroesLoading, onLockHero },
+  {
+    heroes,
+    unavailableHeroes,
+    blueUsedHeroes = [],
+    redUsedHeroes = [],
+    universalBans = [],
+    blueTeamName = "BLUE",
+    redTeamName = "RED",
+    recommendedRanks,
+    missingAllyLanes,
+    currentStep,
+    isHeroesLoading,
+    onLockHero,
+  },
   searchRef,
 ) {
   const [query, setQuery] = useState("");
@@ -27,6 +45,11 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
   const [sortMode, setSortMode] = useState<"ai" | "az">("ai");
 
   const isBan = currentStep?.action === "ban";
+  const isBlueTurn = currentStep?.side !== "red";
+  const blueUsedSet = useMemo(() => new Set(blueUsedHeroes), [blueUsedHeroes]);
+  const redUsedSet = useMemo(() => new Set(redUsedHeroes), [redUsedHeroes]);
+  const univBanSet = useMemo(() => new Set(universalBans), [universalBans]);
+
   const missing = useMemo(() => {
     const keys = isBan ? new Set<string>() : missingLaneKeys(missingAllyLanes);
     return keys.size >= 5 ? new Set<string>() : keys;
@@ -139,71 +162,126 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
       {/* Grid */}
       <div className="max-h-[600px] overflow-y-auto">
         <div className="grid grid-cols-4 gap-1.5 p-3 sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-8">
-        {isHeroesLoading &&
-          Array.from({ length: 18 }).map((_, i) => <div key={i} className="aspect-square animate-pulse bg-panel-2" />)}
-        {!isHeroesLoading && filtered.length === 0 && (
-          <div className="col-span-full py-10 text-center text-sm text-muted">ไม่พบฮีโร่ที่ตรงกับตัวกรอง</div>
-        )}
-        {filtered.map((hero) => {
-          const taken = unavailableHeroes.has(hero.name);
-          const rank = recommendedRanks.get(hero.name);
-          const fillsLane = !taken && missing.has(laneKey(hero.lane));
-          const disabled = taken || !currentStep;
-          return (
-            <button
-              key={hero.name}
-              type="button"
-              disabled={disabled}
-              onClick={() => onLockHero(hero.name)}
-              title={`${displayName(hero.name)} · ${hero.role} · ${laneKey(hero.lane)} · Tier ${hero.tier}`}
-              className={`group relative aspect-square overflow-hidden border text-left transition-all ${
-                taken
-                  ? "border-line opacity-25 grayscale"
-                  : rank
-                    ? "border-gold/70 ring-1 ring-gold/40 hover:border-gold"
-                    : fillsLane
-                      ? "border-good/40 hover:border-good"
-                      : "border-line hover:border-muted"
-              } ${disabled ? "cursor-not-allowed" : "hover:-translate-y-0.5"}`}
-            >
-              <HeroPortrait
-                name={hero.name}
-                hero={hero}
-                className="transition-transform duration-300 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/30 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-1 px-1.5 pb-1">
-                <span className="truncate font-display text-[11px] font-bold leading-tight tracking-wide">
-                  {displayName(hero.name)}
-                </span>
-                <span
-                  className={`hidden shrink-0 font-mono text-[9px] font-bold xl:inline ${fillsLane ? "text-good" : "text-muted"}`}
-                >
-                  {LANE_SHORT[laneKey(hero.lane)]?.en}
-                </span>
-              </div>
-              <span
-                className={`absolute top-1 left-1 border px-1 font-mono text-[9px] font-bold ${TIER_STYLE[hero.tier] ?? TIER_STYLE.B}`}
+          {isHeroesLoading &&
+            Array.from({ length: 18 }).map((_, i) => <div key={i} className="aspect-square animate-pulse bg-panel-2" />)}
+          {!isHeroesLoading && filtered.length === 0 && (
+            <div className="col-span-full py-10 text-center text-sm text-muted">ไม่พบฮีโร่ที่ตรงกับตัวกรอง</div>
+          )}
+          {filtered.map((hero) => {
+            const taken = unavailableHeroes.has(hero.name);
+            const inBlueUsed = blueUsedSet.has(hero.name);
+            const inRedUsed = redUsedSet.has(hero.name);
+            const inUnivBan = univBanSet.has(hero.name);
+
+            const actingTeamUsed = isBlueTurn ? inBlueUsed : inRedUsed;
+            const opponentTeamUsed = isBlueTurn ? inRedUsed : inBlueUsed;
+            const actingTeamName = isBlueTurn ? blueTeamName : redTeamName;
+            const opponentTeamName = isBlueTurn ? redTeamName : blueTeamName;
+
+            const lockedByGlobalBan = inUnivBan || (isBan ? opponentTeamUsed : actingTeamUsed);
+            const canBanToDeny = isBan && !taken && actingTeamUsed && !opponentTeamUsed;
+            const usedByOpponentOnly = !isBan && !taken && opponentTeamUsed && !actingTeamUsed;
+
+            const rank = recommendedRanks.get(hero.name);
+            const fillsLane = !taken && missing.has(laneKey(hero.lane));
+            const disabled = taken || !currentStep;
+            return (
+              <button
+                key={hero.name}
+                type="button"
+                disabled={disabled}
+                onClick={() => onLockHero(hero.name)}
+                title={`${displayName(hero.name)} · ${hero.role} · ${laneKey(hero.lane)} · Tier ${hero.tier}${
+                  lockedByGlobalBan
+                    ? ` · GLOBAL BAN (${inUnivBan ? "แบนร่วม" : isBan ? `${opponentTeamName} เคยใช้แล้ว · ไม่ต้องแบน` : `${actingTeamName} ใช้แล้ว`})`
+                    : canBanToDeny
+                      ? ` · ${actingTeamName} เคยเล่นแล้ว · สามารถแบนตัด ${opponentTeamName} ได้`
+                      : usedByOpponentOnly
+                        ? ` · ${opponentTeamName} ใช้ไปแล้วในเกมก่อน`
+                        : ""
+                }`}
+                className={`group relative aspect-square overflow-hidden border text-left transition-all ${
+                  lockedByGlobalBan
+                    ? "border-red/40 opacity-45 grayscale"
+                    : taken
+                      ? "border-line opacity-25 grayscale"
+                      : rank
+                        ? "border-gold/70 ring-1 ring-gold/40 hover:border-gold"
+                        : fillsLane
+                          ? "border-good/40 hover:border-good"
+                          : canBanToDeny
+                            ? "border-blue/50 hover:border-blue"
+                            : "border-line hover:border-muted"
+                } ${disabled ? "cursor-not-allowed" : "hover:-translate-y-0.5"}`}
               >
-                {hero.tier}
-              </span>
-              {rank && !taken && (
-                <span className="absolute top-1 right-1 bg-gold px-1 font-mono text-[10px] font-bold text-bg">
-                  #{rank}
-                </span>
-              )}
-              {!disabled && (
+                <HeroPortrait
+                  name={hero.name}
+                  hero={hero}
+                  className="transition-transform duration-300 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/30 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-1 px-1.5 pb-1">
+                  <span className="truncate font-display text-[11px] font-bold leading-tight tracking-wide">
+                    {displayName(hero.name)}
+                  </span>
+                  <span
+                    className={`hidden shrink-0 font-mono text-[9px] font-bold xl:inline ${fillsLane ? "text-good" : "text-muted"}`}
+                  >
+                    {LANE_SHORT[laneKey(hero.lane)]?.en}
+                  </span>
+                </div>
                 <span
-                  className={`absolute inset-0 grid place-items-center font-display text-sm font-bold tracking-[0.2em] opacity-0 transition-opacity group-hover:opacity-100 ${
-                    isBan ? "bg-red/30 text-ink" : "bg-blue/20 text-ink"
-                  }`}
+                  className={`absolute top-1 left-1 border px-1 font-mono text-[9px] font-bold ${TIER_STYLE[hero.tier] ?? TIER_STYLE.B}`}
                 >
-                  {isBan ? "BAN" : "LOCK"}
+                  {hero.tier}
                 </span>
-              )}
-            </button>
-          );
-        })}
+                {rank && !taken && (
+                  <span className="absolute top-1 right-1 bg-gold px-1 font-mono text-[10px] font-bold text-bg">
+                    #{rank}
+                  </span>
+                )}
+                {usedByOpponentOnly && !rank && (
+                  <span
+                    className={`absolute top-1 right-1 px-1 font-mono text-[8px] font-bold ${
+                      isBlueTurn ? "bg-red/85 text-ink" : "bg-blue/85 text-ink"
+                    }`}
+                  >
+                    {opponentTeamName.slice(0, 4)} ใช้แล้ว
+                  </span>
+                )}
+                {canBanToDeny && !rank && (
+                  <span
+                    className={`absolute top-1 right-1 px-1 font-mono text-[8px] font-bold ${
+                      isBlueTurn ? "bg-blue/85 text-ink" : "bg-red/85 text-ink"
+                    }`}
+                  >
+                    {actingTeamName.slice(0, 4)} เคยเล่น
+                  </span>
+                )}
+                {lockedByGlobalBan && (
+                  <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 bg-bg/90 py-0.5 text-center border-y border-red/60">
+                    <div className="font-mono text-[8px] font-bold tracking-wider text-red">GLOBAL BAN</div>
+                    <div className="truncate px-1 font-display text-[8px] text-muted">
+                      {inUnivBan
+                        ? "แบนทั้งซีรีส์"
+                        : isBan
+                          ? `${opponentTeamName} เคยใช้แล้ว`
+                          : `${actingTeamName} ใช้แล้ว`}
+                    </div>
+                  </div>
+                )}
+                {!disabled && (
+                  <span
+                    className={`absolute inset-0 grid place-items-center font-display text-sm font-bold tracking-[0.2em] opacity-0 transition-opacity group-hover:opacity-100 ${
+                      isBan ? "bg-red/30 text-ink" : "bg-blue/20 text-ink"
+                    }`}
+                  >
+                    {isBan ? "BAN" : "LOCK"}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
     </section>

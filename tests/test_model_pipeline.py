@@ -44,3 +44,49 @@ def test_invalid_hero_raises_value_error():
     req = DraftStateRequest(ally_picks=["NotARealHeroName123"])
     with pytest.raises(ValueError):
         predictor.predict(req)
+
+
+def test_predictor_side_specific_global_bans():
+    predictor = RoVDraftPredictor()
+    blue_used = ["Florentino", "Liliana", "Hayate"]
+    red_used = ["Nakroth", "Thane", "Toro"]
+    req_blue = DraftStateRequest(
+        mode="pick",
+        side="blue",
+        phase=1,
+        ally_bans=["Billow"],
+        enemy_bans=["Dolia"],
+        blue_global_bans=blue_used,
+        red_global_bans=red_used,
+        top_k=20,
+    )
+    resp_blue = predictor.predict(req_blue)
+    blue_recs = {r.hero_name for r in resp_blue.recommendations}
+    for h in blue_used:
+        assert h not in blue_recs
+    for r in resp_blue.blue_next_picks:
+        assert r.hero_name not in blue_used
+    for r in resp_blue.red_next_picks:
+        assert r.hero_name not in red_used
+
+
+def test_predictor_side_specific_global_bans_in_ban_mode():
+    predictor = RoVDraftPredictor()
+    blue_used = ["Rouie", "Florentino"]
+    red_used = ["Liliana", "Hayate"]
+    req_ban = DraftStateRequest(
+        mode="ban",
+        side="blue",
+        phase=1,
+        blue_global_bans=blue_used,
+        red_global_bans=red_used,
+        top_k=20,
+    )
+    resp = predictor.predict(req_ban)
+    rec_names = {r.hero_name for r in resp.recommendations}
+    # Opponent (Red) already used Liliana and Hayate, so Blue should not ban them (Red can't pick them)
+    for h in red_used:
+        assert h not in rec_names
+    # When opponent is Red, forecast red bans should not target Blue's already used heroes
+    for r in resp.red_next_bans:
+        assert r.hero_name not in blue_used

@@ -142,6 +142,8 @@ class DraftSearchState:
     blue_bans: tuple[int, ...] = ()
     red_bans: tuple[int, ...] = ()
     global_bans: tuple[int, ...] = ()
+    blue_global_bans: tuple[int, ...] = ()
+    red_global_bans: tuple[int, ...] = ()
     step_idx: int = 0
 
     @property
@@ -167,13 +169,21 @@ class DraftSearchState:
         return self.current_step_info[3]
 
     def get_unavailable_set(self) -> set[int]:
-        return (
+        base = (
             set(self.blue_picks)
             | set(self.red_picks)
             | set(self.blue_bans)
             | set(self.red_bans)
             | set(self.global_bans)
         )
+        if self.action_type == 0:  # BAN
+            # When banning, unavailable heroes are those the opponent cannot pick anyway
+            opp_gb = set(self.red_global_bans) if self.acting_side == 0 else set(self.blue_global_bans)
+            return base | opp_gb
+        else:  # PICK
+            # When picking, unavailable heroes are those the acting team cannot pick
+            own_gb = set(self.blue_global_bans) if self.acting_side == 0 else set(self.red_global_bans)
+            return base | own_gb
 
     def transition(self, hero_idx: int) -> DraftSearchState:
         """Return the successor state after taking action hero_idx."""
@@ -201,6 +211,8 @@ class DraftSearchState:
             blue_bans=tuple(b_b),
             red_bans=tuple(r_b),
             global_bans=self.global_bans,
+            blue_global_bans=self.blue_global_bans,
+            red_global_bans=self.red_global_bans,
             step_idx=self.step_idx + 1,
         )
 
@@ -217,8 +229,11 @@ class DraftMinimaxSearch:
     def _to_model_input(self, s: DraftSearchState) -> ModelInput:
         if s.acting_side == 0:  # Blue acting
             ally_picks, enemy_picks, ally_bans, enemy_bans = s.blue_picks, s.red_picks, s.blue_bans, s.red_bans
+            side_gb = s.red_global_bans if s.action_type == 0 else s.blue_global_bans
         else:  # Red acting
             ally_picks, enemy_picks, ally_bans, enemy_bans = s.red_picks, s.blue_picks, s.red_bans, s.blue_bans
+            side_gb = s.blue_global_bans if s.action_type == 0 else s.red_global_bans
+        effective_gb = tuple(dict.fromkeys([*s.global_bans, *side_gb]))
         meta = (
             min(s.step_idx, 17) / 17.0,
             float(s.phase == 2),
@@ -228,7 +243,7 @@ class DraftMinimaxSearch:
             len(ally_picks) / 5.0,
             len(enemy_picks) / 5.0,
         )
-        return ModelInput(ally_picks, enemy_picks, ally_bans, enemy_bans, s.global_bans, meta, s.action_type, s.phase)
+        return ModelInput(ally_picks, enemy_picks, ally_bans, enemy_bans, effective_gb, meta, s.action_type, s.phase)
 
     def evaluate_batch(self, states: list[DraftSearchState]) -> tuple[torch.Tensor, torch.Tensor]:
         """Evaluate a batch of draft states through the neural network.

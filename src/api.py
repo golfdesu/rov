@@ -8,11 +8,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from src.combat_calculator import Build, get_engine
+from src.config import config
 from src.predictor import LANE_LABELS, RoVDraftPredictor
 from src.schemas import (
     CombatDuelRequest,
     CombatStatsRequest,
     DraftPredictionResponse,
+    DraftSessionStateSchema,
     DraftStateRequest,
     HealthResponse,
 )
@@ -113,6 +115,39 @@ def get_draft_steps():
             for s in DRAFT_STEPS
         ]
     }
+
+
+@app.get("/draft/session", response_model=DraftSessionStateSchema)
+def get_draft_session():
+    session_path = config.paths.draft_session_path
+    if not session_path.exists():
+        return DraftSessionStateSchema()
+    try:
+        raw = json.loads(session_path.read_text(encoding="utf-8"))
+        return DraftSessionStateSchema.model_validate(raw)
+    except Exception:
+        return DraftSessionStateSchema()
+
+
+@app.put("/draft/session", response_model=DraftSessionStateSchema)
+def save_draft_session(session: DraftSessionStateSchema):
+    session_path = config.paths.draft_session_path
+    session_path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = session_path.with_suffix(".json.tmp")
+    tmp_path.write_text(
+        json.dumps(session.model_dump(), ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    tmp_path.replace(session_path)
+    return session
+
+
+@app.delete("/draft/session", response_model=DraftSessionStateSchema)
+def clear_draft_session():
+    session_path = config.paths.draft_session_path
+    if session_path.exists():
+        session_path.unlink(missing_ok=True)
+    return DraftSessionStateSchema()
 
 
 @app.post("/predict", response_model=DraftPredictionResponse)

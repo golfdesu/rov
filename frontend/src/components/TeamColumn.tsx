@@ -1,4 +1,4 @@
-import { Ban } from "lucide-react";
+import { Ban, Layers, Plus, X } from "lucide-react";
 import type { DraftStep, Hero, HeroRecommendation } from "../types/draft";
 import { LANE_SHORT, laneKey } from "../utils/draft";
 import { displayName } from "../utils/heroNames";
@@ -6,24 +6,36 @@ import { HeroPortrait } from "./HeroPortrait";
 
 interface TeamColumnProps {
   side: "blue" | "red";
+  teamName: string;
   picks: string[];
   bans: string[];
+  usedHeroes: string[];
+  rawUsedCount: number;
+  gameNumber: number;
   heroMap: Map<string, Hero>;
   currentStep: DraftStep | null;
   predictedNextPicks?: HeroRecommendation[];
   predictedNextBans?: HeroRecommendation[];
   onLockHero?: (heroName: string) => void;
+  onOpenGlobalBanForTeam: () => void;
+  onRemoveUsedHero: (heroName: string) => void;
 }
 
 export function TeamColumn({
   side,
+  teamName,
   picks,
   bans,
+  usedHeroes,
+  rawUsedCount,
+  gameNumber,
   heroMap,
   currentStep,
   predictedNextPicks = [],
   predictedNextBans = [],
   onLockHero,
+  onOpenGlobalBanForTeam,
+  onRemoveUsedHero,
 }: TeamColumnProps) {
   const isBlue = side === "blue";
   const isMyTurn = currentStep?.side === side;
@@ -34,15 +46,15 @@ export function TeamColumn({
   return (
     <section aria-label={`${side} team`} className="flex flex-col gap-2">
       {/* Team header */}
-      <div className={`flex items-center justify-between ${isBlue ? "" : "flex-row-reverse"}`}>
-        <div className={`flex items-center gap-2 ${isBlue ? "" : "flex-row-reverse"}`}>
-          <div className={`h-5 w-1 ${isBlue ? "bg-blue" : "bg-red"}`} />
-          <h2 className={`font-display text-sm font-bold tracking-[0.15em] sm:text-lg ${accent}`}>
-            {isBlue ? "BLUE SIDE" : "RED SIDE"}
+      <div className={`flex items-center justify-between gap-2 ${isBlue ? "" : "flex-row-reverse"}`}>
+        <div className={`flex min-w-0 items-center gap-2 ${isBlue ? "" : "flex-row-reverse"}`}>
+          <div className={`h-5 w-1 shrink-0 ${isBlue ? "bg-blue" : "bg-red"}`} />
+          <h2 className={`truncate font-display text-sm font-bold tracking-[0.12em] sm:text-base ${accent}`}>
+            {isBlue ? "BLUE" : "RED"} · <span className="text-ink">{teamName}</span>
           </h2>
         </div>
         {isMyTurn && (
-          <span className="border border-gold/50 bg-gold/10 px-1.5 py-0.5 font-display text-[10px] font-bold tracking-wider text-gold">
+          <span className="shrink-0 border border-gold/50 bg-gold/10 px-1.5 py-0.5 font-display text-[10px] font-bold tracking-wider text-gold">
             <span className="sm:hidden">NOW</span>
             <span className="hidden sm:inline">ON THE CLOCK</span>
           </span>
@@ -248,6 +260,82 @@ export function TeamColumn({
             </div>
           );
         })}
+      </div>
+
+      {/* On-Board Global Ban (Used Heroes by this Team) */}
+      <div
+        className={`mt-1 border bg-panel/90 p-2 ${
+          isBlue ? "border-blue/35" : "border-red/35"
+        }`}
+      >
+        <div className="mb-1.5 flex items-center justify-between gap-1.5">
+          <div className="flex min-w-0 items-center gap-1.5">
+            <Layers className={`h-3.5 w-3.5 shrink-0 ${accent}`} />
+            <span className="truncate font-display text-[11px] font-bold tracking-wide text-ink">
+              GLOBAL BAN · {teamName}
+            </span>
+            <span
+              className={`shrink-0 px-1.5 py-0.2 font-mono text-[10px] font-bold ${
+                usedHeroes.length > 0
+                  ? isBlue
+                    ? "bg-blue/20 text-blue"
+                    : "bg-red/20 text-red"
+                  : "bg-panel-2 text-dim"
+              }`}
+            >
+              {usedHeroes.length}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={onOpenGlobalBanForTeam}
+            className={`flex shrink-0 items-center gap-1 border px-2 py-0.5 font-display text-[10px] font-bold tracking-wide transition-colors ${
+              isBlue
+                ? "border-blue/50 bg-blue/10 text-blue hover:bg-blue hover:text-ink"
+                : "border-red/50 bg-red/10 text-red hover:bg-red hover:text-ink"
+            }`}
+          >
+            <Plus className="h-3 w-3" />
+            <span>เลือกตัวที่เคยใช้</span>
+          </button>
+        </div>
+
+        {gameNumber === 7 ? (
+          <div className="border border-gold/40 bg-gold/10 px-2 py-1.5 text-center font-display text-[11px] font-semibold text-gold">
+            GAME 7 ULTIMATE BATTLE · ปลดล็อกฮีโร่ที่เคยใช้ทั้งหมด ({rawUsedCount} ตัว)
+          </div>
+        ) : usedHeroes.length === 0 ? (
+          <button
+            type="button"
+            onClick={onOpenGlobalBanForTeam}
+            className="flex w-full items-center justify-center gap-1.5 border border-dashed border-line py-2 text-[11px] text-dim transition-colors hover:border-line-strong hover:bg-panel-2/50 hover:text-ink"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            <span>คลิกเพื่อเลือกฮีโร่ที่ {teamName} ใช้ไปแล้วในเกมก่อน</span>
+          </button>
+        ) : (
+          <div className="flex flex-wrap gap-1">
+            {usedHeroes.map((name) => {
+              const hero = heroMap.get(name);
+              return (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() => onRemoveUsedHero(name)}
+                  title={`${displayName(name)} (${teamName} ใช้แล้ว — คลิกเพื่อนำออก)`}
+                  className="group flex items-center gap-1 border border-line-strong bg-bg py-0.5 pr-1.5 pl-0.5 text-[10px] text-muted transition-colors hover:border-red/60 hover:bg-red/10 hover:text-ink"
+                >
+                  <div className="h-5 w-5 shrink-0 overflow-hidden">
+                    <HeroPortrait name={name} hero={hero} className="grayscale group-hover:grayscale-0" />
+                  </div>
+                  <span className="max-w-[68px] truncate font-medium">{displayName(name)}</span>
+                  <X className="h-2.5 w-2.5 text-dim group-hover:text-red" />
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
     </section>
   );

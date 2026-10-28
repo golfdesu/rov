@@ -53,6 +53,49 @@ export interface DraftHistoryItem {
   redBans: string[];
 }
 
+export type TeamId = "A" | "B";
+
+export interface GlobalBanState {
+  seriesName?: string;
+  teamAName: string;
+  teamBName: string;
+  teamAUsed: string[];
+  teamBUsed: string[];
+  universalBans: string[];
+  blueSideTeam: TeamId;
+  gameNumber: number;
+}
+
+export interface RecordedDraftGame {
+  id: string;
+  gameNumber: number;
+  timestamp: string;
+  seriesName?: string;
+  blueTeamName: string;
+  redTeamName: string;
+  blueSideTeam: TeamId;
+  blueBans: string[];
+  redBans: string[];
+  bluePicks: string[];
+  redPicks: string[];
+  blueWinRate: number;
+}
+
+export interface DraftSessionPayload {
+  stepIndex: number;
+  bluePicks: string[];
+  redPicks: string[];
+  blueBans: string[];
+  redBans: string[];
+  history: DraftHistoryItem[];
+  winHistory: (number | null)[];
+  blueWinRate: number;
+  useLookahead: boolean;
+  globalBans: GlobalBanState;
+  seriesGames: RecordedDraftGame[];
+  updatedAt: number;
+}
+
 export const CANONICAL_LANES = [
   { key: "DS_Lane", nameEn: "Dark Slayer Lane", nameTh: "ออฟเลน", icon: "⚔️" },
   { key: "Jungle", nameEn: "Jungle", nameTh: "ป่า", icon: "🌲" },

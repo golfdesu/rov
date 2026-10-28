@@ -7,6 +7,7 @@ custom filtering by year, league, date, and true-pick-order verification status.
 
 import argparse
 import json
+from datetime import datetime
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,6 +21,12 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Build curated training dataset for RoV SOTA Model")
     parser.add_argument("--min-year", type=int, default=2024, help="Earliest match year to include (default: 2024)")
     parser.add_argument("--max-year", type=int, default=2026, help="Latest match year to include (default: 2026)")
+    parser.add_argument(
+        "--max-date",
+        type=str,
+        default=None,
+        help="Latest match date to include (inclusive, format YYYY-MM-DD, e.g. 2026-10-24)",
+    )
     parser.add_argument(
         "--leagues",
         nargs="+",
@@ -63,6 +70,16 @@ def load_true_pick_order_lookup():
     return lookup
 
 
+def parse_match_date(date_str: str) -> datetime | None:
+    if not date_str:
+        return None
+    cleaned = date_str.split("-")[0].strip()
+    try:
+        return datetime.strptime(cleaned, "%B %d, %Y")
+    except Exception:
+        return None
+
+
 def normalize_league_token(league_str: str) -> str:
     s = league_str.upper()
     if "PRO LEAGUE" in s or "RPL" in s:
@@ -81,6 +98,7 @@ def normalize_league_token(league_str: str) -> str:
 def build_training_dataset(
     min_year: int = 2024,
     max_year: int = 2026,
+    max_date: str | None = None,
     leagues: list[str] | None = None,
     only_true_order: bool = False,
     output_path: Path = DEFAULT_OUTPUT_PATH,
@@ -94,6 +112,9 @@ def build_training_dataset(
     print(f"Loaded {len(true_lookup)} ground-truth games from {TRUE_ORDER_PATH.name}")
 
     allowed_leagues = {lg.upper() for lg in leagues} if leagues else None
+    max_dt = datetime.strptime(max_date, "%Y-%m-%d") if max_date else None
+    if max_dt:
+        print(f"Date filter applied: matches up to {max_date} (inclusive)")
 
     curated_games = []
     stats_by_league = {}
@@ -112,6 +133,12 @@ def build_training_dataset(
         year_val = int(year_str) if year_str.isdigit() else 2026
         if year_val < min_year or year_val > max_year:
             continue
+
+        # Max date filter
+        if max_dt:
+            m_dt = parse_match_date(g.get("date", ""))
+            if m_dt and m_dt > max_dt:
+                continue
 
         # League filter
         lg_code = normalize_league_token(g.get("league", ""))
@@ -194,6 +221,7 @@ def main():
     build_training_dataset(
         min_year=args.min_year,
         max_year=args.max_year,
+        max_date=args.max_date,
         leagues=args.leagues,
         only_true_order=args.only_true_order,
         output_path=args.output,

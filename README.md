@@ -1,34 +1,34 @@
-# RoV (Arena of Valor) Pro Draft AI — SOTA GNN-Transformer
+# RoV (Arena of Valor) Pro Draft Intelligence — SOTA GNN-Transformer
 
-ระบบรวบรวมข้อมูลฮีโร่ครบ **130 ตัว (ถึงตัวล่าสุด Evita)**, สถิติการแข่งขันระดับอาชีพ **4,208 เกม (RPL, APL, AIC, AOG, GCS ปี 2024–2026)** และโมเดลระดับ State-of-the-Art (**`RoVDraftGNNTransformer`**) สำหรับทำนายลำดับการดราฟต์ (Next-Pick / Next-Ban) พร้อมประเมินโอกาสชนะ (`PredWin%`) ภายใต้กติกา **Global Ban Pick**
-
----
-
-## โครงสร้างโปรเจกต์
-
-* `data/heroes_130_full.json` & `data/heroes_130_summary.csv` — ข้อมูลฮีโร่ทั้ง 130 ตัว พร้อมรายละเอียดสกิลครบทุกสกิลและ Feature Flags 10 ด้าน
-* `data/matches_draft_full.json` & `data/matches_draft_flat.csv` — ข้อมูลลำดับการแบน/เลือกทั้ง 4,208 เกม พร้อม Global Ban Pool ในแต่ละซีรีส์
-* `data/hero_draft_stats.csv`, `data/synergy_matrix.csv`, `data/counter_matrix.csv` — ตารางสถิติการเล่นแยกตาม 5 เลนหลัก, คู่หู Synergy (2,605 คู่) และตัวแก้ทาง Counter (6,234 คู่)
-* `src/train_sota_model.py` — โมเดล SOTA **`RoVDraftGNNTransformer`** (Multi-Relational Hero GNN + Multi-Head Draft Transformer + Dual Policy & Win-Value Heads)
-* `src/predict_draft_cli.py` — ระบบจำลองและทำนายการดราฟต์ผ่าน CLI
-* `src/api.py` — FastAPI (`/health`, `/heroes`, `/draft/steps`, `/predict`, `/combat/catalog`, `/combat/stats`, `/combat/duel`) และเสิร์ฟหน้าเว็บจาก `frontend/dist`
-* `src/combat_calculator.py` — คำนวณสเตตัสฮีโร่ (เลเวล + ไอเทม + รูน Lv3 + พลังแฝง), ดาเมจสกิลหลังหักเกราะ/ต้านเวท/เจาะ และจำลองดวล 1v1 (แท็บ **Stat & Duel Lab** บนหน้าเว็บ, เปิดตรงด้วย `/#lab`)
-* `frontend/` — หน้าเว็บดราฟต์ (React + Vite + Tailwind) ธีมถ่ายทอดสด แสดงชื่อฮีโร่ตามเซิร์ฟไทย (เช่น Mortos, Celica, Riktor)
-* `scripts/fetch_hero_icons.py` — ดาวน์โหลดไอคอนฮีโร่สี่เหลี่ยม 130 ตัวลง `frontend/public/avatars/`
-* `data/items.json` — ไอเทม 114 ชิ้น (สเตตัสเป็นตัวเลข, ราคา, passive) จาก rovmeta.com แล้วแก้ทับด้วย `data/items_overrides.json` ที่อ้างอิง Patch Note ทางการ (rov.in.th) สร้างด้วย `python scripts/fetch_items.py`
-* `data/hero_patch_history.json` — ประวัติการปรับสมดุลตัวเลขฮีโร่ 334 รายการ ครอบคลุม 92 ตัวละคร แปลเป็นภาษาอังกฤษจาก Patch Note ทางการไต้หวัน (Garena TW) ผ่าน `scripts/parse_tw_hero_patches.py`
-* `data/hero_level_stats.json` & `data/hero_level_stats.csv` — ตารางสเตตัสเป๊ะๆ ครบทุกเลเวล 1–15 ของฮีโร่ทั้ง 130 ตัว (1,950 แถว) สร้างด้วย `scripts/build_hero_level_stats.py`
-* `data/hero_skills_full.json` — แคตตาล็อกสกิลแบบตัวเลขเป๊ะๆ ทั้ง 525 สกิลของฮีโร่ครบ 130 ตัว (คูลดาวน์, การใช้มานา, Base Damage และอัตราส่วน AD/AP/HP scaling ทุกเลเวล) สร้างด้วย `scripts/build_hero_skills_catalog.py`
-* `data/arcana.json` — รูน Arcana ทางการครบ 90 ชนิด (แดง/ม่วง/เขียว เลเวล 1–3) พร้อมค่าสเตตัสตัวเลขเป๊ะๆ และไอคอน
-* `data/enchantments.json` — พลังแฝงทางการ 33 ชนิด ครบทั้ง 4 ฝ่าย (Veda, Lokheim, Afata, League of Humans)
-* `scripts/fetch_arcana_and_enchantments.py` — สคริปต์ดึงและ parse รูน Arcana 90 ชนิด และพลังแฝง 33 ชนิด
-* `scripts/build_hero_skills_catalog.py` — สคริปต์ multi-source parser ดึงและคำนวณตัวเลขความแรงสกิล, คูลดาวน์ และสเกลลิ่งครบทุกเลเวล 130 ตัวละคร
-* `scripts/download_rov_apk.py` — สคริปต์สแกนโครงสร้างและดาวน์โหลดไฟล์ติดตั้งทางการ (Official APK/XAPK) ของ Garena RoV (v1.64.1.7) ผ่าน HTTP Range Request
-* `run_sota_rov_h100.sbatch` — สคริปต์ SLURM สำหรับส่งงานเทรนสเกลใหญ่บนโหนดการ์ดจอ **NVIDIA H100 (`gpu-h100`)** ของ **ERAWAN HPC**
+Comprehensive hero database covering all **130 heroes (up to Evita)**, pro match dataset with **4,208 complete games (RPL, APL, AIC, AOG, GCS from 2024–2026)**, and State-of-the-Art architecture (**`RoVDraftGNNTransformer`**) for sequential draft recommendation (Next-Pick / Next-Ban) and win rate estimation (`PredWin%`) under **Global Ban Pick** rules.
 
 ---
 
-## วิธีรันบน ERAWAN HPC (NVIDIA H100)
+## Repository Structure
+
+* `data/heroes_130_full.json` & `data/heroes_130_summary.csv` — Full 130-hero dataset with detailed skill descriptions and 10 capability flags.
+* `data/matches_draft_full.json` & `data/matches_draft_flat.csv` — 4,208 pro match drafts with chronological ban/pick sequences and per-series Global Ban tracking.
+* `data/hero_draft_stats.csv`, `data/synergy_matrix.csv`, `data/counter_matrix.csv` — Lane distribution stats across 5 main lanes, ally synergy matrix (2,605 pairs), and enemy counter matrix (6,234 pairs).
+* `src/train_sota_model.py` — SOTA **`RoVDraftGNNTransformer`** model (Multi-Relational Hero GNN + Multi-Head Draft Transformer + Bounded Neural Temperature Gate + Dual Policy & Win-Value Heads).
+* `src/predict_draft_cli.py` — CLI draft simulator and tournament scenario runner.
+* `src/api.py` — FastAPI service endpoints (`/health`, `/heroes`, `/draft/steps`, `/predict`, `/combat/catalog`, `/combat/stats`, `/combat/duel`) and static file serving from `frontend/dist`.
+* `src/combat_calculator.py` — Combat calculations: hero attributes (level + items + Tier-3 arcana + enchantments), mitigated skill damage (armor/magic defense/flat and percentage pierce), and 1v1 duel simulator (**Stat & Duel Lab** tab in web UI, direct link: `/#lab`).
+* `frontend/` — Broadcast-style draft web UI (React 19 + Vite + Tailwind CSS 4) displaying Thai server names (e.g. Mortos, Celica, Riktor).
+* `scripts/fetch_hero_icons.py` — Downloads 130 square hero icons to `frontend/public/avatars/`.
+* `data/items.json` — 114 items (numeric stats, gold price, passives) from rovmeta.com with patch note corrections via `data/items_overrides.json` (rov.in.th).
+* `data/hero_patch_history.json` — 334 numerical hero balance adjustments across 92 characters translated from official Taiwan patch notes (Garena TW) via `scripts/parse_tw_hero_patches.py`.
+* `data/hero_level_stats.json` & `data/hero_level_stats.csv` — Exact level 1–15 stats scaling tables for all 130 heroes (1,950 rows) built via `scripts/build_hero_level_stats.py`.
+* `data/hero_skills_full.json` — Structured numerical catalog of 525 hero skills for all 130 heroes (cooldowns, mana costs, base damage, and AD/AP/HP scaling ratios across all skill levels) built via `scripts/build_hero_skills_catalog.py`.
+* `data/arcana.json` — 90 official Arcana runes (Red/Purple/Green across Tiers I–III) with exact numerical stats and icon mappings.
+* `data/enchantments.json` — 33 official Enchantments across 4 factions (Veda, Lokheim, Afata, League of Humans).
+* `scripts/fetch_arcana_and_enchantments.py` — Scrapes and parses 90 Arcana runes and 33 Enchantments.
+* `scripts/build_hero_skills_catalog.py` — Multi-source parser extracting and calculating exact skill numbers, cooldowns, and level scalings for all 130 heroes.
+* `scripts/download_rov_apk.py` — Inspects APK/XAPK package structure and downloads official Garena RoV game client assets via HTTP Range Requests.
+* `run_sota_rov_h100.sbatch` — SLURM job script for large-scale training on **NVIDIA H100 (`gpu-h100`)** nodes on **ERAWAN HPC**.
+
+---
+
+## Running on ERAWAN HPC (NVIDIA H100)
 
 ```bash
 git clone https://github.com/golfdesu/rov.git
@@ -36,21 +36,21 @@ cd rov
 sbatch run_sota_rov_h100.sbatch
 ```
 
-ดูผลลัพธ์ขณะรัน:
+Monitor job output:
 ```bash
 tail -f logs/rov_sota_h100_*.out
 ```
 
 ---
 
-## วิธีเรียกใช้ทำนายการดราฟต์ (Inference CLI)
+## Inference via CLI
 
-1. **รันตัวอย่างสถานการณ์ดราฟต์โปรลีก 4 รูปแบบ:**
+1. **Run 4 preset pro league draft scenarios:**
 ```bash
 python src/predict_draft_cli.py --demo
 ```
 
-2. **กำหนดสถานการณ์ดราฟต์เอง:**
+2. **Custom draft scenario:**
 ```bash
 python src/predict_draft_cli.py \
   --mode pick \
@@ -65,7 +65,7 @@ python src/predict_draft_cli.py \
 
 ---
 
-## วิธีเปิดหน้าเว็บดราฟต์ (Web UI)
+## Web UI
 
 ```bash
 cd frontend
@@ -75,17 +75,20 @@ cd ..
 uvicorn src.api:app --port 8000
 ```
 
-แล้วเปิด http://localhost:8000
+Open `http://localhost:8000`.
 
-แท็บ **Stat & Duel Lab**: เลือกฮีโร่ 2 ฝั่ง ปรับเลเวล ไอเทม 6 ช่อง รูน Lv3 (สีละ 10 ช่อง) และพลังแฝง (ฝ่ายหลัก ขั้น 1-3 + ฝ่ายรอง ขั้น 1-2) แล้วดูสเตตัส ดาเมจสกิลเข้าจริง EHP คอมโบตามเลเวล และผลดวล — ตัวเลขพลังแฝงที่ใส่ไว้มาจากคำอธิบาย ต้องตรวจกับในเกมอีกครั้ง (`ENCHANTMENT_EFFECTS` ใน `src/combat_calculator.py`)
+**Stat & Duel Lab Tab**: Select heroes for both sides, configure level, 6-slot items, Tier-3 arcana (10 slots per color), and enchantments (Primary core 1-3 + Secondary 1-2) to inspect real-time stats, mitigated skill damage, effective HP (EHP), combo damage curves, and duel outcomes. (Note: parsed enchantment numbers originate from descriptions and are pending in-game verification in `ENCHANTMENT_EFFECTS` inside `src/combat_calculator.py`).
 
-คีย์ลัด: `/` ค้นหาฮีโร่, `Enter` ล็อกตัวที่ AI แนะนำอันดับ 1, `Ctrl+Z` ย้อนกลับ
+Keyboard shortcuts: `/` search hero, `Enter` lock top AI recommendation, `Ctrl+Z` undo last step.
 
-พัฒนาแบบ hot reload: รัน uvicorn ค้างไว้ แล้ว `cd frontend && npm run dev` เปิด http://localhost:3000
+Frontend hot reload development: run uvicorn on port 8000, then in a separate terminal:
+```bash
+cd frontend && npm run dev
+```
+Open `http://localhost:3000`.
 
-หรือรันผ่าน Docker (build หน้าเว็บให้อัตโนมัติ):
+Or run via Docker (automatically builds frontend):
 ```bash
 docker build -t rov-draft .
 docker run -p 8000:8000 rov-draft
 ```
-

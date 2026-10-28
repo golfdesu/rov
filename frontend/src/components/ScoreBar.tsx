@@ -1,4 +1,4 @@
-import { BrainCircuit, RotateCcw, Undo2 } from "lucide-react";
+import { BrainCircuit, Layers, RotateCcw, Undo2 } from "lucide-react";
 import type { DraftStep } from "../types/draft";
 
 interface ScoreBarProps {
@@ -9,6 +9,8 @@ interface ScoreBarProps {
   totalSteps: number;
   useLookahead: boolean;
   setUseLookahead: (v: boolean) => void;
+  globalBanCount: number;
+  onOpenGlobalBans: () => void;
   onUndo: () => void;
   onReset: () => void;
   canUndo: boolean;
@@ -22,6 +24,8 @@ export function ScoreBar({
   totalSteps,
   useLookahead,
   setUseLookahead,
+  globalBanCount,
+  onOpenGlobalBans,
   onUndo,
   onReset,
   canUndo,
@@ -98,6 +102,24 @@ export function ScoreBar({
 
         {/* Controls */}
         <div className="flex shrink-0 items-center gap-2">
+          <button
+            type="button"
+            onClick={onOpenGlobalBans}
+            title="ตั้งค่าฮีโร่ที่ใช้ / แบนในเกมก่อนหน้า (Global Ban Pick)"
+            className={`flex h-10 items-center gap-2 border px-3 font-display text-xs font-bold tracking-wide transition-colors ${
+              globalBanCount > 0
+                ? "border-gold/70 bg-gold/15 text-gold hover:bg-gold/25"
+                : "border-ink/30 bg-panel-2 text-ink hover:border-ink hover:bg-line-strong"
+            }`}
+          >
+            <Layers className="h-4 w-4" />
+            <span className="hidden sm:inline">GLOBAL BP</span>
+            {globalBanCount > 0 && (
+              <span className="bg-gold px-1.5 py-0.5 font-mono text-[10px] font-bold leading-none text-bg">
+                {globalBanCount}
+              </span>
+            )}
+          </button>
           <button
             type="button"
             onClick={() => setUseLookahead(!useLookahead)}

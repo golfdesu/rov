@@ -42,6 +42,14 @@ class DraftStateRequest(BaseModel):
         default_factory=list,
         description="Heroes unavailable due to Global Ban Pick rule from previous games in the series",
     )
+    blue_global_bans: list[str] = Field(
+        default_factory=list,
+        description="Heroes unavailable specifically for Blue team due to being used in previous games",
+    )
+    red_global_bans: list[str] = Field(
+        default_factory=list,
+        description="Heroes unavailable specifically for Red team due to being used in previous games",
+    )
     top_k: int = Field(
         default=5,
         ge=1,
@@ -142,3 +150,52 @@ class CombatStatsRequest(BaseModel):
 class CombatDuelRequest(BaseModel):
     a: CombatBuildRequest
     b: CombatBuildRequest
+
+
+class DraftHistoryItemSchema(BaseModel):
+    stepIndex: int = Field(default=0, ge=0, le=18)
+    bluePicks: list[str] = Field(default_factory=list)
+    redPicks: list[str] = Field(default_factory=list)
+    blueBans: list[str] = Field(default_factory=list)
+    redBans: list[str] = Field(default_factory=list)
+
+
+class GlobalBanStateSchema(BaseModel):
+    seriesName: str = Field(default="", description="Optional custom or derived series matchup name e.g. BRU vs FS")
+    teamAName: str = "TEAM A"
+    teamBName: str = "TEAM B"
+    teamAUsed: list[str] = Field(default_factory=list)
+    teamBUsed: list[str] = Field(default_factory=list)
+    universalBans: list[str] = Field(default_factory=list)
+    blueSideTeam: Literal["A", "B"] = "A"
+    gameNumber: int = Field(default=1, ge=1, le=7)
+
+
+class RecordedDraftGameSchema(BaseModel):
+    id: str
+    gameNumber: int = Field(default=1, ge=1, le=7)
+    timestamp: str
+    seriesName: str = Field(default="", description="Group or series matchup name e.g. BRU vs FS")
+    blueTeamName: str
+    redTeamName: str
+    blueSideTeam: Literal["A", "B"] = "A"
+    blueBans: list[str] = Field(default_factory=list)
+    redBans: list[str] = Field(default_factory=list)
+    bluePicks: list[str] = Field(default_factory=list)
+    redPicks: list[str] = Field(default_factory=list)
+    blueWinRate: float = 50.0
+
+
+class DraftSessionStateSchema(BaseModel):
+    stepIndex: int = Field(default=0, ge=0, le=18)
+    bluePicks: list[str] = Field(default_factory=list)
+    redPicks: list[str] = Field(default_factory=list)
+    blueBans: list[str] = Field(default_factory=list)
+    redBans: list[str] = Field(default_factory=list)
+    history: list[DraftHistoryItemSchema] = Field(default_factory=list)
+    winHistory: list[float | None] = Field(default_factory=list)
+    blueWinRate: float = 50.0
+    useLookahead: bool = False
+    globalBans: GlobalBanStateSchema = Field(default_factory=GlobalBanStateSchema)
+    seriesGames: list[RecordedDraftGameSchema] = Field(default_factory=list)
+    updatedAt: int = Field(default=0, description="Epoch milliseconds of last state update")

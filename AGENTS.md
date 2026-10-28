@@ -55,9 +55,10 @@ Every AI agent (including fast models such as `3.8flash`) MUST strictly obey the
    - Only enchantments in `ENCHANTMENT_EFFECTS` affect numbers; values are parsed from descriptions and pending in-game verification. Never invent values for the rest.
    - `hero_level_stats.json` lacks attack speed/mana; base attack rate is assumed `BASE_ATTACKS_PER_SEC = 1.0`.
 
-9. **Cross-Session Changelog (`CHANGELOG.md`)**:
+9. **Cross-Session Changelog (`CHANGELOG.md`) & English Documentation Invariant**:
    - Before starting work, read the top entries of `CHANGELOG.md` to learn what previous agents already did.
    - Before finishing any task that modified files, add a new entry at the TOP (date, time, agent, what was done, files, verification, open issues) following the format in that file.
+   - **STRICT English Requirement**: All entries in `CHANGELOG.md`, skill documentation (`SKILL.md`), agent notes, and repository markdown files MUST be authored strictly in English to maximize token efficiency and prevent semantic loss across LLM context windows.
 
 10. **Off-Limits Folder (`data/vod_analytics/`)**:
     - This is the owner's paused WIP (VOD minimap rotation tracking).
@@ -125,7 +126,7 @@ ROV/
 │   ├── hero_level_stats.csv         # 1,950 row level 1-15 scaling table (130 heroes * 15 levels)
 │   ├── hero_skills_full.json        # 525 structured hero skills with numerical cooldowns, mana costs & scalings
 │   ├── arcana.json                  # 90 official Arcana runes (30 Red, 30 Purple, 30 Green across Tiers I-III)
-│   └── enchantments.json            # 33 official Enchantments (พลังแฝง) across 4 factions (Veda, Lokheim, Afata, Humans)
+│   └── enchantments.json            # 33 official Enchantments across 4 factions (Veda, Lokheim, Afata, Humans)
 ├── frontend/                        # React 19 + Vite + Tailwind 4 draft UI (see frontend/README.md)
 │   ├── src/                         # App, api/client.ts, hooks/useDraft.ts, components/ (Modal, Alert), utils/draft.ts (reducer)
 │   └── public/

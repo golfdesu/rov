@@ -27,7 +27,7 @@ Dark esports broadcast style for the draft board in `frontend/`. Tokens live in 
 | Role | Family | Notes |
 | :--- | :--- | :--- |
 | Display (team names, hero names, labels) | Chakra Petch 500–700 | Uppercase with wide tracking for labels |
-| Body (Thai + Latin) | IBM Plex Sans Thai 400–600 | Thai UI copy such as "ยังขาดเลน" |
+| Body (Thai + Latin) | IBM Plex Sans Thai 400–600 | Thai UI copy such as "Missing lanes" |
 | Numbers | JetBrains Mono 500–700 | Tabular figures |
 
 ## Shape and motion

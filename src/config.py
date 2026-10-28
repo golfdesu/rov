@@ -23,6 +23,7 @@ class PathConfig:
         self.enchantments_json_path: Path = self.data_dir / "enchantments.json"
         self.synergy_csv_path: Path = self.data_dir / "synergy_matrix.csv"
         self.counter_csv_path: Path = self.data_dir / "counter_matrix.csv"
+        self.draft_session_path: Path = self.data_dir / "draft_session_state.json"
 
         self.sota_model_path: Path = self.models_dir / "sota_draft_gnn_transformer.pt"
         self.baseline_model_path: Path = self.models_dir / "draft_predictor.pt"

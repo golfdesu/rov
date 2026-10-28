@@ -212,6 +212,13 @@ def format_apl_filename(series_id, game_num, blue_team, red_team, apl_schedule):
 
 def format_aog_filename(series_id, game_num, blue_team, red_team):
     s_idx = int(series_id.split("_S")[-1])
+    t1_code = TEAM_CODES.get(blue_team, blue_team.lower().replace(" ", ""))
+    t2_code = TEAM_CODES.get(red_team, red_team.lower().replace(" ", ""))
+
+    if "Playoffs" in series_id:
+        fname = f"2026_po_m{s_idx}_g{game_num}_win_aog_{t1_code}_vs_{t2_code}.png"
+        return f"2026_aog_winter/playoffs/{fname}"
+
     match_num = s_idx
     if s_idx <= 6:
         week = 1
@@ -238,9 +245,6 @@ def format_aog_filename(series_id, game_num, blue_team, red_team):
         week = 8
         day = 24 if s_idx <= 938 else 25
 
-    t1_code = TEAM_CODES.get(blue_team, blue_team.lower().replace(" ", ""))
-    t2_code = TEAM_CODES.get(red_team, red_team.lower().replace(" ", ""))
-
     fname = f"2026_w{week}_d{day}_m{match_num}_g{game_num}_win_aog_{t1_code}_vs_{t2_code}.png"
     rel_path = f"2026_aog_winter/week{week}/{fname}"
     return rel_path
@@ -256,6 +260,9 @@ def format_dest_path(league, series_id, game_num, blue_team, red_team, apl_sched
     s_idx = int(series_id.split("_S")[-1])
     season = "win" if "Winter" in series_id else ("sum" if "Summer" in series_id else "spr")
     season_full = "winter" if "Winter" in series_id else ("summer" if "Summer" in series_id else "spring")
+    if "Playoffs" in series_id:
+        fname = f"2026_po_m{s_idx}_g{game_num}_{season}_{league}_{t1_code}_vs_{t2_code}.png"
+        return f"2026_{league}_{season_full}/playoffs/{fname}"
     fname = f"2026_m{s_idx}_g{game_num}_{season}_{league}_{t1_code}_vs_{t2_code}.png"
     return f"2026_{league}_{season_full}/{fname}"
 
@@ -263,7 +270,7 @@ def format_dest_path(league, series_id, game_num, blue_team, red_team, apl_sched
 def filter_candidates_for_target(all_matches, existing_keys, league, input_dir: Path | None = None):
     prefix = LEAGUE_SERIES_PREFIXES[league]
     stage_filter = None
-    if league == "apl" and input_dir is not None:
+    if input_dir is not None:
         dir_str = input_dir.as_posix().lower()
         if "wildcard" in dir_str:
             stage_filter = "Wildcard"

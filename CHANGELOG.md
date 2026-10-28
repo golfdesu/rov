@@ -1,86 +1,361 @@
 # 📜 Changelog
 
-บันทึกงานของ AI agents / ผู้พัฒนาในโปรเจกต์ RoV Pro Draft Intelligence
-เพื่อให้ agent ที่มาทำงานคนละ session รู้ว่าอะไรถูกทำไปแล้วบ้าง
+Operational log of AI agents and developers working on the RoV Pro Draft Intelligence project.
+Maintains continuity and shared state across disparate sessions and agents.
 
 > [!IMPORTANT]
-> **สำหรับ AI agents:** อ่านรายการบนสุดอย่างน้อย 3 รายการก่อนเริ่มงาน และ **เพิ่มรายการใหม่ไว้บนสุด** ก่อนจบงานทุกครั้ง
+> **For AI Agents:** Read at least the top 3 entries before starting work. **Append your new entry at the TOP** before completing every task. All entries, guidelines, and notes MUST be written strictly in English.
 
-## รูปแบบรายการ
+## Entry Format
 
 ```markdown
-## 📅 YYYY-MM-DD HH:MM (UTC+7) — หัวข้องาน
-**Agent:** ชื่อ agent / โมเดล
+## 📅 YYYY-MM-DD HH:MM (UTC+7) — Task Title
+**Agent:** Agent Name / Model
 
-### ✅ สิ่งที่ทำ
+### ✅ Completed Work
 - ...
 
-### 📁 ไฟล์ที่แก้
+### 📁 Modified Files
 - `path/to/file`
 
-### 🧪 การตรวจสอบ
+### 🧪 Verification
 - ...
 
-### ⚠️ เรื่องค้าง / ข้อควรระวัง
+### ⚠️ Open Issues / Important Notes
 - ...
 ```
 
 ---
 
-## 📅 2026-10-25 16:15 (UTC+7) — แยก Dataset สำหรับเทรนโมเดล + Decoupled Multi-Task Representation & Sequence Policy
+## 📅 2026-10-28 23:05 (UTC+7) — Filter Training Dataset to 2025–2026 Only (Cutoff <= 2026-10-24)
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Curated Dataset Regeneration (`data/matches_training.json`)**:
+  - Rebuilt training dataset using `python src/build_training_dataset.py --min-year 2025 --max-date 2026-10-24`.
+  - Excluded all 812 games from 2024 to eliminate legacy meta noise and obsolete pick patterns (e.g. Erin, Wonder Woman 2024 priorities).
+  - Excluded all 20 games from October 25, 2026 (including all 6 games of RPL 2026 Winter Grand Finals `BRU vs FS`), ensuring zero test leakage.
+  - Retained **3,457 complete 18-step games** (2025: 1,696 games, 2026: 1,761 games).
+  - True Pick Order ratio jumped from 41.3% to **50.9%** (1,761 / 3,457 games).
+  - Retained all Oct 23-24 playoff meta adaptations (Evita, Zanis).
+
+### 📁 Modified Files
+- `src/build_training_dataset.py`: Added `--max-date` option and date filtering logic.
+- `data/matches_training.json`: Regenerated with `--min-year 2025 --max-date 2026-10-24`.
+- `CHANGELOG.md`: Appended operational entry.
+
+### 🧪 Verification
+- Verified dataset composition: 3,457 games (1,761 in 2026, 1,696 in 2025, 0 in 2024, 0 after 2026-10-24).
+- `pytest tests/test_data_integrity.py`: 11/11 tests passed.
+- `pytest tests/ -v`: All 61/61 tests passed.
+- `ruff check --fix .` and `ruff format .`: 0 lint errors, clean format.
+- `ruff check --fix .` and `ruff format .`: 0 errors, clean format.
+
+---
+
+## 📅 2026-10-28 21:20 (UTC+7) — Ingest AOG 2026 Winter Playoffs Screenshots (37 Games) & Complete AOG Season (315/315 Games)
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Liquipedia Match Data Synchronization (`data/matches_draft_full.json`, `data/matches_draft_flat.csv`)**:
+  - Scraped missing live playoff games from Liquipedia wikitext: `Arena_of_Glory_2026_Winter_Playoffs_S1117` (BOOM VN vs BOX, Games 3-7) and `Arena_of_Glory_2026_Winter_Playoffs_S1118` (FPL vs SP Grand Finals, Games 1-7).
+  - Expanded total master pro matches from 4,299 to **4,311 pro games** with 0 unmapped names.
+- **AOG 2026 Winter Playoffs Hungarian Ingestion (`data/true_pick_order.json`)**:
+  - Processed all 37 broadcast draft screenshots from `data/draft_screenshots/2026_aog_winter/`:
+    - Solved global 2D Hungarian bipartite matching (`scipy.optimize.linear_sum_assignment`) against candidate playoff games.
+    - Filed and renamed all 37 screenshots into `data/draft_screenshots/2026_aog_winter/playoffs/2026_po_m{series}_g{game}_win_aog_{blue}_vs_{red}.png`.
+    - Recorded true chronological Blue/Red pick orders in `data/true_pick_order.json`.
+  - Achieved **315 / 315 games (100% complete)** true pick order coverage for the entire AOG 2026 Winter tournament.
+  - Overall repository ground-truth pick order dataset increased to **1,792 games**.
+- **Golden Regression Fixture Update (`tests/fixtures/predict_golden.json`)**:
+  - Re-pinned golden test predictions via `tests.test_predictor_golden.regenerate()` to align with updated match dataset priors.
+
+### 📁 Modified Files
+- `data/matches_draft_full.json` & `data/matches_draft_flat.csv`: Added 12 playoff games (total 4,311 matches).
+- `data/true_pick_order.json`: Added 37 games (total 1,792 recorded games).
+- `scripts/process_draft_screenshots.py`: Added AOG playoffs filename formatter and stage filter support.
+- `tests/fixtures/predict_golden.json`: Re-pinned golden test fixture.
+- `CHANGELOG.md`: Appended operational entry.
+
+### 🧪 Verification
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: PASSED (130 heroes, 4,311 pro games, 1,792 true pick order games, 0 unmapped names).
+- `pytest tests/ -v`: PASSED (All 61/61 unit and integration tests passing).
+- `ruff check --fix .` & `ruff format .`: 0 lint errors, clean formatting across 84 files.
+- `cd frontend && npm run lint && npm run build`: 0 lint errors, Vite build clean.
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **APL 2026 Playoffs Hungarian Ingestion (`data/true_pick_order.json`)**:
+  - Processed all 6 remaining draft screenshots in `data/draft_screenshots/2026_apl/playoffs/`:
+    - `Arena_of_Valor_Premier_League_2026_Playoffs_S233` G4 (BRU vs FL, Day 1 Match 2) -> `2026_po_d1_m2_g4_apl_bru_vs_fl.png`
+    - `Arena_of_Valor_Premier_League_2026_Playoffs_S244` G1..G5 (BAC vs FPL, Day 6 Match 2, Lower Bracket Final / Semifinals) -> `2026_po_d6_m2_g1..g5_apl_...`
+  - Renamed images in-place using two-phase move and recorded true chronological Blue/Red pick orders into `data/true_pick_order.json`.
+  - Achieved **73 / 73 games (100% complete)** true pick order coverage for the entire APL 2026 Playoffs stage.
+  - Overall repository ground-truth pick order dataset increased to **1,755 games**.
+
+### 📁 Modified Files
+- `data/true_pick_order.json`: Added 6 games (total 1,755 recorded games).
+- `CHANGELOG.md`: Appended operational entry.
+
+### 🧪 Verification
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: PASSED (130 heroes, 4,299 pro games, 1,755 true pick order games, 0 unmapped names).
+- `pytest tests/ -v`: PASSED (All 61/61 unit and integration tests passing).
+- `ruff check --fix .` & `ruff format .`: 0 lint errors, clean formatting across 84 files.
+
+---
+
+## 📅 2026-10-28 20:30 (UTC+7) — Ingest RPL 2026 Winter Playoffs (22 Games) & Complete Season True Pick Order (307/307 Games)
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Grand Finals Match Integration (`data/matches_draft_full.json`, `data/matches_draft_flat.csv`)**:
+  - Parsed Liquipedia block for RPL 2026 Winter Grand Finals (`RoV_Pro_League_2026_Winter/Playoffs_S1113`, 6 games between BRU and FS on Oct 25, 2026).
+  - Appended all 6 games into `matches_draft_full.json` and flattened rows into `matches_draft_flat.csv`, bringing total pro games from 4,293 to 4,299 with 0 unmapped hero names.
+- **Playoffs Path Formatting (`scripts/process_draft_screenshots.py`)**:
+  - Generalized stage filtering in `filter_candidates_for_target()` so directory paths containing `wildcard`, `swiss_stage`, or `playoffs` apply for domestic leagues (RPL/AOG/GCS) as well as APL.
+  - Added dedicated playoffs filename and path formatter: `2026_po_m{s_idx}_g{gnum}_{season}_{league}_{t1}_vs_{t2}.png` saving into `2026_rpl_winter/playoffs/`.
+- **Global Hungarian Screenshot Ingestion (`data/true_pick_order.json`)**:
+  - Processed all 22 screenshots in `data/draft_screenshots/2026_rpl_winter/playoffs/`:
+    - `Playoffs_S1110` (BRU vs FS, UB Semifinals): 4 games
+    - `Playoffs_S1111` (TEN vs EA, LB Semifinals): 6 games
+    - `Playoffs_S1112` (EA vs BRU, LB Finals): 6 games
+    - `Playoffs_S1113` (BRU vs FS, Grand Finals): 6 games
+  - 100% matched with Hungarian candidate cost gap > 125.0 and max slot L1 error < 61.2.
+  - Renamed images in-place and recorded chronological Blue/Red pick orders into `data/true_pick_order.json`.
+  - Achieved **307 / 307 games (100% complete)** true pick order coverage for the entire RPL 2026 Winter season (1,749 total ground-truth games across all tournaments).
+
+### 📁 Modified Files
+- `data/matches_draft_full.json`: Added `Playoffs_S1113` (6 games, total 4,299 games).
+- `data/matches_draft_flat.csv`: Appended flat rows for `Playoffs_S1113`.
+- `data/true_pick_order.json`: Recorded true pick order for 22 playoffs games (total 1,749 games).
+- `scripts/process_draft_screenshots.py`: Added playoffs routing and generalized stage candidate filter.
+- `tests/fixtures/predict_golden.json`: Regenerated fixture for current SOTA model alignment.
+- `CHANGELOG.md`: Appended operational log.
+
+### 🧪 Verification
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: PASSED (130 heroes, 4,299 games, 1,749 true pick order games, 0 unmapped names).
+- `pytest tests/ -v`: PASSED (All 61/61 unit and integration tests passing).
+- `ruff check --fix .` & `ruff format .`: 0 lint errors, clean formatting across 84 files.
+- `cd frontend && npm run build && npm run lint`: PASSED (TypeScript + Vite build in 1.69s, 0 oxlint errors).
+
+---
+
+## 📅 2026-10-28 19:40 (UTC+7) — Group Draft History by Matchup and Series (e.g. BRU vs FS)
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Series Grouping Data Model & Schemas (`src/schemas.py`, `frontend/src/types/draft.ts`, `frontend/src/utils/draft.ts`)**:
+  - Added `seriesName` field to `RecordedDraftGame`, `RecordedDraftGameSchema`, `GlobalBanState`, and `GlobalBanStateSchema`.
+  - Added pure utility functions `resolveSeriesName()` and `getGameSeriesGroup()` to automatically group games by canonical matchup (e.g. `BRU vs FS`) regardless of which side is Blue or Red, while preserving custom series names.
+- **Grouped History Modal & Filter Tabs (`frontend/src/components/DraftHistoryModal.tsx`)**:
+  - Implemented interactive group filter pills at the top (`All (Total)`, `BRU vs FS (Count)`, etc.).
+  - Grouped game records into distinct matchup sections with series badge, total games count, latest timestamp, and individual "ลบเฉพาะกลุ่มนี้" (Delete Group) capability.
+- **Series Name Input Control (`frontend/src/components/GlobalBanModal.tsx`)**:
+  - Added editable `SERIES` input in Global Ban control bar with auto-fill placeholder `${teamAName} vs ${teamBName}`.
+- **Series Group Deletion Callback (`frontend/src/hooks/useDraft.ts`, `frontend/src/App.tsx`)**:
+  - Added `deleteSeriesGroup(groupName)` to remove all games belonging to a specific matchup group without wiping the rest of the series history.
+- **Test Suite Updates (`tests/test_api.py`)**:
+  - Verified persistence of `seriesName` on `globalBans` and `seriesGames` across `GET`, `PUT`, and `DELETE` on `/draft/session`.
+
+### 📁 Modified Files
+- `src/schemas.py`: Added `seriesName` to `GlobalBanStateSchema` and `RecordedDraftGameSchema`.
+- `frontend/src/types/draft.ts`: Added `seriesName?: string` to `GlobalBanState` and `RecordedDraftGame`.
+- `frontend/src/utils/draft.ts`: Added `resolveSeriesName()` and `getGameSeriesGroup()`.
+- `frontend/src/hooks/useDraft.ts`: Attached `seriesName` on game record and exposed `deleteSeriesGroup()`.
+- `frontend/src/components/DraftHistoryModal.tsx`: Added group selector tabs, grouped sections, and delete group action.
+- `frontend/src/components/GlobalBanModal.tsx`: Added editable series name input field.
+- `frontend/src/App.tsx`: Wired `deleteSeriesGroup` to `DraftHistoryModal`.
+- `tests/test_api.py`: Added `seriesName` assertions to draft session persistence test.
+- `CHANGELOG.md`: Logged this operational entry in English.
+
+### 🧪 Verification
+- `pytest tests/ -v`: All 61/61 unit and integration tests passing.
+- `ruff check --fix .` & `ruff format .`: 0 lint errors, clean formatting.
+- `npm run lint` & `npm run build`: 0 warnings, clean production bundle build.
+- `curl http://localhost:8000/health`: API healthy, serving from updated build.
+
+### ⚠️ Open Issues / Important Notes
+- Existing records without `seriesName` are automatically grouped by canonical team names via `getGameSeriesGroup()` (100% backward compatible).
+
+---
+
+## 📅 2026-10-28 19:15 (UTC+7) — Add Dual-Layer Draft Session & Series Match History Persistence
+**Agent:** Claude Code (`ag/gemini-4-argon-high`)
+
+### ✅ Completed Work
+- **Server-Side Disk Persistence (`src/config.py`, `src/schemas.py`, `src/api.py`, `.gitignore`)**:
+  - Added `GET /draft/session`, `PUT /draft/session`, and `DELETE /draft/session` endpoints storing active draft board state, series Global Ban state, and recorded game history to `data/draft_session_state.json` via atomic file writes.
+  - Added `DraftHistoryItemSchema`, `GlobalBanStateSchema`, `RecordedDraftGameSchema`, and `DraftSessionStateSchema` in `src/schemas.py`.
+- **Frontend Dual-Layer Persistence & History UI (`frontend/src/hooks/useDraft.ts`, `frontend/src/utils/draft.ts`, `frontend/src/components/DraftHistoryModal.tsx`, `frontend/src/App.tsx`)**:
+  - Implemented synchronous `localStorage` hydration (`rov_draft_session_v1`) paired with asynchronous backend `/draft/session` synchronization so draft state, undo history, Global Ban pools, and recorded series games survive both browser refreshes (`F5`) and backend server (`uvicorn`) restarts.
+  - Added `reconstructDraftHistory` and `hydrate` reducer action in `frontend/src/utils/draft.ts` to restore full step-by-step undo history when loading any recorded game back onto the board.
+  - Created `DraftHistoryModal.tsx` and added history controls to `App.tsx` allowing users to view past games in the series (Blue/Red teams, 4 Bans + 5 Picks per side, win rate, timestamp), bookmark current draft snapshots, reload any recorded game onto the board, delete entries, or reset the entire series.
+
+### 📁 Modified Files
+- `.gitignore`
+- `src/config.py`
+- `src/schemas.py`
+- `src/api.py`
+- `frontend/src/api/client.ts`
+- `frontend/src/types/draft.ts`
+- `frontend/src/utils/draft.ts`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/DraftHistoryModal.tsx`
+- `frontend/src/App.tsx`
+- `tests/test_api.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `pytest -v`: 61/61 tests passed (including `test_draft_session_persistence_endpoints`).
+- `ruff check --fix .` & `ruff format .`: 0 lint errors.
+- `npm run lint` (`oxlint`) & `npm run build` (`tsc -b && vite build`): 0 warnings, 0 errors.
+
+### ⚠️ Open Issues / Important Notes
+- None. Runtime session file `data/draft_session_state.json` is gitignored so local drafting sessions never dirty the repository working tree.
+
+---
+
+## 📅 2026-10-28 18:00 (UTC+7) — Fix Global Ban Denial Logic & Convert Agent Markdown Docs to English
 **Agent:** Claude Fable 5 (ag/gemini-3.8-flash-high)
 
-### ✅ สิ่งที่ทำ
-- **สร้างเครื่องมือตัดช่วงข้อมูลการเทรน (`src/build_training_dataset.py`)**:
-  - รองรับการ slice ข้อมูลตามช่วงปี (`--min-year`, `--max-year`), ลีก (`--leagues`), และสถานะการมี screenshot (`--only-true-order`)
-  - รวม ground-truth chronological pick sequence จาก `data/true_pick_order.json` เข้ากับ `data/matches_draft_full.json` พร้อมแท็ก `is_true_order`
-  - สร้างไฟล์ชุดเทรนเริ่มต้น `data/matches_training.json` (4,271 เกม: 1,716 verified true order games, 2,555 heuristic games)
-- **สถาปัตยกรรม Decoupled Multi-Task Training (`src/train_sota_model.py` & `src/hpo_sota_optuna.py`)**:
-  - แยก supervision weights ระหว่าง `pol_weight_arr` กับ `win_weight_arr`:
-    1. **Representation & Win-Value Learning (`win_weight_arr`)**: ใช้ทุกเกมและทุกขั้นตอน (4,271 เกม) ในการเทรน GNN node embeddings, synergy/counter matrix, และ Win-Value head
-    2. **Ban Policy Learning (`pol_weight_arr`)**: ใช้ทุกเกมสำหรับ Ban Phase 1 และ Phase 2 เนื่องจากลำดับแบนบน Liquipedia เป็น chronological 100% อยู่แล้ว
-    3. **Pick Policy Learning (`pol_weight_arr`)**: ให้ weight = 0.0 สำหรับเกมที่ยังไม่มี screenshot (`is_true_order == False`) เพื่อตัด heuristic label noise (64.1% turn error จาก lane sorting) ออกจากการเทรน sequence policy ของ Transformer
-  - เพิ่มพารามิเตอร์ `--dataset-path` ให้เลือกไฟล์ dataset ได้อย่างยืดหยุ่น โดย default จะโหลด `data/matches_training.json` อัตโนมัติถ้ามีอยู่
-  - อัปเดต `evaluate_sota_model` ให้คำนวณ policy loss และ top-k pick accuracy เฉพาะสเต็ปที่มี clean ground truth (`pol_w > 0`)
+### ✅ Completed Work
+- **Global Ban Denial Bug Fix**:
+  - Fixed hero availability check logic in `frontend/src/utils/draft.ts` (`activeGlobalBansForStep`) and `HeroGrid.tsx`.
+  - In Ban mode (`mode == "ban"`), locked heroes are only those used by the **opponent** (`opponentTeamUsed`), allowing the acting team to ban heroes they previously picked in earlier games to deny them from the opponent.
+  - In Pick mode (`mode == "pick"`), locked heroes are those used by the **acting team** (`actingTeamUsed`) under standard Global Ban rules.
+  - Updated `src/predictor.py` and `src/search/draft_mcts.py` (`DraftSearchState`, `_to_model_input`) to condition unavailable masks and search transitions on action type (Ban masks opponent used, Pick masks own used).
+  - Added unit test `test_predictor_side_specific_global_bans_in_ban_mode` in `tests/test_model_pipeline.py`.
+- **English Markdown Standardization**:
+  - Translated `README.md` into comprehensive, professional English.
+  - Translated `CHANGELOG.md` header instructions, format templates, and recent entries into English.
+  - Updated `AGENTS.md` Rule 9 with strict English rule across all documentation and changelogs.
+  - Verified 100% English across all `.agents/skills/*/SKILL.md` and `.claude/skills/*/SKILL.md` files (0 non-ASCII Thai characters).
+  - Cleaned Thai UI copy reference in `DESIGN.md`.
+  - Added persistent memory `agent-markdown-language-english.md` to user memory index `MEMORY.md`.
 
-### 📁 ไฟล์ที่แก้
-- `src/build_training_dataset.py` (สร้างใหม่)
-- `data/matches_training.json` (สร้างใหม่)
+### 📁 Modified Files
+- `README.md`
+- `CHANGELOG.md`
+- `AGENTS.md`
+- `DESIGN.md`
+- `frontend/src/utils/draft.ts`
+- `frontend/src/components/HeroGrid.tsx`
+- `src/predictor.py`
+- `src/search/draft_mcts.py`
+- `tests/test_model_pipeline.py`
+
+### 🧪 Verification
+- `pytest -v`: 60/60 tests passed (including side-specific global bans in ban and pick modes).
+- `ruff check --fix .` & `ruff format .`: 0 lint errors, clean formatting.
+- `npm --prefix frontend run build` & `npm --prefix frontend run lint`: Clean build and 0 warnings/errors.
+- Live `/predict` validation on localhost:8000 confirming previously used heroes are recommendable and bannable in Ban mode, and blocked in Pick mode.
+- Automated script audit verifying 0 Thai characters across all skill files.
+
+### ⚠️ Open Issues / Important Notes
+- None
+
+---
+
+## 📅 2026-10-25 16:40 (UTC+7) — Integrated On-Board Global Ban Pick UI & Synced H100 SOTA Checkpoint
+**Agent:** Claude Fable 5 (ag/gemini-4-argon-high)
+
+### ✅ Completed Work
+- **H100 Checkpoint & Optuna HPO Sync (`a21a77b`)**:
+  - Synced 40-trial HPO results (`best_params/sota_rov_best_params.json`, `sota_rov_top5_trials.json`) and trained checkpoint with Decoupled Multi-Task Loss on 4,293 games (`models/sota_draft_gnn_transformer.pt`, `val_loss=2.99272`, `win_acc=52.85%`).
+  - Updated `tests/fixtures/predict_golden.json` to match new model output.
+- **Backend Side-Specific Global Ban Pick (`src/schemas.py`, `src/predictor.py`)**:
+  - Added `blue_global_bans` and `red_global_bans` to `DraftStateRequest` alongside `global_bans` (enforced at inference time via masking without retraining).
+  - Updated `RoVDraftPredictor.predict()` and `_evaluate_with_forecasts()` to filter used heroes by side (`Blue` vs `Red`) in recommendations, forecasts (`blue_next_picks`, `red_next_picks`), and Minimax Lookahead Search.
+- **Frontend Team-Based Series & On-Board Global Ban Pick UI**:
+  - Bound used heroes to teams (`teamAName`, `teamBName`, `teamAUsed`, `teamBUsed`) with side swapping (`blueSideTeam: "A" | "B"`) and automatic full unlock in Game 7 (Ultimate Battle).
+  - Added **Series & Global Ban Control Bar** directly on the draft board (`GAME 1..7`, swap sides button, and `Finish Game -> Record Global Bans & Swap` button).
+  - Added **GLOBAL BAN · Heroes Used by This Team** panel below Ban slots in `TeamColumn.tsx` with quick remove and `+ Pick used hero` button.
+  - Added distinct **`GLOBAL BAN ({Team} Used)`** badges on hero cards in `HeroGrid.tsx`.
+
+### 📁 Modified Files
+- `src/schemas.py`
+- `src/predictor.py`
+- `frontend/src/types/draft.ts`
+- `frontend/src/utils/draft.ts`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/GlobalBanModal.tsx`
+- `frontend/src/components/TeamColumn.tsx`
+- `frontend/src/components/HeroGrid.tsx`
+- `frontend/src/components/ScoreBar.tsx`
+- `frontend/src/App.tsx`
+- `tests/test_model_pipeline.py`
+- `tests/fixtures/predict_golden.json`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `select_parsimonious_params.py`: Verified H100 HPO leaderboard and checkpoint.
+- `ruff check --fix .` & `ruff format .`: 0 errors.
+- `npm --prefix frontend run build` & `npm --prefix frontend run lint`: Clean build.
+- `pytest -v`: 59 passed.
+
+### ⚠️ Open Issues / Important Notes
+- None
+
+---
+
+## 📅 2026-10-25 16:15 (UTC+7) — Dataset Slicing Tool & Decoupled Multi-Task Representation & Sequence Policy
+**Agent:** Claude Fable 5 (ag/gemini-3.8-flash-high)
+
+### ✅ Completed Work
+- **Training Dataset Slicing Tool (`src/build_training_dataset.py`)**:
+  - Supports dataset filtering by year range (`--min-year`, `--max-year`), leagues (`--leagues`), and screenshot ground-truth status (`--only-true-order`).
+  - Merged ground-truth chronological pick sequences from `data/true_pick_order.json` into `data/matches_draft_full.json` with `is_true_order` flag.
+  - Generated default training dataset `data/matches_training.json` (4,271 games: 1,716 verified true order games, 2,555 heuristic games).
+- **Decoupled Multi-Task Training Architecture (`src/train_sota_model.py` & `src/hpo_sota_optuna.py`)**:
+  - Decoupled supervision weights between `pol_weight_arr` and `win_weight_arr`:
+    1. **Representation & Win-Value Learning (`win_weight_arr`)**: Uses all 4,271 games and all steps to train GNN node embeddings, synergy/counter matrices, and Win-Value head.
+    2. **Ban Policy Learning (`pol_weight_arr`)**: Uses all games for Phase 1 and Phase 2 Bans (Liquipedia ban order is 100% chronological).
+    3. **Pick Policy Learning (`pol_weight_arr`)**: Sets weight = 0.0 for games without screenshots (`is_true_order == False`), eliminating heuristic lane-order label noise from Transformer sequence training.
+  - Added `--dataset-path` parameter for flexible dataset selection (defaults to `data/matches_training.json` when present).
+  - Updated `evaluate_sota_model` to calculate policy loss and top-k accuracy exclusively on clean ground-truth steps (`pol_w > 0`).
+
+### 📁 Modified Files
+- `src/build_training_dataset.py` (new)
+- `data/matches_training.json` (new)
 - `src/train_sota_model.py`
 - `src/hpo_sota_optuna.py`
 
-### 🧪 การตรวจสอบ
-- `audit_rov_data.py`: ผ่าน 100% (1,727 verified games, 130 heroes, 4,271 draft games)
-- ทดสอบ dry-run เทรน `train_sota_model.py`: โหลด `matches_training.json` ถูกต้อง, สร้าง vectorized tensors 65,340 steps ใน 0.9s, คำนวณ decoupled loss และประเมินผลผ่านฉลุย
-- `pytest -v`: 58/58 tests passed
-- `ruff check --fix .` & `ruff format .`: 0 lint errors, formatted
+### 🧪 Verification
+- `audit_rov_data.py`: PASS (1,727 verified games, 130 heroes, 4,271 draft games).
+- Dry-run training verification: loaded `matches_training.json`, vectorized 65,340 steps in 0.9s, evaluated decoupled loss cleanly.
+- `pytest -v`: 58/58 passed.
+- `ruff check --fix .` & `ruff format .`: 0 errors.
 
-### ⚠️ เรื่องค้าง / ข้อควรระวัง
-- เมื่อรันงานบน ERAWAN HPC (`sbatch run_hpo_rov_h100.sbatch` หรือ `sbatch run_sota_rov_h100.sbatch`) สคริปต์จะใช้ `matches_training.json` ที่มี decoupled policy weighting โดยอัตโนมัติ
+### ⚠️ Open Issues / Important Notes
+- When running on ERAWAN HPC (`sbatch run_hpo_rov_h100.sbatch` or `sbatch run_sota_rov_h100.sbatch`), `matches_training.json` with decoupled policy weighting is used automatically.
+
+---
+
+## 📅 2026-10-25 15:40 (UTC+7) — Liquipedia Pro Match Database Expansion to 4,293 Games & Draft Stats Recomputation
 **Agent:** Claude Fable 5 (ag/gemini-3.8-flash-high)
 
-### ✅ สิ่งที่ทำ
-- อัปเดตฐานข้อมูลการแข่งขันโปรลีก Tier-1 (RPL 2026 Winter Playoffs, AOG 2026 Winter Playoffs, GCS 2026 Summer Playoffs) จาก Liquipedia ด้วย `src/scrape_matches.py`
-  - เพิ่มเกมการแข่งขันรวม 85 เกม (จาก 4,208 เป็น 4,293 เกม; เป็น 18-step games 4,271 เกม)
-  - เพิ่มฟังก์ชัน `format_flat_row` และปรับปรุง logic การรักษารหัส `series_id` เดิม เพื่อไม่ให้กระทบ foreign key ใน `data/true_pick_order.json`
-  - ตรวจสอบความถูกต้องและคง ground truth จากภาพถ่ายทอดสด ป้องกันกรณี community vandalism/wikitext typos บน Liquipedia (เช่น Yue/Zephys เบิ้ลสองฝั่ง)
-- รัน `src/build_draft_stats.py` คำนวณ Recency-weighted Draft Stats และสร้าง Synergy Matrix (2,502 คู่) กับ Counter Matrix (5,880 คู่) ใหม่ทั้งหมดจากข้อมูล 4,293 เกม
-- แก้ไข alignment ฝั่งทีมของแมตช์ GCS 2026 Spring `S1034 G1` ใน `data/true_pick_order.json` ให้ตรงกับ `matches_draft_full.json` (Blue: FW, Red: LIT TEAM)
-- อัปเดต `tests/fixtures/predict_golden.json` ให้ตรงกับ distribution ค่าสถิติใหม่จาก 4,293 เกม
+### ✅ Completed Work
+- Updated Tier-1 pro league match database (RPL 2026 Winter Playoffs, AOG 2026 Winter Playoffs, GCS 2026 Summer Playoffs) from Liquipedia via `src/scrape_matches.py`:
+  - Added 85 games (expanding database from 4,208 to 4,293 games; 4,271 full 18-step games).
+  - Added `format_flat_row` and improved `series_id` retention logic to protect foreign keys in `data/true_pick_order.json`.
+  - Preserved ground truth against Liquipedia community vandalism/wikitext typos.
+- Recomputed recency-weighted draft stats, ally synergy matrix (2,502 pairs), and enemy counter matrix (5,880 pairs) from all 4,293 games via `src/build_draft_stats.py`.
+- Corrected team side alignment for GCS 2026 Spring `S1034 G1` in `data/true_pick_order.json` to match `matches_draft_full.json` (Blue: FW, Red: LIT TEAM).
+- Re-pinned `tests/fixtures/predict_golden.json` to reflect updated statistical distributions.
 
-### 📁 ไฟล์ที่แก้
-- `src/scrape_matches.py`: เพิ่ม `format_flat_row`, incremental safe scrape
-- `data/matches_draft_full.json` & `data/matches_draft_flat.csv`: ขยายเป็น 4,293 เกมโปรลีก Tier-1
-- `data/hero_draft_stats.csv`, `data/synergy_matrix.csv`, `data/counter_matrix.csv`: recomputed
-- `data/true_pick_order.json`: แก้ไข side label S1034 G1
-- `tests/fixtures/predict_golden.json`: re-pinned
+### 📁 Modified Files
+- `src/scrape_matches.py`
+- `data/matches_draft_full.json` & `data/matches_draft_flat.csv`
+- `data/hero_draft_stats.csv`, `data/synergy_matrix.csv`, `data/counter_matrix.csv`
+- `data/true_pick_order.json`
+- `tests/fixtures/predict_golden.json`
 - `CHANGELOG.md`
 
-### 🧪 การตรวจสอบ
-- `audit_rov_data.py`: PASS (130 heroes, 4,293 total pro games, 4,271 full 18-step games, 1,727 true pick order games, 0 unmapped)
-- `pytest`: 58/58 passed (100%)
-- `ruff check --fix .` และ `ruff format .`: All checks passed
-- `npm run lint` (frontend): clean
+### 🧪 Verification
+- `audit_rov_data.py`: PASS (130 heroes, 4,293 total pro games, 4,271 full 18-step games, 1,727 true pick order games, 0 unmapped).
+- `pytest`: 58/58 passed (100%).
+- `ruff check --fix .` & `ruff format .`: All checks passed.
+- `npm run lint` (frontend): clean.
 
 ---
 
