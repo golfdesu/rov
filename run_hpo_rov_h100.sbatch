@@ -26,7 +26,7 @@ echo "Partition           : $SLURM_JOB_PARTITION"
 echo "Job Name            : $SLURM_JOB_NAME"
 echo "Start Time          : $(date '+%Y-%m-%d %H:%M:%S')"
 echo "Working Directory   : $(pwd)"
-echo "Target Task         : Fast GPU-Resident Optuna HPO (40 Trials) + Final SOTA Training"
+echo "Target Task         : Fast GPU-Resident Optuna HPO (50 Trials) + Final SOTA Training"
 echo "Unified Log File    : logs/${SLURM_JOB_NAME}_${SLURM_JOB_ID}.out"
 echo "=============================================================================="
 
@@ -77,9 +77,9 @@ TOTAL_START=$(date +%s)
 
 echo ""
 echo "=============================================================================="
-echo ">>> [STEP 1/3] Running Fast GPU-Resident Optuna HPO (40 Trials, 14 Epochs/Trial)..."
+echo ">>> [STEP 1/3] Running Fast GPU-Resident Optuna HPO (50 Trials, 14 Epochs/Trial)..."
 echo "=============================================================================="
-python -u src/hpo_sota_optuna.py --n-trials 40 --trial-epochs 14
+python -u src/hpo_sota_optuna.py --n-trials 50 --trial-epochs 14
 
 echo ""
 echo "=============================================================================="
