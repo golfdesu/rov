@@ -42,7 +42,7 @@
         "+10 พลังโจมตี\n+8% ดูดเลือด"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/bloodied-club.png"
+      "icon_url": "/items/bloodied-club.png"
     },
     {
       "name": "Chain Hammer",
@@ -61,7 +61,7 @@
         "+40 พลังโจมตี"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/chain-hammer.png"
+      "icon_url": "/items/chain-hammer.png"
     },
     {
       "name": "Dagger",
@@ -80,7 +80,7 @@
         "+10% ความเร็วโจมตี"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/dagger.png"
+      "icon_url": "/items/dagger.png"
     },
     {
       "name": "Gloves",
@@ -99,7 +99,7 @@
         "+8% อัตราคริติคอล"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/gloves.png"
+      "icon_url": "/items/gloves.png"
     },
     {
       "name": "Short Sword",
@@ -118,7 +118,7 @@
         "+20 พลังโจมตี"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/short-sword.png"
+      "icon_url": "/items/short-sword.png"
     },
     {
       "name": "Arcane Hammer",
@@ -141,7 +141,7 @@
         "สกิลติดตัว - Speed Up:\nเมื่อทำการโจมตีปกติ รับความเร็วเคลื่อนที่ +10%"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/arcane-hammer.png"
+      "icon_url": "/items/arcane-hammer.png"
     },
     {
       "name": "Astral Spear",
@@ -162,7 +162,7 @@
         "สกิลติดตัว: เจาะเกราะ+60"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/astral-spear.png"
+      "icon_url": "/items/astral-spear.png"
     },
     {
       "name": "Bloodthirsty Blade",
@@ -185,7 +185,7 @@
         "สกิลติดตัว - Blood Feast:\nเมื่อพลังชีวิตต่ำกว่า 30% จะฟื้นฟู พลังชีวิต 400 - 610 หน่วยของพลังชีวิตสูงสุด ภายใน 5 วินาที CD 20 วิ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/bloodthirsty-blade.png",
+      "icon_url": "/items/bloodthirsty-blade.png",
       "alias": [
         "Ancestral Glory"
       ]
@@ -211,7 +211,7 @@
         "สกิลติดตัว - Stab:\nเพิ่มเจาะเกราะ 10%\n(ฮีโร่โจมตีไกลได้รับผล 2 เท่า)"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/chaos-bow.png"
+      "icon_url": "/items/chaos-bow.png"
     },
     {
       "name": "Cleaving Claymore",
@@ -230,7 +230,7 @@
         "+80 พลังโจมตี"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/cleaving-claymore.png"
+      "icon_url": "/items/cleaving-claymore.png"
     },
     {
       "name": "Shuriken",
@@ -251,7 +251,7 @@
         "สกิลติดตัว - Heel: การโจมตีปกติสร้างความเสียหายกายภาพเพิ่มขึ้น 21-35 (ระยะใกล้)/ 42-70 (ระยะไกล) CD 0.3 วิ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/shuriken.png"
+      "icon_url": "/items/shuriken.png"
     },
     {
       "name": "Tempest Blades",
@@ -273,7 +273,7 @@
         "+5% ความเร็วเคลื่อนที่"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/tempest-blades.png"
+      "icon_url": "/items/tempest-blades.png"
     },
     {
       "name": "Blitz Blade",
@@ -296,7 +296,7 @@
         "สกิลติดตัว - Chain Lightning:\nการโจมตีปกติสร้างโบนัสความเสียหายเวท 45~87 หน่วย การโจมตีปกติทุก 3 ครั้งจะปล่อย Chain Lightning 1 ครั้งและสร้างความเสียหายเวท 150~430 หน่วย (CD: 0.3 วิ)"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/blitz-blade.png"
+      "icon_url": "/items/blitz-blade.png"
     },
     {
       "name": "Bow of Slaughter",
@@ -321,7 +321,7 @@
         "สกิลพิเศษ - [Bloodthirst]:\nดูดเลือดเพิ่มขึ้น 60% เป็นเวลา 3 วิ (ระยะไกลเท่านั้น) CD 60 วิ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/bow-of-slaughter.png"
+      "icon_url": "/items/bow-of-slaughter.png"
     },
     {
       "name": "Broken Spears",
@@ -344,7 +344,7 @@
         "สกิลติดตัว - Destroyer:\nเพิ่มเจาะเกราะ 40-180 (LV อัพ+10)"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/broken-spears.png",
+      "icon_url": "/items/broken-spears.png",
       "alias": [
         "Rankbreaker"
       ]
@@ -372,7 +372,7 @@
         "สกิลติดตัว: ความแรงคริเพิ่มขึ้น 40%"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/claves-sancti.png"
+      "icon_url": "/items/claves-sancti.png"
     },
     {
       "name": "Curse of Death",
@@ -397,7 +397,7 @@
         "สกิลติดตัว - Soul Prison:\nหากการโจมตีปกติหรือใช้สกิลสร้างความเสียหาย การฟื้นฟูพลังชีวิตของเป้าหมายจะลดลง 40% เป็นเวลา 3 วิ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/curse-of-death.png",
+      "icon_url": "/items/curse-of-death.png",
       "alias": [
         "Curse of Death (Item)"
       ]
@@ -425,7 +425,7 @@
         "สกิลติดตัว - The Insatiable:\nเป็นอมตะเมื่อพลังชีวิตต่ำ สามารถป้องกันความเสียหายในเวลาสั้นๆ ทำให้วิ่งเร็วและโจมตีเร็วขึ้น 25% เป็นเวลา 0.75 วิ หากสะสมครบ 4 นาทีจะเพิ่มเอฟเฟกต์เป็น 1.25 วิ CD 120 วิ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/death-sickle.png",
+      "icon_url": "/items/death-sickle.png",
       "patch": "Beta 55 (1.25s from EXP server 4 Sep 2026; TW 24 Sep notice fixes the upgraded Death Sickle duration on live)",
       "sources": [
         "https://www.rov.in.th/patch-notes/expserver260904",
@@ -457,7 +457,7 @@
         "สกิลติดตัว - Wound:\nการโจมตีปกติจะสร้างโบนัสความเสียหายกายภาพ 50 (ฮีโร่ระยะไกลจะเพิ่มสองเท่า) CD: 0.35 วิ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/eclipsing-bow.png"
+      "icon_url": "/items/eclipsing-bow.png"
     },
     {
       "name": "Fafnir's Talon",
@@ -482,7 +482,7 @@
         "สกิลติดตัว - Dragon's Breath:\nการโจมตีปกติจะสร้างความเสียหายกายภาพ เท่ากับ 8% ของ HP ศัตรู (CD 0.35วิ)"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/fafnirs-talon.png"
+      "icon_url": "/items/fafnirs-talon.png"
     },
     {
       "name": "Fenrir's Tooth",
@@ -505,7 +505,7 @@
         "สกิลติดตัว - Fenrir's Tooth:\nเมื่อ HP ของเป้าหมายต่ำกว่า 50% จะได้รับความเสียหาย +30%"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/fenrirs-tooth.png"
+      "icon_url": "/items/fenrirs-tooth.png"
     },
     {
       "name": "Frost Hammer",
@@ -532,7 +532,7 @@
         "สกิลติดตัว - Scar:\nการโจมตีปกติและสกิลจะสร้างโบนัสความเสียหายกายภาพ 140 - 280 (+45% โบนัส AD) แก่เป้าหมาย CD 3 วิ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/frost-hammer.png"
+      "icon_url": "/items/frost-hammer.png"
     },
     {
       "name": "Ifrit's Claw",
@@ -557,7 +557,7 @@
         "สกิลติดตัว - Flame’s Wrath:\nเมื่อโจมตีปกติโดนเป้าหมาย จะโจมตีเร็วขึ้น 10% เป็นเวลา 2 วิ (5 ครั้ง)"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/ifrits-claw.png",
+      "icon_url": "/items/ifrits-claw.png",
       "alias": [
         "Devil's Handshake"
       ]
@@ -585,7 +585,7 @@
         "สกิลติดตัว: เจาะเกราะ+40%"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/muramasa.png"
+      "icon_url": "/items/muramasa.png"
     },
     {
       "name": "Omni Arms",
@@ -614,7 +614,7 @@
         "สกิลติดตัว - Speed Up: เมื่อทำการโจมตีปกติ รับความเร็วเคลื่อนที่ +10%"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/omni-arms.png"
+      "icon_url": "/items/omni-arms.png"
     },
     {
       "name": "Slikk's Sting",
@@ -639,7 +639,7 @@
         "สกิลติดตัว - Wind Bless: หลังจากติดคริ จะต้านทานสถานะเพิ่มขึ้น 35% เป็นเวลา 2 วิ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/slikks-sting.png"
+      "icon_url": "/items/slikks-sting.png"
     },
     {
       "name": "Spear of Longinus",
@@ -666,7 +666,7 @@
         "สกิลติดตัว - Shatter: การโจมตีจะลดเกราะศัตรูลง 6% (สูงสุด 4 ครั้ง) เป็นเวลา 5 วิ (CD 0.3 วิ)"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/spear-of-longinus.png",
+      "icon_url": "/items/spear-of-longinus.png",
       "alias": [
         "Longinus' Spear"
       ]
@@ -696,7 +696,7 @@
         "สกิลกดใช้ - Untrackable\nเข้าสู่สถานะล่องหนทันที (เป็นเวลา 2.5 วิ ฮีโร่ระยะประชิดเป็นเวลา 1 วิ): ได้รับความเร็วเคลื่อนที่ 30% และทุกๆ 0.5 วิฟื้นฟู 130~260 (การใช้สกิลหรือโจมตีปกติจะออกจากสถานะล่องหนทันที) (คูลดาวน์ 75 วิ)"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/stealth-bracer.png",
+      "icon_url": "/items/stealth-bracer.png",
       "patch": "Beta 55",
       "sources": [
         "https://www.rov.in.th/patch-notes/beta55",
@@ -727,7 +727,7 @@
         "สกิลติดตัว - Blood Feast:\nเมื่อพลังชีวิตต่ำกว่า 30% จะฟื้นฟู พลังชีวิต 400 - 610 หน่วยของพลังชีวิตสูงสุด ภายใน 5 วินาที CD 20 วิ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/the-beast.png"
+      "icon_url": "/items/the-beast.png"
     },
     {
       "name": "The Diminisher",
@@ -754,7 +754,7 @@
         "สกิลติด - Cripple:\nหากใช้สกิล ฮีโร่ศัตรูตัวแรกที่โดนจะวิ่งช้าลง 30% และความเสียหายลดลง 20% เป็นเวลา 3 วิ (CD: 8 วิ)"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/the-diminisher.png"
+      "icon_url": "/items/the-diminisher.png"
     },
     {
       "name": "The Morning Star",
@@ -781,7 +781,7 @@
         "สกิลติดตัว - Stab:\nเพิ่มเจาะเกราะ 20% (2 เท่าหากเป็นฮีโร่โจมตีไกล)"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/the-morning-star.png",
+      "icon_url": "/items/the-morning-star.png",
       "alias": [
         "Dawnning Star"
       ]
@@ -811,7 +811,7 @@
         "สกิลติดตัว - Speed Up:\nเมื่อทำการโจมตีปกติจะวิ่งเร็วขึ้น 10%"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/uriels-brand.png"
+      "icon_url": "/items/uriels-brand.png"
     },
     {
       "name": "Lapis Ring",
@@ -830,7 +830,7 @@
         "+300 มานาสูงสุด"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/lapis-ring.png"
+      "icon_url": "/items/lapis-ring.png"
     },
     {
       "name": "Magic Ring",
@@ -851,7 +851,7 @@
         "สกิลติดตัว: ลดคูลดาวน์ +5%"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/magic-ring.png"
+      "icon_url": "/items/magic-ring.png"
     },
     {
       "name": "Pendant of Faith",
@@ -870,7 +870,7 @@
         "+10 ฟื้นฟูมานา/5 วิ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/pendant-of-faith.png"
+      "icon_url": "/items/pendant-of-faith.png"
     },
     {
       "name": "Spell Tome",
@@ -889,7 +889,7 @@
         "+40 พลังเวท"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/spell-tome.png"
+      "icon_url": "/items/spell-tome.png"
     },
     {
       "name": "Ancient Scriptures",
@@ -908,7 +908,7 @@
         "+80 พลังเวท"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/ancient-scriptures.png"
+      "icon_url": "/items/ancient-scriptures.png"
     },
     {
       "name": "Enchanted Scroll",
@@ -927,7 +927,7 @@
         "+120 พลังเวท"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/enchanted-scroll.png"
+      "icon_url": "/items/enchanted-scroll.png"
     },
     {
       "name": "Orrery",
@@ -948,7 +948,7 @@
         "สกิลติดตัว - Echo: เมื่อใช้สกิลโจมตีโดนจะเกิดการระเบิดสร้าง ความเสียหายเวท 180 (CD: 5 วิ)"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/orrery.png"
+      "icon_url": "/items/orrery.png"
     },
     {
       "name": "Phoenix Tear",
@@ -969,7 +969,7 @@
         "สกิลติดตัว - From the Ashes: เมื่อฮีโร่เลเวลอัพจะฟื้นฟูมานา 10% และ HP 20% ใน 3 วิ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/phoenix-tear.png"
+      "icon_url": "/items/phoenix-tear.png"
     },
     {
       "name": "Spooky Mask",
@@ -990,7 +990,7 @@
         "สกิลติดตัว: เจาะเกราะเวท+75"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/spooky-mask.png",
+      "icon_url": "/items/spooky-mask.png",
       "alias": [
         "Spoopy Mask"
       ]
@@ -1016,7 +1016,7 @@
         "สกิลติดตัว - Elemental Edge:\nเมื่อใช้สกิล การโจมตีปกติครั้งถัดไปจะสร้างโบนัส ความเสียหายเวท (30% AD+18% AP) (CD 3 วิ)"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/trick-blade.png"
+      "icon_url": "/items/trick-blade.png"
     },
     {
       "name": "Virtue's Bracelet",
@@ -1041,7 +1041,7 @@
         "+20 ฟื้นฟูมานา/5 วิ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/virtues-bracelet.png"
+      "icon_url": "/items/virtues-bracelet.png"
     },
     {
       "name": "Vlad's Impaler",
@@ -1063,7 +1063,7 @@
         "+12% เวทแวมไพร์"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/vlads-impaler.png"
+      "icon_url": "/items/vlads-impaler.png"
     },
     {
       "name": "Apocalypse",
@@ -1088,7 +1088,7 @@
         "Elemental Edge:\nหลังใช้สกิล\nการโจมตีถัดไปจะสร้าง\nความเสียหายเวท (30% โบนัสกายภาพ + 80% โบนัสเวท) CD 2 วิ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/apocalypse.png"
+      "icon_url": "/items/apocalypse.png"
     },
     {
       "name": "Arctic Orb",
@@ -1111,7 +1111,7 @@
         "สกิลพิเศษ - [Solidify]:\nเป็นอมตะ 2 วิ ระหว่างนั้นจะไม่สามารถเคลื่อนที่, โจมตี หรือใช้สกิลได้ เมื่อสิ้นสุดจะได้โล่ 500 (Lv อัพ+40) (+0.5 AP) 1 วิ (คูลดาวน์ 75 วิ)"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/arctic-orb.png"
+      "icon_url": "/items/arctic-orb.png"
     },
     {
       "name": "Berith's Agony",
@@ -1136,7 +1136,7 @@
         "สกิลติดตัว - Torture:\nเมื่อใช้สกิลถูกเป้าหมายจะสร้างความเสียหายเวท80(+2%พลังชีวิตสูงสุดเป้าหมาย)ทุกวินาที นาน 3 วิ (หากโจมตีมอนสเตอร์ป่าจะจำกัดที่ 200 หน่วย)"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/beriths-agony.png"
+      "icon_url": "/items/beriths-agony.png"
     },
     {
       "name": "Boomstick",
@@ -1159,7 +1159,7 @@
         "สกิลติดตัว - Echo:\nเมื่อใช้สกิล จะระเบิดสร้างความเสียหายเวท 120 (+40% โบนัสพลังเวท) (CD 5 วิ)"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/boomstick.png"
+      "icon_url": "/items/boomstick.png"
     },
     {
       "name": "Carano's Pledge",
@@ -1184,7 +1184,7 @@
         "สกิลติดตัว - Spare Life:\nเมื่อพลังชีวิตต่ำกว่า 30% จะยกเลิกสถานะควบคุมที่ตัวเองได้รับทันที และได้รับ โล่ 510 - 1000 (+100% โบนัส AP +8% โบนัสพลังชีวิต) พร้อมเพิ่มความเร็วในการเคลื่อนที่ 30% เป็นเวลา 4 วิ CD 75 วิ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/caranos-pledge.png",
+      "icon_url": "/items/caranos-pledge.png",
       "alias": [
         "Carano's Vow"
       ],
@@ -1214,7 +1214,7 @@
         "สกิลติดตัว - Curse:\nเมื่อใช้สกิลโจมตีโดนเป้าหมายจะลดพลังเวท 10% และเกราะเวท 100 หน่วยของเป้าหมาย เป็นเวลา 3 วิ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/evil-secrets.png"
+      "icon_url": "/items/evil-secrets.png"
     },
     {
       "name": "Frostguard",
@@ -1239,7 +1239,7 @@
         "สกิลติดตัว - Ice Armor: ได้รับเกราะ และเกราะเวท (+50% โบนัสพลังเวท) (สูงสุดไม่เกิน 230)"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/frostguard.png",
+      "icon_url": "/items/frostguard.png",
       "alias": [
         "Frost Guard"
       ]
@@ -1267,7 +1267,7 @@
         "สกิลติดตัว - Frost: สกิลที่สร้างความเสียหายจะลดความเร็วเคลื่อนที่ 20% เป็นเวลา 2 วิ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/frostys-revenge.png"
+      "icon_url": "/items/frostys-revenge.png"
     },
     {
       "name": "Hecate's Diadem",
@@ -1288,7 +1288,7 @@
         "สกิลติดตัว - Kich : พลังเวทเพิ่มขึ้น 35%"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/hecates-diadem.png"
+      "icon_url": "/items/hecates-diadem.png"
     },
     {
       "name": "Holy of Holies",
@@ -1311,7 +1311,7 @@
         "สกิลติดตัว - Enlightenment: พลังเวททุก 100 หน่วยจะเพิ่มสัดส่วนความเสียหายที่สร้าง 0.5% และลดสัดส่วนความเสียหายที่ได้รับ 0.5%"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/holy-of-holies.png"
+      "icon_url": "/items/holy-of-holies.png"
     },
     {
       "name": "Mage Robe",
@@ -1336,7 +1336,7 @@
         "สกิลติดตัว - Magic Pierce: ได้รับเจาะเวท 32 - 60 (+3% ของโบนัสพลังชีวิต) หน่วยสูงสุดไม่เกิน 150 หน่วย"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/mage-robe.png"
+      "icon_url": "/items/mage-robe.png"
     },
     {
       "name": "Orb of the Magi",
@@ -1361,7 +1361,7 @@
         "สกิลติดตัว - From the Ashes: เมื่อฮีโร่เลเวลอัพจะฟื้นฟูมานา 10% และ HP 20% ใน 3 วิ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/orb-of-the-magi.png"
+      "icon_url": "/items/orb-of-the-magi.png"
     },
     {
       "name": "Rhea's Blessing",
@@ -1386,7 +1386,7 @@
         "สกิลติดตัว - Magic Pierce: เวทแวมไพร์ทุก 2 % ลดคูลดาวน์ลง 1%"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/rheas-blessing.png"
+      "icon_url": "/items/rheas-blessing.png"
     },
     {
       "name": "Soaring Aura",
@@ -1411,7 +1411,7 @@
         "สกิลติดตัว - Enchantment : เมื่อโจมตีปกติหรือใช้สกิลโดนฮีโร่ศัตรูจะเพิ่มเจาะเกราะเวท 10~24 แต้ม (สูงสุด 10 ครั้ง) เป็นเวลา 3 วิ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/soaring-aura.png"
+      "icon_url": "/items/soaring-aura.png"
     },
     {
       "name": "Soul Scroll",
@@ -1436,7 +1436,7 @@
         "สกิลติดตัว - Soul Prison: หากการโจมตีปกติหรือใช้สกิลสร้างความเสียหาย การฟื้นฟูพลังชีวิตของเป้าหมายจะลดลง 40% เป็นเวลา 3 วิ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/soul-scroll.png",
+      "icon_url": "/items/soul-scroll.png",
       "alias": [
         "Tome of the Reaper"
       ]
@@ -1462,7 +1462,7 @@
         "สกิลติดตัว: เจาะเกราะเวท +40%"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/staff-of-nuul.png"
+      "icon_url": "/items/staff-of-nuul.png"
     },
     {
       "name": "Virtue's Necklace",
@@ -1487,7 +1487,7 @@
         "สกิลติดตัว - Enlightened:\nฟื้นฟูมานา 1% ต่อวิ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/virtues-necklace.png"
+      "icon_url": "/items/virtues-necklace.png"
     },
     {
       "name": "Zweihander",
@@ -1514,7 +1514,7 @@
         "สกิลติดตัว - Scorching :\nการโจมตีปกติสร้างโบนัสความเสียหายเวท 40 (20% โบนัสเวท) CD 0.35 วิ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/zweihander.png"
+      "icon_url": "/items/zweihander.png"
     },
     {
       "name": "Gladiator's Gauntlets",
@@ -1533,7 +1533,7 @@
         "+90 ต้านทานเวท"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/gladiators-gauntlets.png"
+      "icon_url": "/items/gladiators-gauntlets.png"
     },
     {
       "name": "Light Armor",
@@ -1550,7 +1550,7 @@
       "passives": [],
       "desc_th": [],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/light-armor.png"
+      "icon_url": "/items/light-armor.png"
     },
     {
       "name": "Necklace of Vitality",
@@ -1567,7 +1567,7 @@
       "passives": [],
       "desc_th": [],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/necklace-of-vitality.png"
+      "icon_url": "/items/necklace-of-vitality.png"
     },
     {
       "name": "Ring of Vitality",
@@ -1586,7 +1586,7 @@
         "+300 พลังชีวิต"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/ring-of-vitality.png"
+      "icon_url": "/items/ring-of-vitality.png"
     },
     {
       "name": "Talisman of Strength",
@@ -1605,7 +1605,7 @@
         "+30 ฟื้นฟูพลังชีวิต/5 วิ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/talisman-of-strength.png"
+      "icon_url": "/items/talisman-of-strength.png"
     },
     {
       "name": "Belt of Clarity",
@@ -1628,7 +1628,7 @@
         "สกิลติดตัว - Regenerate:\nเมื่อโดนโจมตีจะฟื้นฟู HP 4% ภายใน 2 วิ (CD 15 วิ)"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/belt-of-clarity.png"
+      "icon_url": "/items/belt-of-clarity.png"
     },
     {
       "name": "Greaves of Protection",
@@ -1647,7 +1647,7 @@
         "+1000 พลังชีวิต"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/greaves-of-protection.png"
+      "icon_url": "/items/greaves-of-protection.png"
     },
     {
       "name": "Heart of Incubus",
@@ -1668,7 +1668,7 @@
         "สกิลติดตัว - Incantation: สร้าง ความเสียหายเวท 50~78 หน่วย แก่ศัตรูรอบๆ ทุก 1 วิ (ครีปและมอนสเตอร์ป่าโดนแรงขึ้น 50%)"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/heart-of-incubus.png"
+      "icon_url": "/items/heart-of-incubus.png"
     },
     {
       "name": "Knight's Plate",
@@ -1689,7 +1689,7 @@
         "สกิลติดตัว - Spirit Bond: หากฮีโร่ได้รับความเสียหาย จะลดความเร็วโจมตีของผู้ทำการโจมตีลง 15%"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/knights-plate.png"
+      "icon_url": "/items/knights-plate.png"
     },
     {
       "name": "Platinum Gauntlets",
@@ -1710,7 +1710,7 @@
         "+10% ลดคูลดาวน์\n+110 เกราะ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/platinum-gauntlets.png"
+      "icon_url": "/items/platinum-gauntlets.png"
     },
     {
       "name": "Amulet of Longevity",
@@ -1735,7 +1735,7 @@
         "สกิลติดตัว - Longevity:\nเมื่อไม่ได้ต่อสู้จะฟื้นฟูพลังชีวิต 4% ต่อวินาที"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/amulet-of-longevity.png"
+      "icon_url": "/items/amulet-of-longevity.png"
     },
     {
       "name": "Blade of Eternity",
@@ -1758,7 +1758,7 @@
         "สกิลติดตัว - War Rage:\nสร้างความเสียหายเพิ่มขึ้น 10%"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/blade-of-eternity.png"
+      "icon_url": "/items/blade-of-eternity.png"
     },
     {
       "name": "Frost Cape",
@@ -1783,7 +1783,7 @@
         "สกิลติดตัว - Frost Power:\nหลังใช้สกิล การโจมตีปกติภายใน 5 วิ จะสร้างความเสียหายกายภาพ 100 (+30% โบนัส AD) เป็นวงกว้างพร้อมลดความเร็ว 30% (ฮีโร่โจมตีไกล 20%) เป็นเวลา 0.5 วิ (CD 0.65 วิ)"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/frost-cape.png"
+      "icon_url": "/items/frost-cape.png"
     },
     {
       "name": "Gaia's Standard",
@@ -1808,7 +1808,7 @@
         "สกิลติดตัว - Bloodline: ทุก 10% ของพลังชีวิตที่เสียไป จะเพิ่มผลฟื้นฟู +5%"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/gaias-standard.png"
+      "icon_url": "/items/gaias-standard.png"
     },
     {
       "name": "Hercules's Madness",
@@ -1831,7 +1831,7 @@
         "สกิลติดตัว - Berserk: เมื่อ HP ต่ำกว่า 40% จะเพิ่มการดูดเลือด 20% และได้รับโล่ (800+LV ฮีโร่x80) 8 วิ (CD 60 วิ)"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/hercules-madness.png",
+      "icon_url": "/items/hercules-madness.png",
       "alias": [
         "Hercules' Madness"
       ]
@@ -1859,7 +1859,7 @@
         "สกิลติดตัว - Daybreak: เมื่อสร้างความเสียหายแก่ฮีโร่ฝ่ายศัตรูด้วยการโจมตีปกติหรือสกิล ตัวเองและฮีโร่ฝ่ายเราที่มีพลังชีวิตต่ำสุดในรอบตัวจะได้รับโล่ 250~500+4% HP สูงสุด (เป็นเวลา 3 วิ หากรอบตัวไม่มีฮีโร่ฝ่ายเรา โล่จะหนาขึ้น 50%) (คูลดาวน์สำหรับฮีโร่ระยะประชิด/ระยะไกล 10/12.5 วิ)"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/light-shield.png",
+      "icon_url": "/items/light-shield.png",
       "patch": "Beta 55",
       "sources": [
         "https://www.rov.in.th/patch-notes/beta55",
@@ -1891,7 +1891,7 @@
         "สกิลติดตัว - Backfire เมื่อได้รับความเสียหายจะถ่ายโอนความเสียหายจริงตาม 5% ของความเสียหายที่ได้รับให้แก่ศัตรู(ลดลงตามระยะ สูงสุด 50%)"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/mail-of-pain.png",
+      "icon_url": "/items/mail-of-pain.png",
       "patch": "Beta 55 (rework)",
       "sources": [
         "https://www.rov.in.th/patch-notes/beta55",
@@ -1923,7 +1923,7 @@
         "สกิลติดตัว - Soul Prison: ปล่อยเพลิงพิเศษที่สร้างความเสียหาย พร้อมกับลดเอฟเฟกต์ฟื้นฟูพลังชีวิตของศัตรูลง 40% เป็นเวลา 3 วิ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/mantle-of-ra.png"
+      "icon_url": "/items/mantle-of-ra.png"
     },
     {
       "name": "Medallion of Troy",
@@ -1950,7 +1950,7 @@
         "สกิลติดตัว - Harmony: ได้รับเกราะเวท 8-112 หน่วย (เพิ่มขึ้นตาม LV)"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/medallion-of-troy.png"
+      "icon_url": "/items/medallion-of-troy.png"
     },
     {
       "name": "Odin's Will",
@@ -1975,7 +1975,7 @@
         "สกิลติดตัว - Loyalty: เมื่อโดนโจมตี จะเพิ่มความเร็วเคลื่อนที่ 1% และโจมตีแรงขึ้น 2% (สูงสุด 5 ครั้ง)"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/odins-will.png"
+      "icon_url": "/items/odins-will.png"
     },
     {
       "name": "Rock Shield",
@@ -1998,7 +1998,7 @@
         "สกิลพิเศษ - [Pain Absorb]: ได้รับโล่ (HP สูงสุดx30%+HP ที่เสียไปx10%) เป็นเวลา 3 วิ (สามารถใช้ขณะติดสถานะควบคุมได้) หลังจากใช้สกิลนี้ พลังโจมตีตัวเองจะลดลง 70% เป็นเวลา 3 วิ (CD60 วิ)"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/rock-shield.png"
+      "icon_url": "/items/rock-shield.png"
     },
     {
       "name": "Shield of the Lost",
@@ -2021,7 +2021,7 @@
         "สกิลติดตัว - Sentinel: ลดความเร็วโจมตีของผู้ทำการโจมตี 30% และความเร็วเคลื่อนที่ 15% เป็นเวลา 2 วิ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/shield-of-the-lost.png"
+      "icon_url": "/items/shield-of-the-lost.png"
     },
     {
       "name": "The Aegis",
@@ -2046,7 +2046,7 @@
         "สกิลติดตัว - Sentinel:\nลดความเร็วโจมตีของศัตรูในระยะ 5m ลง 30%"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/the-aegis.png"
+      "icon_url": "/items/the-aegis.png"
     },
     {
       "name": "Boots of Speed",
@@ -2067,7 +2067,7 @@
         "สกิลติดตัว: ความเร็วเคลื่อนที่ +30"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/boots-of-speed.png"
+      "icon_url": "/items/boots-of-speed.png"
     },
     {
       "name": "Enchanted Kicks",
@@ -2090,7 +2090,7 @@
         "สามารถสลับไปใช้รองเท้า LV2 อื่นได้ฟรี CD 3 นาที"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/enchanted-kicks.png"
+      "icon_url": "/items/enchanted-kicks.png"
     },
     {
       "name": "Flashy Boots",
@@ -2116,7 +2116,7 @@
         "สามารถสลับไปใช้รองเท้า LV2 อื่นได้ฟรี CD 3 นาที"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/flashy-boots.png"
+      "icon_url": "/items/flashy-boots.png"
     },
     {
       "name": "Gilded Greaves",
@@ -2142,7 +2142,7 @@
         "สามารถสลับไปใช้รองเท้า LV2 อื่นได้ฟรี CD 3 นาที"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/gilded-greaves.png"
+      "icon_url": "/items/gilded-greaves.png"
     },
     {
       "name": "Hermes' Select",
@@ -2168,7 +2168,7 @@
         "สามารถสลับไปใช้รองเท้า LV2 อื่นได้ฟรี CD 3 นาที"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/hermes-select.png"
+      "icon_url": "/items/hermes-select.png"
     },
     {
       "name": "Sonic Boots",
@@ -2197,7 +2197,7 @@
         "สามารถสลับไปใช้รองเท้า LV2 อื่นได้ฟรี CD 3 นาที"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/sonic-boots.png"
+      "icon_url": "/items/sonic-boots.png"
     },
     {
       "name": "War Boots",
@@ -2223,7 +2223,7 @@
         "สามารถสลับไปใช้รองเท้า LV2 อื่นได้ฟรี CD 3 นาที"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/war-boots.png"
+      "icon_url": "/items/war-boots.png"
     },
     {
       "name": "Hunter's Knife",
@@ -2244,7 +2244,7 @@
         "สกิลติดตัว - Modest: เมื่อมีฮีโร่พันธมิตรอยู่ใกล้ๆ ฮีโร่พันธมิตรจะได้รับเหรียญทองและ XP ทั้งหมดจากครีป ส่วนตนเองจะได้รับเพียง 50% เอฟเฟกต์จะหายไปในนาทีที่ 4 ความเสียหายต่อครีปลดลง 25% และเอฟเฟกต์นี้จะหายไปในนาทีที่ 4"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/hunters-knife.png",
+      "icon_url": "/items/hunters-knife.png",
       "alias": [
         "Kukri"
       ],
@@ -2280,7 +2280,7 @@
         "สกิลติดตัว - Modest: เมื่อมีฮีโร่พันธมิตรอยู่ใกล้ๆ ฮีโร่พันธมิตรจะได้รับเหรียญทองและ XP ทั้งหมดจากครีป ส่วนตนเองจะได้รับเพียง 50% เอฟเฟกต์จะหายไปในนาทีที่ 4 ความเสียหายต่อครีปลดลง 25% และเอฟเฟกต์นี้จะหายไปในนาทีที่ 4"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/gnoll-cleaver.png",
+      "icon_url": "/items/gnoll-cleaver.png",
       "patch": "Full Element Assault, Apr 2026",
       "sources": [
         "https://moba.garena.tw/news/show/5528"
@@ -2311,7 +2311,7 @@
         "สกิลติดตัว - Modest: เมื่อมีฮีโร่พันธมิตรอยู่ใกล้ๆ ฮีโร่พันธมิตรจะได้รับเหรียญทองและ XP ทั้งหมดจากครีป ส่วนตนเองจะได้รับเพียง 50% เอฟเฟกต์จะหายไปในนาทีที่ 4 ความเสียหายต่อครีปลดลง 25% และเอฟเฟกต์นี้จะหายไปในนาทีที่ 4"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/monsters-bane.png",
+      "icon_url": "/items/monsters-bane.png",
       "alias": [
         "Monster's Bane"
       ],
@@ -2345,7 +2345,7 @@
         "สกิลติดตัว - Modest: เมื่อมีฮีโร่พันธมิตรอยู่ใกล้ๆ ฮีโร่พันธมิตรจะได้รับเหรียญทองและ XP ทั้งหมดจากครีป ส่วนตนเองจะได้รับเพียง 50% เอฟเฟกต์จะหายไปในนาทีที่ 4 ความเสียหายต่อครีปลดลง 25% และเอฟเฟกต์นี้จะหายไปในนาทีที่ 4"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/mr-stabby.png",
+      "icon_url": "/items/mr-stabby.png",
       "patch": "Full Element Assault, Apr 2026",
       "sources": [
         "https://moba.garena.tw/news/show/5528"
@@ -2375,7 +2375,7 @@
         "สกิลติดตัว - Modest:\nเมื่อมีฮีโร่พันธมิตรอยู่ใกล้ๆ ฮีโร่พันธมิตรจะได้รับเหรียญทองและ XP ทั้งหมดจากครีป ส่วนตนเองจะได้รับเพียง 50% เอฟเฟกต์จะหายไปในนาทีที่ 4 ความเสียหายต่อครีปลดลง 25% และเอฟเฟกต์นี้จะหายไปในนาทีที่ 4"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/stormy-bow.png"
+      "icon_url": "/items/stormy-bow.png"
     },
     {
       "name": "Firestorm Bow",
@@ -2408,7 +2408,7 @@
         "สกิลติดตัว - Modest:\nเมื่อมีฮีโร่พันธมิตรอยู่ใกล้ๆ ฮีโร่พันธมิตรจะได้รับเหรียญทองและ XP ทั้งหมดจากครีป ส่วนตนเองจะได้รับเพียง 50% เอฟเฟกต์จะหายไปในนาทีที่ 4 ความเสียหายต่อครีปลดลง 25% และเอฟเฟกต์นี้จะหายไปในนาทีที่ 4"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/firestorm-bow.png"
+      "icon_url": "/items/firestorm-bow.png"
     },
     {
       "name": "Leviathan",
@@ -2441,7 +2441,7 @@
         "สกิลติดตัว - Modest: เมื่อมีฮีโร่พันธมิตรอยู่ใกล้ๆ ฮีโร่พันธมิตรจะได้รับเหรียญทองและ XP ทั้งหมดจากครีป ส่วนตนเองจะได้รับเพียง 50% เอฟเฟกต์จะหายไปในนาทีที่ 4 ความเสียหายต่อครีปลดลง 25% และเอฟเฟกต์นี้จะหายไปในนาทีที่ 4"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/leviathan.png",
+      "icon_url": "/items/leviathan.png",
       "patch": "Full Element Assault, Apr 2026",
       "sources": [
         "https://moba.garena.tw/news/show/5528"
@@ -2478,7 +2478,7 @@
         "สกิลติดตัว - Modest: เมื่อมีฮีโร่พันธมิตรอยู่ใกล้ๆ ฮีโร่พันธมิตรจะได้รับเหรียญทองและ XP ทั้งหมดจากครีป ส่วนตนเองจะได้รับเพียง 50% เอฟเฟกต์จะหายไปในนาทีที่ 4 ความเสียหายต่อครีปลดลง 25% และเอฟเฟกต์นี้จะหายไปในนาทีที่ 4"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/lokis-curse.png",
+      "icon_url": "/items/lokis-curse.png",
       "patch": "Full Element Assault, Apr 2026",
       "sources": [
         "https://moba.garena.tw/news/show/5528"
@@ -2520,7 +2520,7 @@
         "สกิลติดตัว - Modest: เมื่อมีฮีโร่พันธมิตรอยู่ใกล้ๆ ฮีโร่พันธมิตรจะได้รับเหรียญทองและ XP ทั้งหมดจากครีป ส่วนตนเองจะได้รับเพียง 50% เอฟเฟกต์จะหายไปในนาทีที่ 4 ความเสียหายต่อครีปลดลง 25% และเอฟเฟกต์นี้จะหายไปในนาทีที่ 4"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/soulreaver.png",
+      "icon_url": "/items/soulreaver.png",
       "patch": "Full Element Assault, Apr 2026",
       "sources": [
         "https://moba.garena.tw/news/show/5528"
@@ -2547,7 +2547,7 @@
         "สกิลติดตัว - Modest:\nฮีโร่พันธมิตรที่อยู่รอบๆ จะได้รับโกลด์ และ XP จากการสังหารครีป และมอนสเตอร์เต็มจำนวน ส่วนเจ้าของไอเทมนี้จะได้รับเพียง 25%~50%(ค่อยเพิ่มขึ้นตามเวลา สูงสุดนาทีที่ 15)"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/elemental-stone.png",
+      "icon_url": "/items/elemental-stone.png",
       "alias": [
         "Elemental Gem"
       ]
@@ -2579,7 +2579,7 @@
         "สกิลติดตัว Genesis:\nเพิ่มพลังป้องกันกายภาพและพลังป้องกันเวท 32~60 ให้ตัวเองและพันธมิตรรอบๆ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/earth-gem.png",
+      "icon_url": "/items/earth-gem.png",
       "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
       "sources": [
         "https://moba.garena.tw/news/show/5423",
@@ -2614,7 +2614,7 @@
         "สกิลติดตัว-Magical Shadow:\nเพิ่มลดคูลดาวน์ 5% และความเร็วโจมตี 5% ให้แก่ตัวเองและพันธมิตรรอบๆ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/fire-gem.png",
+      "icon_url": "/items/fire-gem.png",
       "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
       "sources": [
         "https://moba.garena.tw/news/show/5423",
@@ -2651,7 +2651,7 @@
         "สกิลติดตัว-Magical Shadow:\nเพิ่มลดคูลดาวน์ 5% และความเร็วโจมตี 5% ให้แก่ตัวเองและพันธมิตรรอบๆ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/aquaflame-accelerate.png"
+      "icon_url": "/items/aquaflame-accelerate.png"
     },
     {
       "name": "Aquaflame - Rejuvenate",
@@ -2682,7 +2682,7 @@
         "สกิลติดตัว-Magical Shadow:\nเพิ่มลดคูลดาวน์ 5% และความเร็วโจมตี 5% ให้แก่ตัวเองและพันธมิตรรอบๆ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/aquaflame-rejuvenate.png"
+      "icon_url": "/items/aquaflame-rejuvenate.png"
     },
     {
       "name": "Mother Earth - Accelerate",
@@ -2713,7 +2713,7 @@
         "สกิลติดตัว Genesis: เพิ่มพลังป้องกันกายภาพและพลังป้องกันเวท 32~60 ให้ตัวเองและพันธมิตรรอบๆ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/mother-earth-accelerate.png"
+      "icon_url": "/items/mother-earth-accelerate.png"
     },
     {
       "name": "Mother Earth - Barrier",
@@ -2744,7 +2744,7 @@
         "สกิลติดตัว Genesis: เพิ่มพลังป้องกันกายภาพและพลังป้องกันเวท 32~60 ให้ตัวเองและพันธมิตรรอบๆ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/mother-earth-barrier.png",
+      "icon_url": "/items/mother-earth-barrier.png",
       "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
       "sources": [
         "https://moba.garena.tw/news/show/5423",
@@ -2781,7 +2781,7 @@
         "สกิลติดตัว Genesis: เพิ่มพลังป้องกันกายภาพและพลังป้องกันเวท 32~60 ให้ตัวเองและพันธมิตรรอบๆ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/mother-earth-cleansing.png",
+      "icon_url": "/items/mother-earth-cleansing.png",
       "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
       "sources": [
         "https://moba.garena.tw/news/show/5423",
@@ -2818,7 +2818,7 @@
         "สกิลติดตัว Genesis: เพิ่มพลังป้องกันกายภาพและพลังป้องกันเวท 32~60 ให้ตัวเองและพันธมิตรรอบๆ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/mother-earth-magic-eye.png",
+      "icon_url": "/items/mother-earth-magic-eye.png",
       "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
       "sources": [
         "https://moba.garena.tw/news/show/5423",
@@ -2855,7 +2855,7 @@
         "สกิลติดตัว Genesis: เพิ่มพลังป้องกันกายภาพและพลังป้องกันเวท 32~60 ให้ตัวเองและพันธมิตรรอบๆ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/mother-earth-rejuvenate.png"
+      "icon_url": "/items/mother-earth-rejuvenate.png"
     },
     {
       "name": "Wildfire - Barrier",
@@ -2886,7 +2886,7 @@
         "สกิลติดตัว-Magical Shadow:\nเพิ่มลดคูลดาวน์ 5% และความเร็วโจมตี 5% ให้แก่ตัวเองและพันธมิตรรอบๆ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/wildfire-barrier.png",
+      "icon_url": "/items/wildfire-barrier.png",
       "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
       "sources": [
         "https://moba.garena.tw/news/show/5423",
@@ -2923,7 +2923,7 @@
         "สกิลติดตัว-Magical Shadow:\nเพิ่มลดคูลดาวน์ 5% และความเร็วโจมตี 5% ให้แก่ตัวเองและพันธมิตรรอบๆ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/wildfire-cleansing.png",
+      "icon_url": "/items/wildfire-cleansing.png",
       "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
       "sources": [
         "https://moba.garena.tw/news/show/5423",
@@ -2960,7 +2960,7 @@
         "สกิลติดตัว-Magical Shadow:\nเพิ่มลดคูลดาวน์ 5% และความเร็วโจมตี 5% ให้แก่ตัวเองและพันธมิตรรอบๆ"
       ],
       "passives_incomplete": false,
-      "icon_url": "https://rovmeta.com/items/wildfire-magic-eye.png",
+      "icon_url": "/items/wildfire-magic-eye.png",
       "patch": "Full Element Assault (Apr 2026) + Underworld Ace (Jul 2026)",
       "sources": [
         "https://moba.garena.tw/news/show/5423",

@@ -40,6 +40,33 @@ def test_predict_endpoint():
     assert len(data["red_next_picks"]) == 2
 
 
+def test_predict_matrix_endpoint():
+    response = client.post(
+        "/predict/matrix",
+        json={
+            "mode": "pick",
+            "side": "blue",
+            "phase": 1,
+            "ally_picks": ["Rouie", "Billow"],
+            "enemy_picks": ["TeeMee", "Hayate"],
+            "ally_bans": ["Goverra", "Dyadia"],
+            "enemy_bans": ["Heino", "Dolia"],
+            "global_bans": ["Marja"],
+            "top_k": 5,
+        },
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["architecture"] == "EmpiricalMatrixRules"
+    assert data["mode"] == "pick"
+    assert len(data["recommendations"]) == 5
+    rec_names = {r["hero_name"] for r in data["recommendations"]}
+    assert "Marja" not in rec_names
+    assert "Rouie" not in rec_names
+    assert len(data["blue_next_picks"]) == 2
+    assert len(data["red_next_picks"]) == 2
+
+
 def test_predict_next_picks_ghost_forecast():
     response = client.post(
         "/predict",
@@ -254,3 +281,189 @@ def test_draft_session_persistence_endpoints(tmp_path, monkeypatch):
     assert r_del.status_code == 200
     assert not temp_session_file.exists()
     assert client.get("/draft/session").json()["stepIndex"] == 0
+
+
+def test_phase1_and_phase2_lane_filtering_prevents_overlap():
+    # Phase 1 Pick: Blue already picked Liliana (Mid) -> no Mid hero in recommendations, next picks, or enemy next bans
+    r_p1 = client.post(
+        "/predict",
+        json={
+            "mode": "pick",
+            "side": "blue",
+            "phase": 1,
+            "ally_picks": ["Liliana"],
+            "enemy_picks": ["Hayate", "Toro"],
+            "ally_bans": ["Billow", "Dolia"],
+            "enemy_bans": ["Rouie", "TeeMee"],
+            "top_k": 5,
+        },
+    )
+    assert r_p1.status_code == 200
+    d_p1 = r_p1.json()
+    assert all(r["primary_lane"] != "Mid" for r in d_p1["recommendations"])
+    assert all(r["primary_lane"] != "Mid" for r in d_p1["blue_next_picks"])
+    assert all(r["primary_lane"] != "Mid" for r in d_p1["ban_unlocked_heroes"])
+    assert all(r["primary_lane"] != "Mid" for r in d_p1["red_next_bans"])
+
+    # Phase 2 Ban (FPL vs SGP Game 6 board): Red already picked Liliana (Mid), Zephys (Jungle), Flowborn (Dragon_Lane)
+    # Blue's ban recommendations and Ghost Ban must target Red's remaining open lanes (DS_Lane / Roam), never Mid (Mganga)
+    r_p2 = client.post(
+        "/predict",
+        json={
+            "mode": "ban",
+            "side": "blue",
+            "phase": 2,
+            "ally_picks": ["Hayate", "Marja", "Lorion"],
+            "enemy_picks": ["Liliana", "Zephys", "Flowborn (Marksman)"],
+            "ally_bans": ["Eland'orr", "Y'bneth", "Murad"],
+            "enemy_bans": ["Lumburr", "Helen", "Rouie", "Richter"],
+            "top_k": 5,
+        },
+    )
+    assert r_p2.status_code == 200
+    d_p2 = r_p2.json()
+    open_enemy_lanes = {"DS_Lane", "Roam"}
+    assert all(r["primary_lane"] in open_enemy_lanes for r in d_p2["recommendations"])
+    assert all(r["primary_lane"] in open_enemy_lanes for r in d_p2["blue_next_bans"])
+    assert all(r["primary_lane"] in open_enemy_lanes for r in d_p2["ban_unlocked_heroes"])
+    assert all(r["hero_name"] != "Mganga" for r in d_p2["blue_next_bans"])
+    assert d_p2["blue_next_bans"][0]["hero_name"] == d_p2["recommendations"][0]["hero_name"]
+
+
+def test_next_picks_anchored_on_sota_model_not_2024_lifts():
+    r_g4 = client.post(
+        "/predict",
+        json={
+            "mode": "pick",
+            "side": "red",
+            "phase": 1,
+            "ally_picks": [],
+            "enemy_picks": ["TeeMee"],
+            "ally_bans": ["Valhein", "Rouie"],
+            "enemy_bans": ["Lorion", "Tamyn"],
+            "blue_global_bans": [
+                "Dolia",
+                "Zata",
+                "Eland'orr",
+                "Astrid",
+                "Marja",
+                "Billow",
+                "Wiro",
+                "Violet",
+                "Evita",
+                "Biron",
+                "Sinestrea",
+                "Lorion",
+                "Capheny",
+                "Toro",
+                "Yena",
+            ],
+            "red_global_bans": [
+                "Mganga",
+                "Butterfly",
+                "Stuart",
+                "Krizzix",
+                "Mina",
+                "Thane",
+                "Astrid",
+                "Valhein",
+                "Iggy",
+                "Maloch",
+                "Y'bneth",
+                "Billow",
+                "Eland'orr",
+                "Richter",
+                "Ignis",
+            ],
+            "top_k": 5,
+        },
+    )
+    assert r_g4.status_code == 200
+    d_g4 = r_g4.json()
+    red_next_names = [r["hero_name"] for r in d_g4["red_next_picks"]]
+    assert "Erin" not in red_next_names
+    assert "Zill" not in red_next_names
+    assert d_g4["red_next_picks"][0]["hero_name"] == d_g4["recommendations"][0]["hero_name"]
+
+
+def test_completed_5v5_draft_evaluates_exact_step17_matchup_win_rate():
+    blue_picks = ["Yena", "Aoi", "Liliana", "Hayate", "Thane"]
+    red_picks_4 = ["Florentino", "Keera", "Krixi", "Capheny"]
+    blue_bans = ["Rouie", "Billow", "Dolia", "Toro"]
+    red_bans = ["TeeMee", "Marja", "Heino", "Goverra"]
+
+    r_step17 = client.post(
+        "/predict",
+        json={
+            "mode": "pick",
+            "side": "red",
+            "phase": 2,
+            "ally_picks": red_picks_4,
+            "enemy_picks": blue_picks,
+            "ally_bans": red_bans,
+            "enemy_bans": blue_bans,
+            "top_k": 20,
+        },
+    )
+    assert r_step17.status_code == 200
+    step17_recs = {r["hero_name"]: r["predicted_win_rate_pct"] for r in r_step17.json()["recommendations"]}
+
+    r_step18 = client.post(
+        "/predict",
+        json={
+            "mode": "pick",
+            "side": "blue",
+            "phase": 2,
+            "ally_picks": blue_picks,
+            "enemy_picks": [*red_picks_4, "Lumburr"],
+            "ally_bans": blue_bans,
+            "enemy_bans": red_bans,
+            "top_k": 1,
+        },
+    )
+    assert r_step18.status_code == 200
+    blue_final_win = r_step18.json()["recommendations"][0]["predicted_win_rate_pct"]
+    expected_blue_win = round(100.0 - step17_recs["Lumburr"], 2)
+    assert abs(blue_final_win - expected_blue_win) <= 0.02
+
+
+def test_lookahead_respects_open_lane_constraints():
+    r_la = client.post(
+        "/predict",
+        json={
+            "mode": "pick",
+            "side": "blue",
+            "phase": 2,
+            "ally_picks": ["Yena", "Aoi", "Liliana", "Hayate"],
+            "enemy_picks": ["Florentino", "Keera", "Krixi", "Capheny"],
+            "ally_bans": ["Rouie", "Billow", "Dolia", "Toro"],
+            "enemy_bans": ["TeeMee", "Marja", "Heino", "Goverra"],
+            "top_k": 20,
+            "use_lookahead": True,
+        },
+    )
+    assert r_la.status_code == 200
+    top5 = r_la.json()["recommendations"][:5]
+    assert all(r["primary_lane"] == "Roam" for r in top5)
+
+
+def test_recommendations_counter_and_combo_trigger_reasons():
+    # Enemy picked Hayate -> picks countering Hayate (e.g. Florentino, Omen, etc.) should have trigger_reason='counter'
+    response = client.post(
+        "/predict",
+        json={
+            "mode": "pick",
+            "side": "blue",
+            "phase": 1,
+            "ally_picks": [],
+            "enemy_picks": ["Hayate"],
+            "ally_bans": ["Rouie", "Billow"],
+            "enemy_bans": ["Dolia", "TeeMee"],
+            "top_k": 10,
+        },
+    )
+    assert response.status_code == 200
+    data = response.json()
+    counter_recs = [r for r in data["recommendations"] if r.get("trigger_reason") == "counter"]
+    assert len(counter_recs) > 0
+    assert all("Hayate" in r["triggered_by"] for r in counter_recs)

@@ -73,17 +73,17 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
       );
   }, [heroes, query, role, lane, sortMode, unavailableHeroes, recommendedRanks, missing]);
   const chip = (active: boolean) =>
-    `h-7 shrink-0 border px-2.5 font-display text-[11px] font-semibold tracking-wide transition-colors ${
+    `h-6 shrink-0 border px-2 font-display text-[10px] font-semibold tracking-wide transition-colors sm:h-6.5 sm:px-2.5 sm:text-[11px] ${
       active ? "border-gold/60 bg-gold/10 text-gold" : "border-line text-muted hover:border-line-strong hover:text-ink"
     }`;
 
   return (
-    <section className="flex flex-col border border-line bg-panel clip-chamfer">
+    <section className="flex min-h-0 flex-1 flex-col border border-line bg-panel clip-chamfer">
       {/* Filters */}
-      <div className="flex flex-col gap-2 border-b border-line p-3">
-        <div className="flex items-center gap-2">
+      <div className="flex shrink-0 flex-col gap-1.5 border-b border-line p-2 sm:p-2.5">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <label className="relative flex-1">
-            <Search className="pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-dim" />
+            <Search className="pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-dim" />
             <input
               ref={searchRef}
               value={query}
@@ -104,7 +104,7 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
               }}
               placeholder="ค้นหาฮีโร่…"
               aria-label="Search heroes"
-              className="h-9 w-full border border-line bg-bg pr-14 pl-8 text-sm text-ink placeholder:text-dim focus:border-gold/60 focus:outline-none"
+              className="h-8 w-full border border-line bg-bg pr-12 pl-8 text-xs text-ink placeholder:text-dim focus:border-gold/60 focus:outline-none sm:text-sm"
             />
             {query ? (
               <button
@@ -113,10 +113,10 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
                 aria-label="Clear search"
                 className="absolute top-1/2 right-2 -translate-y-1/2 text-dim hover:text-ink"
               >
-                <X className="h-4 w-4" />
+                <X className="h-3.5 w-3.5" />
               </button>
             ) : (
-              <kbd className="absolute top-1/2 right-2 -translate-y-1/2 border border-line px-1.5 font-mono text-[10px] text-dim">
+              <kbd className="absolute top-1/2 right-2 -translate-y-1/2 border border-line px-1 font-mono text-[9px] text-dim">
                 /
               </kbd>
             )}
@@ -125,17 +125,17 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
             type="button"
             onClick={() => setSortMode(sortMode === "ai" ? "az" : "ai")}
             title={sortMode === "ai" ? "เรียงตามคำแนะนำ AI และเลนที่ขาด" : "เรียงตามชื่อ"}
-            className="flex h-9 shrink-0 items-center gap-1.5 border border-line-strong px-2.5 font-display text-[11px] font-semibold tracking-wide text-ink transition-colors hover:border-gold/60 hover:text-gold"
+            className="flex h-8 shrink-0 items-center gap-1 border border-line-strong px-2 font-display text-[10px] font-semibold tracking-wide text-ink transition-colors hover:border-gold/60 hover:text-gold sm:px-2.5 sm:text-[11px]"
           >
-            {sortMode === "ai" ? <Sparkles className="h-3.5 w-3.5 text-gold" /> : <ArrowDownAZ className="h-3.5 w-3.5" />}
+            {sortMode === "ai" ? <Sparkles className="h-3 w-3 text-gold" /> : <ArrowDownAZ className="h-3 w-3" />}
             {sortMode === "ai" ? "AI" : "A–Z"}
           </button>
-          <span className="hidden font-mono text-xs text-dim sm:inline">
+          <span className="hidden font-mono text-[11px] text-dim sm:inline">
             {filtered.length}/{heroes.length}
           </span>
         </div>
 
-        <div className="flex gap-1.5 overflow-x-auto">
+        <div className="flex gap-1 overflow-x-auto pb-0.5">
           <button type="button" className={chip(role === null)} onClick={() => setRole(null)}>
             ALL
           </button>
@@ -144,7 +144,7 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
               {r.toUpperCase()}
             </button>
           ))}
-          <div className="mx-1 w-px shrink-0 bg-line" />
+          <div className="mx-0.5 w-px shrink-0 bg-line" />
           {LANE_KEYS.map((k) => (
             <button
               key={k}
@@ -159,9 +159,9 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
         </div>
       </div>
 
-      {/* Grid */}
-      <div className="max-h-[600px] overflow-y-auto">
-        <div className="grid grid-cols-4 gap-1.5 p-3 sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-8">
+      {/* Grid — fills remaining vertical height and scrolls internally */}
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <div className="grid grid-cols-5 gap-1 p-2 sm:grid-cols-6 sm:gap-1.5 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-9">
           {isHeroesLoading &&
             Array.from({ length: 18 }).map((_, i) => <div key={i} className="aspect-square animate-pulse bg-panel-2" />)}
           {!isHeroesLoading && filtered.length === 0 && (
@@ -242,7 +242,7 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
                 )}
                 {usedByOpponentOnly && !rank && (
                   <span
-                    className={`absolute top-1 right-1 px-1 font-mono text-[8px] font-bold ${
+                    className={`absolute top-1 right-1 max-w-[calc(100%-26px)] truncate px-1 font-mono text-[8px] font-bold ${
                       isBlueTurn ? "bg-red/85 text-ink" : "bg-blue/85 text-ink"
                     }`}
                   >
@@ -251,7 +251,7 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
                 )}
                 {canBanToDeny && !rank && (
                   <span
-                    className={`absolute top-1 right-1 px-1 font-mono text-[8px] font-bold ${
+                    className={`absolute top-1 right-1 max-w-[calc(100%-26px)] truncate px-1 font-mono text-[8px] font-bold ${
                       isBlueTurn ? "bg-blue/85 text-ink" : "bg-red/85 text-ink"
                     }`}
                   >

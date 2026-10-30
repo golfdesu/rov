@@ -1,8 +1,8 @@
 {
   "source": "https://moba.garena.tw/news (Garena TW, translated from Traditional Chinese)",
-  "fetched": "2026-10-18",
-  "count": 334,
-  "heroes": 92,
+  "fetched": "2026-10-30",
+  "count": 349,
+  "heroes": 97,
   "changes": [
     {
       "hero": "Airi",
@@ -3383,6 +3383,116 @@
       "date": "2026-09-24",
       "version": "Beta 55",
       "source": "https://moba.garena.tw/news/show/5716"
+    },
+    {
+      "hero": "Sephera",
+      "skill": "Passive",
+      "field": "Self-heal buff",
+      "before": "Heals lowest HP ally for 50 (+10% AP)",
+      "after": "Heals lowest HP ally for 50 (+10% AP); additionally heals herself for (+4% bonus HP)",
+      "date": "2026-10-30",
+      "version": "Patch 2026-10-30",
+      "source": "In-game patch client update"
+    },
+    {
+      "hero": "Evita",
+      "skill": "Skill 1",
+      "field": "Magic damage nerf",
+      "before": "325/390/455/520/585/650 (+65% AP)",
+      "after": "300/360/420/480/540/600 (+60% AP)",
+      "date": "2026-10-30",
+      "version": "Patch 2026-10-30",
+      "source": "In-game patch client update"
+    },
+    {
+      "hero": "Evita",
+      "skill": "Ultimate",
+      "field": "Cooldown and damage nerf",
+      "before": "CD 50/45/40 s, damage 36/54/72 (+7% AP)",
+      "after": "CD 55/50/45 s, damage 30/45/60 (+6% AP)",
+      "date": "2026-10-30",
+      "version": "Patch 2026-10-30",
+      "source": "In-game patch client update"
+    },
+    {
+      "hero": "Erin",
+      "skill": "Skill 1",
+      "field": "Damage, scaling, and cooldown buff",
+      "before": "CD 8.0-7.0 s, damage 350-700 (+80% AP) (+45% AD), touch 125-250 (+30% AP) (+20% AD)",
+      "after": "CD 8.0-6.5 s, damage 450-900 (+105% AP) (+60% AD), touch 150-300 (+35% AP) (+20% AD)",
+      "date": "2026-10-30",
+      "version": "Patch 2026-10-30",
+      "source": "In-game patch client update"
+    },
+    {
+      "hero": "Xeniel",
+      "skill": "Skill 1",
+      "field": "Shield, base damage, and scaling buff",
+      "before": "Shield 350-900 (+40% AP) (+4%-9% HP), damage 450-1000 (+40% AP) (+4%-9% HP)",
+      "after": "Shield & damage 500-1000 (+50% AP) (+5%-10% max HP)",
+      "date": "2026-10-30",
+      "version": "Patch 2026-10-30",
+      "source": "In-game patch client update"
+    },
+    {
+      "hero": "Tamyn",
+      "skill": "Passive",
+      "field": "Enhanced attack damage nerf",
+      "before": "200-396 (+30% bonus AD)",
+      "after": "182-364 (+28% bonus AD)",
+      "date": "2026-10-30",
+      "version": "Patch 2026-10-30",
+      "source": "In-game patch client update"
+    },
+    {
+      "hero": "Hayate",
+      "skill": "Passive",
+      "field": "True damage adjustment & basic attack bounce",
+      "before": "40 (+25% AD) true damage on 6 hits",
+      "after": "45 (+23% AD) true damage on 6 hits; basic attack bounces to non-hero units for 25% AD physical damage",
+      "date": "2026-10-30",
+      "version": "Patch 2026-10-30",
+      "source": "In-game patch client update"
+    },
+    {
+      "hero": "Hayate",
+      "skill": "Skill 1",
+      "field": "Piercing rework & base damage buff",
+      "before": "105-210 (+20% AD), restores 5 energy on hero hit",
+      "after": "110-220 (+18% AD), pierces non-hero units (-30% dmg per pass, min 40%), restores 10 energy on hero hit",
+      "date": "2026-10-30",
+      "version": "Patch 2026-10-30",
+      "source": "In-game patch client update"
+    },
+    {
+      "hero": "Keera",
+      "skill": "Skill 1",
+      "field": "Cooldown buff",
+      "before": "6.0/5.6/5.2/4.8/4.4/4.0 s",
+      "after": "5.0/4.8/4.6/4.4/4.2/4.0 s",
+      "date": "2026-10-30",
+      "version": "Patch 2026-10-30",
+      "source": "In-game patch client update"
+    },
+    {
+      "hero": "Keera",
+      "skill": "Skill 2",
+      "field": "Damage and AP scaling buff",
+      "before": "Clone 75 (+15% AP), triangle 400-600 (+60% AP)",
+      "after": "Clone 100-200 (+20% AP), triangle 400-800 (+80% AP)",
+      "date": "2026-10-30",
+      "version": "Patch 2026-10-30",
+      "source": "In-game patch client update"
+    },
+    {
+      "hero": "Astrid",
+      "skill": "Skill 1",
+      "field": "Damage, scaling, and buff nerf",
+      "before": "300-600 (+110% AD), +20% AS, +20%-60% MS",
+      "after": "275-550 (+100% AD), +15% AS, +15%-45% MS, penetrate 50-100",
+      "date": "2026-10-30",
+      "version": "Patch 2026-10-30",
+      "source": "In-game patch client update"
     }
   ]
 }

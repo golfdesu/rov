@@ -331,6 +331,17 @@ class DraftMinimaxSearch:
             p_next = c_probs_np[idx]
             w_next = c_win_np[idx]
 
+            # Filter counter-candidates by the needed lanes of the target team at next_state
+            if next_state.action_type == 1:
+                target_pick_ids = next_state.blue_picks if next_acting_side == 0 else next_state.red_picks
+            else:
+                target_pick_ids = next_state.red_picks if next_acting_side == 0 else next_state.blue_picks
+            target_pick_names = [self.predictor.hero_names[i] for i in target_pick_ids]
+            target_row = np.zeros(self.num_heroes, dtype=np.float32)
+            target_row[list(target_pick_ids)] = 1.0
+            needed_next = self.predictor._needed_lanes_for_picks(target_pick_names, target_row)
+            p_next = self.predictor._apply_lane_filter(p_next, needed_next)
+
             # Top counter-actions for the next acting team
             counter_candidates = np.argsort(p_next)[::-1][:branch_factor]
             counter_candidates = [c for c in counter_candidates if p_next[c] > 0]

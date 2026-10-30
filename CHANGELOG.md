@@ -27,6 +27,841 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-10-30 11:30 (UTC+7) — Ingest 2026-10-25 Grand Finals Matches into Curated Training Dataset
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Regenerated Curated Training Dataset (`data/matches_training.json`)**:
+  - Rebuilt dataset with `python src/build_training_dataset.py --min-year 2025 --max-date 2026-10-25`.
+  - Added all 20 pro games from 2026-10-25 (RPL 2026 Winter Grand Finals BRU vs FS, and AOG 2026 Winter Finals & 3rd place deciders).
+  - All 20 added games have 100% verified chronological pick order (`has_true_order=True`).
+  - Dataset expanded from 3,457 to **3,477 pro games** (2025–2026), increasing True Pick Order coverage to **51.2%** (1,781 / 3,477 games).
+- **Updated Pro Draft Statistics & Matrices (`data/hero_draft_stats.csv`, `data/synergy_matrix.csv`, `data/counter_matrix.csv`)**:
+  - Recomputed draft statistics and graphs across all 4,311 matches with `python src/build_draft_stats.py`.
+  - Updated pairwise synergy matrix (2,508 pairs) and counter matrix (5,908 pairs).
+- **Updated System Manual & Memory Indexes (`AGENTS.md`, memory)**:
+  - Synchronized training dataset specifications in `AGENTS.md` and `curated-training-dataset-2025-2026.md`.
+
+### 📁 Modified Files
+- `data/matches_training.json`
+- `data/hero_draft_stats.csv`
+- `data/synergy_matrix.csv`
+- `data/counter_matrix.csv`
+- `AGENTS.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py` → Audit passed (0 unmapped names, 1,792 true pick order games).
+- `pytest` → All 67 tests passed.
+- `npm --prefix frontend run build` & `npm --prefix frontend run lint` → Clean build, 0 lint errors.
+- `ruff check --fix .` & `ruff format .` → All checks passed.
+
+---
+
+## 📅 2026-10-30 11:00 (UTC+7) — Series State & Global Ban Unlock Bug Audit Fixes
+**Agent:** Claude Code (`ag/gemini-4-argon-high`)
+
+### ✅ Completed Work
+- **Fixed Partial Snapshot Bypass in Game Unlock Logic (`frontend/src/utils/draft.ts`)**:
+  - Updated `getGameUnlockStatus` so only completed 5v5 games (`bluePicks.length >= 5 && redPicks.length >= 5`) count as completed games in `seriesGames`.
+  - Evaluated effective Global Ban hero counts (`aCount`, `bCount`) via `syncSeriesGlobalBans(..., targetGame)` so viewing an earlier game (such as G1) does not hide recorded picks from G1 when evaluating unlock eligibility for G2/G3.
+  - Added `getMaxUnlockedGame` helper to compute the highest valid game number (`1..7`) whenever Global Bans or recorded games are removed.
+- **Eliminated Stale `seriesGames` Closures During Game & Series Switching (`frontend/src/hooks/useDraft.ts`)**:
+  - Updated `loadRecordedGame`, `selectGameNumber`, and `switchSeries` to construct and pass `nextSeriesGames` synchronously instead of reading stale closure state after `saveCurrentDraftSnapshot()`.
+  - Updated `switchSeries` to resume an incomplete latest game instead of advancing to `latest.gameNumber + 1`.
+  - Updated `deleteRecordedGame` to automatically clamp `gameNumber` via `getMaxUnlockedGame` when deleting a recorded game invalidates the current game's unlock prerequisites.
+- **Prevented Global Ban Deletion Loophole on Game 2+ (`frontend/src/App.tsx`, `frontend/src/components/GlobalBanModal.tsx`, `frontend/src/components/meta_lab/MetaLab.tsx`)**:
+  - Guarded `removeUsedHero` on `TeamColumn` with confirmation and automatic fallback to `getMaxUnlockedGame` if removing a hero drops a team below `5 * (gameNumber - 1)` Global Bans.
+  - Clamped `gameNumber` to `getMaxUnlockedGame` on `clearAll` and modal close (`handleClose`) in `GlobalBanModal`.
+- **Enabled Main-Board Global Ban Import in Matrix Draft (`frontend/src/components/meta_lab/MetaLab.tsx`)**:
+  - Updated `hasMainPicks` so the "ดึงจากกระดานหลัก" button is enabled when the main draft board has Global Bans or `gameNumber > 1` configured even before the first pick/ban of the game is locked.
+
+### 📁 Modified Files
+- `frontend/src/utils/draft.ts`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/GlobalBanModal.tsx`
+- `frontend/src/App.tsx`
+- `frontend/src/components/meta_lab/MetaLab.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run build` → Production build succeeded (0 errors).
+- `npm --prefix frontend run lint` → Oxlint passed (0 warnings/errors).
+- `ruff check --fix . && ruff format .` → All checks passed.
+- `pytest` → 67 / 67 passed.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-10-30 10:35 (UTC+7) — Enforce Global Ban Prerequisites for Fast-Forwarding to Game N (10 Heroes for Game 3)
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Implemented Game Unlock & Skip Validation (`frontend/src/utils/draft.ts`)**:
+  - Added `getGameUnlockStatus` helper to validate game navigation rules in multi-game series.
+  - Rules: Game 1 is always unlocked; Game N (> 1) requires either:
+    1. Preceding games 1..(N-1) to be recorded in series history, OR
+    2. Both Team A and Team B to have at least `5 * (N - 1)` heroes used in Global Ban (5 heroes each for Game 2, 10 heroes each for Game 3, 15 heroes each for Game 4, etc.).
+- **Hardened Draft State & Navigation (`frontend/src/hooks/useDraft.ts`)**:
+  - Enforced unlock check in `selectGameNumber`.
+  - Automatically snapshots active in-progress draft before switching games.
+  - Hydrates board state when switching to an existing recorded game in the series.
+- **Enhanced UI Controls & Human Error Prevention (`frontend/src/App.tsx`)**:
+  - Top navigation bar `G1..G7` buttons reflect lock status with tooltips showing required vs current hero counts.
+  - Clicking a locked game prompts the user with requirements and offers a 1-click shortcut to open Global Ban settings.
+  - Added warning confirmation on "จบ G{N}→G{N+1}" if the current draft has fewer than 10 picks.
+- **Synchronized Global Ban Modal Navigation (`frontend/src/components/GlobalBanModal.tsx`)**:
+  - `G1..G7` selector inside the modal now dynamically locks unearned games, instantly unlocking Game 3 as soon as both teams accumulate 10 heroes.
+
+### 📁 Modified Files
+- `frontend/src/utils/draft.ts`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/App.tsx`
+- `frontend/src/components/GlobalBanModal.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run build` → Production build succeeded (0 errors).
+- `npm --prefix frontend run lint` → Oxlint passed (0 warnings/errors).
+- `pytest` → All 67 tests passed (100%).
+- `ruff check --fix . && ruff format .` → Zero errors, formatted.
+
+### ⚠️ Open Issues / Important Notes
+- Users can now safely draft without fear of accidentally clicking future games. Skipping directly to Game 3 strictly enforces 10 global bans per side.
+
+---
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Disabled Automatic Blue/Red Team Side Swap**:
+  - `frontend/src/hooks/useDraft.ts`: Changed default parameter `swapAfter = false` in `recordGameToSeries` to prevent automatic toggling of `blueSideTeam` when advancing to next game.
+  - `frontend/src/hooks/useDraft.ts`: Updated `switchSeries` to retain the current `blueSideTeam` orientation of the latest series game rather than inverting sides.
+  - `frontend/src/App.tsx`: Explicitly invoked `recordGameToSeries(false)` on the "จบ G{N}→G{N+1}" button click.
+  - Maintained manual "สลับฝั่ง" button across the top bar and Global Ban modal for user-controlled side adjustments.
+
+### 📁 Modified Files
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/App.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run build` → Production build succeeded (0 errors).
+- `npm --prefix frontend run lint` → Oxlint passed (0 warnings/errors).
+- `pytest` → All 67 tests passed (100%).
+- `ruff check --fix . && ruff format .` → Zero errors, formatted.
+
+### ⚠️ Open Issues / Important Notes
+- Side swaps are now strictly manual via the top-bar "สลับฝั่ง" button or the Global Ban dialog.
+
+---
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Standardized All 268 Status Screenshot File Names**:
+  - Renamed 130 Level 1 status screenshots from `LINE_ALBUM_Status_*.jpg` or `S__*.jpg` to standard `status_lv1.jpg`.
+  - Renamed 130 Level 15 status screenshots from `LINE_ALBUM_Lv15_*.jpg` or `S__*.jpg` to standard `status_lv15.jpg`.
+  - Renamed 8 auxiliary/variant status screenshots:
+    - Skud test capture → `heroes/Skud/status/status_lv1_alt.jpg`
+    - Flowborn Marksman with items capture → `heroes/Flowborn (Marksman)/status/status_lv15_items.jpg`
+    - 6 redundant angle/alternate captures (Alice, Lu Bu, Nakroth, Toro, Tulen, Valhein) → `heroes/<Hero>/status/status_lv15_alt.jpg`
+  - Zero camera/LINE album auto-generated file names remaining across all `heroes/*/status/` directories.
+- **Updated Catalog & Ingestion Datasets**:
+  - `data/hero_status_lv1.json`: Updated all 130 hero `source` paths to `heroes/<Hero>/status/status_lv1.jpg`.
+  - `data/hero_status_lv15.json`: Updated all 130 hero `source` paths to `heroes/<Hero>/status/status_lv15.jpg`.
+  - `scripts/update_lv15_status.py`: Updated all dictionary entries to reference `status_lv15.jpg`.
+
+### 📁 Modified Files
+- `data/hero_status_lv1.json`
+- `data/hero_status_lv15.json`
+- `scripts/update_lv15_status.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified all 130 `status_lv1.jpg` and 130 `status_lv15.jpg` files exist on disk with 0 missing.
+- Verified 8 extra variant files correctly renamed and present.
+- `pytest` → All 67 tests passing (100%).
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py` → 130 heroes, 4,311 matches passed.
+- `ruff check --fix . && ruff format .` → Clean formatting, 0 errors.
+
+### ⚠️ Open Issues / Important Notes
+- All hero status images now follow the uniform canonical naming pattern `heroes/<Hero>/status/status_lv{1,15}.jpg`.
+
+---
+
+## 📅 2026-10-30 09:40 (UTC+7) — Reorganize Loose Hero Status Screenshots into Dedicated Subdirectories
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Cleaned and Structured `heroes/` Directory**:
+  - Organized all 126 loose image files (`LINE_ALBUM_Lv15_*.jpg`) into structured per-hero folders (`heroes/<Hero>/status/`).
+  - Moved 124 primary measured Level 15 status screenshots to their respective hero directories (e.g. `heroes/Airi/status/`, `heroes/Arthur/status/`, etc.).
+  - Moved 2 related variant images to their corresponding hero directories:
+    - `LINE_ALBUM_Lv15_261019_28.jpg` (Skud Lv.1 test capture) → `heroes/Skud/status/`
+    - `LINE_ALBUM_Lv15_261020_58.jpg` (Flowborn Marksman item status capture) → `heroes/Flowborn (Marksman)/status/`
+  - Zero loose files remaining in `heroes/` root directory.
+- **Updated Catalog & Ingestion References**:
+  - Updated all 130 hero `source` paths in `data/hero_status_lv15.json` to point to `heroes/<Hero>/status/<filename>`.
+  - Updated `scripts/update_lv15_status.py` source references to match the new nested folder convention.
+
+### 📁 Modified Files
+- `data/hero_status_lv15.json`
+- `scripts/update_lv15_status.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified 0 loose files in `heroes/` directory.
+- Verified all 130 `source` paths in `data/hero_status_lv15.json` exist on disk.
+- `pytest` → All 67 tests passing (100%).
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py` → 130 heroes, 4,311 matches passed.
+- `ruff check --fix . && ruff format .` → Clean formatting, 0 errors.
+
+### ⚠️ Open Issues / Important Notes
+- None. All 130 heroes now have standardized directory structures under `heroes/<Hero>/status/` and `heroes/<Hero>/skill/`.
+
+---
+
+## 📅 2026-10-30 09:15 (UTC+7) — Ingest 2026-10-30 Patch Balance Changes & In-Game Skill Screenshots
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Archived 11 In-Game Patch Screenshots**:
+  - Moved raw screenshot captures from repository root into their respective `heroes/<Hero>/skill/` folders:
+    - `S__19849220_0.jpg` → `heroes/Sephera/skill/` (Passive Living Water self-heal buff)
+    - `S__19849221_0.jpg` → `heroes/Evita/skill/` (Ultimate Umbral Cloak CD & damage nerf)
+    - `S__19849222_0.jpg` → `heroes/Evita/skill/` (Skill 1 Abyssal Assault damage nerf)
+    - `S__19849223_0.jpg` → `heroes/Erin/skill/` (Skill 1 Greeting of Leaves damage, scaling & CD buff)
+    - `S__19849224_0.jpg` → `heroes/Xeniel/skill/` (Skill 1 Divine Protection shield, damage & scaling buff)
+    - `S__19849225_0.jpg` → `heroes/Tamyn/skill/` (Passive Shadow Devourer base damage & bonus AD nerf)
+    - `S__19849226_0.jpg` → `heroes/Hayate/skill/` (Skill 1 Shuriken Toss damage, energy & non-hero pierce)
+    - `S__19849227_0.jpg` → `heroes/Hayate/skill/` (Passive Blood of the Dragon true damage & basic attack bounce)
+    - `S__19849228_0.jpg` → `heroes/Keera/skill/` (Skill 2 Triangle Maze clone & triangle damage/AP buff)
+    - `S__19849229_0.jpg` → `heroes/Keera/skill/` (Skill 1 Umbra Dream cooldown buff)
+    - `S__19849230.jpg` → `heroes/Astrid/skill/` (Skill 1 Spin Slash damage, AD & buff nerf)
+- **Updated Hero Patch Catalogues (`data/hero_patches/`)**:
+  - **Sephera**: Added `self_heal_bonus_hp_pct: 4.0` to Passive ("Living Water").
+  - **Evita**: Nerfed Skill 1 base damage to `300..600` (+60% AP); nerfed Ultimate CD to `55/50/45 s`, base damage to `30/45/60` (+6% AP).
+  - **Erin**: Buffed Skill 1 CD to `8.0..6.5 s`, base damage to `450..900` (+105% AP, +60% AD), and touch damage to `150..300` (+35% AP).
+  - **Xeniel**: Buffed Skill 1 base damage and shield to `500..1000` (+50% AP, +5%..10% max HP); corrected icon path mapping.
+  - **Tamyn**: Nerfed Passive enhanced attack damage to `182..364` (+28% bonus AD).
+  - **Hayate**: Buffed Passive true damage to `45` (+23% AD) and added 25% AD basic attack bounce to non-hero units; updated Skill 1 to `110..220` (+18% AD) with non-hero piercing and 10 energy recovery.
+  - **Keera**: Buffed Skill 1 CD to `5.0..4.0 s`; buffed Skill 2 clone damage to `100..200` (+20% AP) and triangle damage to `400..800` (+80% AP).
+  - **Astrid**: Nerfed Skill 1 base damage to `275..550` (+100% AD), movement speed to `15%..45%`, attack speed to `15%`, and recorded `50..100` penetration per level.
+- **Synced to Core Repositories & Patch History**:
+  - Propagated all 8 hero updates to `data/hero_skills_full.json` and `data/heroes_130_full.json` via `scripts/apply_hero_patch.py`.
+  - Added 11 change records to `data/hero_patch_history.json` (349 total changes across 97 heroes).
+  - Updated `tests/test_data_integrity.py` to pin Patch 2026-10-30 numbers.
+- **Verification**:
+  - `pytest -q`: 67 passed, 0 failures.
+  - `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: PASSED (130 heroes with min 4 skills, 0 unmapped names).
+  - `ruff check --fix .` & `ruff format .`: 0 errors.
+  - `npm --prefix frontend run build` & `npm --prefix frontend run lint`: Clean build.
+
+### 📁 Modified Files
+- `heroes/Sephera/skill/S__19849220_0.jpg` (Moved)
+- `heroes/Evita/skill/S__19849221_0.jpg` (Moved)
+- `heroes/Evita/skill/S__19849222_0.jpg` (Moved)
+- `heroes/Erin/skill/S__19849223_0.jpg` (Moved)
+- `heroes/Xeniel/skill/S__19849224_0.jpg` (Moved)
+- `heroes/Tamyn/skill/S__19849225_0.jpg` (Moved)
+- `heroes/Hayate/skill/S__19849226_0.jpg` (Moved)
+- `heroes/Hayate/skill/S__19849227_0.jpg` (Moved)
+- `heroes/Keera/skill/S__19849228_0.jpg` (Moved)
+- `heroes/Keera/skill/S__19849229_0.jpg` (Moved)
+- `heroes/Astrid/skill/S__19849230.jpg` (Moved)
+- `data/hero_patches/Sephera.json`
+- `data/hero_patches/Evita.json`
+- `data/hero_patches/Erin.json`
+- `data/hero_patches/Xeniel.json`
+- `data/hero_patches/Tamyn.json`
+- `data/hero_patches/Hayate.json`
+- `data/hero_patches/Keera.json`
+- `data/hero_patches/Astrid.json`
+- `data/hero_skills_full.json`
+- `data/heroes_130_full.json`
+- `data/hero_patch_history.json`
+- `tests/test_data_integrity.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `pytest -q`: 67/67 passed.
+- `audit_rov_data.py`: 130 heroes, 4,311 matches passed.
+- `ruff check --fix .` & `ruff format .`: 0 lint errors.
+- `npm run build` & `npm run lint`: Clean build.
+
+### ⚠️ Open Issues / Important Notes
+- None. All 2026-10-30 patch values are accurately synced.
+
+---
+
+## 📅 2026-10-29 09:45 (UTC+7) — Update Agent Manual & Data Guardian on 2024 Training Data Exclusion
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Codified 2024 Data Exclusion Invariant**:
+  - Updated `AGENTS.md` Current System Status table: clearly distinguished the raw match archive (`data/matches_draft_full.json`, 4,208 games, 2024–2026) from the curated training dataset (`data/matches_training.json`, 3,457 games strictly from 2025–2026).
+  - Added **Invariant 13** in `AGENTS.md`: strictly prohibits training production models on 2024 data to eliminate legacy meta noise and obsolete pick habits; documented holdout of 20 Grand Finals games (2026-10-25) to prevent test leakage; updated directory tree to include `matches_training.json`.
+  - Updated `.agents/skills/rov-data-guardian/SKILL.md` (and mirrored to `.claude/skills/rov-data-guardian/SKILL.md`) with the training dataset vs match archive rule.
+  - Created persistent memory `memory/curated-training-dataset-2025-2026.md` and indexed in `memory/MEMORY.md`.
+
+### 📁 Modified Files
+- `AGENTS.md`
+- `.agents/skills/rov-data-guardian/SKILL.md`
+- `.claude/skills/rov-data-guardian/SKILL.md`
+- `memory/curated-training-dataset-2025-2026.md` (Created)
+- `memory/MEMORY.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Ran `pytest tests/test_skills_sync.py` (Passed — zero drift between `.agents` and `.claude`).
+- Ran `ruff check .` and `ruff format --check .`.
+
+### ⚠️ Open Issues / Important Notes
+- All AI agents in future sessions will now strictly recognize `data/matches_training.json` (3,457 games, 2025–2026) as the canonical training dataset.
+
+---
+
+## 📅 2026-10-29 09:30 (UTC+7) — Full Competitor Intelligence & Technical Benchmark of 7 Draft Platforms (`docs/COMPETITORS.md`)
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Complete Market Reconnaissance & Reverse-Engineering across 7 Platforms**:
+  - **RoV LAB** (`rovlab.app`): React 19 SPA + Supabase BaaS; rule-based role-counting heuristics and fixed (+3, +2, +1) counter scoring.
+  - **CoachOS Draft** (`coachos-draft.vercel.app`): Vanilla ES Modules + Vercel Functions + Supabase; reverse-engineered `/api/v1/aov/*` APIs, revealing its forced "chronology-quarantine" (`SIDE_LINEUP_ONLY`, `UNORDERED`) due to Liquipedia's `h1..h5` lane ordering trap.
+  - **AOV DraftMind** (`aov-ban-pick.vercel.app`): Next.js App Router; reverse-engineered `0g1i1v.-b90qe.js` finding empirical pair/matchup win rates with `bestDeny` detection, lane flex tags, and dynamic win probability bar `50 + 50 * edge`.
+  - **AOV Optimal Draft Assistant** (`lktnlac.github.io/Arena-of-Valor-Draft-Suggestion/`): Vanilla JS; reverse-engineered `draftEngine.js` showing parameterized weighted linear score `0.30 Meta + 0.20 Counter + 0.15 Synergy + 0.15 Flex - 0.15 Risk` backed by small sparse JSON tables (< 1% pair coverage).
+  - **AOV MetaForge** (`aov-metaforge.vercel.app`): Vanilla JS + GSAP + Web Audio; hardcoded threat alerts for S+ tier picks (Butterfly, Tamyn) with fixed counter advice and Gacha team builder.
+  - **ROV Ban/Pick Simulator** (`rov-ban-pick.vercel.app`): React 18 UMD + Tailwind CDN; pure manual stream overlay fetching hero lists via Google Sheets OpenSheet API.
+  - **AoV Drafter** (`imvixtor.github.io/aov_drafter/`): Vanilla JS; mock database of 25 heroes with qualitative 1-5 ratings.
+- **Created Comprehensive Market Benchmark Document (`docs/COMPETITORS.md`)**:
+  - Detailed 8-system comparative matrix, categorized market solutions into 5 technical tiers, documented our architectural moats (True Pick Order CV Pipeline + SOTA GNN-Transformer + Full Combat Math Engine), and outlined high-value roadmap inspirations.
+
+### 📁 Modified Files
+- `docs/COMPETITORS.md` (Created and expanded to all 7 platforms)
+- `CHANGELOG.md` (Updated)
+
+### 🧪 Verification
+- Verified `docs/COMPETITORS.md` adheres to strict English requirement and repository standards.
+- Successfully queried, tested, and validated live code and network responses from all 7 target platforms.
+- Ran `ruff check .` and `pytest tests/test_skills_sync.py`.
+
+### ⚠️ Open Issues / Important Notes
+- All competitor data archived. Ready for product roadmap decisions (e.g., adding composition balance telemetry or historical counter-lookup).
+
+---
+
+## 📅 2026-10-29 08:30 (UTC+7) — Bundle 100% Local Item Icons and Fix Broken Item Images in Stat & Duel Lab
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Resolved Broken Item Images (404s)**:
+  - Diagnosed that 23 out of 114 item icons in `data/items.json` failed to load when hotlinked to `https://rovmeta.com/items/` due to filename/extension mismatches or missing items (Beta 55 additions and support rework items).
+  - Developed and executed automated bundling script `scripts/fetch_item_icons.py`:
+    - Downloaded and verified 104 item icons from `rovmeta.com` with corrected slug and extension mappings.
+    - Extracted and cropped remaining 10 in-game items (`Bloodthirsty Blade`, `Ifrit's Claw`, `Stealth Bracer`, `Soul Scroll`, `Light Shield`, `Hunter's Knife`, `Aquaflame - Accelerate`, `Aquaflame - Rejuvenate`, `Mother Earth - Accelerate`, `Mother Earth - Rejuvenate`) directly from high-resolution in-game screenshots in `item/`.
+    - Bundled all 114 items into `frontend/public/items/<slug>.png` (and built into `frontend/dist/items/`) as standardized 100x100 PNGs.
+  - Updated all 114 entries in `data/items.json` to reference local `/items/{slug}.png` paths, ensuring zero external dependencies and offline support.
+- **Resilient UI Fallback in Combat Lab (`frontend/src/components/lab/BuildPanel.tsx`)**:
+  - Implemented reusable `ItemIcon` component in `BuildPanel.tsx` with render-derived `failedSrc === src` error handling, resetting cleanly on prop change with zero cascading re-renders and preventing broken image icon boxes.
+- **FastAPI Service Reload**:
+  - Reloaded FastAPI backend process so `/combat/catalog` actively delivers local `/items/...` URIs. Tested and confirmed 100% 200 OK responses across all 114 item endpoints.
+- **Permanent Data Integrity Test Guard (`tests/test_data_integrity.py`)**:
+  - Added assertions to `test_items_catalog` in `test_data_integrity.py` verifying that all 114 items in `data/items.json` have valid `/items/` URLs and matching local image files in `frontend/public/items/`.
+
+### 📁 Modified Files
+- `data/items.json`
+- `frontend/src/components/lab/BuildPanel.tsx`
+- `tests/test_data_integrity.py`
+- `scripts/fetch_item_icons.py` (New asset builder script)
+- `frontend/public/items/*.png` (114 bundled local icons)
+- `frontend/dist/` (Rebuilt production assets)
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `python scripts/fetch_item_icons.py` verified 114 / 114 icons generated and written.
+- `pytest -v`: 67 / 67 tests passed in 8.60s.
+- `npm run build`: TypeScript `tsc -b` and Vite client production build completed in 942ms with 0 errors.
+- `npm run lint`: `oxlint` passed with 0 errors.
+- `ruff check --fix .` and `ruff format .`: 0 lint errors, 100% formatted.
+
+### ⚠️ Open Issues / Important Notes
+- None. All 114 RoV items now have 100% local, self-contained icons.
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Pure Empirical Matrix Draft Engine (`src/predictor.py` & `src/api.py`)**:
+  - Implemented `RoVDraftPredictor.predict_matrix()` in `src/predictor.py` executing 100% zero neural network inference: evaluates pick/ban recommendations and matchup win rates directly using pairwise ally synergy (`synergy_matrix.csv`), enemy counter matrix (`counter_matrix.csv`), and pro match presence/win rates (`hero_draft_stats.csv`) with lane coverage constraint logic.
+  - Exposed endpoint `POST /predict/matrix` returning `DraftPredictionResponse` with `architecture="EmpiricalMatrixRules"`.
+  - Added full test coverage `test_predict_matrix_endpoint` in `tests/test_api.py`.
+  - Purged obsolete experimental comp generator and mechanic analyzer files (`src/comp_generator.py`, `src/mechanic_analyzer.py`, `tests/test_mechanic_analyzer.py`, and mechanics schemas in `src/schemas.py`).
+- **Flexible Draft Hook Engine (`frontend/src/hooks/useDraft.ts`)**:
+  - Extended `useDraft(options?: UseDraftOptions)` with `engine: "sota" | "matrix"`, `persistSession: boolean`, and `storageKey?: string`.
+  - Added `importDraft()` helper allowing instant state hydration from any draft board.
+- **Matrix & Rule Draft Board Remake (`frontend/src/components/meta_lab/MetaLab.tsx`)**:
+  - Remade the tab into a complete broadcast-style draft board matching the zero-overflow mobile, tablet, and desktop responsive UX.
+  - Added "ดึงข้อมูลจากกระดานหลัก (Import from Main Draft)" button to clone the live SOTA draft board into the matrix engine with 1 click for side-by-side comparison.
+  - Added informational header clearly distinguishing empirical statistical sums from deep learning model inference.
+- **Navigation Update (`frontend/src/App.tsx`)**:
+  - Renamed tab from "Meta Lab (Beta)" to "Matrix Draft (สถิติ & กฎ)".
+
+### 📁 Modified Files
+- `src/predictor.py`
+- `src/api.py`
+- `src/schemas.py`
+- `tests/test_api.py`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/meta_lab/MetaLab.tsx`
+- `frontend/src/App.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `pytest -v` passed all 67 tests (100% pass rate).
+- `cd frontend && npm run lint` passed with 0 warnings/errors (oxlint).
+- `cd frontend && npm run build` built client bundle in <1.0s without TypeScript errors.
+- `ruff check --fix .` and `ruff format .` maintained zero lint errors and consistent formatting.
+
+### ⚠️ Open Issues / Important Notes
+- The background server `python -m uvicorn src.api:app --port 8000` is running and serving the newly built `frontend/dist` with both `/predict` (SOTA GNN-Transformer) and `/predict/matrix` (Pure Empirical Matrix Rules).
+
+---
+
+## 📅 2026-10-29 06:20 (UTC+7) — Cross-Viewport Zero-Overflow UI Audit & Responsive Layout Hardening
+**Agent:** Claude Code (`ag/gemini-4-argon-high`)
+
+### ✅ Completed Work
+- **Compact & Full TeamColumn Overflow Elimination (`frontend/src/components/TeamColumn.tsx`)**:
+  - Separated the mobile (`<sm`) 4 square ban slots (`aspect-square h-7.5 w-7.5 min-[380px]:h-8 min-[380px]:w-8`) into their own dedicated row below the team name and Global Ban counter button so they never crush the team name on 320px–430px phone screens, while keeping the inline 4 square ban slots (`sm:h-9 sm:w-9`) in the header on iPad/Tablet (`>=sm`).
+  - Added `max-w-full` and `flex-1 min-w-0` to Red-side (`items-end`) pick slot text containers and ghost pick labels so `truncate` always bounds text width properly.
+  - Scaled full-board ban slots (`h-8.5 sm:h-11 lg:h-11 xl:h-12 2xl:h-13`) and added `truncate` to ghost ban tags and mobile Global Ban controls so the mobile 2-column "Teams & Global Ban" view never overflows.
+- **2-Tier Desktop & Stacked Mobile/Tablet AI Metrics (`frontend/src/components/AiPanel.tsx`)**:
+  - Replaced the 3-column horizontal `WIN / SYN / CTR` row inside desktop (`lg:grid-cols-5`) cards with a 2-tier layout (`WIN` on top, `SYN` & `CTR` paired below) plus `overflow-hidden`, preventing numeric overflow at the 1024px (`lg`) breakpoint.
+  - Removed the redundant `LOCK`/`BAN` badge on mobile/tablet (`<lg`) rows and stacked `WIN` above `SYN · CTR` on the right, freeing over 100px of center width for hero names and trigger badges (`⚔️ แก้`, `🤝 คู่`, `🛡️ ป้อง`, `⚡ ปลดล็อก`) on iPad Split-View (`768px`) and mobile screens.
+- **Responsive Grid Proportions & Navigation Truncation (`frontend/src/App.tsx`, `ScoreBar.tsx`, `HeroGrid.tsx`, `GlobalBanModal.tsx`)**:
+  - Calibrated desktop 3-column grid proportions (`lg:grid-cols-[240px_minmax(0,1fr)_240px] xl:grid-cols-[300px_minmax(0,1fr)_300px] 2xl:grid-cols-[340px_minmax(0,1fr)_340px]`) to give the 5-card AI deck wider center space at 1024px–1279px.
+  - Added `min-w-0`, `w-full truncate text-center`, and `whitespace-nowrap` guards across the mobile bottom navigation bar, top series toolbar, `ScoreBar` win probability bar (`min-w-[48px]` with square icon buttons on `<sm`), `HeroGrid` top-right used-hero badges (`max-w-[calc(100%-26px)] truncate`), and `GlobalBanModal` category tabs.
+
+### 📁 Modified Files
+- `frontend/src/components/TeamColumn.tsx`
+- `frontend/src/components/AiPanel.tsx`
+- `frontend/src/App.tsx`
+- `frontend/src/components/ScoreBar.tsx`
+- `frontend/src/components/HeroGrid.tsx`
+- `frontend/src/components/GlobalBanModal.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`) passed with 0 errors and 0 warnings.
+- `npm --prefix frontend run build` (`tsc -b && vite build`) succeeded cleanly in 872ms.
+- `ruff check --fix .` and `ruff format .` passed with 0 issues.
+- `pytest -v` passed 70/70 tests.
+
+### ⚠️ Open Issues / Important Notes
+- None. All text and numeric elements are strictly bounded across 320px, 375px, 768px, 1024px, 1280px, and 1920px viewports.
+
+---
+
+## 📅 2026-10-29 05:55 (UTC+7) — Full-Width Trigger Badges in AiPanel & Expanded Compact Ban Slots (iPhone/iPad)
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Full-Width Trigger Badges in AiPanel (`frontend/src/components/AiPanel.tsx`)**:
+  - Restructured the 5-column desktop recommendation card deck (`lg:grid-cols-5`) into a clean vertical stack.
+  - Centered hero portrait with rank tag on top, followed by full-width hero name and lane indicator.
+  - Promoted trigger badges (counter `⚔️ แก้`, combo `🤝 คู่`, protect `🛡️ ป้อง`, and ban unlock `⚡ ปลดล็อก`) to their own full-width line (`w-full truncate text-center`) with native hover tooltip (`title`), preventing truncation or disappearing text on narrow laptop displays (1024px–1366px).
+  - Compacted the right-hand metrics column on mobile/tablet to allocate 40–50px more space for hero name and trigger badges.
+- **Enlarged Compact Ban Slots for iPad & iPhone (`frontend/src/components/TeamColumn.tsx`)**:
+  - Scaled up compact ban slot size from `h-6 w-6 sm:h-7 sm:w-7` (24–28px) to `h-8 w-8 sm:h-9 sm:w-9` (32–36px) for comfortable viewing and touch accuracy on mobile phones and tablets.
+  - Scaled matching compact Global Ban button to `h-8 sm:h-9 px-2` with larger icons and legible typography.
+
+### 📁 Modified Files
+- `frontend/src/components/AiPanel.tsx`
+- `frontend/src/components/TeamColumn.tsx`
+
+### 🧪 Verification
+- `oxlint` passed with 0 errors and 0 warnings.
+- `vite build` completed cleanly in 838ms.
+- Python full test suite passed 70/70 tests (`pytest -v`).
+
+### ⚠️ Open Issues / Important Notes
+- None. Trigger badges are now clearly visible across all viewport sizes, and mobile/tablet ban slots are comfortably sized.
+
+---
+
+## 📅 2026-10-29 05:40 (UTC+7) — Team Ban Slots Ratio Calibration to Broadcast Square (1:1)
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Square Ban Slot Ratio Calibration (`frontend/src/components/TeamColumn.tsx`)**:
+  - Replaced the horizontal flex-stretched ban container (`flex-1`) with an explicit square aspect ratio (`aspect-square shrink-0 h-11 sm:h-12 xl:h-13`).
+  - Added visual phase grouping gap between Phase 1 bans (B1, B2) and Phase 2 bans (B3, B4) via `ml-2` / `mr-2`.
+  - Preserved portrait centering and ban diagonal crossline overlay aligned to the 1:1 square broadcast standard.
+
+### 📁 Modified Files
+- `frontend/src/components/TeamColumn.tsx`
+
+### 🧪 Verification
+- `oxlint` passed with 0 errors and 0 warnings.
+- `vite build` completed cleanly producing optimized client bundle.
+
+### ⚠️ Open Issues / Important Notes
+- None. Ban slots on desktop board are now strictly 1:1 squares aligned with official tournament broadcast UI.
+
+---
+
+## 📅 2026-10-29 05:15 (UTC+7) — Single-Screen App-Shell Draft UI Overhaul (Mobile, iPad, Laptop)
+**Agent:** Claude Code (`ag/gemini-4-argon-high`)
+
+### ✅ Completed Work
+- **Zero-Scroll Single-Screen App Architecture (`frontend/src/App.tsx`, `frontend/src/components/ScoreBar.tsx`)**:
+  - Converted the root application shell to `h-dvh max-h-dvh overflow-hidden flex flex-col` so the Draft board never triggers window-level vertical scrolling across mobile phones, iPads/tablets, and laptops.
+  - Integrated Series & Global Ban controls (`+ แมตช์ใหม่`, `G1..G7` game selector, `สลับฝั่ง`, `Global Ban`, `ประวัติ`, `จบ Gx→Gy`) directly into the top navigation bar.
+  - Made the active draft step indicator (`STEP X/18 · BLUE/RED BAN/PICK`) visible on all screen sizes inside a compact `ScoreBar`.
+- **Responsive Multi-Device Draft Layout (`frontend/src/components/TeamColumn.tsx`, `frontend/src/components/AiPanel.tsx`, `frontend/src/components/HeroGrid.tsx`)**:
+  - **Mobile (`< 768px`)**: Added a pinned `compact` 2-team Broadcast Matchup HUD (5 horizontal pick slots + 4 mini ban slots + Global Ban counter per team), a 5-card `ribbon` AI Quick-Pick bar above the internally scrollable 5-column `HeroGrid`, and a native-style 3-tab Bottom Navigation Bar (`เลือกฮีโร่`, `AI #1 / วิเคราะห์ AI`, `กระดาน & Global Ban`).
+  - **iPad / Tablet (`768px – 1023px`)**: Combined the top side-by-side compact Matchup HUD with a 12-column Split-View workspace (`col-span-5` vertical `AiPanel` + `col-span-7` internally scrollable `HeroGrid`).
+  - **Laptop / Desktop (`>= 1024px`)**: Engineered a 3-column full-viewport layout where `TeamColumn` pick slots dynamically flex (`flex-1 min-h-[44px] max-h-[82px]`) and Global Ban tags scroll internally, while `AiPanel` renders a 5-column horizontal tactical card deck above the `flex-1` `HeroGrid`.
+
+### 📁 Modified Files
+- `frontend/src/App.tsx`
+- `frontend/src/components/ScoreBar.tsx`
+- `frontend/src/components/TeamColumn.tsx`
+- `frontend/src/components/AiPanel.tsx`
+- `frontend/src/components/HeroGrid.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `cd frontend && npm run lint && npm run build` (0 warnings, 0 errors, TypeScript + Vite bundle verified)
+- `ruff check --fix . && ruff format .` (clean)
+- `pytest -v` (all tests passed)
+
+### ⚠️ Open Issues / Important Notes
+- Next phase can extend the same single-screen mobile-app ergonomics to `Meta Lab` and `Stat & Duel Lab` if desired.
+
+---
+
+## 📅 2026-10-29 04:30 (UTC+7) — Autonomous Comp Discovery & Innovation Engine (Meta Lab Overhaul)
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Engineered Combinatorial Comp Discovery Engine (`src/comp_generator.py`, `src/schemas.py`, `src/api.py`)**:
+  - Replaced manual-only inspection with an autonomous search algorithm that evaluates tens of thousands of 5-hero lane combinations (`DS_Lane`, `Jungle`, `Mid`, `Dragon_Lane`, `Roam`).
+  - Integrated 525 skills text & numerical scalings to detect mechanical traits: AoE hard CC/suppress, armor/magic defense shred, high scaling burst, long-range poke/sniping, and hyper sustain.
+  - Calculated **Off-Meta Novelty Score** against 4,208 pro match draft games (`data/synergy_matrix.csv`). Pairs and 5-hero comps with 0 prior pro matches earn a `100.0% Novelty (Hidden Gem)` badge.
+  - Added REST endpoint `POST /mechanics/discover-comps` with options for `archetype` (`all`, `wombo_combo`, `dive_mobility`, `poke_siege`, `hyper_sustain`), optional `anchor_hero`, and `min_novelty`.
+- **Transformed Frontend Meta Lab UI (`frontend/src/components/meta_lab/MetaLab.tsx`, `frontend/src/types/draft.ts`)**:
+  - Built an intuitive Discovery Control Center with archetype selector cards, anchor hero picker, off-meta toggle, and one-click "คิดค้นคอมพ์ใหม่ (Discover Comps)".
+  - Rendered discovery cards showing 5 heroes across 5 lanes, title, archetype, synergy score, pro match history count (`pro_games_together`), 3-color damage profile, key skill combos, and mechanic highlights.
+  - Kept manual comp inspector as a collapsible diagnostic sub-panel with "ส่งไปตรวจสอบในกระดาน" button.
+- **Verification & Testing (`tests/test_mechanic_analyzer.py`)**:
+  - Added `test_comp_discovery_engine_direct_and_endpoint()`.
+  - All 70 pytest tests passing, 0 ruff errors, 0 oxlint errors, and frontend built successfully.
+
+### 📁 Modified Files
+- `src/schemas.py`
+- `src/comp_generator.py`
+- `src/api.py`
+- `frontend/src/types/draft.ts`
+- `frontend/src/components/meta_lab/MetaLab.tsx`
+- `tests/test_mechanic_analyzer.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `pytest -v` (70/70 passed)
+- `ruff check --fix . && ruff format .` (clean)
+- `cd frontend && npm run build && npm run lint` (clean, 0 warnings)
+- Live curl test on `/mechanics/discover-comps` verified evaluation of 20,736 combinations in real-time.
+
+---
+
+## 📅 2026-10-29 03:45 (UTC+7) — Mechanic-Driven Comp Innovation & Meta Lab Beta
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Implemented Backend Mechanic-Driven Comp Analyzer (`src/mechanic_analyzer.py`, `src/schemas.py`, `src/api.py`)**:
+  - Engineered `MechanicCompAnalyzer` combining 130 heroes' full skill kits (`data/hero_skills_full.json`), level base stats & scalings (`data/hero_level_stats.json`), and capability flags (`data/heroes_130_full.json`).
+  - Implemented 4 core mechanical intelligence engines:
+    1. **Damage Profile**: Calculates precise team Physical %, Magic %, and True Damage % distribution with tactical verdicts (detecting all-physical, all-magic, heavy true damage, or balanced hybrid comps).
+    2. **Core Mechanics Scoring**: Normalizes Hard CC / Control, Burst / Execution, Sustain & Shields, Mobility, and Frontline Durability on a 0.0 - 10.0 scale.
+    3. **Power Spike Curve**: Models Early (Lv 1-4), Mid (Lv 5-11), and Late (Lv 12-15) combat curves with peak phase identification (Early Snowball vs Late Scaling).
+    4. **Mechanic Synergy Archetype Matching**: Identifies concrete skill interactions (e.g. Dolia Ult reset, Rouie recall transit, Aya parasitic bruiser dive, Baldum stasis trap into delayed AoE burst, Aleister/Arum suppression, TeeMee gold acceleration & revival).
+  - Designed `POST /mechanics/analyze-comp` REST endpoint returning tactical alerts, missing lanes, synergy pairs, and mechanic-fit hero recommendations.
+- **Built Dedicated Meta Lab (Beta) UI Tab (`frontend/src/components/meta_lab/MetaLab.tsx`, `frontend/src/App.tsx`, `frontend/src/types/draft.ts`)**:
+  - Added dedicated top-level navigation tab `Meta Lab (Beta)` separating mechanic comp exploration from broadcast ban/pick draft.
+  - Interactive 5v5 ally vs enemy team builder with one-click import from active draft board.
+  - Tactical dashboard rendering 3-color stacked damage distribution bar, 5-dimension mechanics ratings, power spike curves, actionable alert badges, and detected combo cards.
+  - Innovative Hero Recommendations with lane filtering, fit scores, weakness-fix badges, combo partner tags, and direct "+ เพิ่มเข้าทีม" action.
+- **Testing & Verification (`tests/test_mechanic_analyzer.py`)**:
+  - Added unit tests for combo detection, damage profile, empty comps, and lane filtering.
+  - All 69 pytest tests passing, 0 ruff errors, 0 oxlint errors, and successful frontend build.
+
+### 📁 Modified Files
+- `src/schemas.py`
+- `src/mechanic_analyzer.py`
+- `src/api.py`
+- `frontend/src/types/draft.ts`
+- `frontend/src/components/meta_lab/MetaLab.tsx`
+- `frontend/src/App.tsx`
+- `tests/test_mechanic_analyzer.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `pytest -v` (69/69 passed)
+- `ruff check --fix . && ruff format .` (0 errors, clean)
+- `cd frontend && npm run build && npm run lint` (0 errors, clean)
+- Live server test on `http://localhost:8000/mechanics/analyze-comp` verified response.
+
+### ⚠️ Open Issues / Important Notes
+- Meta Lab (Beta) is fully decoupled and accessible at `http://localhost:8000/#metalab` or via the top tab navigation.
+
+---
+
+## 📅 2026-10-29 02:30 (UTC+7) — Counter, Synergy & Ban-Unlock Context Badges for AI Suggestions
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Added Explicit `trigger_reason` to AI Recommendations (`src/schemas.py`, `frontend/src/types/draft.ts`, `src/predictor.py`)**:
+  - Extended `HeroRecommendation` with `trigger_reason: "counter" | "combo" | "ban_unlock" | "protect"`.
+  - Added `_find_pick_triggers_and_reason()` in `src/predictor.py`:
+    1. **Counter Priority**: Compares available hero against locked enemy picks using `counter_mat`. If advantage >= +2.0%, tags `trigger_reason="counter"` with up to 2 countered enemy heroes.
+    2. **Synergy Priority**: Compares against locked ally picks using `synergy_mat`. If synergy >= +2.0%, tags `trigger_reason="combo"` with up to 2 partner heroes.
+    3. **Ban-Unlock Priority**: If no active pick synergy/counter, checks `ban_triggers` and tags `trigger_reason="ban_unlock"`.
+    4. **Ban Mode Priority**: Tags `trigger_reason="protect"` for target bans that protect ally picks.
+- **Rendered Color-Coded Context Badges in Draft UI (`frontend/src/components/AiPanel.tsx`, `frontend/src/components/TeamColumn.tsx`)**:
+  - In `AiPanel.tsx`:
+    - Red badge: `⚔️ แก้ทาง [ศัตรู]`
+    - Blue badge: `🤝 คู่ [เพื่อนร่วมทีม]`
+    - Gold badge: `🛡️ ปลดล็อก (แบน [ตัวแบน])` or `🛡️ ปกป้อง [เพื่อน]`
+  - In `TeamColumn.tsx`: Tooltip and ghost slot tags now accurately reflect `แก้ทาง`, `คู่`, or `ป้องกัน`.
+- **Added Regression Test & Updated Golden Fixture (`tests/test_api.py`, `tests/fixtures/predict_golden.json`)**:
+  - Added `test_recommendations_counter_and_combo_trigger_reasons()` and regenerated `predict_golden.json`.
+
+### 📁 Modified Files
+- `src/schemas.py`
+- `src/predictor.py`
+- `frontend/src/types/draft.ts`
+- `frontend/src/components/AiPanel.tsx`
+- `frontend/src/components/TeamColumn.tsx`
+- `tests/test_api.py`
+- `tests/fixtures/predict_golden.json`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `cd frontend && npm run lint && npm run build`: 0 warnings, 0 errors.
+- `ruff check --fix . && ruff format .`: All checks passed.
+- `pytest -v`: 66 passed in 8.26s.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-10-29 02:15 (UTC+7) — Full System Bug Audit & Fixes (Step 18 5v5 Value, Lookahead Lane Constraint, Ghost Ban Sync, Series UI)
+**Agent:** Claude Code (`ag/gemini-4-argon-high`)
+
+### ✅ Completed Work
+- **Fixed Step 18 Completed-Draft 5v5 Win Rate Evaluation (`src/predictor.py`)**:
+  - When a 5v5 draft is complete (`len(blue_picks) == 5 and len(red_picks) == 5`), `predict()` now evaluates the exact Step 17 (`Red Pick 5`) state (`red_picks[:4]` vs `blue_picks`) and reads `win_probs[id(red_picks[4])]` so the 10th picked hero is never truncated by `MAX_HISTORY_LEN = 17`.
+- **Enforced Open-Lane Ordering in Lookahead & Standard Ranking (`src/predictor.py`, `src/search/draft_mcts.py`)**:
+  - Partitioned candidate ordering by `is_needed_lane(h_idx)` in both standard and `use_lookahead=True` branches so penalized off-lane heroes (`prob = 0.05%`) can never outrank open-lane heroes via `0.60 * l_score`.
+  - Applied `_apply_lane_filter()` to opponent counter-turns inside `DraftMinimaxSearch.search_lookahead_win_rates()`.
+- **Synchronized Ghost Ban with SOTA Ban Recommendations (`src/predictor.py`)**:
+  - Reduced `p2b_scores` blend weight in `_forecast_bans()` to `0.15` when `team.opp_picks` is present on the board so `blue_next_bans[0]` / `red_next_bans[0]` stays aligned with `recommendations[0]`.
+- **Fixed Frontend Series Switching & Team Name Input UX (`frontend/src/hooks/useDraft.ts`, `frontend/src/components/GlobalBanModal.tsx`)**:
+  - Updated `switchSeries()` to auto-save any in-progress draft snapshot before switching series and to compute used heroes via `syncSeriesGlobalBans()`.
+  - Fixed `GlobalBanModal.tsx` team name `<input>` elements so clearing with Backspace does not immediately inject `"TEAM BLUE"` / `"TEAM RED"` mid-typing (fallback applied on `onBlur`), and preserved `seriesName` and `gameNumber` in `clearAll()`.
+
+### 📁 Modified Files
+- `src/predictor.py`
+- `src/search/draft_mcts.py`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/GlobalBanModal.tsx`
+- `tests/test_api.py`
+- `tests/fixtures/predict_golden.json`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `cd frontend && npm run lint && npm run build`: 0 warnings, 0 errors.
+- `ruff check --fix . && ruff format .`: All checks passed.
+- `pytest -v`: 65 passed in 8.08s (including `test_completed_5v5_draft_evaluates_exact_step17_matchup_win_rate` and `test_lookahead_respects_open_lane_constraints`).
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-10-29 01:55 (UTC+7) — Anchor Ghost Pick Forecasts on SOTA GNN-Transformer & Remove 2024 Lift Pollution
+**Agent:** Claude Code (`ag/gemini-4-argon-high`)
+
+### ✅ Completed Work
+- **Excluded Legacy 2024 Matches & Inactive Heroes from Statistical Ban/Pick Lift Tables (`src/predictor.py`)**:
+  - Updated `_build_ban_pick_intel_tables()` to filter out 2024 matches and require active 2026 pro presence (`picks_2026 >= 15`) so legacy 2024 picks (`Erin`, `Zill`, `Wisp`) cannot pollute `ban_to_pick_score` or `pick_to_ban_score`.
+- **Anchored `_choose_next_pick()` on SOTA GNN-Transformer Policy (`src/predictor.py`)**:
+  - Removed the unconditional `blend_w = 0.75` override in `_choose_next_pick()` so `blue_next_picks` and `red_next_picks` directly reflect the H100-trained `RoVDraftGNNTransformer` probabilities (`probs`), only blending `ban_dist` on opening multi-ban counter-unlock combos (`max_ban_score >= 30.0` with `>= 2` triggering bans).
+  - Verified on `FPL vs SGP` Game 4 (`Valhein + Rouie` banned by Red, `TeeMee` picked by Blue): `red_next_picks` now predicts `#1 Wiro (12.67%)` and `#2 Tachi (16.77%)` (matching `recommendations[0]`), instead of `Erin` and `Zill`.
+- **Added Regression Test & Updated Golden Fixture (`tests/test_api.py`, `tests/fixtures/predict_golden.json`)**:
+  - Added `test_next_picks_anchored_on_sota_model_not_2024_lifts()` and regenerated `tests/fixtures/predict_golden.json`.
+
+### 📁 Modified Files
+- `src/predictor.py`
+- `tests/test_api.py`
+- `tests/fixtures/predict_golden.json`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check --fix .` and `ruff format .`: `0` issues.
+- `pytest -v`: all **63 / 63** tests passed.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-10-29 01:40 (UTC+7) — Draft Board UI Cleanup: Remove Timeline Strip & Consolidate Series Controls
+**Agent:** Claude Code (`ag/gemini-4-argon-high`)
+
+### ✅ Completed Work
+- **Removed Horizontal `DraftTimeline` Strip (`frontend/src/App.tsx`)**:
+  - Removed the 18-slot horizontal `<DraftTimeline />` bar from the main draft view since pick/ban sequences and active turns are already displayed in the left/right `TeamColumn` panels and `ScoreBar`.
+- **Removed Redundant Modal & Action Buttons (`frontend/src/components/ScoreBar.tsx`, `frontend/src/App.tsx`)**:
+  - Removed the duplicate `GLOBAL BP` button from `ScoreBar.tsx`.
+  - Removed the duplicate `BLUE: <Team> [count]` and `RED: <Team> [count]` buttons from the series control bar (already shown in each `TeamColumn`'s `GLOBAL BAN` section).
+  - Consolidated the finish-game action into a single `จบเกม G(n) → เริ่ม G(n+1)` button alongside `สลับฝั่ง (Blue ⇄ Red)`.
+- **Re-laid Out Series Control Bar (`frontend/src/App.tsx`)**:
+  - Organized the `Series and Global Ban Controls` bar into a clean two-sided toolbar: Left (`+ แมตช์ใหม่`, series title, segmented `G1`–`G7` selector) and Right (`สลับฝั่ง (Blue ⇄ Red)`, `ตั้งค่าทีม / Global Ban`, `ประวัติการดราฟต์`, `จบเกม G(n) → เริ่ม G(n+1)`).
+
+### 📁 Modified Files
+- `frontend/src/App.tsx`
+- `frontend/src/components/ScoreBar.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run build` and `npm --prefix frontend run lint`: passed cleanly (`0` warnings/errors).
+- `pytest -v`: all **62 / 62** tests passed.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-10-29 01:25 (UTC+7) — Global Ban Series State Reconciliation & Side-Order UI Safeguards
+**Agent:** Claude Code (`ag/gemini-4-argon-high`)
+
+### ✅ Completed Work
+- **Single-Source-of-Truth Global Ban Sync (`frontend/src/utils/draft.ts`, `frontend/src/hooks/useDraft.ts`)**:
+  - Added `syncSeriesGlobalBans()` and `heroOriginGameMap()` to reconcile `teamAUsed` and `teamBUsed` against recorded games in `seriesGames` whenever a game is recorded (`recordGameToSeries`), overwritten, deleted (`deleteRecordedGame`), restored (`loadRecordedGame`), or when switching game numbers (`selectGameNumber`).
+  - Changed `recordGameToSeries()` and `saveCurrentDraftSnapshot()` to upsert by `(seriesGroup, gameNumber)` instead of creating duplicate snapshots for the same game number, automatically pruning any heroes from overwritten/deleted games.
+- **Anti-Human-Error UI Safeguards (`frontend/src/App.tsx`, `frontend/src/components/GlobalBanModal.tsx`, `frontend/src/components/TeamColumn.tsx`)**:
+  - Aligned `GlobalBanModal` team inputs and category tabs with the main draft board so **Left = Current BLUE Side** and **Right = Current RED Side** regardless of whether `blueSideTeam` is `"A"` or `"B"`.
+  - Added explicit **"จบเกม → สลับฝั่งเริ่ม G(n+1)"** (`recordGameToSeries(true)`) and **"จบเกม (ฝั่งเดิม G(n+1))"** (`recordGameToSeries(false)`) buttons on the series bar for pro games where the loser elects to stay on the same side.
+  - Added `G1..G6` origin badges on each Global Ban hero chip in both `TeamColumn` and `GlobalBanModal` so users can immediately inspect which game added each hero.
+
+### 📁 Modified Files
+- `frontend/src/utils/draft.ts`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/GlobalBanModal.tsx`
+- `frontend/src/components/TeamColumn.tsx`
+- `frontend/src/App.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Ran `npm --prefix frontend run build` (`built in 879ms`) and `npm --prefix frontend run lint` (`0` warnings/errors).
+- Ran `pytest -v` (`62 passed`).
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-10-29 01:05 (UTC+7) — Phase 1 & Phase 2 Directional Lane-Overlap Fix Across All Prediction Paths
+**Agent:** Claude Code (`ag/gemini-4-argon-high`)
+
+### ✅ Completed Work
+- **Unified Needed-Lanes & Directional Lane Filter (`src/predictor.py`)**:
+  - Added `_needed_lanes_for_picks(picks, pick_vec_row)` and `_apply_lane_filter(probs, needed_lanes)` to compute still-needed primary lanes for any team in both Phase 1 and Phase 2, including a slot-aware fallback when secondary flex-lane coverage saturates `lane_cov >= 0.65` before all 5 primary lanes are filled.
+  - Applied opponent-lane filtering (`opp_needed_lanes`) to `_forecast_bans()` (`blue_next_bans` / `red_next_bans`) so Ghost Ban slots only target lanes the opponent has not yet drafted (resolving the `FPL vs SGP` Game 6 bug where `? Mganga` (Mid) was suggested as a Ghost Ban after `Liliana` (Mid) had already been picked).
+  - Applied directional lane filtering (`ally_needed_lanes` in Pick mode, `enemy_needed_lanes` in Ban mode) to `predict()` (`recommendations`) and `_compute_ban_unlocked_heroes()` (`ban_unlocked_heroes`), and removed the `[:25]` candidate search truncation in `_choose_next_pick()`.
+
+### 📁 Modified Files
+- `src/predictor.py`
+- `tests/test_api.py`
+- `tests/fixtures/predict_golden.json`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Audited all 18 draft steps across 30 pro games (`540` decision states): verified `0` lane overlaps across Phase 1 and Phase 2 for `recommendations`, `blue_next_picks`/`red_next_picks`, `blue_next_bans`/`red_next_bans`, and `ban_unlocked_heroes`.
+- Added `test_phase1_and_phase2_lane_filtering_prevents_overlap` in `tests/test_api.py` and regenerated `tests/fixtures/predict_golden.json`.
+- Ran `ruff check --fix .`, `ruff format .`, and `pytest -v` (`62 passed`).
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-10-29 00:15 (UTC+7) — Multi-Series Match Management & New Series Workflow
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Multi-Series Creation & Switch Engine (`useDraft.ts`, `NewSeriesModal.tsx`)**:
+  - Implemented `startNewSeries(teamA, teamB, seriesName)`: automatically archives ongoing draft board actions into the previous series history, resets the draft board, and initializes a clean Global Ban pool for the new matchup.
+  - Implemented `switchSeries(groupName)`: restores cumulative Global Ban history (`teamAUsed`, `teamBUsed`) across past games for the target series and positions the board at the next game number.
+  - Built `NewSeriesModal` component featuring quick presets for major pro teams across RPL (BRU, BAC, FS, TLN, EA, KOG, HD, TEN), AOG (1S, FL, FPL, GAM, BOX), and GCS/APL (ONE, HKA, BMG, DCG, FW) with custom series tagging.
+- **Draft History & Board Navigation Integration (`DraftHistoryModal.tsx`, `App.tsx`)**:
+  - Added "+ แมตช์ใหม่" button directly on the series toolbar and within the Draft History modal header.
+  - Added "ดราฟต์ซีรีส์นี้ต่อ" action on each series group card to switch seamlessly between concurrent match draft sessions without clearing history.
+  - Displayed the active series group name prominently in the control bar.
+- **Verification & Deployment**:
+  - Built production bundle (`npm run build`) in 885ms without TypeScript or bundling errors.
+  - Validated frontend linting (`npm run lint`) and python code quality (`ruff check` & `ruff format`).
+  - Executed automated test suite (`pytest -v`): all 61 tests passed.
+  - Restarted FastAPI server on `http://0.0.0.0:8000` with the updated distribution build.
+
+### 📁 Modified Files
+- `frontend/src/components/NewSeriesModal.tsx`
+- `frontend/src/components/DraftHistoryModal.tsx`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/App.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run build` -> Passed (0 errors, 402.25 kB JS bundle)
+- `npm --prefix frontend run lint` -> Passed (oxlint 0 errors)
+- `ruff check --fix . && ruff format .` -> Passed (All checks passed)
+- `pytest -v` -> 61 passed in 5.60s
+- Background FastAPI server reloaded on port 8000
+
+### ⚠️ Open Issues / Important Notes
+- None. Multi-series draft separation and Global Ban isolation fully operational.
+
+## 📅 2026-10-28 23:45 (UTC+7) — Pull 50-Trial H100 Checkpoint, Silence Warnings & MLflow Noise
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Synchronized 50-Trial HPO Checkpoint from ERAWAN H100**:
+  - Pulled updated `models/sota_draft_gnn_transformer.pt`, `best_params/sota_rov_best_params.json`, and `best_params/sota_rov_top5_trials.json`.
+  - Parsimony selection verified Rank #1 (Trial #01) as Safest & Compact: Val Loss = 2.79025 | Overfit Gap = +0.2899 | Top-1 = 21.93% | Top-5 = 60.67% | WinAcc = 52.17%.
+- **Silenced PyTorch & MLflow Warning Spam**:
+  - Filtered prototype nested tensor `UserWarning` in `src/train_sota_model.py` and `src/hpo_sota_optuna.py`.
+  - Added SQLite compatibility guard (`sqlite3.sqlite_version >= 3.31.0`) in both training scripts to disable SQL-based MLflow and suppress `INFO mlflow.store.db.utils` spam on Rocky Linux / HPC nodes.
+  - Added pytest filterwarnings in `pyproject.toml` for clean test execution.
+- **Updated Golden Test Fixtures**:
+  - Re-pinned golden draft inference predictions in `tests/fixtures/predict_golden.json` for the newly trained checkpoint.
+
+### 📁 Modified Files
+- `src/hpo_sota_optuna.py`: Added SQLite version check, silenced MLflow logger on failure, and filtered PyTorch nested tensor warnings.
+- `src/train_sota_model.py`: Added SQLite version check, disabled MLflow on incompatibility, and filtered PyTorch warnings.
+- `pyproject.toml`: Added pytest filterwarnings for UserWarning and Starlette deprecations.
+- `tests/fixtures/predict_golden.json`: Updated golden scenario predictions for the 50-trial SOTA checkpoint.
+- `CHANGELOG.md`: Appended operational entry.
+
+### 🧪 Verification
+- `pytest -v`: 61/61 tests passed.
+- `python src/predict_draft_cli.py --demo`: Verified warning-free clean CLI execution.
+- `ruff check --fix . && ruff format .`: Passed cleanly with zero lint errors.
+
+### ⚠️ Open Issues / Important Notes
+- Production model checkpoint is now fully trained on 2025–2026 data with zero-leakage isolation from October 25, 2026 matches (ready for RPL Winter Grand Finals validation).
+
 ## 📅 2026-10-28 23:05 (UTC+7) — Filter Training Dataset to 2025–2026 Only (Cutoff <= 2026-10-24)
 **Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
 

@@ -1,8 +1,11 @@
 import argparse
 import json
+import logging
 import math
 import random
+import sqlite3
 import time
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -12,11 +15,21 @@ import torch.nn.functional as F
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 
+# Suppress PyTorch prototype nested tensor warning in TransformerEncoder
+warnings.filterwarnings("ignore", message=".*nested tensors.*")
+warnings.filterwarnings("ignore", category=UserWarning, module="torch.nn.modules.transformer")
+
 try:
     import mlflow
 
-    HAS_MLFLOW = True
-except ImportError:
+    # MLflow SQL-based backend requires SQLite >= 3.31.0; silence and disable if incompatible
+    sqlite_ver = tuple(map(int, sqlite3.sqlite_version.split(".")[:2]))
+    if sqlite_ver < (3, 31):
+        logging.getLogger("mlflow").setLevel(logging.ERROR)
+        HAS_MLFLOW = False
+    else:
+        HAS_MLFLOW = True
+except Exception:
     HAS_MLFLOW = False
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -944,6 +957,7 @@ def parse_args():
 
 
 def main():
+    global HAS_MLFLOW
     args = parse_args()
 
     # Load Optuna best_params / top_5_trials if available
@@ -1105,7 +1119,9 @@ def main():
             )
             print("MLflow tracking active (Experiment: 'RoV_Draft_Intelligence')", flush=True)
         except Exception as e:
-            print(f"Warning: MLflow start_run error: {e}", flush=True)
+            print(f"Warning: MLflow start_run error: {e}. Disabling MLflow.", flush=True)
+            logging.getLogger("mlflow").setLevel(logging.ERROR)
+            HAS_MLFLOW = False
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)

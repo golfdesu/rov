@@ -15,7 +15,8 @@ This repository follows Big Tech Machine Learning Engineering standards (modeled
 | Component | Status & Verified Metrics |
 | :--- | :--- |
 | **Hero & Skill Database** | **130 / 130 Heroes** (`data/heroes_130_full.json`, `data/heroes_130_summary.csv`, `data/hero_skills_full.json`) up to **Evita** (Oct 2026), **Tamyn** (Jul 2026), and **Flowborn (Marksman & Mage)**, each with `>= 4` skills, 100% numerical cooldowns/mana arrays, base damage, and AD/AP/HP scaling. |
-| **Pro Match Dataset** | **4,208 Complete Pro Games** (`data/matches_draft_full.json`) from RPL, APL, AIC, AOG, and GCS (2024–2026) with Global Ban Pick tracking and **0 unmapped hero names**. |
+| **Pro Match Archive** | **4,208 Complete Pro Games** (`data/matches_draft_full.json`) from RPL, APL, AIC, AOG, and GCS (2024–2026) with Global Ban Pick tracking and **0 unmapped hero names**. |
+| **Curated Training Dataset** | **3,477 Games (2025–2026)** (`data/matches_training.json`). All 812 games from 2024 are strictly excluded to remove legacy meta noise; includes all 20 games from 2026-10-25 with 100% verified true pick order. **True Pick Order coverage = 51.2%** (1,781 / 3,477 games). |
 | **Draft Web UI** | React 19 + Vite + Tailwind 4 broadcast-style draft board (`frontend/`), served by FastAPI from `frontend/dist`. 130 / 130 square hero icons (`frontend/public/avatars/`), Thai display names (Arthur -> Mortos, Brunhilda -> Celica, Richter -> Riktor). |
 | **SOTA Architecture** | `RoVDraftGNNTransformer` (`src/train_sota_model.py`): 2-Layer Multi-Relational Hero GNN (`adj_copick`, `adj_synergy`, `adj_counter`, `adj_countered_by`) + Sequence Transformer + Bounded Neural Temperature Gate + Dual Policy & Win-Value Heads. |
 | **H100 Optuna HPO** | Completed 40 Trials on ERAWAN HPC H100 (`best_params/sota_rov_top5_trials.json`, `configs/selected_production_params.json`). |
@@ -81,6 +82,14 @@ Every AI agent (including fast models such as `3.8flash`) MUST strictly obey the
     - Edit skills only in `.agents/skills/`, then copy them over with `cp -r .agents/skills/. .claude/skills/`. `tests/test_skills_sync.py` fails if the two differ.
     - Quote model metrics from `python .agents/skills/hpo-parsimony-selector/scripts/select_parsimonious_params.py`, not from the status table above. As of 2026-10-21 the table and `configs/selected_production_params.json` describe an older run than the served checkpoint.
 
+13. **Curated Training Dataset & 2024 Exclusion Invariant (`data/matches_training.json`)**:
+    - `data/matches_draft_full.json` (4,208 games) is the historical archival repository (2024–2026).
+    - **STRICTLY FORBIDDEN to train the production model on 2024 data**. All 812 games from 2024 are excluded because legacy meta noise and obsolete hero priorities (e.g., pre-rework Wonder Woman, obsolete 2024 Erin dynamics) degrade model performance on the current meta.
+    - The active training dataset is `data/matches_training.json` containing **3,477 games strictly from 2025–2026** with **51.2% True Pick Order coverage** (1,781 / 3,477 games), including all 20 games from the 2026-10-25 Grand Finals (RPL & AOG) with 100% verified broadcast screenshots.
+    - `src/train_sota_model.py` automatically defaults to `data/matches_training.json` whenever it exists.
+    - Regenerate the training set only with:
+      `python src/build_training_dataset.py --min-year 2025 --max-date 2026-10-25`
+
 ---
 
 ## 2. Repository Structure & Architecture
@@ -112,7 +121,8 @@ ROV/
 ├── data/
 │   ├── heroes_130_full.json         # Full 130 RoV heroes + skills + capability flags
 │   ├── heroes_130_summary.csv       # Tabular summary of all 130 heroes
-│   ├── matches_draft_full.json      # 4,208 pro tournament draft games (2024–2026)
+│   ├── matches_training.json        # Curated training set: 3,477 games (2025–2026 only, 2024 excluded, 51.2% true order)
+│   ├── matches_draft_full.json      # Full historical archive: 4,208 pro tournament draft games (2024–2026)
 │   ├── matches_draft_flat.csv       # Flattened match draft table
 │   ├── hero_draft_stats.csv         # 5-lane distributions, pick/ban/win/presence rates
 │   ├── synergy_matrix.csv           # Pairwise ally synergy matrix

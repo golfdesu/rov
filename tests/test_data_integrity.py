@@ -75,6 +75,15 @@ def test_items_catalog():
     carano = by_name.get("Carano's Pledge") or by_name.get("Carano's Vow")
     assert carano["stats"] == {"ability_power": 180, "magic_life_steal": 12, "movement_speed_pct": 5}
 
+    # Verify all item icons are bundled locally in frontend/public/items/
+    items_dir = config.paths.base_dir / "frontend" / "public" / "items"
+    assert items_dir.is_dir(), "frontend/public/items directory is missing"
+    for i in items:
+        icon_url = i.get("icon_url")
+        assert icon_url and icon_url.startswith("/items/"), f"{i['name']}: invalid icon_url {icon_url}"
+        icon_file = config.paths.base_dir / "frontend" / "public" / icon_url.lstrip("/")
+        assert icon_file.exists(), f"{i['name']}: missing local item icon file {icon_file}"
+
 
 def test_hero_patch_history():
     assert config.paths.hero_patch_history_path.exists()
@@ -254,11 +263,11 @@ def test_latest_patch_alignments():
     raz_s1 = next(s for s in heroes["Raz"] if s["slot"] == "Skill 1")
     assert raz_s1["cooldown"] == [8.0, 7.7, 7.4, 7.1, 6.8, 6.5]
 
-    # Astrid Rework
+    # Astrid (Patch 2026-10-30 Nerf)
     astrid_skills = {s["slot"]: s for s in heroes["Astrid"]}
     assert astrid_skills["Passive"]["name"] == "Martial Soul"
     assert astrid_skills["Skill 1"]["name"] == "Spin Slash"
-    assert astrid_skills["Skill 1"]["base_damage"] == [300, 360, 420, 480, 540, 600]
+    assert astrid_skills["Skill 1"]["base_damage"] == [275, 330, 385, 440, 495, 550]
     assert astrid_skills["Skill 1"]["cooldown"] == [8.0, 8.0, 8.0, 8.0, 8.0, 8.0]
     assert astrid_skills["Skill 2"]["name"] == "Fearless Charge"
     assert astrid_skills["Skill 2"]["base_damage"] == [230, 276, 322, 368, 414, 460]
@@ -266,6 +275,31 @@ def test_latest_patch_alignments():
     assert astrid_skills["Ultimate"]["name"] == "Dire Blow"
     assert astrid_skills["Ultimate"]["base_damage"] == [200, 250, 300]
     assert astrid_skills["Ultimate"]["cooldown"] == [50.0, 45.0, 40.0]
+
+    # Patch 2026-10-30 Validations
+    evita_s1 = next(s for s in heroes["Evita"] if s["slot"] == "Skill 1")
+    assert evita_s1["base_damage"] == [300, 360, 420, 480, 540, 600]
+    assert evita_s1["scaling"]["ap_pct"] == 60.0
+
+    erin_s1 = next(s for s in heroes["Erin"] if s["slot"] == "Skill 1")
+    assert erin_s1["base_damage"] == [450, 540, 630, 720, 810, 900]
+    assert erin_s1["scaling"]["ap_pct"] == 105.0
+
+    xeniel_s1 = next(s for s in heroes["Xeniel"] if s["slot"] == "Skill 1")
+    assert xeniel_s1["base_damage"] == [500, 600, 700, 800, 900, 1000]
+    assert xeniel_s1["scaling"]["ap_pct"] == 50.0
+
+    tamyn_passive = next(s for s in heroes["Tamyn"] if s["slot"] == "Passive")
+    assert tamyn_passive["base_damage"] == [182]
+    assert tamyn_passive["scaling"]["bonus_ad_pct"] == 28.0
+
+    hayate_s1 = next(s for s in heroes["Hayate"] if s["slot"] == "Skill 1")
+    assert hayate_s1["base_damage"] == [110, 132, 154, 176, 198, 220]
+    assert hayate_s1["scaling"]["ad_pct"] == 18.0
+
+    keera_s2 = next(s for s in heroes["Keera"] if s["slot"] == "Skill 2")
+    assert keera_s2["base_damage"] == [400, 480, 560, 640, 720, 800]
+    assert keera_s2["scaling"]["ap_pct"] == 80.0
 
     # Enchantments Beta 55
     with open(config.paths.enchantments_json_path, "r", encoding="utf-8") as f:

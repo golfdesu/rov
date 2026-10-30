@@ -26,6 +26,37 @@ function formatStats(stats: Record<string, number>): string {
     .join(", ");
 }
 
+function ItemIcon({
+  src,
+  name,
+  className = "h-7 w-7 shrink-0",
+}: {
+  src?: string | null;
+  name: string;
+  className?: string;
+}) {
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+
+  if (!src || failedSrc === src) {
+    return (
+      <div
+        className={`flex items-center justify-center border border-line bg-panel-2 p-0.5 text-center font-mono text-[9px] font-bold text-muted ${className}`}
+      >
+        <span className="truncate">{name.slice(0, 3).toUpperCase()}</span>
+      </div>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt={name}
+      className={className}
+      loading="lazy"
+      onError={() => setFailedSrc(src)}
+    />
+  );
+}
+
 function Section({ title, children, right }: { title: string; children: ReactNode; right?: ReactNode }) {
   return (
     <section className="border-t border-line pt-3">
@@ -91,7 +122,7 @@ function ItemPicker({
             className="flex items-center gap-2 bg-panel p-1.5 text-left hover:bg-line"
             title={[formatStats(i.stats), ...i.passives].join("\n")}
           >
-            {i.icon_url && <img src={i.icon_url} alt="" className="h-7 w-7 shrink-0" loading="lazy" />}
+            <ItemIcon src={i.icon_url} name={i.name} className="h-7 w-7 shrink-0 object-cover" />
             <span className="min-w-0">
               <span className="block truncate text-xs">{i.name}</span>
               <span className="block truncate font-mono text-[10px] text-dim">
@@ -266,10 +297,8 @@ export function BuildPanel({
                     picking === i ? "border-gold" : "border-line"
                   } bg-panel-2 hover:border-line-strong`}
                 >
-                  {item?.icon_url ? (
-                    <img src={item.icon_url} alt={item.name} className="h-full w-full object-cover" />
-                  ) : item ? (
-                    <span className="p-0.5 text-[9px] leading-tight">{item.name}</span>
+                  {item ? (
+                    <ItemIcon src={item.icon_url} name={item.name} className="h-full w-full object-cover" />
                   ) : (
                     <Plus size={14} className="text-dim" />
                   )}

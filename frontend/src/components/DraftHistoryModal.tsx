@@ -4,6 +4,8 @@ import {
   FolderOpen,
   History,
   Layers,
+  Play,
+  PlusCircle,
   RotateCcw,
   Trash2,
   X,
@@ -20,6 +22,8 @@ interface DraftHistoryModalProps {
   heroMap: Map<string, Hero>;
   hasCurrentDraftActions: boolean;
   onSaveCurrentSnapshot: () => void;
+  onOpenNewSeries?: () => void;
+  onSwitchSeries?: (groupName: string) => void;
   onLoadGame: (game: RecordedDraftGame) => void;
   onDeleteGame: (id: string) => void;
   onDeleteGroup: (groupName: string) => void;
@@ -32,6 +36,8 @@ export function DraftHistoryModal({
   heroMap,
   hasCurrentDraftActions,
   onSaveCurrentSnapshot,
+  onOpenNewSeries,
+  onSwitchSeries,
   onLoadGame,
   onDeleteGame,
   onDeleteGroup,
@@ -85,6 +91,20 @@ export function DraftHistoryModal({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          {onOpenNewSeries && (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onOpenNewSeries();
+              }}
+              title="เริ่มแมตช์ / ซีรีส์ใหม่ (แยกประวัติออกจากแมตช์เดิม)"
+              className="flex h-8 items-center gap-1.5 border border-gold bg-gold px-2.5 font-display text-[11px] font-bold tracking-wide text-bg transition-colors hover:bg-gold/90"
+            >
+              <PlusCircle className="h-3.5 w-3.5" />
+              <span>+ แมตช์ใหม่</span>
+            </button>
+          )}
           {hasCurrentDraftActions && (
             <button
               type="button"
@@ -206,19 +226,35 @@ export function DraftHistoryModal({
                     )}
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (window.confirm(`ต้องการลบประวัติของกลุ่ม "${grp.name}" ทั้งหมด (${grp.count} เกม)?`)) {
-                        onDeleteGroup(grp.name);
-                      }
-                    }}
-                    title={`ลบประวัติเฉพาะกลุ่ม ${grp.name}`}
-                    className="flex h-6 items-center gap-1 border border-red/40 bg-red/10 px-2 font-display text-[10px] font-semibold text-red transition-colors hover:bg-red hover:text-ink"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                    <span>ลบเฉพาะกลุ่มนี้</span>
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    {onSwitchSeries && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onSwitchSeries(grp.name);
+                          onClose();
+                        }}
+                        title={`สลับกระดานมาดราฟต์เกมถัดไปของซีรีส์ "${grp.name}"`}
+                        className="flex h-6 items-center gap-1 border border-gold/60 bg-gold/15 px-2 font-display text-[10px] font-bold text-gold transition-colors hover:bg-gold hover:text-bg"
+                      >
+                        <Play className="h-3 w-3" />
+                        <span>ดราฟต์ซีรีส์นี้ต่อ</span>
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm(`ต้องการลบประวัติของกลุ่ม "${grp.name}" ทั้งหมด (${grp.count} เกม)?`)) {
+                          onDeleteGroup(grp.name);
+                        }
+                      }}
+                      title={`ลบประวัติเฉพาะกลุ่ม ${grp.name}`}
+                      className="flex h-6 items-center gap-1 border border-red/40 bg-red/10 px-2 font-display text-[10px] font-semibold text-red transition-colors hover:bg-red hover:text-ink"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      <span>ลบเฉพาะกลุ่มนี้</span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* Games in this Group */}

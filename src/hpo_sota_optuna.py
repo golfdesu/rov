@@ -1,8 +1,11 @@
 import argparse
 import copy
 import json
+import logging
 import random
+import sqlite3
 import time
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -13,11 +16,21 @@ from optuna.pruners import MedianPruner
 from optuna.samplers import TPESampler
 from torch.utils.data import DataLoader
 
+# Suppress PyTorch prototype nested tensor warning in TransformerEncoder
+warnings.filterwarnings("ignore", message=".*nested tensors.*")
+warnings.filterwarnings("ignore", category=UserWarning, module="torch.nn.modules.transformer")
+
 try:
     import mlflow
 
-    HAS_MLFLOW = True
-except ImportError:
+    # MLflow SQL-based backend requires SQLite >= 3.31.0; silence and disable if incompatible
+    sqlite_ver = tuple(map(int, sqlite3.sqlite_version.split(".")[:2]))
+    if sqlite_ver < (3, 31):
+        logging.getLogger("mlflow").setLevel(logging.ERROR)
+        HAS_MLFLOW = False
+    else:
+        HAS_MLFLOW = True
+except Exception:
     HAS_MLFLOW = False
 
 from train_sota_model import (
@@ -56,6 +69,7 @@ def parse_args():
 
 
 def main():
+    global HAS_MLFLOW
     args = parse_args()
     set_seed(SEED)
 
@@ -73,7 +87,9 @@ def main():
             mlflow.set_experiment("RoV_Draft_Intelligence")
             print("MLflow tracking active (Experiment: 'RoV_Draft_Intelligence')", flush=True)
         except Exception as e:
-            print(f"Warning: MLflow set_experiment error: {e}", flush=True)
+            print(f"Warning: MLflow set_experiment error: {e}. Disabling MLflow for this run.", flush=True)
+            logging.getLogger("mlflow").setLevel(logging.ERROR)
+            HAS_MLFLOW = False
 
     t0 = time.time()
     (

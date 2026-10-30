@@ -158,6 +158,14 @@ def predict_draft(request: DraftStateRequest):
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
+@app.post("/predict/matrix", response_model=DraftPredictionResponse)
+def predict_matrix_draft(request: DraftStateRequest):
+    try:
+        return predictor.predict_matrix(request)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
 @app.get("/combat/catalog")
 def combat_catalog():
     return get_engine().catalog()
@@ -178,7 +186,7 @@ def combat_stats(request: CombatStatsRequest):
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
-@app.post("/combat/duel")
+@app.post("/combat/duel", response_model=dict)
 def combat_duel(request: CombatDuelRequest):
     try:
         return get_engine().duel(Build(**request.a.model_dump()), Build(**request.b.model_dump()))

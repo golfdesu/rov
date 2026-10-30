@@ -29,6 +29,7 @@ export interface HeroRecommendation {
   counter_edge_pct: number;
   capabilities: string[];
   triggered_by?: string[];
+  trigger_reason?: "counter" | "combo" | "ban_unlock" | "protect" | null;
 }
 
 export interface DraftPredictionResponse {
@@ -124,3 +125,90 @@ export const CANONICAL_DRAFT_STEPS: DraftStep[] = [
   { step: 16, phase: 2, action: "pick", side: "blue", label: "Blue Pick 5" },
   { step: 17, phase: 2, action: "pick", side: "red", label: "Red Pick 5" },
 ];
+
+export interface DamageProfile {
+  physical_pct: number;
+  magic_pct: number;
+  true_pct: number;
+  verdict: string;
+}
+
+export interface MechanicsScore {
+  hard_cc_score: number;
+  burst_score: number;
+  sustain_score: number;
+  mobility_score: number;
+  frontline_score: number;
+}
+
+export interface PowerSpikeTimeline {
+  early_game: number;
+  mid_game: number;
+  late_game: number;
+  peak_phase: string;
+}
+
+export interface SynergyPair {
+  hero_a: string;
+  hero_b: string;
+  synergy_type: string;
+  description: string;
+}
+
+export interface CompAlert {
+  type: "warning" | "danger" | "good";
+  title: string;
+  message: string;
+}
+
+export interface MechanicHeroRecommendation {
+  hero_name: string;
+  primary_lane: string;
+  primary_role: string;
+  mechanic_fit_score: number;
+  reasons: string[];
+  fixes_weakness: string[];
+  combo_partners: string[];
+}
+
+export interface CompAnalysisResponse {
+  ally_heroes: string[];
+  enemy_heroes: string[];
+  damage_profile: DamageProfile;
+  mechanics_scores: MechanicsScore;
+  power_spike: PowerSpikeTimeline;
+  synergy_pairs: SynergyPair[];
+  alerts: CompAlert[];
+  missing_lanes: string[];
+  recommendations: MechanicHeroRecommendation[];
+}
+
+export type CompArchetype =
+  | "all"
+  | "wombo_combo"
+  | "dive_mobility"
+  | "poke_siege"
+  | "hyper_sustain";
+
+export interface DiscoveredComp {
+  title: string;
+  archetype: string;
+  heroes: string[];
+  lane_assignments: Record<string, string>;
+  mechanic_score: number;
+  novelty_score: number;
+  pro_games_together: number;
+  damage_profile: DamageProfile;
+  mechanic_highlights: string[];
+  key_combos: string[];
+  power_curve: string;
+}
+
+export interface CompDiscoveryResponse {
+  archetype: string;
+  anchor_hero: string | null;
+  total_evaluated: number;
+  comps: DiscoveredComp[];
+}
+
+

@@ -188,6 +188,168 @@ export function getGameSeriesGroup(game: RecordedDraftGame): string {
   return `${sorted[0]} vs ${sorted[1]}`;
 }
 
+/**
+ * Returns a map from hero name to the game number (G1..G6) in which each team picked it
+ * within the specified series group.
+ */
+export function heroOriginGameMap(
+  seriesGames: RecordedDraftGame[],
+  groupName: string,
+): { teamAGameByHero: Record<string, number>; teamBGameByHero: Record<string, number> } {
+  const teamAGameByHero: Record<string, number> = {};
+  const teamBGameByHero: Record<string, number> = {};
+  const groupGames = seriesGames
+    .filter((g) => getGameSeriesGroup(g) === groupName)
+    .sort((a, b) => a.gameNumber - b.gameNumber);
+
+  for (const g of groupGames) {
+    const aPicks = g.blueSideTeam === "A" ? g.bluePicks : g.redPicks;
+    const bPicks = g.blueSideTeam === "A" ? g.redPicks : g.bluePicks;
+    for (const h of aPicks) {
+      if (teamAGameByHero[h] === undefined) teamAGameByHero[h] = g.gameNumber;
+    }
+    for (const h of bPicks) {
+      if (teamBGameByHero[h] === undefined) teamBGameByHero[h] = g.gameNumber;
+    }
+  }
+  return { teamAGameByHero, teamBGameByHero };
+}
+
+/**
+ * Result of checking whether a game in a series is unlocked for draft navigation.
+ */
+export interface GameUnlockStatus {
+  isUnlocked: boolean;
+  requiredCount: number;
+  aCount: number;
+  bCount: number;
+  missingGames: number[];
+}
+
+/**
+ * Checks whether a given game number (1..7) is unlocked.
+ * Game 1 is always unlocked.
+ * A game is unlocked if:
+ * 1) All preceding games 1..(targetGame - 1) exist in seriesGames history as completed drafts (5v5), OR
+ * 2) Both Team A and Team B have at least 5 * (targetGame - 1) effective heroes in global ban
+ *    (e.g. 5 per side for G2, 10 per side for G3, 15 per side for G4), OR
+ * 3) The targetGame itself is already recorded as a completed game in series history.
+ */
+export function getGameUnlockStatus(
+  targetGame: number,
+  globalBans: GlobalBanState,
+  seriesGames: RecordedDraftGame[],
+  groupOverride?: string,
+): GameUnlockStatus {
+  const currentGroup = groupOverride ?? resolveSeriesName(globalBans);
+  const completedNumbers = new Set(
+    seriesGames
+      .filter((g) => getGameSeriesGroup(g) === currentGroup && g.bluePicks.length >= 5 && g.redPicks.length >= 5)
+      .map((g) => g.gameNumber),
+  );
+
+  const syncedForTarget = syncSeriesGlobalBans(globalBans, seriesGames, targetGame, [], currentGroup);
+  const aCount = syncedForTarget.teamAUsed.length;
+  const bCount = syncedForTarget.teamBUsed.length;
+  const requiredCount = Math.max(0, 5 * (targetGame - 1));
+
+  // Game 1 or already completed games in this series are always accessible
+  if (targetGame <= 1 || completedNumbers.has(targetGame)) {
+    return {
+      isUnlocked: true,
+      requiredCount,
+      aCount,
+      bCount,
+      missingGames: [],
+    };
+  }
+
+  // Check if all preceding games 1..(targetGame - 1) have been completed (5v5)
+  const missingGames: number[] = [];
+  for (let g = 1; g < targetGame; g++) {
+    if (!completedNumbers.has(g)) {
+      missingGames.push(g);
+    }
+  }
+
+  if (missingGames.length === 0) {
+    return {
+      isUnlocked: true,
+      requiredCount,
+      aCount,
+      bCount,
+      missingGames: [],
+    };
+  }
+
+  // Fast-forward condition: requires 5 * (targetGame - 1) heroes per team in Global Ban
+  const isUnlocked = aCount >= requiredCount && bCount >= requiredCount;
+
+  return { isUnlocked, requiredCount, aCount, bCount, missingGames };
+}
+
+/**
+ * Returns the highest game number (1..7) that currently satisfies unlock conditions.
+ */
+export function getMaxUnlockedGame(
+  globalBans: GlobalBanState,
+  seriesGames: RecordedDraftGame[],
+  groupOverride?: string,
+): number {
+  for (let g = 7; g >= 1; g--) {
+    if (getGameUnlockStatus(g, globalBans, seriesGames, groupOverride).isUnlocked) {
+      return g;
+    }
+  }
+  return 1;
+}
+
+/**
+ * Reconciles `teamAUsed` and `teamBUsed` against recorded games of the active series up to
+ * `targetGameNumber` (exclusive), removing heroes from deleted/overwritten/future games while
+ * preserving manually toggled heroes.
+ */
+export function syncSeriesGlobalBans(
+  prev: GlobalBanState,
+  nextSeriesGames: RecordedDraftGame[],
+  targetGameNumber: number,
+  removedGames: RecordedDraftGame[] = [],
+  groupOverride?: string,
+): { teamAUsed: string[]; teamBUsed: string[] } {
+  const currentGroup = groupOverride ?? resolveSeriesName(prev);
+  const groupGames = nextSeriesGames
+    .filter((g) => getGameSeriesGroup(g) === currentGroup)
+    .sort((a, b) => a.gameNumber - b.gameNumber);
+
+  const removedA = new Set<string>();
+  const removedB = new Set<string>();
+  for (const g of [...removedGames, ...groupGames.filter((x) => x.gameNumber >= targetGameNumber)]) {
+    const aPicks = g.blueSideTeam === "A" ? g.bluePicks : g.redPicks;
+    const bPicks = g.blueSideTeam === "A" ? g.redPicks : g.bluePicks;
+    aPicks.forEach((h) => removedA.add(h));
+    bPicks.forEach((h) => removedB.add(h));
+  }
+
+  const recordedA = new Set<string>();
+  const recordedB = new Set<string>();
+  for (const g of groupGames) {
+    if (g.gameNumber < targetGameNumber) {
+      const aPicks = g.blueSideTeam === "A" ? g.bluePicks : g.redPicks;
+      const bPicks = g.blueSideTeam === "A" ? g.redPicks : g.bluePicks;
+      aPicks.forEach((h) => recordedA.add(h));
+      bPicks.forEach((h) => recordedB.add(h));
+    }
+  }
+
+  const manualA = prev.teamAUsed.filter((h) => !removedA.has(h));
+  const manualB = prev.teamBUsed.filter((h) => !removedB.has(h));
+
+  return {
+    teamAUsed: Array.from(new Set([...manualA, ...recordedA])),
+    teamBUsed: Array.from(new Set([...manualB, ...recordedB])),
+  };
+}
+
 export function activeGlobalBansForStep(globalBans: GlobalBanState, stepIndex?: number): string[] {
   const bUsed = blueUsedHeroes(globalBans);
   const rUsed = redUsedHeroes(globalBans);

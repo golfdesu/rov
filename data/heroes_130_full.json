@@ -1618,19 +1618,35 @@
           25
         ],
         "base_damage": [
-          300,
-          360,
-          420,
-          480,
-          540,
-          600
+          275,
+          330,
+          385,
+          440,
+          495,
+          550
         ],
         "scaling": {
-          "ad_pct": 110.0
+          "ad_pct": 100.0,
+          "penetrate_base": [
+            50,
+            60,
+            70,
+            80,
+            90,
+            100
+          ],
+          "mspd_base": [
+            15,
+            18,
+            21,
+            24,
+            27,
+            30
+          ]
         },
         "icon_url": "/skills/Astrid/1_spinslash.png",
-        "desc_th": "Astrid สร้างความเสียหายกายภาพ 300 (+110%AD) หน่วยแก่ศัตรูรอบๆ\nหากโจมตีโดนเป้าหมายที่ติดวงแหวนเพลิง Astrid จะวิ่งเร็วขึ้น 20% ทันที และจะค่อยๆ เพิ่มเป็น 60% เป็นเวลา 2.5 วิ\nทุกครั้งที่โดนศัตรู เธอจะได้รับโบนัสความเร็วโจมตี 20% และเจาะเกราะ 50 หน่วย (สูงสุด 3 ครั้ง) เป็นเวลา 5 วิ",
-        "description": "Deals 300-600 (+110% AD) physical damage to nearby enemies. Grants speed boost and stacks +20% AS & +50 armor pierce up to 3 times."
+        "desc_th": "Astrid สร้างความเสียหายกายภาพ 275(+100%AD) หน่วยแก่ศัตรูรอบๆ หากโจมตีโดนเป้าหมายที่ติดวงแหวนเพลิง Astrid จะวิ่งเร็วขึ้น 15% ทันที และจะค่อยๆ เพิ่มเป็น 45% เป็นเวลา 2.5 วิ ทุกครั้งที่โดนศัตรู เธอจะได้รับโบนัสความเร็วโจมตี 15% และเจาะเกราะ 50 หน่วย (สูงสุด 3 ครั้ง) เป็นเวลา 5 วิ",
+        "description": "Deals 275-550 (+100% AD) physical damage to nearby enemies. Grants speed boost (15-45%) and stacks +15% AS & +50-100 armor pierce up to 3 times."
       },
       {
         "slot": "Skill 2",
@@ -5961,30 +5977,40 @@
         "damage_type": "magic",
         "cooldown": [
           8.0,
-          7.8,
-          7.6,
+          7.7,
           7.4,
-          7.2,
-          7.0
+          7.1,
+          6.8,
+          6.5
         ],
         "mana_cost": [
           0
         ],
         "base_damage": [
-          350,
-          420,
-          490,
-          560,
+          450,
+          540,
           630,
-          700
+          720,
+          810,
+          900
         ],
         "scaling": {
-          "ap_pct": 80.0,
-          "ad_pct": 45.0
+          "ap_pct": 105.0,
+          "ad_pct": 60.0,
+          "touch_base": [
+            150,
+            180,
+            210,
+            240,
+            270,
+            300
+          ],
+          "touch_ap_pct": 35.0,
+          "touch_ad_pct": 20.0
         },
-        "description": "Fires a laurel leaf dealing 350-700 (+80% AP) (+45% AD) magic damage. Expands into a ring at max range or hero hit, dealing 125-250 (+30% AP) (+20% AD) magic damage and slowing by 30% for 1s.",
+        "description": "Fires a laurel leaf dealing 450-900 (+105% AP) (+60% AD) magic damage. Expands into a ring at max range or hero hit, dealing 150-300 (+35% AP) (+20% AD) magic damage and slowing by 30% for 1s (CD 8.0-6.5s).",
         "icon_url": "/skills/Erin/1_spinningsong.png",
-        "desc_th": "Erin ยิงใบกระวานออกไป สร้าง ความเสียหายเวท 350 (+80% AP) (+45% AD) แก่เป้าหมายที่โดน พร้อมกับสะสมสัญลักษณ์ให้ตนเอง เมื่อใบกระวานโจมตีโดนฮีโร่ศัตรูหรือบินไปจนสุดทาง มันจะขยายออกเป็นวงเวท ซึ่งจะสร้าง ความเสียหายเวท 125 (+30% AP) (+20% AD) พร้อมกับทำให้ศัตรู วิ่งช้าลง 30% เป็นเวลา 1 วิ"
+        "desc_th": "Erin ยิงใบกระวานออกไป สร้าง ความเสียหายเวท 450 (+105% AP) (+60% AD) แก่เป้าหมายที่โดน พร้อมกับสะสมสัญลักษณ์ให้ตนเอง เมื่อใบกระวานโจมตีโดนฮีโร่ศัตรูหรือบินไปจนสุดทาง มันจะขยายออกเป็นวงเวท ซึ่งจะสร้าง ความเสียหายเวท 150 (+35% AP) (+20% AD) พร้อมกับทำให้ศัตรู วิ่งช้าลง 30% เป็นเวลา 1 วิ"
       },
       {
         "slot": "Skill 2",
@@ -6278,19 +6304,19 @@
           35
         ],
         "base_damage": [
-          325,
-          390,
-          455,
-          520,
-          585,
-          650
+          300,
+          360,
+          420,
+          480,
+          540,
+          600
         ],
         "scaling": {
-          "ap_pct": 65.0
+          "ap_pct": 60.0
         },
-        "description": "Releases Abyssal Beasts forward, exploding for 325-650 (+65% AP) magic damage on hit or max range. Splashes full damage to surrounding enemies (25% on repeated target).",
+        "description": "Releases Abyssal Beasts forward, exploding for 300-600 (+60% AP) magic damage on hit or max range. Splashes full damage to surrounding enemies (25% on repeated target).",
         "icon_url": "/skills/Evita/1_abyssalbeast.png",
-        "desc_th": "Evita ปล่อย Abyssal Beasts ไปยังทิศทางที่กำหนด เมื่อโดนศัตรูหรือบินไปจนสุดจะระเบิดสร้างความเสียหายเวท 325(+65%AP) และกระจายพลังงานความมืดไปรอบๆ สร้างความเสียหายเท่าเดิมแก่เป้าหมายในระยะ แต่หากโดนเป้าหมายเดิมซ้ำ จะสร้างความเสียหายเพียง 25%"
+        "desc_th": "Evita ปล่อย Abyssal Beasts ไปยังทิศทางที่กำหนด เมื่อโดนศัตรูหรือบินไปจนสุดจะระเบิดสร้างความเสียหายเวท 300(+60%AP) และกระจายพลังงานความมืดไปรอบๆ สร้างความเสียหายเท่าเดิมแก่เป้าหมายในระยะ แต่หากโดนเป้าหมายเดิมซ้ำ จะสร้างความเสียหายเพียง 25%"
       },
       {
         "slot": "Skill 2",
@@ -6338,20 +6364,20 @@
         "type": "Magic / Special",
         "damage_type": "magic",
         "cooldown": [
+          55.0,
           50.0,
-          45.0,
-          40.0
+          45.0
         ],
         "mana_cost": [
           80
         ],
         "base_damage": [
-          36,
-          54,
-          72
+          30,
+          45,
+          60
         ],
         "scaling": {
-          "ap_pct": 7.0,
+          "ap_pct": 6.0,
           "shield_base": [
             450,
             675,
@@ -6365,9 +6391,9 @@
           ],
           "touch_shield_ap_pct": 2.0
         },
-        "description": "Gains a 450-900 (+90% AP) shield and unleashes beasts hunting enemies for 6s. Hits deal 36-72 (+7% AP) magic damage, slow by 50% for 2s, and grant 10-20 (+2% AP) shield per hit.",
+        "description": "Gains a 450-900 (+90% AP) shield and unleashes beasts hunting enemies for 6s (CD 55/50/45s). Hits deal 30-60 (+6% AP) magic damage, slow by 50% for 2s, and grant 10-20 (+2% AP) shield per hit.",
         "icon_url": "/skills/Evita/3_abyssalhunt.png",
-        "desc_th": "Evita ได้รับโล่ 450(+90%AP) หน่วยและปล่อย Abyssal Beasts ออกไปโจมตีศัตรู 1 ครั้ง สร้างความเสียหายพร้อมกับลดความเร็วเคลื่อนที่ 50% นาน 2 วิ ซึ่ง Abyssal Beasts จะทำการไล่ล่าศัตรูนาน 6 วิ หากสังหารหรือช่วยสังหารฮีโร่ฝ่ายศัตรู จะเพิ่มระยะเวลาให้สกิลนี้นานขึ้น 2/1 ระหว่างนี้ความเร็วในการสะสมพลังงานความมืดของ Evita จะเพิ่มขึ้นอย่างมาก ทุกครั้งที่ Abyssal Beasts โจมตีโดนศัตรูจะสร้างความเสียหายเวท 36(+7%AP) หน่วย(สร้างความเสียหายแก่ป้อมปราการเพียง 20%) และมอบโล่ 10(+2%AP) หน่วยให้ Evita"
+        "desc_th": "Evita ได้รับโล่ 450(+90%AP) หน่วยและปล่อย Abyssal Beasts ออกไปโจมตีศัตรู 1 ครั้ง สร้างความเสียหายพร้อมกับลดความเร็วเคลื่อนที่ 50% นาน 2 วิ ซึ่ง Abyssal Beasts จะทำการไล่ล่าศัตรูนาน 6 วิ หากสังหารหรือช่วยสังหารฮีโร่ฝ่ายศัตรู จะเพิ่มระยะเวลาให้สกิลนี้นานขึ้น 2/1 ระหว่างนี้ความเร็วในการสะสมพลังงานความมืดของ Evita จะเพิ่มขึ้นอย่างมาก ทุกครั้งที่ Abyssal Beasts โจมตีโดนศัตรูจะสร้างความเสียหายเวท 30(+6%AP) หน่วย(สร้างความเสียหายแก่ป้อมปราการเพียง 20%) และมอบโล่ 10(+2%AP) หน่วยให้ Evita"
       }
     ]
   },
@@ -7497,13 +7523,14 @@
           0
         ],
         "base_damage": [
-          40
+          45
         ],
         "scaling": {
-          "ad_pct": 25.0
+          "ad_pct": 23.0,
+          "bounce_ad_pct": 25.0
         },
-        "desc_th": "หลังจาก Hayate โจมตีใส่เป้าหมายเดิมครบ 6 ครั้ง จะฟื้นฟู 40 หน่วยพลังงาน และทำให้การโจมตีต่อไปจะสร้างโบนัส ความเสียหายจริง 40 (+25%AD) แก่เป้าหมายเป็นเวลา 4 วิ",
-        "description": "After Hayate hits the same target 6 times, he recovers 40 energy and his subsequent attacks deal 40 (+25% AD) bonus true damage for 4s.",
+        "desc_th": "การโจมตีปกติของ Hayate จะชิ่งใส่ศัตรูที่อยู่รอบๆ เป้าหมาย (ยกเว้นฮีโร่ศัตรู) โดยจะสร้างความเสียหายกายภาพ 25%AD (เบาลง 50% หากเป็นมอนสเตอร์ป่า แต่จะค่อยๆ แรงขึ้นตาม LV ฮีโร่) เมื่อเขาสร้างความเสียหายด้วยการโจมตีปกติ หรือสกิลใส่เป้าหมายเดิมครบ 6 ครั้ง เขาจะฟื้นฟู 40 พลังงาน และการโจมตีใส่เป้าหมายดังกล่าวครั้งต่อไปภายใน 4 วิ จะสร้างโบนัส ความเสียหายจริง 45 (+23%AD)",
+        "description": "Hayate's basic attacks bounce to surrounding non-hero enemies dealing 25% AD physical damage (50% vs jungle monsters, scales with level). After hitting the same target 6 times with attacks/skills, he recovers 40 energy and his attacks against them deal 45 (+23% AD) bonus true damage for 4s.",
         "icon_url": "/skills/Hayate/0_bloodofthedragon.png"
       },
       {
@@ -7528,18 +7555,18 @@
           50
         ],
         "base_damage": [
-          105,
-          126,
-          147,
-          168,
-          189,
-          210
+          110,
+          132,
+          154,
+          176,
+          198,
+          220
         ],
         "scaling": {
-          "ad_pct": 20.0
+          "ad_pct": 18.0
         },
-        "desc_th": "Hayate ปาดาวกระจายไปยังทิศที่กำหนดและวิ่งเร็วขึ้น 10% พร้อมกับสร้าง ความเสียหายกายภาพ 105 (+20%AD) แก่ศัตรูที่โดน (ดาวกระจายสามารถส่งผลต่อไอเทมและการโจมตีปกติ แต่ละดอกที่โดนฮีโร่ศัตรูจะฟื้นฟู 5 พลังงาน)\nจำนวนดาวกระจาย: 5/7/9 ดอก (ขึ้นอยู่กับความเร็วโจมตี: 0%/75%/150%)",
-        "description": "Hayate throws shurikens in the target direction and gains 10% movement speed, dealing 105/126/147/168/189/210 (+20% AD) physical damage to enemies hit (applies on-hit effects and restores 5 energy per shuriken hitting a hero). Fires 5/7/9 shurikens at 0%/75%/150% bonus attack speed.",
+        "desc_th": "Hayate วิ่งเร็วขึ้น 10% พร้อมกับยิงกระสุนไปยังทิศทางที่กำหนด แต่ละนัดจะสร้างความเสียหายกายภาพ 110(+18%AD) และติดเอฟเฟกต์ลูกบอลเวท นอกจากนี้ กระสุนจะทะลุผ่านยูนิตที่ไม่ใช่ฮีโร่ แต่ทุกครั้งที่ทะลุผ่านจะลดความเสียหาย 30% (สูงสุดลดเหลือ 40%) หากโจมตีโดนศัตรูจะฟื้นฟูพลังงาน 10 หน่วย (กระสุนแต่ละนัดสามารถฟื้นฟูได้ครั้งเดียว) (Hayate จะยิงกระสุน 5/7/9 นัดตามความเร็วโจมตี 0%/75%/150%)",
+        "description": "Hayate gains 10% movement speed and fires shurikens in target direction. Each deals 110/132/154/176/198/220 (+18% AD) physical damage and pierces non-hero units (-30% damage per pass, min 40%). Restores 10 energy on hit (once per bullet). Fires 5/7/9 shurikens at 0%/75%/150% attack speed.",
         "icon_url": "/skills/Hayate/3_shurikentoss.png"
       },
       {
@@ -9036,11 +9063,11 @@
         "type": "Magic / Movement",
         "damage_type": "magic",
         "cooldown": [
-          6.0,
-          5.6,
-          5.2,
+          5.0,
           4.8,
+          4.6,
           4.4,
+          4.2,
           4.0
         ],
         "mana_cost": [
@@ -9060,11 +9087,20 @@
           200
         ],
         "scaling": {
-          "ap_pct": 20.0
+          "ap_pct": 20.0,
+          "clone_base": [
+            100,
+            120,
+            140,
+            160,
+            180,
+            200
+          ],
+          "clone_ap_pct": 40.0
         },
         "icon_url": "/skills/Keera/3_umbradream.png",
         "desc_th": "Keera กระโดดพร้อมทิ้งร่างเงา สร้าง ความเสียหายเวท 100 (+20%AP) (x2 หากโดนกลางวง) จากนั้นดึงศัตรูใกล้สุดเข้าหาตัวพร้อมลดความเร็ว 35% และล็อคเป้า 3 วิ (หากโจมตีโดน การโจมตีปกติ 3 ครั้งถัดไปจะเร็วขึ้น 50% และสร้าง ความเสียหายเวท แทน)\n\nหากกดซ้ำ เงาจะพุ่งใส่ศัตรูที่ถูกล็อค สร้าง ความเสียหายเวท 100 (+40%AP) และสร้าง (30% ของความเสียหายที่สร้างได้) เป็นวงกว้าง\nหากไม่ได้ล็อค เงาจะพุ่งหา Keera แทน สร้าง 45% ของความเสียหายขณะที่สกิลทำงาน (สูงสุด 40% Max HP ของ Keera)",
-        "description": "Keera leaps leaving a clone behind, dealing 100 (+20% AP) magic damage (doubled at center). Drags the closest enemy towards her, slowing by 35% and locking onto them for 3s. Enhanced next 3 attacks gain 50% attack speed and deal magic damage. Recast sends the clone dashing at the locked target dealing 100 (+40% AP) magic damage plus 30% of total damage dealt in an area."
+        "description": "Keera leaps leaving a clone behind, dealing 100-200 (+20% AP) magic damage (doubled at center) (CD 5.0-4.0s). Drags the closest enemy towards her, slowing by 35% and locking onto them for 3s. Enhanced next 3 attacks gain 50% attack speed and deal magic damage. Recast sends clone dashing at locked target dealing 100-200 (+40% AP) magic damage plus 30% of damage dealt."
       },
       {
         "name": "Triangle Maze",
@@ -9089,18 +9125,27 @@
         ],
         "base_damage": [
           400,
-          440,
           480,
-          520,
           560,
-          600
+          640,
+          720,
+          800
         ],
         "scaling": {
-          "ap_pct": 60.0
+          "ap_pct": 80.0,
+          "clone_base": [
+            100,
+            120,
+            140,
+            160,
+            180,
+            200
+          ],
+          "clone_ap_pct": 20.0
         },
         "icon_url": "/skills/Keera/1_trianglemaze.png",
-        "desc_th": "Keera พุ่งพร้อมกับแยกเงาออกมา 2 ร่าง แต่ละร่างจะสร้าง ความเสียหายเวท 75 (+15%AP) จากนั้นจะสร้างพื้นที่สามเหลี่ยมขึ้นมา สร้าง ความเสียหายเวท 400 (+60%AP) เป็นเวลา 1 วิ (ขณะใช้สกิลจะไม่ตกเป็นเป้าโจมตี และศัตรูที่โดนขอบสามเหลี่ยมจะติดสตั๊น 0.5 วิ)\n\nหลังใช้สกิลการโจมตีปกติ 3 ครั้งถัดไปจะเปลี่ยนเป็นระยะไกล\n(ฝ่ายศัตรูจะมองเห็นทั้ง 3 ร่างเหมือนกันหมด)",
-        "description": "Keera dashes splitting into 2 clones, each dealing 75 (+15% AP) magic damage, then creates a triangle maze dealing 400 (+60% AP) magic damage for 1s. While casting, she is untargetable. Enemies touching the edge are stunned for 0.5s. Enhances next 3 attacks to become ranged."
+        "desc_th": "Keera พุ่งพร้อมกับแยกเงาออกมา 2 ร่าง แต่ละร่างจะสร้าง ความเสียหายเวท 100 (+20%AP) จากนั้นจะสร้างพื้นที่สามเหลี่ยมขึ้นมา สร้าง ความเสียหายเวท 400 (+80%AP) เป็นเวลา 1 วิ (ขณะใช้สกิลจะไม่ตกเป็นเป้าโจมตี และศัตรูที่โดนขอบสามเหลี่ยมจะติดสตั๊น 0.5 วิ)\n\nหลังใช้สกิลการโจมตีปกติ 3 ครั้งถัดไปจะเปลี่ยนเป็นระยะไกล\n(ฝ่ายศัตรูจะมองเห็นทั้ง 3 ร่างเหมือนกันหมด)",
+        "description": "Keera dashes splitting into 2 clones, each dealing 100-200 (+20% AP) magic damage, then creates a triangle maze dealing 400-800 (+80% AP) magic damage for 1s. While casting, she is untargetable. Enemies touching the edge are stunned for 0.5s. Enhances next 3 attacks to become ranged."
       },
       {
         "name": "Fading Phantom",
@@ -14590,10 +14635,11 @@
         "scaling": {
           "heal_ap_pct": 10,
           "target_hp_pct": 2,
-          "ap_pct": 0.2
+          "ap_pct": 0.2,
+          "self_heal_bonus_hp_pct": 4.0
         },
-        "description": "When casting abilities, Sephera triggers water waves dealing magic damage equal to 2% (+0.2% AP) of max HP to the lowest HP enemy, and heals the lowest HP ally for 50 (+10% AP) (heal increases with hero level).",
-        "desc_th": "เมื่อใช้สกิล Sephera จะสร้าง ความเสียหายเวท 2% (+0.2%AP) ของ HP สูงสุดแก่ฮีโร่ศัตรูที่ HP ที่น้อยที่สุดในระยะ พร้อมกับ ฟื้นฟู 50 (+10%AP) แก่ฮีโร่พันธมิตรในระยะที่ HP น้อยที่สุด (ฟื้นฟูแรงขึ้นตาม LV)",
+        "description": "When casting abilities, Sephera triggers water waves dealing magic damage equal to 2% (+0.2% AP) of max HP to the lowest HP enemy, heals the lowest HP ally for 50 (+10% AP) (increases with hero level), and heals herself for (+4% bonus HP).",
+        "desc_th": "เมื่อ Sephera ใช้สกิล จะสร้างความเสียหายเวทตาม 2%(+0.2%AP) HP สูงสุดแก่ฮีโร่ฝ่ายศัตรูที่มีพลังชีวิตน้อยที่สุด และฟื้นฟูพลังชีวิตฮีโร่ฝ่ายเราที่มีพลังชีวิตน้อยที่สุด ซึ่งจะฟื้นฟู 50(+10%AP) หน่วย (พลังชีวิตที่ฟื้นฟูจะเพิ่มขึ้นตาม LV) ส่วนเธอเองจะฟื้นฟูพลังชีวิต (+4% โบนัส HP) เพิ่มเติม",
         "icon_url": "/skills/Sephera/0_livingwater.png"
       },
       {
@@ -15830,15 +15876,15 @@
           0
         ],
         "base_damage": [
-          200
+          182
         ],
         "scaling": {
-          "bonus_ad_pct": 30.0,
-          "level_scaling": 14.0,
+          "bonus_ad_pct": 28.0,
+          "level_scaling": 13.0,
           "hp_pct": 2.0
         },
-        "desc_th": "สกิลติดตัว\nหลังจาก Tamyn เก็บหอกศักดิ์สิทธิ์ จะเสริมพลังให้การโจมตีปกติกลายเป็นการโจมตีพิเศษ (เป็นเวลา 4 วิ สูงสุด 2 ครั้ง) พร้อมได้รับความเร็วเคลื่อนที่เพิ่มขึ้น 20-40 หน่วย (เป็นเวลา 4 วิ เมื่อ 2 วิจะถึงขีดจำกัด)\nการโจมตีพิเศษโจมตีโดนจะสร้างโบนัสความเสียหายกายภาพ 200-396 หน่วย (เพิ่มขึ้นตาม LV) + (30% โบนัสAD) (โบนัสความเสียหายไม่ติดคริ) พร้อมกับลดคูลดาวน์ของสกิลทั้งหมดลง 1 วิ\nการเก็บหอกศักดิ์สิทธิ์ จะฟื้นฟูพลังชีวิต 100-198 (เพิ่มขึ้นตาม LV) (2% โบนัสพลังชีวิต) หน่วยให้ Tamyn เมื่อการโจมตีพิเศษโจมตีโดนจะได้รับการฟื้นฟูเป็น 2 เท่า\nTamyn ใช้สกิลจะได้รับความเร็วเคลื่อนที่ 2% (เป็นเวลา 5 วิ สูงสุด 3 ครั้ง)\nโบนัสความเร็วเคลื่อนที่จะเพิ่มความเสียหายสกิลและการโจมตีพิเศษของ Tamyn ในค่าที่เท่ากัน\nหลังจากหอกศักดิ์สิทธิ์หายไป 5 วิจะฟื้นฟูอัตโนมัติ",
-        "description": "Passive: Collecting a Sacred Spear enhances Tamyn's next basic attacks into special attacks (up to 2 stacks for 4s) and grants 20-40 movement speed for 4s. Special attacks deal 200-396 (+14/lv) (+30% bonus AD) bonus physical damage (cannot crit) and reduce all skill cooldowns by 1s. Collecting a spear heals 100-198 (+7/lv) (+2% bonus HP), doubled when a special attack hits. Skill casts grant 2% movement speed for 5s (stacks up to 3 times). Movement speed bonuses increase skill and special attack damage equally. Spears regenerate automatically 5s after expiring.",
+        "desc_th": "สกิลติดตัว\nหลังจาก Tamyn เก็บหอกศักดิ์สิทธิ์ จะเสริมพลังให้การโจมตีปกติกลายเป็นการโจมตีพิเศษ (เป็นเวลา 4 วิ สูงสุด 2 ครั้ง) พร้อมได้รับความเร็วเคลื่อนที่เพิ่มขึ้น 20-40 หน่วย (เป็นเวลา 4 วิ เมื่อ 2 วิจะถึงขีดจำกัด)\nการโจมตีพิเศษโจมตีโดนจะสร้างโบนัสความเสียหายกายภาพ 182-364 (เพิ่มขึ้นตาม LV) + (28% โบนัส AD) หน่วย (โบนัสความเสียหายไม่ติดคริ) พร้อมกับลดคูลดาวน์ของสกิลทั้งหมดลง 1 วิ\nการเก็บหอกศักดิ์สิทธิ์ จะฟื้นฟูพลังชีวิต 100-198 (เพิ่มขึ้นตาม LV) (+2% โบนัสพลังชีวิต) หน่วยให้ Tamyn การโจมตีพิเศษโจมตีโดนจะได้รับการฟื้นฟูเป็น 2 เท่า\nเมื่อ Tamyn ใช้สกิลจะได้รับความเร็วเคลื่อนที่ 2% (เป็นเวลา 5 วิ สูงสุด 3 ครั้ง)\nโบนัสความเร็วเคลื่อนที่จะเพิ่มความเสียหายสกิลและการโจมตีพิเศษของ Tamyn ในค่าที่เท่ากัน\nหลังจากหอกศักดิ์สิทธิ์หายไป 5 วิจะฟื้นฟูอัตโนมัติ",
+        "description": "Passive: Collecting a Sacred Spear enhances Tamyn's next basic attacks into special attacks (up to 2 stacks for 4s) and grants 20-40 movement speed for 4s. Special attacks deal 182-364 (+13/lv) (+28% bonus AD) bonus physical damage (cannot crit) and reduce all skill cooldowns by 1s. Collecting a spear heals 100-198 (+7/lv) (+2% bonus HP), doubled when a special attack hits. Skill casts grant 2% movement speed for 5s (stacks up to 3 times). Movement speed bonuses increase skill and special attack damage equally. Spears regenerate automatically 5s after expiring.",
         "icon_url": "/skills/Tamyn/0_spearreturn.png"
       },
       {
@@ -18588,20 +18634,44 @@
           55
         ],
         "base_damage": [
-          450,
-          560,
-          670,
-          780,
-          890,
+          500,
+          600,
+          700,
+          800,
+          900,
           1000
         ],
         "scaling": {
-          "ap_pct": 40.0,
-          "own_hp_pct": 4.0
+          "ap_pct": 50.0,
+          "own_hp_pct": 5.0,
+          "shield_base": [
+            500,
+            600,
+            700,
+            800,
+            900,
+            1000
+          ],
+          "bonus_shield_hp_pct": [
+            5.0,
+            6.0,
+            7.0,
+            8.0,
+            9.0,
+            10.0
+          ],
+          "bonus_dmg_hp_pct": [
+            5.0,
+            6.0,
+            7.0,
+            8.0,
+            9.0,
+            10.0
+          ]
         },
-        "description": "Xeniel gains a shield absorbing 350/460/570/680/790/900 (+40% AP) (+4%/5%/6%/7%/8%/9% max HP) for 5s. After 1.5s, can recast to detonate shield, dealing 450/560/670/780/890/1000 (+40% AP) (+4%/5%/6%/7%/8%/9% max HP) magic damage to nearby enemies and gaining Holy Brand stacks based on enemies hit. If destroyed by enemies, deals 50% damage.",
-        "icon_url": "/skills/Xeniel/1_divineprotection.png",
-        "desc_th": "Xeniel ได้รับโล่ที่สามารถดูดซับความเสียหายได้ 350/460/570/680/790/900 (+40%AP)(+4%/5%/6%/7%/8%/9% พลังชีวิตสูงสุด) นาน 5 วิ หลังจากใช้งาน 1.5 วิ จะสามารถกดใช้งานอีกครั้งเพื่อทำการ ระเบิดโล่ ซึ่งจะสร้างความเสียหายเวท 450/560/670/780/890/1000 (+40%AP)(+4%/5%/6%/7%/8%/9% พลังชีวิตสูงสุด) แก่ศัตรูรอบๆ และได้รับ Holy Brand ตามจำนวนศัตรูที่โดน หากโล่ของเขาถูกทำลาย จะสร้างความเสียหายแก่บริเวณรอบๆ เพียง 50%"
+        "description": "Xeniel gains a shield absorbing 500/600/700/800/900/1000 (+50% AP) (+5%/6%/7%/8%/9%/10% max HP) for 5s. After 1.5s, can recast to detonate shield, dealing 500/600/700/800/900/1000 (+50% AP) (+5%/6%/7%/8%/9%/10% max HP) magic damage to nearby enemies and gaining Holy Brand stacks based on enemies hit. If destroyed by enemies, deals 50% damage.",
+        "icon_url": "/skills/Xeniel/2_divineprotection.png",
+        "desc_th": "Xeniel ได้รับโล่ที่สามารถดูดซับความเสียหายได้ 500(+50%AP)(+5%พลังชีวิตสูงสุด) นาน 5 วิ หลังจากใช้งาน 1.5 วิ จะสามารถกดใช้งานอีกครั้งเพื่อทำการ ระเบิดโล่ ซึ่งจะสร้างความเสียหายเวท 500(+50%AP)(+5%พลังชีวิตสูงสุด) แก่ศัตรูรอบๆ และได้รับ Holy Brand ตามจำนวนศัตรูที่โดน หากโล่ของเขาถูกทำลาย จะสร้างความเสียหายแก่บริเวณรอบๆ เพียง 50%"
       },
       {
         "slot": "Skill 2",
@@ -18631,7 +18701,7 @@
           "ap_pct": 60.0
         },
         "description": "Xeniel leaps to target location (immune to control while airborne), dealing 350/400/450/500/550/600 (+60% AP) magic damage to nearby enemies and knocking them up for 0.75s.",
-        "icon_url": "/skills/Xeniel/2_malleus.png",
+        "icon_url": "/skills/Xeniel/1_malleus.png",
         "desc_th": "Xeniel กระโดดไปยังจุดที่กำหนด (ระหว่างกระโดดจะป้องกันสถานะ) สร้าง ความเสียหายเวท 350/400/450/500/550/600 (+60%AP) แก่ศัตรูรอบๆ พร้อมกับทำให้ ลอยขึ้น 0.75 วิ"
       },
       {

@@ -17,12 +17,15 @@ import {
   EMPTY_GLOBAL_BANS,
   EMPTY_PREDICTION,
   getGameSeriesGroup,
+  getGameUnlockStatus,
+  getMaxUnlockedGame,
   INITIAL_DRAFT_STATE,
   type PredictionState,
   prioritizeMissingLanes,
   reconstructDraftHistory,
   redTeamName,
   resolveSeriesName,
+  syncSeriesGlobalBans,
   unavailableSet,
 } from "../utils/draft";
 
@@ -41,9 +44,9 @@ function sanitizeWinHistory(arr: unknown): number[] {
   return out;
 }
 
-function loadLocalSession(): DraftSessionPayload | null {
+function loadLocalSession(key = SESSION_STORAGE_KEY): DraftSessionPayload | null {
   try {
-    const raw = window.localStorage.getItem(SESSION_STORAGE_KEY);
+    const raw = window.localStorage.getItem(key);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<DraftSessionPayload>;
     if (!parsed || typeof parsed !== "object") return null;
@@ -66,9 +69,9 @@ function loadLocalSession(): DraftSessionPayload | null {
   }
 }
 
-function saveLocalSession(payload: DraftSessionPayload): void {
+function saveLocalSession(payload: DraftSessionPayload, key = SESSION_STORAGE_KEY): void {
   try {
-    window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(payload));
+    window.localStorage.setItem(key, JSON.stringify(payload));
   } catch {
     // Ignore storage quota or private browsing errors
   }
@@ -145,9 +148,21 @@ function useHeroCatalog() {
   return { heroes, isLoading, isFallback, error };
 }
 
-export function useDraft() {
+export interface UseDraftOptions {
+  engine?: "sota" | "matrix";
+  persistSession?: boolean;
+  storageKey?: string;
+}
+
+export function useDraft(options: UseDraftOptions = {}) {
+  const {
+    engine = "sota",
+    persistSession = true,
+    storageKey = SESSION_STORAGE_KEY,
+  } = options;
+
   const catalog = useHeroCatalog();
-  const [initialSession] = useState<DraftSessionPayload | null>(() => loadLocalSession());
+  const [initialSession] = useState<DraftSessionPayload | null>(() => loadLocalSession(storageKey));
 
   const [state, dispatch] = useReducer(draftReducer, initialSession, initMachineState);
   const [globalBans, setGlobalBans] = useState<GlobalBanState>(
@@ -169,6 +184,7 @@ export function useDraft() {
 
   // On mount: synchronize with backend /draft/session so state survives browser cache clears or new windows
   useEffect(() => {
+    if (!persistSession) return;
     const ctrl = new AbortController();
     async function syncFromServer() {
       try {
@@ -193,7 +209,7 @@ export function useDraft() {
           setGlobalBans({ ...EMPTY_GLOBAL_BANS, ...remote.globalBans });
           setUseLookahead(Boolean(remote.useLookahead));
           setSeriesGames(Array.isArray(remote.seriesGames) ? remote.seriesGames : []);
-          saveLocalSession(remote);
+          saveLocalSession(remote, storageKey);
         }
       } catch (err) {
         if (!isAbortError(err)) {
@@ -205,7 +221,7 @@ export function useDraft() {
     }
     syncFromServer();
     return () => ctrl.abort();
-  }, []);
+  }, [persistSession, storageKey]);
 
   // Persist every draft/series change to both localStorage (instant F5 reload) and backend disk (/draft/session)
   useEffect(() => {
@@ -228,7 +244,7 @@ export function useDraft() {
       globalBans.teamBName === "TEAM B";
 
     // Avoid overwriting a non-empty remote session before initial GET /draft/session finishes
-    if (!hasCompletedInitialSyncRef.current && isDefaultEmpty && lastSavedAtRef.current === 0) {
+    if (persistSession && !hasCompletedInitialSyncRef.current && isDefaultEmpty && lastSavedAtRef.current === 0) {
       return;
     }
 
@@ -248,7 +264,9 @@ export function useDraft() {
       seriesGames,
       updatedAt: now,
     };
-    saveLocalSession(payload);
+    saveLocalSession(payload, storageKey);
+
+    if (!persistSession) return;
 
     const ctrl = new AbortController();
     putJson("/draft/session", payload, ctrl.signal).catch((err) => {
@@ -258,6 +276,8 @@ export function useDraft() {
     });
     return () => ctrl.abort();
   }, [
+    persistSession,
+    storageKey,
     stepIndex,
     bluePicks,
     redPicks,
@@ -289,8 +309,9 @@ export function useDraft() {
       setIsLoading(true);
       setPredictError(null);
       try {
+        const endpoint = engine === "matrix" ? "/predict/matrix" : "/predict";
         const data = await postJson<DraftPredictionResponse>(
-          "/predict",
+          endpoint,
           buildPredictPayload(stepIndex, draft, globalBans, useLookahead, CANDIDATE_POOL),
           ctrl.signal,
         );
@@ -338,7 +359,7 @@ export function useDraft() {
 
     run();
     return () => ctrl.abort();
-  }, [stepIndex, bluePicks, redPicks, blueBans, redBans, globalBans, useLookahead]);
+  }, [engine, stepIndex, bluePicks, redPicks, blueBans, redBans, globalBans, useLookahead]);
 
   const lockHero = useCallback(
     (hero: string) => {
@@ -361,8 +382,14 @@ export function useDraft() {
   }, []);
 
   const recordGameToSeries = useCallback(
-    (swapAfter = true) => {
+    (swapAfter = false) => {
+      const currentGroup = resolveSeriesName(globalBans);
       const hasAnyAction = bluePicks.length + redPicks.length + blueBans.length + redBans.length > 0;
+      const overwrittenGames = seriesGames.filter(
+        (g) => getGameSeriesGroup(g) === currentGroup && g.gameNumber === globalBans.gameNumber,
+      );
+
+      let nextSeriesGames = seriesGames;
       if (hasAnyAction) {
         const snapshot: RecordedDraftGame = {
           id: `${Date.now()}-g${globalBans.gameNumber}`,
@@ -372,7 +399,7 @@ export function useDraft() {
             minute: "2-digit",
             second: "2-digit",
           }),
-          seriesName: resolveSeriesName(globalBans),
+          seriesName: currentGroup,
           blueTeamName: blueTeamName(globalBans),
           redTeamName: redTeamName(globalBans),
           blueSideTeam: globalBans.blueSideTeam,
@@ -382,20 +409,25 @@ export function useDraft() {
           redPicks: [...redPicks],
           blueWinRate: state.blueWinRate,
         };
-        setSeriesGames((prev) => [snapshot, ...prev]);
+        nextSeriesGames = [
+          snapshot,
+          ...seriesGames.filter(
+            (g) => !(getGameSeriesGroup(g) === currentGroup && g.gameNumber === globalBans.gameNumber),
+          ),
+        ];
+        setSeriesGames(nextSeriesGames);
       }
 
       setGlobalBans((prev) => {
         const blueIsA = prev.blueSideTeam === "A";
         const addToA = blueIsA ? bluePicks : redPicks;
         const addToB = blueIsA ? redPicks : bluePicks;
-        const nextA = Array.from(new Set([...prev.teamAUsed, ...addToA]));
-        const nextB = Array.from(new Set([...prev.teamBUsed, ...addToB]));
         const nextGame = Math.min(prev.gameNumber + 1, 7);
+        const synced = syncSeriesGlobalBans(prev, nextSeriesGames, nextGame, overwrittenGames);
         return {
           ...prev,
-          teamAUsed: nextA,
-          teamBUsed: nextB,
+          teamAUsed: Array.from(new Set([...synced.teamAUsed, ...addToA])),
+          teamBUsed: Array.from(new Set([...synced.teamBUsed, ...addToB])),
           gameNumber: nextGame,
           blueSideTeam: swapAfter ? (prev.blueSideTeam === "A" ? "B" : "A") : prev.blueSideTeam,
         };
@@ -403,12 +435,13 @@ export function useDraft() {
       dispatch({ type: "reset" });
       setPredictError(null);
     },
-    [bluePicks, redPicks, blueBans, redBans, globalBans, state.blueWinRate],
+    [bluePicks, redPicks, blueBans, redBans, globalBans, seriesGames, state.blueWinRate],
   );
 
   const saveCurrentDraftSnapshot = useCallback(() => {
     const hasAnyAction = bluePicks.length + redPicks.length + blueBans.length + redBans.length > 0;
     if (!hasAnyAction) return;
+    const currentGroup = resolveSeriesName(globalBans);
     const snapshot: RecordedDraftGame = {
       id: `${Date.now()}-g${globalBans.gameNumber}`,
       gameNumber: globalBans.gameNumber,
@@ -417,7 +450,7 @@ export function useDraft() {
         minute: "2-digit",
         second: "2-digit",
       }),
-      seriesName: resolveSeriesName(globalBans),
+      seriesName: currentGroup,
       blueTeamName: blueTeamName(globalBans),
       redTeamName: redTeamName(globalBans),
       blueSideTeam: globalBans.blueSideTeam,
@@ -427,44 +460,303 @@ export function useDraft() {
       redPicks: [...redPicks],
       blueWinRate: state.blueWinRate,
     };
-    setSeriesGames((prev) => [snapshot, ...prev]);
+    setSeriesGames((prev) => [
+      snapshot,
+      ...prev.filter((g) => !(getGameSeriesGroup(g) === currentGroup && g.gameNumber === globalBans.gameNumber)),
+    ]);
   }, [bluePicks, redPicks, blueBans, redBans, globalBans, state.blueWinRate]);
 
-  const loadRecordedGame = useCallback((game: RecordedDraftGame) => {
-    const reconstructed = reconstructDraftHistory({
-      bluePicks: game.bluePicks,
-      redPicks: game.redPicks,
-      blueBans: game.blueBans,
-      redBans: game.redBans,
-    });
-    dispatch({
-      type: "hydrate",
-      payload: {
-        stepIndex: reconstructed.stepIndex,
-        bluePicks: [...game.bluePicks],
-        redPicks: [...game.redPicks],
-        blueBans: [...game.blueBans],
-        redBans: [...game.redBans],
-        history: reconstructed.history,
-        blueWinRate: game.blueWinRate,
-        winHistory: [],
-      },
-    });
-    setGlobalBans((prev) => ({
-      ...prev,
-      gameNumber: game.gameNumber,
-      blueSideTeam: game.blueSideTeam,
-    }));
-    setPredictError(null);
-  }, []);
+  const loadRecordedGame = useCallback(
+    (game: RecordedDraftGame, gamesListOverride?: RecordedDraftGame[]) => {
+      const activeSeriesGames = gamesListOverride ?? seriesGames;
+      const reconstructed = reconstructDraftHistory({
+        bluePicks: game.bluePicks,
+        redPicks: game.redPicks,
+        blueBans: game.blueBans,
+        redBans: game.redBans,
+      });
+      dispatch({
+        type: "hydrate",
+        payload: {
+          stepIndex: reconstructed.stepIndex,
+          bluePicks: [...game.bluePicks],
+          redPicks: [...game.redPicks],
+          blueBans: [...game.blueBans],
+          redBans: [...game.redBans],
+          history: reconstructed.history,
+          blueWinRate: game.blueWinRate,
+          winHistory: [],
+        },
+      });
+      const targetGroup = getGameSeriesGroup(game);
+      const teamAName = game.blueSideTeam === "A" ? game.blueTeamName : game.redTeamName;
+      const teamBName = game.blueSideTeam === "A" ? game.redTeamName : game.blueTeamName;
+      setGlobalBans((prev) => {
+        const sameSeries = resolveSeriesName(prev) === targetGroup;
+        const baseState: GlobalBanState = sameSeries
+          ? prev
+          : {
+              ...prev,
+              seriesName: game.seriesName || targetGroup,
+              teamAName: teamAName || prev.teamAName,
+              teamBName: teamBName || prev.teamBName,
+              teamAUsed: [],
+              teamBUsed: [],
+            };
+        const synced = syncSeriesGlobalBans(baseState, activeSeriesGames, game.gameNumber, [], targetGroup);
+        return {
+          ...baseState,
+          ...synced,
+          gameNumber: game.gameNumber,
+          blueSideTeam: game.blueSideTeam,
+        };
+      });
+      setPredictError(null);
+    },
+    [seriesGames],
+  );
 
-  const deleteRecordedGame = useCallback((id: string) => {
-    setSeriesGames((prev) => prev.filter((g) => g.id !== id));
-  }, []);
+  const selectGameNumber = useCallback(
+    (nextGameNumber: number) => {
+      if (nextGameNumber === globalBans.gameNumber) return;
+
+      const currentGroup = resolveSeriesName(globalBans);
+      const hasCurrentActions =
+        bluePicks.length + redPicks.length + blueBans.length + redBans.length > 0;
+
+      let nextSeriesGames = seriesGames;
+      const overwrittenGames = hasCurrentActions
+        ? seriesGames.filter(
+            (g) => getGameSeriesGroup(g) === currentGroup && g.gameNumber === globalBans.gameNumber,
+          )
+        : [];
+
+      if (hasCurrentActions) {
+        const snapshot: RecordedDraftGame = {
+          id: `${Date.now()}-g${globalBans.gameNumber}`,
+          gameNumber: globalBans.gameNumber,
+          timestamp: new Date().toLocaleTimeString("th-TH", {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          }),
+          seriesName: currentGroup,
+          blueTeamName: blueTeamName(globalBans),
+          redTeamName: redTeamName(globalBans),
+          blueSideTeam: globalBans.blueSideTeam,
+          blueBans: [...blueBans],
+          redBans: [...redBans],
+          bluePicks: [...bluePicks],
+          redPicks: [...redPicks],
+          blueWinRate: state.blueWinRate,
+        };
+        nextSeriesGames = [
+          snapshot,
+          ...seriesGames.filter(
+            (g) => !(getGameSeriesGroup(g) === currentGroup && g.gameNumber === globalBans.gameNumber),
+          ),
+        ];
+      }
+
+      const unlockStatus = getGameUnlockStatus(nextGameNumber, globalBans, nextSeriesGames);
+      if (!unlockStatus.isUnlocked) {
+        return;
+      }
+
+      if (hasCurrentActions) {
+        setSeriesGames(nextSeriesGames);
+      }
+
+      const targetGame = nextSeriesGames.find(
+        (g) => getGameSeriesGroup(g) === currentGroup && g.gameNumber === nextGameNumber,
+      );
+
+      if (targetGame) {
+        loadRecordedGame(targetGame, nextSeriesGames);
+      } else {
+        dispatch({ type: "reset" });
+        setPredictError(null);
+        setGlobalBans((prev) => {
+          const synced = syncSeriesGlobalBans(prev, nextSeriesGames, nextGameNumber, overwrittenGames);
+          return {
+            ...prev,
+            ...synced,
+            gameNumber: nextGameNumber,
+          };
+        });
+      }
+    },
+    [
+      globalBans,
+      seriesGames,
+      bluePicks,
+      redPicks,
+      blueBans,
+      redBans,
+      state.blueWinRate,
+      loadRecordedGame,
+    ],
+  );
+
+  const deleteRecordedGame = useCallback(
+    (id: string) => {
+      const deleted = seriesGames.find((g) => g.id === id);
+      const nextSeriesGames = seriesGames.filter((g) => g.id !== id);
+      setSeriesGames(nextSeriesGames);
+      if (deleted) {
+        setGlobalBans((prev) => {
+          if (getGameSeriesGroup(deleted) !== resolveSeriesName(prev)) return prev;
+          const synced = syncSeriesGlobalBans(prev, nextSeriesGames, prev.gameNumber, [deleted]);
+          const candidate: GlobalBanState = {
+            ...prev,
+            ...synced,
+          };
+          const maxUnlocked = getMaxUnlockedGame(candidate, nextSeriesGames);
+          const clampedGame = Math.min(prev.gameNumber, maxUnlocked);
+          const finalSynced =
+            clampedGame !== prev.gameNumber
+              ? syncSeriesGlobalBans(candidate, nextSeriesGames, clampedGame)
+              : synced;
+          return {
+            ...prev,
+            ...finalSynced,
+            gameNumber: clampedGame,
+          };
+        });
+      }
+    },
+    [seriesGames],
+  );
 
   const deleteSeriesGroup = useCallback((groupName: string) => {
     setSeriesGames((prev) => prev.filter((g) => getGameSeriesGroup(g) !== groupName));
+    setGlobalBans((prev) => {
+      if (resolveSeriesName(prev) !== groupName) return prev;
+      return {
+        ...prev,
+        teamAUsed: [],
+        teamBUsed: [],
+        gameNumber: 1,
+      };
+    });
   }, []);
+
+  const startNewSeries = useCallback(
+    (teamAName: string, teamBName: string, customSeriesName?: string) => {
+      const hasAnyAction = bluePicks.length + redPicks.length + blueBans.length + redBans.length > 0;
+      if (hasAnyAction) {
+        saveCurrentDraftSnapshot();
+      }
+
+      const tA = teamAName.trim() || "TEAM A";
+      const tB = teamBName.trim() || "TEAM B";
+      const sName = customSeriesName?.trim() || `${tA} vs ${tB}`;
+
+      dispatch({ type: "reset" });
+      setPredictError(null);
+
+      setGlobalBans({
+        seriesName: sName,
+        teamAName: tA,
+        teamBName: tB,
+        teamAUsed: [],
+        teamBUsed: [],
+        universalBans: [],
+        blueSideTeam: "A",
+        gameNumber: 1,
+      });
+    },
+    [bluePicks, redPicks, blueBans, redBans, saveCurrentDraftSnapshot],
+  );
+
+  const switchSeries = useCallback(
+    (groupName: string) => {
+      const currentGroup = resolveSeriesName(globalBans);
+      const hasCurrentActions =
+        bluePicks.length + redPicks.length + blueBans.length + redBans.length > 0;
+
+      let nextSeriesGames = seriesGames;
+      if (hasCurrentActions) {
+        const snapshot: RecordedDraftGame = {
+          id: `${Date.now()}-g${globalBans.gameNumber}`,
+          gameNumber: globalBans.gameNumber,
+          timestamp: new Date().toLocaleTimeString("th-TH", {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          }),
+          seriesName: currentGroup,
+          blueTeamName: blueTeamName(globalBans),
+          redTeamName: redTeamName(globalBans),
+          blueSideTeam: globalBans.blueSideTeam,
+          blueBans: [...blueBans],
+          redBans: [...redBans],
+          bluePicks: [...bluePicks],
+          redPicks: [...redPicks],
+          blueWinRate: state.blueWinRate,
+        };
+        nextSeriesGames = [
+          snapshot,
+          ...seriesGames.filter(
+            (g) => !(getGameSeriesGroup(g) === currentGroup && g.gameNumber === globalBans.gameNumber),
+          ),
+        ];
+        setSeriesGames(nextSeriesGames);
+      }
+
+      const groupGames = nextSeriesGames.filter((g) => getGameSeriesGroup(g) === groupName);
+      if (groupGames.length === 0) return;
+
+      const sorted = [...groupGames].sort((a, b) => a.gameNumber - b.gameNumber);
+      const latest = sorted[sorted.length - 1];
+
+      if (latest.bluePicks.length < 5 || latest.redPicks.length < 5) {
+        loadRecordedGame(latest, nextSeriesGames);
+        return;
+      }
+
+      const teamAName = latest.blueSideTeam === "A" ? latest.blueTeamName : latest.redTeamName;
+      const teamBName = latest.blueSideTeam === "A" ? latest.redTeamName : latest.blueTeamName;
+      const targetGameNumber = Math.min(latest.gameNumber + 1, 7);
+
+      const baseBans: GlobalBanState = {
+        seriesName: latest.seriesName || groupName,
+        teamAName,
+        teamBName,
+        teamAUsed: [],
+        teamBUsed: [],
+        universalBans: [],
+        blueSideTeam: latest.blueSideTeam,
+        gameNumber: targetGameNumber,
+      };
+      const synced = syncSeriesGlobalBans(baseBans, nextSeriesGames, targetGameNumber, [], groupName);
+      const candidate: GlobalBanState = { ...baseBans, ...synced };
+      const maxUnlocked = getMaxUnlockedGame(candidate, nextSeriesGames, groupName);
+      const finalGameNumber = Math.min(targetGameNumber, maxUnlocked);
+      const finalSynced =
+        finalGameNumber !== targetGameNumber
+          ? syncSeriesGlobalBans(baseBans, nextSeriesGames, finalGameNumber, [], groupName)
+          : synced;
+
+      dispatch({ type: "reset" });
+      setPredictError(null);
+      setGlobalBans({
+        ...baseBans,
+        ...finalSynced,
+        gameNumber: finalGameNumber,
+      });
+    },
+    [
+      seriesGames,
+      globalBans,
+      bluePicks,
+      redPicks,
+      blueBans,
+      redBans,
+      state.blueWinRate,
+      loadRecordedGame,
+    ],
+  );
 
   const clearAllHistory = useCallback(() => {
     dispatch({ type: "reset" });
@@ -473,14 +765,51 @@ export function useDraft() {
     setPredictError(null);
     lastSavedAtRef.current = Date.now();
     try {
-      window.localStorage.removeItem(SESSION_STORAGE_KEY);
+      window.localStorage.removeItem(storageKey);
     } catch {
       // ignore
     }
-    deleteJson("/draft/session").catch(() => {
-      // ignore
-    });
-  }, []);
+    if (persistSession) {
+      deleteJson("/draft/session").catch(() => {
+        // ignore
+      });
+    }
+  }, [persistSession, storageKey]);
+
+  const importDraft = useCallback(
+    (draft: {
+      bluePicks: string[];
+      redPicks: string[];
+      blueBans: string[];
+      redBans: string[];
+      globalBans?: GlobalBanState;
+    }) => {
+      const reconstructed = reconstructDraftHistory({
+        bluePicks: draft.bluePicks,
+        redPicks: draft.redPicks,
+        blueBans: draft.blueBans,
+        redBans: draft.redBans,
+      });
+      dispatch({
+        type: "hydrate",
+        payload: {
+          stepIndex: reconstructed.stepIndex,
+          bluePicks: [...draft.bluePicks],
+          redPicks: [...draft.redPicks],
+          blueBans: [...draft.blueBans],
+          redBans: [...draft.redBans],
+          history: reconstructed.history,
+          blueWinRate: DEFAULT_WIN_RATE,
+          winHistory: [],
+        },
+      });
+      if (draft.globalBans) {
+        setGlobalBans(draft.globalBans);
+      }
+      setPredictError(null);
+    },
+    [],
+  );
 
   return {
     heroes: catalog.heroes,
@@ -494,14 +823,18 @@ export function useDraft() {
     redBans,
     globalBans,
     setGlobalBans,
+    selectGameNumber,
     seriesGames,
     saveCurrentDraftSnapshot,
+    startNewSeries,
+    switchSeries,
     loadRecordedGame,
     deleteRecordedGame,
     deleteSeriesGroup,
     clearAllHistory,
     swapTeamSides,
     recordGameToSeries,
+    importDraft,
     unavailableHeroes,
     useLookahead,
     setUseLookahead,

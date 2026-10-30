@@ -11,3 +11,9 @@ ignore = [
 
 [tool.ruff.lint.isort]
 known-first-party = ["src"]
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore:.*nested tensors.*:UserWarning",
+    "ignore:.*httpx.*:DeprecationWarning",
+]

@@ -8,7 +8,7 @@
       "armor": 552,
       "magic_defense": 269,
       "movement_speed": 370,
-      "source": "heroes/Toro/status/S__19767312_0.jpg"
+      "source": "heroes/Toro/status/status_lv15.jpg"
     },
     "Lu Bu": {
       "hp": 8772,
@@ -16,7 +16,7 @@
       "armor": 466,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/Lu Bu/status/S__19767309_0.jpg"
+      "source": "heroes/Lu Bu/status/status_lv15.jpg"
     },
     "Nakroth": {
       "hp": 6928,
@@ -24,7 +24,7 @@
       "armor": 413,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/Nakroth/status/S__19767307_0.jpg"
+      "source": "heroes/Nakroth/status/status_lv15.jpg"
     },
     "Tulen": {
       "hp": 6915,
@@ -32,7 +32,7 @@
       "armor": 425,
       "magic_defense": 269,
       "movement_speed": 350,
-      "source": "heroes/Tulen/status/S__19767305_0.jpg"
+      "source": "heroes/Tulen/status/status_lv15.jpg"
     },
     "Valhein": {
       "hp": 6970,
@@ -40,7 +40,7 @@
       "armor": 433,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/Valhein/status/S__19767303_0.jpg"
+      "source": "heroes/Valhein/status/status_lv15.jpg"
     },
     "Alice": {
       "hp": 7408,
@@ -48,7 +48,7 @@
       "armor": 438,
       "magic_defense": 269,
       "movement_speed": 350,
-      "source": "heroes/Alice/status/S__19767301_0.jpg"
+      "source": "heroes/Alice/status/status_lv15.jpg"
     },
     "Zata": {
       "hp": 7540,
@@ -56,7 +56,7 @@
       "armor": 404,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_1.jpg"
+      "source": "heroes/Zata/status/status_lv15.jpg"
     },
     "Raz": {
       "hp": 7274,
@@ -64,7 +64,7 @@
       "armor": 463,
       "magic_defense": 269,
       "movement_speed": 390,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_2.jpg"
+      "source": "heroes/Raz/status/status_lv15.jpg"
     },
     "TeeMee": {
       "hp": 7853,
@@ -72,7 +72,7 @@
       "armor": 491,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_3.jpg"
+      "source": "heroes/TeeMee/status/status_lv15.jpg"
     },
     "Laville": {
       "hp": 7326,
@@ -80,7 +80,7 @@
       "armor": 419,
       "magic_defense": 269,
       "movement_speed": 350,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_4.jpg"
+      "source": "heroes/Laville/status/status_lv15.jpg"
     },
     "Bolt Baron": {
       "hp": 6946,
@@ -88,7 +88,7 @@
       "armor": 402,
       "magic_defense": 269,
       "movement_speed": 370,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_5.jpg"
+      "source": "heroes/Bolt Baron/status/status_lv15.jpg"
     },
     "Paine": {
       "hp": 7750,
@@ -96,7 +96,7 @@
       "armor": 425,
       "magic_defense": 269,
       "movement_speed": 370,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_6.jpg"
+      "source": "heroes/Paine/status/status_lv15.jpg"
     },
     "Airi": {
       "hp": 7743,
@@ -104,7 +104,7 @@
       "armor": 445,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_7.jpg"
+      "source": "heroes/Airi/status/status_lv15.jpg"
     },
     "Capheny": {
       "hp": 6958,
@@ -112,7 +112,7 @@
       "armor": 394,
       "magic_defense": 269,
       "movement_speed": 350,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_8.jpg"
+      "source": "heroes/Capheny/status/status_lv15.jpg"
     },
     "Zanis": {
       "hp": 8776,
@@ -120,7 +120,7 @@
       "armor": 497,
       "magic_defense": 269,
       "movement_speed": 370,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_9.jpg"
+      "source": "heroes/Zanis/status/status_lv15.jpg"
     },
     "Errol": {
       "hp": 8510,
@@ -128,7 +128,7 @@
       "armor": 448,
       "magic_defense": 269,
       "movement_speed": 370,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_10.jpg"
+      "source": "heroes/Errol/status/status_lv15.jpg"
     },
     "Krizzix": {
       "hp": 8367,
@@ -136,7 +136,7 @@
       "armor": 489,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_11.jpg"
+      "source": "heroes/Krizzix/status/status_lv15.jpg"
     },
     "Baldum": {
       "hp": 8415,
@@ -144,7 +144,7 @@
       "armor": 517,
       "magic_defense": 269,
       "movement_speed": 370,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_12.jpg"
+      "source": "heroes/Baldum/status/status_lv15.jpg"
     },
     "Liliana": {
       "hp": 6915,
@@ -152,7 +152,7 @@
       "armor": 425,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_13.jpg"
+      "source": "heroes/Liliana/status/status_lv15.jpg"
     },
     "Thane": {
       "hp": 9155,
@@ -160,7 +160,7 @@
       "armor": 572,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_14.jpg"
+      "source": "heroes/Thane/status/status_lv15.jpg"
     },
     "Fennik": {
       "hp": 6985,
@@ -168,7 +168,7 @@
       "armor": 435,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_15.jpg"
+      "source": "heroes/Fennik/status/status_lv15.jpg"
     },
     "Enzo": {
       "hp": 7489,
@@ -176,7 +176,7 @@
       "armor": 464,
       "magic_defense": 269,
       "movement_speed": 370,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_16.jpg"
+      "source": "heroes/Enzo/status/status_lv15.jpg"
     },
     "Butterfly": {
       "hp": 7819,
@@ -184,7 +184,7 @@
       "armor": 431,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_17.jpg"
+      "source": "heroes/Butterfly/status/status_lv15.jpg"
     },
     "Marja": {
       "hp": 8080,
@@ -192,7 +192,7 @@
       "armor": 452,
       "magic_defense": 269,
       "movement_speed": 370,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_18.jpg"
+      "source": "heroes/Marja/status/status_lv15.jpg"
     },
     "Volkath": {
       "hp": 7992,
@@ -200,7 +200,7 @@
       "armor": 489,
       "magic_defense": 269,
       "movement_speed": 370,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_19.jpg"
+      "source": "heroes/Volkath/status/status_lv15.jpg"
     },
     "Veres": {
       "hp": 9035,
@@ -208,7 +208,7 @@
       "armor": 551,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_20.jpg"
+      "source": "heroes/Veres/status/status_lv15.jpg"
     },
     "Billow": {
       "hp": 7600,
@@ -216,7 +216,7 @@
       "armor": 458,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_21.jpg"
+      "source": "heroes/Billow/status/status_lv15.jpg"
     },
     "Roxie": {
       "hp": 9193,
@@ -224,7 +224,7 @@
       "armor": 496,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_22.jpg"
+      "source": "heroes/Roxie/status/status_lv15.jpg"
     },
     "Sinestrea": {
       "hp": 7343,
@@ -232,7 +232,7 @@
       "armor": 431,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_23.jpg"
+      "source": "heroes/Sinestrea/status/status_lv15.jpg"
     },
     "Murad": {
       "hp": 6768,
@@ -240,7 +240,7 @@
       "armor": 448,
       "magic_defense": 269,
       "movement_speed": 390,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_24.jpg"
+      "source": "heroes/Murad/status/status_lv15.jpg"
     },
     "Astrid": {
       "hp": 8080,
@@ -248,7 +248,7 @@
       "armor": 460,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_25.jpg"
+      "source": "heroes/Astrid/status/status_lv15.jpg"
     },
     "Tachi": {
       "hp": 7343,
@@ -256,7 +256,7 @@
       "armor": 431,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_26.jpg"
+      "source": "heroes/Tachi/status/status_lv15.jpg"
     },
     "Skud": {
       "hp": 8856,
@@ -264,7 +264,7 @@
       "armor": 456,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_27.jpg"
+      "source": "heroes/Skud/status/status_lv15.jpg"
     },
     "Hayate": {
       "hp": 6640,
@@ -272,7 +272,7 @@
       "armor": 434,
       "magic_defense": 269,
       "movement_speed": 350,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_29.jpg"
+      "source": "heroes/Hayate/status/status_lv15.jpg"
     },
     "Yena": {
       "hp": 7863,
@@ -280,7 +280,7 @@
       "armor": 456,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_30.jpg"
+      "source": "heroes/Yena/status/status_lv15.jpg"
     },
     "Quillen": {
       "hp": 7228,
@@ -288,7 +288,7 @@
       "armor": 444,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_31.jpg"
+      "source": "heroes/Quillen/status/status_lv15.jpg"
     },
     "Yan": {
       "hp": 8528,
@@ -296,7 +296,7 @@
       "armor": 457,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_32.jpg"
+      "source": "heroes/Yan/status/status_lv15.jpg"
     },
     "Mina": {
       "hp": 8690,
@@ -304,7 +304,7 @@
       "armor": 495,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_33.jpg"
+      "source": "heroes/Mina/status/status_lv15.jpg"
     },
     "Omen": {
       "hp": 8415,
@@ -312,7 +312,7 @@
       "armor": 504,
       "magic_defense": 269,
       "movement_speed": 390,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_34.jpg"
+      "source": "heroes/Omen/status/status_lv15.jpg"
     },
     "Qi": {
       "hp": 8400,
@@ -320,7 +320,7 @@
       "armor": 510,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_35.jpg"
+      "source": "heroes/Qi/status/status_lv15.jpg"
     },
     "Wonder Woman": {
       "hp": 8776,
@@ -328,7 +328,7 @@
       "armor": 503,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_36.jpg"
+      "source": "heroes/Wonder Woman/status/status_lv15.jpg"
     },
     "Eland'orr": {
       "hp": 6649,
@@ -336,7 +336,7 @@
       "armor": 428,
       "magic_defense": 269,
       "movement_speed": 350,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_37.jpg"
+      "source": "heroes/Eland'orr/status/status_lv15.jpg"
     },
     "Taara": {
       "hp": 8566,
@@ -344,7 +344,7 @@
       "armor": 504,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_38.jpg"
+      "source": "heroes/Taara/status/status_lv15.jpg"
     },
     "Lindis": {
       "hp": 7059,
@@ -352,7 +352,7 @@
       "armor": 424,
       "magic_defense": 269,
       "movement_speed": 370,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_39.jpg"
+      "source": "heroes/Lindis/status/status_lv15.jpg"
     },
     "Zill": {
       "hp": 7865,
@@ -360,7 +360,7 @@
       "armor": 470,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_40.jpg"
+      "source": "heroes/Zill/status/status_lv15.jpg"
     },
     "Lauriel": {
       "hp": 6871,
@@ -368,7 +368,7 @@
       "armor": 425,
       "magic_defense": 269,
       "movement_speed": 350,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_41.jpg"
+      "source": "heroes/Lauriel/status/status_lv15.jpg"
     },
     "Zephys": {
       "hp": 7992,
@@ -376,7 +376,7 @@
       "armor": 495,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_42.jpg"
+      "source": "heroes/Zephys/status/status_lv15.jpg"
     },
     "Richter": {
       "hp": 8350,
@@ -384,7 +384,7 @@
       "armor": 482,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_43.jpg"
+      "source": "heroes/Richter/status/status_lv15.jpg"
     },
     "Zuka": {
       "hp": 7319,
@@ -392,7 +392,7 @@
       "armor": 444,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_44.jpg"
+      "source": "heroes/Zuka/status/status_lv15.jpg"
     },
     "Aoi": {
       "hp": 7560,
@@ -400,7 +400,7 @@
       "armor": 413,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_45.jpg"
+      "source": "heroes/Aoi/status/status_lv15.jpg"
     },
     "Kriknak": {
       "hp": 7465,
@@ -408,7 +408,7 @@
       "armor": 454,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_46.jpg"
+      "source": "heroes/Kriknak/status/status_lv15.jpg"
     },
     "Florentino": {
       "hp": 7735,
@@ -416,7 +416,7 @@
       "armor": 431,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_47.jpg"
+      "source": "heroes/Florentino/status/status_lv15.jpg"
     },
     "Violet": {
       "hp": 7254,
@@ -424,7 +424,7 @@
       "armor": 441,
       "magic_defense": 269,
       "movement_speed": 350,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_48.jpg"
+      "source": "heroes/Violet/status/status_lv15.jpg"
     },
     "Keera": {
       "hp": 7608,
@@ -432,7 +432,7 @@
       "armor": 414,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_49.jpg"
+      "source": "heroes/Keera/status/status_lv15.jpg"
     },
     "Krixi": {
       "hp": 7176,
@@ -440,7 +440,7 @@
       "armor": 404,
       "magic_defense": 269,
       "movement_speed": 350,
-      "source": "heroes/LINE_ALBUM_Lv15_261019_50.jpg"
+      "source": "heroes/Krixi/status/status_lv15.jpg"
     },
     "Max": {
       "hp": 8528,
@@ -448,7 +448,7 @@
       "armor": 503,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_1.jpg"
+      "source": "heroes/Max/status/status_lv15.jpg"
     },
     "Dirak": {
       "hp": 6290,
@@ -456,7 +456,7 @@
       "armor": 394,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_2.jpg"
+      "source": "heroes/Dirak/status/status_lv15.jpg"
     },
     "Omega": {
       "hp": 8190,
@@ -464,7 +464,7 @@
       "armor": 490,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_3.jpg"
+      "source": "heroes/Omega/status/status_lv15.jpg"
     },
     "Bijan": {
       "hp": 8393,
@@ -472,7 +472,7 @@
       "armor": 512,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_4.jpg"
+      "source": "heroes/Bijan/status/status_lv15.jpg"
     },
     "Erin": {
       "hp": 7140,
@@ -480,7 +480,7 @@
       "armor": 436,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_5.jpg"
+      "source": "heroes/Erin/status/status_lv15.jpg"
     },
     "Wiro": {
       "hp": 9493,
@@ -488,7 +488,7 @@
       "armor": 382,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_6.jpg"
+      "source": "heroes/Wiro/status/status_lv15.jpg"
     },
     "The Flash": {
       "hp": 7140,
@@ -496,7 +496,7 @@
       "armor": 443,
       "magic_defense": 269,
       "movement_speed": 400,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_7.jpg"
+      "source": "heroes/The Flash/status/status_lv15.jpg"
     },
     "Diao Chan": {
       "hp": 6989,
@@ -504,7 +504,7 @@
       "armor": 400,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_8.jpg"
+      "source": "heroes/Diao Chan/status/status_lv15.jpg"
     },
     "Annette": {
       "hp": 7136,
@@ -512,7 +512,7 @@
       "armor": 421,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_9.jpg"
+      "source": "heroes/Annette/status/status_lv15.jpg"
     },
     "Rouie": {
       "hp": 8063,
@@ -520,7 +520,7 @@
       "armor": 411,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_10.jpg"
+      "source": "heroes/Rouie/status/status_lv15.jpg"
     },
     "Chaugnar": {
       "hp": 8981,
@@ -528,7 +528,7 @@
       "armor": 577,
       "magic_defense": 269,
       "movement_speed": 390,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_11.jpg"
+      "source": "heroes/Chaugnar/status/status_lv15.jpg"
     },
     "Ishar": {
       "hp": 7134,
@@ -536,7 +536,7 @@
       "armor": 381,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_12.jpg"
+      "source": "heroes/Ishar/status/status_lv15.jpg"
     },
     "Aya": {
       "hp": 7139,
@@ -544,7 +544,7 @@
       "armor": 411,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_13.jpg"
+      "source": "heroes/Aya/status/status_lv15.jpg"
     },
     "Goverra": {
       "hp": 7180,
@@ -552,7 +552,7 @@
       "armor": 416,
       "magic_defense": 269,
       "movement_speed": 370,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_14.jpg"
+      "source": "heroes/Goverra/status/status_lv15.jpg"
     },
     "Amily": {
       "hp": 7960,
@@ -560,7 +560,7 @@
       "armor": 483,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_15.jpg"
+      "source": "heroes/Amily/status/status_lv15.jpg"
     },
     "Edras": {
       "hp": 7353,
@@ -568,7 +568,7 @@
       "armor": 409,
       "magic_defense": 269,
       "movement_speed": 375,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_16.jpg"
+      "source": "heroes/Edras/status/status_lv15.jpg"
     },
     "Thorne": {
       "hp": 7040,
@@ -576,7 +576,7 @@
       "armor": 415,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_17.jpg"
+      "source": "heroes/Thorne/status/status_lv15.jpg"
     },
     "Wukong": {
       "hp": 7707,
@@ -584,7 +584,7 @@
       "armor": 445,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_18.jpg"
+      "source": "heroes/Wukong/status/status_lv15.jpg"
     },
     "Charlotte": {
       "hp": 7750,
@@ -592,7 +592,7 @@
       "armor": 443,
       "magic_defense": 269,
       "movement_speed": 390,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_19.jpg"
+      "source": "heroes/Charlotte/status/status_lv15.jpg"
     },
     "Gildur": {
       "hp": 8578,
@@ -600,7 +600,7 @@
       "armor": 498,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_20.jpg"
+      "source": "heroes/Gildur/status/status_lv15.jpg"
     },
     "Dextra": {
       "hp": 8610,
@@ -608,7 +608,7 @@
       "armor": 492,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_21.jpg"
+      "source": "heroes/Dextra/status/status_lv15.jpg"
     },
     "Maloch": {
       "hp": 8490,
@@ -616,7 +616,7 @@
       "armor": 481,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_22.jpg"
+      "source": "heroes/Maloch/status/status_lv15.jpg"
     },
     "Tel'Annas": {
       "hp": 7173,
@@ -624,7 +624,7 @@
       "armor": 433,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_23.jpg"
+      "source": "heroes/Tel'Annas/status/status_lv15.jpg"
     },
     "Veera": {
       "hp": 7317,
@@ -632,7 +632,7 @@
       "armor": 421,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_24.jpg"
+      "source": "heroes/Veera/status/status_lv15.jpg"
     },
     "Xeniel": {
       "hp": 9333,
@@ -640,7 +640,7 @@
       "armor": 587,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_25.jpg"
+      "source": "heroes/Xeniel/status/status_lv15.jpg"
     },
     "Yorn": {
       "hp": 7152,
@@ -648,7 +648,7 @@
       "armor": 424,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_26.jpg"
+      "source": "heroes/Yorn/status/status_lv15.jpg"
     },
     "Y'bneth": {
       "hp": 8716,
@@ -656,7 +656,7 @@
       "armor": 497,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_27.jpg"
+      "source": "heroes/Y'bneth/status/status_lv15.jpg"
     },
     "Helen": {
       "hp": 7170,
@@ -664,7 +664,7 @@
       "armor": 445,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_28.jpg"
+      "source": "heroes/Helen/status/status_lv15.jpg"
     },
     "Allain": {
       "hp": 8500,
@@ -672,7 +672,7 @@
       "armor": 420,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_29.jpg"
+      "source": "heroes/Allain/status/status_lv15.jpg"
     },
     "Natalya": {
       "hp": 7411,
@@ -680,7 +680,7 @@
       "armor": 418,
       "magic_defense": 269,
       "movement_speed": 370,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_30.jpg"
+      "source": "heroes/Natalya/status/status_lv15.jpg"
     },
     "Grakk": {
       "hp": 8547,
@@ -688,7 +688,7 @@
       "armor": 502,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_31.jpg"
+      "source": "heroes/Grakk/status/status_lv15.jpg"
     },
     "Aleister": {
       "hp": 7059,
@@ -696,7 +696,7 @@
       "armor": 415,
       "magic_defense": 269,
       "movement_speed": 350,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_32.jpg"
+      "source": "heroes/Aleister/status/status_lv15.jpg"
     },
     "Mganga": {
       "hp": 7963,
@@ -704,7 +704,7 @@
       "armor": 469,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_33.jpg"
+      "source": "heroes/Mganga/status/status_lv15.jpg"
     },
     "Ignis": {
       "hp": 7244,
@@ -712,7 +712,7 @@
       "armor": 475,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_34.jpg"
+      "source": "heroes/Ignis/status/status_lv15.jpg"
     },
     "D'Arcy": {
       "hp": 7176,
@@ -720,7 +720,7 @@
       "armor": 400,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_35.jpg"
+      "source": "heroes/D'Arcy/status/status_lv15.jpg"
     },
     "Lumburr": {
       "hp": 9596,
@@ -728,7 +728,7 @@
       "armor": 489,
       "magic_defense": 269,
       "movement_speed": 370,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_36.jpg"
+      "source": "heroes/Lumburr/status/status_lv15.jpg"
     },
     "Jinnar": {
       "hp": 7425,
@@ -736,7 +736,7 @@
       "armor": 438,
       "magic_defense": 269,
       "movement_speed": 370,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_37.jpg"
+      "source": "heroes/Jinnar/status/status_lv15.jpg"
     },
     "Tamyn": {
       "hp": 7891,
@@ -744,7 +744,7 @@
       "armor": 458,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_38.jpg"
+      "source": "heroes/Tamyn/status/status_lv15.jpg"
     },
     "Arduin": {
       "hp": 8610,
@@ -752,7 +752,7 @@
       "armor": 492,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_39.jpg"
+      "source": "heroes/Arduin/status/status_lv15.jpg"
     },
     "Zip": {
       "hp": 8704,
@@ -760,7 +760,7 @@
       "armor": 541,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_40.jpg"
+      "source": "heroes/Zip/status/status_lv15.jpg"
     },
     "Lorion": {
       "hp": 7288,
@@ -768,7 +768,7 @@
       "armor": 473,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_41.jpg"
+      "source": "heroes/Lorion/status/status_lv15.jpg"
     },
     "Kaine": {
       "hp": 7492,
@@ -776,7 +776,7 @@
       "armor": 437,
       "magic_defense": 269,
       "movement_speed": 400,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_42.jpg"
+      "source": "heroes/Kaine/status/status_lv15.jpg"
     },
     "Bright": {
       "hp": 7489,
@@ -784,7 +784,7 @@
       "armor": 464,
       "magic_defense": 269,
       "movement_speed": 370,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_43.jpg"
+      "source": "heroes/Bright/status/status_lv15.jpg"
     },
     "Stuart": {
       "hp": 6979,
@@ -792,7 +792,7 @@
       "armor": 424,
       "magic_defense": 269,
       "movement_speed": 350,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_44.jpg"
+      "source": "heroes/Stuart/status/status_lv15.jpg"
     },
     "Slimz": {
       "hp": 7198,
@@ -800,7 +800,7 @@
       "armor": 441,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_45.jpg"
+      "source": "heroes/Slimz/status/status_lv15.jpg"
     },
     "Elsu": {
       "hp": 6871,
@@ -808,7 +808,7 @@
       "armor": 424,
       "magic_defense": 269,
       "movement_speed": 350,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_46.jpg"
+      "source": "heroes/Elsu/status/status_lv15.jpg"
     },
     "Iggy": {
       "hp": 6731,
@@ -816,7 +816,7 @@
       "armor": 390,
       "magic_defense": 269,
       "movement_speed": 350,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_47.jpg"
+      "source": "heroes/Iggy/status/status_lv15.jpg"
     },
     "Superman": {
       "hp": 8367,
@@ -824,7 +824,7 @@
       "armor": 472,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_48.jpg"
+      "source": "heroes/Superman/status/status_lv15.jpg"
     },
     "Ryoma": {
       "hp": 8260,
@@ -832,7 +832,7 @@
       "armor": 487,
       "magic_defense": 269,
       "movement_speed": 390,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_49.jpg"
+      "source": "heroes/Ryoma/status/status_lv15.jpg"
     },
     "Kil'Groth": {
       "hp": 8415,
@@ -840,7 +840,7 @@
       "armor": 504,
       "magic_defense": 269,
       "movement_speed": 390,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_50.jpg"
+      "source": "heroes/Kil'Groth/status/status_lv15.jpg"
     },
     "Teeri": {
       "hp": 7326,
@@ -848,7 +848,7 @@
       "armor": 419,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_51.jpg"
+      "source": "heroes/Teeri/status/status_lv15.jpg"
     },
     "Bonnie": {
       "hp": 6844,
@@ -856,7 +856,7 @@
       "armor": 425,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_52.jpg"
+      "source": "heroes/Bonnie/status/status_lv15.jpg"
     },
     "Sephera": {
       "hp": 6492,
@@ -864,7 +864,7 @@
       "armor": 381,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_53.jpg"
+      "source": "heroes/Sephera/status/status_lv15.jpg"
     },
     "Rourke": {
       "hp": 8160,
@@ -872,7 +872,7 @@
       "armor": 476,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_54.jpg"
+      "source": "heroes/Rourke/status/status_lv15.jpg"
     },
     "Ata": {
       "hp": 8410,
@@ -880,7 +880,7 @@
       "armor": 474,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_55.jpg"
+      "source": "heroes/Ata/status/status_lv15.jpg"
     },
     "Wisp": {
       "hp": 7095,
@@ -888,7 +888,7 @@
       "armor": 435,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_56.jpg"
+      "source": "heroes/Wisp/status/status_lv15.jpg"
     },
     "Flowborn (Marksman)": {
       "hp": 7140,
@@ -896,7 +896,7 @@
       "armor": 444,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_57.jpg"
+      "source": "heroes/Flowborn (Marksman)/status/status_lv15.jpg"
     },
     "Ming": {
       "hp": 8315,
@@ -904,7 +904,7 @@
       "armor": 450,
       "magic_defense": 269,
       "movement_speed": 370,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_59.jpg"
+      "source": "heroes/Ming/status/status_lv15.jpg"
     },
     "Dolia": {
       "hp": 7140,
@@ -912,7 +912,7 @@
       "armor": 420,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_60.jpg"
+      "source": "heroes/Dolia/status/status_lv15.jpg"
     },
     "Ormarr": {
       "hp": 8970,
@@ -920,7 +920,7 @@
       "armor": 494,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_61.jpg"
+      "source": "heroes/Ormarr/status/status_lv15.jpg"
     },
     "Biron": {
       "hp": 8400,
@@ -928,7 +928,7 @@
       "armor": 490,
       "magic_defense": 269,
       "movement_speed": 390,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_62.jpg"
+      "source": "heroes/Biron/status/status_lv15.jpg"
     },
     "Kahlii": {
       "hp": 6731,
@@ -936,7 +936,7 @@
       "armor": 390,
       "magic_defense": 269,
       "movement_speed": 350,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_63.jpg"
+      "source": "heroes/Kahlii/status/status_lv15.jpg"
     },
     "Ilumia": {
       "hp": 6487,
@@ -944,7 +944,7 @@
       "armor": 443,
       "magic_defense": 269,
       "movement_speed": 350,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_64.jpg"
+      "source": "heroes/Ilumia/status/status_lv15.jpg"
     },
     "Brunhilda": {
       "hp": 7002,
@@ -952,7 +952,7 @@
       "armor": 408,
       "magic_defense": 269,
       "movement_speed": 350,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_65.jpg"
+      "source": "heroes/Brunhilda/status/status_lv15.jpg"
     },
     "Moren": {
       "hp": 7272,
@@ -960,7 +960,7 @@
       "armor": 441,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_66.jpg"
+      "source": "heroes/Moren/status/status_lv15.jpg"
     },
     "Dyadia": {
       "hp": 7205,
@@ -968,7 +968,7 @@
       "armor": 421,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_67.jpg"
+      "source": "heroes/Dyadia/status/status_lv15.jpg"
     },
     "Heino": {
       "hp": 7600,
@@ -976,7 +976,7 @@
       "armor": 444,
       "magic_defense": 269,
       "movement_speed": 370,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_68.jpg"
+      "source": "heroes/Heino/status/status_lv15.jpg"
     },
     "Preyta": {
       "hp": 6659,
@@ -984,7 +984,7 @@
       "armor": 437,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_69.jpg"
+      "source": "heroes/Preyta/status/status_lv15.jpg"
     },
     "Arum": {
       "hp": 8929,
@@ -992,7 +992,7 @@
       "armor": 455,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_70.jpg"
+      "source": "heroes/Arum/status/status_lv15.jpg"
     },
     "Evita": {
       "hp": 6871,
@@ -1000,7 +1000,7 @@
       "armor": 425,
       "magic_defense": 269,
       "movement_speed": 350,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_71.jpg"
+      "source": "heroes/Evita/status/status_lv15.jpg"
     },
     "Flowborn (Mage)": {
       "hp": 7310,
@@ -1008,7 +1008,7 @@
       "armor": 444,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_72.jpg"
+      "source": "heroes/Flowborn (Mage)/status/status_lv15.jpg"
     },
     "Cresht": {
       "hp": 9601,
@@ -1016,7 +1016,7 @@
       "armor": 585,
       "magic_defense": 269,
       "movement_speed": 380,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_73.jpg"
+      "source": "heroes/Cresht/status/status_lv15.jpg"
     },
     "Azzen'Ka": {
       "hp": 6844,
@@ -1024,7 +1024,7 @@
       "armor": 425,
       "magic_defense": 269,
       "movement_speed": 360,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_74.jpg"
+      "source": "heroes/Azzen'Ka/status/status_lv15.jpg"
     },
     "Arthur": {
       "hp": 9260,
@@ -1032,7 +1032,7 @@
       "armor": 500,
       "magic_defense": 269,
       "movement_speed": 390,
-      "source": "heroes/LINE_ALBUM_Lv15_261020_75.jpg"
+      "source": "heroes/Arthur/status/status_lv15.jpg"
     },
     "Yue": {
       "hp": 7213,
@@ -1040,7 +1040,7 @@
       "armor": 403,
       "magic_defense": 239,
       "movement_speed": 360,
-      "source": "heroes/S__19775490.jpg"
+      "source": "heroes/Yue/status/status_lv15.jpg"
     }
   }
 }

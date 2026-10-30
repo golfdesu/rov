@@ -40,6 +40,13 @@ It checks:
 3. **Hero Alias Normalization**:
    - Normalize Liquipedia aliases (`"Riktor" -> "Richter"`, `"Diaochan" -> "Diao Chan"`, `"Chaugnar"`, ...) so there are **0 unmapped hero names**.
    - Thai server names (`Mortos`, `Celica`, `Riktor`) are display-only (`frontend/src/utils/heroNames.ts`). Never rename heroes in `data/` or the checkpoint.
+4. **Training Dataset vs. Match Archive (2024 Exclusion)**:
+   - `data/matches_draft_full.json` (4,208 games) is the historical archival repository covering 2024–2026.
+   - `data/matches_training.json` is the **curated training dataset** containing **3,457 games strictly from 2025–2026**.
+   - All 812 games from 2024 are excluded to prevent legacy meta noise and obsolete pick habits from polluting the SOTA model.
+   - 20 games from 2026-10-25 Grand Finals are held out to eliminate test leakage.
+   - True Pick Order coverage is 50.9% (1,761 / 3,457 games).
+   - Rebuild tool: `python src/build_training_dataset.py --min-year 2025 --max-date 2026-10-24`.
 
 ---
 

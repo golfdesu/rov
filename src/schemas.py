@@ -86,6 +86,10 @@ class HeroRecommendation(BaseModel):
         default_factory=list,
         description="Bans or picks that statistically triggered/unlocked this recommendation",
     )
+    trigger_reason: Literal["counter", "combo", "ban_unlock", "protect"] | None = Field(
+        default=None,
+        description="Reason category for triggered_by: counter | combo | ban_unlock | protect",
+    )
 
 
 class DraftPredictionResponse(BaseModel):

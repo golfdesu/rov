@@ -12,7 +12,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 61,
       "resource_regen_5s": 0,
-      "source": "heroes/Airi/status/LINE_ALBUM_Status_261019b_34.jpg"
+      "source": "heroes/Airi/status/status_lv1.jpg"
     },
     "Aleister": {
       "hp": 3377,
@@ -24,7 +24,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 53,
       "resource_regen_5s": 18,
-      "source": "heroes/Aleister/status/LINE_ALBUM_Status_261019b_7.jpg"
+      "source": "heroes/Aleister/status/status_lv1.jpg"
     },
     "Alice": {
       "hp": 3558,
@@ -36,7 +36,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 55,
       "resource_regen_5s": 17,
-      "source": "heroes/Alice/status/LINE_ALBUM_Status_261019b_31.jpg"
+      "source": "heroes/Alice/status/status_lv1.jpg"
     },
     "Allain": {
       "hp": 3600,
@@ -48,7 +48,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 70,
       "resource_regen_5s": 0,
-      "source": "heroes/Allain/status/LINE_ALBUM_Status_261019b_4.jpg"
+      "source": "heroes/Allain/status/status_lv1.jpg"
     },
     "Amily": {
       "hp": 3725,
@@ -60,7 +60,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 54,
       "resource_regen_5s": 16,
-      "source": "heroes/Amily/status/LINE_ALBUM_Status_261019c_39.jpg"
+      "source": "heroes/Amily/status/status_lv1.jpg"
     },
     "Annette": {
       "hp": 3555,
@@ -72,7 +72,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 60,
       "resource_regen_5s": 15,
-      "source": "heroes/Annette/status/LINE_ALBUM_Status_261019c_33.jpg"
+      "source": "heroes/Annette/status/status_lv1.jpg"
     },
     "Aoi": {
       "hp": 3360,
@@ -84,7 +84,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 55,
       "resource_regen_5s": 0,
-      "source": "heroes/Aoi/status/LINE_ALBUM_Status_261019_21.jpg"
+      "source": "heroes/Aoi/status/status_lv1.jpg"
     },
     "Arduin": {
       "hp": 3657,
@@ -96,7 +96,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 61,
       "resource_regen_5s": 15,
-      "source": "heroes/Arduin/status/LINE_ALBUM_Status_261019b_15.jpg"
+      "source": "heroes/Arduin/status/status_lv1.jpg"
     },
     "Arthur": {
       "hp": 3922,
@@ -108,7 +108,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 65,
       "resource_regen_5s": 0,
-      "source": "heroes/Arthur/status/LINE_ALBUM_Status_261019c_24.jpg"
+      "source": "heroes/Arthur/status/status_lv1.jpg"
     },
     "Arum": {
       "hp": 3551,
@@ -120,7 +120,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 80,
       "resource_regen_5s": 17,
-      "source": "heroes/Arum/status/LINE_ALBUM_Status_261019c_19.jpg"
+      "source": "heroes/Arum/status/status_lv1.jpg"
     },
     "Astrid": {
       "hp": 3600,
@@ -132,7 +132,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 60,
       "resource_regen_5s": 16,
-      "source": "heroes/Astrid/status/LINE_ALBUM_Status_261019b_54.jpg"
+      "source": "heroes/Astrid/status/status_lv1.jpg"
     },
     "Ata": {
       "hp": 3720,
@@ -144,7 +144,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 54,
       "resource_regen_5s": 0,
-      "source": "heroes/Ata/status/LINE_ALBUM_Status_261019c_5.jpg"
+      "source": "heroes/Ata/status/status_lv1.jpg"
     },
     "Aya": {
       "hp": 3558,
@@ -156,7 +156,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 55,
       "resource_regen_5s": 17,
-      "source": "heroes/Aya/status/LINE_ALBUM_Status_261019c_37.jpg"
+      "source": "heroes/Aya/status/status_lv1.jpg"
     },
     "Azzen'Ka": {
       "hp": 3391,
@@ -168,7 +168,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 53,
       "resource_regen_5s": 18,
-      "source": "heroes/Azzen'Ka/status/LINE_ALBUM_Status_261019c_23.jpg"
+      "source": "heroes/Azzen'Ka/status/status_lv1.jpg"
     },
     "Baldum": {
       "hp": 3720,
@@ -180,7 +180,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 69,
       "resource_regen_5s": 15,
-      "source": "heroes/Baldum/status/LINE_ALBUM_Status_261019b_39.jpg"
+      "source": "heroes/Baldum/status/status_lv1.jpg"
     },
     "Bijan": {
       "hp": 3570,
@@ -192,7 +192,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 62,
       "resource_regen_5s": 15,
-      "source": "heroes/Bijan/status/LINE_ALBUM_Status_261019c_28.jpg"
+      "source": "heroes/Bijan/status/status_lv1.jpg"
     },
     "Billow": {
       "hp": 3400,
@@ -205,7 +205,7 @@
       "hp_regen_5s": 50,
       "resource_regen_5s": 16,
       "armor_pct": 20,
-      "source": "heroes/Billow/status/LINE_ALBUM_Status_261019b_49.jpg"
+      "source": "heroes/Billow/status/status_lv1.jpg"
     },
     "Biron": {
       "hp": 3500,
@@ -217,7 +217,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 50,
       "resource_regen_5s": 0,
-      "source": "heroes/Biron/status/LINE_ALBUM_Status_261019c_11.jpg"
+      "source": "heroes/Biron/status/status_lv1.jpg"
     },
     "Bolt Baron": {
       "hp": 3376,
@@ -230,7 +230,7 @@
       "hp_regen_5s": 50,
       "resource_regen_5s": 0,
       "armor_pct": 20,
-      "source": "heroes/Bolt Baron/status/LINE_ALBUM_Status_261019b_32.jpg"
+      "source": "heroes/Bolt Baron/status/status_lv1.jpg"
     },
     "Bonnie": {
       "hp": 3391,
@@ -242,7 +242,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 47,
       "resource_regen_5s": 18,
-      "source": "heroes/Bonnie/status/LINE_ALBUM_Status_261019c_2.jpg"
+      "source": "heroes/Bonnie/status/status_lv1.jpg"
     },
     "Bright": {
       "hp": 3585,
@@ -254,7 +254,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 50,
       "resource_regen_5s": 15,
-      "source": "heroes/Bright/status/LINE_ALBUM_Status_261019b_19.jpg"
+      "source": "heroes/Bright/status/status_lv1.jpg"
     },
     "Brunhilda": {
       "hp": 3526,
@@ -266,7 +266,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 39,
       "resource_regen_5s": 16,
-      "source": "heroes/Brunhilda/status/LINE_ALBUM_Status_261019c_14.jpg"
+      "source": "heroes/Brunhilda/status/status_lv1.jpg"
     },
     "Butterfly": {
       "hp": 3619,
@@ -278,7 +278,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 57,
       "resource_regen_5s": 0,
-      "source": "heroes/Butterfly/status/LINE_ALBUM_Status_261019b_44.jpg"
+      "source": "heroes/Butterfly/status/status_lv1.jpg"
     },
     "Capheny": {
       "hp": 3379,
@@ -290,7 +290,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 47,
       "resource_regen_5s": 0,
-      "source": "heroes/Capheny/status/LINE_ALBUM_Status_261019b_35.jpg"
+      "source": "heroes/Capheny/status/status_lv1.jpg"
     },
     "Charlotte": {
       "hp": 3550,
@@ -302,7 +302,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 60,
       "resource_regen_5s": 0,
-      "source": "heroes/Charlotte/status/LINE_ALBUM_Status_261019c_43.jpg"
+      "source": "heroes/Charlotte/status/status_lv1.jpg"
     },
     "Chaugnar": {
       "hp": 3661,
@@ -314,7 +314,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 65,
       "resource_regen_5s": 15,
-      "source": "heroes/Chaugnar/status/LINE_ALBUM_Status_261019c_35.jpg"
+      "source": "heroes/Chaugnar/status/status_lv1.jpg"
     },
     "Cresht": {
       "hp": 3800,
@@ -326,7 +326,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 67,
       "resource_regen_5s": 0,
-      "source": "heroes/Cresht/status/LINE_ALBUM_Status_261019c_22.jpg"
+      "source": "heroes/Cresht/status/status_lv1.jpg"
     },
     "D'Arcy": {
       "hp": 3438,
@@ -338,7 +338,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 54,
       "resource_regen_5s": 17,
-      "source": "heroes/D'Arcy/status/LINE_ALBUM_Status_261019b_10.jpg"
+      "source": "heroes/D'Arcy/status/status_lv1.jpg"
     },
     "Dextra": {
       "hp": 3657,
@@ -350,7 +350,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 61,
       "resource_regen_5s": 0,
-      "source": "heroes/Dextra/status/LINE_ALBUM_Status_261019c_45.jpg"
+      "source": "heroes/Dextra/status/status_lv1.jpg"
     },
     "Diao Chan": {
       "hp": 3358,
@@ -362,7 +362,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 54,
       "resource_regen_5s": 17,
-      "source": "heroes/Diao Chan/status/LINE_ALBUM_Status_261019c_32.jpg"
+      "source": "heroes/Diao Chan/status/status_lv1.jpg"
     },
     "Dirak": {
       "hp": 3000,
@@ -374,7 +374,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 57,
       "resource_regen_5s": 19,
-      "source": "heroes/Dirak/status/LINE_ALBUM_Status_261019c_26.jpg"
+      "source": "heroes/Dirak/status/status_lv1.jpg"
     },
     "Dolia": {
       "hp": 3500,
@@ -386,7 +386,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 55,
       "resource_regen_5s": 16,
-      "source": "heroes/Dolia/status/LINE_ALBUM_Status_261019c_9.jpg"
+      "source": "heroes/Dolia/status/status_lv1.jpg"
     },
     "Dyadia": {
       "hp": 3560,
@@ -398,7 +398,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 50,
       "resource_regen_5s": 15,
-      "source": "heroes/Dyadia/status/LINE_ALBUM_Status_261019c_16.jpg"
+      "source": "heroes/Dyadia/status/status_lv1.jpg"
     },
     "Edras": {
       "hp": 3512,
@@ -411,7 +411,7 @@
       "hp_regen_5s": 52,
       "resource_regen_5s": 0,
       "armor_pct": 20,
-      "source": "heroes/Edras/status/LINE_ALBUM_Status_261019c_40.jpg"
+      "source": "heroes/Edras/status/status_lv1.jpg"
     },
     "Eland'orr": {
       "hp": 3400,
@@ -423,7 +423,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 48,
       "resource_regen_5s": 15,
-      "source": "heroes/Eland'orr/status/LINE_ALBUM_Status_261019_13.jpg"
+      "source": "heroes/Eland'orr/status/status_lv1.jpg"
     },
     "Elsu": {
       "hp": 3369,
@@ -435,7 +435,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 49,
       "resource_regen_5s": 16,
-      "source": "heroes/Elsu/status/LINE_ALBUM_Status_261019b_22.jpg"
+      "source": "heroes/Elsu/status/status_lv1.jpg"
     },
     "Enzo": {
       "hp": 3585,
@@ -447,7 +447,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 61,
       "resource_regen_5s": 16,
-      "source": "heroes/Enzo/status/LINE_ALBUM_Status_261019b_43.jpg"
+      "source": "heroes/Enzo/status/status_lv1.jpg"
     },
     "Erin": {
       "hp": 3500,
@@ -459,7 +459,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 50,
       "resource_regen_5s": 0,
-      "source": "heroes/Erin/status/LINE_ALBUM_Status_261019c_29.jpg"
+      "source": "heroes/Erin/status/status_lv1.jpg"
     },
     "Errol": {
       "hp": 3575,
@@ -471,7 +471,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 64,
       "resource_regen_5s": 0,
-      "source": "heroes/Errol/status/LINE_ALBUM_Status_261019b_37.jpg"
+      "source": "heroes/Errol/status/status_lv1.jpg"
     },
     "Evita": {
       "hp": 3369,
@@ -483,7 +483,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 53,
       "resource_regen_5s": 17,
-      "source": "heroes/Evita/status/LINE_ALBUM_Status_261019c_20.jpg"
+      "source": "heroes/Evita/status/status_lv1.jpg"
     },
     "Fennik": {
       "hp": 3357,
@@ -495,7 +495,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 51,
       "resource_regen_5s": 15,
-      "source": "heroes/Fennik/status/LINE_ALBUM_Status_261019b_42.jpg"
+      "source": "heroes/Fennik/status/status_lv1.jpg"
     },
     "Florentino": {
       "hp": 3535,
@@ -507,7 +507,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 60,
       "resource_regen_5s": 0,
-      "source": "heroes/Florentino/status/LINE_ALBUM_Status_261019_23.jpg"
+      "source": "heroes/Florentino/status/status_lv1.jpg"
     },
     "Flowborn (Mage)": {
       "hp": 3600,
@@ -520,7 +520,7 @@
       "hp_regen_5s": 50,
       "resource_regen_5s": 16,
       "armor_pct": 20,
-      "source": "heroes/Flowborn (Mage)/status/LINE_ALBUM_Status_261019c_21.jpg"
+      "source": "heroes/Flowborn (Mage)/status/status_lv1.jpg"
     },
     "Flowborn (Marksman)": {
       "hp": 3500,
@@ -533,7 +533,7 @@
       "hp_regen_5s": 50,
       "resource_regen_5s": 15,
       "armor_pct": 20,
-      "source": "heroes/Flowborn (Marksman)/status/LINE_ALBUM_Status_261019c_7.jpg"
+      "source": "heroes/Flowborn (Marksman)/status/status_lv1.jpg"
     },
     "Gildur": {
       "hp": 3678,
@@ -545,7 +545,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 66,
       "resource_regen_5s": 15,
-      "source": "heroes/Gildur/status/LINE_ALBUM_Status_261019c_44.jpg"
+      "source": "heroes/Gildur/status/status_lv1.jpg"
     },
     "Goverra": {
       "hp": 3400,
@@ -558,7 +558,7 @@
       "hp_regen_5s": 50,
       "resource_regen_5s": 18,
       "armor_pct": 20,
-      "source": "heroes/Goverra/status/LINE_ALBUM_Status_261019c_38.jpg"
+      "source": "heroes/Goverra/status/status_lv1.jpg"
     },
     "Grakk": {
       "hp": 3850,
@@ -571,7 +571,7 @@
       "hp_regen_5s": 70,
       "resource_regen_5s": 17,
       "armor_pct": 20,
-      "source": "heroes/Grakk/status/LINE_ALBUM_Status_261019b_6.jpg"
+      "source": "heroes/Grakk/status/status_lv1.jpg"
     },
     "Hayate": {
       "hp": 3350,
@@ -583,7 +583,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 56,
       "resource_regen_5s": 50,
-      "source": "heroes/Hayate/status/LINE_ALBUM_Status_261019_2.jpg"
+      "source": "heroes/Hayate/status/status_lv1.jpg"
     },
     "Heino": {
       "hp": 3400,
@@ -596,7 +596,7 @@
       "hp_regen_5s": 50,
       "resource_regen_5s": 16,
       "armor_pct": 20,
-      "source": "heroes/Heino/status/LINE_ALBUM_Status_261019c_17.jpg"
+      "source": "heroes/Heino/status/status_lv1.jpg"
     },
     "Helen": {
       "hp": 3588,
@@ -608,7 +608,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 48,
       "resource_regen_5s": 17,
-      "source": "heroes/Helen/status/LINE_ALBUM_Status_261019b_3.jpg"
+      "source": "heroes/Helen/status/status_lv1.jpg"
     },
     "Iggy": {
       "hp": 3475,
@@ -620,7 +620,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 46,
       "resource_regen_5s": 0,
-      "source": "heroes/Iggy/status/LINE_ALBUM_Status_261019b_23.jpg"
+      "source": "heroes/Iggy/status/status_lv1.jpg"
     },
     "Ignis": {
       "hp": 3555,
@@ -632,7 +632,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 54,
       "resource_regen_5s": 17,
-      "source": "heroes/Ignis/status/LINE_ALBUM_Status_261019b_9.jpg"
+      "source": "heroes/Ignis/status/status_lv1.jpg"
     },
     "Ilumia": {
       "hp": 3400,
@@ -644,7 +644,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 50,
       "resource_regen_5s": 18,
-      "source": "heroes/Ilumia/status/LINE_ALBUM_Status_261019c_13.jpg"
+      "source": "heroes/Ilumia/status/status_lv1.jpg"
     },
     "Ishar": {
       "hp": 3438,
@@ -656,7 +656,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 44,
       "resource_regen_5s": 18,
-      "source": "heroes/Ishar/status/LINE_ALBUM_Status_261019c_36.jpg"
+      "source": "heroes/Ishar/status/status_lv1.jpg"
     },
     "Jinnar": {
       "hp": 3472,
@@ -668,7 +668,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 54,
       "resource_regen_5s": 17,
-      "source": "heroes/Jinnar/status/LINE_ALBUM_Status_261019b_12.jpg"
+      "source": "heroes/Jinnar/status/status_lv1.jpg"
     },
     "Kahlii": {
       "hp": 3475,
@@ -680,7 +680,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 54,
       "resource_regen_5s": 17,
-      "source": "heroes/Kahlii/status/LINE_ALBUM_Status_261019c_12.jpg"
+      "source": "heroes/Kahlii/status/status_lv1.jpg"
     },
     "Kaine": {
       "hp": 3642,
@@ -692,7 +692,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 62,
       "resource_regen_5s": 19,
-      "source": "heroes/Kaine/status/LINE_ALBUM_Status_261019b_18.jpg"
+      "source": "heroes/Kaine/status/status_lv1.jpg"
     },
     "Keera": {
       "hp": 3660,
@@ -704,7 +704,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 55,
       "resource_regen_5s": 18,
-      "source": "heroes/Keera/status/LINE_ALBUM_Status_261019_25.jpg"
+      "source": "heroes/Keera/status/status_lv1.jpg"
     },
     "Kil'Groth": {
       "hp": 3720,
@@ -716,7 +716,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 61,
       "resource_regen_5s": 16,
-      "source": "heroes/Kil'Groth/status/LINE_ALBUM_Status_261019b_26.jpg"
+      "source": "heroes/Kil'Groth/status/status_lv1.jpg"
     },
     "Kriknak": {
       "hp": 3589,
@@ -728,7 +728,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 57,
       "resource_regen_5s": 16,
-      "source": "heroes/Kriknak/status/LINE_ALBUM_Status_261019_22.jpg"
+      "source": "heroes/Kriknak/status/status_lv1.jpg"
     },
     "Krixi": {
       "hp": 3438,
@@ -740,7 +740,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 54,
       "resource_regen_5s": 18,
-      "source": "heroes/Krixi/status/LINE_ALBUM_Status_261019b_46.jpg"
+      "source": "heroes/Krixi/status/status_lv1.jpg"
     },
     "Krizzix": {
       "hp": 3672,
@@ -752,7 +752,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 57,
       "resource_regen_5s": 16,
-      "source": "heroes/Krizzix/status/LINE_ALBUM_Status_261019b_38.jpg"
+      "source": "heroes/Krizzix/status/status_lv1.jpg"
     },
     "Lauriel": {
       "hp": 3369,
@@ -764,7 +764,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 53,
       "resource_regen_5s": 17,
-      "source": "heroes/Lauriel/status/LINE_ALBUM_Status_261019_17.jpg"
+      "source": "heroes/Lauriel/status/status_lv1.jpg"
     },
     "Laville": {
       "hp": 3588,
@@ -776,7 +776,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 44,
       "resource_regen_5s": 18,
-      "source": "heroes/Laville/status/LINE_ALBUM_Status_261019b_30.jpg"
+      "source": "heroes/Laville/status/status_lv1.jpg"
     },
     "Liliana": {
       "hp": 3485,
@@ -788,7 +788,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 67,
       "resource_regen_5s": 18,
-      "source": "heroes/Liliana/status/LINE_ALBUM_Status_261019b_40.jpg"
+      "source": "heroes/Liliana/status/status_lv1.jpg"
     },
     "Lindis": {
       "hp": 3377,
@@ -800,7 +800,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 49,
       "resource_regen_5s": 15,
-      "source": "heroes/Lindis/status/LINE_ALBUM_Status_261019_15.jpg"
+      "source": "heroes/Lindis/status/status_lv1.jpg"
     },
     "Lorion": {
       "hp": 3438,
@@ -812,7 +812,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 54,
       "resource_regen_5s": 17,
-      "source": "heroes/Lorion/status/LINE_ALBUM_Status_261019b_17.jpg"
+      "source": "heroes/Lorion/status/status_lv1.jpg"
     },
     "Lu Bu": {
       "hp": 3781,
@@ -825,7 +825,7 @@
       "hp_regen_5s": 64,
       "resource_regen_5s": 0,
       "armor_pct": 20,
-      "source": "heroes/Lu Bu/status/LINE_ALBUM_Status_261019_12.jpg"
+      "source": "heroes/Lu Bu/status/status_lv1.jpg"
     },
     "Lumburr": {
       "hp": 3887,
@@ -837,7 +837,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 68,
       "resource_regen_5s": 17,
-      "source": "heroes/Lumburr/status/LINE_ALBUM_Status_261019b_11.jpg"
+      "source": "heroes/Lumburr/status/status_lv1.jpg"
     },
     "Maloch": {
       "hp": 3800,
@@ -849,7 +849,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 65,
       "resource_regen_5s": 0,
-      "source": "heroes/Maloch/status/LINE_ALBUM_Status_261019c_47.jpg"
+      "source": "heroes/Maloch/status/status_lv1.jpg"
     },
     "Marja": {
       "hp": 3635,
@@ -861,7 +861,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 52,
       "resource_regen_5s": -5,
-      "source": "heroes/Marja/status/LINE_ALBUM_Status_261019b_45.jpg"
+      "source": "heroes/Marja/status/status_lv1.jpg"
     },
     "Max": {
       "hp": 3833,
@@ -873,7 +873,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 63,
       "resource_regen_5s": 16,
-      "source": "heroes/Max/status/LINE_ALBUM_Status_261019c_25.jpg"
+      "source": "heroes/Max/status/status_lv1.jpg"
     },
     "Mganga": {
       "hp": 3555,
@@ -885,7 +885,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 55,
       "resource_regen_5s": 18,
-      "source": "heroes/Mganga/status/LINE_ALBUM_Status_261019b_8.jpg"
+      "source": "heroes/Mganga/status/status_lv1.jpg"
     },
     "Mina": {
       "hp": 3650,
@@ -897,7 +897,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 60,
       "resource_regen_5s": 14,
-      "source": "heroes/Mina/status/LINE_ALBUM_Status_261019_6.jpg"
+      "source": "heroes/Mina/status/status_lv1.jpg"
     },
     "Ming": {
       "hp": 3620,
@@ -909,7 +909,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 57,
       "resource_regen_5s": 16,
-      "source": "heroes/Ming/status/LINE_ALBUM_Status_261019c_8.jpg"
+      "source": "heroes/Ming/status/status_lv1.jpg"
     },
     "Moren": {
       "hp": 3562,
@@ -921,7 +921,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 46,
       "resource_regen_5s": 15,
-      "source": "heroes/Moren/status/LINE_ALBUM_Status_261019c_15.jpg"
+      "source": "heroes/Moren/status/status_lv1.jpg"
     },
     "Murad": {
       "hp": 3268,
@@ -933,7 +933,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 59,
       "resource_regen_5s": 16,
-      "source": "heroes/Murad/status/LINE_ALBUM_Status_261019b_53.jpg"
+      "source": "heroes/Murad/status/status_lv1.jpg"
     },
     "Nakroth": {
       "hp": 3288,
@@ -945,7 +945,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 55,
       "resource_regen_5s": 15,
-      "source": "heroes/Nakroth/status/LINE_ALBUM_Status_261019_11.jpg"
+      "source": "heroes/Nakroth/status/status_lv1.jpg"
     },
     "Natalya": {
       "hp": 3673,
@@ -957,7 +957,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 57,
       "resource_regen_5s": 17,
-      "source": "heroes/Natalya/status/LINE_ALBUM_Status_261019b_5.jpg"
+      "source": "heroes/Natalya/status/status_lv1.jpg"
     },
     "Omega": {
       "hp": 3500,
@@ -969,7 +969,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 66,
       "resource_regen_5s": 15,
-      "source": "heroes/Omega/status/LINE_ALBUM_Status_261019c_27.jpg"
+      "source": "heroes/Omega/status/status_lv1.jpg"
     },
     "Omen": {
       "hp": 3720,
@@ -981,7 +981,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 61,
       "resource_regen_5s": -5,
-      "source": "heroes/Omen/status/LINE_ALBUM_Status_261019_8.jpg"
+      "source": "heroes/Omen/status/status_lv1.jpg"
     },
     "Ormarr": {
       "hp": 3650,
@@ -993,7 +993,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 66,
       "resource_regen_5s": 15,
-      "source": "heroes/Ormarr/status/LINE_ALBUM_Status_261019c_10.jpg"
+      "source": "heroes/Ormarr/status/status_lv1.jpg"
     },
     "Paine": {
       "hp": 3550,
@@ -1005,7 +1005,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 55,
       "resource_regen_5s": 25,
-      "source": "heroes/Paine/status/LINE_ALBUM_Status_261019b_33.jpg"
+      "source": "heroes/Paine/status/status_lv1.jpg"
     },
     "Preyta": {
       "hp": 3308,
@@ -1017,7 +1017,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 52,
       "resource_regen_5s": 18,
-      "source": "heroes/Preyta/status/LINE_ALBUM_Status_261019c_18.jpg"
+      "source": "heroes/Preyta/status/status_lv1.jpg"
     },
     "Qi": {
       "hp": 3563,
@@ -1029,7 +1029,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 61,
       "resource_regen_5s": 15,
-      "source": "heroes/Qi/status/LINE_ALBUM_Status_261019_9.jpg"
+      "source": "heroes/Qi/status/status_lv1.jpg"
     },
     "Quillen": {
       "hp": 3619,
@@ -1042,7 +1042,7 @@
       "hp_regen_5s": 60,
       "resource_regen_5s": 0,
       "critical_damage": 125,
-      "source": "heroes/Quillen/status/LINE_ALBUM_Status_261019_4.jpg"
+      "source": "heroes/Quillen/status/status_lv1.jpg"
     },
     "Raz": {
       "hp": 3585,
@@ -1054,7 +1054,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 56,
       "resource_regen_5s": 50,
-      "source": "heroes/Raz/status/LINE_ALBUM_Status_261019b_28.jpg"
+      "source": "heroes/Raz/status/status_lv1.jpg"
     },
     "Richter": {
       "hp": 3765,
@@ -1066,7 +1066,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 60,
       "resource_regen_5s": 0,
-      "source": "heroes/Richter/status/LINE_ALBUM_Status_261019_19.jpg"
+      "source": "heroes/Richter/status/status_lv1.jpg"
     },
     "Rouie": {
       "hp": 3555,
@@ -1078,7 +1078,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 60,
       "resource_regen_5s": 15,
-      "source": "heroes/Rouie/status/LINE_ALBUM_Status_261019c_34.jpg"
+      "source": "heroes/Rouie/status/status_lv1.jpg"
     },
     "Rourke": {
       "hp": 3575,
@@ -1090,7 +1090,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 50,
       "resource_regen_5s": 15,
-      "source": "heroes/Rourke/status/LINE_ALBUM_Status_261019c_4.jpg"
+      "source": "heroes/Rourke/status/status_lv1.jpg"
     },
     "Roxie": {
       "hp": 3815,
@@ -1102,7 +1102,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 69,
       "resource_regen_5s": 20,
-      "source": "heroes/Roxie/status/LINE_ALBUM_Status_261019b_50.jpg"
+      "source": "heroes/Roxie/status/status_lv1.jpg"
     },
     "Ryoma": {
       "hp": 3500,
@@ -1114,7 +1114,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 58,
       "resource_regen_5s": 0,
-      "source": "heroes/Ryoma/status/LINE_ALBUM_Status_261019b_25.jpg"
+      "source": "heroes/Ryoma/status/status_lv1.jpg"
     },
     "Sephera": {
       "hp": 3216,
@@ -1126,7 +1126,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 52,
       "resource_regen_5s": 17,
-      "source": "heroes/Sephera/status/LINE_ALBUM_Status_261019c_3.jpg"
+      "source": "heroes/Sephera/status/status_lv1.jpg"
     },
     "Sinestrea": {
       "hp": 3535,
@@ -1138,7 +1138,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 61,
       "resource_regen_5s": 0,
-      "source": "heroes/Sinestrea/status/LINE_ALBUM_Status_261019b_51.jpg"
+      "source": "heroes/Sinestrea/status/status_lv1.jpg"
     },
     "Skud": {
       "hp": 3865,
@@ -1150,7 +1150,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 61,
       "resource_regen_5s": 15,
-      "source": "heroes/Skud/status/LINE_ALBUM_Status_261019b_55.jpg"
+      "source": "heroes/Skud/status/status_lv1.jpg"
     },
     "Slimz": {
       "hp": 3642,
@@ -1162,7 +1162,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 52,
       "resource_regen_5s": 16,
-      "source": "heroes/Slimz/status/LINE_ALBUM_Status_261019b_21.jpg"
+      "source": "heroes/Slimz/status/status_lv1.jpg"
     },
     "Stuart": {
       "hp": 3377,
@@ -1174,7 +1174,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 46,
       "resource_regen_5s": 0,
-      "source": "heroes/Stuart/status/LINE_ALBUM_Status_261019b_20.jpg"
+      "source": "heroes/Stuart/status/status_lv1.jpg"
     },
     "Superman": {
       "hp": 3672,
@@ -1186,7 +1186,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 61,
       "resource_regen_5s": 0,
-      "source": "heroes/Superman/status/LINE_ALBUM_Status_261019b_24.jpg"
+      "source": "heroes/Superman/status/status_lv1.jpg"
     },
     "Taara": {
       "hp": 3620,
@@ -1198,7 +1198,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 67,
       "resource_regen_5s": 0,
-      "source": "heroes/Taara/status/LINE_ALBUM_Status_261019_14.jpg"
+      "source": "heroes/Taara/status/status_lv1.jpg"
     },
     "Tachi": {
       "hp": 3535,
@@ -1210,7 +1210,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 60,
       "resource_regen_5s": 0,
-      "source": "heroes/Tachi/status/LINE_ALBUM_Status_261019_1.jpg"
+      "source": "heroes/Tachi/status/status_lv1.jpg"
     },
     "Tamyn": {
       "hp": 3523,
@@ -1223,7 +1223,7 @@
       "hp_regen_5s": 56,
       "resource_regen_5s": 0,
       "armor_pct": 20,
-      "source": "heroes/Tamyn/status/LINE_ALBUM_Status_261019b_13.jpg"
+      "source": "heroes/Tamyn/status/status_lv1.jpg"
     },
     "TeeMee": {
       "hp": 3551,
@@ -1235,7 +1235,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 59,
       "resource_regen_5s": 15,
-      "source": "heroes/TeeMee/status/LINE_ALBUM_Status_261019b_29.jpg"
+      "source": "heroes/TeeMee/status/status_lv1.jpg"
     },
     "Teeri": {
       "hp": 3588,
@@ -1247,7 +1247,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 44,
       "resource_regen_5s": 15,
-      "source": "heroes/Teeri/status/LINE_ALBUM_Status_261019c_1.jpg"
+      "source": "heroes/Teeri/status/status_lv1.jpg"
     },
     "Tel'Annas": {
       "hp": 3592,
@@ -1259,7 +1259,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 50,
       "resource_regen_5s": 15,
-      "source": "heroes/Tel'Annas/status/LINE_ALBUM_Status_261019c_48.jpg"
+      "source": "heroes/Tel'Annas/status/status_lv1.jpg"
     },
     "Thane": {
       "hp": 3835,
@@ -1271,7 +1271,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 68,
       "resource_regen_5s": 15,
-      "source": "heroes/Thane/status/LINE_ALBUM_Status_261019b_41.jpg"
+      "source": "heroes/Thane/status/status_lv1.jpg"
     },
     "The Flash": {
       "hp": 3570,
@@ -1283,7 +1283,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 61,
       "resource_regen_5s": 17,
-      "source": "heroes/The Flash/status/LINE_ALBUM_Status_261019c_31.jpg"
+      "source": "heroes/The Flash/status/status_lv1.jpg"
     },
     "Thorne": {
       "hp": 3400,
@@ -1295,7 +1295,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 50,
       "resource_regen_5s": 0,
-      "source": "heroes/Thorne/status/LINE_ALBUM_Status_261019c_41.jpg"
+      "source": "heroes/Thorne/status/status_lv1.jpg"
     },
     "Toro": {
       "hp": 3800,
@@ -1307,7 +1307,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 65,
       "resource_regen_5s": -27,
-      "source": "heroes/Toro/status/LINE_ALBUM_Status_261019b_14.jpg"
+      "source": "heroes/Toro/status/status_lv1.jpg"
     },
     "Tulen": {
       "hp": 3485,
@@ -1319,7 +1319,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 54,
       "resource_regen_5s": 18,
-      "source": "heroes/Tulen/status/LINE_ALBUM_Status_261019_7.jpg"
+      "source": "heroes/Tulen/status/status_lv1.jpg"
     },
     "Valhein": {
       "hp": 3592,
@@ -1331,7 +1331,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 50,
       "resource_regen_5s": 15,
-      "source": "heroes/Valhein/status/LINE_ALBUM_Status_261019b_52.jpg"
+      "source": "heroes/Valhein/status/status_lv1.jpg"
     },
     "Veera": {
       "hp": 3579,
@@ -1343,7 +1343,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 56,
       "resource_regen_5s": 18,
-      "source": "heroes/Veera/status/LINE_ALBUM_Status_261019c_49.jpg"
+      "source": "heroes/Veera/status/status_lv1.jpg"
     },
     "Veres": {
       "hp": 3785,
@@ -1355,7 +1355,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 62,
       "resource_regen_5s": 0,
-      "source": "heroes/Veres/status/LINE_ALBUM_Status_261019b_48.jpg"
+      "source": "heroes/Veres/status/status_lv1.jpg"
     },
     "Violet": {
       "hp": 3565,
@@ -1367,7 +1367,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 50,
       "resource_regen_5s": 15,
-      "source": "heroes/Violet/status/LINE_ALBUM_Status_261019_24.jpg"
+      "source": "heroes/Violet/status/status_lv1.jpg"
     },
     "Volkath": {
       "hp": 3617,
@@ -1379,7 +1379,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 60,
       "resource_regen_5s": 15,
-      "source": "heroes/Volkath/status/LINE_ALBUM_Status_261019b_47.jpg"
+      "source": "heroes/Volkath/status/status_lv1.jpg"
     },
     "Wiro": {
       "hp": 3786,
@@ -1391,7 +1391,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 90,
       "resource_regen_5s": 17,
-      "source": "heroes/Wiro/status/LINE_ALBUM_Status_261019c_30.jpg"
+      "source": "heroes/Wiro/status/status_lv1.jpg"
     },
     "Wisp": {
       "hp": 3357,
@@ -1403,7 +1403,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 50,
       "resource_regen_5s": 16,
-      "source": "heroes/Wisp/status/LINE_ALBUM_Status_261019c_6.jpg"
+      "source": "heroes/Wisp/status/status_lv1.jpg"
     },
     "Wonder Woman": {
       "hp": 3784,
@@ -1415,7 +1415,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 72,
       "resource_regen_5s": 0,
-      "source": "heroes/Wonder Woman/status/LINE_ALBUM_Status_261019_10.jpg"
+      "source": "heroes/Wonder Woman/status/status_lv1.jpg"
     },
     "Wukong": {
       "hp": 3505,
@@ -1429,7 +1429,7 @@
       "resource_regen_5s": 15,
       "critical_chance": 22,
       "critical_damage": 175,
-      "source": "heroes/Wukong/status/LINE_ALBUM_Status_261019c_42.jpg"
+      "source": "heroes/Wukong/status/status_lv1.jpg"
     },
     "Xeniel": {
       "hp": 3719,
@@ -1441,7 +1441,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 68,
       "resource_regen_5s": 17,
-      "source": "heroes/Xeniel/status/LINE_ALBUM_Status_261019c_50.jpg"
+      "source": "heroes/Xeniel/status/status_lv1.jpg"
     },
     "Y'bneth": {
       "hp": 3724,
@@ -1453,7 +1453,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 66,
       "resource_regen_5s": 15,
-      "source": "heroes/Y'bneth/status/LINE_ALBUM_Status_261019b_2.jpg"
+      "source": "heroes/Y'bneth/status/status_lv1.jpg"
     },
     "Yan": {
       "hp": 3575,
@@ -1465,7 +1465,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 61,
       "resource_regen_5s": 17,
-      "source": "heroes/Yan/status/LINE_ALBUM_Status_261019_5.jpg"
+      "source": "heroes/Yan/status/status_lv1.jpg"
     },
     "Yena": {
       "hp": 3663,
@@ -1477,7 +1477,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 61,
       "resource_regen_5s": -100,
-      "source": "heroes/Yena/status/LINE_ALBUM_Status_261019_3.jpg"
+      "source": "heroes/Yena/status/status_lv1.jpg"
     },
     "Yorn": {
       "hp": 3582,
@@ -1489,7 +1489,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 52,
       "resource_regen_5s": 15,
-      "source": "heroes/Yorn/status/LINE_ALBUM_Status_261019b_1.jpg"
+      "source": "heroes/Yorn/status/status_lv1.jpg"
     },
     "Yue": {
       "hp": 3475,
@@ -1501,7 +1501,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 45,
       "resource_regen_5s": 18,
-      "source": "heroes/Yue/status/LINE_ALBUM_Status_261019c_46.jpg"
+      "source": "heroes/Yue/status/status_lv1.jpg"
     },
     "Zanis": {
       "hp": 3784,
@@ -1513,7 +1513,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 62,
       "resource_regen_5s": 16,
-      "source": "heroes/Zanis/status/LINE_ALBUM_Status_261019b_36.jpg"
+      "source": "heroes/Zanis/status/status_lv1.jpg"
     },
     "Zata": {
       "hp": 3585,
@@ -1525,7 +1525,7 @@
       "attack_range": "Ranged",
       "hp_regen_5s": 54,
       "resource_regen_5s": 18,
-      "source": "heroes/Zata/status/LINE_ALBUM_Status_261019b_27.jpg"
+      "source": "heroes/Zata/status/status_lv1.jpg"
     },
     "Zephys": {
       "hp": 3617,
@@ -1537,7 +1537,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 60,
       "resource_regen_5s": 15,
-      "source": "heroes/Zephys/status/LINE_ALBUM_Status_261019_18.jpg"
+      "source": "heroes/Zephys/status/status_lv1.jpg"
     },
     "Zill": {
       "hp": 3371,
@@ -1549,7 +1549,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 62,
       "resource_regen_5s": 16,
-      "source": "heroes/Zill/status/LINE_ALBUM_Status_261019_16.jpg"
+      "source": "heroes/Zill/status/status_lv1.jpg"
     },
     "Zip": {
       "hp": 3769,
@@ -1561,7 +1561,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 67,
       "resource_regen_5s": 16,
-      "source": "heroes/Zip/status/LINE_ALBUM_Status_261019b_16.jpg"
+      "source": "heroes/Zip/status/status_lv1.jpg"
     },
     "Zuka": {
       "hp": 3469,
@@ -1573,7 +1573,7 @@
       "attack_range": "Melee",
       "hp_regen_5s": 54,
       "resource_regen_5s": 0,
-      "source": "heroes/Zuka/status/LINE_ALBUM_Status_261019_20.jpg"
+      "source": "heroes/Zuka/status/status_lv1.jpg"
     }
   }
 }
