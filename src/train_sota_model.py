@@ -69,6 +69,40 @@ DRAFT_STEPS = [
 
 MAX_HISTORY_LEN = 17
 
+# Regional League Conditioning Constants (Option 1: Performance-Adjusted Global)
+# Order: 0 = RPL (TH), 1 = AOG (VN), 2 = GCS (TW), 3 = INTL (APL / AIC)
+LEAGUE_NAMES = ("RPL", "AOG", "GCS", "INTL")
+# Grounded in APL+AIC 2025-2026 international win rates: RPL (53.7%), GCS (52.3%), AOG (44.7%)
+PERFORMANCE_GLOBAL_LEAGUE_WEIGHTS = (0.32, 0.20, 0.30, 0.18)
+# Rebalances domestic match volume (AOG=34.5%, RPL=31.0%, GCS=19.0% 6-team league, INTL=15.5%)
+LEAGUE_SAMPLE_WEIGHTS = (1.05, 0.75, 1.35, 1.15)
+
+
+def encode_league_id(league_str: str) -> int:
+    """Map tournament/league string to canonical index: 0=RPL, 1=AOG, 2=GCS, 3=INTL."""
+    s = str(league_str or "").strip().upper()
+    if "RPL" in s or "ROV PRO LEAGUE" in s:
+        return 0
+    if "AOG" in s or "ARENA OF GLORY" in s:
+        return 1
+    if "GCS" in s or "GARENA CHALLENGER" in s:
+        return 2
+    return 3
+
+
+def get_league_vector(league_mode: str = "GLOBAL") -> tuple[float, float, float, float]:
+    """Return 4-dim regional conditioning vector (RPL, AOG, GCS, INTL)."""
+    mode = str(league_mode or "GLOBAL").strip().upper()
+    if mode in ("RPL", "TH", "ROV PRO LEAGUE"):
+        return (1.0, 0.0, 0.0, 0.0)
+    if mode in ("AOG", "VN", "ARENA OF GLORY"):
+        return (0.0, 1.0, 0.0, 0.0)
+    if mode in ("GCS", "TW", "GARENA CHALLENGER SERIES"):
+        return (0.0, 0.0, 1.0, 0.0)
+    if mode in ("INTL", "APL", "AIC"):
+        return (0.0, 0.0, 0.0, 1.0)
+    return PERFORMANCE_GLOBAL_LEAGUE_WEIGHTS
+
 
 def row_normalize_adj(mat: np.ndarray) -> np.ndarray:
     pos = np.maximum(mat, 0.0)
@@ -194,10 +228,18 @@ def load_sota_data_and_graphs(dataset_path: Path | str | None = None):
     ban_p2_2026 = np.zeros(num_heroes, dtype=np.float32)
     hero_wins_train = np.zeros(num_heroes, dtype=np.float32)
 
+    num_leagues = len(LEAGUE_NAMES)
+    lg_pick_counts = np.zeros((num_leagues, num_heroes), dtype=np.float32)
+    lg_ban_p1_counts = np.zeros((num_leagues, num_heroes), dtype=np.float32)
+    lg_ban_p2_counts = np.zeros((num_leagues, num_heroes), dtype=np.float32)
+
     for g in train_games:
         bw = g["blue_win"]
         yr = int(g.get("year", 2025)) if str(g.get("year", "2025")).isdigit() else 2025
-        w = 1.0 if yr >= 2026 else (0.5 if yr == 2025 else 0.2)
+        lg_id = encode_league_id(g.get("league", ""))
+        lg_mult = LEAGUE_SAMPLE_WEIGHTS[lg_id]
+        w = (1.0 if yr >= 2026 else (0.5 if yr == 2025 else 0.2)) * lg_mult
+        w_2026 = (1.0 if yr >= 2026 else 0.35) * lg_mult
         bp = [hero_to_id[h] for h in g["blue_picks"] if h in hero_to_id]
         rp = [hero_to_id[h] for h in g["red_picks"] if h in hero_to_id]
         bb = [hero_to_id[h] for h in g["blue_bans"] if h in hero_to_id]
@@ -205,25 +247,29 @@ def load_sota_data_and_graphs(dataset_path: Path | str | None = None):
 
         for h in bp:
             pick_counts[h] += w
+            lg_pick_counts[lg_id, h] += w_2026
             if bw == 1:
                 hero_wins_train[h] += w
             if yr >= 2026:
-                pick_2026[h] += 1.0
+                pick_2026[h] += lg_mult
         for h in rp:
             pick_counts[h] += w
+            lg_pick_counts[lg_id, h] += w_2026
             if bw == 0:
                 hero_wins_train[h] += w
             if yr >= 2026:
-                pick_2026[h] += 1.0
+                pick_2026[h] += lg_mult
 
         for h in bb[:2] + rb[:2]:
             ban_p1_counts[h] += w
+            lg_ban_p1_counts[lg_id, h] += w_2026
             if yr >= 2026:
-                ban_p1_2026[h] += 1.0
+                ban_p1_2026[h] += lg_mult
         for h in bb[2:] + rb[2:]:
             ban_p2_counts[h] += w
+            lg_ban_p2_counts[lg_id, h] += w_2026
             if yr >= 2026:
-                ban_p2_2026[h] += 1.0
+                ban_p2_2026[h] += lg_mult
 
         for eb_h in rb[2:]:
             for bp_h in bp:
@@ -276,17 +322,33 @@ def load_sota_data_and_graphs(dataset_path: Path | str | None = None):
 
     hero_base_win_adv = (((hero_wins_train + 5.0) / (pick_counts + 10.0)) - 0.5).astype(np.float32)
 
+    global_pick_prob = (pick_2026 + 0.5) / (pick_2026.sum() + 0.5 * num_heroes)
+    global_ban1_prob = (ban_p1_2026 + 0.5) / (ban_p1_2026.sum() + 0.5 * num_heroes)
+    global_ban2_prob = (ban_p2_2026 + 0.5) / (ban_p2_2026.sum() + 0.5 * num_heroes)
+
+    # Hierarchical Dirichlet smoothing toward performance-adjusted global 2026 distribution
+    prior_strength = 25.0
+    league_pick_log_priors = np.zeros((num_leagues, num_heroes), dtype=np.float32)
+    league_ban_p1_log_priors = np.zeros((num_leagues, num_heroes), dtype=np.float32)
+    league_ban_p2_log_priors = np.zeros((num_leagues, num_heroes), dtype=np.float32)
+    for lg_i in range(num_leagues):
+        p_cnt = lg_pick_counts[lg_i] + prior_strength * global_pick_prob
+        b1_cnt = lg_ban_p1_counts[lg_i] + prior_strength * global_ban1_prob
+        b2_cnt = lg_ban_p2_counts[lg_i] + prior_strength * global_ban2_prob
+        league_pick_log_priors[lg_i] = np.log(p_cnt / p_cnt.sum())
+        league_ban_p1_log_priors[lg_i] = np.log(b1_cnt / b1_cnt.sum())
+        league_ban_p2_log_priors[lg_i] = np.log(b2_cnt / b2_cnt.sum())
+
     priors = {
         "pick_log_prior": np.log((pick_counts + 1.0) / (pick_counts.sum() + num_heroes)).astype(np.float32),
         "ban_p1_log_prior": np.log((ban_p1_counts + 1.0) / (ban_p1_counts.sum() + num_heroes)).astype(np.float32),
         "ban_p2_log_prior": np.log((ban_p2_counts + 1.0) / (ban_p2_counts.sum() + num_heroes)).astype(np.float32),
-        "pick_2026_log_prior": np.log((pick_2026 + 0.5) / (pick_2026.sum() + 0.5 * num_heroes)).astype(np.float32),
-        "ban_p1_2026_log_prior": np.log((ban_p1_2026 + 0.5) / (ban_p1_2026.sum() + 0.5 * num_heroes)).astype(
-            np.float32
-        ),
-        "ban_p2_2026_log_prior": np.log((ban_p2_2026 + 0.5) / (ban_p2_2026.sum() + 0.5 * num_heroes)).astype(
-            np.float32
-        ),
+        "pick_2026_log_prior": np.log(global_pick_prob).astype(np.float32),
+        "ban_p1_2026_log_prior": np.log(global_ban1_prob).astype(np.float32),
+        "ban_p2_2026_log_prior": np.log(global_ban2_prob).astype(np.float32),
+        "league_pick_log_priors": league_pick_log_priors,
+        "league_ban_p1_log_priors": league_ban_p1_log_priors,
+        "league_ban_p2_log_priors": league_ban_p2_log_priors,
         "hero_base_win_adv": hero_base_win_adv,
     }
 
@@ -360,7 +422,7 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
     ts_arr = np.zeros((total_steps, MAX_HISTORY_LEN), dtype=np.int64)
     tpad_arr = np.ones((total_steps, MAX_HISTORY_LEN), dtype=np.bool_)
 
-    mctx_arr = np.zeros((total_steps, 7), dtype=np.float32)
+    mctx_arr = np.zeros((total_steps, 11), dtype=np.float32)
     act_arr = np.zeros(total_steps, dtype=np.int64)
     ph_arr = np.zeros(total_steps, dtype=np.int64)
     target_arr = np.zeros(total_steps, dtype=np.int64)
@@ -373,7 +435,9 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
         b_gban = [hero_to_id[h] for h in g.get("blue_global_bans", []) if h in hero_to_id]
         r_gban = [hero_to_id[h] for h in g.get("red_global_bans", []) if h in hero_to_id]
         year_val = int(g.get("year", 2026)) if str(g.get("year", "2026")).isdigit() else 2026
-        recency_w = 1.0 if year_val >= 2026 else (0.5 if year_val == 2025 else 0.2)
+        lg_id = encode_league_id(g.get("league", ""))
+        lg_vec = [1.0 if i == lg_id else 0.0 for i in range(4)]
+        recency_w = (1.0 if year_val >= 2026 else (0.5 if year_val == 2025 else 0.2)) * LEAGUE_SAMPLE_WEIGHTS[lg_id]
         blue_win = 1 if int(g.get("blue_win", 1)) == 1 else 0
         is_true_order = bool(g.get("is_true_order", False))
 
@@ -468,6 +532,7 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
                     float(year_val >= 2026),
                     len(ally_picks) / 5.0,
                     len(enemy_picks) / 5.0,
+                    *lg_vec,
                 ]
                 act_arr[row_idx] = action_type
                 ph_arr[row_idx] = phase
@@ -654,13 +719,28 @@ class RoVDraftGNNTransformer(nn.Module):
             "ban_p2_2026_log_prior", torch.tensor(priors["ban_p2_2026_log_prior"], dtype=torch.float32)
         )
         self.register_buffer("hero_base_win_adv", torch.tensor(priors["hero_base_win_adv"], dtype=torch.float32))
+        self.has_league_conditioning = "league_pick_log_priors" in priors
+        if self.has_league_conditioning:
+            self.register_buffer(
+                "league_pick_log_priors",
+                torch.tensor(priors["league_pick_log_priors"], dtype=torch.float32),
+            )
+            self.register_buffer(
+                "league_ban_p1_log_priors",
+                torch.tensor(priors["league_ban_p1_log_priors"], dtype=torch.float32),
+            )
+            self.register_buffer(
+                "league_ban_p2_log_priors",
+                torch.tensor(priors["league_ban_p2_log_priors"], dtype=torch.float32),
+            )
 
         self.gnn = RelationalHeroGNN(num_heroes, hero_features.shape[1], d_model, dropout=dropout)
 
         self.token_type_embed = nn.Embedding(5, d_model, padding_idx=0)
         self.step_pos_embed = nn.Embedding(18, d_model)
 
-        macro_dim = 4 * d_model + 10 + 20 + 7
+        self.meta_dim = 11 if self.has_league_conditioning else 7
+        macro_dim = 4 * d_model + 10 + 20 + self.meta_dim
         self.cls_proj = nn.Sequential(
             nn.Linear(macro_dim, d_model * 2),
             nn.LayerNorm(d_model * 2),
@@ -703,9 +783,26 @@ class RoVDraftGNNTransformer(nn.Module):
 
         self.neural_temp = nn.Parameter(torch.tensor([neural_scale, neural_scale, neural_scale], dtype=torch.float32))
 
-        self.w_pick = nn.Parameter(torch.tensor([0.45, 0.55, 2.30, 0.00, 1.25, 0.85, 0.00, 0.90], dtype=torch.float32))
-        self.w_ban1 = nn.Parameter(torch.tensor([0.40, 0.65, 0.00, 0.15, 0.20, 0.20, 0.30, -0.40], dtype=torch.float32))
-        self.w_ban2 = nn.Parameter(torch.tensor([0.35, 0.55, 0.00, 1.95, 0.35, 0.30, 1.15, -0.60], dtype=torch.float32))
+        if self.has_league_conditioning:
+            self.w_pick = nn.Parameter(
+                torch.tensor([0.35, 0.35, 2.30, 0.00, 1.25, 0.85, 0.00, 0.90, 0.35], dtype=torch.float32)
+            )
+            self.w_ban1 = nn.Parameter(
+                torch.tensor([0.30, 0.45, 0.00, 0.15, 0.20, 0.20, 0.30, -0.40, 0.35], dtype=torch.float32)
+            )
+            self.w_ban2 = nn.Parameter(
+                torch.tensor([0.25, 0.40, 0.00, 1.95, 0.35, 0.30, 1.15, -0.60, 0.30], dtype=torch.float32)
+            )
+        else:
+            self.w_pick = nn.Parameter(
+                torch.tensor([0.45, 0.55, 2.30, 0.00, 1.25, 0.85, 0.00, 0.90], dtype=torch.float32)
+            )
+            self.w_ban1 = nn.Parameter(
+                torch.tensor([0.40, 0.65, 0.00, 0.15, 0.20, 0.20, 0.30, -0.40], dtype=torch.float32)
+            )
+            self.w_ban2 = nn.Parameter(
+                torch.tensor([0.35, 0.55, 0.00, 1.95, 0.35, 0.30, 1.15, -0.60], dtype=torch.float32)
+            )
 
         self.state_value_head = nn.Sequential(
             nn.Linear(d_model * 2, 64),
@@ -733,6 +830,22 @@ class RoVDraftGNNTransformer(nn.Module):
     ):
         B = ally_picks_vec.size(0)
         device = ally_picks_vec.device
+
+        if meta_ctx.size(-1) > self.meta_dim:
+            meta_ctx_macro = meta_ctx[:, : self.meta_dim]
+        elif meta_ctx.size(-1) < self.meta_dim:
+            default_lg = (
+                torch.tensor(
+                    PERFORMANCE_GLOBAL_LEAGUE_WEIGHTS,
+                    dtype=meta_ctx.dtype,
+                    device=device,
+                )
+                .unsqueeze(0)
+                .expand(B, -1)
+            )
+            meta_ctx_macro = torch.cat([meta_ctx, default_lg], dim=-1)
+        else:
+            meta_ctx_macro = meta_ctx
 
         H_gnn = self.gnn(
             self.hero_features,
@@ -765,7 +878,7 @@ class RoVDraftGNNTransformer(nn.Module):
                 enemy_missing_lanes,
                 ally_skills,
                 enemy_skills,
-                meta_ctx,
+                meta_ctx_macro,
             ],
             dim=-1,
         )
@@ -835,6 +948,15 @@ class RoVDraftGNNTransformer(nn.Module):
             + wb2[6] * ban_target_score
             + wb2[7] * syn_plus_cnt
         )
+
+        if self.has_league_conditioning and wp.numel() >= 9:
+            league_weights = meta_ctx_macro[:, 7:11]
+            lg_pick_prior = torch.matmul(league_weights, self.league_pick_log_priors)
+            lg_ban1_prior = torch.matmul(league_weights, self.league_ban_p1_log_priors)
+            lg_ban2_prior = torch.matmul(league_weights, self.league_ban_p2_log_priors)
+            pick_logits = pick_logits + wp[8] * lg_pick_prior
+            ban1_logits = ban1_logits + wb1[8] * lg_ban1_prior
+            ban2_logits = ban2_logits + wb2[8] * lg_ban2_prior
 
         is_pick = (action_type == 1).unsqueeze(-1)
         is_phase2 = (phase == 2).unsqueeze(-1)
@@ -1008,26 +1130,27 @@ def main():
             print(f"Warning: could not read {best_params_file}: {e}", flush=True)
 
     if args.preset == "h100":
-        d_model = args.d_model or tuned.get("d_model", 128)
+        # Production locked architecture: d_model=256, nhead=4, num_layers=1 (Trial #43 Safest)
+        d_model = args.d_model or tuned.get("d_model", 256)
         nhead = args.nhead or tuned.get("nhead", 4)
-        num_layers = args.num_layers or tuned.get("num_layers", 2)
-        dropout = args.dropout if args.dropout is not None else tuned.get("dropout", 0.25)
-        neural_scale = args.neural_scale if args.neural_scale is not None else tuned.get("neural_scale", 0.65)
+        num_layers = args.num_layers or tuned.get("num_layers", 1)
+        dropout = args.dropout if args.dropout is not None else tuned.get("dropout", 0.2589)
+        neural_scale = args.neural_scale if args.neural_scale is not None else tuned.get("neural_scale", 0.6032)
         epochs = args.epochs or 30
         batch_size = args.batch_size or tuned.get("batch_size", 512)
         augment_factor = args.augment_factor or tuned.get("augment_factor", 1)
-        lr = args.lr or tuned.get("lr", 1.5e-3)
-        weight_decay = args.weight_decay if args.weight_decay is not None else tuned.get("weight_decay", 1e-2)
+        lr = args.lr or tuned.get("lr", 1.07e-3)
+        weight_decay = args.weight_decay if args.weight_decay is not None else tuned.get("weight_decay", 6.0e-4)
         label_smoothing = (
-            args.label_smoothing if args.label_smoothing is not None else tuned.get("label_smoothing", 0.05)
+            args.label_smoothing if args.label_smoothing is not None else tuned.get("label_smoothing", 0.0179)
         )
         win_loss_weight = (
-            args.win_loss_weight if args.win_loss_weight is not None else tuned.get("win_loss_weight", 0.20)
+            args.win_loss_weight if args.win_loss_weight is not None else tuned.get("win_loss_weight", 0.3375)
         )
     else:
-        d_model = args.d_model or tuned.get("d_model", 64)
+        d_model = args.d_model or tuned.get("d_model", 128)
         nhead = args.nhead or tuned.get("nhead", 4)
-        num_layers = args.num_layers or tuned.get("num_layers", 2)
+        num_layers = args.num_layers or tuned.get("num_layers", 1)
         dropout = args.dropout if args.dropout is not None else tuned.get("dropout", 0.20)
         neural_scale = args.neural_scale if args.neural_scale is not None else tuned.get("neural_scale", 0.65)
         epochs = args.epochs or 8

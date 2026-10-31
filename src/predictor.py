@@ -14,7 +14,7 @@ from src.schemas import (
     HeroRecommendation,
 )
 from src.search.draft_mcts import DraftMinimaxSearch, DraftSearchState, ModelInput, encode_batch, run_model
-from src.train_sota_model import RoVDraftGNNTransformer
+from src.train_sota_model import RoVDraftGNNTransformer, get_league_vector
 
 LANE_LABELS = [
     "DS_Lane (ออฟเลน)",
@@ -293,6 +293,7 @@ class RoVDraftPredictor:
         is_pick: bool,
         is_red: bool,
         phase: int,
+        league: str = "GLOBAL",
     ) -> ModelInput:
         """Encodes one draft position from the acting team's point of view."""
         step_idx = min(len(ally_picks) + len(enemy_picks) + len(ally_bans) + len(enemy_bans), 17)
@@ -304,6 +305,7 @@ class RoVDraftPredictor:
             1.0,
             len(ally_picks) / 5.0,
             len(enemy_picks) / 5.0,
+            *get_league_vector(league),
         )
         ids = self.hero_to_id
         return ModelInput(
@@ -402,7 +404,9 @@ class RoVDraftPredictor:
             return 0
         return min(max_slots, 4 - len(team.bans))
 
-    def _next_pick_input(self, team: TeamDraft, sim_picks: list[str], global_bans: list[str]) -> ModelInput:
+    def _next_pick_input(
+        self, team: TeamDraft, sim_picks: list[str], global_bans: list[str], league: str = "GLOBAL"
+    ) -> ModelInput:
         return self._model_input(
             sim_picks,
             team.opp_picks,
@@ -412,9 +416,10 @@ class RoVDraftPredictor:
             is_pick=True,
             is_red=team.side == "red",
             phase=1 if len(sim_picks) < 3 else 2,
+            league=league,
         )
 
-    def _next_ban_input(self, team: TeamDraft, global_bans: list[str]) -> ModelInput:
+    def _next_ban_input(self, team: TeamDraft, global_bans: list[str], league: str = "GLOBAL") -> ModelInput:
         return self._model_input(
             team.picks,
             team.opp_picks,
@@ -424,6 +429,7 @@ class RoVDraftPredictor:
             is_pick=False,
             is_red=team.side == "red",
             phase=1 if len(team.bans) < 2 else 2,
+            league=league,
         )
 
     def _needed_lanes_for_picks(
@@ -570,6 +576,7 @@ class RoVDraftPredictor:
         teams: list[TeamDraft],
         global_bans: list[str] | dict[str, list[str]],
         max_slots: int = 2,
+        league: str = "GLOBAL",
     ) -> tuple[tuple[np.ndarray, ...], np.ndarray, np.ndarray, dict[str, list[HeroRecommendation]]]:
         """Runs the main position and every team's pick/ban forecasts in as few batched passes as possible.
 
@@ -588,7 +595,7 @@ class RoVDraftPredictor:
             forecasts[f"{t.side}_next_bans"] = []
             if self._next_ban_slots(t, max_slots):
                 opp_side = "red" if t.side == "blue" else "blue"
-                inputs.append(self._next_ban_input(t, gb_by_side.get(opp_side, [])))
+                inputs.append(self._next_ban_input(t, gb_by_side.get(opp_side, []), league=league))
                 jobs.append(("ban", t))
         main_arrays: tuple[np.ndarray, ...] | None = None
         main_probs = main_win = np.empty(0)
@@ -598,7 +605,9 @@ class RoVDraftPredictor:
                 if rank == 1:
                     forecasts[f"{t.side}_next_picks"] = []
                 if pick_slots[t.side] >= rank:
-                    inputs.append(self._next_pick_input(t, sim_picks[t.side], gb_by_side.get(t.side, [])))
+                    inputs.append(
+                        self._next_pick_input(t, sim_picks[t.side], gb_by_side.get(t.side, []), league=league)
+                    )
                     jobs.append(("pick", t))
             if not inputs:
                 break
@@ -715,9 +724,10 @@ class RoVDraftPredictor:
             is_pick=act_type == 1,
             is_red=side_val == 1,
             phase=req.phase,
+            league=req.league,
         )
         arrays, probs, win_probs, forecasts = self._evaluate_with_forecasts(
-            main_input, teams, {"blue": blue_effective_gb, "red": red_effective_gb}
+            main_input, teams, {"blue": blue_effective_gb, "red": red_effective_gb}, league=req.league
         )
         ap_row, ep_row, unavail_row = arrays[0][0], arrays[1][0], arrays[4][0]
 
@@ -733,6 +743,7 @@ class RoVDraftPredictor:
                 is_pick=True,
                 is_red=True,
                 phase=2,
+                league=req.league,
             )
             step17_arrays = encode_batch([step17_input], len(self.hero_names))
             _, step17_win_t = run_model(self.model, step17_arrays, self.device)
@@ -788,6 +799,7 @@ class RoVDraftPredictor:
                 blue_global_bans=tuple(ids[h] for h in blue_gb),
                 red_global_bans=tuple(ids[h] for h in red_gb),
                 step_idx=step_idx,
+                league=req.league,
             )
             candidate_pool = avail_sorted[: max(req.top_k * 2, 8)]
             lookahead_win_rates = self.search_engine.search_lookahead_win_rates(

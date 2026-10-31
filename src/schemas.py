@@ -66,6 +66,10 @@ class DraftStateRequest(BaseModel):
         le=4,
         description="Minimax search depth (lookahead turns)",
     )
+    league: Literal["RPL", "AOG", "GCS", "INTL", "GLOBAL"] = Field(
+        default="GLOBAL",
+        description="Target regional pro league meta conditioning: 'RPL' (TH), 'AOG' (VN), 'GCS' (TW), 'INTL' (APL/AIC), or 'GLOBAL' (performance-adjusted global blend)",
+    )
 
 
 class HeroRecommendation(BaseModel):

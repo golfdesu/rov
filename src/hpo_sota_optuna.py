@@ -60,6 +60,24 @@ def parse_args():
     parser.add_argument("--n-trials", type=int, default=40, help="Number of Optuna HPO trials")
     parser.add_argument("--trial-epochs", type=int, default=14, help="Max epochs per HPO trial")
     parser.add_argument(
+        "--d-model",
+        type=int,
+        default=256,
+        help="Locked Transformer embedding dimension (default: 256, Trial #43 Safest)",
+    )
+    parser.add_argument(
+        "--nhead",
+        type=int,
+        default=4,
+        help="Locked Multi-head attention heads (default: 4, head_dim=64)",
+    )
+    parser.add_argument(
+        "--num-layers",
+        type=int,
+        default=1,
+        help="Locked Transformer encoder layers (default: 1, 100% receptive field on <=17 tokens)",
+    )
+    parser.add_argument(
         "--dataset-path",
         type=Path,
         default=None,
@@ -144,9 +162,11 @@ def main():
 
     def objective(trial: optuna.Trial):
         t_start = time.time()
-        d_model = trial.suggest_categorical("d_model", [64, 128, 192, 256])
-        nhead = trial.suggest_categorical("nhead", [4, 8])
-        num_layers = trial.suggest_int("num_layers", 1, 4)
+        # Structural architecture parameters are locked based on 50-trial H100 findings
+        # (num_layers=1 gives 100% global receptive field on <=17 draft tokens; d_model=256, nhead=4)
+        d_model = trial.suggest_categorical("d_model", [args.d_model])
+        nhead = trial.suggest_categorical("nhead", [args.nhead])
+        num_layers = trial.suggest_categorical("num_layers", [args.num_layers])
         dropout = trial.suggest_float("dropout", 0.12, 0.45)
         neural_scale = trial.suggest_float("neural_scale", 0.25, 1.35)
         lr = trial.suggest_float("lr", 4e-4, 3.5e-3, log=True)
@@ -345,33 +365,35 @@ def main():
         pruner=MedianPruner(n_startup_trials=6, n_warmup_steps=3),
     )
 
-    # Enqueue 2 well-regularized baseline trials (compact 64d and medium 128d) so MedianPruner has solid benchmarks
+    # Enqueue locked-architecture benchmarks for MedianPruner:
+    # 1. Trial #43 (Safest Production: Rank #2 in 50-trial H100 run, val_loss=2.79781, win_acc=55.41%)
     study.enqueue_trial(
         {
-            "d_model": 64,
-            "nhead": 4,
-            "num_layers": 2,
-            "dropout": 0.22,
-            "neural_scale": 0.60,
-            "lr": 2.0e-3,
-            "weight_decay": 8e-3,
-            "label_smoothing": 0.04,
-            "win_loss_weight": 0.20,
+            "d_model": args.d_model,
+            "nhead": args.nhead,
+            "num_layers": args.num_layers,
+            "dropout": 0.2589,
+            "neural_scale": 0.6032,
+            "lr": 0.001073,
+            "weight_decay": 0.000599,
+            "label_smoothing": 0.0179,
+            "win_loss_weight": 0.3375,
             "batch_size": 512,
             "augment_factor": 1,
         }
     )
+    # 2. Strong regularized alternative
     study.enqueue_trial(
         {
-            "d_model": 128,
-            "nhead": 4,
-            "num_layers": 2,
+            "d_model": args.d_model,
+            "nhead": args.nhead,
+            "num_layers": args.num_layers,
             "dropout": 0.28,
             "neural_scale": 0.55,
-            "lr": 1.5e-3,
-            "weight_decay": 1.5e-2,
-            "label_smoothing": 0.06,
-            "win_loss_weight": 0.20,
+            "lr": 0.0012,
+            "weight_decay": 0.002,
+            "label_smoothing": 0.03,
+            "win_loss_weight": 0.30,
             "batch_size": 512,
             "augment_factor": 1,
         }

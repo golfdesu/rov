@@ -88,7 +88,7 @@ echo "==========================================================================
 echo ">>> [STARTED] Training SOTA RoVDraftGNNTransformer (--preset h100)..."
 echo "=============================================================================="
 
-python -u src/train_sota_model.py --preset h100
+python -u src/train_sota_model.py --preset h100 --use-safest
 
 echo ""
 echo "=============================================================================="

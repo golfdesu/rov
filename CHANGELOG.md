@@ -27,6 +27,40 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-10-31 11:20 (UTC+7) — Lock SOTA Architecture & Add Performance-Adjusted Regional League Conditioning
+**Agent:** Claude Code (`ag/gemini-4-argon-high`)
+
+### ✅ Completed Work
+- **Locked Structural Transformer Architecture (`d_model=256, num_layers=1, nhead=4`)**:
+  - Locked `num_layers = 1`, `d_model = 256`, and `nhead = 4` across `src/hpo_sota_optuna.py`, `src/train_sota_model.py`, and `src/config.py`.
+  - Theoretical & empirical grounding: Draft sequence length is at most 17 tokens (`MAX_HISTORY_LEN = 17`), so 1 self-attention layer provides a 100% global receptive field; 4 of 5 top H100 HPO candidates selected `num_layers = 1`, with Trial #43 achieving the safest overfit gap (`+0.26490`) and highest win-value accuracy (`55.41%`).
+- **Implemented Unified Model with Performance-Adjusted Regional League Conditioning (`RPL`, `AOG`, `GCS`, `INTL`, `GLOBAL`)**:
+  - Analyzed 3,477 matches (2025–2026) across RPL (1,077), AOG (1,199), GCS (661), and APL/AIC (540): splitting into 3 separate models drops GNN pairwise graph coverage by 43%–60%, while unconditioned global training penalizes GCS validation loss (`2.9191` vs `2.7685` in RPL) because GCS has 6 teams (fewer matches) despite a `52.3%` international win rate in APL/AIC (`RPL = 53.7%`, `GCS = 52.3%`, `AOG = 44.7%`).
+  - Added `PERFORMANCE_GLOBAL_LEAGUE_WEIGHTS = (0.32, 0.20, 0.30, 0.18)` and `LEAGUE_SAMPLE_WEIGHTS = (1.05, 0.75, 1.35, 1.15)` in `src/train_sota_model.py` to weight global priors and sample losses by international competitive strength rather than raw match volume.
+  - Added Dirichlet-smoothed regional priors (`league_pick_log_priors`, `league_ban_p1_log_priors`, `league_ban_p2_log_priors` of shape `(4, 130)`), 11-dim `meta_ctx` (`7` base features + `4` league conditioning features), and a 9th learnable fusion weight in `w_pick / w_ban1 / w_ban2` inside `RoVDraftGNNTransformer` with full backward compatibility for existing 7-dim checkpoints.
+  - Threaded `league: Literal["RPL", "AOG", "GCS", "INTL", "GLOBAL"] = "GLOBAL"` through `DraftStateRequest` (`src/schemas.py`), `RoVDraftPredictor` (`src/predictor.py`), and `DraftMinimaxSearch` (`src/search/draft_mcts.py`).
+
+### 📁 Modified Files
+- `src/train_sota_model.py`
+- `src/hpo_sota_optuna.py`
+- `src/config.py`
+- `src/schemas.py`
+- `src/predictor.py`
+- `src/search/draft_mcts.py`
+- `tests/test_model_pipeline.py`
+- `run_sota_rov_h100.sbatch`
+- `AGENTS.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `pytest -v`: All 68 automated tests passed (including new `test_league_conditioning_encoding_and_forward` and all 72 golden predictor fixtures).
+- `ruff check --fix .` & `ruff format .`: 0 lint errors, 100% formatted.
+
+### ⚠️ Open Issues / Important Notes
+- Ready for Optuna HPO (`run_hpo_rov_h100.sbatch`) and SOTA training (`run_sota_rov_h100.sbatch`) on ERAWAN HPC H100. Once retrained, the new checkpoint will automatically enable 11-dim regional league conditioning (`has_league_conditioning = True`).
+
+---
+
 ## 📅 2026-10-30 20:45 (UTC+7) — Integrate Retrained SOTA Checkpoint & 50-Trial H100 HPO Parameters
 **Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
 

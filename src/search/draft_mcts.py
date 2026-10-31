@@ -16,6 +16,8 @@ from typing import TYPE_CHECKING, NamedTuple
 import numpy as np
 import torch
 
+from src.train_sota_model import get_league_vector
+
 if TYPE_CHECKING:
     from src.predictor import RoVDraftPredictor
 
@@ -98,7 +100,8 @@ def encode_batch(inputs: Sequence[ModelInput], num_heroes: int) -> tuple[np.ndar
     tok_types = np.zeros((n, MAX_HISTORY_LEN), dtype=np.int64)
     tok_steps = np.zeros((n, MAX_HISTORY_LEN), dtype=np.int64)
     tok_pad = np.ones((n, MAX_HISTORY_LEN), dtype=np.bool_)
-    meta = np.zeros((n, 7), dtype=np.float32)
+    meta_dim = len(inputs[0].meta) if inputs else 11
+    meta = np.zeros((n, meta_dim), dtype=np.float32)
     act_types = np.zeros(n, dtype=np.int64)
     phases = np.zeros(n, dtype=np.int64)
 
@@ -145,6 +148,7 @@ class DraftSearchState:
     blue_global_bans: tuple[int, ...] = ()
     red_global_bans: tuple[int, ...] = ()
     step_idx: int = 0
+    league: str = "GLOBAL"
 
     @property
     def is_terminal(self) -> bool:
@@ -214,6 +218,7 @@ class DraftSearchState:
             blue_global_bans=self.blue_global_bans,
             red_global_bans=self.red_global_bans,
             step_idx=self.step_idx + 1,
+            league=self.league,
         )
 
 
@@ -242,6 +247,7 @@ class DraftMinimaxSearch:
             1.0,
             len(ally_picks) / 5.0,
             len(enemy_picks) / 5.0,
+            *get_league_vector(s.league),
         )
         return ModelInput(ally_picks, enemy_picks, ally_bans, enemy_bans, effective_gb, meta, s.action_type, s.phase)
 

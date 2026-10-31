@@ -90,3 +90,76 @@ def test_predictor_side_specific_global_bans_in_ban_mode():
     # When opponent is Red, forecast red bans should not target Blue's already used heroes
     for r in resp.red_next_bans:
         assert r.hero_name not in blue_used
+
+
+def test_league_conditioning_encoding_and_forward():
+    import numpy as np
+    import torch
+
+    from src.train_sota_model import (
+        PERFORMANCE_GLOBAL_LEAGUE_WEIGHTS,
+        RoVDraftGNNTransformer,
+        encode_league_id,
+        get_league_vector,
+    )
+
+    assert encode_league_id("RPL 2026 Winter") == 0
+    assert encode_league_id("AOG 2026 Winter") == 1
+    assert encode_league_id("GCS 2026 Summer") == 2
+    assert encode_league_id("APL 2026") == 3
+    assert encode_league_id("AIC 2025") == 3
+    assert get_league_vector("RPL") == (1.0, 0.0, 0.0, 0.0)
+    assert get_league_vector("GCS") == (0.0, 0.0, 1.0, 0.0)
+    assert get_league_vector("GLOBAL") == PERFORMANCE_GLOBAL_LEAGUE_WEIGHTS
+    assert abs(sum(PERFORMANCE_GLOBAL_LEAGUE_WEIGHTS) - 1.0) < 1e-6
+
+    predictor = RoVDraftPredictor()
+    priors = dict(predictor.ckpt["priors"])
+    priors["league_pick_log_priors"] = np.zeros((4, 130), dtype=np.float32)
+    priors["league_ban_p1_log_priors"] = np.zeros((4, 130), dtype=np.float32)
+    priors["league_ban_p2_log_priors"] = np.zeros((4, 130), dtype=np.float32)
+    # Give Hero 0 a strong RPL boost and Hero 1 a strong GCS boost
+    priors["league_pick_log_priors"][0, 0] = 3.0
+    priors["league_pick_log_priors"][2, 1] = 3.0
+
+    model = RoVDraftGNNTransformer(
+        num_heroes=130,
+        hero_features=predictor.ckpt["hero_features"],
+        lane_probs=predictor.ckpt["lane_probs"],
+        graphs=predictor.ckpt["graphs"],
+        priors=priors,
+        d_model=256,
+        nhead=4,
+        num_layers=1,
+    )
+    model.eval()
+    assert model.has_league_conditioning is True
+    assert model.meta_dim == 11
+    assert model.w_pick.numel() == 9
+
+    B = 2
+    zeros_vec = torch.zeros((B, 130), dtype=torch.float32)
+    unavail = torch.zeros((B, 130), dtype=torch.bool)
+    th = torch.zeros((B, 17), dtype=torch.long)
+    tt = torch.zeros((B, 17), dtype=torch.long)
+    ts = torch.zeros((B, 17), dtype=torch.long)
+    tpad = torch.ones((B, 17), dtype=torch.bool)
+    meta_rpl_vs_gcs = torch.tensor(
+        [
+            [0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+        ],
+        dtype=torch.float32,
+    )
+    act = torch.ones(B, dtype=torch.long)
+    ph = torch.ones(B, dtype=torch.long)
+
+    with torch.no_grad():
+        logits, q_win = model(
+            zeros_vec, zeros_vec, zeros_vec, zeros_vec, unavail, th, tt, ts, tpad, meta_rpl_vs_gcs, act, ph
+        )
+    assert logits.shape == (2, 130)
+    assert q_win.shape == (2, 130)
+    # Row 0 (RPL) should favor Hero 0 relative to Row 1 (GCS), and Row 1 (GCS) should favor Hero 1
+    assert float(logits[0, 0] - logits[1, 0]) > 0.5
+    assert float(logits[1, 1] - logits[0, 1]) > 0.5

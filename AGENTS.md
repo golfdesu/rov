@@ -35,9 +35,10 @@ Every AI agent (including fast models such as `3.8flash`) MUST strictly obey the
 2. **Data Augmentation Invariant (`augment_factor`)**:
    - **NEVER** set `augment_factor > 2` or shuffle picks across Phase 1 and Phase 2 boundaries. Doing so causes severe overfitting (`Val Loss > 4.30`).
    - In production and H100 HPO, `augment_factor = 1` won all Top 5 ranks.
-3. **Model Capacity & Regularization Guardrail**:
-   - On 4,208 games (`64,008` training decision steps), `d_model = 128`, `nhead = 4`, `batch_size = 512`, `dropout = 0.27–0.30`, and `neural_scale = 0.27–0.51` is the verified Pareto optimum.
-   - Do NOT increase `d_model` to `256+` without running Optuna HPO verification.
+3. **Model Capacity & Architecture Guardrail (Locked SOTA)**:
+   - Verified on 50 HPO Trials (NVIDIA H100, 2026-10-30): Production architecture is strictly locked to **`d_model = 256`**, **`num_layers = 1`**, and **`nhead = 4`** (`head_dim = 64`, 2.47M parameters).
+   - Sequence length is short (`<= 17` tokens); 1 Transformer layer provides 100% global receptive field across all draft turns. Deeper networks (`num_layers >= 3`) degrade generalization.
+   - For resource-constrained or edge CPU inference, the parsimonious compact candidate is locked to **`d_model = 128`**, **`num_layers = 1`**, and **`nhead = 4`** (643K parameters).
 4. **ERAWAN HPC (`compute4` H100) Rules**:
    - Partition MUST be `#SBATCH --partition=gpu-h100` with `#SBATCH --gres=gpu:1`.
    - **NEVER** call `torch.compile()` (Rocky Linux on `compute4` lacks `Python.h` headers).
