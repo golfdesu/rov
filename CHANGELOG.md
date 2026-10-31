@@ -27,6 +27,47 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-10-30 20:45 (UTC+7) — Integrate Retrained SOTA Checkpoint & 50-Trial H100 HPO Parameters
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Retrained Model & 50-Trial HPO Artifacts Integrated from ERAWAN HPC**:
+  - Pulled new SOTA checkpoint `models/sota_draft_gnn_transformer.pt` trained on ERAWAN H100 using the updated 3,477-game curated dataset (2025–2026, including Oct 25 Grand Finals).
+  - Checkpoint metrics: Val Loss = `2.80450`, Win-Value Accuracy = `53.07%`, architecture = `d_model=256, nhead=4, num_layers=1, dropout=0.2589, neural_scale=0.6032` (Trial #43 Safest candidate).
+  - Integrated 50-trial Optuna HPO search results (`best_params/sota_rov_best_params.json`, `best_params/sota_rov_top5_trials.json`).
+- **Updated Curated Production Configurations (`configs/selected_production_params.json`)**:
+  - Updated `selected_for_production_safest` with Trial #43 parameters (Val Loss `2.79781`, Overfit Gap `+0.26490`, WinAcc `55.41%`).
+  - Updated `selected_for_production_compact` with Trial #20 parameters (Val Loss `2.81532`, Overfit Gap `+0.23738`, WinAcc `53.54%`, 643K params).
+  - Updated dataset summary to 3,477 total games (2,955 train, 522 val).
+- **Dynamic Test & Golden Fixture Synchronization**:
+  - Enhanced `test_completed_5v5_draft_evaluates_exact_step17_matchup_win_rate` in `tests/test_api.py` to dynamically evaluate the top recommended Roam hero instead of a hardcoded hero string.
+  - Regenerated `tests/fixtures/predict_golden.json` to pin model predictions across all 72 golden test scenarios under the new checkpoint.
+- **CI Pipeline & Data Guardian Resilience**:
+  - Fixed `audit_true_pick_order()` in `.agents/skills/rov-data-guardian/scripts/audit_rov_data.py` (and mirrored `.claude/skills/`) to conditionally check screenshot files only when `data/draft_screenshots/` is present on disk. In CI / git checkout environments where large media files are ignored via `.gitignore`, schema and Liquipedia parity are strictly verified without failing on absent raw image dumps.
+- **Documentation & Agent Manual Sync**:
+  - Updated Champion Performance metrics and HPO trial count in `AGENTS.md`.
+
+### 📁 Modified Files
+- `.agents/skills/rov-data-guardian/scripts/audit_rov_data.py`
+- `.claude/skills/rov-data-guardian/scripts/audit_rov_data.py`
+- `models/sota_draft_gnn_transformer.pt`
+- `best_params/sota_rov_best_params.json`
+- `best_params/sota_rov_top5_trials.json`
+- `configs/selected_production_params.json`
+- `tests/test_api.py`
+- `tests/fixtures/predict_golden.json`
+- `AGENTS.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `python .agents/skills/hpo-parsimony-selector/scripts/select_parsimonious_params.py` → Parsimony audit verified; checkpoint matches Trial #43 Safest config.
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py` → Audit passed locally and under simulated CI checkout (0 errors).
+- `pytest` → All 67 tests passed (100%).
+- `npm --prefix frontend run build` & `npm --prefix frontend run lint` → Clean build, 0 lint warnings/errors.
+- `ruff check --fix .` & `ruff format .` → All checks passed.
+
+---
+
 ## 📅 2026-10-30 11:30 (UTC+7) — Ingest 2026-10-25 Grand Finals Matches into Curated Training Dataset
 **Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
 

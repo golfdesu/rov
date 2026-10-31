@@ -15,12 +15,12 @@ This repository follows Big Tech Machine Learning Engineering standards (modeled
 | Component | Status & Verified Metrics |
 | :--- | :--- |
 | **Hero & Skill Database** | **130 / 130 Heroes** (`data/heroes_130_full.json`, `data/heroes_130_summary.csv`, `data/hero_skills_full.json`) up to **Evita** (Oct 2026), **Tamyn** (Jul 2026), and **Flowborn (Marksman & Mage)**, each with `>= 4` skills, 100% numerical cooldowns/mana arrays, base damage, and AD/AP/HP scaling. |
-| **Pro Match Archive** | **4,208 Complete Pro Games** (`data/matches_draft_full.json`) from RPL, APL, AIC, AOG, and GCS (2024–2026) with Global Ban Pick tracking and **0 unmapped hero names**. |
+| **Pro Match Archive** | **4,311 Complete Pro Games** (`data/matches_draft_full.json`) from RPL, APL, AIC, AOG, and GCS (2024–2026) with Global Ban Pick tracking and **0 unmapped hero names**. |
 | **Curated Training Dataset** | **3,477 Games (2025–2026)** (`data/matches_training.json`). All 812 games from 2024 are strictly excluded to remove legacy meta noise; includes all 20 games from 2026-10-25 with 100% verified true pick order. **True Pick Order coverage = 51.2%** (1,781 / 3,477 games). |
 | **Draft Web UI** | React 19 + Vite + Tailwind 4 broadcast-style draft board (`frontend/`), served by FastAPI from `frontend/dist`. 130 / 130 square hero icons (`frontend/public/avatars/`), Thai display names (Arthur -> Mortos, Brunhilda -> Celica, Richter -> Riktor). |
-| **SOTA Architecture** | `RoVDraftGNNTransformer` (`src/train_sota_model.py`): 2-Layer Multi-Relational Hero GNN (`adj_copick`, `adj_synergy`, `adj_counter`, `adj_countered_by`) + Sequence Transformer + Bounded Neural Temperature Gate + Dual Policy & Win-Value Heads. |
-| **H100 Optuna HPO** | Completed 40 Trials on ERAWAN HPC H100 (`best_params/sota_rov_top5_trials.json`, `configs/selected_production_params.json`). |
-| **Champion Performance** | **Val Loss = `2.7470–2.7480`** \| **Top-1 = `23.85%`** \| **Top-3 = `49.07%`** \| **Top-5 = `64.22%`** \| **Top-10 = `81.32%`** \| **WinAcc = `54.13%`** (Out of 130 Heroes). |
+| **SOTA Architecture** | `RoVDraftGNNTransformer` (`src/train_sota_model.py`): Multi-Relational Hero GNN (`adj_copick`, `adj_synergy`, `adj_counter`, `adj_countered_by`) + Sequence Transformer + Bounded Neural Temperature Gate + Dual Policy & Win-Value Heads. |
+| **H100 Optuna HPO** | Completed 50 Trials on ERAWAN HPC H100 (`best_params/sota_rov_top5_trials.json`, `configs/selected_production_params.json`). |
+| **Champion Performance** | **Val Loss = `2.8045`** (checkpoint) / **`2.7978`** (Trial #43 Safest) \| **Top-1 = `21.99%`** \| **Top-3 = `46.30%`** \| **Top-5 = `60.61%`** \| **Top-10 = `80.21%`** \| **WinAcc = `53.07%`–`55.41%`** (Out of 130 Heroes, trained through Oct 25, 2026). |
 
 ---
 

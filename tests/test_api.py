@@ -408,6 +408,9 @@ def test_completed_5v5_draft_evaluates_exact_step17_matchup_win_rate():
     assert r_step17.status_code == 200
     step17_recs = {r["hero_name"]: r["predicted_win_rate_pct"] for r in r_step17.json()["recommendations"]}
 
+    assert len(step17_recs) > 0
+    chosen_hero = r_step17.json()["recommendations"][0]["hero_name"]
+
     r_step18 = client.post(
         "/predict",
         json={
@@ -415,7 +418,7 @@ def test_completed_5v5_draft_evaluates_exact_step17_matchup_win_rate():
             "side": "blue",
             "phase": 2,
             "ally_picks": blue_picks,
-            "enemy_picks": [*red_picks_4, "Lumburr"],
+            "enemy_picks": [*red_picks_4, chosen_hero],
             "ally_bans": blue_bans,
             "enemy_bans": red_bans,
             "top_k": 1,
@@ -423,7 +426,7 @@ def test_completed_5v5_draft_evaluates_exact_step17_matchup_win_rate():
     )
     assert r_step18.status_code == 200
     blue_final_win = r_step18.json()["recommendations"][0]["predicted_win_rate_pct"]
-    expected_blue_win = round(100.0 - step17_recs["Lumburr"], 2)
+    expected_blue_win = round(100.0 - step17_recs[chosen_hero], 2)
     assert abs(blue_final_win - expected_blue_win) <= 0.02
 
 

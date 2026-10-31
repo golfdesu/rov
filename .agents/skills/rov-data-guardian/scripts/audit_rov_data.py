@@ -18,6 +18,10 @@ def audit_true_pick_order(matches: list[dict]) -> list[str]:
     by_key = {(m["series_id"], m["game_number"]): m for m in matches}
     errors = []
     seen = set()
+    has_screenshot_dir = SCREENSHOT_DIR.exists()
+    if not has_screenshot_dir:
+        print("[INFO] data/draft_screenshots not present on disk (CI/git checkout); skipping file existence checks")
+
     for g in games:
         key = (g.get("series_id"), g.get("game_number"))
         label = f"{key[0]} game {key[1]}"
@@ -35,8 +39,11 @@ def audit_true_pick_order(matches: list[dict]) -> list[str]:
         if g.get("source") not in ("screenshot", "manual"):
             errors.append(f"{label}: source must be 'screenshot' or 'manual', got {g.get('source')!r}")
         shot = g.get("screenshot")
-        if g.get("source") == "screenshot" and not (shot and (SCREENSHOT_DIR / shot).exists()):
-            errors.append(f"{label}: screenshot file missing: {shot}")
+        if g.get("source") == "screenshot":
+            if not shot:
+                errors.append(f"{label}: screenshot path missing for source='screenshot'")
+            elif has_screenshot_dir and not (SCREENSHOT_DIR / shot).exists():
+                errors.append(f"{label}: screenshot file missing: {shot}")
     print(f"[INFO] true_pick_order.json: {len(games)} games checked")
     return errors
 
