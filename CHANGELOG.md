@@ -27,6 +27,78 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-10-31 15:00 (UTC+7) — Ingest GCS 2026 Summer Grand Final True Pick Order & Verify Recorded Drafts
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Verified User-Recorded Draft History Against Broadcast Screenshots (100% Match)**:
+  - Cross-verified all 6 games from `data/draft_session_state.json` against the 6 broadcast HUD screenshots (`Screenshot 2026-10-31 142339.png` through `142613.png`).
+  - Confirmed 100% accuracy on all 60 hero picks, 48 bans, side selection, and game winners across the entire BO7 Grand Final (DCG 2 - 4 ANK).
+  - Resolved earlier agent confusion: confirmed that Game 1 Red picks are indeed `['Wiro', "Eland'orr", 'Qi', 'Edras', 'Liliana']` exactly as recorded by the user.
+- **Canonical Screenshot Organization**:
+  - Renamed all 6 screenshots to canonical naming structure in `data/draft_screenshots/2026_gcs_summer/playoffs/`:
+    `2026_po_m4_g1..g6_sum_gcs_dcg_vs_ank.png` (with Game 3 as `ank_vs_dcg`).
+- **Archive & Training Dataset Ingestion**:
+  - Ingested 6 new true pick order games into `data/true_pick_order.json` (total: 1,798 games).
+  - Ingested 6 new master tournament games into `data/matches_draft_full.json` (total: 4,317 games).
+  - Fixed argparse `%` escaping bug in `src/build_training_dataset.py`.
+  - Rebuilt `data/matches_training.json`: 3,483 games (strictly 2025–2026), 1,787 true order games (51.3% coverage).
+- **Test Suite & Golden Fixtures**:
+  - Regenerated `tests/fixtures/predict_golden.json` and verified all 69 pytest tests passing cleanly.
+
+### 📁 Modified Files
+- `AGENTS.md`
+- `CHANGELOG.md`
+- `data/counter_matrix.csv`
+- `data/hero_draft_stats.csv`
+- `data/matches_draft_flat.csv`
+- `data/matches_draft_full.json`
+- `data/matches_training.json`
+- `data/synergy_matrix.csv`
+- `data/true_pick_order.json`
+- `src/build_training_dataset.py`
+- `tests/fixtures/predict_golden.json`
+- `tests/test_predictor_golden.py`
+
+### 🧪 Verification
+- `pytest -v`: 69/69 passed (100%).
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: PASS (130 heroes, 4,317 pro games, 0 unmapped hero names).
+- `ruff check --fix .` and `ruff format .`: clean.
+
+### ⚠️ Open Issues / Important Notes
+- GCS 2026 Summer Grand Final series (DCG vs ANK) is now completely archived with 100% verified chronological pick order.
+- Production training set automatically reflects all 26 grand final games across RPL, AOG, and GCS.
+
+---
+
+## 📅 2026-10-31 13:15 (UTC+7) — Sync Outcome-Weighted H100 HPO Parameters & Golden Fixtures
+**Agent:** Claude Code (`ag/gemini-4-argon-high`)
+
+### ✅ Completed Work
+- **Pulled & Integrated Outcome-Weighted H100 Checkpoint (`2ab98c1`)**:
+  - Synced `configs/selected_production_params.json`, `src/config.py`, `src/train_sota_model.py`, and `src/hpo_sota_optuna.py` with the new 50-trial H100 HPO results (`Trial #14 Safest`: `val_loss=2.79330`, `overfit_gap=+0.21611`, `neural_scale=1.0746`, `batch_size=1024`; `Trial #34 Rank #1`: `val_loss=2.79091`, `top10_pct=80.93%`).
+  - Regenerated `tests/fixtures/predict_golden.json` against the new outcome-weighted `models/sota_draft_gnn_transformer.pt` (`val_loss=2.8165`, `val_win_acc=52.35%`).
+  - Updated `AGENTS.md` status table and restarted the local FastAPI server on port 8000 with the new checkpoint.
+
+### 📁 Modified Files
+- `configs/selected_production_params.json`
+- `src/config.py`
+- `src/train_sota_model.py`
+- `src/hpo_sota_optuna.py`
+- `tests/fixtures/predict_golden.json`
+- `AGENTS.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `python .agents/skills/hpo-parsimony-selector/scripts/select_parsimonious_params.py`: Verified Top-5 HPO parsimony & safety leaderboard matches `configs/selected_production_params.json`.
+- `ruff check --fix . && ruff format .`: 0 lint errors.
+- `pytest -v`: All 69 automated tests passed.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
 ## 📅 2026-10-31 12:30 (UTC+7) — Outcome-Weighted Policy Training, In-Series Winner Adaptation & Series Score UI
 **Agent:** Claude Code (`ag/gemini-4-argon-high`)
 

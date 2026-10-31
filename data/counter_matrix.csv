@@ -1,16 +1,16 @@
 ﻿hero,opponent_hero,games_against,wins_against,win_rate_against_pct,smoothed_advantage
 Ryoma,Marja,231.7,124.6,53.78,3.68
 Marja,Ryoma,231.7,107.1,46.22,-3.68
-Lorion,Rouie,227.3,119.1,52.4,2.34
-Rouie,Lorion,227.3,108.2,47.6,-2.34
+Lorion,Rouie,228.3,120.1,52.61,2.54
+Rouie,Lorion,228.3,108.2,47.39,-2.54
 Rouie,Y'bneth,166.6,84.5,50.72,0.7
 Y'bneth,Rouie,166.6,82.1,49.28,-0.7
 Hayate,Capheny,166.4,86.3,51.86,1.8
 Capheny,Hayate,166.4,80.1,48.14,-1.8
 Eland'orr,Capheny,158.2,80.3,50.76,0.73
 Capheny,Eland'orr,158.2,77.9,49.24,-0.73
-Marja,Qi,154.8,82.8,53.49,3.36
-Qi,Marja,154.8,72.0,46.51,-3.36
+Marja,Qi,155.8,83.8,53.79,3.65
+Qi,Marja,155.8,72.0,46.21,-3.65
 Ryoma,Eland'orr,138.3,69.2,50.04,0.03
 Eland'orr,Ryoma,138.3,69.1,49.96,-0.03
 Lorion,Toro,135.7,72.5,53.43,3.28
@@ -21,8 +21,8 @@ TeeMee,Toro,133.3,70.4,52.81,2.69
 Toro,TeeMee,133.3,62.9,47.19,-2.69
 Y'bneth,Toro,132.1,76.1,57.61,7.28
 Toro,Y'bneth,132.1,56.0,42.39,-7.28
-Violet,Eland'orr,130.1,74.6,57.34,7.02
-Eland'orr,Violet,130.1,55.5,42.66,-7.02
+Violet,Eland'orr,131.1,75.6,57.67,7.33
+Eland'orr,Violet,131.1,55.5,42.33,-7.33
 Toro,Capheny,128.9,70.6,54.77,4.56
 Capheny,Toro,128.9,58.3,45.23,-4.56
 Marja,Toro,125.8,63.2,50.24,0.23
@@ -91,10 +91,10 @@ Toro,Qi,101.3,47.1,46.5,-3.31
 Ignis,Rouie,101.3,40.5,39.98,-9.46
 Billow,Hayate,101.0,57.0,56.44,6.07
 Hayate,Billow,101.0,44.0,43.56,-6.07
+Valhein,Toro,100.8,52.4,51.98,1.87
+Toro,Valhein,100.8,48.4,48.02,-1.87
 Marja,Billow,100.0,50.0,50.0,0.0
 Billow,Marja,100.0,50.0,50.0,0.0
-Valhein,Toro,99.8,51.4,51.5,1.42
-Toro,Valhein,99.8,48.4,48.5,-1.42
 TeeMee,Iggy,99.4,50.6,50.91,0.85
 Iggy,TeeMee,99.4,48.8,49.09,-0.85
 Y'bneth,Capheny,99.0,57.7,58.28,7.81
@@ -105,26 +105,26 @@ Hayate,Stuart,98.9,53.9,54.5,4.24
 Stuart,Hayate,98.9,45.0,45.5,-4.24
 TeeMee,Hayate,98.2,49.7,50.61,0.58
 Hayate,TeeMee,98.2,48.5,49.39,-0.58
+Marja,Eland'orr,98.0,50.7,51.73,1.63
+Eland'orr,Marja,98.0,47.3,48.27,-1.63
 TeeMee,Capheny,97.8,49.1,50.2,0.19
 Capheny,TeeMee,97.8,48.7,49.8,-0.19
+Annette,Zata,97.5,55.0,56.41,6.04
 Toro,Wisp,97.5,49.5,50.77,0.72
 Wisp,Toro,97.5,48.0,49.23,-0.72
-Marja,Eland'orr,97.0,49.7,51.24,1.17
+Zata,Annette,97.5,42.5,43.59,-6.04
+Stuart,TeeMee,97.1,48.7,50.15,0.15
+TeeMee,Stuart,97.1,48.4,49.85,-0.15
 Hayate,Wisp,97.0,49.0,50.52,0.49
 Wisp,Hayate,97.0,48.0,49.48,-0.49
-Eland'orr,Marja,97.0,47.3,48.76,-1.17
-Annette,Zata,96.5,54.0,55.96,5.61
-Zata,Annette,96.5,42.5,44.04,-5.61
-TeeMee,Stuart,96.1,48.4,50.36,0.34
-Stuart,TeeMee,96.1,47.7,49.64,-0.34
 Marja,Keera,96.0,54.1,56.35,5.98
 Keera,Marja,96.0,41.9,43.65,-5.98
+Valhein,Stuart,95.7,50.8,53.08,2.9
+Stuart,Valhein,95.7,44.9,46.92,-2.9
 Iggy,Marja,95.2,52.5,55.15,4.84
 Marja,Iggy,95.2,42.7,44.85,-4.84
 Stuart,Violet,95.0,50.5,53.16,2.97
 Violet,Stuart,95.0,44.5,46.84,-2.97
-Valhein,Stuart,94.7,50.8,53.64,3.43
-Stuart,Valhein,94.7,43.9,46.36,-3.43
 Skud,Billow,94.5,53.0,56.08,5.72
 Zephys,Eland'orr,94.5,49.0,51.85,1.74
 Eland'orr,Zephys,94.5,45.5,48.15,-1.74
@@ -153,35 +153,35 @@ Eland'orr,Lorion,90.9,50.4,55.45,5.11
 Lorion,Eland'orr,90.9,40.5,44.55,-5.11
 Y'bneth,Hayate,90.8,51.4,56.61,6.2
 Hayate,Y'bneth,90.8,39.4,43.39,-6.2
+Wisp,Lorion,90.5,48.5,53.59,3.37
 Wisp,Marja,90.5,46.5,51.38,1.3
 Marja,Wisp,90.5,44.0,48.62,-1.3
+Lorion,Wisp,90.5,42.0,46.41,-3.37
 Keera,Yena,89.8,46.7,52.0,1.88
 Yena,Keera,89.8,43.1,48.0,-1.88
 Lorion,Capheny,89.5,54.5,60.89,10.21
-Wisp,Lorion,89.5,48.5,54.19,3.93
-Lorion,Wisp,89.5,41.0,45.81,-3.93
 Capheny,Lorion,89.5,35.0,39.11,-10.21
 Tachi,Capheny,89.2,56.7,63.57,12.71
 Capheny,Tachi,89.2,32.5,36.43,-12.71
+Marja,Liliana,88.5,47.2,53.33,3.12
 Zata,Liliana,88.5,46.0,51.98,1.85
 Liliana,Zata,88.5,42.5,48.02,-1.85
+Liliana,Marja,88.5,41.3,46.67,-3.12
 Stuart,Toro,88.4,51.0,57.69,7.2
 Toro,Skud,88.4,44.5,50.34,0.32
 Skud,Toro,88.4,43.9,49.66,-0.32
 Toro,Stuart,88.4,37.4,42.31,-7.2
+Toro,Ignis,88.2,46.6,52.83,2.65
+Ignis,Toro,88.2,41.6,47.17,-2.65
+Rouie,Yena,88.1,47.3,53.69,3.45
+Yena,Rouie,88.1,40.8,46.31,-3.45
 Billow,Lorion,88.0,45.0,51.14,1.06
 Lorion,Billow,88.0,43.0,48.86,-1.06
 Eland'orr,Dolia,87.7,47.2,53.82,3.58
 Dolia,Eland'orr,87.7,40.5,46.18,-3.58
-Marja,Liliana,87.5,46.2,52.8,2.62
-Liliana,Marja,87.5,41.3,47.2,-2.62
-Toro,Ignis,87.2,46.6,53.44,3.22
 Stuart,Skud,87.2,46.4,53.21,3.0
 Skud,Stuart,87.2,40.8,46.79,-3.0
-Ignis,Toro,87.2,40.6,46.56,-3.22
 Keera,Stuart,87.1,52.6,60.39,9.72
-Rouie,Yena,87.1,47.3,54.31,4.03
-Yena,Rouie,87.1,39.8,45.69,-4.03
 Stuart,Keera,87.1,34.5,39.61,-9.72
 Enzo,Liliana,86.9,49.7,57.19,6.73
 Liliana,Enzo,86.9,37.2,42.81,-6.73
@@ -196,7 +196,11 @@ TeeMee,Tachi,85.5,36.5,42.69,-6.83
 Y'bneth,Violet,85.2,52.3,61.38,10.64
 Violet,Y'bneth,85.2,32.9,38.62,-10.64
 Yena,Hayate,84.7,42.9,50.65,0.61
+Richter,Yena,84.7,42.7,50.41,0.39
+Yena,Richter,84.7,42.0,49.59,-0.39
 Hayate,Yena,84.7,41.8,49.35,-0.61
+Y'bneth,Eland'orr,84.6,48.2,56.97,6.51
+Eland'orr,Y'bneth,84.6,36.4,43.03,-6.51
 Qi,TeeMee,84.3,45.7,54.21,3.93
 TeeMee,Qi,84.3,38.6,45.79,-3.93
 Dolia,Toro,84.1,43.1,51.25,1.17
@@ -205,29 +209,25 @@ Valhein,Ignis,83.8,45.7,54.53,4.23
 Keera,Toro,83.8,42.2,50.36,0.33
 Toro,Keera,83.8,41.6,49.64,-0.33
 Ignis,Valhein,83.8,38.1,45.47,-4.23
-Richter,Yena,83.7,42.7,51.02,0.95
-Yena,Richter,83.7,41.0,48.98,-0.95
-Y'bneth,Eland'orr,83.6,47.2,56.46,6.03
-Eland'orr,Y'bneth,83.6,36.4,43.54,-6.03
-Eland'orr,Valhein,82.5,51.0,61.82,11.02
+Eland'orr,Valhein,83.5,51.0,61.08,10.34
+Valhein,Eland'orr,83.5,32.5,38.92,-10.34
+Airi,Tachi,83.0,46.5,56.02,5.62
+Tachi,Airi,83.0,36.5,43.98,-5.62
 Enzo,Billow,82.5,42.5,51.52,1.41
 Billow,Enzo,82.5,40.0,48.48,-1.41
-Valhein,Eland'orr,82.5,31.5,38.18,-11.02
+Y'bneth,Qi,82.4,51.4,62.38,11.54
 Mina,Capheny,82.4,44.8,54.37,4.07
 Zata,Eland'orr,82.4,44.7,54.25,3.96
 Eland'orr,Zata,82.4,37.7,45.75,-3.96
 Capheny,Mina,82.4,37.6,45.63,-4.07
+Qi,Y'bneth,82.4,31.0,37.62,-11.54
 Marja,Enzo,81.7,44.9,54.96,4.62
 Enzo,Marja,81.7,36.8,45.04,-4.62
-Y'bneth,Qi,81.4,50.4,61.92,11.1
-Qi,Y'bneth,81.4,31.0,38.08,-11.1
 Y'bneth,Ryoma,81.3,53.4,65.68,14.6
 Skud,Keera,81.3,40.7,50.06,0.06
 Keera,Skud,81.3,40.6,49.94,-0.06
 Ryoma,Y'bneth,81.3,27.9,34.32,-14.6
 Y'bneth,Billow,81.0,47.5,58.64,8.05
-Airi,Tachi,81.0,44.5,54.94,4.6
-Tachi,Airi,81.0,36.5,45.06,-4.6
 Billow,Y'bneth,81.0,33.5,41.36,-8.05
 Qi,Eland'orr,80.7,41.9,51.92,1.79
 Eland'orr,Qi,80.7,38.8,48.08,-1.79
@@ -239,6 +239,8 @@ Lorion,Thane,79.3,43.7,55.11,4.75
 Thane,Lorion,79.3,35.6,44.89,-4.75
 Ryoma,Liliana,79.2,45.4,57.32,6.81
 Liliana,Ryoma,79.2,33.8,42.68,-6.81
+Lorion,Tachi,79.0,42.5,53.8,3.53
+Tachi,Lorion,79.0,36.5,46.2,-3.53
 Ryoma,Richter,78.7,44.8,56.93,6.43
 Richter,Ryoma,78.7,33.9,43.07,-6.43
 Toro,Maloch,78.5,40.6,51.72,1.6
@@ -248,8 +250,6 @@ Tachi,Y'bneth,78.4,33.0,42.09,-7.35
 Billow,TeeMee,78.0,46.5,59.62,8.93
 Lorion,Enzo,78.0,46.0,58.97,8.33
 Valhein,Billow,78.0,43.0,55.13,4.76
-Lorion,Tachi,78.0,41.5,53.21,2.98
-Tachi,Lorion,78.0,36.5,46.79,-2.98
 Billow,Valhein,78.0,35.0,44.87,-4.76
 Enzo,Lorion,78.0,32.0,41.03,-8.33
 TeeMee,Billow,78.0,31.5,40.38,-8.93
@@ -273,16 +273,16 @@ Rouie,Marja,76.8,38.9,50.65,0.6
 Marja,Rouie,76.8,37.9,49.35,-0.6
 Hayate,Enzo,76.7,38.4,50.07,0.06
 Enzo,Hayate,76.7,38.3,49.93,-0.06
+Thane,TeeMee,76.5,45.8,59.87,9.15
+TeeMee,Thane,76.5,30.7,40.13,-9.15
 Yena,Toro,76.3,39.6,51.9,1.76
 Toro,Yena,76.3,36.7,48.1,-1.76
+Y'bneth,Lorion,76.1,43.1,56.64,6.15
+Lorion,Y'bneth,76.1,33.0,43.36,-6.15
 Violet,Hayate,75.6,43.2,57.14,6.62
 Hayate,Violet,75.6,32.4,42.86,-6.62
-Thane,TeeMee,75.5,44.8,59.34,8.65
-TeeMee,Thane,75.5,30.7,40.66,-8.65
 Eland'orr,Stuart,75.3,38.1,50.6,0.55
 Stuart,Eland'orr,75.3,37.2,49.4,-0.55
-Y'bneth,Lorion,75.1,43.1,57.39,6.84
-Lorion,Y'bneth,75.1,32.0,42.61,-6.84
 Hayate,Flowborn (Marksman),75.0,43.0,57.33,6.79
 Flowborn (Marksman),Hayate,75.0,32.0,42.67,-6.79
 Stuart,Enzo,74.9,43.5,58.08,7.48
@@ -332,6 +332,8 @@ Keera,Tachi,71.7,28.7,40.03,-9.2
 Lorion,Violet,71.3,36.4,51.05,0.97
 Violet,Lorion,71.3,34.9,48.95,-0.97
 Wisp,Zephys,71.0,47.5,66.9,15.58
+Zephys,Tachi,71.0,41.0,57.75,7.14
+Tachi,Zephys,71.0,30.0,42.25,-7.14
 Zephys,Wisp,71.0,23.5,33.1,-15.58
 Eland'orr,Liliana,70.9,40.7,57.4,6.83
 Liliana,Eland'orr,70.9,30.2,42.6,-6.83
@@ -340,8 +342,10 @@ Keera,Y'bneth,70.7,23.6,33.38,-15.32
 Hayate,Dolia,70.6,42.0,59.49,8.75
 Dolia,Hayate,70.6,28.6,40.51,-8.75
 Ryoma,Capheny,70.4,40.2,57.1,6.54
+Violet,Liliana,70.4,37.8,53.69,3.4
 Ignis,Iggy,70.4,35.6,50.57,0.52
 Iggy,Ignis,70.4,34.8,49.43,-0.52
+Liliana,Violet,70.4,32.6,46.31,-3.4
 Capheny,Ryoma,70.4,30.2,42.9,-6.54
 Toro,Zephys,70.3,38.5,54.77,4.39
 Zephys,Toro,70.3,31.8,45.23,-4.39
@@ -349,38 +353,34 @@ Capheny,Keera,70.1,46.2,65.91,14.65
 Skud,TeeMee,70.1,36.4,51.93,1.77
 TeeMee,Skud,70.1,33.7,48.07,-1.77
 Keera,Capheny,70.1,23.9,34.09,-14.65
-Zephys,Tachi,70.0,40.0,57.14,6.58
-Tachi,Zephys,70.0,30.0,42.86,-6.58
 Airi,Florentino,69.9,40.3,57.65,7.05
 Lorion,Stuart,69.9,38.5,55.08,4.68
 Stuart,Lorion,69.9,31.4,44.92,-4.68
 Florentino,Airi,69.9,29.6,42.35,-7.05
 Y'bneth,Thane,69.7,38.7,55.52,5.09
 Thane,Y'bneth,69.7,31.0,44.48,-5.09
-Violet,Liliana,69.4,36.8,53.03,2.79
-Liliana,Violet,69.4,32.6,46.97,-2.79
+Ryoma,Thane,69.6,35.4,50.86,0.79
+Thane,Ryoma,69.6,34.2,49.14,-0.79
+Biron,Toro,69.5,35.3,50.79,0.73
+Toro,Biron,69.5,34.2,49.21,-0.73
 Sinestrea,Toro,69.3,45.7,65.95,14.67
 Toro,Sinestrea,69.3,23.6,34.05,-14.67
 Hayate,Fennik,69.2,38.7,55.92,5.45
 Fennik,Hayate,69.2,30.5,44.08,-5.45
+Violet,Qi,69.1,37.9,54.85,4.46
 Lorion,Ignis,69.1,36.4,52.68,2.46
 Ignis,Lorion,69.1,32.7,47.32,-2.46
+Qi,Violet,69.1,31.2,45.15,-4.46
 Lorion,Keera,68.9,45.5,66.04,14.75
 Lorion,Skud,68.9,38.9,56.46,5.94
 Violet,Capheny,68.9,37.2,53.99,3.67
 Capheny,Violet,68.9,31.7,46.01,-3.67
 Skud,Lorion,68.9,30.0,43.54,-5.94
 Keera,Lorion,68.9,23.4,33.96,-14.75
-Ryoma,Thane,68.6,35.4,51.6,1.47
-Thane,Ryoma,68.6,33.2,48.4,-1.47
 Rouie,Qi,68.5,37.8,55.18,4.77
 Billow,Liliana,68.5,36.5,53.28,3.02
-Biron,Toro,68.5,34.3,50.07,0.07
-Toro,Biron,68.5,34.2,49.93,-0.07
 Liliana,Billow,68.5,32.0,46.72,-3.02
 Qi,Rouie,68.5,30.7,44.82,-4.77
-Violet,Qi,68.1,36.9,54.19,3.85
-Qi,Violet,68.1,31.2,45.81,-3.85
 Billow,Iggy,68.0,36.0,52.94,2.7
 Iggy,Billow,68.0,32.0,47.06,-2.7
 Qi,Stuart,67.8,36.8,54.28,3.93
@@ -421,6 +421,8 @@ Thane,Capheny,65.3,39.6,60.64,9.75
 Capheny,Thane,65.3,25.7,39.36,-9.75
 Billow,Violet,65.0,36.0,55.38,4.93
 Violet,Billow,65.0,29.0,44.62,-4.93
+Y'bneth,Yena,64.8,38.8,59.88,9.04
+Yena,Y'bneth,64.8,26.0,40.12,-9.04
 Dolia,Billow,64.5,34.5,53.49,3.19
 Billow,Dolia,64.5,30.0,46.51,-3.19
 Annette,Billow,64.0,34.0,53.12,2.86
@@ -428,13 +430,13 @@ Billow,Annette,64.0,30.0,46.88,-2.86
 Liliana,Qi,63.9,34.7,54.3,3.93
 Qi,Liliana,63.9,29.2,45.7,-3.93
 Eland'orr,Yena,63.8,39.5,61.91,10.89
-Y'bneth,Yena,63.8,38.8,60.82,9.89
-Yena,Y'bneth,63.8,25.0,39.18,-9.89
 Yena,Eland'orr,63.8,24.3,38.09,-10.89
+Y'bneth,Liliana,63.7,44.8,70.33,18.58
 Violet,Toro,63.7,37.7,59.18,8.39
 Stuart,Liliana,63.7,32.7,51.33,1.22
 Liliana,Stuart,63.7,31.0,48.67,-1.22
 Toro,Violet,63.7,26.0,40.82,-8.39
+Liliana,Y'bneth,63.7,18.9,29.67,-18.58
 Y'bneth,Valhein,63.6,32.7,51.42,1.29
 Valhein,Y'bneth,63.6,30.9,48.58,-1.29
 Mganga,Qi,63.4,34.7,54.73,4.32
@@ -453,8 +455,8 @@ Annette,Hayate,63.0,30.5,48.41,-1.45
 Stuart,Thane,63.0,30.3,48.1,-1.74
 Valhein,Skud,62.9,33.8,53.74,3.41
 Skud,Valhein,62.9,29.1,46.26,-3.41
-Y'bneth,Liliana,62.7,43.8,69.86,18.12
-Liliana,Y'bneth,62.7,18.9,30.14,-18.12
+Stuart,Ryoma,62.6,35.8,57.19,6.56
+Ryoma,Stuart,62.6,26.8,42.81,-6.56
 Billow,Biron,62.5,35.0,56.0,5.47
 Yena,Billow,62.5,32.0,51.2,1.09
 Billow,Yena,62.5,30.5,48.8,-1.09
@@ -481,10 +483,8 @@ Skud,Yena,61.7,39.0,63.21,12.04
 Enzo,Eland'orr,61.7,31.6,51.22,1.11
 Eland'orr,Enzo,61.7,30.1,48.78,-1.11
 Yena,Skud,61.7,22.7,36.79,-12.04
-Stuart,Ryoma,61.6,34.8,56.49,5.92
 Zata,Toro,61.6,32.7,53.08,2.81
 Toro,Zata,61.6,28.9,46.92,-2.81
-Ryoma,Stuart,61.6,26.8,43.51,-5.92
 Qi,Iggy,61.5,34.8,56.59,6.0
 Billow,Wisp,61.5,33.5,54.47,4.07
 Wisp,Billow,61.5,28.0,45.53,-4.07
@@ -501,6 +501,8 @@ Stuart,Iggy,60.6,33.6,55.45,4.95
 Iggy,Stuart,60.6,27.0,44.55,-4.95
 Zephys,Keera,60.3,31.9,52.9,2.64
 Keera,Zephys,60.3,28.4,47.1,-2.64
+Eland'orr,Ignis,60.2,32.7,54.32,3.93
+Ignis,Eland'orr,60.2,27.5,45.68,-3.93
 TeeMee,Richter,60.1,39.6,65.89,14.45
 Capheny,Ignis,60.1,30.7,51.08,0.98
 Ignis,Capheny,60.1,29.4,48.92,-0.98
@@ -524,10 +526,8 @@ Billow,Zata,59.5,27.5,46.22,-3.44
 Hayate,Murad,59.4,32.0,53.87,3.52
 Murad,Hayate,59.4,27.4,46.13,-3.52
 Enzo,Zephys,59.2,37.7,63.68,12.42
-Eland'orr,Ignis,59.2,32.7,55.24,4.75
 TeeMee,Yena,59.2,31.4,53.04,2.76
 Yena,TeeMee,59.2,27.8,46.96,-2.76
-Ignis,Eland'orr,59.2,26.5,44.76,-4.75
 Zephys,Enzo,59.2,21.5,36.32,-12.42
 Annette,Toro,59.0,34.5,58.47,7.69
 Flowborn (Marksman),Marja,59.0,33.0,55.93,5.38
@@ -544,12 +544,16 @@ Zephys,Ryoma,58.3,20.9,35.85,-12.83
 Baldum,Y'bneth,58.2,29.9,51.37,1.25
 Y'bneth,Baldum,58.2,28.3,48.63,-1.25
 Sinestrea,Marja,58.0,32.5,56.03,5.47
+Lorion,Biron,58.0,32.5,56.03,5.47
 Zephys,Capheny,58.0,30.5,52.59,2.34
 Capheny,Zephys,58.0,27.5,47.41,-2.34
 Marja,Sinestrea,58.0,25.5,43.97,-5.47
+Biron,Lorion,58.0,25.5,43.97,-5.47
 Skud,Capheny,57.8,34.0,58.82,7.99
+Ryoma,Tachi,57.8,33.7,58.3,7.52
 Enzo,Skud,57.8,32.1,55.54,5.02
 Skud,Enzo,57.8,25.7,44.46,-5.02
+Tachi,Ryoma,57.8,24.1,41.7,-7.52
 Capheny,Skud,57.8,23.8,41.18,-7.99
 Airi,TeeMee,57.7,30.0,51.99,1.81
 Qi,Ignis,57.7,29.8,51.65,1.49
@@ -564,21 +568,19 @@ Eland'orr,Thane,57.4,31.1,54.18,3.79
 Thane,Eland'orr,57.4,26.3,45.82,-3.79
 Ignis,TeeMee,57.4,25.5,44.43,-5.05
 Mganga,Ignis,57.3,32.8,57.24,6.56
+Thane,Valhein,57.3,32.1,56.02,5.45
+Valhein,Thane,57.3,25.2,43.98,-5.45
 Ignis,Mganga,57.3,24.5,42.76,-6.56
 Mganga,Stuart,57.2,32.5,56.82,6.17
 Stuart,Mganga,57.2,24.7,43.18,-6.17
 Y'bneth,Flowborn (Marksman),57.0,35.0,61.4,10.32
 Wisp,Keera,57.0,33.5,58.77,7.94
-Lorion,Biron,57.0,31.5,55.26,4.76
 Annette,Marja,57.0,29.0,50.88,0.79
 Marja,Annette,57.0,28.0,49.12,-0.79
-Biron,Lorion,57.0,25.5,44.74,-4.76
 Keera,Wisp,57.0,23.5,41.23,-7.94
 Flowborn (Marksman),Y'bneth,57.0,22.0,38.6,-10.32
 Thane,Zephys,56.9,32.2,56.59,5.96
 Zephys,Thane,56.9,24.7,43.41,-5.96
-Ryoma,Tachi,56.8,32.7,57.57,6.85
-Tachi,Ryoma,56.8,24.1,42.43,-6.85
 Keera,Iggy,56.7,31.1,54.85,4.39
 Iggy,Keera,56.7,25.6,45.15,-4.39
 Ignis,Keera,56.6,28.6,50.53,0.48
@@ -591,8 +593,6 @@ Fennik,Qi,56.4,29.5,52.3,2.08
 Qi,Fennik,56.4,26.9,47.7,-2.08
 Taara,Toro,56.4,25.0,44.33,-5.13
 Eland'orr,Mganga,56.4,19.4,34.4,-14.1
-Thane,Valhein,56.3,31.1,55.24,4.74
-Valhein,Thane,56.3,25.2,44.76,-4.74
 Skud,Violet,56.1,33.9,60.43,9.42
 Violet,Skud,56.1,22.2,39.57,-9.42
 Astrid,Billow,56.0,30.0,53.57,3.23
@@ -602,9 +602,13 @@ Billow,Astrid,56.0,26.0,46.43,-3.23
 Zephys,Liliana,55.8,30.3,54.3,3.88
 Liliana,Zephys,55.8,25.5,45.7,-3.88
 Yena,Fennik,55.7,30.8,55.3,4.78
+Mina,Sinestrea,55.7,29.2,52.42,2.19
 Capheny,Biron,55.7,28.5,51.17,1.05
 Biron,Capheny,55.7,27.2,48.83,-1.05
+Sinestrea,Mina,55.7,26.5,47.58,-2.19
 Fennik,Yena,55.7,24.9,44.7,-4.78
+Liliana,Yue,55.6,35.0,62.95,11.69
+Yue,Liliana,55.6,20.6,37.05,-11.69
 Eland'orr,Murad,55.5,29.1,52.43,2.2
 Billow,Mganga,55.5,28.0,50.45,0.41
 Mganga,Billow,55.5,27.5,49.55,-0.41
@@ -613,6 +617,8 @@ Thane,Violet,55.4,30.0,54.15,3.75
 Enzo,Fennik,55.4,28.9,52.17,1.95
 Fennik,Enzo,55.4,26.5,47.83,-1.95
 Violet,Thane,55.4,25.4,45.85,-3.75
+Airi,Y'bneth,55.3,32.4,58.59,7.75
+Y'bneth,Airi,55.3,22.9,41.41,-7.75
 Airi,Enzo,55.1,30.2,54.81,4.34
 Liliana,Yena,55.1,28.0,50.82,0.74
 Yena,Liliana,55.1,27.1,49.18,-0.74
@@ -622,19 +628,13 @@ Biron,Y'bneth,55.0,25.5,46.36,-3.28
 Violet,Yena,54.9,31.5,57.38,6.65
 Yena,Violet,54.9,23.4,42.62,-6.65
 Sinestrea,Taara,54.7,29.7,54.3,3.87
-Mina,Sinestrea,54.7,28.2,51.55,1.4
-Sinestrea,Mina,54.7,26.5,48.45,-1.4
 Taara,Sinestrea,54.7,25.0,45.7,-3.87
-Liliana,Yue,54.6,35.0,64.1,12.71
 Hayate,Richter,54.6,33.0,60.44,9.41
 Cresht,Toro,54.6,29.2,53.48,3.14
 Toro,Cresht,54.6,25.4,46.52,-3.14
 Richter,Hayate,54.6,21.6,39.56,-9.41
-Yue,Liliana,54.6,19.6,35.9,-12.71
 Iggy,Zephys,54.5,29.5,54.13,3.72
 Zephys,Iggy,54.5,25.0,45.87,-3.72
-Airi,Y'bneth,54.3,31.4,57.83,7.05
-Y'bneth,Airi,54.3,22.9,42.17,-7.05
 Richter,Toro,54.0,30.3,56.11,5.5
 Keera,Fennik,54.0,29.5,54.63,4.17
 Iggy,Ryoma,54.0,27.6,51.11,1.0
@@ -648,6 +648,8 @@ Thane,Wisp,53.7,25.2,46.93,-2.76
 Tachi,Eland'orr,53.5,28.5,53.27,2.94
 Eland'orr,Tachi,53.5,25.0,46.73,-2.94
 Dolia,Liliana,53.4,31.9,59.74,8.75
+Biron,Eland'orr,53.4,27.7,51.87,1.68
+Eland'orr,Biron,53.4,25.7,48.13,-1.68
 Liliana,Dolia,53.4,21.5,40.26,-8.75
 Marja,Fennik,53.3,30.5,57.22,6.49
 Fennik,Marja,53.3,22.8,42.78,-6.49
@@ -667,9 +669,9 @@ Violet,Tachi,52.7,26.2,49.72,-0.26
 Keera,Eland'orr,52.7,20.1,38.14,-10.65
 Y'bneth,Sinestrea,52.6,27.4,52.09,1.88
 Sinestrea,Y'bneth,52.6,25.2,47.91,-1.88
-Biron,Eland'orr,52.4,26.7,50.95,0.86
-Eland'orr,Biron,52.4,25.7,49.05,-0.86
 Iggy,Toro,52.3,29.7,56.79,6.09
+Sinestrea,Stuart,52.3,28.2,53.92,3.52
+Stuart,Sinestrea,52.3,24.1,46.08,-3.52
 Toro,Iggy,52.3,22.6,43.21,-6.09
 Wisp,Liliana,52.2,29.5,56.51,5.84
 Liliana,Wisp,52.2,22.7,43.49,-5.84
@@ -679,32 +681,36 @@ Sinestrea,Lorion,52.0,27.5,52.88,2.59
 Lorion,Sinestrea,52.0,24.5,47.12,-2.59
 Nakroth,Flowborn (Marksman),52.0,24.0,46.15,-3.45
 Zephys,Skud,52.0,23.5,45.19,-4.31
+Rouie,Stuart,51.9,32.0,61.66,10.45
 Yena,Enzo,51.9,28.7,55.3,4.75
 Enzo,Yena,51.9,23.2,44.7,-4.75
+Stuart,Rouie,51.9,19.9,38.34,-10.45
 Qi,Valhein,51.8,27.9,53.86,3.46
 Valhein,Qi,51.8,23.9,46.14,-3.46
 Tachi,Enzo,51.7,32.2,62.28,11.01
 Enzo,Tachi,51.7,19.5,37.72,-11.01
+Y'bneth,Stuart,51.5,30.3,58.83,7.91
 Annette,TeeMee,51.5,30.0,58.25,7.39
 Fennik,Capheny,51.5,26.8,52.04,1.83
 Wisp,Stuart,51.5,26.0,50.49,0.43
 Stuart,Wisp,51.5,25.5,49.51,-0.43
 Capheny,Fennik,51.5,24.7,47.96,-1.83
 TeeMee,Annette,51.5,21.5,41.75,-7.39
+Stuart,Y'bneth,51.5,21.2,41.17,-7.91
 Florentino,Toro,51.4,28.1,54.67,4.18
 Toro,Florentino,51.4,23.3,45.33,-4.18
-Sinestrea,Stuart,51.3,28.2,54.97,4.45
-Stuart,Sinestrea,51.3,23.1,45.03,-4.45
 Lorion,Yena,51.2,30.7,59.96,8.92
 Florentino,Tachi,51.2,26.2,51.17,1.05
 Stuart,Maloch,51.2,25.7,50.2,0.17
 Maloch,Stuart,51.2,25.5,49.8,-0.17
 Tachi,Florentino,51.2,25.0,48.83,-1.05
 Yena,Lorion,51.2,20.5,40.04,-8.92
+Lorion,Richter,51.1,31.9,62.43,11.12
 Tachi,Liliana,51.1,29.2,57.14,6.39
 TeeMee,Elsu,51.1,27.4,53.62,3.24
 Elsu,TeeMee,51.1,23.7,46.38,-3.24
 Liliana,Tachi,51.1,21.9,42.86,-6.39
+Richter,Lorion,51.1,19.2,37.57,-11.12
 Wisp,Biron,51.0,30.0,58.82,7.89
 Violet,Flowborn (Marksman),51.0,29.0,56.86,6.14
 Zephys,Stuart,51.0,28.8,56.47,5.79
@@ -713,10 +719,14 @@ Maloch,Valhein,51.0,25.2,49.41,-0.53
 Stuart,Zephys,51.0,22.2,43.53,-5.79
 Flowborn (Marksman),Violet,51.0,22.0,43.14,-6.14
 Biron,Wisp,51.0,21.0,41.18,-7.89
+Dolia,Airi,50.9,29.7,58.35,7.47
 Zephys,Violet,50.9,26.5,52.06,1.85
 Eland'orr,Hayate,50.9,26.1,51.28,1.14
 Hayate,Eland'orr,50.9,24.8,48.72,-1.14
 Violet,Zephys,50.9,24.4,47.94,-1.85
+Airi,Dolia,50.9,21.2,41.65,-7.47
+Tachi,Stuart,50.7,30.0,59.17,8.2
+Stuart,Tachi,50.7,20.7,40.83,-8.2
 Hayate,Valhein,50.6,26.6,52.57,2.3
 Maloch,Yena,50.6,26.0,51.38,1.24
 Mina,Qi,50.6,25.4,50.2,0.18
@@ -724,49 +734,41 @@ Qi,Mina,50.6,25.2,49.8,-0.18
 Yena,Maloch,50.6,24.6,48.62,-1.24
 Valhein,Hayate,50.6,24.0,47.43,-2.3
 TeeMee,Fennik,50.5,32.1,63.56,12.12
-Y'bneth,Stuart,50.5,30.3,60.0,8.94
+Lorion,Mganga,50.5,29.5,58.42,7.52
 Thane,Zata,50.5,28.9,57.23,6.46
 Rouie,Toro,50.5,28.8,57.03,6.28
+Annette,Dolia,50.5,28.0,55.45,4.87
 Sinestrea,TeeMee,50.5,25.4,50.3,0.27
 TeeMee,Sinestrea,50.5,25.1,49.7,-0.27
+Dolia,Annette,50.5,22.5,44.55,-4.87
 Toro,Rouie,50.5,21.7,42.97,-6.28
 Zata,Thane,50.5,21.6,42.77,-6.46
-Stuart,Y'bneth,50.5,20.2,40.0,-8.94
+Mganga,Lorion,50.5,21.0,41.58,-7.52
 Fennik,TeeMee,50.5,18.4,36.44,-12.12
+Airi,Rouie,50.4,29.7,58.93,7.98
+Rouie,Airi,50.4,20.7,41.07,-7.98
 Skud,Liliana,50.3,27.4,54.47,4.0
 Liliana,Skud,50.3,22.9,45.53,-4.0
-Lorion,Richter,50.1,30.9,61.68,10.43
-Richter,Lorion,50.1,19.2,38.32,-10.43
 Stuart,Florentino,50.0,26.4,52.8,2.5
+Zata,Airi,50.0,26.0,52.0,1.79
+Airi,Zata,50.0,24.0,48.0,-1.79
 Florentino,Stuart,50.0,23.6,47.2,-2.5
-Rouie,Stuart,49.9,32.0,64.13,12.61
-Dolia,Airi,49.9,29.7,59.52,8.5
-Airi,Dolia,49.9,20.2,40.48,-8.5
-Stuart,Rouie,49.9,17.9,35.87,-12.61
 Ryoma,Florentino,49.8,27.7,55.62,5.02
 Florentino,Ryoma,49.8,22.1,44.38,-5.02
 Qi,Ryoma,49.7,30.3,60.97,9.78
-Tachi,Stuart,49.7,30.0,60.36,9.25
 Mina,Skud,49.7,28.6,57.55,6.73
 Fennik,Stuart,49.7,25.7,51.71,1.53
 Stuart,Fennik,49.7,24.0,48.29,-1.53
 Skud,Mina,49.7,21.1,42.45,-6.73
-Stuart,Tachi,49.7,19.7,39.64,-9.25
 Ryoma,Qi,49.7,19.4,39.03,-9.78
 Liliana,Thane,49.6,26.3,53.02,2.7
 Thane,Liliana,49.6,23.3,46.98,-2.7
-Lorion,Mganga,49.5,28.5,57.58,6.76
-Annette,Dolia,49.5,27.0,54.55,4.05
 Billow,Fennik,49.5,26.0,52.53,2.25
 Fennik,Billow,49.5,23.5,47.47,-2.25
-Dolia,Annette,49.5,22.5,45.45,-4.05
-Mganga,Lorion,49.5,21.0,42.42,-6.76
-Airi,Rouie,49.4,28.7,58.1,7.22
 Maloch,Capheny,49.4,28.6,57.89,7.04
 Hayate,Nakroth,49.4,24.8,50.2,0.18
 Nakroth,Hayate,49.4,24.6,49.8,-0.18
 Capheny,Maloch,49.4,20.8,42.11,-7.04
-Rouie,Airi,49.4,20.7,41.9,-7.22
 Airi,Liliana,49.3,28.8,58.42,7.5
 Rouie,Violet,49.3,28.4,57.61,6.78
 Iggy,Skud,49.3,28.1,57.0,6.24
@@ -781,11 +783,11 @@ Dolia,Maloch,49.2,22.2,45.12,-4.35
 Keera,Thane,49.2,17.9,36.38,-12.14
 Zephys,Richter,49.0,26.5,54.08,3.64
 Astrid,Eland'orr,49.0,26.0,53.06,2.73
-Zata,Airi,49.0,26.0,53.06,2.73
+Richter,Stuart,49.0,25.6,52.24,2.0
 Zuka,Eland'orr,49.0,25.5,52.04,1.82
 Eland'orr,Zuka,49.0,23.5,47.96,-1.82
+Stuart,Richter,49.0,23.4,47.76,-2.0
 Eland'orr,Astrid,49.0,23.0,46.94,-2.73
-Airi,Zata,49.0,23.0,46.94,-2.73
 Richter,Zephys,49.0,22.5,45.92,-3.64
 Lorion,Fennik,48.9,34.4,70.35,18.12
 Y'bneth,Ignis,48.9,29.7,60.74,9.56
@@ -811,8 +813,6 @@ Valhein,Yena,48.2,30.3,62.86,11.44
 Yena,Valhein,48.2,17.9,37.14,-11.44
 Dolia,TeeMee,48.1,26.2,54.47,3.97
 TeeMee,Dolia,48.1,21.9,45.53,-3.97
-Richter,Stuart,48.0,25.6,53.33,2.96
-Stuart,Richter,48.0,22.4,46.67,-2.96
 Y'bneth,Fennik,47.7,29.1,61.01,9.78
 Marja,Mganga,47.7,27.9,58.49,7.54
 Marja,Nakroth,47.7,27.5,57.65,6.8
@@ -841,6 +841,8 @@ Hayate,Mganga,47.3,22.7,47.99,-1.78
 Ignis,Zephys,47.3,21.4,45.24,-4.22
 Rouie,Enzo,47.2,26.2,55.51,4.89
 Enzo,Rouie,47.2,21.0,44.49,-4.89
+Valhein,Liliana,47.1,26.3,55.84,5.18
+Liliana,Valhein,47.1,20.8,44.16,-5.18
 Violet,Astrid,47.0,28.0,59.57,8.49
 Qi,Zephys,47.0,25.6,54.47,3.96
 Zephys,Qi,47.0,21.4,45.53,-3.96
@@ -865,8 +867,6 @@ Lorion,Annette,46.5,23.5,50.54,0.48
 Annette,Lorion,46.5,23.0,49.46,-0.48
 Enzo,Iggy,46.5,21.0,45.16,-4.29
 Qi,Dolia,46.5,19.8,42.58,-6.57
-Valhein,Liliana,46.1,25.3,54.88,4.32
-Liliana,Valhein,46.1,20.8,45.12,-4.32
 Thane,Biron,46.0,26.5,57.61,6.73
 Billow,Raz,46.0,23.5,51.09,0.96
 Cresht,Zata,46.0,23.0,50.0,0.0
@@ -875,6 +875,8 @@ Raz,Billow,46.0,22.5,48.91,-0.96
 Biron,Thane,46.0,19.5,42.39,-6.73
 Annette,Sinestrea,45.7,25.0,54.7,4.16
 Enzo,Biron,45.7,25.0,54.7,4.16
+Wisp,Yena,45.7,24.5,53.61,3.19
+Yena,Wisp,45.7,21.2,46.39,-3.19
 Sinestrea,Annette,45.7,20.7,45.3,-4.16
 Biron,Enzo,45.7,20.7,45.3,-4.16
 Y'bneth,Dolia,45.6,28.2,61.84,10.47
@@ -885,13 +887,17 @@ Hayate,Zata,45.6,21.9,48.03,-1.74
 Tachi,Iggy,45.6,20.0,43.86,-5.43
 Mganga,Y'bneth,45.6,18.8,41.23,-7.75
 Dolia,Y'bneth,45.6,17.4,38.16,-10.47
+Sinestrea,Zata,45.5,26.5,58.24,7.28
 Airi,Wisp,45.5,24.0,52.75,2.43
 Capheny,Valhein,45.5,23.0,50.55,0.49
 Valhein,Capheny,45.5,22.5,49.45,-0.49
 Wisp,Airi,45.5,21.5,47.25,-2.43
+Zata,Sinestrea,45.5,19.0,41.76,-7.28
 Y'bneth,Florentino,45.4,29.4,64.76,13.04
+Mina,Rouie,45.4,26.2,57.71,6.81
 Violet,Zata,45.4,23.6,51.98,1.75
 Zata,Violet,45.4,21.8,48.02,-1.75
+Rouie,Mina,45.4,19.2,42.29,-6.81
 Florentino,Y'bneth,45.4,16.0,35.24,-13.04
 Sinestrea,Liliana,44.9,29.1,64.81,13.06
 Elsu,Iggy,44.9,23.9,53.23,2.85
@@ -903,20 +909,16 @@ Y'bneth,Richter,44.8,25.1,56.03,5.31
 Sinestrea,Hayate,44.8,24.9,55.58,4.92
 Hayate,Sinestrea,44.8,19.9,44.42,-4.92
 Richter,Y'bneth,44.8,19.7,43.97,-5.31
-Wisp,Yena,44.7,24.5,54.81,4.24
-Yena,Wisp,44.7,20.2,45.19,-4.24
 Bolt Baron,Marja,44.5,27.0,60.67,9.41
-Sinestrea,Zata,44.5,26.5,59.55,8.42
 Y'bneth,Annette,44.5,24.5,55.06,4.46
 Murad,Marja,44.5,23.5,52.81,2.48
 Marja,Murad,44.5,21.0,47.19,-2.48
 Annette,Y'bneth,44.5,20.0,44.94,-4.46
-Zata,Sinestrea,44.5,18.0,40.45,-8.42
 Marja,Bolt Baron,44.5,17.5,39.33,-9.41
-Mina,Rouie,44.4,25.2,56.76,5.95
+Tachi,Yena,44.4,26.2,59.01,7.94
 Arduin,Enzo,44.4,23.0,51.8,1.59
 Enzo,Arduin,44.4,21.4,48.2,-1.59
-Rouie,Mina,44.4,19.2,43.24,-5.95
+Yena,Tachi,44.4,18.2,40.99,-7.94
 Sinestrea,Iggy,44.3,27.0,60.95,9.64
 Eland'orr,Nakroth,44.3,25.9,58.47,7.46
 Nakroth,Eland'orr,44.3,18.4,41.53,-7.46
@@ -928,6 +930,7 @@ Maloch,Lorion,44.2,20.2,45.7,-3.78
 Richter,Tachi,44.2,19.7,44.57,-4.78
 Zephys,Airi,44.2,19.5,44.12,-5.18
 Dolia,Murad,44.0,25.8,58.64,7.6
+Ryoma,Dolia,44.0,25.4,57.73,6.8
 Qi,Florentino,44.0,24.6,55.91,5.2
 Billow,Flowborn (Marksman),44.0,24.0,54.55,4.0
 Wisp,Violet,44.0,23.0,52.27,2.0
@@ -936,6 +939,7 @@ Yena,Ryoma,44.0,21.7,49.32,-0.6
 Violet,Wisp,44.0,21.0,47.73,-2.0
 Flowborn (Marksman),Billow,44.0,20.0,45.45,-4.0
 Florentino,Qi,44.0,19.4,44.09,-5.2
+Dolia,Ryoma,44.0,18.6,42.27,-6.8
 Murad,Dolia,44.0,18.2,41.36,-7.6
 Sinestrea,Rouie,43.9,25.0,56.95,6.11
 Violet,Ignis,43.9,24.7,56.26,5.51
@@ -957,36 +961,36 @@ Thane,Dolia,43.5,19.9,45.75,-3.74
 Biron,Annette,43.5,17.5,40.23,-8.59
 Biron,Violet,43.5,15.0,34.48,-13.64
 Florentino,Rouie,43.5,14.4,33.1,-14.85
-Tachi,Yena,43.4,26.2,60.37,9.11
 Annette,Iggy,43.4,24.4,56.22,5.47
 Keera,Violet,43.4,23.6,54.38,3.85
 Richter,Ignis,43.4,22.3,51.38,1.21
 Ignis,Richter,43.4,21.1,48.62,-1.21
 Violet,Keera,43.4,19.8,45.62,-3.85
 Iggy,Annette,43.4,19.0,43.78,-5.47
-Yena,Tachi,43.4,17.2,39.63,-9.11
 Taara,Iggy,43.3,23.8,54.97,4.36
 Iggy,Taara,43.3,19.5,45.03,-4.36
 Rouie,Maloch,43.2,25.8,59.72,8.54
 Eland'orr,Maloch,43.2,23.1,53.47,3.05
 Airi,Eland'orr,43.2,22.2,51.39,1.22
 Bolt Baron,Stuart,43.2,22.2,51.39,1.22
+Rouie,Thane,43.2,21.7,50.23,0.2
+Thane,Rouie,43.2,21.5,49.77,-0.2
 Eland'orr,Airi,43.2,21.0,48.61,-1.22
 Stuart,Bolt Baron,43.2,21.0,48.61,-1.22
 Maloch,Eland'orr,43.2,20.1,46.53,-3.05
 Maloch,Rouie,43.2,17.4,40.28,-8.54
 Y'bneth,Maloch,43.1,29.5,68.45,16.19
 Maloch,Y'bneth,43.1,13.6,31.55,-16.19
+Annette,Tachi,43.0,26.0,60.47,9.18
 Billow,Ignis,43.0,25.0,58.14,7.14
 Annette,Valhein,43.0,24.5,56.98,6.12
-Ryoma,Dolia,43.0,24.4,56.74,5.92
 Alice,Zata,43.0,23.5,54.65,4.08
 Sinestrea,Eland'orr,43.0,23.4,54.42,3.88
 Eland'orr,Sinestrea,43.0,19.6,45.58,-3.88
 Zata,Alice,43.0,19.5,45.35,-4.08
-Dolia,Ryoma,43.0,18.6,43.26,-5.92
 Valhein,Annette,43.0,18.5,43.02,-6.12
 Ignis,Billow,43.0,18.0,41.86,-7.14
+Tachi,Annette,43.0,17.0,39.53,-9.18
 Airi,Capheny,42.9,23.2,54.08,3.58
 Capheny,Airi,42.9,19.7,45.92,-3.58
 Murad,Enzo,42.8,23.5,54.91,4.3
@@ -1001,6 +1005,8 @@ Eland'orr,Taara,42.5,25.4,59.76,8.56
 Wisp,Richter,42.5,23.0,54.12,3.61
 Keera,Bolt Baron,42.5,22.5,52.94,2.58
 Bolt Baron,TeeMee,42.5,22.0,51.76,1.55
+Marja,Wiro,42.5,21.5,50.59,0.52
+Wiro,Marja,42.5,21.0,49.41,-0.52
 TeeMee,Bolt Baron,42.5,20.5,48.24,-1.55
 Bolt Baron,Keera,42.5,20.0,47.06,-2.58
 Richter,Wisp,42.5,19.5,45.88,-3.61
@@ -1009,15 +1015,12 @@ Fennik,Mganga,42.4,23.3,54.95,4.34
 Mganga,Fennik,42.4,19.1,45.05,-4.34
 Skud,Ignis,42.2,27.3,64.69,12.86
 Violet,Richter,42.2,24.4,57.82,6.85
-Rouie,Thane,42.2,21.7,51.42,1.24
-Thane,Rouie,42.2,20.5,48.58,-1.24
 Richter,Violet,42.2,17.8,42.18,-6.85
 Ignis,Skud,42.2,14.9,35.31,-12.86
 Dolia,Capheny,42.1,22.4,53.21,2.81
 Capheny,Dolia,42.1,19.7,46.79,-2.81
 Qi,Keera,42.0,28.2,67.14,15.0
 Lorion,Wiro,42.0,26.0,61.9,10.42
-Annette,Tachi,42.0,25.0,59.52,8.33
 Maloch,Billow,42.0,22.5,53.57,3.12
 Yue,Zata,42.0,22.5,53.57,3.12
 Sinestrea,Edras,42.0,22.0,52.38,2.08
@@ -1026,28 +1029,31 @@ Lorion,Murad,42.0,21.0,50.0,0.0
 Edras,Sinestrea,42.0,20.0,47.62,-2.08
 Billow,Maloch,42.0,19.5,46.43,-3.12
 Zata,Yue,42.0,19.5,46.43,-3.12
-Tachi,Annette,42.0,17.0,40.48,-8.33
 Wiro,Lorion,42.0,16.0,38.1,-10.42
 Keera,Qi,42.0,13.8,32.86,-15.0
 Tachi,Dolia,41.8,23.1,55.26,4.6
 Stuart,Dolia,41.8,21.5,51.44,1.26
 Dolia,Stuart,41.8,20.3,48.56,-1.26
 Dolia,Tachi,41.8,18.7,44.74,-4.6
+Biron,Liliana,41.7,23.2,55.64,4.93
 Ryoma,Wisp,41.7,21.5,51.56,1.36
 Valhein,Ryoma,41.7,21.4,51.32,1.15
 Ryoma,Valhein,41.7,20.3,48.68,-1.15
 Wisp,Ryoma,41.7,20.2,48.44,-1.36
+Liliana,Biron,41.7,18.5,44.36,-4.93
+Y'bneth,Wiro,41.5,28.5,68.67,16.32
 Violet,Annette,41.5,25.5,61.45,10.0
 Mganga,Ryoma,41.5,22.2,53.49,3.05
 Taara,Zephys,41.5,22.0,53.01,2.63
 Marja,Maloch,41.5,21.5,51.81,1.58
-Wiro,Marja,41.5,21.0,50.6,0.53
-Marja,Wiro,41.5,20.5,49.4,-0.53
 Maloch,Marja,41.5,20.0,48.19,-1.58
 Zephys,Taara,41.5,19.5,46.99,-2.63
 Ryoma,Mganga,41.5,19.3,46.51,-3.05
 Annette,Violet,41.5,16.0,38.55,-10.0
+Wiro,Y'bneth,41.5,13.0,31.33,-16.32
 Tachi,Thane,41.4,25.7,62.08,10.55
+Mina,TeeMee,41.4,24.4,58.94,7.81
+TeeMee,Mina,41.4,17.0,41.06,-7.81
 Thane,Tachi,41.4,15.7,37.92,-10.55
 TeeMee,Taara,41.3,24.7,59.81,8.56
 Taara,TeeMee,41.3,16.6,40.19,-8.56
@@ -1055,6 +1061,7 @@ Sinestrea,Skud,41.1,23.8,57.91,6.9
 Thane,Skud,41.1,21.5,52.31,2.02
 Skud,Thane,41.1,19.6,47.69,-2.02
 Skud,Sinestrea,41.1,17.3,42.09,-6.9
+Zata,Zephys,41.0,26.5,64.63,12.77
 Eland'orr,Flowborn (Marksman),41.0,24.0,58.54,7.45
 Tachi,Edras,41.0,22.0,53.66,3.19
 Wisp,Ignis,41.0,21.5,52.44,2.13
@@ -1063,47 +1070,46 @@ Flowborn (Marksman),Dolia,41.0,20.0,48.78,-1.06
 Ignis,Wisp,41.0,19.5,47.56,-2.13
 Edras,Tachi,41.0,19.0,46.34,-3.19
 Flowborn (Marksman),Eland'orr,41.0,17.0,41.46,-7.45
+Zephys,Zata,41.0,14.5,35.37,-12.77
 Violet,Dolia,40.9,21.9,53.55,3.09
 Dolia,Violet,40.9,19.0,46.45,-3.09
 Y'bneth,Yue,40.8,24.9,61.03,9.62
 Yue,Y'bneth,40.8,15.9,38.97,-9.62
-Biron,Liliana,40.7,22.2,54.55,3.96
-Liliana,Biron,40.7,18.5,45.45,-3.96
+Airi,Murad,40.7,23.0,56.51,5.67
+Murad,Airi,40.7,17.7,43.49,-5.67
 Lorion,Florentino,40.6,25.2,62.07,10.52
 Sinestrea,Elsu,40.6,24.7,60.84,9.44
 Enzo,Mganga,40.6,22.2,54.68,4.08
 Mganga,Enzo,40.6,18.4,45.32,-4.08
 Elsu,Sinestrea,40.6,15.9,39.16,-9.44
 Florentino,Lorion,40.6,15.4,37.93,-10.52
-Y'bneth,Wiro,40.5,27.5,67.9,15.59
-Wiro,Y'bneth,40.5,13.0,32.1,-15.59
 Ryoma,Keera,40.4,24.7,61.14,9.7
-Mina,TeeMee,40.4,23.4,57.92,6.9
 Liliana,Maloch,40.4,21.2,52.48,2.16
 Maloch,Liliana,40.4,19.2,47.52,-2.16
-TeeMee,Mina,40.4,17.0,42.08,-6.9
 Keera,Ryoma,40.4,15.7,38.86,-9.7
 Airi,Keera,40.2,26.1,64.93,12.99
 Keera,Airi,40.2,14.1,35.07,-12.99
 TeeMee,Mganga,40.1,21.0,52.37,2.06
 Mganga,TeeMee,40.1,19.1,47.63,-2.06
-Zata,Zephys,40.0,26.5,66.25,14.13
 Rouie,Flowborn (Marksman),40.0,26.0,65.0,13.04
+Y'bneth,Edras,40.0,23.0,57.5,6.52
 Sinestrea,Tachi,40.0,22.0,55.0,4.35
 Yena,Marja,40.0,20.1,50.25,0.22
+Edras,Marja,40.0,20.0,50.0,0.0
+Marja,Edras,40.0,20.0,50.0,0.0
 Marja,Yena,40.0,19.9,49.75,-0.22
 Tachi,Sinestrea,40.0,18.0,45.0,-4.35
+Edras,Y'bneth,40.0,17.0,42.5,-6.52
 Flowborn (Marksman),Rouie,40.0,14.0,35.0,-13.04
-Zephys,Zata,40.0,13.5,33.75,-14.13
 Enzo,Dolia,39.9,22.8,57.14,6.21
 Dolia,Enzo,39.9,17.1,42.86,-6.21
 Richter,Biron,39.8,24.5,61.56,10.04
 Biron,Richter,39.8,15.3,38.44,-10.04
 Skud,Richter,39.7,22.8,57.43,6.46
-Airi,Murad,39.7,22.0,55.42,4.7
 Iggy,Wisp,39.7,20.7,52.14,1.86
+Nakroth,TeeMee,39.7,20.6,51.89,1.64
+TeeMee,Nakroth,39.7,19.1,48.11,-1.64
 Wisp,Iggy,39.7,19.0,47.86,-1.86
-Murad,Airi,39.7,17.7,44.58,-4.7
 Richter,Skud,39.7,16.9,42.57,-6.46
 Dolia,Fennik,39.6,22.6,57.07,6.14
 Valhein,Airi,39.6,20.6,52.02,1.75
@@ -1127,15 +1133,13 @@ Capheny,Murad,39.4,18.9,47.97,-1.76
 Liliana,Raz,39.4,18.3,46.45,-3.08
 Sinestrea,Violet,39.4,16.4,41.62,-7.27
 Zephys,Mganga,39.4,12.0,30.46,-16.96
+Ignis,Liliana,39.2,20.6,52.55,2.21
+Liliana,Ignis,39.2,18.6,47.45,-2.21
 Florentino,Valhein,39.1,20.7,52.94,2.55
 Valhein,Florentino,39.1,18.4,47.06,-2.55
 Y'bneth,Astrid,39.0,24.0,61.54,10.0
 Toro,Flowborn (Marksman),39.0,24.0,61.54,10.0
 Skud,Zata,39.0,23.3,59.74,8.44
-Y'bneth,Edras,39.0,22.0,56.41,5.56
-Edras,Marja,39.0,20.0,51.28,1.11
-Marja,Edras,39.0,19.0,48.72,-1.11
-Edras,Y'bneth,39.0,17.0,43.59,-5.56
 Zata,Skud,39.0,15.7,40.26,-8.44
 Astrid,Y'bneth,39.0,15.0,38.46,-10.0
 Flowborn (Marksman),Toro,39.0,15.0,38.46,-10.0
@@ -1148,8 +1152,6 @@ Enzo,Richter,38.8,19.9,51.29,1.12
 Richter,Enzo,38.8,18.9,48.71,-1.12
 Skud,Elsu,38.8,18.3,47.16,-2.46
 Raz,Marja,38.7,22.7,58.66,7.49
-Nakroth,TeeMee,38.7,19.6,50.65,0.56
-TeeMee,Nakroth,38.7,19.1,49.35,-0.56
 Marja,Raz,38.7,16.0,41.34,-7.49
 Thane,Nakroth,38.6,23.2,60.1,8.74
 Hayate,Elsu,38.6,19.9,51.55,1.35
@@ -1168,10 +1170,8 @@ Richter,Fennik,38.3,21.6,56.4,5.53
 Fennik,Richter,38.3,16.7,43.6,-5.53
 Liliana,Mganga,38.3,15.8,41.25,-7.56
 Murad,Florentino,38.2,19.7,51.57,1.36
-Ignis,Liliana,38.2,19.6,51.31,1.13
 Yena,Iggy,38.2,19.2,50.26,0.23
 Iggy,Yena,38.2,19.0,49.74,-0.23
-Liliana,Ignis,38.2,18.6,48.69,-1.13
 Florentino,Murad,38.2,18.5,48.43,-1.36
 Richter,Iggy,38.1,19.7,51.71,1.47
 Iggy,Richter,38.1,18.4,48.29,-1.47
@@ -1179,6 +1179,7 @@ Ryoma,Ignis,38.0,22.9,60.26,8.86
 Astrid,Lorion,38.0,22.0,57.89,6.82
 Thane,Flowborn (Marksman),38.0,22.0,57.89,6.82
 Eland'orr,Wiro,38.0,21.5,56.58,5.68
+Wisp,Maloch,38.0,20.5,53.95,3.41
 Capheny,Florentino,38.0,20.1,52.89,2.5
 Skud,Ryoma,38.0,20.0,52.63,2.27
 Capheny,Flowborn (Marksman),38.0,20.0,52.63,2.27
@@ -1189,6 +1190,7 @@ Aoi,Keera,38.0,18.4,48.42,-1.36
 Ryoma,Skud,38.0,18.0,47.37,-2.27
 Flowborn (Marksman),Capheny,38.0,18.0,47.37,-2.27
 Florentino,Capheny,38.0,17.9,47.11,-2.5
+Maloch,Wisp,38.0,17.5,46.05,-3.41
 Wiro,Eland'orr,38.0,16.5,43.42,-5.68
 Lorion,Astrid,38.0,16.0,42.11,-6.82
 Flowborn (Marksman),Thane,38.0,16.0,42.11,-6.82
@@ -1215,6 +1217,8 @@ Zata,Capheny,37.4,15.2,40.64,-8.06
 Biron,Iggy,37.4,12.9,34.49,-13.36
 Y'bneth,Taara,37.3,24.7,66.22,13.97
 Mganga,Murad,37.3,22.0,58.98,7.74
+Zata,Ryoma,37.3,19.4,52.01,1.73
+Ryoma,Zata,37.3,17.9,47.99,-1.73
 Murad,Mganga,37.3,15.3,41.02,-7.74
 Taara,Y'bneth,37.3,12.6,33.78,-13.97
 Hayate,Aoi,37.2,20.5,55.11,4.4
@@ -1226,18 +1230,18 @@ Richter,Valhein,37.1,19.1,51.48,1.28
 Valhein,Richter,37.1,18.0,48.52,-1.28
 Dolia,Keera,37.1,16.0,43.13,-5.92
 Billow,Murad,37.0,24.0,64.86,12.79
+Violet,Wiro,37.0,23.5,63.51,11.63
 Tamyn,Astrid,37.0,23.0,62.16,10.47
 Zata,Flowborn (Marksman),37.0,21.0,56.76,5.81
-Wisp,Maloch,37.0,20.5,55.41,4.65
 Toro,Elsu,37.0,19.5,52.7,2.33
 Billow,Richter,37.0,19.5,52.7,2.33
 Florentino,Yena,37.0,19.3,52.16,1.86
 Yena,Florentino,37.0,17.7,47.84,-1.86
 Elsu,Toro,37.0,17.5,47.3,-2.33
 Richter,Billow,37.0,17.5,47.3,-2.33
-Maloch,Wisp,37.0,16.5,44.59,-4.65
 Flowborn (Marksman),Zata,37.0,16.0,43.24,-5.81
 Astrid,Tamyn,37.0,14.0,37.84,-10.47
+Wiro,Violet,37.0,13.5,36.49,-11.63
 Murad,Billow,37.0,13.0,35.14,-12.79
 Biron,Ignis,36.9,20.4,55.28,4.55
 Skud,Hayate,36.9,18.5,50.14,0.12
@@ -1273,20 +1277,20 @@ Mina,Thane,36.1,15.8,43.77,-5.34
 Elsu,Marja,36.1,13.9,38.5,-9.86
 Ryoma,Astrid,36.0,23.0,63.89,11.9
 Flowborn (Marksman),Taara,36.0,23.0,63.89,11.9
-Violet,Wiro,36.0,22.5,62.5,10.71
 Airi,Skud,36.0,21.5,59.72,8.33
 Billow,Edras,36.0,21.0,58.33,7.14
 Wisp,Mganga,36.0,20.5,56.94,5.95
 Fennik,Eland'orr,36.0,20.3,56.39,5.48
+Rouie,Nakroth,36.0,20.2,56.11,5.24
 Billow,Bolt Baron,36.0,18.5,51.39,1.19
 Wiro,TeeMee,36.0,18.5,51.39,1.19
 Bolt Baron,Billow,36.0,17.5,48.61,-1.19
 TeeMee,Wiro,36.0,17.5,48.61,-1.19
+Nakroth,Rouie,36.0,15.8,43.89,-5.24
 Eland'orr,Fennik,36.0,15.7,43.61,-5.48
 Mganga,Wisp,36.0,15.5,43.06,-5.95
 Edras,Billow,36.0,15.0,41.67,-7.14
 Skud,Airi,36.0,14.5,40.28,-8.33
-Wiro,Violet,36.0,13.5,37.5,-10.71
 Astrid,Ryoma,36.0,13.0,36.11,-11.9
 Taara,Flowborn (Marksman),36.0,13.0,36.11,-11.9
 Violet,Taara,35.9,22.7,63.23,11.34
@@ -1320,8 +1324,6 @@ Y'bneth,Murad,35.4,16.8,47.46,-2.17
 Eland'orr,Richter,35.3,22.9,64.87,12.71
 Thane,Fennik,35.3,21.3,60.34,8.84
 Fennik,Ignis,35.3,18.7,52.97,2.54
-Zata,Ryoma,35.3,18.4,52.12,1.82
-Ryoma,Zata,35.3,16.9,47.88,-1.82
 Ignis,Fennik,35.3,16.6,47.03,-2.54
 Fennik,Thane,35.3,14.0,39.66,-8.84
 Richter,Eland'orr,35.3,12.4,35.13,-12.71
@@ -1334,7 +1336,6 @@ Ignis,Airi,35.2,14.1,40.06,-8.5
 Sinestrea,Flowborn (Marksman),35.0,23.0,65.71,13.41
 Astrid,Annette,35.0,21.0,60.0,8.54
 Lorion,Edras,35.0,21.0,60.0,8.54
-Rouie,Nakroth,35.0,20.2,57.71,6.59
 Zephys,Biron,35.0,20.0,57.14,6.1
 Florentino,Zephys,35.0,20.0,57.14,6.1
 Tachi,Flowborn (Marksman),35.0,18.0,51.43,1.22
@@ -1343,7 +1344,6 @@ Flowborn (Marksman),Tachi,35.0,17.0,48.57,-1.22
 Florentino,Billow,35.0,17.0,48.57,-1.22
 Biron,Zephys,35.0,15.0,42.86,-6.1
 Zephys,Florentino,35.0,15.0,42.86,-6.1
-Nakroth,Rouie,35.0,14.8,42.29,-6.59
 Annette,Astrid,35.0,14.0,40.0,-8.54
 Edras,Lorion,35.0,14.0,40.0,-8.54
 Flowborn (Marksman),Sinestrea,35.0,12.0,34.29,-13.41
@@ -1381,6 +1381,7 @@ Florentino,Ignis,34.1,16.5,48.39,-1.37
 Zuka,Hayate,34.1,14.5,42.52,-6.36
 Hayate,Yue,34.0,22.1,65.0,12.75
 Zata,Astrid,34.0,21.0,61.76,10.0
+Yena,Biron,34.0,21.0,61.76,10.0
 Astrid,Flowborn (Marksman),34.0,20.0,58.82,7.5
 Edras,Toro,34.0,20.0,58.82,7.5
 Flowborn (Marksman),Wisp,34.0,18.0,52.94,2.5
@@ -1394,6 +1395,7 @@ Zata,Moren,34.0,16.0,47.06,-2.5
 Flowborn (Marksman),Astrid,34.0,14.0,41.18,-7.5
 Toro,Edras,34.0,14.0,41.18,-7.5
 Astrid,Zata,34.0,13.0,38.24,-10.0
+Biron,Yena,34.0,13.0,38.24,-10.0
 Yue,Hayate,34.0,11.9,35.0,-12.75
 Raz,Skud,33.9,18.2,53.69,3.13
 Y'bneth,Nakroth,33.9,17.9,52.8,2.38
@@ -1408,6 +1410,8 @@ Florentino,Enzo,33.7,14.6,43.32,-5.67
 Iggy,Florentino,33.7,14.4,42.73,-6.17
 Florentino,Wisp,33.7,11.2,33.23,-14.23
 Elsu,Qi,33.6,18.1,53.87,3.28
+Dolia,Zephys,33.6,16.9,50.3,0.25
+Zephys,Dolia,33.6,16.7,49.7,-0.25
 Qi,Elsu,33.6,15.5,46.13,-3.28
 Toro,Wiro,33.5,21.5,64.18,12.03
 Stuart,Murad,33.5,19.5,58.21,6.96
@@ -1424,12 +1428,10 @@ Enzo,Ignis,33.2,16.8,50.6,0.51
 Ignis,Enzo,33.2,16.4,49.4,-0.51
 Qi,Aoi,33.2,15.5,46.69,-2.81
 Airi,Flowborn (Marksman),33.0,22.0,66.67,14.1
-Yena,Biron,33.0,20.0,60.61,8.97
 Astrid,Toro,33.0,19.0,57.58,6.41
 Biron,Zata,33.0,18.0,54.55,3.85
 Zata,Biron,33.0,15.0,45.45,-3.85
 Toro,Astrid,33.0,14.0,42.42,-6.41
-Biron,Yena,33.0,13.0,39.39,-8.97
 Flowborn (Marksman),Airi,33.0,11.0,33.33,-14.1
 Iggy,Nakroth,32.9,17.0,51.67,1.41
 Sinestrea,Keera,32.9,16.7,50.76,0.64
@@ -1441,8 +1443,6 @@ Nakroth,Violet,32.7,15.6,47.71,-1.94
 Liliana,Annette,32.7,11.2,34.25,-13.31
 Taara,Stuart,32.6,19.9,61.04,9.33
 Hayate,Taara,32.6,17.8,54.6,3.89
-Dolia,Zephys,32.6,16.9,51.84,1.55
-Zephys,Dolia,32.6,15.7,48.16,-1.55
 Taara,Hayate,32.6,14.8,45.4,-3.89
 Stuart,Taara,32.6,12.7,38.96,-9.33
 Wiro,Enzo,32.5,20.0,61.54,9.74
@@ -1501,11 +1501,15 @@ Y'bneth,Mina,31.5,13.3,42.22,-6.53
 Yena,Murad,31.5,12.4,39.37,-8.93
 Zephys,Annette,31.5,11.5,36.51,-11.33
 Toro,Raz,31.5,10.8,34.29,-13.2
+Eland'orr,Yue,31.4,18.3,58.28,6.95
 Fennik,Iggy,31.4,16.0,50.96,0.8
 Iggy,Fennik,31.4,15.4,49.04,-0.8
+Yue,Eland'orr,31.4,13.1,41.72,-6.95
 Valhein,Dolia,31.1,17.4,55.95,4.99
+Zata,TeeMee,31.1,17.0,54.66,3.91
 Dolia,Nakroth,31.1,16.9,54.34,3.64
 Nakroth,Dolia,31.1,14.2,45.66,-3.64
+TeeMee,Zata,31.1,14.1,45.34,-3.91
 Dolia,Valhein,31.1,13.7,44.05,-4.99
 Qi,Flowborn (Marksman),31.0,20.0,64.52,12.16
 Zephys,Wiro,31.0,19.5,62.9,10.81
@@ -1541,26 +1545,32 @@ Yue,Stuart,30.6,15.2,49.67,-0.27
 Thane,Mganga,30.6,11.5,37.58,-10.38
 Mganga,Taara,30.5,16.3,53.44,2.88
 Taara,Mganga,30.5,14.2,46.56,-2.88
-Eland'orr,Yue,30.4,18.3,60.2,8.52
-Yue,Eland'orr,30.4,12.1,39.8,-8.52
+Airi,Richter,30.4,21.2,69.74,16.48
+Murad,Ryoma,30.4,17.8,58.55,7.14
+Ryoma,Murad,30.4,12.6,41.45,-7.14
+Richter,Airi,30.4,9.2,30.26,-16.48
 Raz,Yena,30.3,18.0,59.41,7.85
 Yena,Raz,30.3,12.3,40.59,-7.85
 Thane,Wiro,30.2,17.5,57.95,6.63
 Wiro,Thane,30.2,12.7,42.05,-6.63
 Sinestrea,Enzo,30.1,19.2,63.79,11.5
-Zata,TeeMee,30.1,16.0,53.16,2.63
+Ryoma,Nakroth,30.1,15.4,51.16,0.97
 Iggy,Mina,30.1,15.1,50.17,0.14
 Mina,Iggy,30.1,15.0,49.83,-0.14
-TeeMee,Zata,30.1,14.1,46.84,-2.63
+Nakroth,Ryoma,30.1,14.7,48.84,-0.97
 Enzo,Sinestrea,30.1,10.9,36.21,-11.5
 Flowborn (Marksman),Zephys,30.0,17.0,56.67,5.56
 Liliana,Edras,30.0,17.0,56.67,5.56
 Airi,Taara,30.0,16.5,55.0,4.17
 Biron,Flowborn (Marksman),30.0,16.0,53.33,2.78
+Edras,Valhein,30.0,16.0,53.33,2.78
 Flowborn (Marksman),Biron,30.0,14.0,46.67,-2.78
+Valhein,Edras,30.0,14.0,46.67,-2.78
 Taara,Airi,30.0,13.5,45.0,-4.17
 Zephys,Flowborn (Marksman),30.0,13.0,43.33,-5.56
 Edras,Liliana,30.0,13.0,43.33,-5.56
+Sinestrea,Thane,29.9,18.7,62.54,10.45
+Thane,Sinestrea,29.9,11.2,37.46,-10.45
 Dolia,Iggy,29.8,16.5,55.37,4.47
 Iggy,Dolia,29.8,13.3,44.63,-4.47
 Airi,Ryoma,29.7,21.2,71.38,17.79
@@ -1587,9 +1597,7 @@ Wiro,Airi,29.5,13.0,44.07,-4.93
 Aoi,Enzo,29.5,12.9,43.73,-5.21
 Lorion,Zata,29.5,11.5,38.98,-9.15
 Florentino,Keera,29.5,11.0,37.29,-10.56
-Airi,Richter,29.4,20.2,68.71,15.54
 Ryoma,Cresht,29.4,17.8,60.54,8.76
-Murad,Ryoma,29.4,17.8,60.54,8.76
 Hayate,Omen,29.4,15.9,54.08,3.39
 Omen,Yena,29.4,15.7,53.4,2.82
 Murad,Wisp,29.4,15.7,53.4,2.82
@@ -1601,8 +1609,6 @@ Yena,Omen,29.4,13.7,46.6,-2.82
 Wisp,Murad,29.4,13.7,46.6,-2.82
 Omen,Hayate,29.4,13.5,45.92,-3.39
 Cresht,Ryoma,29.4,11.6,39.46,-8.76
-Ryoma,Murad,29.4,11.6,39.46,-8.76
-Richter,Airi,29.4,9.2,31.29,-15.54
 Zata,Murad,29.3,20.7,70.65,17.14
 Iggy,Murad,29.3,16.6,56.66,5.52
 Murad,Iggy,29.3,12.7,43.34,-5.52
@@ -1611,19 +1617,13 @@ TeeMee,Zuka,29.2,17.8,60.96,9.09
 Fennik,Biron,29.2,15.7,53.77,3.12
 Biron,Fennik,29.2,13.5,46.23,-3.13
 Zuka,TeeMee,29.2,11.4,39.04,-9.09
-Ryoma,Nakroth,29.1,15.4,52.92,2.42
-Nakroth,Ryoma,29.1,13.7,47.08,-2.42
 Edras,TeeMee,29.0,17.0,58.62,7.14
-Edras,Valhein,29.0,16.0,55.17,4.29
 Florentino,Mganga,29.0,14.6,50.34,0.29
 Mganga,Florentino,29.0,14.4,49.66,-0.29
-Valhein,Edras,29.0,13.0,44.83,-4.29
 TeeMee,Edras,29.0,12.0,41.38,-7.14
 Omen,Skud,28.9,20.1,69.55,16.19
-Sinestrea,Thane,28.9,18.7,64.71,12.18
 Liliana,Taara,28.9,17.3,59.86,8.17
 Taara,Liliana,28.9,11.6,40.14,-8.17
-Thane,Sinestrea,28.9,10.2,35.29,-12.18
 Skud,Omen,28.9,8.8,30.45,-16.19
 Rouie,Fennik,28.8,15.7,54.51,3.74
 Fennik,Rouie,28.8,13.1,45.49,-3.74
@@ -1635,23 +1635,31 @@ Yena,Sinestrea,28.6,13.4,46.85,-2.6
 Sinestrea,Mganga,28.6,12.9,45.1,-4.05
 Stuart,Annette,28.5,17.0,59.65,7.97
 Billow,Yue,28.5,16.5,57.89,6.52
+Ryoma,Zuka,28.5,15.7,55.09,4.2
+Liliana,Aoi,28.5,14.8,51.93,1.59
+Aoi,Liliana,28.5,13.7,48.07,-1.59
+Zuka,Ryoma,28.5,12.8,44.91,-4.2
 Yue,Billow,28.5,12.0,42.11,-6.52
 Annette,Stuart,28.5,11.5,40.35,-7.97
+Sinestrea,Nakroth,28.4,21.8,76.76,22.09
 TeeMee,Aoi,28.4,18.3,64.44,11.92
 Aoi,Marja,28.4,15.0,52.82,2.33
 Rouie,Annette,28.4,14.7,51.76,1.45
 Annette,Rouie,28.4,13.7,48.24,-1.45
 Marja,Aoi,28.4,13.4,47.18,-2.33
 Aoi,TeeMee,28.4,10.1,35.56,-11.92
+Nakroth,Sinestrea,28.4,6.6,23.24,-22.09
 Valhein,Cresht,28.3,15.6,55.12,4.23
 Aoi,Skud,28.3,14.7,51.94,1.6
 Skud,Aoi,28.3,13.6,48.06,-1.6
 Cresht,Valhein,28.3,12.7,44.88,-4.23
 Sinestrea,Ignis,28.2,18.6,65.96,13.16
+Mganga,Yena,28.2,16.8,59.57,7.89
 Thane,Zuka,28.2,15.9,56.38,5.26
 Tachi,Taara,28.2,14.7,52.13,1.75
 Taara,Tachi,28.2,13.5,47.87,-1.75
 Zuka,Thane,28.2,12.3,43.62,-5.26
+Yena,Mganga,28.2,11.4,40.43,-7.89
 Ignis,Sinestrea,28.2,9.6,34.04,-13.16
 Cresht,Zephys,28.0,18.5,66.07,13.24
 Annette,Flowborn (Marksman),28.0,17.0,60.71,8.82
@@ -1703,12 +1711,8 @@ Wisp,Yue,27.5,16.0,58.18,6.72
 Billow,Omen,27.5,16.0,58.18,6.72
 Thane,Florentino,27.5,15.6,56.73,5.52
 Alice,Billow,27.5,15.0,54.55,3.73
-Liliana,Aoi,27.5,14.8,53.82,3.13
-Ryoma,Zuka,27.5,14.7,53.45,2.84
 Qi,Annette,27.5,14.0,50.91,0.75
 Annette,Qi,27.5,13.5,49.09,-0.75
-Zuka,Ryoma,27.5,12.8,46.55,-2.84
-Aoi,Liliana,27.5,12.7,46.18,-3.13
 Billow,Alice,27.5,12.5,45.45,-3.73
 Florentino,Thane,27.5,11.9,43.27,-5.52
 Wiro,Wisp,27.5,11.5,41.82,-6.72
@@ -1717,14 +1721,15 @@ Yue,Wisp,27.5,11.5,41.82,-6.72
 Omen,Billow,27.5,11.5,41.82,-6.72
 Fennik,Florentino,27.5,11.0,40.0,-8.21
 Stuart,Wiro,27.5,10.0,36.36,-11.19
-Sinestrea,Nakroth,27.4,21.8,79.56,24.25
-Nakroth,Sinestrea,27.4,5.6,20.44,-24.25
-Mganga,Yena,27.2,16.8,61.76,9.64
-Yena,Mganga,27.2,10.4,38.24,-9.64
+Aoi,Toro,27.2,18.0,66.18,13.25
+Toro,Aoi,27.2,9.2,33.82,-13.25
 Violet,Yue,27.1,20.2,74.54,20.09
+Valhein,Zata,27.1,14.2,52.4,1.96
 Mganga,Dolia,27.1,14.0,51.66,1.36
 Dolia,Mganga,27.1,13.1,48.34,-1.36
+Zata,Valhein,27.1,12.9,47.6,-1.96
 Yue,Violet,27.1,6.9,25.46,-20.09
+Maloch,Biron,27.0,19.5,72.22,18.18
 Tachi,Biron,27.0,17.5,64.81,12.12
 Bolt Baron,Florentino,27.0,17.0,62.96,10.61
 Zephys,Nakroth,27.0,15.0,55.56,4.55
@@ -1739,6 +1744,7 @@ Nakroth,Zephys,27.0,12.0,44.44,-4.55
 Wisp,Edras,27.0,12.0,44.44,-4.55
 Florentino,Bolt Baron,27.0,10.0,37.04,-10.61
 Biron,Tachi,27.0,9.5,35.19,-12.12
+Biron,Maloch,27.0,7.5,27.78,-18.18
 Mina,Marja,26.9,14.7,54.65,3.8
 Marja,Mina,26.9,12.2,45.35,-3.8
 Qi,Wiro,26.7,16.2,60.67,8.72
@@ -1761,17 +1767,12 @@ Elsu,Tachi,26.4,11.9,45.08,-4.01
 Yue,Thane,26.4,11.4,43.18,-5.56
 Aoi,Capheny,26.3,13.2,50.19,0.15
 Capheny,Aoi,26.3,13.1,49.81,-0.15
-Aoi,Toro,26.2,17.0,64.89,12.11
 TeeMee,Omen,26.2,15.2,58.02,6.52
 Cresht,Capheny,26.2,13.7,52.29,1.86
 Capheny,Cresht,26.2,12.5,47.71,-1.86
 Omen,TeeMee,26.2,11.0,41.98,-6.52
-Toro,Aoi,26.2,9.2,35.11,-12.11
 Cresht,Stuart,26.1,15.8,60.54,8.57
-Valhein,Zata,26.1,14.2,54.41,3.58
-Zata,Valhein,26.1,11.9,45.59,-3.58
 Stuart,Cresht,26.1,10.3,39.46,-8.57
-Maloch,Biron,26.0,18.5,71.15,17.19
 Keera,Zuka,26.0,16.3,62.69,10.31
 Cresht,Flowborn (Marksman),26.0,16.0,61.54,9.38
 Edras,Zephys,26.0,16.0,61.54,9.38
@@ -1796,10 +1797,11 @@ Tulen,Iggy,26.0,10.5,40.38,-7.81
 Flowborn (Marksman),Cresht,26.0,10.0,38.46,-9.38
 Zephys,Edras,26.0,10.0,38.46,-9.38
 Zuka,Keera,26.0,9.7,37.31,-10.31
-Biron,Maloch,26.0,7.5,28.85,-17.19
 Y'bneth,Zuka,25.9,18.6,71.81,17.71
+Maloch,Taara,25.9,13.9,53.67,2.98
 Baldum,Lorion,25.9,13.2,50.97,0.78
 Lorion,Baldum,25.9,12.7,49.03,-0.78
+Taara,Maloch,25.9,12.0,46.33,-2.98
 Zuka,Y'bneth,25.9,7.3,28.19,-17.71
 Taara,Murad,25.8,16.7,64.73,11.95
 Mganga,Raz,25.8,14.6,56.59,5.35
@@ -1807,6 +1809,9 @@ Violet,Murad,25.8,14.3,55.43,4.4
 Murad,Violet,25.8,11.5,44.57,-4.4
 Raz,Mganga,25.8,11.2,43.41,-5.35
 Murad,Taara,25.8,9.1,35.27,-11.95
+Qi,Yue,25.7,14.8,57.59,6.15
+Yue,Qi,25.7,10.9,42.41,-6.15
+Lorion,Taara,25.5,16.0,62.75,10.32
 Raz,Bolt Baron,25.5,15.0,58.82,7.14
 Elsu,Violet,25.5,13.7,53.73,3.02
 Yena,Elsu,25.5,13.1,51.37,1.11
@@ -1815,6 +1820,7 @@ Florentino,Yan,25.5,12.6,49.41,-0.48
 Elsu,Yena,25.5,12.4,48.63,-1.11
 Violet,Elsu,25.5,11.8,46.27,-3.02
 Bolt Baron,Raz,25.5,10.5,41.18,-7.14
+Taara,Lorion,25.5,9.5,37.25,-10.32
 Sinestrea,Maloch,25.4,17.5,68.9,15.29
 Raz,Iggy,25.4,15.1,59.45,7.64
 Iggy,Raz,25.4,10.3,40.55,-7.64
@@ -1823,8 +1829,10 @@ Thane,Taara,25.3,13.2,52.17,1.76
 Taara,Thane,25.3,12.1,47.83,-1.76
 Rouie,Murad,25.2,16.1,63.89,11.22
 Taara,Valhein,25.2,15.2,60.32,8.33
+Eland'orr,Aoi,25.2,14.3,56.75,5.45
 Yue,Toro,25.2,13.0,51.59,1.28
 Toro,Yue,25.2,12.2,48.41,-1.28
+Aoi,Eland'orr,25.2,10.9,43.25,-5.45
 Valhein,Taara,25.2,10.0,39.68,-8.33
 Murad,Rouie,25.2,9.1,36.11,-11.22
 Billow,Butterfly,25.0,16.5,66.0,12.9
@@ -1849,8 +1857,6 @@ Mina,Enzo,24.9,17.2,69.08,15.37
 Aoi,Fennik,24.9,14.9,59.84,7.93
 Krizzix,Skud,24.9,13.1,52.61,2.1
 Murad,Toro,24.9,13.1,52.61,2.1
-Maloch,Taara,24.9,12.9,51.81,1.46
-Taara,Maloch,24.9,12.0,48.19,-1.46
 Skud,Krizzix,24.9,11.8,47.39,-2.1
 Toro,Murad,24.9,11.8,47.39,-2.1
 Fennik,Aoi,24.9,10.0,40.16,-7.93
@@ -1859,8 +1865,6 @@ Mganga,Nakroth,24.8,17.1,68.95,15.26
 Rouie,Dolia,24.8,14.4,58.06,6.49
 Dolia,Rouie,24.8,10.4,41.94,-6.49
 Nakroth,Mganga,24.8,7.7,31.05,-15.26
-Qi,Yue,24.7,14.8,59.92,7.98
-Yue,Qi,24.7,9.9,40.08,-7.98
 Violet,Fennik,24.6,17.5,71.14,16.99
 Iggy,Aoi,24.6,14.4,58.54,6.86
 Zuka,Marja,24.6,14.2,57.72,6.21
@@ -1870,7 +1874,6 @@ Marja,Zuka,24.6,10.4,42.28,-6.21
 Aoi,Iggy,24.6,10.2,41.46,-6.86
 Fennik,Violet,24.6,7.1,28.86,-16.99
 Sinestrea,Wiro,24.5,17.0,69.39,15.57
-Lorion,Taara,24.5,15.0,61.22,9.02
 Skud,Yue,24.5,14.6,59.59,7.7
 Biron,Airi,24.5,14.5,59.18,7.38
 Billow,Cresht,24.5,14.0,57.14,5.74
@@ -1885,7 +1888,6 @@ Natalya,Billow,24.5,11.0,44.9,-4.1
 Cresht,Billow,24.5,10.5,42.86,-5.74
 Airi,Biron,24.5,10.0,40.82,-7.38
 Yue,Skud,24.5,9.9,40.41,-7.7
-Taara,Lorion,24.5,9.5,38.78,-9.02
 Wiro,Sinestrea,24.5,7.5,30.61,-15.57
 Violet,Baldum,24.4,14.4,59.02,7.24
 Baldum,Violet,24.4,10.0,40.98,-7.24
@@ -1894,12 +1896,10 @@ Qi,Cresht,24.3,15.5,63.79,11.06
 Cresht,Qi,24.3,8.8,36.21,-11.06
 Yue,TeeMee,24.3,7.9,32.51,-14.03
 Murad,Keera,24.2,15.0,61.98,9.6
-Eland'orr,Aoi,24.2,14.3,59.09,7.28
 Nakroth,Zata,24.2,14.0,57.85,6.29
 Murad,TeeMee,24.2,12.8,52.89,2.32
 TeeMee,Murad,24.2,11.4,47.11,-2.32
 Zata,Nakroth,24.2,10.2,42.15,-6.29
-Aoi,Eland'orr,24.2,9.9,40.91,-7.28
 Keera,Murad,24.2,9.2,38.02,-9.6
 Cresht,Nakroth,24.1,13.7,56.85,5.48
 Nakroth,Cresht,24.1,10.4,43.15,-5.48
@@ -1926,6 +1926,8 @@ Yue,Enzo,23.9,10.5,43.93,-4.85
 Aoi,Ignis,23.8,13.5,56.72,5.37
 Ignis,Aoi,23.8,10.3,43.28,-5.37
 Maloch,Iggy,23.7,14.4,60.76,8.59
+Zata,Rouie,23.7,13.5,56.96,5.56
+Rouie,Zata,23.7,10.2,43.04,-5.56
 Iggy,Maloch,23.7,9.3,39.24,-8.59
 Tachi,Raz,23.5,14.5,61.7,9.32
 Rouie,Wiro,23.5,14.5,61.7,9.32
@@ -1977,10 +1979,14 @@ Hayate,Moren,23.0,14.0,60.87,8.62
 Astrid,Zephys,23.0,13.0,56.52,5.17
 Flowborn (Marksman),Wiro,23.0,13.0,56.52,5.17
 Ryoma,Wiro,23.0,13.0,56.52,5.17
+Taara,Yena,23.0,12.8,55.65,4.48
 Alice,Flowborn (Marksman),23.0,12.0,52.17,1.72
 Tamyn,Rouie,23.0,12.0,52.17,1.72
+Biron,Astrid,23.0,12.0,52.17,1.72
 Flowborn (Marksman),Alice,23.0,11.0,47.83,-1.72
 Rouie,Tamyn,23.0,11.0,47.83,-1.72
+Astrid,Biron,23.0,11.0,47.83,-1.72
+Yena,Taara,23.0,10.2,44.35,-4.48
 Zephys,Astrid,23.0,10.0,43.48,-5.17
 Wiro,Flowborn (Marksman),23.0,10.0,43.48,-5.17
 Wiro,Ryoma,23.0,10.0,43.48,-5.17
@@ -2006,17 +2012,18 @@ Liliana,Murad,22.8,11.0,48.25,-1.39
 Iggy,Wiro,22.7,15.5,68.28,14.46
 Ryoma,Taara,22.7,13.9,61.23,8.89
 Qi,Bolt Baron,22.7,13.0,57.27,5.75
-Zata,Rouie,22.7,12.5,55.07,4.01
 Florentino,Marja,22.7,11.5,50.66,0.52
 Marja,Florentino,22.7,11.2,49.34,-0.52
-Rouie,Zata,22.7,10.2,44.93,-4.01
 Bolt Baron,Qi,22.7,9.7,42.73,-5.75
 Taara,Ryoma,22.7,8.8,38.77,-8.89
 Wiro,Iggy,22.7,7.2,31.72,-14.46
+Mina,Valhein,22.6,13.5,59.73,7.69
 Stuart,Omen,22.6,12.1,53.54,2.8
 Omen,Stuart,22.6,10.5,46.46,-2.8
+Valhein,Mina,22.6,9.1,40.27,-7.69
 Ryoma,Alice,22.5,15.0,66.67,13.16
 Hayate,Wiro,22.5,14.5,64.44,11.4
+Butterfly,Eland'orr,22.5,13.5,60.0,7.89
 Florentino,Maloch,22.5,13.1,58.22,6.49
 Billow,Baldum,22.5,13.0,57.78,6.14
 Wisp,Raz,22.5,12.5,55.56,4.39
@@ -2027,6 +2034,7 @@ Biron,Yue,22.5,10.5,46.67,-2.63
 Raz,Wisp,22.5,10.0,44.44,-4.39
 Baldum,Billow,22.5,9.5,42.22,-6.14
 Maloch,Florentino,22.5,9.4,41.78,-6.49
+Eland'orr,Butterfly,22.5,9.0,40.0,-7.89
 Wiro,Hayate,22.5,8.0,35.56,-11.4
 Alice,Ryoma,22.5,7.5,33.33,-13.16
 Aya,Zata,22.4,13.2,58.93,7.04
@@ -2052,16 +2060,12 @@ Wisp,Volkath,22.0,14.5,65.91,12.5
 Yue,Flowborn (Marksman),22.0,14.0,63.64,10.71
 Violet,Alice,22.0,13.0,59.09,7.14
 Edras,Dolia,22.0,13.0,59.09,7.14
-Taara,Yena,22.0,12.8,58.18,6.43
 Nakroth,Elsu,22.0,12.0,54.55,3.57
 Alice,Toro,22.0,12.0,54.55,3.57
-Biron,Astrid,22.0,12.0,54.55,3.57
 Lorion,Volkath,22.0,11.0,50.0,0.0
 Volkath,Lorion,22.0,11.0,50.0,0.0
 Elsu,Nakroth,22.0,10.0,45.45,-3.57
 Toro,Alice,22.0,10.0,45.45,-3.57
-Astrid,Biron,22.0,10.0,45.45,-3.57
-Yena,Taara,22.0,9.2,41.82,-6.43
 Alice,Violet,22.0,9.0,40.91,-7.14
 Dolia,Edras,22.0,9.0,40.91,-7.14
 Flowborn (Marksman),Yue,22.0,8.0,36.36,-10.71
@@ -2085,18 +2089,14 @@ Elsu,Thane,21.7,10.6,48.85,-0.9
 Ignis,Raz,21.7,9.5,43.78,-4.87
 Yena,Mina,21.7,8.8,40.55,-7.4
 Cresht,Lorion,21.7,8.0,36.87,-10.29
-Mina,Valhein,21.6,12.5,57.87,6.16
 Aoi,Yena,21.6,11.4,52.78,2.17
 Yena,Aoi,21.6,10.2,47.22,-2.17
-Valhein,Mina,21.6,9.1,42.13,-6.16
 Hayate,Cresht,21.5,15.3,71.16,16.55
 Annette,Fennik,21.5,14.5,67.44,13.64
 Annette,Yue,21.5,14.0,65.12,11.82
-Butterfly,Eland'orr,21.5,12.5,58.14,6.36
 Maloch,Zephys,21.5,12.5,58.14,6.36
 Mganga,Annette,21.5,11.0,51.16,0.91
 Annette,Mganga,21.5,10.5,48.84,-0.91
-Eland'orr,Butterfly,21.5,9.0,41.86,-6.36
 Zephys,Maloch,21.5,9.0,41.86,-6.36
 Yue,Annette,21.5,7.5,34.88,-11.82
 Fennik,Annette,21.5,7.0,32.56,-13.64
@@ -2117,6 +2117,7 @@ Elsu,Y'bneth,21.3,8.8,41.31,-6.78
 Cresht,Eland'orr,21.3,8.7,40.85,-7.14
 Skud,Taara,21.0,14.3,68.1,14.07
 Taara,Cresht,21.0,14.0,66.67,12.96
+Edras,Ignis,21.0,14.0,66.67,12.96
 Flowborn (Marksman),Iggy,21.0,13.0,61.9,9.26
 Flowborn (Marksman),Mganga,21.0,13.0,61.9,9.26
 Bolt Baron,Fennik,21.0,13.0,61.9,9.26
@@ -2126,6 +2127,7 @@ Annette,Wiro,21.0,12.0,57.14,5.56
 Flowborn (Marksman),Enzo,21.0,12.0,57.14,5.56
 Biron,Dolia,21.0,11.5,54.76,3.7
 Airi,Mina,21.0,11.5,54.76,3.7
+Annette,Murad,21.0,11.5,54.76,3.7
 Annette,Keera,21.0,11.0,52.38,1.85
 Taara,Wisp,21.0,11.0,52.38,1.85
 Volkath,Zata,21.0,11.0,52.38,1.85
@@ -2136,6 +2138,7 @@ Wisp,Taara,21.0,10.0,47.62,-1.85
 Zata,Volkath,21.0,10.0,47.62,-1.85
 Dolia,Biron,21.0,9.5,45.24,-3.7
 Mina,Airi,21.0,9.5,45.24,-3.7
+Murad,Annette,21.0,9.5,45.24,-3.7
 TeeMee,Flowborn (Marksman),21.0,9.0,42.86,-5.56
 Hayate,Astrid,21.0,9.0,42.86,-5.56
 Wiro,Annette,21.0,9.0,42.86,-5.56
@@ -2144,6 +2147,7 @@ Iggy,Flowborn (Marksman),21.0,8.0,38.1,-9.26
 Mganga,Flowborn (Marksman),21.0,8.0,38.1,-9.26
 Fennik,Bolt Baron,21.0,8.0,38.1,-9.26
 Cresht,Taara,21.0,7.0,33.33,-12.96
+Ignis,Edras,21.0,7.0,33.33,-12.96
 Taara,Skud,21.0,6.7,31.9,-14.07
 Stuart,Nakroth,20.9,14.7,70.33,15.8
 Nakroth,Stuart,20.9,6.2,29.67,-15.8
@@ -2220,28 +2224,30 @@ Baldum,Skud,20.1,9.7,48.26,-1.34
 Taara,Omen,20.1,9.7,48.26,-1.34
 Yue,Valhein,20.1,8.4,41.79,-6.32
 Alice,Capheny,20.0,16.0,80.0,23.08
-Edras,Ignis,20.0,14.0,70.0,15.38
+Zephys,Murad,20.0,14.1,70.5,15.77
 Tamyn,Toro,20.0,13.0,65.0,11.54
+Tamyn,Biron,20.0,11.0,55.0,3.85
 Wisp,Moren,20.0,11.0,55.0,3.85
 Edras,Thane,20.0,11.0,55.0,3.85
 Yue,Tachi,20.0,10.5,52.5,1.92
-Annette,Murad,20.0,10.5,52.5,1.92
 Maloch,Roxie,20.0,10.5,52.5,1.92
 Taara,Florentino,20.0,10.3,51.5,1.15
 Flowborn (Marksman),Elsu,20.0,10.0,50.0,0.0
 Elsu,Flowborn (Marksman),20.0,10.0,50.0,0.0
 Edras,Iggy,20.0,10.0,50.0,0.0
 Iggy,Edras,20.0,10.0,50.0,0.0
+Astrid,Wisp,20.0,10.0,50.0,0.0
+Wisp,Astrid,20.0,10.0,50.0,0.0
 Tachi,Moren,20.0,10.0,50.0,0.0
 Moren,Tachi,20.0,10.0,50.0,0.0
 Florentino,Taara,20.0,9.7,48.5,-1.15
 Tachi,Yue,20.0,9.5,47.5,-1.92
-Murad,Annette,20.0,9.5,47.5,-1.92
 Roxie,Maloch,20.0,9.5,47.5,-1.92
+Biron,Tamyn,20.0,9.0,45.0,-3.85
 Moren,Wisp,20.0,9.0,45.0,-3.85
 Thane,Edras,20.0,9.0,45.0,-3.85
 Toro,Tamyn,20.0,7.0,35.0,-11.54
-Ignis,Edras,20.0,6.0,30.0,-15.38
+Murad,Zephys,20.0,5.9,29.5,-15.77
 Capheny,Alice,20.0,4.0,20.0,-23.08
 Dolia,Elsu,19.9,13.5,67.84,13.71
 Skud,Arduin,19.9,11.6,58.29,6.37
@@ -2261,7 +2267,9 @@ Krizzix,Marja,19.8,8.1,40.91,-6.98
 Violet,Yan,19.8,8.0,40.4,-7.36
 Stuart,Aoi,19.7,13.7,69.54,14.98
 Cresht,Annette,19.7,12.0,60.91,8.37
+Zuka,Zephys,19.7,12.0,60.91,8.37
 Annette,Cresht,19.7,7.7,39.09,-8.37
+Zephys,Zuka,19.7,7.7,39.09,-8.37
 Aoi,Stuart,19.7,6.0,30.46,-14.98
 Mina,Zephys,19.5,15.0,76.92,20.59
 Sinestrea,Yue,19.5,13.5,69.23,14.71
@@ -2283,12 +2291,16 @@ Tachi,Aoi,19.4,8.8,45.36,-3.54
 Yue,Murad,19.4,7.0,36.08,-10.63
 Murad,Nakroth,19.3,9.7,50.26,0.2
 Nakroth,Murad,19.3,9.6,49.74,-0.2
+Mina,Ryoma,19.2,12.3,64.06,10.71
 Airi,Omen,19.2,11.2,58.33,6.35
 Richter,Mganga,19.2,11.1,57.81,5.95
 Zephys,Yan,19.2,10.5,54.69,3.57
+Liliana,Baldum,19.2,10.3,53.65,2.78
+Baldum,Liliana,19.2,8.9,46.35,-2.78
 Yan,Zephys,19.2,8.7,45.31,-3.57
 Mganga,Richter,19.2,8.1,42.19,-5.95
 Omen,Airi,19.2,8.0,41.67,-6.35
+Ryoma,Mina,19.2,6.9,35.94,-10.71
 Marja,Natalya,19.1,11.9,62.3,9.36
 TeeMee,Tel'Annas,19.1,11.5,60.21,7.77
 Richter,Mina,19.1,9.7,50.79,0.6
@@ -2296,7 +2308,6 @@ Mina,Richter,19.1,9.4,49.21,-0.6
 Tel'Annas,TeeMee,19.1,7.6,39.79,-7.77
 Natalya,Marja,19.1,7.2,37.7,-9.36
 Billow,Yan,19.0,13.5,71.05,16.0
-Zephys,Murad,19.0,13.1,68.95,14.4
 Wisp,Arduin,19.0,13.0,68.42,14.0
 Enzo,Moren,19.0,13.0,68.42,14.0
 Edras,Zata,19.0,12.0,63.16,10.0
@@ -2306,22 +2317,18 @@ Tachi,Heino,19.0,11.5,60.53,8.0
 Tamyn,Capheny,19.0,11.0,57.89,6.0
 Valhein,Heino,19.0,11.0,57.89,6.0
 Annette,Edras,19.0,11.0,57.89,6.0
-Tamyn,Biron,19.0,11.0,57.89,6.0
 Zephys,Elsu,19.0,11.0,57.89,6.0
 Iggy,Yue,19.0,10.5,55.26,4.0
 Edras,Ryoma,19.0,10.0,52.63,2.0
-Wisp,Astrid,19.0,10.0,52.63,2.0
 Valhein,Astrid,19.0,10.0,52.63,2.0
 Edras,Skud,19.0,10.0,52.63,2.0
 Ryoma,Edras,19.0,9.0,47.37,-2.0
-Astrid,Wisp,19.0,9.0,47.37,-2.0
 Astrid,Valhein,19.0,9.0,47.37,-2.0
 Skud,Edras,19.0,9.0,47.37,-2.0
 Yue,Iggy,19.0,8.5,44.74,-4.0
 Capheny,Tamyn,19.0,8.0,42.11,-6.0
 Heino,Valhein,19.0,8.0,42.11,-6.0
 Edras,Annette,19.0,8.0,42.11,-6.0
-Biron,Tamyn,19.0,8.0,42.11,-6.0
 Elsu,Zephys,19.0,8.0,42.11,-6.0
 Heino,Tachi,19.0,7.5,39.47,-8.0
 Zata,Edras,19.0,7.0,36.84,-10.0
@@ -2329,15 +2336,15 @@ Astrid,Mina,19.0,7.0,36.84,-10.0
 Violet,Tamyn,19.0,7.0,36.84,-10.0
 Arduin,Wisp,19.0,6.0,31.58,-14.0
 Moren,Enzo,19.0,6.0,31.58,-14.0
-Murad,Zephys,19.0,5.9,31.05,-14.4
 Yan,Billow,19.0,5.5,28.95,-16.0
 Hayate,Natalya,18.9,15.9,84.13,25.9
+Valhein,Nakroth,18.9,12.7,67.2,13.05
 Murad,Mina,18.9,10.1,53.44,2.61
 Mina,Murad,18.9,8.8,46.56,-2.61
+Nakroth,Valhein,18.9,6.2,32.8,-13.05
 Natalya,Hayate,18.9,3.0,15.87,-25.9
 Arduin,Hayate,18.8,9.9,52.66,2.02
 Hayate,Arduin,18.8,8.9,47.34,-2.02
-Zuka,Zephys,18.7,12.0,64.17,10.73
 Dolia,Volkath,18.7,10.7,57.22,5.47
 Cresht,Airi,18.7,10.0,53.48,2.63
 Valhein,Raz,18.7,9.8,52.41,1.82
@@ -2346,7 +2353,6 @@ Murad,Richter,18.7,9.3,49.73,-0.2
 Raz,Valhein,18.7,8.9,47.59,-1.82
 Airi,Cresht,18.7,8.7,46.52,-2.63
 Volkath,Dolia,18.7,8.0,42.78,-5.47
-Zephys,Zuka,18.7,6.7,35.83,-10.73
 Liliana,Omen,18.6,11.5,61.83,8.94
 Yena,Natalya,18.6,11.2,60.22,7.72
 Elsu,Fennik,18.6,10.4,55.91,4.47
@@ -2375,33 +2381,35 @@ Wisp,Mina,18.5,7.5,40.54,-7.14
 Ming,Hayate,18.5,7.4,40.0,-7.55
 Heino,Toro,18.5,7.0,37.84,-9.18
 Natalya,Lorion,18.5,4.0,21.62,-21.43
+Mganga,Maloch,18.4,11.9,64.67,11.07
 Krizzix,Stuart,18.4,9.8,53.26,2.46
 Yue,Richter,18.4,9.6,52.17,1.64
 Richter,Yue,18.4,8.8,47.83,-1.64
 Stuart,Krizzix,18.4,8.6,46.74,-2.46
+Maloch,Mganga,18.4,6.5,35.33,-11.07
 Raz,Arduin,18.3,11.1,60.66,8.02
 Arduin,Raz,18.3,7.2,39.34,-8.02
 Mina,Taara,18.2,14.2,78.02,21.07
 Skud,Natalya,18.2,12.2,67.03,12.81
-Mina,Ryoma,18.2,11.3,62.09,9.09
 Tachi,Mina,18.2,10.7,58.79,6.61
 Mganga,Zuka,18.2,10.5,57.69,5.79
-Liliana,Baldum,18.2,10.3,56.59,4.96
 Thane,Omen,18.2,10.1,55.49,4.13
 Omen,Violet,18.2,9.2,50.55,0.41
 Violet,Omen,18.2,9.0,49.45,-0.41
 Omen,Thane,18.2,8.1,44.51,-4.13
-Baldum,Liliana,18.2,7.9,43.41,-4.96
 Zuka,Mganga,18.2,7.7,42.31,-5.79
 Mina,Tachi,18.2,7.5,41.21,-6.61
-Ryoma,Mina,18.2,6.9,37.91,-9.09
 Natalya,Skud,18.2,6.0,32.97,-12.81
 Taara,Mina,18.2,4.0,21.98,-21.07
 Qi,Murad,18.1,12.4,68.51,13.9
+Baldum,Eland'orr,18.1,11.2,61.88,8.92
 Elsu,Maloch,18.1,9.6,53.04,2.28
 Aya,Eland'orr,18.1,9.2,50.83,0.62
+Airi,Zuka,18.1,9.1,50.28,0.21
+Zuka,Airi,18.1,9.0,49.72,-0.21
 Eland'orr,Aya,18.1,8.9,49.17,-0.62
 Maloch,Elsu,18.1,8.5,46.96,-2.28
+Eland'orr,Baldum,18.1,6.9,38.12,-8.92
 Murad,Qi,18.1,5.7,31.49,-13.9
 Tamyn,Billow,18.0,14.0,77.78,20.83
 Edras,Nakroth,18.0,13.0,72.22,16.67
@@ -2411,6 +2419,7 @@ Omen,Iggy,18.0,12.4,68.89,14.17
 Alice,Airi,18.0,11.5,63.89,10.42
 Zuka,Iggy,18.0,11.1,61.67,8.75
 Maloch,Wiro,18.0,11.0,61.11,8.33
+Biron,Edras,18.0,11.0,61.11,8.33
 Stuart,Zuka,18.0,10.5,58.33,6.25
 Valhein,Flowborn (Marksman),18.0,10.0,55.56,4.17
 Edras,Cresht,18.0,10.0,55.56,4.17
@@ -2432,6 +2441,7 @@ Keera,Yue,18.0,8.0,44.44,-4.17
 Maloch,Heino,18.0,8.0,44.44,-4.17
 Zuka,Stuart,18.0,7.5,41.67,-6.25
 Wiro,Maloch,18.0,7.0,38.89,-8.33
+Edras,Biron,18.0,7.0,38.89,-8.33
 Iggy,Zuka,18.0,6.9,38.33,-8.75
 Airi,Alice,18.0,6.5,36.11,-10.42
 Iggy,Omen,18.0,5.6,31.11,-14.17
@@ -2439,10 +2449,8 @@ Annette,Alice,18.0,5.5,30.56,-14.58
 Yue,Zephys,18.0,5.5,30.56,-14.58
 Nakroth,Edras,18.0,5.0,27.78,-16.67
 Billow,Tamyn,18.0,4.0,22.22,-20.83
-Valhein,Nakroth,17.9,12.7,70.95,15.69
 Zuka,Rouie,17.9,10.2,56.98,5.23
 Rouie,Zuka,17.9,7.7,43.02,-5.23
-Nakroth,Valhein,17.9,5.2,29.05,-15.69
 Mina,Violet,17.8,9.8,55.06,3.78
 Maloch,Aoi,17.8,9.1,51.12,0.84
 Aoi,Maloch,17.8,8.7,48.88,-0.84
@@ -2472,10 +2480,8 @@ Yan,Skud,17.5,6.1,34.86,-11.28
 Florentino,Wiro,17.5,6.0,34.29,-11.7
 Gildur,Eland'orr,17.5,4.5,25.71,-18.09
 Ignis,Omen,17.4,12.4,71.26,15.81
-Mganga,Maloch,17.4,11.9,68.39,13.68
 Eland'orr,Natalya,17.4,11.3,64.94,11.11
 Natalya,Eland'orr,17.4,6.1,35.06,-11.11
-Maloch,Mganga,17.4,5.5,31.61,-13.68
 Omen,Ignis,17.4,5.0,28.74,-15.81
 Krizzix,Liliana,17.3,9.9,57.23,5.36
 Rouie,Krizzix,17.3,9.7,56.07,4.51
@@ -2496,11 +2502,8 @@ Enzo,Taara,17.2,6.7,38.95,-8.19
 Erin,Stuart,17.2,6.0,34.88,-11.21
 Maloch,Mina,17.2,5.2,30.23,-14.66
 Mganga,Aya,17.1,11.2,65.5,11.47
-Baldum,Eland'orr,17.1,10.2,59.65,7.14
-Zuka,Airi,17.1,9.0,52.63,1.95
-Airi,Zuka,17.1,8.1,47.37,-1.95
-Eland'orr,Baldum,17.1,6.9,40.35,-7.14
 Aya,Mganga,17.1,5.9,34.5,-11.47
+Edras,Yue,17.0,13.0,76.47,19.57
 Marja,Heino,17.0,12.5,73.53,17.39
 Alice,Astrid,17.0,12.0,70.59,15.22
 Chaugnar,Lorion,17.0,12.0,70.59,15.22
@@ -2512,7 +2515,6 @@ Tamyn,Dolia,17.0,11.0,64.71,10.87
 Annette,Ignis,17.0,11.0,64.71,10.87
 Tachi,Goverra,17.0,11.0,64.71,10.87
 Mina,Wiro,17.0,10.0,58.82,6.52
-Biron,Edras,17.0,10.0,58.82,6.52
 Bolt Baron,Toro,17.0,9.5,55.88,4.35
 Capheny,Arduin,17.0,9.2,54.12,3.04
 Aya,Capheny,17.0,8.9,52.35,1.74
@@ -2526,7 +2528,6 @@ Capheny,Aya,17.0,8.1,47.65,-1.74
 Arduin,Capheny,17.0,7.8,45.88,-3.04
 Toro,Bolt Baron,17.0,7.5,44.12,-4.35
 Wiro,Mina,17.0,7.0,41.18,-6.52
-Edras,Biron,17.0,7.0,41.18,-6.52
 Edras,Enzo,17.0,6.0,35.29,-10.87
 Dolia,Tamyn,17.0,6.0,35.29,-10.87
 Ignis,Annette,17.0,6.0,35.29,-10.87
@@ -2537,6 +2538,7 @@ Astrid,Alice,17.0,5.0,29.41,-15.22
 Lorion,Chaugnar,17.0,5.0,29.41,-15.22
 Fennik,Edras,17.0,5.0,29.41,-15.22
 Heino,Marja,17.0,4.5,26.47,-17.39
+Yue,Edras,17.0,4.0,23.53,-19.57
 Wiro,Nakroth,16.9,11.7,69.23,14.19
 Nakroth,Wiro,16.9,5.2,30.77,-14.19
 Baldum,Qi,16.8,8.9,52.98,2.19
@@ -2594,7 +2596,7 @@ Nakroth,Taara,16.2,7.6,46.91,-2.25
 Aoi,Ryoma,16.2,6.5,40.12,-7.21
 Arduin,Lorion,16.2,6.5,40.12,-7.21
 Maloch,Bolt Baron,16.0,13.5,84.38,25.0
-Edras,Yue,16.0,13.0,81.25,22.73
+Violet,Edras,16.0,12.0,75.0,18.18
 Tamyn,Marja,16.0,11.0,68.75,13.64
 Edras,Astrid,16.0,11.0,68.75,13.64
 Elsu,Taara,16.0,10.9,68.12,13.18
@@ -2623,7 +2625,7 @@ Liliana,Gildur,16.0,5.5,34.38,-11.36
 Taara,Elsu,16.0,5.1,31.87,-13.18
 Marja,Tamyn,16.0,5.0,31.25,-13.64
 Astrid,Edras,16.0,5.0,31.25,-13.64
-Yue,Edras,16.0,3.0,18.75,-22.73
+Edras,Violet,16.0,4.0,25.0,-18.18
 Bolt Baron,Maloch,16.0,2.5,15.62,-25.0
 Keera,Arduin,15.9,9.9,62.26,8.9
 Yan,Toro,15.9,9.1,57.23,5.25
@@ -2685,6 +2687,7 @@ Stuart,Yan,15.3,7.6,49.67,-0.23
 Yan,Capheny,15.3,6.9,45.1,-3.52
 Butterfly,Dolia,15.2,10.2,67.11,12.26
 Sinestrea,Omen,15.2,10.2,67.11,12.26
+Butterfly,Qi,15.2,10.0,65.79,11.32
 Rouie,Yan,15.2,9.8,64.47,10.38
 Tachi,Omen,15.2,9.7,63.82,9.91
 Airi,Elsu,15.2,9.0,59.21,6.6
@@ -2695,11 +2698,11 @@ Arduin,Violet,15.2,7.2,47.37,-1.89
 Elsu,Airi,15.2,6.2,40.79,-6.6
 Omen,Tachi,15.2,5.5,36.18,-9.91
 Yan,Rouie,15.2,5.4,35.53,-10.38
+Qi,Butterfly,15.2,5.2,34.21,-11.32
 Dolia,Butterfly,15.2,5.0,32.89,-12.26
 Omen,Sinestrea,15.2,5.0,32.89,-12.26
 Astrid,Ignis,15.0,11.0,73.33,16.67
 Tamyn,Zata,15.0,11.0,73.33,16.67
-Violet,Edras,15.0,11.0,73.33,16.67
 Rouie,Astrid,15.0,11.0,73.33,16.67
 Wiro,Mganga,15.0,10.5,70.0,14.29
 Tamyn,Y'bneth,15.0,10.0,66.67,11.9
@@ -2745,7 +2748,6 @@ Ata,Qi,15.0,5.0,33.33,-11.9
 Mganga,Wiro,15.0,4.5,30.0,-14.29
 Ignis,Astrid,15.0,4.0,26.67,-16.67
 Zata,Tamyn,15.0,4.0,26.67,-16.67
-Edras,Violet,15.0,4.0,26.67,-16.67
 Astrid,Rouie,15.0,4.0,26.67,-16.67
 Valhein,Elsu,14.9,9.4,63.09,9.33
 Toro,Ming,14.9,8.7,58.39,5.98
@@ -2811,12 +2813,10 @@ Tel'Annas,Eland'orr,14.3,6.2,43.36,-4.68
 Baldum,Stuart,14.3,5.3,37.06,-9.11
 Rouie,Taara,14.2,10.7,75.35,17.82
 Yan,Keera,14.2,9.3,65.49,10.89
-Butterfly,Qi,14.2,9.0,63.38,9.41
 Bolt Baron,Eland'orr,14.2,8.2,57.75,5.45
 Cresht,Yue,14.2,7.2,50.7,0.5
 Yue,Cresht,14.2,7.0,49.3,-0.5
 Eland'orr,Bolt Baron,14.2,6.0,42.25,-5.45
-Qi,Butterfly,14.2,5.2,36.62,-9.41
 Keera,Yan,14.2,4.9,34.51,-10.89
 Taara,Rouie,14.2,3.5,24.65,-17.82
 Sinestrea,Florentino,14.1,11.1,78.72,20.15
@@ -2834,6 +2834,7 @@ Annette,Gildur,14.0,8.0,57.14,5.0
 Butterfly,Valhein,14.0,8.0,57.14,5.0
 Hayate,Goverra,14.0,8.0,57.14,5.0
 Butterfly,Zata,14.0,8.0,57.14,5.0
+Wiro,Yue,14.0,8.0,57.14,5.0
 Astrid,Zuka,14.0,8.0,57.14,5.0
 Zephys,Raz,14.0,8.0,57.14,5.0
 Yena,Edras,14.0,8.0,57.14,5.0
@@ -2857,6 +2858,7 @@ Gildur,Annette,14.0,6.0,42.86,-5.0
 Valhein,Butterfly,14.0,6.0,42.86,-5.0
 Goverra,Hayate,14.0,6.0,42.86,-5.0
 Zata,Butterfly,14.0,6.0,42.86,-5.0
+Yue,Wiro,14.0,6.0,42.86,-5.0
 Zuka,Astrid,14.0,6.0,42.86,-5.0
 Raz,Zephys,14.0,6.0,42.86,-5.0
 Edras,Yena,14.0,6.0,42.86,-5.0
@@ -2957,7 +2959,6 @@ Bolt Baron,Ignis,13.0,9.0,69.23,13.16
 Ryoma,Butterfly,13.0,8.5,65.38,10.53
 Baldum,Capheny,13.0,8.5,65.38,10.53
 Astrid,Yue,13.0,8.0,61.54,7.89
-Wiro,Yue,13.0,8.0,61.54,7.89
 Florentino,Flowborn (Marksman),13.0,8.0,61.54,7.89
 Zuka,Maloch,13.0,7.6,58.46,5.79
 Alice,Florentino,13.0,7.5,57.69,5.26
@@ -2982,7 +2983,6 @@ Tamyn,Stuart,13.0,6.0,46.15,-2.63
 Florentino,Alice,13.0,5.5,42.31,-5.26
 Maloch,Zuka,13.0,5.4,41.54,-5.79
 Yue,Astrid,13.0,5.0,38.46,-7.89
-Yue,Wiro,13.0,5.0,38.46,-7.89
 Flowborn (Marksman),Florentino,13.0,5.0,38.46,-7.89
 Butterfly,Ryoma,13.0,4.5,34.62,-10.53
 Capheny,Baldum,13.0,4.5,34.62,-10.53
@@ -3051,12 +3051,14 @@ Skud,Goverra,12.5,4.5,36.0,-9.46
 Goverra,Wisp,12.5,3.0,24.0,-17.57
 Yue,Baldum,12.3,7.1,57.72,5.19
 Baldum,Yue,12.3,5.2,42.28,-5.19
+Annette,Zuka,12.2,9.7,79.51,19.78
 Tel'Annas,Capheny,12.2,8.2,67.21,11.54
 Wiro,Richter,12.2,6.2,50.82,0.55
 Zuka,Yue,12.2,6.2,50.82,0.55
 Richter,Wiro,12.2,6.0,49.18,-0.55
 Yue,Zuka,12.2,6.0,49.18,-0.55
 Capheny,Tel'Annas,12.2,4.0,32.79,-11.54
+Zuka,Annette,12.2,2.5,20.49,-19.78
 Toro,Arduin,12.1,8.5,70.25,13.54
 Florentino,Mina,12.1,6.9,57.02,4.7
 Ryoma,Omen,12.1,6.6,54.55,3.04
@@ -3068,6 +3070,7 @@ Fennik,Arduin,12.0,8.8,73.33,15.56
 Wiro,Taara,12.0,8.5,70.83,13.89
 Bolt Baron,Arduin,12.0,8.5,70.83,13.89
 Stuart,Wonder Woman,12.0,8.3,69.17,12.78
+Taara,Astrid,12.0,8.0,66.67,11.11
 Astrid,Florentino,12.0,8.0,66.67,11.11
 Y'bneth,Butterfly,12.0,8.0,66.67,11.11
 Alice,Cresht,12.0,8.0,66.67,11.11
@@ -3109,6 +3112,7 @@ Volkath,Hayate,12.0,5.0,41.67,-5.56
 Moren,TeeMee,12.0,5.0,41.67,-5.56
 Grakk,Stuart,12.0,4.6,38.33,-7.78
 Fennik,Goverra,12.0,4.5,37.5,-8.33
+Astrid,Taara,12.0,4.0,33.33,-11.11
 Florentino,Astrid,12.0,4.0,33.33,-11.11
 Butterfly,Y'bneth,12.0,4.0,33.33,-11.11
 Cresht,Alice,12.0,4.0,33.33,-11.11
@@ -3187,12 +3191,10 @@ Enzo,Cresht,11.3,7.4,65.49,10.12
 Yan,Enzo,11.3,5.9,52.21,1.45
 Enzo,Yan,11.3,5.4,47.79,-1.45
 Cresht,Enzo,11.3,3.9,34.51,-10.12
-Annette,Zuka,11.2,8.7,77.68,18.02
 Zata,Omen,11.2,7.2,64.29,9.3
 TeeMee,Natalya,11.2,7.2,64.29,9.3
 Omen,Zata,11.2,4.0,35.71,-9.3
 Natalya,TeeMee,11.2,4.0,35.71,-9.3
-Zuka,Annette,11.2,2.5,22.32,-18.02
 Aoi,Zephys,11.1,8.1,72.97,14.91
 Slimz,Hayate,11.1,7.2,64.86,9.65
 Fennik,Yan,11.1,6.8,61.26,7.31
@@ -3203,11 +3205,11 @@ Hayate,Slimz,11.1,3.9,35.14,-9.65
 Zephys,Aoi,11.1,3.0,27.03,-14.91
 Alice,Nakroth,11.0,9.0,81.82,20.59
 Edras,Keera,11.0,9.0,81.82,20.59
-Taara,Astrid,11.0,8.0,72.73,14.71
 Yena,Goverra,11.0,8.0,72.73,14.71
 Toro,Dyadia,11.0,8.0,72.73,14.71
 Rouie,Xeniel,11.0,7.3,66.36,10.59
 Tamyn,Airi,11.0,7.0,63.64,8.82
+Tamyn,Valhein,11.0,7.0,63.64,8.82
 Dyadia,Marja,11.0,7.0,63.64,8.82
 Capheny,Dyadia,11.0,7.0,63.64,8.82
 Moren,Yena,11.0,7.0,63.64,8.82
@@ -3218,6 +3220,7 @@ Enzo,Heino,11.0,6.0,54.55,2.94
 Volkath,Taara,11.0,6.0,54.55,2.94
 Flowborn (Marksman),Zuka,11.0,6.0,54.55,2.94
 Gildur,Zephys,11.0,6.0,54.55,2.94
+Dyadia,Tachi,11.0,6.0,54.55,2.94
 Moren,Skud,11.0,6.0,54.55,2.94
 Yue,Aoi,11.0,5.7,51.82,1.18
 Baldum,Zephys,11.0,5.5,50.0,0.0
@@ -3229,14 +3232,15 @@ Heino,Enzo,11.0,5.0,45.45,-2.94
 Taara,Volkath,11.0,5.0,45.45,-2.94
 Zuka,Flowborn (Marksman),11.0,5.0,45.45,-2.94
 Zephys,Gildur,11.0,5.0,45.45,-2.94
+Tachi,Dyadia,11.0,5.0,45.45,-2.94
 Skud,Moren,11.0,5.0,45.45,-2.94
 Goverra,Zephys,11.0,4.5,40.91,-5.88
 Airi,Tamyn,11.0,4.0,36.36,-8.82
+Valhein,Tamyn,11.0,4.0,36.36,-8.82
 Marja,Dyadia,11.0,4.0,36.36,-8.82
 Dyadia,Capheny,11.0,4.0,36.36,-8.82
 Yena,Moren,11.0,4.0,36.36,-8.82
 Xeniel,Rouie,11.0,3.7,33.64,-10.59
-Astrid,Taara,11.0,3.0,27.27,-14.71
 Goverra,Yena,11.0,3.0,27.27,-14.71
 Dyadia,Toro,11.0,3.0,27.27,-14.71
 Nakroth,Alice,11.0,2.0,18.18,-20.59
@@ -3337,7 +3341,6 @@ Flowborn (Marksman),Ignis,10.0,9.0,90.0,25.0
 Keera,Krizzix,10.0,8.2,82.0,20.0
 Toro,Aya,10.0,8.0,80.0,18.75
 Moren,Violet,10.0,8.0,80.0,18.75
-Tamyn,Valhein,10.0,7.0,70.0,12.5
 Tamyn,Taara,10.0,7.0,70.0,12.5
 Krizzix,Taara,10.0,7.0,70.0,12.5
 Moren,Toro,10.0,7.0,70.0,12.5
@@ -3348,6 +3351,7 @@ Wisp,Yan,10.0,6.5,65.0,9.38
 Mina,Alice,10.0,6.0,60.0,6.25
 Butterfly,Maloch,10.0,6.0,60.0,6.25
 Lorion,Butterfly,10.0,6.0,60.0,6.25
+Dyadia,Rouie,10.0,6.0,60.0,6.25
 Rourke,Astrid,10.0,6.0,60.0,6.25
 Thane,Gildur,10.0,6.0,60.0,6.25
 Edras,Wiro,10.0,6.0,60.0,6.25
@@ -3383,6 +3387,7 @@ Krixi,Eland'orr,10.0,4.3,43.0,-4.38
 Alice,Mina,10.0,4.0,40.0,-6.25
 Maloch,Butterfly,10.0,4.0,40.0,-6.25
 Butterfly,Lorion,10.0,4.0,40.0,-6.25
+Rouie,Dyadia,10.0,4.0,40.0,-6.25
 Astrid,Rourke,10.0,4.0,40.0,-6.25
 Gildur,Thane,10.0,4.0,40.0,-6.25
 Wiro,Edras,10.0,4.0,40.0,-6.25
@@ -3392,7 +3397,6 @@ Fennik,Moren,10.0,4.0,40.0,-6.25
 Tulen,Billow,10.0,3.5,35.0,-9.38
 Lorion,Yan,10.0,3.5,35.0,-9.38
 Yan,Wisp,10.0,3.5,35.0,-9.38
-Valhein,Tamyn,10.0,3.0,30.0,-12.5
 Taara,Tamyn,10.0,3.0,30.0,-12.5
 Taara,Krizzix,10.0,3.0,30.0,-12.5
 Toro,Moren,10.0,3.0,30.0,-12.5
@@ -3539,18 +3543,17 @@ Nakroth,Bolt Baron,9.0,5.5,61.11,6.67
 Elsu,Bolt Baron,9.0,5.5,61.11,6.67
 Billow,Goverra,9.0,5.5,61.11,6.67
 Butterfly,Flowborn (Marksman),9.0,5.0,55.56,3.33
+Baldum,Tamyn,9.0,5.0,55.56,3.33
 Skud,Gildur,9.0,5.0,55.56,3.33
 Tamyn,Lorion,9.0,5.0,55.56,3.33
 Gildur,Airi,9.0,5.0,55.56,3.33
 Sinestrea,Gildur,9.0,5.0,55.56,3.33
-Dyadia,Rouie,9.0,5.0,55.56,3.33
 Chaugnar,Capheny,9.0,5.0,55.56,3.33
 Butterfly,Sinestrea,9.0,5.0,55.56,3.33
 Iggy,Tamyn,9.0,5.0,55.56,3.33
 Enzo,Astrid,9.0,5.0,55.56,3.33
 Gildur,Yena,9.0,5.0,55.56,3.33
 Arduin,Tachi,9.0,5.0,55.56,3.33
-Tachi,Dyadia,9.0,5.0,55.56,3.33
 Tel'Annas,Zephys,9.0,5.0,55.56,3.33
 Violet,Goverra,9.0,5.0,55.56,3.33
 Chaugnar,Wisp,9.0,5.0,55.56,3.33
@@ -3560,18 +3563,17 @@ Zephys,Heino,9.0,4.5,50.0,0.0
 Natalya,Bolt Baron,9.0,4.5,50.0,0.0
 Bolt Baron,Natalya,9.0,4.5,50.0,0.0
 Flowborn (Marksman),Butterfly,9.0,4.0,44.44,-3.33
+Tamyn,Baldum,9.0,4.0,44.44,-3.33
 Gildur,Skud,9.0,4.0,44.44,-3.33
 Lorion,Tamyn,9.0,4.0,44.44,-3.33
 Airi,Gildur,9.0,4.0,44.44,-3.33
 Gildur,Sinestrea,9.0,4.0,44.44,-3.33
-Rouie,Dyadia,9.0,4.0,44.44,-3.33
 Capheny,Chaugnar,9.0,4.0,44.44,-3.33
 Sinestrea,Butterfly,9.0,4.0,44.44,-3.33
 Tamyn,Iggy,9.0,4.0,44.44,-3.33
 Astrid,Enzo,9.0,4.0,44.44,-3.33
 Yena,Gildur,9.0,4.0,44.44,-3.33
 Tachi,Arduin,9.0,4.0,44.44,-3.33
-Dyadia,Tachi,9.0,4.0,44.44,-3.33
 Zephys,Tel'Annas,9.0,4.0,44.44,-3.33
 Goverra,Violet,9.0,4.0,44.44,-3.33
 Wisp,Chaugnar,9.0,4.0,44.44,-3.33
@@ -3639,8 +3641,10 @@ Lorion,Gildur,8.5,5.0,58.82,5.17
 Wisp,Gildur,8.5,5.0,58.82,5.17
 Keera,Alice,8.5,4.5,52.94,1.72
 Billow,Wonder Woman,8.5,4.5,52.94,1.72
+Butterfly,Liliana,8.5,4.5,52.94,1.72
 Alice,Keera,8.5,4.0,47.06,-1.72
 Wonder Woman,Billow,8.5,4.0,47.06,-1.72
+Liliana,Butterfly,8.5,4.0,47.06,-1.72
 Alice,Ignis,8.5,3.5,41.18,-5.17
 Azzen'Ka,Mganga,8.5,3.5,41.18,-5.17
 Gildur,Lorion,8.5,3.5,41.18,-5.17
@@ -3731,6 +3735,7 @@ Tamyn,TeeMee,8.0,6.0,75.0,14.29
 Butterfly,Yena,8.0,6.0,75.0,14.29
 Mina,Edras,8.0,6.0,75.0,14.29
 Tamyn,Yue,8.0,6.0,75.0,14.29
+Dyadia,Dolia,8.0,6.0,75.0,14.29
 Thane,Goverra,8.0,6.0,75.0,14.29
 Moren,Airi,8.0,6.0,75.0,14.29
 Florentino,Gildur,8.0,6.0,75.0,14.29
@@ -3750,20 +3755,22 @@ Marja,Moren,8.0,5.0,62.5,7.14
 Moren,Biron,8.0,5.0,62.5,7.14
 Thane,Moren,8.0,5.0,62.5,7.14
 Aoi,Astrid,8.0,5.0,62.5,7.14
+Dyadia,Murad,8.0,5.0,62.5,7.14
 Iggy,Krizzix,8.0,4.9,61.25,6.43
 Tulen,Eland'orr,8.0,4.9,61.25,6.43
 Elsu,Arduin,8.0,4.6,57.5,4.29
 Ata,Toro,8.0,4.5,56.25,3.57
 Zip,Iggy,8.0,4.5,56.25,3.57
 Valhein,Goverra,8.0,4.5,56.25,3.57
+Ata,Wisp,8.0,4.5,56.25,3.57
 Lorion,Ata,8.0,4.5,56.25,3.57
 Valhein,Ata,8.0,4.5,56.25,3.57
-Tamyn,Baldum,8.0,4.0,50.0,0.0
-Baldum,Tamyn,8.0,4.0,50.0,0.0
 Tamyn,Maloch,8.0,4.0,50.0,0.0
 Maloch,Tamyn,8.0,4.0,50.0,0.0
 Astrid,Murad,8.0,4.0,50.0,0.0
 Murad,Astrid,8.0,4.0,50.0,0.0
+Butterfly,Wiro,8.0,4.0,50.0,0.0
+Wiro,Butterfly,8.0,4.0,50.0,0.0
 Tamyn,Qi,8.0,4.0,50.0,0.0
 Qi,Tamyn,8.0,4.0,50.0,0.0
 Elsu,Kahlii,8.0,4.0,50.0,0.0
@@ -3773,6 +3780,7 @@ Flowborn (Marksman),Volkath,8.0,4.0,50.0,0.0
 Toro,Ata,8.0,3.5,43.75,-3.57
 Iggy,Zip,8.0,3.5,43.75,-3.57
 Goverra,Valhein,8.0,3.5,43.75,-3.57
+Wisp,Ata,8.0,3.5,43.75,-3.57
 Ata,Lorion,8.0,3.5,43.75,-3.57
 Ata,Valhein,8.0,3.5,43.75,-3.57
 Arduin,Elsu,8.0,3.4,42.5,-4.29
@@ -3792,6 +3800,7 @@ Moren,Marja,8.0,3.0,37.5,-7.14
 Biron,Moren,8.0,3.0,37.5,-7.14
 Moren,Thane,8.0,3.0,37.5,-7.14
 Astrid,Aoi,8.0,3.0,37.5,-7.14
+Murad,Dyadia,8.0,3.0,37.5,-7.14
 Fennik,Alice,8.0,2.5,31.25,-10.71
 Roxie,Billow,8.0,2.5,31.25,-10.71
 Flowborn (Marksman),Chaugnar,8.0,2.0,25.0,-14.29
@@ -3799,6 +3808,7 @@ TeeMee,Tamyn,8.0,2.0,25.0,-14.29
 Yena,Butterfly,8.0,2.0,25.0,-14.29
 Edras,Mina,8.0,2.0,25.0,-14.29
 Yue,Tamyn,8.0,2.0,25.0,-14.29
+Dolia,Dyadia,8.0,2.0,25.0,-14.29
 Goverra,Thane,8.0,2.0,25.0,-14.29
 Airi,Moren,8.0,2.0,25.0,-14.29
 Gildur,Florentino,8.0,2.0,25.0,-14.29
@@ -3859,17 +3869,17 @@ Wisp,Alice,7.5,5.5,73.33,12.96
 Volkath,Murad,7.5,5.5,73.33,12.96
 Biron,Butterfly,7.5,4.5,60.0,5.56
 Goverra,Nakroth,7.5,4.5,60.0,5.56
+Maloch,Zip,7.5,4.5,60.0,5.56
 Sinestrea,Bolt Baron,7.5,4.5,60.0,5.56
 Slimz,Keera,7.5,4.2,56.0,3.33
 Elsu,Wonder Woman,7.5,4.1,54.67,2.59
-Liliana,Butterfly,7.5,4.0,53.33,1.85
 Thane,Tulen,7.5,3.9,52.0,1.11
 Tulen,Thane,7.5,3.6,48.0,-1.11
-Butterfly,Liliana,7.5,3.5,46.67,-1.85
 Wonder Woman,Elsu,7.5,3.4,45.33,-2.59
 Keera,Slimz,7.5,3.3,44.0,-3.33
 Butterfly,Biron,7.5,3.0,40.0,-5.56
 Nakroth,Goverra,7.5,3.0,40.0,-5.56
+Zip,Maloch,7.5,3.0,40.0,-5.56
 Bolt Baron,Sinestrea,7.5,3.0,40.0,-5.56
 Alice,Wisp,7.5,2.0,26.67,-12.96
 Murad,Volkath,7.5,2.0,26.67,-12.96
@@ -3939,6 +3949,7 @@ Cresht,Krizzix,7.1,4.6,64.79,8.02
 Mganga,Cresht,7.1,4.4,61.97,6.49
 Iggy,Slimz,7.1,4.4,61.97,6.49
 Richter,Grakk,7.1,4.2,59.15,4.96
+Yena,Tel'Annas,7.1,4.2,59.15,4.96
 Marja,Grakk,7.1,3.9,54.93,2.67
 Baldum,Sinestrea,7.1,3.9,54.93,2.67
 Toro,Wonder Woman,7.1,3.8,53.52,1.91
@@ -3946,6 +3957,7 @@ Wonder Woman,Toro,7.1,3.3,46.48,-1.91
 Grakk,Marja,7.1,3.2,45.07,-2.67
 Sinestrea,Baldum,7.1,3.2,45.07,-2.67
 Grakk,Richter,7.1,2.9,40.85,-4.96
+Tel'Annas,Yena,7.1,2.9,40.85,-4.96
 Cresht,Mganga,7.1,2.7,38.03,-6.49
 Slimz,Iggy,7.1,2.7,38.03,-6.49
 Krizzix,Cresht,7.1,2.5,35.21,-8.02
@@ -3958,7 +3970,7 @@ Kriknak,Wisp,7.0,5.5,78.57,15.38
 Wisp,Tel'Annas,7.0,5.5,78.57,15.38
 Thane,Ata,7.0,5.5,78.57,15.38
 Qi,Zip,7.0,5.3,75.71,13.85
-Dyadia,Dolia,7.0,5.0,71.43,11.54
+Astrid,Mganga,7.0,5.0,71.43,11.54
 Iggy,Dyadia,7.0,5.0,71.43,11.54
 Heino,Florentino,7.0,5.0,71.43,11.54
 Krizzix,Natalya,7.0,5.0,71.43,11.54
@@ -3980,12 +3992,12 @@ Heino,Mina,7.0,4.5,64.29,7.69
 Murad,Heino,7.0,4.5,64.29,7.69
 Bolt Baron,Mina,7.0,4.5,64.29,7.69
 Tel'Annas,Mganga,7.0,4.5,64.29,7.69
+Mganga,Ata,7.0,4.5,64.29,7.69
 Tel'Annas,Richter,7.0,4.2,60.0,5.38
 Eland'orr,Dyadia,7.0,4.0,57.14,3.85
 Tamyn,Richter,7.0,4.0,57.14,3.85
 Gildur,Flowborn (Marksman),7.0,4.0,57.14,3.85
 Airi,Heino,7.0,4.0,57.14,3.85
-Wiro,Butterfly,7.0,4.0,57.14,3.85
 D'Arcy,Butterfly,7.0,4.0,57.14,3.85
 D'Arcy,Ryoma,7.0,4.0,57.14,3.85
 Astrid,Omen,7.0,4.0,57.14,3.85
@@ -3997,6 +4009,7 @@ Sinestrea,Max,7.0,4.0,57.14,3.85
 Mganga,Heino,7.0,4.0,57.14,3.85
 Zip,Marja,7.0,4.0,57.14,3.85
 Flowborn (Marksman),Baldum,7.0,4.0,57.14,3.85
+Zata,Dyadia,7.0,4.0,57.14,3.85
 Fennik,Volkath,7.0,4.0,57.14,3.85
 Ata,Zephys,7.0,4.0,57.14,3.85
 Edras,Elsu,7.0,4.0,57.14,3.85
@@ -4004,14 +4017,11 @@ Moren,Edras,7.0,4.0,57.14,3.85
 Moren,Volkath,7.0,4.0,57.14,3.85
 Moren,Ryoma,7.0,4.0,57.14,3.85
 Yue,Gildur,7.0,4.0,57.14,3.85
-Dyadia,Murad,7.0,4.0,57.14,3.85
 Rouie,Omega,7.0,3.9,55.71,3.08
 Skud,Omega,7.0,3.9,55.71,3.08
 Richter,Baldum,7.0,3.6,51.43,0.77
 Zip,Capheny,7.0,3.5,50.0,0.0
 Capheny,Zip,7.0,3.5,50.0,0.0
-Wisp,Ata,7.0,3.5,50.0,0.0
-Ata,Wisp,7.0,3.5,50.0,0.0
 Baldum,Richter,7.0,3.4,48.57,-0.77
 Omega,Rouie,7.0,3.1,44.29,-3.08
 Omega,Skud,7.0,3.1,44.29,-3.08
@@ -4019,7 +4029,6 @@ Dyadia,Eland'orr,7.0,3.0,42.86,-3.85
 Richter,Tamyn,7.0,3.0,42.86,-3.85
 Flowborn (Marksman),Gildur,7.0,3.0,42.86,-3.85
 Heino,Airi,7.0,3.0,42.86,-3.85
-Butterfly,Wiro,7.0,3.0,42.86,-3.85
 Butterfly,D'Arcy,7.0,3.0,42.86,-3.85
 Ryoma,D'Arcy,7.0,3.0,42.86,-3.85
 Omen,Astrid,7.0,3.0,42.86,-3.85
@@ -4031,6 +4040,7 @@ Max,Sinestrea,7.0,3.0,42.86,-3.85
 Heino,Mganga,7.0,3.0,42.86,-3.85
 Marja,Zip,7.0,3.0,42.86,-3.85
 Baldum,Flowborn (Marksman),7.0,3.0,42.86,-3.85
+Dyadia,Zata,7.0,3.0,42.86,-3.85
 Volkath,Fennik,7.0,3.0,42.86,-3.85
 Zephys,Ata,7.0,3.0,42.86,-3.85
 Elsu,Edras,7.0,3.0,42.86,-3.85
@@ -4038,13 +4048,13 @@ Edras,Moren,7.0,3.0,42.86,-3.85
 Volkath,Moren,7.0,3.0,42.86,-3.85
 Ryoma,Moren,7.0,3.0,42.86,-3.85
 Gildur,Yue,7.0,3.0,42.86,-3.85
-Murad,Dyadia,7.0,3.0,42.86,-3.85
 Richter,Tel'Annas,7.0,2.8,40.0,-5.38
 Mina,Heino,7.0,2.5,35.71,-7.69
 Heino,Murad,7.0,2.5,35.71,-7.69
 Mina,Bolt Baron,7.0,2.5,35.71,-7.69
 Mganga,Tel'Annas,7.0,2.5,35.71,-7.69
-Dolia,Dyadia,7.0,2.0,28.57,-11.54
+Ata,Mganga,7.0,2.5,35.71,-7.69
+Mganga,Astrid,7.0,2.0,28.57,-11.54
 Dyadia,Iggy,7.0,2.0,28.57,-11.54
 Florentino,Heino,7.0,2.0,28.57,-11.54
 Natalya,Krizzix,7.0,2.0,28.57,-11.54
@@ -4161,7 +4171,7 @@ Natalya,Aya,6.5,3.5,53.85,2.0
 Heino,Iggy,6.5,3.5,53.85,2.0
 Errol,Billow,6.5,3.5,53.85,2.0
 Roxie,Liliana,6.5,3.5,53.85,2.0
-Maloch,Zip,6.5,3.5,53.85,2.0
+Ata,Biron,6.5,3.5,53.85,2.0
 Teeri,Valhein,6.5,3.3,50.77,0.4
 Valhein,Teeri,6.5,3.2,49.23,-0.4
 Gildur,Ignis,6.5,3.0,46.15,-2.0
@@ -4172,7 +4182,7 @@ Aya,Natalya,6.5,3.0,46.15,-2.0
 Iggy,Heino,6.5,3.0,46.15,-2.0
 Billow,Errol,6.5,3.0,46.15,-2.0
 Liliana,Roxie,6.5,3.0,46.15,-2.0
-Zip,Maloch,6.5,3.0,46.15,-2.0
+Biron,Ata,6.5,3.0,46.15,-2.0
 Florentino,Wonder Woman,6.5,2.8,43.08,-3.6
 Baldum,Thane,6.5,2.6,40.0,-5.2
 Enzo,Butterfly,6.5,2.5,38.46,-6.0
@@ -4263,11 +4273,9 @@ Sephera,Stuart,6.1,3.5,57.38,3.72
 Ming,Murad,6.1,3.5,57.38,3.72
 Rouie,Arduin,6.1,3.4,55.74,2.89
 Kriknak,Liliana,6.1,3.3,54.1,2.07
-Yena,Tel'Annas,6.1,3.2,52.46,1.24
 Iggy,Tel'Annas,6.1,3.2,52.46,1.24
 Yan,Ryoma,6.1,3.1,50.82,0.41
 Ryoma,Yan,6.1,3.0,49.18,-0.41
-Tel'Annas,Yena,6.1,2.9,47.54,-1.24
 Tel'Annas,Iggy,6.1,2.9,47.54,-1.24
 Liliana,Kriknak,6.1,2.8,45.9,-2.07
 Arduin,Rouie,6.1,2.7,44.26,-2.89
@@ -4291,14 +4299,12 @@ Yena,Lu Bu,6.0,4.5,75.0,12.5
 Y'bneth,Charlotte,6.0,4.5,75.0,12.5
 Thane,Azzen'Ka,6.0,4.5,75.0,12.5
 Marja,Omega,6.0,4.5,75.0,12.5
-Mganga,Ata,6.0,4.5,75.0,12.5
 Ata,Skud,6.0,4.5,75.0,12.5
 Goverra,Airi,6.0,4.5,75.0,12.5
 Dyadia,Qi,6.0,4.0,66.67,8.33
 Dyadia,TeeMee,6.0,4.0,66.67,8.33
 Wiro,Baldum,6.0,4.0,66.67,8.33
 Wisp,Azzen'Ka,6.0,4.0,66.67,8.33
-Astrid,Mganga,6.0,4.0,66.67,8.33
 Chaugnar,Maloch,6.0,4.0,66.67,8.33
 Elsu,Gildur,6.0,4.0,66.67,8.33
 Krizzix,Airi,6.0,4.0,66.67,8.33
@@ -4307,7 +4313,6 @@ Taara,Natalya,6.0,4.0,66.67,8.33
 Ming,Wisp,6.0,4.0,66.67,8.33
 Bolt Baron,Zuka,6.0,4.0,66.67,8.33
 Dyadia,Liliana,6.0,4.0,66.67,8.33
-Zata,Dyadia,6.0,4.0,66.67,8.33
 Skud,Roxie,6.0,4.0,66.67,8.33
 Mina,Moren,6.0,4.0,66.67,8.33
 Moren,Keera,6.0,4.0,66.67,8.33
@@ -4318,6 +4323,7 @@ Wisp,Dyadia,6.0,4.0,66.67,8.33
 Wisp,D'Arcy,6.0,4.0,66.67,8.33
 Taara,Yan,6.0,3.9,65.0,7.5
 TeeMee,Erin,6.0,3.7,61.67,5.83
+Zip,Lorion,6.0,3.5,58.33,4.17
 Yue,Kahlii,6.0,3.5,58.33,4.17
 Alice,Mganga,6.0,3.5,58.33,4.17
 Wiro,Aoi,6.0,3.5,58.33,4.17
@@ -4356,6 +4362,7 @@ Azzen'Ka,Ryoma,6.0,3.0,50.0,0.0
 Ryoma,Azzen'Ka,6.0,3.0,50.0,0.0
 Tulen,Murad,6.0,2.7,45.0,-2.5
 Yan,Maloch,6.0,2.6,43.33,-3.33
+Lorion,Zip,6.0,2.5,41.67,-4.17
 Kahlii,Yue,6.0,2.5,41.67,-4.17
 Mganga,Alice,6.0,2.5,41.67,-4.17
 Aoi,Wiro,6.0,2.5,41.67,-4.17
@@ -4370,7 +4377,6 @@ Qi,Dyadia,6.0,2.0,33.33,-8.33
 TeeMee,Dyadia,6.0,2.0,33.33,-8.33
 Baldum,Wiro,6.0,2.0,33.33,-8.33
 Azzen'Ka,Wisp,6.0,2.0,33.33,-8.33
-Mganga,Astrid,6.0,2.0,33.33,-8.33
 Maloch,Chaugnar,6.0,2.0,33.33,-8.33
 Gildur,Elsu,6.0,2.0,33.33,-8.33
 Airi,Krizzix,6.0,2.0,33.33,-8.33
@@ -4379,7 +4385,6 @@ Natalya,Taara,6.0,2.0,33.33,-8.33
 Wisp,Ming,6.0,2.0,33.33,-8.33
 Zuka,Bolt Baron,6.0,2.0,33.33,-8.33
 Liliana,Dyadia,6.0,2.0,33.33,-8.33
-Dyadia,Zata,6.0,2.0,33.33,-8.33
 Roxie,Skud,6.0,2.0,33.33,-8.33
 Moren,Mina,6.0,2.0,33.33,-8.33
 Keera,Moren,6.0,2.0,33.33,-8.33
@@ -4392,7 +4397,6 @@ Lu Bu,Yena,6.0,1.5,25.0,-12.5
 Charlotte,Y'bneth,6.0,1.5,25.0,-12.5
 Azzen'Ka,Thane,6.0,1.5,25.0,-12.5
 Omega,Marja,6.0,1.5,25.0,-12.5
-Ata,Mganga,6.0,1.5,25.0,-12.5
 Skud,Ata,6.0,1.5,25.0,-12.5
 Airi,Goverra,6.0,1.5,25.0,-12.5
 Ryoma,Xeniel,6.0,1.4,23.33,-13.33
@@ -4408,6 +4412,7 @@ D'Arcy,Thane,6.0,1.0,16.67,-16.67
 Mganga,Tamyn,6.0,0.0,0.0,-25.0
 Chaugnar,Airi,6.0,0.0,0.0,-25.0
 Yue,Yan,5.9,4.9,83.05,16.39
+Baldum,Toro,5.9,4.2,71.19,10.5
 Fennik,Wonder Woman,5.9,4.1,69.49,9.66
 Skud,Grakk,5.9,3.7,62.71,6.3
 Arduin,Zuka,5.9,3.5,59.32,4.62
@@ -4422,6 +4427,7 @@ Krixi,Rouie,5.9,2.5,42.37,-3.78
 Zuka,Arduin,5.9,2.4,40.68,-4.62
 Grakk,Skud,5.9,2.2,37.29,-6.3
 Wonder Woman,Fennik,5.9,1.8,30.51,-9.66
+Toro,Baldum,5.9,1.7,28.81,-10.5
 Yan,Yue,5.9,1.0,16.95,-16.39
 Thane,Grakk,5.8,4.6,79.31,14.41
 Iggy,Charlotte,5.8,4.2,72.41,11.02
@@ -4477,11 +4483,13 @@ Elsu,Krizzix,5.6,4.6,82.14,15.52
 Stuart,Krixi,5.6,3.8,67.86,8.62
 Iggy,Zanis,5.6,3.8,67.86,8.62
 Tel'Annas,Ignis,5.6,3.4,60.71,5.17
+Zip,Yena,5.6,3.2,57.14,3.45
 Grakk,Dolia,5.6,3.2,57.14,3.45
 Zuka,Aya,5.6,3.1,55.36,2.59
 Yena,Erin,5.6,2.8,50.0,0.0
 Erin,Yena,5.6,2.8,50.0,0.0
 Aya,Zuka,5.6,2.5,44.64,-2.59
+Yena,Zip,5.6,2.4,42.86,-3.45
 Dolia,Grakk,5.6,2.4,42.86,-3.45
 Ignis,Tel'Annas,5.6,2.2,39.29,-5.17
 Krixi,Stuart,5.6,1.8,32.14,-8.62
@@ -4504,7 +4512,7 @@ Mina,Preyta,5.5,3.0,54.55,2.17
 Heino,Elsu,5.5,3.0,54.55,2.17
 Florentino,Goverra,5.5,3.0,54.55,2.17
 Yan,Tachi,5.5,3.0,54.55,2.17
-Biron,Ata,5.5,3.0,54.55,2.17
+Airi,Tel'Annas,5.5,3.0,54.55,2.17
 Elsu,Ata,5.5,3.0,54.55,2.17
 Dolia,Yan,5.5,2.9,52.73,1.3
 Yan,Dolia,5.5,2.6,47.27,-1.3
@@ -4513,7 +4521,7 @@ Preyta,Mina,5.5,2.5,45.45,-2.17
 Elsu,Heino,5.5,2.5,45.45,-2.17
 Goverra,Florentino,5.5,2.5,45.45,-2.17
 Tachi,Yan,5.5,2.5,45.45,-2.17
-Ata,Biron,5.5,2.5,45.45,-2.17
+Tel'Annas,Airi,5.5,2.5,45.45,-2.17
 Ata,Elsu,5.5,2.5,45.45,-2.17
 Mina,Gildur,5.5,2.0,36.36,-6.52
 Grakk,Tachi,5.5,2.0,36.36,-6.52
@@ -4614,6 +4622,7 @@ Zuka,Moren,5.0,5.0,100.0,22.73
 Alice,Omen,5.0,4.5,90.0,18.18
 Alice,Gildur,5.0,4.0,80.0,13.64
 Keera,Flowborn (Marksman),5.0,4.0,80.0,13.64
+Baldum,Edras,5.0,4.0,80.0,13.64
 Y'bneth,Rourke,5.0,4.0,80.0,13.64
 Errol,Wisp,5.0,4.0,80.0,13.64
 Rourke,Marja,5.0,4.0,80.0,13.64
@@ -4631,7 +4640,6 @@ Azzen'Ka,Hayate,5.0,3.5,70.0,9.09
 Bolt Baron,Wiro,5.0,3.5,70.0,9.09
 Xeniel,Enzo,5.0,3.5,70.0,9.09
 Annette,Arduin,5.0,3.5,70.0,9.09
-Zip,Lorion,5.0,3.5,70.0,9.09
 Ryoma,Heino,5.0,3.5,70.0,9.09
 Violet,Ming,5.0,3.5,70.0,9.09
 Yue,Alice,5.0,3.5,70.0,9.09
@@ -4723,7 +4731,6 @@ Hayate,Azzen'Ka,5.0,1.5,30.0,-9.09
 Wiro,Bolt Baron,5.0,1.5,30.0,-9.09
 Enzo,Xeniel,5.0,1.5,30.0,-9.09
 Arduin,Annette,5.0,1.5,30.0,-9.09
-Lorion,Zip,5.0,1.5,30.0,-9.09
 Heino,Ryoma,5.0,1.5,30.0,-9.09
 Ming,Violet,5.0,1.5,30.0,-9.09
 Alice,Yue,5.0,1.5,30.0,-9.09
@@ -4731,6 +4738,7 @@ Xeniel,Valhein,5.0,1.4,28.0,-10.0
 Krizzix,Wonder Woman,5.0,1.3,26.0,-10.91
 Gildur,Alice,5.0,1.0,20.0,-13.64
 Flowborn (Marksman),Keera,5.0,1.0,20.0,-13.64
+Edras,Baldum,5.0,1.0,20.0,-13.64
 Rourke,Y'bneth,5.0,1.0,20.0,-13.64
 Wisp,Errol,5.0,1.0,20.0,-13.64
 Marja,Rourke,5.0,1.0,20.0,-13.64
@@ -4751,7 +4759,6 @@ TeeMee,Lu Bu,4.9,3.4,69.39,8.72
 Omen,Slimz,4.9,3.4,69.39,8.72
 Skud,Tel'Annas,4.9,3.4,69.39,8.72
 Diao Chan,Liliana,4.9,3.3,67.35,7.8
-Baldum,Toro,4.9,3.2,65.31,6.88
 Grakk,Raz,4.9,3.0,61.22,5.05
 Krizzix,Raz,4.9,3.0,61.22,5.05
 Helen,Toro,4.9,3.0,61.22,5.05
@@ -4768,7 +4775,6 @@ Toro,Tel'Annas,4.9,2.0,40.82,-4.13
 Raz,Grakk,4.9,1.9,38.78,-5.05
 Raz,Krizzix,4.9,1.9,38.78,-5.05
 Toro,Helen,4.9,1.9,38.78,-5.05
-Toro,Baldum,4.9,1.7,34.69,-6.88
 Liliana,Diao Chan,4.9,1.6,32.65,-7.8
 Lu Bu,TeeMee,4.9,1.5,30.61,-8.72
 Slimz,Omen,4.9,1.5,30.61,-8.72
@@ -4833,7 +4839,6 @@ Arthur,Toro,4.7,0.2,4.26,-20.09
 Mina,Chaugnar,4.7,0.2,4.26,-20.09
 Chaugnar,Fennik,4.6,4.4,95.65,19.81
 Richter,Kriknak,4.6,4.0,86.96,16.04
-Zip,Yena,4.6,3.2,69.57,8.49
 Charlotte,Yena,4.6,3.0,65.22,6.6
 Richter,Ming,4.6,2.7,58.7,3.77
 Charlotte,Thane,4.6,2.7,58.7,3.77
@@ -4846,7 +4851,6 @@ Omen,Zuka,4.6,2.0,43.48,-2.83
 Ming,Richter,4.6,1.9,41.3,-3.77
 Thane,Charlotte,4.6,1.9,41.3,-3.77
 Yena,Charlotte,4.6,1.6,34.78,-6.6
-Yena,Zip,4.6,1.4,30.43,-8.49
 Kriknak,Richter,4.6,0.6,13.04,-16.04
 Fennik,Chaugnar,4.6,0.2,4.35,-19.81
 Arduin,Gildur,4.5,4.5,100.0,21.43
@@ -4887,7 +4891,6 @@ Wisp,Thorne,4.5,2.5,55.56,2.38
 Yan,Bolt Baron,4.5,2.5,55.56,2.38
 Bolt Baron,Heino,4.5,2.5,55.56,2.38
 Tulen,Wisp,4.5,2.5,55.56,2.38
-Tel'Annas,Airi,4.5,2.5,55.56,2.38
 Billow,Azzen'Ka,4.5,2.5,55.56,2.38
 Dolia,Zip,4.5,2.5,55.56,2.38
 Roxie,Ignis,4.5,2.5,55.56,2.38
@@ -4903,7 +4906,6 @@ Thorne,Wisp,4.5,2.0,44.44,-2.38
 Bolt Baron,Yan,4.5,2.0,44.44,-2.38
 Heino,Bolt Baron,4.5,2.0,44.44,-2.38
 Wisp,Tulen,4.5,2.0,44.44,-2.38
-Airi,Tel'Annas,4.5,2.0,44.44,-2.38
 Azzen'Ka,Billow,4.5,2.0,44.44,-2.38
 Zip,Dolia,4.5,2.0,44.44,-2.38
 Ignis,Roxie,4.5,2.0,44.44,-2.38
@@ -5068,7 +5070,6 @@ D'Arcy,Alice,4.0,3.0,75.0,10.0
 D'Arcy,Valhein,4.0,3.0,75.0,10.0
 Azzen'Ka,Wiro,4.0,3.0,75.0,10.0
 Alice,Goverra,4.0,3.0,75.0,10.0
-Baldum,Edras,4.0,3.0,75.0,10.0
 D'Arcy,Marja,4.0,3.0,75.0,10.0
 Annette,D'Arcy,4.0,3.0,75.0,10.0
 Tamyn,Krizzix,4.0,3.0,75.0,10.0
@@ -5092,6 +5093,7 @@ Azzen'Ka,Capheny,4.0,3.0,75.0,10.0
 Dyadia,Keera,4.0,3.0,75.0,10.0
 Chaugnar,TeeMee,4.0,3.0,75.0,10.0
 Tamyn,Omen,4.0,3.0,75.0,10.0
+Zuka,Dyadia,4.0,3.0,75.0,10.0
 Krizzix,Edras,4.0,3.0,75.0,10.0
 Preyta,Astrid,4.0,3.0,75.0,10.0
 Volkath,Goverra,4.0,3.0,75.0,10.0
@@ -5122,6 +5124,8 @@ Astrid,Gildur,4.0,2.0,50.0,0.0
 Gildur,Astrid,4.0,2.0,50.0,0.0
 D'Arcy,Tachi,4.0,2.0,50.0,0.0
 Tachi,D'Arcy,4.0,2.0,50.0,0.0
+Butterfly,Edras,4.0,2.0,50.0,0.0
+Edras,Butterfly,4.0,2.0,50.0,0.0
 Heino,Kahlii,4.0,2.0,50.0,0.0
 Kahlii,Heino,4.0,2.0,50.0,0.0
 Ming,Lorion,4.0,2.0,50.0,0.0
@@ -5138,6 +5142,8 @@ Alice,Zuka,4.0,2.0,50.0,0.0
 Zuka,Alice,4.0,2.0,50.0,0.0
 Aya,Flowborn (Marksman),4.0,2.0,50.0,0.0
 Flowborn (Marksman),Aya,4.0,2.0,50.0,0.0
+Y'bneth,Dyadia,4.0,2.0,50.0,0.0
+Dyadia,Y'bneth,4.0,2.0,50.0,0.0
 Sinestrea,Dyadia,4.0,2.0,50.0,0.0
 Dyadia,Sinestrea,4.0,2.0,50.0,0.0
 Ormarr,Lorion,4.0,2.0,50.0,0.0
@@ -5193,7 +5199,6 @@ Alice,D'Arcy,4.0,1.0,25.0,-10.0
 Valhein,D'Arcy,4.0,1.0,25.0,-10.0
 Wiro,Azzen'Ka,4.0,1.0,25.0,-10.0
 Goverra,Alice,4.0,1.0,25.0,-10.0
-Edras,Baldum,4.0,1.0,25.0,-10.0
 Marja,D'Arcy,4.0,1.0,25.0,-10.0
 D'Arcy,Annette,4.0,1.0,25.0,-10.0
 Krizzix,Tamyn,4.0,1.0,25.0,-10.0
@@ -5217,6 +5222,7 @@ Capheny,Azzen'Ka,4.0,1.0,25.0,-10.0
 Keera,Dyadia,4.0,1.0,25.0,-10.0
 TeeMee,Chaugnar,4.0,1.0,25.0,-10.0
 Omen,Tamyn,4.0,1.0,25.0,-10.0
+Dyadia,Zuka,4.0,1.0,25.0,-10.0
 Edras,Krizzix,4.0,1.0,25.0,-10.0
 Astrid,Preyta,4.0,1.0,25.0,-10.0
 Goverra,Volkath,4.0,1.0,25.0,-10.0
@@ -5295,6 +5301,7 @@ TeeMee,Grakk,3.7,3.2,86.49,13.92
 Roxie,Nakroth,3.7,3.0,81.08,11.86
 Tachi,Omega,3.7,3.0,81.08,11.86
 Tachi,Tel'Annas,3.7,3.0,81.08,11.86
+Lorion,Tel'Annas,3.7,3.0,81.08,11.86
 Zip,Ignis,3.7,2.7,72.97,8.76
 Aoi,Krixi,3.7,2.7,72.97,8.76
 Helen,Taara,3.7,2.7,72.97,8.76
@@ -5322,6 +5329,7 @@ Taara,Helen,3.7,1.0,27.03,-8.76
 Nakroth,Roxie,3.7,0.7,18.92,-11.86
 Omega,Tachi,3.7,0.7,18.92,-11.86
 Tel'Annas,Tachi,3.7,0.7,18.92,-11.86
+Tel'Annas,Lorion,3.7,0.7,18.92,-11.86
 Grakk,TeeMee,3.7,0.5,13.51,-13.92
 Chaugnar,Keera,3.6,3.4,94.44,16.67
 Richter,Diao Chan,3.6,3.0,83.33,12.5
@@ -5611,7 +5619,6 @@ Mina,Zanis,3.0,3.0,100.0,16.67
 Krizzix,Gildur,3.0,3.0,100.0,16.67
 Moren,Errol,3.0,3.0,100.0,16.67
 Mina,Butterfly,3.0,3.0,100.0,16.67
-Zuka,Dyadia,3.0,3.0,100.0,16.67
 Tamyn,Nakroth,3.0,3.0,100.0,16.67
 Preyta,Stuart,3.0,3.0,100.0,16.67
 Rouie,Laville,3.0,3.0,100.0,16.67
@@ -5634,6 +5641,7 @@ Teeri,Florentino,3.0,2.4,80.0,10.0
 Maloch,Kahlii,3.0,2.0,66.67,5.56
 Tamyn,Gildur,3.0,2.0,66.67,5.56
 Alice,Dyadia,3.0,2.0,66.67,5.56
+Tamyn,Aoi,3.0,2.0,66.67,5.56
 Tamyn,Keera,3.0,2.0,66.67,5.56
 Sinestrea,Chaugnar,3.0,2.0,66.67,5.56
 Butterfly,Aya,3.0,2.0,66.67,5.56
@@ -5646,7 +5654,6 @@ Alice,Wonder Woman,3.0,2.0,66.67,5.56
 Flowborn (Marksman),Wonder Woman,3.0,2.0,66.67,5.56
 Stuart,D'Arcy,3.0,2.0,66.67,5.56
 Bolt Baron,Flowborn (Marksman),3.0,2.0,66.67,5.56
-Edras,Butterfly,3.0,2.0,66.67,5.56
 Butterfly,Omen,3.0,2.0,66.67,5.56
 Butterfly,Skud,3.0,2.0,66.67,5.56
 Butterfly,Ignis,3.0,2.0,66.67,5.56
@@ -5660,7 +5667,6 @@ Kahlii,Flowborn (Marksman),3.0,2.0,66.67,5.56
 Tamyn,Tachi,3.0,2.0,66.67,5.56
 Flowborn (Marksman),Yan,3.0,2.0,66.67,5.56
 Aya,Volkath,3.0,2.0,66.67,5.56
-Y'bneth,Dyadia,3.0,2.0,66.67,5.56
 Jinnar,Capheny,3.0,2.0,66.67,5.56
 Jinnar,Alice,3.0,2.0,66.67,5.56
 Kahlii,Eland'orr,3.0,2.0,66.67,5.56
@@ -5693,6 +5699,7 @@ Xeniel,Zata,3.0,2.0,66.67,5.56
 Goverra,Edras,3.0,2.0,66.67,5.56
 Volkath,Edras,3.0,2.0,66.67,5.56
 Mganga,Dyadia,3.0,2.0,66.67,5.56
+Richter,Dyadia,3.0,2.0,66.67,5.56
 Chaugnar,Yue,3.0,2.0,66.67,5.56
 Stuart,Butterfly,3.0,2.0,66.67,5.56
 Edras,Yan,3.0,2.0,66.67,5.56
@@ -5721,6 +5728,7 @@ Tamyn,Florentino,3.0,2.0,66.67,5.56
 Astrid,Ata,3.0,2.0,66.67,5.56
 Airi,Dyadia,3.0,2.0,66.67,5.56
 Azzen'Ka,Y'bneth,3.0,2.0,66.67,5.56
+Aoi,Edras,3.0,2.0,66.67,5.56
 Rourke,Annette,3.0,2.0,66.67,5.56
 Maloch,Evita,3.0,2.0,66.67,5.56
 Stuart,Evita,3.0,2.0,66.67,5.56
@@ -5779,6 +5787,7 @@ Fennik,Diao Chan,3.0,1.1,36.67,-4.44
 Kahlii,Maloch,3.0,1.0,33.33,-5.56
 Gildur,Tamyn,3.0,1.0,33.33,-5.56
 Dyadia,Alice,3.0,1.0,33.33,-5.56
+Aoi,Tamyn,3.0,1.0,33.33,-5.56
 Keera,Tamyn,3.0,1.0,33.33,-5.56
 Chaugnar,Sinestrea,3.0,1.0,33.33,-5.56
 Aya,Butterfly,3.0,1.0,33.33,-5.56
@@ -5791,7 +5800,6 @@ Wonder Woman,Alice,3.0,1.0,33.33,-5.56
 Wonder Woman,Flowborn (Marksman),3.0,1.0,33.33,-5.56
 D'Arcy,Stuart,3.0,1.0,33.33,-5.56
 Flowborn (Marksman),Bolt Baron,3.0,1.0,33.33,-5.56
-Butterfly,Edras,3.0,1.0,33.33,-5.56
 Omen,Butterfly,3.0,1.0,33.33,-5.56
 Skud,Butterfly,3.0,1.0,33.33,-5.56
 Ignis,Butterfly,3.0,1.0,33.33,-5.56
@@ -5805,7 +5813,6 @@ Flowborn (Marksman),Kahlii,3.0,1.0,33.33,-5.56
 Tachi,Tamyn,3.0,1.0,33.33,-5.56
 Yan,Flowborn (Marksman),3.0,1.0,33.33,-5.56
 Volkath,Aya,3.0,1.0,33.33,-5.56
-Dyadia,Y'bneth,3.0,1.0,33.33,-5.56
 Capheny,Jinnar,3.0,1.0,33.33,-5.56
 Alice,Jinnar,3.0,1.0,33.33,-5.56
 Eland'orr,Kahlii,3.0,1.0,33.33,-5.56
@@ -5838,6 +5845,7 @@ Zata,Xeniel,3.0,1.0,33.33,-5.56
 Edras,Goverra,3.0,1.0,33.33,-5.56
 Edras,Volkath,3.0,1.0,33.33,-5.56
 Dyadia,Mganga,3.0,1.0,33.33,-5.56
+Dyadia,Richter,3.0,1.0,33.33,-5.56
 Yue,Chaugnar,3.0,1.0,33.33,-5.56
 Butterfly,Stuart,3.0,1.0,33.33,-5.56
 Yan,Edras,3.0,1.0,33.33,-5.56
@@ -5866,6 +5874,7 @@ Florentino,Tamyn,3.0,1.0,33.33,-5.56
 Ata,Astrid,3.0,1.0,33.33,-5.56
 Dyadia,Airi,3.0,1.0,33.33,-5.56
 Y'bneth,Azzen'Ka,3.0,1.0,33.33,-5.56
+Edras,Aoi,3.0,1.0,33.33,-5.56
 Annette,Rourke,3.0,1.0,33.33,-5.56
 Evita,Maloch,3.0,1.0,33.33,-5.56
 Evita,Stuart,3.0,1.0,33.33,-5.56
@@ -5899,7 +5908,6 @@ Zanis,Mina,3.0,0.0,0.0,-16.67
 Gildur,Krizzix,3.0,0.0,0.0,-16.67
 Errol,Moren,3.0,0.0,0.0,-16.67
 Butterfly,Mina,3.0,0.0,0.0,-16.67
-Dyadia,Zuka,3.0,0.0,0.0,-16.67
 Nakroth,Tamyn,3.0,0.0,0.0,-16.67
 Stuart,Preyta,3.0,0.0,0.0,-16.67
 Laville,Rouie,3.0,0.0,0.0,-16.67

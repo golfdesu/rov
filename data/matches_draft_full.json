@@ -255608,5 +255608,417 @@
     ],
     "blue_global_bans": [],
     "red_global_bans": []
+  },
+  {
+    "series_id": "Garena_Challenger_Series_2026_Summer/Playoffs_S1067",
+    "league": "Garena Challenger Series",
+    "year": "2026",
+    "stage": "Summer/Playoffs",
+    "date": "October 31, 2026 - 15:00",
+    "bestof": 7,
+    "game_number": 1,
+    "is_ultimate_battle": false,
+    "length": "25:13",
+    "blue_team": "DCG",
+    "red_team": "ANK",
+    "blue_win": 1,
+    "blue_bans": [
+      "Ryoma",
+      "Lorion",
+      "Aoi",
+      "Zata"
+    ],
+    "red_bans": [
+      "Tamyn",
+      "Rouie",
+      "Mina",
+      "Airi"
+    ],
+    "blue_picks": [
+      "Marja",
+      "Y'bneth",
+      "Violet",
+      "Yue",
+      "Butterfly"
+    ],
+    "red_picks": [
+      "Wiro",
+      "Eland'orr",
+      "Qi",
+      "Edras",
+      "Liliana"
+    ],
+    "blue_global_bans": [],
+    "red_global_bans": []
+  },
+  {
+    "series_id": "Garena_Challenger_Series_2026_Summer/Playoffs_S1067",
+    "league": "Garena Challenger Series",
+    "year": "2026",
+    "stage": "Summer/Playoffs",
+    "date": "October 31, 2026 - 15:00",
+    "bestof": 7,
+    "game_number": 2,
+    "is_ultimate_battle": false,
+    "length": "15:54",
+    "blue_team": "DCG",
+    "red_team": "ANK",
+    "blue_win": 0,
+    "blue_bans": [
+      "Lorion",
+      "Billow",
+      "Mganga",
+      "Mina"
+    ],
+    "red_bans": [
+      "Rouie",
+      "Stuart",
+      "Zata",
+      "Airi"
+    ],
+    "blue_picks": [
+      "Tamyn",
+      "Toro",
+      "Eland'orr",
+      "Edras",
+      "Liliana"
+    ],
+    "red_picks": [
+      "Baldum",
+      "Valhein",
+      "Aoi",
+      "Biron",
+      "Ignis"
+    ],
+    "blue_global_bans": [
+      "Marja",
+      "Y'bneth",
+      "Violet",
+      "Yue",
+      "Butterfly"
+    ],
+    "red_global_bans": [
+      "Wiro",
+      "Eland'orr",
+      "Qi",
+      "Edras",
+      "Liliana"
+    ]
+  },
+  {
+    "series_id": "Garena_Challenger_Series_2026_Summer/Playoffs_S1067",
+    "league": "Garena Challenger Series",
+    "year": "2026",
+    "stage": "Summer/Playoffs",
+    "date": "October 31, 2026 - 15:00",
+    "bestof": 7,
+    "game_number": 3,
+    "is_ultimate_battle": false,
+    "length": "26:09",
+    "blue_team": "ANK",
+    "red_team": "DCG",
+    "blue_win": 0,
+    "blue_bans": [
+      "Thane",
+      "Billow",
+      "Nakroth",
+      "Wiro"
+    ],
+    "red_bans": [
+      "Tamyn",
+      "Violet",
+      "Murad",
+      "Marja"
+    ],
+    "blue_picks": [
+      "Rouie",
+      "Y'bneth",
+      "Tachi",
+      "Tel'Annas",
+      "Richter"
+    ],
+    "red_picks": [
+      "Lorion",
+      "Stuart",
+      "Airi",
+      "Dyadia",
+      "Yena"
+    ],
+    "blue_global_bans": [
+      "Wiro",
+      "Eland'orr",
+      "Qi",
+      "Edras",
+      "Liliana",
+      "Baldum",
+      "Valhein",
+      "Aoi",
+      "Biron",
+      "Ignis"
+    ],
+    "red_global_bans": [
+      "Marja",
+      "Y'bneth",
+      "Violet",
+      "Yue",
+      "Butterfly",
+      "Tamyn",
+      "Toro",
+      "Eland'orr",
+      "Edras",
+      "Liliana"
+    ]
+  },
+  {
+    "series_id": "Garena_Challenger_Series_2026_Summer/Playoffs_S1067",
+    "league": "Garena Challenger Series",
+    "year": "2026",
+    "stage": "Summer/Playoffs",
+    "date": "October 31, 2026 - 15:00",
+    "bestof": 7,
+    "game_number": 4,
+    "is_ultimate_battle": false,
+    "length": "22:03",
+    "blue_team": "DCG",
+    "red_team": "ANK",
+    "blue_win": 0,
+    "blue_bans": [
+      "Tamyn",
+      "Lorion",
+      "Florentino",
+      "Airi"
+    ],
+    "red_bans": [
+      "Evita",
+      "Wiro",
+      "Tachi",
+      "Biron"
+    ],
+    "blue_picks": [
+      "Valhein",
+      "TeeMee",
+      "Rouie",
+      "Sinestrea",
+      "Ryoma"
+    ],
+    "red_picks": [
+      "Stuart",
+      "Thane",
+      "Zata",
+      "Nakroth",
+      "Mina"
+    ],
+    "blue_global_bans": [
+      "Marja",
+      "Y'bneth",
+      "Violet",
+      "Yue",
+      "Butterfly",
+      "Tamyn",
+      "Toro",
+      "Eland'orr",
+      "Edras",
+      "Liliana",
+      "Lorion",
+      "Stuart",
+      "Airi",
+      "Dyadia",
+      "Yena"
+    ],
+    "red_global_bans": [
+      "Wiro",
+      "Eland'orr",
+      "Qi",
+      "Edras",
+      "Liliana",
+      "Baldum",
+      "Valhein",
+      "Aoi",
+      "Biron",
+      "Ignis",
+      "Rouie",
+      "Y'bneth",
+      "Tachi",
+      "Tel'Annas",
+      "Richter"
+    ]
+  },
+  {
+    "series_id": "Garena_Challenger_Series_2026_Summer/Playoffs_S1067",
+    "league": "Garena Challenger Series",
+    "year": "2026",
+    "stage": "Summer/Playoffs",
+    "date": "October 31, 2026 - 15:00",
+    "bestof": 7,
+    "game_number": 5,
+    "is_ultimate_battle": false,
+    "length": "15:19",
+    "blue_team": "DCG",
+    "red_team": "ANK",
+    "blue_win": 0,
+    "blue_bans": [
+      "Tamyn",
+      "Billow",
+      "Violet",
+      "Marja"
+    ],
+    "red_bans": [
+      "Evita",
+      "Thane",
+      "Biron",
+      "Omen"
+    ],
+    "blue_picks": [
+      "Tachi",
+      "Dolia",
+      "Zata",
+      "Zuka",
+      "Murad"
+    ],
+    "red_picks": [
+      "Ryoma",
+      "Annette",
+      "Airi",
+      "Dyadia",
+      "Zephys"
+    ],
+    "blue_global_bans": [
+      "Marja",
+      "Y'bneth",
+      "Violet",
+      "Yue",
+      "Butterfly",
+      "Tamyn",
+      "Toro",
+      "Eland'orr",
+      "Edras",
+      "Liliana",
+      "Lorion",
+      "Stuart",
+      "Airi",
+      "Dyadia",
+      "Yena",
+      "Valhein",
+      "TeeMee",
+      "Rouie",
+      "Sinestrea",
+      "Ryoma"
+    ],
+    "red_global_bans": [
+      "Wiro",
+      "Eland'orr",
+      "Qi",
+      "Edras",
+      "Liliana",
+      "Baldum",
+      "Valhein",
+      "Aoi",
+      "Biron",
+      "Ignis",
+      "Rouie",
+      "Y'bneth",
+      "Tachi",
+      "Tel'Annas",
+      "Richter",
+      "Stuart",
+      "Thane",
+      "Zata",
+      "Nakroth",
+      "Mina"
+    ]
+  },
+  {
+    "series_id": "Garena_Challenger_Series_2026_Summer/Playoffs_S1067",
+    "league": "Garena Challenger Series",
+    "year": "2026",
+    "stage": "Summer/Playoffs",
+    "date": "October 31, 2026 - 15:00",
+    "bestof": 7,
+    "game_number": 6,
+    "is_ultimate_battle": false,
+    "length": "15:56",
+    "blue_team": "DCG",
+    "red_team": "ANK",
+    "blue_win": 0,
+    "blue_bans": [
+      "Tamyn",
+      "Violet",
+      "Florentino",
+      "Marja"
+    ],
+    "red_bans": [
+      "Evita",
+      "Thane",
+      "Zanis",
+      "Nakroth"
+    ],
+    "blue_picks": [
+      "Wisp",
+      "Zip",
+      "Mganga",
+      "Taara",
+      "Biron"
+    ],
+    "red_picks": [
+      "Lorion",
+      "Astrid",
+      "Ata",
+      "Yena",
+      "Maloch"
+    ],
+    "blue_global_bans": [
+      "Marja",
+      "Y'bneth",
+      "Violet",
+      "Yue",
+      "Butterfly",
+      "Tamyn",
+      "Toro",
+      "Eland'orr",
+      "Edras",
+      "Liliana",
+      "Lorion",
+      "Stuart",
+      "Airi",
+      "Dyadia",
+      "Yena",
+      "Valhein",
+      "TeeMee",
+      "Rouie",
+      "Sinestrea",
+      "Ryoma",
+      "Tachi",
+      "Dolia",
+      "Zata",
+      "Zuka",
+      "Murad"
+    ],
+    "red_global_bans": [
+      "Wiro",
+      "Eland'orr",
+      "Qi",
+      "Edras",
+      "Liliana",
+      "Baldum",
+      "Valhein",
+      "Aoi",
+      "Biron",
+      "Ignis",
+      "Rouie",
+      "Y'bneth",
+      "Tachi",
+      "Tel'Annas",
+      "Richter",
+      "Stuart",
+      "Thane",
+      "Zata",
+      "Nakroth",
+      "Mina",
+      "Ryoma",
+      "Annette",
+      "Airi",
+      "Dyadia",
+      "Zephys"
+    ]
   }
 ]

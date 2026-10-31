@@ -366,34 +366,34 @@ def main():
     )
 
     # Enqueue locked-architecture benchmarks for MedianPruner:
-    # 1. Trial #45 (Best & Safest Production: Rank #1 in 50-trial H100 run, val_loss=2.78280, overfit_gap=+0.20282)
+    # 1. Trial #14 (Safest Production: Rank #3 in 50-trial H100 run, val_loss=2.79330, overfit_gap=+0.21611)
     study.enqueue_trial(
         {
             "d_model": args.d_model,
             "nhead": args.nhead,
             "num_layers": args.num_layers,
-            "dropout": 0.2468,
-            "neural_scale": 0.6554,
-            "lr": 0.001187,
-            "weight_decay": 0.001473,
-            "label_smoothing": 0.0363,
-            "win_loss_weight": 0.3358,
-            "batch_size": 512,
+            "dropout": 0.1941,
+            "neural_scale": 1.0746,
+            "lr": 0.001933,
+            "weight_decay": 0.000689,
+            "label_smoothing": 0.0397,
+            "win_loss_weight": 0.2186,
+            "batch_size": 1024,
             "augment_factor": 1,
         }
     )
-    # 2. Strong regularized alternative
+    # 2. Trial #34 (Rank #1 Best Val Loss in 50-trial H100 run, val_loss=2.79091, overfit_gap=+0.23111)
     study.enqueue_trial(
         {
             "d_model": args.d_model,
             "nhead": args.nhead,
             "num_layers": args.num_layers,
-            "dropout": 0.28,
-            "neural_scale": 0.55,
-            "lr": 0.0012,
-            "weight_decay": 0.002,
-            "label_smoothing": 0.03,
-            "win_loss_weight": 0.30,
+            "dropout": 0.2513,
+            "neural_scale": 1.3326,
+            "lr": 0.001211,
+            "weight_decay": 0.001459,
+            "label_smoothing": 0.0395,
+            "win_loss_weight": 0.1266,
             "batch_size": 512,
             "augment_factor": 1,
         }

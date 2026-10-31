@@ -15,12 +15,12 @@ This repository follows Big Tech Machine Learning Engineering standards (modeled
 | Component | Status & Verified Metrics |
 | :--- | :--- |
 | **Hero & Skill Database** | **130 / 130 Heroes** (`data/heroes_130_full.json`, `data/heroes_130_summary.csv`, `data/hero_skills_full.json`) up to **Evita** (Oct 2026), **Tamyn** (Jul 2026), and **Flowborn (Marksman & Mage)**, each with `>= 4` skills, 100% numerical cooldowns/mana arrays, base damage, and AD/AP/HP scaling. |
-| **Pro Match Archive** | **4,311 Complete Pro Games** (`data/matches_draft_full.json`) from RPL, APL, AIC, AOG, and GCS (2024–2026) with Global Ban Pick tracking and **0 unmapped hero names**. |
-| **Curated Training Dataset** | **3,477 Games (2025–2026)** (`data/matches_training.json`). All 812 games from 2024 are strictly excluded to remove legacy meta noise; includes all 20 games from 2026-10-25 with 100% verified true pick order. **True Pick Order coverage = 51.2%** (1,781 / 3,477 games). |
+| **Pro Match Archive** | **4,317 Complete Pro Games** (`data/matches_draft_full.json`) from RPL, APL, AIC, AOG, and GCS (2024–2026) with Global Ban Pick tracking and **0 unmapped hero names**. |
+| **Curated Training Dataset** | **3,483 Games (2025–2026)** (`data/matches_training.json`). All 812 games from 2024 are strictly excluded to remove legacy meta noise; includes all 26 games from the 2026-10 Grand Finals (RPL, AOG, GCS) with 100% verified true pick order. **True Pick Order coverage = 51.3%** (1,787 / 3,483 games). |
 | **Draft Web UI** | React 19 + Vite + Tailwind 4 broadcast-style draft board (`frontend/`), served by FastAPI from `frontend/dist`. 130 / 130 square hero icons (`frontend/public/avatars/`), Thai display names (Arthur -> Mortos, Brunhilda -> Celica, Richter -> Riktor). |
 | **SOTA Architecture** | `RoVDraftGNNTransformer` (`src/train_sota_model.py`): Multi-Relational Hero GNN (`adj_copick`, `adj_synergy`, `adj_counter`, `adj_countered_by`) + Sequence Transformer + Bounded Neural Temperature Gate + Dual Policy & Win-Value Heads. |
 | **H100 Optuna HPO** | Completed 50 Trials on ERAWAN HPC H100 (`best_params/sota_rov_top5_trials.json`, `configs/selected_production_params.json`). |
-| **Champion Performance** | **Val Loss = `2.7990`** (checkpoint) / **`2.7828`** (Trial #45 Best & Safest) \| **Top-1 = `21.69%`–`22.14%`** \| **Top-3 = `45.86%`–`46.41%`** \| **Top-5 = `59.62%`–`60.94%`** \| **Top-10 = `80.61%`–`81.08%`** \| **WinAcc = `52.73%`–`54.50%`** (Out of 130 Heroes, League-Conditioned SOTA trained through Oct 25, 2026). |
+| **Champion Performance** | **Val Loss = `2.8165`** (checkpoint) / **`2.7909`** (Trial #34 Rank #1) / **`2.7933`** (Trial #14 Safest) \| **Top-1 = `21.04%`–`21.68%`** \| **Top-3 = `46.25%`–`46.38%`** \| **Top-5 = `60.21%`–`61.24%`** \| **Top-10 = `80.13%`–`80.93%`** \| **WinAcc = `52.35%`–`54.45%`** (Out of 130 Heroes, Outcome-Weighted & League-Conditioned SOTA trained through Oct 25, 2026). |
 
 ---
 

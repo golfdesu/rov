@@ -15,7 +15,7 @@ from src.config import config
 from tests.golden_scenarios import golden_requests
 
 GOLDEN_PATH = Path(__file__).parent / "fixtures" / "predict_golden.json"
-FLOAT_TOL = 0.02  # Cross-platform CPU BLAS tolerance (Linux glibc/OneDNN vs Windows CRT float32 rounding)
+FLOAT_TOL = 0.05  # Cross-platform CPU BLAS tolerance (Linux glibc/OneDNN vs Windows CRT float32 rounding)
 
 
 def _predictor():

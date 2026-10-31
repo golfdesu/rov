@@ -1137,22 +1137,22 @@ def main():
             print(f"Warning: could not read {best_params_file}: {e}", flush=True)
 
     if args.preset == "h100":
-        # Production locked architecture: d_model=256, nhead=4, num_layers=1 (Trial #45 Best & Safest)
+        # Production locked architecture: d_model=256, nhead=4, num_layers=1 (Trial #14 Safest)
         d_model = args.d_model or tuned.get("d_model", 256)
         nhead = args.nhead or tuned.get("nhead", 4)
         num_layers = args.num_layers or tuned.get("num_layers", 1)
-        dropout = args.dropout if args.dropout is not None else tuned.get("dropout", 0.2468)
-        neural_scale = args.neural_scale if args.neural_scale is not None else tuned.get("neural_scale", 0.6554)
+        dropout = args.dropout if args.dropout is not None else tuned.get("dropout", 0.1941)
+        neural_scale = args.neural_scale if args.neural_scale is not None else tuned.get("neural_scale", 1.0746)
         epochs = args.epochs or 30
-        batch_size = args.batch_size or tuned.get("batch_size", 512)
+        batch_size = args.batch_size or tuned.get("batch_size", 1024)
         augment_factor = args.augment_factor or tuned.get("augment_factor", 1)
-        lr = args.lr or tuned.get("lr", 1.19e-3)
-        weight_decay = args.weight_decay if args.weight_decay is not None else tuned.get("weight_decay", 1.47e-3)
+        lr = args.lr or tuned.get("lr", 1.93e-3)
+        weight_decay = args.weight_decay if args.weight_decay is not None else tuned.get("weight_decay", 6.89e-4)
         label_smoothing = (
-            args.label_smoothing if args.label_smoothing is not None else tuned.get("label_smoothing", 0.0363)
+            args.label_smoothing if args.label_smoothing is not None else tuned.get("label_smoothing", 0.0397)
         )
         win_loss_weight = (
-            args.win_loss_weight if args.win_loss_weight is not None else tuned.get("win_loss_weight", 0.3358)
+            args.win_loss_weight if args.win_loss_weight is not None else tuned.get("win_loss_weight", 0.2186)
         )
     else:
         d_model = args.d_model or tuned.get("d_model", 128)

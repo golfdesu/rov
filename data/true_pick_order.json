@@ -41217,6 +41217,144 @@
       ],
       "source": "screenshot",
       "screenshot": "2026_rpl_winter/playoffs/2026_po_m1113_g6_win_rpl_fs_vs_bru.png"
+    },
+    {
+      "series_id": "Garena_Challenger_Series_2026_Summer/Playoffs_S1067",
+      "game_number": 1,
+      "date": "October 31, 2026 - 15:00",
+      "blue_team": "DCG",
+      "red_team": "ANK",
+      "blue_picks": [
+        "Marja",
+        "Y'bneth",
+        "Violet",
+        "Yue",
+        "Butterfly"
+      ],
+      "red_picks": [
+        "Wiro",
+        "Eland'orr",
+        "Qi",
+        "Edras",
+        "Liliana"
+      ],
+      "source": "screenshot",
+      "screenshot": "2026_gcs_summer/playoffs/2026_po_m4_g1_sum_gcs_dcg_vs_ank.png"
+    },
+    {
+      "series_id": "Garena_Challenger_Series_2026_Summer/Playoffs_S1067",
+      "game_number": 2,
+      "date": "October 31, 2026 - 15:00",
+      "blue_team": "DCG",
+      "red_team": "ANK",
+      "blue_picks": [
+        "Tamyn",
+        "Toro",
+        "Eland'orr",
+        "Edras",
+        "Liliana"
+      ],
+      "red_picks": [
+        "Baldum",
+        "Valhein",
+        "Aoi",
+        "Biron",
+        "Ignis"
+      ],
+      "source": "screenshot",
+      "screenshot": "2026_gcs_summer/playoffs/2026_po_m4_g2_sum_gcs_dcg_vs_ank.png"
+    },
+    {
+      "series_id": "Garena_Challenger_Series_2026_Summer/Playoffs_S1067",
+      "game_number": 3,
+      "date": "October 31, 2026 - 15:00",
+      "blue_team": "ANK",
+      "red_team": "DCG",
+      "blue_picks": [
+        "Rouie",
+        "Y'bneth",
+        "Tachi",
+        "Tel'Annas",
+        "Richter"
+      ],
+      "red_picks": [
+        "Lorion",
+        "Stuart",
+        "Airi",
+        "Dyadia",
+        "Yena"
+      ],
+      "source": "screenshot",
+      "screenshot": "2026_gcs_summer/playoffs/2026_po_m4_g3_sum_gcs_ank_vs_dcg.png"
+    },
+    {
+      "series_id": "Garena_Challenger_Series_2026_Summer/Playoffs_S1067",
+      "game_number": 4,
+      "date": "October 31, 2026 - 15:00",
+      "blue_team": "DCG",
+      "red_team": "ANK",
+      "blue_picks": [
+        "Valhein",
+        "TeeMee",
+        "Rouie",
+        "Sinestrea",
+        "Ryoma"
+      ],
+      "red_picks": [
+        "Stuart",
+        "Thane",
+        "Zata",
+        "Nakroth",
+        "Mina"
+      ],
+      "source": "screenshot",
+      "screenshot": "2026_gcs_summer/playoffs/2026_po_m4_g4_sum_gcs_dcg_vs_ank.png"
+    },
+    {
+      "series_id": "Garena_Challenger_Series_2026_Summer/Playoffs_S1067",
+      "game_number": 5,
+      "date": "October 31, 2026 - 15:00",
+      "blue_team": "DCG",
+      "red_team": "ANK",
+      "blue_picks": [
+        "Tachi",
+        "Dolia",
+        "Zata",
+        "Zuka",
+        "Murad"
+      ],
+      "red_picks": [
+        "Ryoma",
+        "Annette",
+        "Airi",
+        "Dyadia",
+        "Zephys"
+      ],
+      "source": "screenshot",
+      "screenshot": "2026_gcs_summer/playoffs/2026_po_m4_g5_sum_gcs_dcg_vs_ank.png"
+    },
+    {
+      "series_id": "Garena_Challenger_Series_2026_Summer/Playoffs_S1067",
+      "game_number": 6,
+      "date": "October 31, 2026 - 15:00",
+      "blue_team": "DCG",
+      "red_team": "ANK",
+      "blue_picks": [
+        "Wisp",
+        "Zip",
+        "Mganga",
+        "Taara",
+        "Biron"
+      ],
+      "red_picks": [
+        "Lorion",
+        "Astrid",
+        "Ata",
+        "Yena",
+        "Maloch"
+      ],
+      "source": "screenshot",
+      "screenshot": "2026_gcs_summer/playoffs/2026_po_m4_g6_sum_gcs_dcg_vs_ank.png"
     }
   ]
 }

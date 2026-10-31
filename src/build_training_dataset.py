@@ -36,7 +36,7 @@ def parse_args():
     parser.add_argument(
         "--only-true-order",
         action="store_true",
-        help="Only include games with 100% verified chronological pick order from broadcast screenshots",
+        help="Only include games with 100%% verified chronological pick order from broadcast screenshots",
     )
     parser.add_argument(
         "--output",
