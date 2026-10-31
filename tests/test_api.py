@@ -470,3 +470,29 @@ def test_recommendations_counter_and_combo_trigger_reasons():
     counter_recs = [r for r in data["recommendations"] if r.get("trigger_reason") == "counter"]
     assert len(counter_recs) > 0
     assert all("Hayate" in r["triggered_by"] for r in counter_recs)
+
+
+def test_series_winning_heroes_adaptation_boost():
+    base_payload = {
+        "mode": "pick",
+        "side": "blue",
+        "phase": 1,
+        "ally_picks": [],
+        "enemy_picks": [],
+        "ally_bans": ["Rouie", "Billow"],
+        "enemy_bans": ["Dolia", "TeeMee"],
+        "top_k": 10,
+    }
+    r_base = client.post("/predict", json=base_payload)
+    assert r_base.status_code == 200
+    base_recs = r_base.json()["recommendations"]
+    target_hero = base_recs[2]["hero_name"]
+    base_prob = base_recs[2]["probability_pct"]
+
+    r_boost = client.post(
+        "/predict",
+        json={**base_payload, "series_winning_heroes": [target_hero]},
+    )
+    assert r_boost.status_code == 200
+    boost_map = {r["hero_name"]: r["probability_pct"] for r in r_boost.json()["recommendations"]}
+    assert boost_map[target_hero] > base_prob

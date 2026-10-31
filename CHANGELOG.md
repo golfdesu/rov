@@ -27,6 +27,89 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-10-31 12:30 (UTC+7) — Outcome-Weighted Policy Training, In-Series Winner Adaptation & Series Score UI
+**Agent:** Claude Code (`ag/gemini-4-argon-high`)
+
+### ✅ Completed Work
+- **Outcome-Weighted Policy Priors & Advantage-Weighted Policy Imitation (`src/train_sota_model.py`)**:
+  - Weighted pick priors (`pick_counts`, `pick_2026`, `lg_pick_counts`) by match outcome (`1.25x` for winning side picks, `0.75x` for losing side picks) while preserving unbiased `raw_pick_counts` for `hero_base_win_adv` and co-pick denominators.
+  - Weighted policy cross-entropy loss (`pol_weight_arr`) on verified pick turns by `1.25x` for winning picks and `0.75x` for losing picks (`1.67:1` ratio in favor of winning drafts) while keeping `win_weight_arr` unbiased (`1.0`).
+- **Inference-Time Win-Advantage Modulation & In-Series Winner Adaptation (`src/schemas.py`, `src/predictor.py`)**:
+  - Added `series_winning_heroes` to `DraftStateRequest` and `winner` to `RecordedDraftGameSchema`.
+  - Modulated pick policy probabilities in `RoVDraftPredictor.predict()` by predicted win-value advantage (`probs * exp(0.60 * clip(win_probs - 0.5, -0.20, 0.20))`) and added a `1.12x` In-Series Winner Adaptation Boost for heroes that won previous games in the active series.
+- **Frontend Series Winner Recording & Live Series Score (`frontend/`)**:
+  - Added 1-click winner selection (`Team A ชนะ` / `Team B ชนะ` / `ข้าม`) when finishing a game (`จบ G1->G2`), automatically assigning Blue side in the next game to the losing team per pro tournament rules.
+  - Added live series score display (`(aWins-bWins)`) on the top series bar and winner toggle buttons inside `DraftHistoryModal.tsx`.
+  - Automatically extracted `series_winning_heroes` from earlier games in the series and sent them to `/predict`.
+
+### 📁 Modified Files
+- `src/train_sota_model.py`
+- `src/schemas.py`
+- `src/predictor.py`
+- `tests/test_api.py`
+- `tests/fixtures/predict_golden.json`
+- `frontend/src/types/draft.ts`
+- `frontend/src/utils/draft.ts`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/DraftHistoryModal.tsx`
+- `frontend/src/App.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `pytest -v`: All 69 automated tests passed (including `test_series_winning_heroes_adaptation_boost` and 72 golden predictor states).
+- `npm run lint` & `npm run build` in `frontend/`: 0 lint errors, production bundle built cleanly.
+- `ruff check --fix .` & `ruff format .`: 0 lint errors, 100% formatted.
+
+### ⚠️ Open Issues / Important Notes
+- Inference-time outcome weighting and in-series adaptation work immediately on the current checkpoint; running `sbatch run_sota_rov_h100.sbatch` on ERAWAN H100 will also bake the `1.25x / 0.75x` outcome-weighted priors and policy loss into the neural checkpoint weights.
+
+---
+
+## 📅 2026-10-31 12:15 (UTC+7) — Integrate League-Conditioned SOTA Checkpoint, Trial #45 H100 HPO Parameters & Frontend League Meta Selector
+**Agent:** Claude Code (`ag/gemini-4-argon-high`)
+
+### ✅ Completed Work
+- **Integrated League-Conditioned SOTA Checkpoint & 50-Trial H100 HPO Artifacts (`f38deae`)**:
+  - Pulled `models/sota_draft_gnn_transformer.pt`, `best_params/sota_rov_best_params.json`, and `best_params/sota_rov_top5_trials.json` trained on ERAWAN H100 with locked architecture (`d_model=256, num_layers=1, nhead=4`) and performance-adjusted regional league conditioning (`has_league_conditioning=True`).
+  - **Best & Safest Trial (Trial #45, Rank #1)**: Achieved record-low validation loss **`2.78280`** (down from `2.79781`) and narrowed the overfit gap to **`+0.20282`** (down from `+0.26490`), with Top-10 accuracy **`80.61%`**.
+  - **Served Checkpoint (`models/sota_draft_gnn_transformer.pt`)**: Achieved validation loss **`2.79899`** and late-draft win-value accuracy **`54.50%`** (up from `53.07%`).
+- **Synchronized Production Configs & Golden Fixtures**:
+  - Updated `configs/selected_production_params.json`, `src/config.py`, `src/train_sota_model.py`, and `src/hpo_sota_optuna.py` to match Trial #45 (`dropout=0.2468, neural_scale=0.6554, lr=0.001187, weight_decay=0.001473, label_smoothing=0.0363, win_loss_weight=0.3358`).
+  - Regenerated `tests/fixtures/predict_golden.json` (`python -c "from tests.test_predictor_golden import regenerate; regenerate()"`) for the new league-conditioned checkpoint.
+- **Added Regional League Meta Selector (`GLOBAL`, `RPL`, `GCS`, `AOG`, `INTL`) to Frontend UI**:
+  - Added `LeagueCode` type and session persistence in `frontend/src/types/draft.ts` and `frontend/src/hooks/useDraft.ts`.
+  - Updated `buildPredictPayload` in `frontend/src/utils/draft.ts` to send `league` in every `/predict` request and automatically re-fetch recommendations when the active league changes.
+  - Added segmented `META` selector (`GLOBAL | RPL | GCS | AOG | INTL`) on desktop and compact dropdown on mobile/tablet in `frontend/src/components/ScoreBar.tsx` and wired it in `frontend/src/App.tsx`.
+  - Rebuilt `frontend/dist` (`npm run build`) so the live FastAPI server serves the updated UI immediately.
+
+### 📁 Modified Files
+- `models/sota_draft_gnn_transformer.pt`
+- `best_params/sota_rov_best_params.json`
+- `best_params/sota_rov_top5_trials.json`
+- `configs/selected_production_params.json`
+- `src/config.py`
+- `src/train_sota_model.py`
+- `src/hpo_sota_optuna.py`
+- `tests/fixtures/predict_golden.json`
+- `frontend/src/types/draft.ts`
+- `frontend/src/utils/draft.ts`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/ScoreBar.tsx`
+- `frontend/src/App.tsx`
+- `AGENTS.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `pytest -v`: All 68 automated tests passed (including 72 golden predictor states and league conditioning tests).
+- `npm run lint` & `npm run build` in `frontend/`: 0 lint errors, production bundle built cleanly.
+- `ruff check --fix .` & `ruff format .`: 0 lint errors, 100% formatted.
+- `python .agents/skills/hpo-parsimony-selector/scripts/select_parsimonious_params.py`: Verified served checkpoint and production config alignment.
+
+### ⚠️ Open Issues / Important Notes
+- None. Production model and serving pipeline are 100% synchronized with the new league-conditioned SOTA checkpoint.
+
+---
+
 ## 📅 2026-10-31 11:20 (UTC+7) — Lock SOTA Architecture & Add Performance-Adjusted Regional League Conditioning
 **Agent:** Claude Code (`ag/gemini-4-argon-high`)
 

@@ -1,5 +1,7 @@
 export type RoleType = "Warrior" | "Assassin" | "Mage" | "Marksman" | "Support" | "Tank";
 
+export type LeagueCode = "GLOBAL" | "RPL" | "GCS" | "AOG" | "INTL";
+
 export interface Hero {
   id: number;
   name: string;
@@ -80,6 +82,7 @@ export interface RecordedDraftGame {
   bluePicks: string[];
   redPicks: string[];
   blueWinRate: number;
+  winner?: TeamId;
 }
 
 export interface DraftSessionPayload {
@@ -92,6 +95,7 @@ export interface DraftSessionPayload {
   winHistory: (number | null)[];
   blueWinRate: number;
   useLookahead: boolean;
+  league?: LeagueCode;
   globalBans: GlobalBanState;
   seriesGames: RecordedDraftGame[];
   updatedAt: number;

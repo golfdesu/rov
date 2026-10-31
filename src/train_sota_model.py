@@ -226,6 +226,7 @@ def load_sota_data_and_graphs(dataset_path: Path | str | None = None):
     pick_2026 = np.zeros(num_heroes, dtype=np.float32)
     ban_p1_2026 = np.zeros(num_heroes, dtype=np.float32)
     ban_p2_2026 = np.zeros(num_heroes, dtype=np.float32)
+    raw_pick_counts = np.zeros(num_heroes, dtype=np.float32)
     hero_wins_train = np.zeros(num_heroes, dtype=np.float32)
 
     num_leagues = len(LEAGUE_NAMES)
@@ -240,25 +241,29 @@ def load_sota_data_and_graphs(dataset_path: Path | str | None = None):
         lg_mult = LEAGUE_SAMPLE_WEIGHTS[lg_id]
         w = (1.0 if yr >= 2026 else (0.5 if yr == 2025 else 0.2)) * lg_mult
         w_2026 = (1.0 if yr >= 2026 else 0.35) * lg_mult
+        blue_win_mult = 1.25 if bw == 1 else 0.75
+        red_win_mult = 1.25 if bw == 0 else 0.75
         bp = [hero_to_id[h] for h in g["blue_picks"] if h in hero_to_id]
         rp = [hero_to_id[h] for h in g["red_picks"] if h in hero_to_id]
         bb = [hero_to_id[h] for h in g["blue_bans"] if h in hero_to_id]
         rb = [hero_to_id[h] for h in g["red_bans"] if h in hero_to_id]
 
         for h in bp:
-            pick_counts[h] += w
-            lg_pick_counts[lg_id, h] += w_2026
+            raw_pick_counts[h] += w
+            pick_counts[h] += w * blue_win_mult
+            lg_pick_counts[lg_id, h] += w_2026 * blue_win_mult
             if bw == 1:
                 hero_wins_train[h] += w
             if yr >= 2026:
-                pick_2026[h] += lg_mult
+                pick_2026[h] += lg_mult * blue_win_mult
         for h in rp:
-            pick_counts[h] += w
-            lg_pick_counts[lg_id, h] += w_2026
+            raw_pick_counts[h] += w
+            pick_counts[h] += w * red_win_mult
+            lg_pick_counts[lg_id, h] += w_2026 * red_win_mult
             if bw == 0:
                 hero_wins_train[h] += w
             if yr >= 2026:
-                pick_2026[h] += lg_mult
+                pick_2026[h] += lg_mult * red_win_mult
 
         for h in bb[:2] + rb[:2]:
             ban_p1_counts[h] += w
@@ -309,9 +314,9 @@ def load_sota_data_and_graphs(dataset_path: Path | str | None = None):
         for j in range(num_heroes):
             if i == j:
                 continue
-            co_pick_mat[i, j] = math.log1p(syn_g[i, j]) / math.log1p(max(1.0, pick_counts[j]))
-            counter_pick_mat[i, j] = math.log1p(cnt_g[i, j]) / math.log1p(max(1.0, pick_counts[j]))
-            ban_target_mat[i, j] = math.log1p(ban_response_mat[i, j]) / math.log1p(max(1.0, pick_counts[j]))
+            co_pick_mat[i, j] = math.log1p(syn_g[i, j]) / math.log1p(max(1.0, raw_pick_counts[j]))
+            counter_pick_mat[i, j] = math.log1p(cnt_g[i, j]) / math.log1p(max(1.0, raw_pick_counts[j]))
+            ban_target_mat[i, j] = math.log1p(ban_response_mat[i, j]) / math.log1p(max(1.0, raw_pick_counts[j]))
             synergy_mat[i, j] = ((syn_w[i, j] + 3.0) / (syn_g[i, j] + 6.0)) - 0.5
             counter_mat[i, j] = ((cnt_w[i, j] + 3.0) / (cnt_g[i, j] + 6.0)) - 0.5
 
@@ -320,7 +325,7 @@ def load_sota_data_and_graphs(dataset_path: Path | str | None = None):
     adj_counter = row_normalize_adj(np.maximum(counter_mat, 0.0) * np.log1p(cnt_g))
     adj_countered_by = row_normalize_adj(np.maximum(-counter_mat, 0.0) * np.log1p(cnt_g))
 
-    hero_base_win_adv = (((hero_wins_train + 5.0) / (pick_counts + 10.0)) - 0.5).astype(np.float32)
+    hero_base_win_adv = (((hero_wins_train + 5.0) / (raw_pick_counts + 10.0)) - 0.5).astype(np.float32)
 
     global_pick_prob = (pick_2026 + 0.5) / (pick_2026.sum() + 0.5 * num_heroes)
     global_ban1_prob = (ban_p1_2026 + 0.5) / (ban_p1_2026.sum() + 0.5 * num_heroes)
@@ -540,14 +545,16 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
                 win_arr[row_idx] = acting_win
 
                 # Decoupled supervision:
-                # 1. Win-value loss applies to all actions across all games
+                # 1. Win-value loss applies to all actions across all games (unbiased 1.0 outcome balance)
                 win_weight_arr[row_idx] = recency_w
 
-                # 2. Policy loss applies to all bans (chronological on Liquipedia) and verified picks only
+                # 2. Policy loss applies to all bans (chronological on Liquipedia) and verified picks,
+                #    with Advantage-Weighted Policy Imitation (1.25x for winning side picks, 0.75x for losing side picks)
                 if action_type == 0:
                     pol_weight_arr[row_idx] = recency_w
                 elif is_true_order:
-                    pol_weight_arr[row_idx] = recency_w
+                    win_mult = 1.25 if acting_win >= 0.5 else 0.75
+                    pol_weight_arr[row_idx] = recency_w * win_mult
                 else:
                     pol_weight_arr[row_idx] = 0.0
 
@@ -1130,22 +1137,22 @@ def main():
             print(f"Warning: could not read {best_params_file}: {e}", flush=True)
 
     if args.preset == "h100":
-        # Production locked architecture: d_model=256, nhead=4, num_layers=1 (Trial #43 Safest)
+        # Production locked architecture: d_model=256, nhead=4, num_layers=1 (Trial #45 Best & Safest)
         d_model = args.d_model or tuned.get("d_model", 256)
         nhead = args.nhead or tuned.get("nhead", 4)
         num_layers = args.num_layers or tuned.get("num_layers", 1)
-        dropout = args.dropout if args.dropout is not None else tuned.get("dropout", 0.2589)
-        neural_scale = args.neural_scale if args.neural_scale is not None else tuned.get("neural_scale", 0.6032)
+        dropout = args.dropout if args.dropout is not None else tuned.get("dropout", 0.2468)
+        neural_scale = args.neural_scale if args.neural_scale is not None else tuned.get("neural_scale", 0.6554)
         epochs = args.epochs or 30
         batch_size = args.batch_size or tuned.get("batch_size", 512)
         augment_factor = args.augment_factor or tuned.get("augment_factor", 1)
-        lr = args.lr or tuned.get("lr", 1.07e-3)
-        weight_decay = args.weight_decay if args.weight_decay is not None else tuned.get("weight_decay", 6.0e-4)
+        lr = args.lr or tuned.get("lr", 1.19e-3)
+        weight_decay = args.weight_decay if args.weight_decay is not None else tuned.get("weight_decay", 1.47e-3)
         label_smoothing = (
-            args.label_smoothing if args.label_smoothing is not None else tuned.get("label_smoothing", 0.0179)
+            args.label_smoothing if args.label_smoothing is not None else tuned.get("label_smoothing", 0.0363)
         )
         win_loss_weight = (
-            args.win_loss_weight if args.win_loss_weight is not None else tuned.get("win_loss_weight", 0.3375)
+            args.win_loss_weight if args.win_loss_weight is not None else tuned.get("win_loss_weight", 0.3358)
         )
     else:
         d_model = args.d_model or tuned.get("d_model", 128)

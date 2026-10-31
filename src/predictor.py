@@ -754,6 +754,24 @@ class RoVDraftPredictor:
         ally_needed_lanes = self._needed_lanes_for_picks(ally_picks, ap_row)
         enemy_needed_lanes = self._needed_lanes_for_picks(enemy_picks, ep_row)
         target_needed_lanes = ally_needed_lanes if req.mode == "pick" else enemy_needed_lanes
+
+        # Outcome-weighted policy modulation:
+        # 1. Weight pick policy by predicted win-value advantage so outdraft/comfort-trap picks are penalized
+        if req.mode == "pick" and (len(blue_picks) < 5 or len(red_picks) < 5):
+            win_adv = np.clip(win_probs - 0.5, -0.20, 0.20)
+            probs = probs * np.exp(0.60 * win_adv)
+
+        # 2. In-series winner adaptation boost (steal-pick / target-ban heroes that won earlier games in the series)
+        if req.series_winning_heroes:
+            for h_win in self.resolve_heroes(req.series_winning_heroes):
+                h_id = self.hero_to_id[h_win]
+                if not unavail_row[h_id]:
+                    probs[h_id] *= 1.12
+
+        total_p = float(probs.sum())
+        if total_p > 0:
+            probs = probs / total_p
+
         probs = self._apply_lane_filter(probs, target_needed_lanes)
 
         def is_needed_lane(h_idx: int) -> int:

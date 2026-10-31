@@ -20,7 +20,7 @@ This repository follows Big Tech Machine Learning Engineering standards (modeled
 | **Draft Web UI** | React 19 + Vite + Tailwind 4 broadcast-style draft board (`frontend/`), served by FastAPI from `frontend/dist`. 130 / 130 square hero icons (`frontend/public/avatars/`), Thai display names (Arthur -> Mortos, Brunhilda -> Celica, Richter -> Riktor). |
 | **SOTA Architecture** | `RoVDraftGNNTransformer` (`src/train_sota_model.py`): Multi-Relational Hero GNN (`adj_copick`, `adj_synergy`, `adj_counter`, `adj_countered_by`) + Sequence Transformer + Bounded Neural Temperature Gate + Dual Policy & Win-Value Heads. |
 | **H100 Optuna HPO** | Completed 50 Trials on ERAWAN HPC H100 (`best_params/sota_rov_top5_trials.json`, `configs/selected_production_params.json`). |
-| **Champion Performance** | **Val Loss = `2.8045`** (checkpoint) / **`2.7978`** (Trial #43 Safest) \| **Top-1 = `21.99%`** \| **Top-3 = `46.30%`** \| **Top-5 = `60.61%`** \| **Top-10 = `80.21%`** \| **WinAcc = `53.07%`–`55.41%`** (Out of 130 Heroes, trained through Oct 25, 2026). |
+| **Champion Performance** | **Val Loss = `2.7990`** (checkpoint) / **`2.7828`** (Trial #45 Best & Safest) \| **Top-1 = `21.69%`–`22.14%`** \| **Top-3 = `45.86%`–`46.41%`** \| **Top-5 = `59.62%`–`60.94%`** \| **Top-10 = `80.61%`–`81.08%`** \| **WinAcc = `52.73%`–`54.50%`** (Out of 130 Heroes, League-Conditioned SOTA trained through Oct 25, 2026). |
 
 ---
 

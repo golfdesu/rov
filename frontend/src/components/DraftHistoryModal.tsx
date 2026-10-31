@@ -8,10 +8,11 @@ import {
   PlusCircle,
   RotateCcw,
   Trash2,
+  Trophy,
   X,
 } from "lucide-react";
 import { useId, useMemo, useState } from "react";
-import type { Hero, RecordedDraftGame } from "../types/draft";
+import type { Hero, RecordedDraftGame, TeamId } from "../types/draft";
 import { getGameSeriesGroup } from "../utils/draft";
 import { displayName } from "../utils/heroNames";
 import { HeroPortrait } from "./HeroPortrait";
@@ -25,6 +26,7 @@ interface DraftHistoryModalProps {
   onOpenNewSeries?: () => void;
   onSwitchSeries?: (groupName: string) => void;
   onLoadGame: (game: RecordedDraftGame) => void;
+  onSetGameWinner?: (id: string, winner?: TeamId) => void;
   onDeleteGame: (id: string) => void;
   onDeleteGroup: (groupName: string) => void;
   onClearAllSeries: () => void;
@@ -39,6 +41,7 @@ export function DraftHistoryModal({
   onOpenNewSeries,
   onSwitchSeries,
   onLoadGame,
+  onSetGameWinner,
   onDeleteGame,
   onDeleteGroup,
   onClearAllSeries,
@@ -262,6 +265,8 @@ export function DraftHistoryModal({
                   {grp.items.map((g) => {
                     const blueWin = Math.min(Math.max(g.blueWinRate ?? 50, 0), 100);
                     const redWin = 100 - blueWin;
+                    const blueTeamId: TeamId = g.blueSideTeam;
+                    const redTeamId: TeamId = g.blueSideTeam === "A" ? "B" : "A";
                     return (
                       <div
                         key={g.id}
@@ -280,6 +285,38 @@ export function DraftHistoryModal({
                               <Clock className="h-3 w-3" />
                               {g.timestamp}
                             </span>
+                            {onSetGameWinner && (
+                              <div className="inline-flex items-center gap-1 border border-line bg-bg px-1.5 py-0.5">
+                                <Trophy className="h-3 w-3 text-gold" />
+                                <span className="font-mono text-[10px] text-dim">WINNER:</span>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    onSetGameWinner(g.id, g.winner === blueTeamId ? undefined : blueTeamId)
+                                  }
+                                  className={`px-1.5 py-0.5 font-display text-[10px] font-bold transition-colors ${
+                                    g.winner === blueTeamId
+                                      ? "bg-blue text-bg"
+                                      : "text-blue hover:bg-blue/15"
+                                  }`}
+                                >
+                                  {g.blueTeamName}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    onSetGameWinner(g.id, g.winner === redTeamId ? undefined : redTeamId)
+                                  }
+                                  className={`px-1.5 py-0.5 font-display text-[10px] font-bold transition-colors ${
+                                    g.winner === redTeamId
+                                      ? "bg-red text-bg"
+                                      : "text-red hover:bg-red/15"
+                                  }`}
+                                >
+                                  {g.redTeamName}
+                                </button>
+                              </div>
+                            )}
                           </div>
 
                           <div className="flex items-center gap-2">

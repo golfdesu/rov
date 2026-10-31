@@ -6,7 +6,9 @@ import {
   type DraftSessionPayload,
   type GlobalBanState,
   type Hero,
+  type LeagueCode,
   type RecordedDraftGame,
+  type TeamId,
 } from "../types/draft";
 import {
   blueTeamName,
@@ -19,6 +21,7 @@ import {
   getGameSeriesGroup,
   getGameUnlockStatus,
   getMaxUnlockedGame,
+  getSeriesWinningHeroes,
   INITIAL_DRAFT_STATE,
   type PredictionState,
   prioritizeMissingLanes,
@@ -32,6 +35,11 @@ import {
 // Fetch a wider candidate pool so lane-filling heroes can be promoted into the top 5
 const CANDIDATE_POOL = 20;
 const SESSION_STORAGE_KEY = "rov_draft_session_v1";
+const VALID_LEAGUES: readonly LeagueCode[] = ["GLOBAL", "RPL", "GCS", "AOG", "INTL"];
+
+function sanitizeLeague(v: unknown): LeagueCode {
+  return typeof v === "string" && VALID_LEAGUES.includes(v as LeagueCode) ? (v as LeagueCode) : "GLOBAL";
+}
 
 function sanitizeWinHistory(arr: unknown): number[] {
   if (!Array.isArray(arr)) return [];
@@ -60,6 +68,7 @@ function loadLocalSession(key = SESSION_STORAGE_KEY): DraftSessionPayload | null
       winHistory: Array.isArray(parsed.winHistory) ? parsed.winHistory : [],
       blueWinRate: typeof parsed.blueWinRate === "number" ? parsed.blueWinRate : DEFAULT_WIN_RATE,
       useLookahead: Boolean(parsed.useLookahead),
+      league: sanitizeLeague(parsed.league),
       globalBans: parsed.globalBans ? { ...EMPTY_GLOBAL_BANS, ...parsed.globalBans } : EMPTY_GLOBAL_BANS,
       seriesGames: Array.isArray(parsed.seriesGames) ? parsed.seriesGames : [],
       updatedAt: typeof parsed.updatedAt === "number" ? parsed.updatedAt : 0,
@@ -169,6 +178,7 @@ export function useDraft(options: UseDraftOptions = {}) {
     () => initialSession?.globalBans ?? EMPTY_GLOBAL_BANS,
   );
   const [useLookahead, setUseLookahead] = useState<boolean>(() => initialSession?.useLookahead ?? false);
+  const [league, setLeague] = useState<LeagueCode>(() => sanitizeLeague(initialSession?.league));
   const [seriesGames, setSeriesGames] = useState<RecordedDraftGame[]>(
     () => initialSession?.seriesGames ?? [],
   );
@@ -208,6 +218,7 @@ export function useDraft(options: UseDraftOptions = {}) {
           });
           setGlobalBans({ ...EMPTY_GLOBAL_BANS, ...remote.globalBans });
           setUseLookahead(Boolean(remote.useLookahead));
+          setLeague(sanitizeLeague(remote.league));
           setSeriesGames(Array.isArray(remote.seriesGames) ? remote.seriesGames : []);
           saveLocalSession(remote, storageKey);
         }
@@ -260,6 +271,7 @@ export function useDraft(options: UseDraftOptions = {}) {
       winHistory: state.winHistory.map((v) => (typeof v === "number" && Number.isFinite(v) ? v : null)),
       blueWinRate: state.blueWinRate,
       useLookahead,
+      league,
       globalBans,
       seriesGames,
       updatedAt: now,
@@ -287,6 +299,7 @@ export function useDraft(options: UseDraftOptions = {}) {
     state.winHistory,
     state.blueWinRate,
     useLookahead,
+    league,
     globalBans,
     seriesGames,
   ]);
@@ -296,6 +309,11 @@ export function useDraft(options: UseDraftOptions = {}) {
   const unavailableHeroes = useMemo(
     () => unavailableSet({ bluePicks, redPicks, blueBans, redBans }, globalBans, stepIndex),
     [bluePicks, redPicks, blueBans, redBans, globalBans, stepIndex],
+  );
+
+  const seriesWinningHeroes = useMemo(
+    () => getSeriesWinningHeroes(seriesGames, resolveSeriesName(globalBans), globalBans.gameNumber),
+    [seriesGames, globalBans],
   );
 
   // Fetch AI recommendations whenever the draft or lookahead setting changes.
@@ -312,7 +330,15 @@ export function useDraft(options: UseDraftOptions = {}) {
         const endpoint = engine === "matrix" ? "/predict/matrix" : "/predict";
         const data = await postJson<DraftPredictionResponse>(
           endpoint,
-          buildPredictPayload(stepIndex, draft, globalBans, useLookahead, CANDIDATE_POOL),
+          buildPredictPayload(
+            stepIndex,
+            draft,
+            globalBans,
+            useLookahead,
+            CANDIDATE_POOL,
+            league,
+            seriesWinningHeroes,
+          ),
           ctrl.signal,
         );
 
@@ -359,7 +385,18 @@ export function useDraft(options: UseDraftOptions = {}) {
 
     run();
     return () => ctrl.abort();
-  }, [engine, stepIndex, bluePicks, redPicks, blueBans, redBans, globalBans, useLookahead]);
+  }, [
+    engine,
+    stepIndex,
+    bluePicks,
+    redPicks,
+    blueBans,
+    redBans,
+    globalBans,
+    useLookahead,
+    league,
+    seriesWinningHeroes,
+  ]);
 
   const lockHero = useCallback(
     (hero: string) => {
@@ -382,7 +419,7 @@ export function useDraft(options: UseDraftOptions = {}) {
   }, []);
 
   const recordGameToSeries = useCallback(
-    (swapAfter = false) => {
+    (swapAfter = false, winner?: TeamId) => {
       const currentGroup = resolveSeriesName(globalBans);
       const hasAnyAction = bluePicks.length + redPicks.length + blueBans.length + redBans.length > 0;
       const overwrittenGames = seriesGames.filter(
@@ -408,6 +445,7 @@ export function useDraft(options: UseDraftOptions = {}) {
           bluePicks: [...bluePicks],
           redPicks: [...redPicks],
           blueWinRate: state.blueWinRate,
+          winner: winner ?? overwrittenGames[0]?.winner,
         };
         nextSeriesGames = [
           snapshot,
@@ -424,12 +462,22 @@ export function useDraft(options: UseDraftOptions = {}) {
         const addToB = blueIsA ? redPicks : bluePicks;
         const nextGame = Math.min(prev.gameNumber + 1, 7);
         const synced = syncSeriesGlobalBans(prev, nextSeriesGames, nextGame, overwrittenGames);
+        // Pro rule: losing team gets first side choice (defaulting to Blue side) in the next game
+        const nextBlueSide: TeamId = winner
+          ? winner === "A"
+            ? "B"
+            : "A"
+          : swapAfter
+            ? prev.blueSideTeam === "A"
+              ? "B"
+              : "A"
+            : prev.blueSideTeam;
         return {
           ...prev,
           teamAUsed: Array.from(new Set([...synced.teamAUsed, ...addToA])),
           teamBUsed: Array.from(new Set([...synced.teamBUsed, ...addToB])),
           gameNumber: nextGame,
-          blueSideTeam: swapAfter ? (prev.blueSideTeam === "A" ? "B" : "A") : prev.blueSideTeam,
+          blueSideTeam: nextBlueSide,
         };
       });
       dispatch({ type: "reset" });
@@ -437,6 +485,12 @@ export function useDraft(options: UseDraftOptions = {}) {
     },
     [bluePicks, redPicks, blueBans, redBans, globalBans, seriesGames, state.blueWinRate],
   );
+
+  const setRecordedGameWinner = useCallback((id: string, winner?: TeamId) => {
+    setSeriesGames((prev) =>
+      prev.map((g) => (g.id === id ? { ...g, winner } : g)),
+    );
+  }, []);
 
   const saveCurrentDraftSnapshot = useCallback(() => {
     const hasAnyAction = bluePicks.length + redPicks.length + blueBans.length + redBans.length > 0;
@@ -834,10 +888,13 @@ export function useDraft(options: UseDraftOptions = {}) {
     clearAllHistory,
     swapTeamSides,
     recordGameToSeries,
+    setRecordedGameWinner,
     importDraft,
     unavailableHeroes,
     useLookahead,
     setUseLookahead,
+    league,
+    setLeague,
     ...state.prediction,
     blueWinRate: state.blueWinRate,
     winHistory: state.winHistory,

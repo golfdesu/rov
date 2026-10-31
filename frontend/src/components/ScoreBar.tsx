@@ -1,5 +1,33 @@
-import { BrainCircuit, RotateCcw, Undo2 } from "lucide-react";
-import type { DraftStep } from "../types/draft";
+import { BrainCircuit, Globe, RotateCcw, Undo2 } from "lucide-react";
+import type { DraftStep, LeagueCode } from "../types/draft";
+
+const LEAGUE_OPTIONS: { code: LeagueCode; label: string; title: string }[] = [
+  {
+    code: "GLOBAL",
+    label: "GLOBAL",
+    title: "Global Meta Blend (RPL 37.9% + GCS 37.0% + AOG 19.6% + INTL 5.5%)",
+  },
+  {
+    code: "RPL",
+    label: "RPL",
+    title: "RPL — RoV Pro League (Thailand Meta)",
+  },
+  {
+    code: "GCS",
+    label: "GCS",
+    title: "GCS — Garena Challenger Series (Taiwan Meta)",
+  },
+  {
+    code: "AOG",
+    label: "AOG",
+    title: "AOG — Arena of Glory (Vietnam Meta)",
+  },
+  {
+    code: "INTL",
+    label: "INTL",
+    title: "INTL — APL / AIC International Tournament Meta",
+  },
+];
 
 interface ScoreBarProps {
   blueWinRate: number;
@@ -9,6 +37,8 @@ interface ScoreBarProps {
   totalSteps: number;
   useLookahead: boolean;
   setUseLookahead: (v: boolean) => void;
+  league?: LeagueCode;
+  setLeague?: (v: LeagueCode) => void;
   onUndo: () => void;
   onReset: () => void;
   canUndo: boolean;
@@ -22,6 +52,8 @@ export function ScoreBar({
   totalSteps,
   useLookahead,
   setUseLookahead,
+  league,
+  setLeague,
   onUndo,
   onReset,
   canUndo,
@@ -102,6 +134,60 @@ export function ScoreBar({
 
         {/* Action Controls */}
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          {league && setLeague && (
+            <>
+              {/* Desktop segmented league selector */}
+              <div
+                role="group"
+                aria-label="Regional League Meta"
+                className="hidden h-8.5 items-center border border-line-strong bg-panel p-0.5 lg:inline-flex"
+              >
+                <span className="flex items-center gap-1 px-2 font-mono text-[10px] font-semibold tracking-wider text-dim">
+                  <Globe className="h-3 w-3 text-gold" />
+                  META
+                </span>
+                {LEAGUE_OPTIONS.map((opt) => {
+                  const active = league === opt.code;
+                  return (
+                    <button
+                      key={opt.code}
+                      type="button"
+                      onClick={() => setLeague(opt.code)}
+                      title={opt.title}
+                      aria-pressed={active}
+                      className={`h-7 px-2 font-mono text-[11px] font-bold tracking-wide transition-colors ${
+                        active
+                          ? "bg-gold text-bg"
+                          : "text-muted hover:bg-panel-2 hover:text-ink"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Mobile / Tablet compact league dropdown */}
+              <label
+                title="Select regional pro league meta conditioning"
+                className="inline-flex h-7.5 items-center gap-1 border border-gold/50 bg-panel px-1.5 font-mono text-[11px] font-bold text-gold sm:h-8.5 sm:px-2 lg:hidden"
+              >
+                <Globe className="h-3.5 w-3.5 shrink-0 text-gold" />
+                <select
+                  aria-label="Regional League Meta"
+                  value={league}
+                  onChange={(e) => setLeague(e.target.value as LeagueCode)}
+                  className="bg-transparent font-mono text-[11px] font-bold text-gold focus:outline-none"
+                >
+                  {LEAGUE_OPTIONS.map((opt) => (
+                    <option key={opt.code} value={opt.code} className="bg-panel text-ink">
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </>
+          )}
           <button
             type="button"
             onClick={() => setUseLookahead(!useLookahead)}

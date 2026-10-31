@@ -70,6 +70,10 @@ class DraftStateRequest(BaseModel):
         default="GLOBAL",
         description="Target regional pro league meta conditioning: 'RPL' (TH), 'AOG' (VN), 'GCS' (TW), 'INTL' (APL/AIC), or 'GLOBAL' (performance-adjusted global blend)",
     )
+    series_winning_heroes: list[str] = Field(
+        default_factory=list,
+        description="Heroes that won previous games in the current series and remain available for steal-pick or target-ban adaptation",
+    )
 
 
 class HeroRecommendation(BaseModel):
@@ -192,6 +196,7 @@ class RecordedDraftGameSchema(BaseModel):
     bluePicks: list[str] = Field(default_factory=list)
     redPicks: list[str] = Field(default_factory=list)
     blueWinRate: float = 50.0
+    winner: Literal["A", "B"] | None = None
 
 
 class DraftSessionStateSchema(BaseModel):
@@ -204,6 +209,7 @@ class DraftSessionStateSchema(BaseModel):
     winHistory: list[float | None] = Field(default_factory=list)
     blueWinRate: float = 50.0
     useLookahead: bool = False
+    league: Literal["RPL", "AOG", "GCS", "INTL", "GLOBAL"] = "GLOBAL"
     globalBans: GlobalBanStateSchema = Field(default_factory=GlobalBanStateSchema)
     seriesGames: list[RecordedDraftGameSchema] = Field(default_factory=list)
     updatedAt: int = Field(default=0, description="Epoch milliseconds of last state update")

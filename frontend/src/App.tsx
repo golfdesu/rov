@@ -6,7 +6,9 @@ import {
   Layers,
   PlusCircle,
   Sparkles,
+  Trophy,
   Users,
+  X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AiPanel } from "./components/AiPanel";
@@ -26,6 +28,7 @@ import {
   blueUsedHeroes,
   getGameUnlockStatus,
   getMaxUnlockedGame,
+  getSeriesScore,
   heroOriginGameMap,
   redTeamName,
   redUsedHeroes,
@@ -72,9 +75,12 @@ export function App() {
     clearAllHistory,
     swapTeamSides,
     recordGameToSeries,
+    setRecordedGameWinner,
     unavailableHeroes,
     useLookahead,
     setUseLookahead,
+    league,
+    setLeague,
     recommendations,
     blueNextPicks,
     redNextPicks,
@@ -100,11 +106,16 @@ export function App() {
   const [globalBanModalCat, setGlobalBanModalCat] = useState<GlobalBanCategoryKey | null>(null);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isNewSeriesModalOpen, setIsNewSeriesModalOpen] = useState(false);
+  const [isSelectingWinner, setIsSelectingWinner] = useState(false);
 
   const bUsed = useMemo(() => blueUsedHeroes(globalBans), [globalBans]);
   const rUsed = useMemo(() => redUsedHeroes(globalBans), [globalBans]);
   const bName = blueTeamName(globalBans);
   const rName = redTeamName(globalBans);
+  const seriesScore = useMemo(
+    () => getSeriesScore(seriesGames, resolveSeriesName(globalBans)),
+    [seriesGames, globalBans],
+  );
   const blueCategoryKey: GlobalBanCategoryKey = globalBans.blueSideTeam === "A" ? "teamAUsed" : "teamBUsed";
   const redCategoryKey: GlobalBanCategoryKey = globalBans.blueSideTeam === "A" ? "teamBUsed" : "teamAUsed";
 
@@ -221,10 +232,15 @@ export function App() {
               </button>
 
               <span
-                className="hidden max-w-[180px] truncate border-x border-line px-2.5 font-display text-xs font-bold tracking-wider text-gold xl:inline-block"
+                className="hidden max-w-[220px] truncate border-x border-line px-2.5 font-display text-xs font-bold tracking-wider text-gold xl:inline-block"
                 title={globalBans.seriesName || `${bName} vs ${rName}`}
               >
                 {globalBans.seriesName || `${bName} vs ${rName}`}
+                {seriesScore.aWins + seriesScore.bWins > 0 && (
+                  <span className="ml-1.5 font-mono text-[11px] text-ink">
+                    ({seriesScore.aWins}-{seriesScore.bWins})
+                  </span>
+                )}
               </span>
 
               <div className="inline-flex shrink-0 items-center border border-line bg-bg p-0.5">
@@ -317,32 +333,83 @@ export function App() {
                 )}
               </button>
 
-              <button
-                type="button"
-                disabled={!hasAnyPick}
-                onClick={() => {
-                  if (
-                    !isDraftComplete &&
-                    !window.confirm(
-                      `Game ${globalBans.gameNumber} ยังดราฟต์ไม่ครบ 10 ตัว (${bluePicks.length + redPicks.length}/10)\n\nยืนยันต้องการจบเกมนี้และนำฮีโร่ที่เลือกเข้าสู่ Global Ban ของเกมถัดไปหรือไม่?`,
-                    )
-                  ) {
-                    return;
-                  }
-                  recordGameToSeries(false);
-                }}
-                title="บันทึกฮีโร่ที่ทั้ง 2 ทีมเลือกในตานี้เข้า Global Ban ของแต่ละทีม และเริ่มเกมถัดไป"
-                className={`flex h-7.5 shrink-0 items-center gap-1.5 border px-2.5 font-display text-xs font-bold whitespace-nowrap transition-colors disabled:pointer-events-none disabled:opacity-35 ${
-                  isDraftComplete
-                    ? "border-gold bg-gold text-bg hover:bg-gold/90"
-                    : "border-good/60 bg-good/15 text-good hover:bg-good hover:text-bg"
-                }`}
-              >
-                <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-                <span>
-                  จบ G{globalBans.gameNumber}→G{Math.min(globalBans.gameNumber + 1, 7)}
-                </span>
-              </button>
+              {isSelectingWinner ? (
+                <div className="inline-flex h-7.5 shrink-0 items-center gap-1 border border-gold bg-panel px-1.5">
+                  <Trophy className="h-3.5 w-3.5 shrink-0 text-gold" />
+                  <span className="font-display text-[11px] font-bold text-gold">ใครชนะ G{globalBans.gameNumber}?</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const blueTeamId = globalBans.blueSideTeam;
+                      recordGameToSeries(false, blueTeamId);
+                      setIsSelectingWinner(false);
+                    }}
+                    title={`${bName} (Blue) ชนะ — เกมถัดไป ${rName} จะได้เลือกฝั่ง Blue อัตโนมัติ`}
+                    className="h-6 bg-blue px-2 font-display text-[11px] font-bold text-bg transition-colors hover:bg-blue/90"
+                  >
+                    {bName} ชนะ
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const redTeamId = globalBans.blueSideTeam === "A" ? "B" : "A";
+                      recordGameToSeries(false, redTeamId);
+                      setIsSelectingWinner(false);
+                    }}
+                    title={`${rName} (Red) ชนะ — เกมถัดไป ${bName} จะได้เลือกฝั่ง Blue อัตโนมัติ`}
+                    className="h-6 bg-red px-2 font-display text-[11px] font-bold text-bg transition-colors hover:bg-red/90"
+                  >
+                    {rName} ชนะ
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      recordGameToSeries(false);
+                      setIsSelectingWinner(false);
+                    }}
+                    title="ข้ามการระบุผู้ชนะ (บันทึกเฉพาะ Global Ban)"
+                    className="h-6 border border-line bg-bg px-1.5 font-display text-[10px] font-semibold text-muted hover:text-ink"
+                  >
+                    ข้าม
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsSelectingWinner(false)}
+                    title="ยกเลิก"
+                    aria-label="ยกเลิก"
+                    className="p-0.5 text-dim hover:text-ink"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  disabled={!hasAnyPick}
+                  onClick={() => {
+                    if (
+                      !isDraftComplete &&
+                      !window.confirm(
+                        `Game ${globalBans.gameNumber} ยังดราฟต์ไม่ครบ 10 ตัว (${bluePicks.length + redPicks.length}/10)\n\nยืนยันต้องการจบเกมนี้และนำฮีโร่ที่เลือกเข้าสู่ Global Ban ของเกมถัดไปหรือไม่?`,
+                      )
+                    ) {
+                      return;
+                    }
+                    setIsSelectingWinner(true);
+                  }}
+                  title="บันทึกผลการแข่งขัน + ฮีโร่ที่ทั้ง 2 ทีมเลือกเข้า Global Ban ของแต่ละทีม และเริ่มเกมถัดไป"
+                  className={`flex h-7.5 shrink-0 items-center gap-1.5 border px-2.5 font-display text-xs font-bold whitespace-nowrap transition-colors disabled:pointer-events-none disabled:opacity-35 ${
+                    isDraftComplete
+                      ? "border-gold bg-gold text-bg hover:bg-gold/90"
+                      : "border-good/60 bg-good/15 text-good hover:bg-good hover:text-bg"
+                  }`}
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                  <span>
+                    จบ G{globalBans.gameNumber}→G{Math.min(globalBans.gameNumber + 1, 7)}
+                  </span>
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -372,6 +439,8 @@ export function App() {
               totalSteps={totalSteps}
               useLookahead={useLookahead}
               setUseLookahead={setUseLookahead}
+              league={league}
+              setLeague={setLeague}
               onUndo={undo}
               onReset={reset}
               canUndo={canUndo}
@@ -399,6 +468,7 @@ export function App() {
                 onOpenNewSeries={() => setIsNewSeriesModalOpen(true)}
                 onSwitchSeries={switchSeries}
                 onLoadGame={loadRecordedGame}
+                onSetGameWinner={setRecordedGameWinner}
                 onDeleteGame={deleteRecordedGame}
                 onDeleteGroup={deleteSeriesGroup}
                 onClearAllSeries={clearAllHistory}

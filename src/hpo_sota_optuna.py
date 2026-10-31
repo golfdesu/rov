@@ -366,18 +366,18 @@ def main():
     )
 
     # Enqueue locked-architecture benchmarks for MedianPruner:
-    # 1. Trial #43 (Safest Production: Rank #2 in 50-trial H100 run, val_loss=2.79781, win_acc=55.41%)
+    # 1. Trial #45 (Best & Safest Production: Rank #1 in 50-trial H100 run, val_loss=2.78280, overfit_gap=+0.20282)
     study.enqueue_trial(
         {
             "d_model": args.d_model,
             "nhead": args.nhead,
             "num_layers": args.num_layers,
-            "dropout": 0.2589,
-            "neural_scale": 0.6032,
-            "lr": 0.001073,
-            "weight_decay": 0.000599,
-            "label_smoothing": 0.0179,
-            "win_loss_weight": 0.3375,
+            "dropout": 0.2468,
+            "neural_scale": 0.6554,
+            "lr": 0.001187,
+            "weight_decay": 0.001473,
+            "label_smoothing": 0.0363,
+            "win_loss_weight": 0.3358,
             "batch_size": 512,
             "augment_factor": 1,
         }

@@ -3,6 +3,7 @@ import {
   type DraftHistoryItem,
   type GlobalBanState,
   type HeroRecommendation,
+  type LeagueCode,
   type RecordedDraftGame,
   type RoleType,
 } from "../types/draft";
@@ -186,6 +187,44 @@ export function getGameSeriesGroup(game: RecordedDraftGame): string {
   }
   const sorted = [b, r].sort((x, y) => x.localeCompare(y));
   return `${sorted[0]} vs ${sorted[1]}`;
+}
+
+/**
+ * Computes the series win count for Team A and Team B in the specified series group.
+ */
+export function getSeriesScore(
+  seriesGames: RecordedDraftGame[],
+  groupName: string,
+): { aWins: number; bWins: number } {
+  let aWins = 0;
+  let bWins = 0;
+  for (const g of seriesGames) {
+    if (getGameSeriesGroup(g) !== groupName) continue;
+    if (g.winner === "A") aWins++;
+    else if (g.winner === "B") bWins++;
+  }
+  return { aWins, bWins };
+}
+
+/**
+ * Extracts all heroes picked by the winning team in earlier games (gameNumber < currentGameNumber)
+ * of the active series group for in-series winner adaptation (steal-pick / target-ban boost).
+ */
+export function getSeriesWinningHeroes(
+  seriesGames: RecordedDraftGame[],
+  groupName: string,
+  currentGameNumber: number,
+): string[] {
+  const winners = new Set<string>();
+  for (const g of seriesGames) {
+    if (getGameSeriesGroup(g) !== groupName || g.gameNumber >= currentGameNumber || !g.winner) continue;
+    const winningPicks =
+      g.winner === g.blueSideTeam ? g.bluePicks : g.redPicks;
+    for (const h of winningPicks) {
+      winners.add(h);
+    }
+  }
+  return Array.from(winners);
 }
 
 /**
@@ -466,6 +505,8 @@ export function buildPredictPayload(
   globalBans: readonly string[] | GlobalBanState,
   lookahead: boolean,
   candidatePool: number,
+  league: LeagueCode = "GLOBAL",
+  seriesWinningHeroes: readonly string[] = [],
 ) {
   const gbState: GlobalBanState = Array.isArray(globalBans)
     ? { ...EMPTY_GLOBAL_BANS, universalBans: [...globalBans] }
@@ -489,6 +530,8 @@ export function buildPredictPayload(
       red_global_bans: rUsed,
       top_k: 1,
       use_lookahead: false,
+      league,
+      series_winning_heroes: [...seriesWinningHeroes],
     };
   }
   const isBlue = step.side === "blue";
@@ -506,5 +549,7 @@ export function buildPredictPayload(
     top_k: candidatePool,
     use_lookahead: lookahead,
     lookahead_depth: 2,
+    league,
+    series_winning_heroes: [...seriesWinningHeroes],
   };
 }
