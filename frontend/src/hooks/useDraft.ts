@@ -31,9 +31,10 @@ import {
   syncSeriesGlobalBans,
   unavailableSet,
 } from "../utils/draft";
+import { displayName } from "../utils/heroNames";
 
-// Fetch a wider candidate pool so lane-filling heroes can be promoted into the top 5
-const CANDIDATE_POOL = 20;
+// Fetch a wider candidate pool so lane-filling and per-lane filtered heroes always have 5+ candidates
+const CANDIDATE_POOL = 50;
 const SESSION_STORAGE_KEY = "rov_draft_session_v1";
 const VALID_LEAGUES: readonly LeagueCode[] = ["GLOBAL", "RPL", "GCS", "AOG", "INTL"];
 
@@ -52,27 +53,60 @@ function sanitizeWinHistory(arr: unknown): number[] {
   return out;
 }
 
+function normalizeHeroList(arr: unknown): string[] {
+  return Array.isArray(arr) ? arr.filter((h): h is string => typeof h === "string").map(displayName) : [];
+}
+
+function normalizeSessionPayload(parsed: Partial<DraftSessionPayload>): DraftSessionPayload {
+  const rawGb = parsed.globalBans ? { ...EMPTY_GLOBAL_BANS, ...parsed.globalBans } : EMPTY_GLOBAL_BANS;
+  const globalBans: GlobalBanState = {
+    ...rawGb,
+    teamAUsed: normalizeHeroList(rawGb.teamAUsed),
+    teamBUsed: normalizeHeroList(rawGb.teamBUsed),
+    universalBans: normalizeHeroList(rawGb.universalBans),
+  };
+  const seriesGames: RecordedDraftGame[] = Array.isArray(parsed.seriesGames)
+    ? parsed.seriesGames.map((g) => ({
+        ...g,
+        bluePicks: normalizeHeroList(g.bluePicks),
+        redPicks: normalizeHeroList(g.redPicks),
+        blueBans: normalizeHeroList(g.blueBans),
+        redBans: normalizeHeroList(g.redBans),
+      }))
+    : [];
+
+  return {
+    stepIndex: typeof parsed.stepIndex === "number" ? parsed.stepIndex : 0,
+    bluePicks: normalizeHeroList(parsed.bluePicks),
+    redPicks: normalizeHeroList(parsed.redPicks),
+    blueBans: normalizeHeroList(parsed.blueBans),
+    redBans: normalizeHeroList(parsed.redBans),
+    history: Array.isArray(parsed.history)
+      ? parsed.history.map((entry) => ({
+          ...entry,
+          bluePicks: normalizeHeroList(entry.bluePicks),
+          redPicks: normalizeHeroList(entry.redPicks),
+          blueBans: normalizeHeroList(entry.blueBans),
+          redBans: normalizeHeroList(entry.redBans),
+        }))
+      : [],
+    winHistory: Array.isArray(parsed.winHistory) ? parsed.winHistory : [],
+    blueWinRate: typeof parsed.blueWinRate === "number" ? parsed.blueWinRate : DEFAULT_WIN_RATE,
+    useLookahead: Boolean(parsed.useLookahead),
+    league: sanitizeLeague(parsed.league),
+    globalBans,
+    seriesGames,
+    updatedAt: typeof parsed.updatedAt === "number" ? parsed.updatedAt : 0,
+  };
+}
+
 function loadLocalSession(key = SESSION_STORAGE_KEY): DraftSessionPayload | null {
   try {
     const raw = window.localStorage.getItem(key);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<DraftSessionPayload>;
     if (!parsed || typeof parsed !== "object") return null;
-    return {
-      stepIndex: typeof parsed.stepIndex === "number" ? parsed.stepIndex : 0,
-      bluePicks: Array.isArray(parsed.bluePicks) ? parsed.bluePicks : [],
-      redPicks: Array.isArray(parsed.redPicks) ? parsed.redPicks : [],
-      blueBans: Array.isArray(parsed.blueBans) ? parsed.blueBans : [],
-      redBans: Array.isArray(parsed.redBans) ? parsed.redBans : [],
-      history: Array.isArray(parsed.history) ? parsed.history : [],
-      winHistory: Array.isArray(parsed.winHistory) ? parsed.winHistory : [],
-      blueWinRate: typeof parsed.blueWinRate === "number" ? parsed.blueWinRate : DEFAULT_WIN_RATE,
-      useLookahead: Boolean(parsed.useLookahead),
-      league: sanitizeLeague(parsed.league),
-      globalBans: parsed.globalBans ? { ...EMPTY_GLOBAL_BANS, ...parsed.globalBans } : EMPTY_GLOBAL_BANS,
-      seriesGames: Array.isArray(parsed.seriesGames) ? parsed.seriesGames : [],
-      updatedAt: typeof parsed.updatedAt === "number" ? parsed.updatedAt : 0,
-    };
+    return normalizeSessionPayload(parsed);
   } catch {
     return null;
   }
@@ -158,7 +192,7 @@ function useHeroCatalog() {
 }
 
 export interface UseDraftOptions {
-  engine?: "sota" | "matrix";
+  engine?: "sota" | "matrix" | "heuristic";
   persistSession?: boolean;
   storageKey?: string;
 }
@@ -198,8 +232,9 @@ export function useDraft(options: UseDraftOptions = {}) {
     const ctrl = new AbortController();
     async function syncFromServer() {
       try {
-        const remote = await getJson<DraftSessionPayload>("/draft/session", ctrl.signal);
-        if (remote && remote.updatedAt > lastSavedAtRef.current) {
+        const rawRemote = await getJson<DraftSessionPayload>("/draft/session", ctrl.signal);
+        if (rawRemote && rawRemote.updatedAt > lastSavedAtRef.current) {
+          const remote = normalizeSessionPayload(rawRemote);
           isHydratingRemoteRef.current = true;
           lastSavedAtRef.current = remote.updatedAt;
           const hydrated = initMachineState(remote);
@@ -216,10 +251,10 @@ export function useDraft(options: UseDraftOptions = {}) {
               winHistory: hydrated.winHistory,
             },
           });
-          setGlobalBans({ ...EMPTY_GLOBAL_BANS, ...remote.globalBans });
+          setGlobalBans(remote.globalBans);
           setUseLookahead(Boolean(remote.useLookahead));
           setLeague(sanitizeLeague(remote.league));
-          setSeriesGames(Array.isArray(remote.seriesGames) ? remote.seriesGames : []);
+          setSeriesGames(remote.seriesGames);
           saveLocalSession(remote, storageKey);
         }
       } catch (err) {
@@ -327,7 +362,12 @@ export function useDraft(options: UseDraftOptions = {}) {
       setIsLoading(true);
       setPredictError(null);
       try {
-        const endpoint = engine === "matrix" ? "/predict/matrix" : "/predict";
+        const endpoint =
+          engine === "matrix"
+            ? "/predict/matrix"
+            : engine === "heuristic"
+              ? "/predict/heuristic"
+              : "/predict";
         const data = await postJson<DraftPredictionResponse>(
           endpoint,
           buildPredictPayload(
@@ -418,108 +458,6 @@ export function useDraft(options: UseDraftOptions = {}) {
     }));
   }, []);
 
-  const recordGameToSeries = useCallback(
-    (swapAfter = false, winner?: TeamId) => {
-      const currentGroup = resolveSeriesName(globalBans);
-      const hasAnyAction = bluePicks.length + redPicks.length + blueBans.length + redBans.length > 0;
-      const overwrittenGames = seriesGames.filter(
-        (g) => getGameSeriesGroup(g) === currentGroup && g.gameNumber === globalBans.gameNumber,
-      );
-
-      let nextSeriesGames = seriesGames;
-      if (hasAnyAction) {
-        const snapshot: RecordedDraftGame = {
-          id: `${Date.now()}-g${globalBans.gameNumber}`,
-          gameNumber: globalBans.gameNumber,
-          timestamp: new Date().toLocaleTimeString("th-TH", {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-          }),
-          seriesName: currentGroup,
-          blueTeamName: blueTeamName(globalBans),
-          redTeamName: redTeamName(globalBans),
-          blueSideTeam: globalBans.blueSideTeam,
-          blueBans: [...blueBans],
-          redBans: [...redBans],
-          bluePicks: [...bluePicks],
-          redPicks: [...redPicks],
-          blueWinRate: state.blueWinRate,
-          winner: winner ?? overwrittenGames[0]?.winner,
-        };
-        nextSeriesGames = [
-          snapshot,
-          ...seriesGames.filter(
-            (g) => !(getGameSeriesGroup(g) === currentGroup && g.gameNumber === globalBans.gameNumber),
-          ),
-        ];
-        setSeriesGames(nextSeriesGames);
-      }
-
-      setGlobalBans((prev) => {
-        const blueIsA = prev.blueSideTeam === "A";
-        const addToA = blueIsA ? bluePicks : redPicks;
-        const addToB = blueIsA ? redPicks : bluePicks;
-        const nextGame = Math.min(prev.gameNumber + 1, 7);
-        const synced = syncSeriesGlobalBans(prev, nextSeriesGames, nextGame, overwrittenGames);
-        // Pro rule: losing team gets first side choice (defaulting to Blue side) in the next game
-        const nextBlueSide: TeamId = winner
-          ? winner === "A"
-            ? "B"
-            : "A"
-          : swapAfter
-            ? prev.blueSideTeam === "A"
-              ? "B"
-              : "A"
-            : prev.blueSideTeam;
-        return {
-          ...prev,
-          teamAUsed: Array.from(new Set([...synced.teamAUsed, ...addToA])),
-          teamBUsed: Array.from(new Set([...synced.teamBUsed, ...addToB])),
-          gameNumber: nextGame,
-          blueSideTeam: nextBlueSide,
-        };
-      });
-      dispatch({ type: "reset" });
-      setPredictError(null);
-    },
-    [bluePicks, redPicks, blueBans, redBans, globalBans, seriesGames, state.blueWinRate],
-  );
-
-  const setRecordedGameWinner = useCallback((id: string, winner?: TeamId) => {
-    setSeriesGames((prev) =>
-      prev.map((g) => (g.id === id ? { ...g, winner } : g)),
-    );
-  }, []);
-
-  const saveCurrentDraftSnapshot = useCallback(() => {
-    const hasAnyAction = bluePicks.length + redPicks.length + blueBans.length + redBans.length > 0;
-    if (!hasAnyAction) return;
-    const currentGroup = resolveSeriesName(globalBans);
-    const snapshot: RecordedDraftGame = {
-      id: `${Date.now()}-g${globalBans.gameNumber}`,
-      gameNumber: globalBans.gameNumber,
-      timestamp: new Date().toLocaleTimeString("th-TH", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      }),
-      seriesName: currentGroup,
-      blueTeamName: blueTeamName(globalBans),
-      redTeamName: redTeamName(globalBans),
-      blueSideTeam: globalBans.blueSideTeam,
-      blueBans: [...blueBans],
-      redBans: [...redBans],
-      bluePicks: [...bluePicks],
-      redPicks: [...redPicks],
-      blueWinRate: state.blueWinRate,
-    };
-    setSeriesGames((prev) => [
-      snapshot,
-      ...prev.filter((g) => !(getGameSeriesGroup(g) === currentGroup && g.gameNumber === globalBans.gameNumber)),
-    ]);
-  }, [bluePicks, redPicks, blueBans, redBans, globalBans, state.blueWinRate]);
-
   const loadRecordedGame = useCallback(
     (game: RecordedDraftGame, gamesListOverride?: RecordedDraftGame[]) => {
       const activeSeriesGames = gamesListOverride ?? seriesGames;
@@ -556,6 +494,7 @@ export function useDraft(options: UseDraftOptions = {}) {
               teamBName: teamBName || prev.teamBName,
               teamAUsed: [],
               teamBUsed: [],
+              universalBans: [],
             };
         const synced = syncSeriesGlobalBans(baseState, activeSeriesGames, game.gameNumber, [], targetGroup);
         return {
@@ -569,6 +508,157 @@ export function useDraft(options: UseDraftOptions = {}) {
     },
     [seriesGames],
   );
+
+  const recordGameToSeries = useCallback(
+    (swapAfter = false, winner?: TeamId) => {
+      const hasAnyAction = bluePicks.length + redPicks.length + blueBans.length + redBans.length > 0;
+      if (!hasAnyAction) return;
+
+      const currentGroup = resolveSeriesName(globalBans);
+      const overwrittenGames = seriesGames.filter(
+        (g) => getGameSeriesGroup(g) === currentGroup && g.gameNumber === globalBans.gameNumber,
+      );
+      const effectiveWinner = winner ?? overwrittenGames[0]?.winner;
+
+      const snapshot: RecordedDraftGame = {
+        id: `${Date.now()}-g${globalBans.gameNumber}`,
+        gameNumber: globalBans.gameNumber,
+        timestamp: new Date().toLocaleTimeString("th-TH", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        }),
+        seriesName: currentGroup,
+        blueTeamName: blueTeamName(globalBans),
+        redTeamName: redTeamName(globalBans),
+        blueSideTeam: globalBans.blueSideTeam,
+        blueBans: [...blueBans],
+        redBans: [...redBans],
+        bluePicks: [...bluePicks],
+        redPicks: [...redPicks],
+        blueWinRate: state.blueWinRate,
+        winner: effectiveWinner,
+      };
+      const nextSeriesGames = [
+        snapshot,
+        ...seriesGames.filter(
+          (g) => !(getGameSeriesGroup(g) === currentGroup && g.gameNumber === globalBans.gameNumber),
+        ),
+      ];
+      setSeriesGames(nextSeriesGames);
+
+      if (globalBans.gameNumber >= 7) {
+        setGlobalBans((prev) => {
+          const synced = syncSeriesGlobalBans(prev, nextSeriesGames, 7, overwrittenGames);
+          return {
+            ...prev,
+            ...synced,
+            blueSideTeam: swapAfter ? (prev.blueSideTeam === "A" ? "B" : "A") : prev.blueSideTeam,
+          };
+        });
+        return;
+      }
+
+      const nextGame = globalBans.gameNumber + 1;
+      const existingNextGame = nextSeriesGames.find(
+        (g) => getGameSeriesGroup(g) === currentGroup && g.gameNumber === nextGame,
+      );
+      if (existingNextGame) {
+        loadRecordedGame(existingNextGame, nextSeriesGames);
+        return;
+      }
+
+      setGlobalBans((prev) => {
+        const blueIsA = prev.blueSideTeam === "A";
+        const addToA = blueIsA ? bluePicks : redPicks;
+        const addToB = blueIsA ? redPicks : bluePicks;
+        const synced = syncSeriesGlobalBans(prev, nextSeriesGames, nextGame, overwrittenGames);
+        // Pro rule: losing team gets first side choice (defaulting to Blue side) in the next game
+        const nextBlueSide: TeamId = effectiveWinner
+          ? effectiveWinner === "A"
+            ? "B"
+            : "A"
+          : swapAfter
+            ? prev.blueSideTeam === "A"
+              ? "B"
+              : "A"
+            : prev.blueSideTeam;
+        return {
+          ...prev,
+          teamAUsed: Array.from(new Set([...synced.teamAUsed, ...addToA])),
+          teamBUsed: Array.from(new Set([...synced.teamBUsed, ...addToB])),
+          gameNumber: nextGame,
+          blueSideTeam: nextBlueSide,
+        };
+      });
+      dispatch({ type: "reset" });
+      setPredictError(null);
+    },
+    [
+      bluePicks,
+      redPicks,
+      blueBans,
+      redBans,
+      globalBans,
+      seriesGames,
+      state.blueWinRate,
+      loadRecordedGame,
+    ],
+  );
+
+  const setRecordedGameWinner = useCallback(
+    (id: string, winner?: TeamId) => {
+      const target = seriesGames.find((g) => g.id === id);
+      setSeriesGames((prev) => prev.map((g) => (g.id === id ? { ...g, winner } : g)));
+      if (
+        target &&
+        winner &&
+        getGameSeriesGroup(target) === resolveSeriesName(globalBans) &&
+        target.gameNumber === globalBans.gameNumber - 1 &&
+        stepIndex === 0
+      ) {
+        setGlobalBans((prev) => ({
+          ...prev,
+          blueSideTeam: winner === "A" ? "B" : "A",
+        }));
+      }
+    },
+    [seriesGames, globalBans, stepIndex],
+  );
+
+  const saveCurrentDraftSnapshot = useCallback(() => {
+    const hasAnyAction = bluePicks.length + redPicks.length + blueBans.length + redBans.length > 0;
+    if (!hasAnyAction) return;
+    const currentGroup = resolveSeriesName(globalBans);
+    setSeriesGames((prev) => {
+      const overwrittenGames = prev.filter(
+        (g) => getGameSeriesGroup(g) === currentGroup && g.gameNumber === globalBans.gameNumber,
+      );
+      const snapshot: RecordedDraftGame = {
+        id: `${Date.now()}-g${globalBans.gameNumber}`,
+        gameNumber: globalBans.gameNumber,
+        timestamp: new Date().toLocaleTimeString("th-TH", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        }),
+        seriesName: currentGroup,
+        blueTeamName: blueTeamName(globalBans),
+        redTeamName: redTeamName(globalBans),
+        blueSideTeam: globalBans.blueSideTeam,
+        blueBans: [...blueBans],
+        redBans: [...redBans],
+        bluePicks: [...bluePicks],
+        redPicks: [...redPicks],
+        blueWinRate: state.blueWinRate,
+        winner: overwrittenGames[0]?.winner,
+      };
+      return [
+        snapshot,
+        ...prev.filter((g) => !(getGameSeriesGroup(g) === currentGroup && g.gameNumber === globalBans.gameNumber)),
+      ];
+    });
+  }, [bluePicks, redPicks, blueBans, redBans, globalBans, state.blueWinRate]);
 
   const selectGameNumber = useCallback(
     (nextGameNumber: number) => {
@@ -603,6 +693,7 @@ export function useDraft(options: UseDraftOptions = {}) {
           bluePicks: [...bluePicks],
           redPicks: [...redPicks],
           blueWinRate: state.blueWinRate,
+          winner: overwrittenGames[0]?.winner,
         };
         nextSeriesGames = [
           snapshot,
@@ -628,13 +719,22 @@ export function useDraft(options: UseDraftOptions = {}) {
       if (targetGame) {
         loadRecordedGame(targetGame, nextSeriesGames);
       } else {
+        const prevGame = nextSeriesGames.find(
+          (g) => getGameSeriesGroup(g) === currentGroup && g.gameNumber === nextGameNumber - 1,
+        );
         dispatch({ type: "reset" });
         setPredictError(null);
         setGlobalBans((prev) => {
           const synced = syncSeriesGlobalBans(prev, nextSeriesGames, nextGameNumber, overwrittenGames);
+          const nextBlueSide: TeamId = prevGame?.winner
+            ? prevGame.winner === "A"
+              ? "B"
+              : "A"
+            : prev.blueSideTeam;
           return {
             ...prev,
             ...synced,
+            blueSideTeam: nextBlueSide,
             gameNumber: nextGameNumber,
           };
         });
@@ -658,6 +758,15 @@ export function useDraft(options: UseDraftOptions = {}) {
       const nextSeriesGames = seriesGames.filter((g) => g.id !== id);
       setSeriesGames(nextSeriesGames);
       if (deleted) {
+        const currentGroup = resolveSeriesName(globalBans);
+        const isDeletedActiveGame =
+          getGameSeriesGroup(deleted) === currentGroup && deleted.gameNumber === globalBans.gameNumber;
+
+        if (isDeletedActiveGame) {
+          dispatch({ type: "reset" });
+          setPredictError(null);
+        }
+
         setGlobalBans((prev) => {
           if (getGameSeriesGroup(deleted) !== resolveSeriesName(prev)) return prev;
           const synced = syncSeriesGlobalBans(prev, nextSeriesGames, prev.gameNumber, [deleted]);
@@ -679,13 +788,15 @@ export function useDraft(options: UseDraftOptions = {}) {
         });
       }
     },
-    [seriesGames],
+    [seriesGames, globalBans],
   );
 
   const deleteSeriesGroup = useCallback((groupName: string) => {
     setSeriesGames((prev) => prev.filter((g) => getGameSeriesGroup(g) !== groupName));
     setGlobalBans((prev) => {
       if (resolveSeriesName(prev) !== groupName) return prev;
+      dispatch({ type: "reset" });
+      setPredictError(null);
       return {
         ...prev,
         teamAUsed: [],
@@ -731,6 +842,9 @@ export function useDraft(options: UseDraftOptions = {}) {
 
       let nextSeriesGames = seriesGames;
       if (hasCurrentActions) {
+        const overwrittenGames = seriesGames.filter(
+          (g) => getGameSeriesGroup(g) === currentGroup && g.gameNumber === globalBans.gameNumber,
+        );
         const snapshot: RecordedDraftGame = {
           id: `${Date.now()}-g${globalBans.gameNumber}`,
           gameNumber: globalBans.gameNumber,
@@ -748,6 +862,7 @@ export function useDraft(options: UseDraftOptions = {}) {
           bluePicks: [...bluePicks],
           redPicks: [...redPicks],
           blueWinRate: state.blueWinRate,
+          winner: overwrittenGames[0]?.winner,
         };
         nextSeriesGames = [
           snapshot,
@@ -772,6 +887,11 @@ export function useDraft(options: UseDraftOptions = {}) {
       const teamAName = latest.blueSideTeam === "A" ? latest.blueTeamName : latest.redTeamName;
       const teamBName = latest.blueSideTeam === "A" ? latest.redTeamName : latest.blueTeamName;
       const targetGameNumber = Math.min(latest.gameNumber + 1, 7);
+      const nextBlueSide: TeamId = latest.winner
+        ? latest.winner === "A"
+          ? "B"
+          : "A"
+        : latest.blueSideTeam;
 
       const baseBans: GlobalBanState = {
         seriesName: latest.seriesName || groupName,
@@ -780,7 +900,7 @@ export function useDraft(options: UseDraftOptions = {}) {
         teamAUsed: [],
         teamBUsed: [],
         universalBans: [],
-        blueSideTeam: latest.blueSideTeam,
+        blueSideTeam: nextBlueSide,
         gameNumber: targetGameNumber,
       };
       const synced = syncSeriesGlobalBans(baseBans, nextSeriesGames, targetGameNumber, [], groupName);
@@ -837,6 +957,7 @@ export function useDraft(options: UseDraftOptions = {}) {
       blueBans: string[];
       redBans: string[];
       globalBans?: GlobalBanState;
+      seriesGames?: RecordedDraftGame[];
     }) => {
       const reconstructed = reconstructDraftHistory({
         bluePicks: draft.bluePicks,
@@ -857,6 +978,9 @@ export function useDraft(options: UseDraftOptions = {}) {
           winHistory: [],
         },
       });
+      if (draft.seriesGames) {
+        setSeriesGames(draft.seriesGames);
+      }
       if (draft.globalBans) {
         setGlobalBans(draft.globalBans);
       }

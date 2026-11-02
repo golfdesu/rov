@@ -255,7 +255,7 @@
       "source": "https://moba.garena.tw/news/show/5385"
     },
     {
-      "hero": "Arthur",
+      "hero": "Mortos",
       "skill": "Skill 2",
       "field": "physical damage",
       "before": "50/65/80/95/110/125 ( +35%AD )",
@@ -1045,7 +1045,7 @@
       "source": "https://moba.garena.tw/news/show/5456"
     },
     {
-      "hero": "Brunhilda",
+      "hero": "Celica",
       "skill": "Passive",
       "field": "New effect",
       "before": null,
@@ -1525,7 +1525,7 @@
       "source": "https://moba.garena.tw/news/show/5490"
     },
     {
-      "hero": "Arthur",
+      "hero": "Mortos",
       "skill": "Skill 1",
       "field": "Enhanced basic attack range",
       "before": "500",
@@ -2525,7 +2525,7 @@
       "source": "https://moba.garena.tw/news/show/5661"
     },
     {
-      "hero": "Brunhilda",
+      "hero": "Celica",
       "skill": "Skill 1",
       "field": "AD",
       "before": "40/44/48/52/56/60",
@@ -2535,7 +2535,7 @@
       "source": "https://moba.garena.tw/news/show/5661"
     },
     {
-      "hero": "Brunhilda",
+      "hero": "Celica",
       "skill": "Ultimate",
       "field": "cooldown",
       "before": "26/21/16 s",
@@ -2665,7 +2665,7 @@
       "source": "https://moba.garena.tw/news/show/5680"
     },
     {
-      "hero": "Arthur",
+      "hero": "Mortos",
       "skill": "Skill 2",
       "field": "shield",
       "before": "5/6/7/8/9/10% max HP",
@@ -3005,7 +3005,7 @@
       "source": "https://moba.garena.tw/news/show/5716"
     },
     {
-      "hero": "Brunhilda",
+      "hero": "Celica",
       "skill": "Skill 1",
       "field": "New effect",
       "before": null,
@@ -3015,7 +3015,7 @@
       "source": "https://moba.garena.tw/news/show/5716"
     },
     {
-      "hero": "Brunhilda",
+      "hero": "Celica",
       "skill": "Skill 1",
       "field": "speed-up duration",
       "before": "2 s",
@@ -3025,7 +3025,7 @@
       "source": "https://moba.garena.tw/news/show/5716"
     },
     {
-      "hero": "Brunhilda",
+      "hero": "Celica",
       "skill": "Ultimate",
       "field": "cooldown",
       "before": "22/19/16 s",

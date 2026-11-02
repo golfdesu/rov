@@ -98,7 +98,7 @@ For batch processing new screenshots rapidly with Global Hungarian Bipartite Mat
 
 ## 4. Guardrails
 
-- Use canonical hero names (`Arthur`, `Brunhilda`, `Richter`), not Thai display names (`Mortos`, `Celica`, `Riktor`).
+- Use canonical Thai server hero names (`Mortos`, `Celica`, `Riktor`), not legacy Global/Liquipedia names (`Arthur`, `Brunhilda`, `Richter`).
 - `Flowborn (Marksman)` and `Flowborn (Mage)` share one portrait, so the image cannot tell them apart. Take the role from the Liquipedia record for that game (Mage is rare: 9 of 4,252 games).
 - **Reworked Azzen'Ka vs Default Taara Trap**:
   - Azzen'Ka has a remodeled female appearance (dark hair with purple fringe, tiara, purple eyes as shown in `frontend/public/avatars/Azzen_Ka.jpg`), NOT the old classic sand wraith.

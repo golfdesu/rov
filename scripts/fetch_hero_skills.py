@@ -29,7 +29,10 @@ HEADERS = {
 }
 
 ROVMETA_SLUGS: dict[str, str] = {
-    "Arthur": "arthur",
+    "Mortos": "mortos",
+    "Celica": "celica",
+    "Riktor": "riktor",
+    "Arthur": "mortos",
     "Brunhilda": "celica",
     "Richter": "riktor",
     "Bolt Baron": "bolt-baron",

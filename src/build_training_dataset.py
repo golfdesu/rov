@@ -39,6 +39,11 @@ def parse_args():
         help="Only include games with 100%% verified chronological pick order from broadcast screenshots",
     )
     parser.add_argument(
+        "--no-true-order",
+        action="store_true",
+        help="Ignore true pick order and mark 100%% of games as heuristic Liquipedia order (0%% true pick order)",
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=DEFAULT_OUTPUT_PATH,
@@ -101,15 +106,19 @@ def build_training_dataset(
     max_date: str | None = None,
     leagues: list[str] | None = None,
     only_true_order: bool = False,
+    no_true_order: bool = False,
     output_path: Path = DEFAULT_OUTPUT_PATH,
     flat_csv_path: Path | None = None,
 ):
     with open(MATCHES_FULL_PATH, "r", encoding="utf-8") as f:
         all_games = json.load(f)
 
-    true_lookup = load_true_pick_order_lookup()
+    true_lookup = {} if no_true_order else load_true_pick_order_lookup()
     print(f"Loaded {len(all_games)} raw pro games from {MATCHES_FULL_PATH.name}")
-    print(f"Loaded {len(true_lookup)} ground-truth games from {TRUE_ORDER_PATH.name}")
+    if no_true_order:
+        print("Flag --no-true-order active: strictly 0 ground-truth games used (100% heuristic Liquipedia order)")
+    else:
+        print(f"Loaded {len(true_lookup)} ground-truth games from {TRUE_ORDER_PATH.name}")
 
     allowed_leagues = {lg.upper() for lg in leagues} if leagues else None
     max_dt = datetime.strptime(max_date, "%Y-%m-%d") if max_date else None
@@ -224,6 +233,7 @@ def main():
         max_date=args.max_date,
         leagues=args.leagues,
         only_true_order=args.only_true_order,
+        no_true_order=args.no_true_order,
         output_path=args.output,
         flat_csv_path=args.flat_csv,
     )

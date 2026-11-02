@@ -1,7 +1,7 @@
 import { ArrowDownToLine, Calculator, RotateCcw, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useDraft } from "../../hooks/useDraft";
-import type { GlobalBanState, Hero } from "../../types/draft";
+import type { GlobalBanState, Hero, RecordedDraftGame } from "../../types/draft";
 import {
   blueTeamName,
   blueUsedHeroes,
@@ -26,6 +26,7 @@ interface MetaLabProps {
   mainBlueBans?: string[];
   mainRedBans?: string[];
   mainGlobalBans?: GlobalBanState;
+  mainSeriesGames?: RecordedDraftGame[];
 }
 
 type MobileDraftView = "draft" | "ai" | "teams";
@@ -37,6 +38,7 @@ export function MetaLab({
   mainBlueBans = [],
   mainRedBans = [],
   mainGlobalBans,
+  mainSeriesGames = [],
 }: MetaLabProps) {
   const [mobileView, setMobileView] = useState<MobileDraftView>("draft");
   const [globalBanModalCat, setGlobalBanModalCat] = useState<GlobalBanCategoryKey | null>(null);
@@ -97,7 +99,7 @@ export function MetaLab({
 
   const recommendedRanks = useMemo(() => {
     const map = new Map<string, number>();
-    recommendations.forEach((r, idx) => map.set(r.hero_name, idx + 1));
+    recommendations.slice(0, 5).forEach((r, idx) => map.set(r.hero_name, idx + 1));
     return map;
   }, [recommendations]);
 
@@ -110,7 +112,8 @@ export function MetaLab({
       mainGlobalBans.gameNumber > 1);
   const hasMainPicks =
     mainBluePicks.length + mainRedPicks.length + mainBlueBans.length + mainRedBans.length > 0 ||
-    hasMainGlobalBans;
+    hasMainGlobalBans ||
+    mainSeriesGames.length > 0;
 
   const handleImport = () => {
     importDraft({
@@ -119,6 +122,7 @@ export function MetaLab({
       blueBans: mainBlueBans,
       redBans: mainRedBans,
       globalBans: mainGlobalBans,
+      seriesGames: mainSeriesGames,
     });
     setImportNotification("ดึงสถานะจากกระดานหลักเรียบร้อยแล้ว!");
     setTimeout(() => setImportNotification(null), 3000);

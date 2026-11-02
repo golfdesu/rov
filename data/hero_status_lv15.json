@@ -378,7 +378,7 @@
       "movement_speed": 380,
       "source": "heroes/Zephys/status/status_lv15.jpg"
     },
-    "Richter": {
+    "Riktor": {
       "hp": 8350,
       "attack_damage": 377,
       "armor": 482,
@@ -946,7 +946,7 @@
       "movement_speed": 350,
       "source": "heroes/Ilumia/status/status_lv15.jpg"
     },
-    "Brunhilda": {
+    "Celica": {
       "hp": 7002,
       "attack_damage": 417,
       "armor": 408,
@@ -1026,7 +1026,7 @@
       "movement_speed": 360,
       "source": "heroes/Azzen'Ka/status/status_lv15.jpg"
     },
-    "Arthur": {
+    "Mortos": {
       "hp": 9260,
       "attack_damage": 346,
       "armor": 500,

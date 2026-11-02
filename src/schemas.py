@@ -53,7 +53,7 @@ class DraftStateRequest(BaseModel):
     top_k: int = Field(
         default=5,
         ge=1,
-        le=20,
+        le=60,
         description="Number of top hero recommendations to return",
     )
     use_lookahead: bool = Field(
@@ -66,9 +66,9 @@ class DraftStateRequest(BaseModel):
         le=4,
         description="Minimax search depth (lookahead turns)",
     )
-    league: Literal["RPL", "AOG", "GCS", "INTL", "GLOBAL"] = Field(
+    league: Literal["RPL", "AOG", "GCS", "INTL", "APL", "AIC", "GLOBAL"] = Field(
         default="GLOBAL",
-        description="Target regional pro league meta conditioning: 'RPL' (TH), 'AOG' (VN), 'GCS' (TW), 'INTL' (APL/AIC), or 'GLOBAL' (performance-adjusted global blend)",
+        description="Target regional pro league meta conditioning: 'RPL' (TH), 'AOG' (VN), 'GCS' (TW), 'INTL'/'APL'/'AIC' (international), or 'GLOBAL' (performance-adjusted global blend)",
     )
     series_winning_heroes: list[str] = Field(
         default_factory=list,
@@ -209,7 +209,7 @@ class DraftSessionStateSchema(BaseModel):
     winHistory: list[float | None] = Field(default_factory=list)
     blueWinRate: float = 50.0
     useLookahead: bool = False
-    league: Literal["RPL", "AOG", "GCS", "INTL", "GLOBAL"] = "GLOBAL"
+    league: Literal["RPL", "AOG", "GCS", "INTL", "APL", "AIC", "GLOBAL"] = "GLOBAL"
     globalBans: GlobalBanStateSchema = Field(default_factory=GlobalBanStateSchema)
     seriesGames: list[RecordedDraftGameSchema] = Field(default_factory=list)
     updatedAt: int = Field(default=0, description="Epoch milliseconds of last state update")

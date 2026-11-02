@@ -79,8 +79,8 @@ def build_hero_normalizer():
 
     # Special aliases used in Liquipedia templates
     aliases = {
-        "riktor": "Richter",
-        "richter": "Richter",
+        "riktor": "Riktor",
+        "richter": "Riktor",
         "diaochan": "Diao Chan",
         "diao chan": "Diao Chan",
         "kilgroth": "Kil'Groth",
@@ -100,8 +100,10 @@ def build_hero_normalizer():
         "batman": "Kaine",
         "joker": "Stuart",
         "thejoker": "Stuart",
-        "celica": "Brunhilda",
-        "mortos": "Arthur",
+        "celica": "Celica",
+        "brunhilda": "Celica",
+        "mortos": "Mortos",
+        "arthur": "Mortos",
         "flowborn": "Flowborn (Marksman)",
         "flowborn(marksman)": "Flowborn (Marksman)",
         "flowborn(archer)": "Flowborn (Marksman)",
@@ -133,6 +135,96 @@ def build_hero_normalizer():
         return lookup.get(alnum, raw_name.strip().title())
 
     return normalize
+
+
+TEAM_ALIASES = {
+    # RPL (Thailand)
+    "GODJI CHECK": "GJC",
+    "GODJI": "GJC",
+    "GJC": "GJC",
+    "TENACITY": "TEN",
+    "TEN": "TEN",
+    "SOLYX": "SLX",
+    "SLX": "SLX",
+    "HYDRA": "HD",
+    "HD": "HD",
+    "FULL SENSE": "FS",
+    "FS": "FS",
+    "BACON": "BAC",
+    "BACON TIME": "BAC",
+    "BAC": "BAC",
+    "TALON": "TLN",
+    "TLN": "TLN",
+    "EARENA": "EA",
+    "EA": "EA",
+    "BURIRAM UNITED ESPORTS": "BRU",
+    "BURIRAM": "BRU",
+    "BRU": "BRU",
+    "KING OF GAMERS CLUB": "KOG",
+    "KING OF GAMERS": "KOG",
+    "KOG": "KOG",
+    "PSG ESPORTS": "PSG",
+    "PSG": "PSG",
+    # AOG (Vietnam)
+    "SP": "SGP",
+    "SAIGON PHANTOM": "SGP",
+    "SGP": "SGP",
+    "TEAM FLASH": "FL",
+    "FLASH": "FL",
+    "FL": "FL",
+    "ONE STAR ESPORTS": "1S",
+    "ONE STAR": "1S",
+    "1S": "1S",
+    "FPL HCMC": "FPL",
+    "FPT POLYTECHNIC": "FPL",
+    "FPL": "FPL",
+    "GAM ESPORTS": "GAM",
+    "GAM": "GAM",
+    "SECRET": "TS",
+    "TEAM SECRET": "TS",
+    "TS": "TS",
+    "BOOM VN": "BOOM",
+    "BOOM": "BOOM",
+    "RRQ VN": "RRQ",
+    "RRQ": "RRQ",
+    "BOX GAMING": "BOX",
+    "BOX": "BOX",
+    "TDT ESPORTS": "TDT",
+    "TDT": "TDT",
+    "SUPERNOVA": "SPN",
+    "SPN": "SPN",
+    "BLACK SENSE": "BSS",
+    "BSS": "BSS",
+    "TT GAMING VN": "TTVN",
+    "TTVN": "TTVN",
+    # GCS (Taiwan)
+    "FLASH WOLVES": "FW",
+    "FW": "FW",
+    "ONE TEAM": "ONE",
+    "ONE TEAM ESPORTS": "ONE",
+    "ONE": "ONE",
+    "LIT TEAM": "LIT",
+    "LIT": "LIT",
+    "DEEP CROSS GAMING": "DCG",
+    "DCG": "DCG",
+    "BANMEI GAMING": "BMG",
+    "BMG": "BMG",
+    "ANK GAMING": "ANK",
+    "ANK": "ANK",
+    "HONG KONG ATTITUDE": "HKA",
+    "HKA": "HKA",
+    # APL / AIC (International / Wildcard)
+    "GG LIVE": "GGL",
+    "GGL": "GGL",
+}
+
+
+def normalize_team(raw_team: str) -> str:
+    """Normalize raw team string to standard official esports abbreviation."""
+    if not raw_team:
+        return ""
+    s = raw_team.strip().upper()
+    return TEAM_ALIASES.get(s, s)
 
 
 def extract_balanced_templates(text: str, template_prefix: str):
@@ -204,8 +296,8 @@ def parse_match_block(match_wt: str, tournament_page: str, series_idx: int, norm
 
     opp1_m = re.search(r"\|\s*opponent1\s*=\s*\{\{(?:TeamOpponent|LiteralOpponent)\|([^|\n}]+)", match_wt)
     opp2_m = re.search(r"\|\s*opponent2\s*=\s*\{\{(?:TeamOpponent|LiteralOpponent)\|([^|\n}]+)", match_wt)
-    team1 = opp1_m.group(1).strip().upper() if opp1_m else "TEAM1"
-    team2 = opp2_m.group(1).strip().upper() if opp2_m else "TEAM2"
+    team1 = normalize_team(opp1_m.group(1)) if opp1_m else "TEAM1"
+    team2 = normalize_team(opp2_m.group(1)) if opp2_m else "TEAM2"
 
     # Find all |mapX={{Map ... }} blocks in order
     map_entries = []

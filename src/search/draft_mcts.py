@@ -133,7 +133,12 @@ def run_model(
     """Runs one batched forward pass; returns (policy probs, acting-team win probs), each (batch, heroes)."""
     with torch.no_grad():
         logits, q_win_logits = model(*(torch.from_numpy(a).to(device) for a in arrays))
-    return torch.softmax(logits, dim=-1), torch.sigmoid(q_win_logits)
+    probs = torch.softmax(logits, dim=-1)
+    unavail = torch.from_numpy(arrays[4]).to(device)
+    probs = probs.masked_fill(unavail, 0.0)
+    sums = probs.sum(dim=-1, keepdim=True)
+    probs = torch.where(sums > 0, probs / sums, probs)
+    return probs, torch.sigmoid(q_win_logits)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -147,6 +152,7 @@ class DraftSearchState:
     global_bans: tuple[int, ...] = ()
     blue_global_bans: tuple[int, ...] = ()
     red_global_bans: tuple[int, ...] = ()
+    series_winning_heroes: tuple[int, ...] = ()
     step_idx: int = 0
     league: str = "GLOBAL"
 
@@ -217,6 +223,7 @@ class DraftSearchState:
             global_bans=self.global_bans,
             blue_global_bans=self.blue_global_bans,
             red_global_bans=self.red_global_bans,
+            series_winning_heroes=self.series_winning_heroes,
             step_idx=self.step_idx + 1,
             league=self.league,
         )
@@ -334,8 +341,17 @@ class DraftMinimaxSearch:
 
         for idx, (hid, next_state) in enumerate(zip(valid_candidates, child_states)):
             next_acting_side = next_state.acting_side
-            p_next = c_probs_np[idx]
+            p_next = c_probs_np[idx].copy()
             w_next = c_win_np[idx]
+
+            if next_state.series_winning_heroes:
+                next_unavail = next_state.get_unavailable_set()
+                for w_hid in next_state.series_winning_heroes:
+                    if w_hid not in next_unavail:
+                        p_next[w_hid] *= 1.12
+                p_sum = float(p_next.sum())
+                if p_sum > 0:
+                    p_next /= p_sum
 
             # Filter counter-candidates by the needed lanes of the target team at next_state
             if next_state.action_type == 1:

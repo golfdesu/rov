@@ -130,7 +130,7 @@ export function EnchantmentBoard({
       return;
     }
 
-    const [e1] = current;
+    // current.length >= 2
     const sameTierSameFaction = current.find((c) => c.faction === faction && c.tier === tier);
     if (sameTierSameFaction) {
       const others = current.filter((c) => c.name !== sameTierSameFaction.name);
@@ -143,14 +143,36 @@ export function EnchantmentBoard({
       return;
     }
 
-    if (tier === 1 && e1.tier === 1) {
-      const next = [e1.name, name];
-      const secFactions = next.map((n) => enchMap.get(n)?.faction).filter(Boolean);
-      onChange({
-        secondary_enchantments: next,
-        secondary_faction: [...new Set(secFactions)].join(", ") || null,
-      });
-      return;
+    if (tier === 2) {
+      const sameFactionT1 = current.find((c) => c.faction === faction && c.tier === 1);
+      if (sameFactionT1) {
+        onChange({
+          secondary_enchantments: [sameFactionT1.name, name],
+          secondary_faction: faction,
+        });
+        return;
+      }
+    }
+
+    if (tier === 1) {
+      const sameFactionT2 = current.find((c) => c.faction === faction && c.tier === 2);
+      if (sameFactionT2) {
+        onChange({
+          secondary_enchantments: [name, sameFactionT2.name],
+          secondary_faction: faction,
+        });
+        return;
+      }
+      const [e1] = current;
+      if (e1.tier === 1) {
+        const next = [e1.name, name];
+        const secFactions = next.map((n) => enchMap.get(n)?.faction).filter(Boolean);
+        onChange({
+          secondary_enchantments: next,
+          secondary_faction: [...new Set(secFactions)].join(", ") || null,
+        });
+        return;
+      }
     }
 
     onChange({

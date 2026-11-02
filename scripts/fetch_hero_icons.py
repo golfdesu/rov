@@ -37,10 +37,17 @@ ICON_SIZE = 160
 
 # rovmeta lists Thai server names separately; their icons are the current TH art
 ROVMETA_ALIASES = {
-    "Arthur": "Mortos",
-    "Brunhilda": "Celica",
+    "Mortos": "Mortos",
+    "Celica": "Celica",
+    "Riktor": "Riktor",
     "Flowborn (Mage)": "Flowborn",
     "Flowborn (Marksman)": "Flowborn",
+}
+
+LEGACY_AVATAR_FILES = {
+    "Mortos": "Arthur.jpg",
+    "Celica": "Brunhilda.jpg",
+    "Riktor": "Richter.jpg",
 }
 
 # Garena file is 403 (Evita) or outdated / not an icon (Tamyn, reworked Azzen'Ka)
@@ -97,7 +104,7 @@ def main() -> None:
     mapping: dict[str, str] = {}
     missing: list[str] = []
     for name in names:
-        filename = safe_filename(name)
+        filename = LEGACY_AVATAR_FILES.get(name, safe_filename(name))
         dest = AVATAR_DIR / filename
         if name in LIQUIPEDIA_OVERRIDES:
             url = lq_urls.get(LIQUIPEDIA_OVERRIDES[name])

@@ -49,6 +49,7 @@ STAT_ALIASES: dict[str, tuple[str, tuple[str, ...]]] = {
     "hp_regen_5s": ("flat", ("hp regen / 5s",)),
     "mana_regen_5s": ("flat", ("mana regen / 5s",)),
     "ability_power_pct": ("pct", ("magic bonus",)),
+    "critical_damage": ("pct", ("critical damage", "crit damage")),
 }
 ALIAS_TO_KEY = {alias: key for key, (_, aliases) in STAT_ALIASES.items() for alias in aliases}
 

@@ -31,7 +31,7 @@
     "source": "broadcast_median",
     "sample_count": 36
   },
-  "Arthur": {
+  "Mortos": {
     "source": "broadcast_median",
     "sample_count": 8
   },
@@ -83,7 +83,7 @@
     "source": "broadcast_single",
     "sample_count": 2
   },
-  "Brunhilda": {
+  "Celica": {
     "source": "broadcast_single",
     "sample_count": 1
   },
@@ -347,7 +347,7 @@
     "source": "broadcast_median",
     "sample_count": 24
   },
-  "Richter": {
+  "Riktor": {
     "source": "broadcast_median",
     "sample_count": 205
   },

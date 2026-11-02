@@ -435,6 +435,7 @@ export function draftReducer(state: DraftMachineState, action: DraftAction): Dra
         [key]: [...state[key], action.hero],
         stepIndex: state.stepIndex + 1,
         history: [...state.history, snapshot],
+        prediction: EMPTY_PREDICTION,
       };
     }
     case "undo": {
@@ -446,8 +447,8 @@ export function draftReducer(state: DraftMachineState, action: DraftAction): Dra
         history: state.history.slice(0, -1),
         // Drop stale derived state; useDraft refetches for the restored step
         prediction: EMPTY_PREDICTION,
-        winHistory: state.winHistory.slice(0, last.stepIndex),
-        blueWinRate: state.winHistory[last.stepIndex - 1] ?? DEFAULT_WIN_RATE,
+        winHistory: state.winHistory.slice(0, last.stepIndex + 1),
+        blueWinRate: state.winHistory[last.stepIndex] ?? DEFAULT_WIN_RATE,
       };
     }
     case "reset":

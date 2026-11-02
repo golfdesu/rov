@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { getJson, isAbortError, postJson } from "../api/client";
 import { type CombatBuild, type CombatCatalog, type DuelResult, type Side, emptyBuild } from "../types/combat";
+import { displayName } from "../utils/heroNames";
 
 const STORAGE_KEY = "rov-combat-lab-v1";
 
@@ -8,7 +9,11 @@ function sanitizeBuild(raw: unknown, fallbackHero: string): CombatBuild {
   const base = emptyBuild(fallbackHero);
   if (!raw || typeof raw !== "object") return base;
   const merged = { ...base, ...(raw as Partial<CombatBuild>) };
-  if (typeof merged.hero !== "string" || !merged.hero) merged.hero = fallbackHero;
+  if (typeof merged.hero !== "string" || !merged.hero) {
+    merged.hero = fallbackHero;
+  } else {
+    merged.hero = displayName(merged.hero);
+  }
   return merged;
 }
 

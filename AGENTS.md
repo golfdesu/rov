@@ -48,8 +48,8 @@ Every AI agent (including fast models such as `3.8flash`) MUST strictly obey the
 6. **Code Quality & Automatic Linting Protocol (Ruff)**:
    - Whenever any code is written, updated, or refactored, the AI agent **MUST** autonomously run `ruff check --fix .` and `ruff format .` to maintain zero lint errors and consistent formatting before completing any task.
    - For frontend changes, also run `npm run build` and `npm run lint` in `frontend/`.
-7. **Hero Display Names vs Canonical Names**:
-   - The API, data, and model always use canonical names (`Arthur`, `Brunhilda`, `Richter`). Thai server names are display-only, in `frontend/src/utils/heroNames.ts`. Never rename heroes in `data/` or the checkpoint.
+7. **Hero Canonical Names (Thai Server Default)**:
+   - The API, data, and model use official Thai server hero names (`Mortos`, `Celica`, `Riktor`, `Kaine`, `Stuart`, `Helen`) as the canonical default across all files (`data/`, `models/`, `src/`, `frontend/`). Legacy Global/Liquipedia aliases (`Arthur -> Mortos`, `Brunhilda -> Celica`, `Richter -> Riktor`) are automatically normalized in `src/scrape_matches.py` and `src/predictor.py`.
    - Regenerate hero icons only with `python scripts/fetch_hero_icons.py` (keeps filenames in sync with `frontend/public/hero_images.json`).
 
 8. **Combat Calculator Data Gaps (`src/combat_calculator.py`)**:

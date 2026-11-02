@@ -15,12 +15,14 @@ BROWSER_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 }
 
-# Mapping aliases/old names to canonical 2026 RoV hero names
-EXCLUDED_DUPLICATES = {"Celica", "Mortos", "Payna", "Peura", "Batman", "The Joker"}
+# Mapping aliases/old names to canonical 2026 RoV Thai server hero names
+EXCLUDED_DUPLICATES = {"Brunhilda", "Arthur", "Richter", "Payna", "Peura", "Batman", "The Joker"}
 
 NAME_MAPPING_TO_FANDOM = {
     "Diao Chan": "Diaochan",
-    "Richter": "Riktor",
+    "Riktor": "Riktor",
+    "Mortos": "Arthur",
+    "Celica": "Brunhilda",
     "Flowborn (Marksman)": "Flowborn/Archer",
     "Flowborn (Mage)": "Flowborn/Mage",
 }
@@ -563,10 +565,15 @@ def extract_skill_features(skills, primary_role, secondary_role):
             combined_text,
         )
     )
+    text_no_slow_imm = re.sub(
+        r"\b(?:immune to movement impairment|slow immunity|immune to slow[s]?)\b",
+        "",
+        combined_text,
+    )
     has_immunity = bool(
         re.search(
             r"\bimmune\b|\bimmunity\b|\biron body\b|\buntargetable\b|\binvincib|\bcannot be targeted\b|\bremove all control\b|\bcleanses\b",
-            combined_text,
+            text_no_slow_imm,
         )
     )
     has_heal = bool(

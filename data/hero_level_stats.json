@@ -1122,8 +1122,8 @@
       },
       "growth_source": "measured_lv15"
     },
-    "Arthur": {
-      "hero": "Arthur",
+    "Mortos": {
+      "hero": "Mortos",
       "primary_class": "Warrior",
       "growth_rates": {
         "hp_growth": 381.2857142857143,
@@ -2942,8 +2942,8 @@
       },
       "growth_source": "measured_lv15"
     },
-    "Brunhilda": {
-      "hero": "Brunhilda",
+    "Celica": {
+      "hero": "Celica",
       "primary_class": "Marksman",
       "growth_rates": {
         "hp_growth": 248.28571428571428,
@@ -12182,8 +12182,8 @@
       },
       "growth_source": "measured_lv15"
     },
-    "Richter": {
-      "hero": "Richter",
+    "Riktor": {
+      "hero": "Riktor",
       "primary_class": "Warrior",
       "growth_rates": {
         "hp_growth": 327.5,

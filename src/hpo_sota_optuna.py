@@ -83,6 +83,24 @@ def parse_args():
         default=None,
         help="Path to training matches JSON (default: data/matches_training.json or data/matches_draft_full.json)",
     )
+    parser.add_argument(
+        "--output-best-params",
+        type=Path,
+        default=None,
+        help="Custom output path for best params JSON (default: best_params/sota_rov_best_params.json)",
+    )
+    parser.add_argument(
+        "--output-top5",
+        type=Path,
+        default=None,
+        help="Custom output path for top 5 trials JSON (default: best_params/sota_rov_top5_trials.json)",
+    )
+    parser.add_argument(
+        "--output-model-path",
+        type=Path,
+        default=None,
+        help="Custom output path for best model checkpoint (default: models/sota_draft_gnn_transformer.pt)",
+    )
     return parser.parse_args()
 
 
@@ -443,7 +461,7 @@ def main():
         )
     print("=" * 95, flush=True)
 
-    top5_path = BEST_PARAMS_DIR / "sota_rov_top5_trials.json"
+    top5_path = args.output_top5 or (BEST_PARAMS_DIR / "sota_rov_top5_trials.json")
     with open(top5_path, "w", encoding="utf-8") as f:
         json.dump(
             {
@@ -466,7 +484,7 @@ def main():
         "n_trials": args.n_trials,
         "elapsed_seconds": round(hpo_elapsed, 2),
     }
-    best_params_path = BEST_PARAMS_DIR / "sota_rov_best_params.json"
+    best_params_path = args.output_best_params or (BEST_PARAMS_DIR / "sota_rov_best_params.json")
     with open(best_params_path, "w", encoding="utf-8") as f:
         json.dump(best_params_payload, f, indent=2)
     print(f"Saved best hyperparameters to: {best_params_path}", flush=True)
@@ -487,7 +505,9 @@ def main():
             "best_params": study.best_params,
             "top_5_trials": top5_trials,
         }
-        torch.save(ckpt, MODEL_DIR / "sota_draft_gnn_transformer.pt")
+        out_ckpt_path = args.output_model_path or (MODEL_DIR / "sota_draft_gnn_transformer.pt")
+        torch.save(ckpt, out_ckpt_path)
+        print(f"Saved best HPO checkpoint to: {out_ckpt_path}", flush=True)
 
         print("\n=== Best HPO Model Validation Metrics (Out of 130 Heroes) ===", flush=True)
         for k, label in [

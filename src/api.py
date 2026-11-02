@@ -1,4 +1,6 @@
 import json
+import threading
+import uuid
 from pathlib import Path
 
 import numpy as np
@@ -39,6 +41,27 @@ app.add_middleware(
 )
 
 predictor = RoVDraftPredictor()
+heuristic_predictor: RoVDraftPredictor | None = None
+_heuristic_predictor_lock = threading.Lock()
+
+
+def get_heuristic_predictor() -> RoVDraftPredictor:
+    global heuristic_predictor
+    if heuristic_predictor is None:
+        with _heuristic_predictor_lock:
+            if heuristic_predictor is None:
+                model_path = config.paths.models_dir / "sota_draft_gnn_transformer_heuristic.pt"
+                if not model_path.exists():
+                    raise HTTPException(
+                        status_code=503,
+                        detail=(
+                            "Heuristic draft model artifact not found at models/sota_draft_gnn_transformer_heuristic.pt. "
+                            "Please run HPO or training first via run_hpo_heuristic_h100.sbatch or train_sota_model.py."
+                        ),
+                    )
+                heuristic_predictor = RoVDraftPredictor(model_path=model_path)
+    return heuristic_predictor
+
 
 # Precompute rich hero metadata catalog
 hero_summary_path = DATA_DIR / "heroes_130_summary.csv"
@@ -117,36 +140,45 @@ def get_draft_steps():
     }
 
 
+_session_lock = threading.Lock()
+
+
 @app.get("/draft/session", response_model=DraftSessionStateSchema)
 def get_draft_session():
     session_path = config.paths.draft_session_path
-    if not session_path.exists():
-        return DraftSessionStateSchema()
-    try:
-        raw = json.loads(session_path.read_text(encoding="utf-8"))
-        return DraftSessionStateSchema.model_validate(raw)
-    except Exception:
-        return DraftSessionStateSchema()
+    with _session_lock:
+        if not session_path.exists():
+            return DraftSessionStateSchema()
+        try:
+            raw = json.loads(session_path.read_text(encoding="utf-8"))
+            return DraftSessionStateSchema.model_validate(raw)
+        except Exception:
+            return DraftSessionStateSchema()
 
 
 @app.put("/draft/session", response_model=DraftSessionStateSchema)
 def save_draft_session(session: DraftSessionStateSchema):
     session_path = config.paths.draft_session_path
     session_path.parent.mkdir(parents=True, exist_ok=True)
-    tmp_path = session_path.with_suffix(".json.tmp")
-    tmp_path.write_text(
-        json.dumps(session.model_dump(), ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
-    tmp_path.replace(session_path)
+    with _session_lock:
+        tmp_path = session_path.with_name(f"{session_path.stem}_{uuid.uuid4().hex[:8]}.tmp")
+        try:
+            tmp_path.write_text(
+                json.dumps(session.model_dump(), ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+            tmp_path.replace(session_path)
+        finally:
+            tmp_path.unlink(missing_ok=True)
     return session
 
 
 @app.delete("/draft/session", response_model=DraftSessionStateSchema)
 def clear_draft_session():
     session_path = config.paths.draft_session_path
-    if session_path.exists():
-        session_path.unlink(missing_ok=True)
+    with _session_lock:
+        if session_path.exists():
+            session_path.unlink(missing_ok=True)
     return DraftSessionStateSchema()
 
 
@@ -166,9 +198,23 @@ def predict_matrix_draft(request: DraftStateRequest):
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
+@app.post("/predict/heuristic", response_model=DraftPredictionResponse)
+def predict_heuristic_draft(request: DraftStateRequest):
+    try:
+        return get_heuristic_predictor().predict(request)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+_combat_catalog_cache = None
+
+
 @app.get("/combat/catalog")
 def combat_catalog():
-    return get_engine().catalog()
+    global _combat_catalog_cache
+    if _combat_catalog_cache is None:
+        _combat_catalog_cache = get_engine().catalog()
+    return _combat_catalog_cache
 
 
 @app.post("/combat/stats")

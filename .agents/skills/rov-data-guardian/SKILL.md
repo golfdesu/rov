@@ -38,8 +38,8 @@ It checks:
    - So `src/build_draft_stats.py` uses `h1..h5` positions for lane distributions, and `src/train_sota_model.py` uses `order_team_picks_by_draft_logic()` to estimate Phase 1 (`P1..P3`) vs Phase 2 (`P4..P5`) picks.
    - That estimate is only about 54% right per pick slot and 79% right on phase (measured on 97 screenshot games, see `CHANGELOG.md`). Prefer `data/true_pick_order.json` wherever a game has it.
 3. **Hero Alias Normalization**:
-   - Normalize Liquipedia aliases (`"Riktor" -> "Richter"`, `"Diaochan" -> "Diao Chan"`, `"Chaugnar"`, ...) so there are **0 unmapped hero names**.
-   - Thai server names (`Mortos`, `Celica`, `Riktor`) are display-only (`frontend/src/utils/heroNames.ts`). Never rename heroes in `data/` or the checkpoint.
+   - Normalize Liquipedia aliases (`"Richter" -> "Riktor"`, `"Arthur" -> "Mortos"`, `"Brunhilda" -> "Celica"`, `"Diaochan" -> "Diao Chan"`) so there are **0 unmapped hero names**.
+   - Thai server names (`Mortos`, `Celica`, `Riktor`) are the canonical default across `data/`, the model checkpoint, and the web UI.
 4. **Training Dataset vs. Match Archive (2024 Exclusion)**:
    - `data/matches_draft_full.json` (4,208 games) is the historical archival repository covering 2024–2026.
    - `data/matches_training.json` is the **curated training dataset** containing **3,457 games strictly from 2025–2026**.

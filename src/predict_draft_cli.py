@@ -11,7 +11,10 @@ import torch.nn.functional as F
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-from train_sota_model import MAX_HISTORY_LEN, RoVDraftGNNTransformer
+try:
+    from src.train_sota_model import MAX_HISTORY_LEN, RoVDraftGNNTransformer, get_league_vector
+except ImportError:
+    from train_sota_model import MAX_HISTORY_LEN, RoVDraftGNNTransformer, get_league_vector
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
@@ -57,7 +60,12 @@ def resolve_hero_list(raw_str: str, hero_to_id: dict):
     for k in list(hero_to_id.keys()):
         lookup[re.sub(r"[^a-z0-9]", "", k.lower())] = k
     aliases = {
-        "riktor": "Richter",
+        "riktor": "Riktor",
+        "richter": "Riktor",
+        "mortos": "Mortos",
+        "arthur": "Mortos",
+        "celica": "Celica",
+        "brunhilda": "Celica",
         "diaochan": "Diao Chan",
         "flowborn": "Flowborn (Marksman)",
         "flowborn mm": "Flowborn (Marksman)",
@@ -134,6 +142,7 @@ def predict_next_action(
     enemy_bans=None,
     global_bans=None,
     top_k=5,
+    league="GLOBAL",
 ):
     ally_picks = ally_picks or []
     enemy_picks = enemy_picks or []
@@ -172,7 +181,14 @@ def predict_next_action(
     side_int = 1 if side.lower() == "red" else 0
     total_actions_done = len(ally_picks) + len(enemy_picks) + len(ally_bans) + len(enemy_bans)
     if phase is None:
-        phase = 2 if (len(ally_picks) >= 3 or len(ally_bans) >= 2) else 1
+        if action_mode.lower() == "pick":
+            phase = 2 if (len(ally_picks) >= 3 and len(enemy_picks) >= 3) else 1
+        else:
+            phase = (
+                2
+                if (len(ally_bans) >= 2 and len(enemy_bans) >= 2 and len(ally_picks) >= 3 and len(enemy_picks) >= 3)
+                else 1
+            )
 
     mctx = np.array(
         [
@@ -184,6 +200,7 @@ def predict_next_action(
                 1.0,  # 2026 tournament patch meta
                 len(ally_picks) / 5.0,
                 len(enemy_picks) / 5.0,
+                *get_league_vector(league),
             ]
         ],
         dtype=np.float32,
@@ -261,7 +278,7 @@ def predict_next_action(
             }
         )
 
-    return missing_lanes, recommendations
+    return missing_lanes, recommendations, phase
 
 
 def print_scenario_report(
@@ -349,7 +366,7 @@ def run_demos():
 
     for sc in scenarios:
         gb = [h for h in sc["global_bans"] if h in hero_to_id]
-        missing_lanes, recs = predict_next_action(
+        missing_lanes, recs, _ = predict_next_action(
             model,
             ckpt,
             hero_names,
@@ -398,10 +415,16 @@ def main():
     parser.add_argument(
         "--global-bans", type=str, default="", help="Comma-separated heroes unavailable due to Global Ban"
     )
+    parser.add_argument(
+        "--league",
+        choices=["RPL", "AOG", "GCS", "INTL", "APL", "AIC", "GLOBAL"],
+        default="GLOBAL",
+        help="Regional league meta conditioning: RPL (TH), AOG (VN), GCS (TW), INTL (international), or GLOBAL",
+    )
     parser.add_argument("--top-k", type=int, default=5, help="Number of recommendations to display")
     args = parser.parse_args()
 
-    if args.demo or not any([args.ally_picks, args.enemy_picks, args.ally_bans, args.enemy_bans]):
+    if args.demo or len(sys.argv) == 1:
         run_demos()
         return
 
@@ -416,7 +439,7 @@ def main():
     eb = resolve_hero_list(args.enemy_bans, hero_to_id)
     gb = resolve_hero_list(args.global_bans, hero_to_id)
 
-    missing_lanes, recs = predict_next_action(
+    missing_lanes, recs, effective_phase = predict_next_action(
         model,
         ckpt,
         hero_names,
@@ -432,12 +455,13 @@ def main():
         enemy_bans=eb,
         global_bans=gb,
         top_k=args.top_k,
+        league=args.league,
     )
     print_scenario_report(
         "Custom Draft Query",
         args.mode,
         args.side,
-        args.phase or 1,
+        effective_phase,
         ap,
         ep,
         ab,

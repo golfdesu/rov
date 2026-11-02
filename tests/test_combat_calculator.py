@@ -93,6 +93,9 @@ def test_alternate_form_skills_use_ingame_slot_level(engine):
     atk = engine.build_stats(build)
     rows = {r["slot"]: r for r in engine.skill_damage(atk, atk, build)}
     levels = engine.skill_levels_for(build)
+    assert levels["Skill 3"] == levels["Skill 1"] == 6
+    assert levels["Skill 4"] == levels["Skill 2"] == 6
+    assert levels["Skill 5"] == levels["Ultimate"] == 3
     assert rows["Skill 3"]["skill_level"] == levels["Skill 1"]
     assert rows["Skill 4"]["skill_level"] == levels["Skill 2"]
     assert rows["Skill 5"]["skill_level"] == levels["Ultimate"]
@@ -239,6 +242,12 @@ def test_duel_outcome(engine):
     assert len(res["a"]["level_sweep"]) == 15
 
 
+def test_legacy_hero_alias_resolution(engine):
+    for legacy, canonical in (("Arthur", "Mortos"), ("Brunhilda", "Celica"), ("Richter", "Riktor")):
+        res = engine.build_stats(Build(hero=legacy, level=15))
+        assert res["hero"] == canonical
+
+
 def test_enchantment_procs(engine):
     b_atk = Build(hero="Valhein", level=15, primary_faction="Veda", primary_enchantments=["Holy Thunder"])
     b_def = Build(hero="Toro", level=15)
@@ -356,3 +365,57 @@ def test_procs_include_defender_damage_taken_pct(engine):
     p_norm = engine._procs(s_atk, b_atk, engine.build_stats(b_def_normal))[0]["damage"]
     p_axe = engine._procs(s_atk, b_atk, engine.build_stats(b_def_axe))[0]["damage"]
     assert p_axe == pytest.approx(p_norm * 1.01, rel=1e-4)
+
+
+def test_all_130_heroes_have_zero_skill_warnings(engine):
+    target = engine.build_stats(Build(hero="Toro", level=15))
+    for hero_name in engine.level_stats:
+        build = Build(hero=hero_name, level=15)
+        stats = engine.build_stats(build)
+        skills = engine.skill_damage(stats, target, build)
+        assert len(skills) >= 4
+        for sk in skills:
+            assert sk["warnings"] == [], f"{hero_name} {sk['slot']} has warnings: {sk['warnings']}"
+
+    # Specifically verify Tamyn's Passive does not add own_hp as physical damage
+    b_tamyn = Build(hero="Tamyn", level=15)
+    s_tamyn = engine.build_stats(b_tamyn)
+    tamyn_passive = next(s for s in engine.skill_damage(s_tamyn, target, b_tamyn) if s["slot"] == "Passive")
+    assert "own_hp" not in tamyn_passive["components"]
+
+
+def test_duel_respects_active_combo_slots_for_passives(engine):
+    target = Build(hero="Toro", level=15)
+    # 1. Yena in Combined-Blade preset (no 'Passive' in active_combo_slots) should not proc Lunar Phase
+    yena_combined = Build(hero="Yena", level=15, active_combo_slots=["Skill 3", "Skill 4", "Skill 5"])
+    res_yena = engine.duel(yena_combined, target)
+    assert "Lunar Phase (Passive)" not in res_yena["simulation"]["a"]["damage_breakdown"]
+
+    # 2. Edras in Berserker preset (with 'Passive (Berserker Mode)' in active_combo_slots) casts it in duel
+    edras_berserker = Build(
+        hero="Edras",
+        level=15,
+        active_combo_slots=["Skill 2 (Berserker Mode)", "Ultimate (Berserker Mode)", "Passive (Berserker Mode)"],
+    )
+    res_edras = engine.duel(edras_berserker, target)
+    edras_passive_name = next(s["name"] for s in res_edras["a"]["skills"] if s["slot"] == "Passive (Berserker Mode)")
+    assert edras_passive_name in res_edras["simulation"]["a"]["damage_breakdown"]
+    assert res_edras["simulation"]["a"]["damage_breakdown"][edras_passive_name] > 0
+
+
+def test_arcana_aliases_resolution(engine):
+    build = Build(hero="Valhein", level=1, arcana={"Guerrilla": 5, "Spirit": 5, "Skewer": 10})
+    res = engine.build_stats(build)
+    assert "Spirit" in build.arcana
+    assert build.arcana["Spirit"] == 10
+    assert "Dragon's Claw" in build.arcana
+    assert build.arcana["Dragon's Claw"] == 10
+    assert res["sources"]["arcana"]["armor_pierce_flat"] == pytest.approx(64.0)
+    assert res["sources"]["arcana"]["movement_speed_pct"] == pytest.approx(10.0)
+
+
+def test_claves_sancti_stats(engine):
+    build = Build(hero="Valhein", level=15, items=["Claves Sancti"])
+    res = engine.build_stats(build)
+    assert res["stats"]["critical_chance"] >= 25.0
+    assert res["stats"]["critical_damage"] >= 240.0  # Base 200 + 40

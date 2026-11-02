@@ -1,8 +1,18 @@
 import { Flame, Loader2, Sparkles, Trophy } from "lucide-react";
+import { useState } from "react";
 import type { DraftStep, Hero, HeroRecommendation } from "../types/draft";
 import { LANE_SHORT, laneKey, missingLaneKeys } from "../utils/draft";
 import { displayName } from "../utils/heroNames";
 import { HeroPortrait } from "./HeroPortrait";
+
+const LANE_FILTER_TABS = [
+  { key: "ALL", short: "ALL", label: "ALL" },
+  { key: "DS_Lane", short: "DSL", label: "DSL ออฟ" },
+  { key: "Jungle", short: "JGL", label: "JGL ป่า" },
+  { key: "Mid", short: "MID", label: "MID กลาง" },
+  { key: "Dragon_Lane", short: "ADL", label: "ADL แครี่" },
+  { key: "Roam", short: "SUP", label: "SUP โรม" },
+] as const;
 
 interface AiPanelProps {
   recommendations: HeroRecommendation[];
@@ -23,7 +33,8 @@ function Sparkline({ values }: { values: number[] }) {
   if (pts.length < 2) return null;
   const w = 240;
   const h = 36;
-  const x = (i: number) => (i / 17) * w;
+  const maxStep = Math.max(17, ...pts.map(([i]) => i));
+  const x = (i: number) => (i / maxStep) * w;
   const y = (v: number) => h - ((v - 30) / 40) * h;
   const d = pts.map(([i, v], k) => `${k ? "L" : "M"}${x(i).toFixed(1)},${y(Math.min(Math.max(v, 30), 70)).toFixed(1)}`);
   const last = pts[pts.length - 1];
@@ -49,6 +60,21 @@ export function AiPanel({
   onLockHero,
   variant = "full",
 }: AiPanelProps) {
+  const [laneFilterState, setLaneFilterState] = useState<{ step: number | undefined; lane: string }>({
+    step: currentStep?.step,
+    lane: "ALL",
+  });
+  const selectedLane = laneFilterState.step === currentStep?.step ? laneFilterState.lane : "ALL";
+  const toggleLane = (key: string) => {
+    setLaneFilterState((prev) => {
+      const current = prev.step === currentStep?.step ? prev.lane : "ALL";
+      return {
+        step: currentStep?.step,
+        lane: current === key && key !== "ALL" ? "ALL" : key,
+      };
+    });
+  };
+
   if (!currentStep) {
     const blueWins = blueWinRate >= 50;
     if (variant === "ribbon") {
@@ -85,9 +111,15 @@ export function AiPanel({
 
   const isBan = currentStep.action === "ban";
   const sideText = currentStep.side === "blue" ? "text-blue" : "text-red";
-  const shown = recommendations.slice(0, 5);
-  const maxProb = Math.max(...shown.map((r) => r.probability_pct), 1);
   const missing = isBan ? new Set<string>() : missingLaneKeys(missingAllyLanes);
+  const filteredRecs =
+    selectedLane === "ALL"
+      ? recommendations
+      : recommendations
+          .filter((r) => laneKey(r.primary_lane) === selectedLane)
+          .map((r, i) => ({ ...r, rank: i + 1 }));
+  const shown = filteredRecs.slice(0, 5);
+  const maxProb = Math.max(...shown.map((r) => r.probability_pct), 1);
 
   if (variant === "ribbon") {
     return (
@@ -103,20 +135,26 @@ export function AiPanel({
           </div>
 
           <div className="flex flex-wrap items-center gap-1">
-            {!isBan &&
-              missingAllyLanes.length > 0 &&
-              missingAllyLanes.length < 5 &&
-              missingAllyLanes.map((lane) => {
-                const k = laneKey(lane);
-                return (
-                  <span
-                    key={lane}
-                    className="border border-good/50 bg-good/10 px-1.5 py-0.2 font-mono text-[10px] font-bold text-good"
-                  >
-                    ขาด {LANE_SHORT[k]?.en ?? k}
-                  </span>
-                );
-              })}
+            {LANE_FILTER_TABS.map((tab) => {
+              const active = selectedLane === tab.key;
+              const isMissing = !isBan && tab.key !== "ALL" && missing.size < 5 && missing.has(tab.key);
+              return (
+                <button
+                  type="button"
+                  key={tab.key}
+                  onClick={() => toggleLane(tab.key)}
+                  className={`border px-1.5 py-0.5 font-mono text-[9.5px] font-bold transition-colors ${
+                    active
+                      ? "border-gold bg-gold text-bg"
+                      : isMissing
+                        ? "border-good/60 bg-good/10 text-good hover:bg-good/20"
+                        : "border-line bg-bg text-muted hover:border-line-strong hover:text-ink"
+                  }`}
+                >
+                  {isMissing && !active ? `+${tab.short}` : tab.short}
+                </button>
+              );
+            })}
             {banUnlockedHeroes.slice(0, 2).map((u) => (
               <button
                 type="button"
@@ -132,11 +170,16 @@ export function AiPanel({
         </div>
 
         <div className={`grid grid-cols-5 gap-1 p-1.5 sm:gap-1.5 transition-opacity ${isLoading ? "opacity-50" : ""}`}>
-          {shown.length === 0
-            ? Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="h-16 animate-pulse bg-panel-2" />
-              ))
-            : shown.map((rec, idx) => {
+          {isLoading && shown.length === 0 ? (
+            Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="h-16 animate-pulse bg-panel-2" />
+            ))
+          ) : shown.length === 0 ? (
+            <div className="col-span-5 py-4 text-center font-mono text-xs text-muted">
+              ไม่มีคำแนะนำสำหรับตำแหน่งนี้
+            </div>
+          ) : (
+            shown.map((rec, idx) => {
                 const hero = heroMap.get(rec.hero_name);
                 const win = rec.lookahead_win_rate_pct ?? rec.predicted_win_rate_pct;
                 const lane = laneKey(rec.primary_lane);
@@ -173,7 +216,8 @@ export function AiPanel({
                     </div>
                   </button>
                 );
-              })}
+              })
+          )}
         </div>
       </section>
     );
@@ -181,8 +225,8 @@ export function AiPanel({
 
   return (
     <section className="flex min-h-0 flex-col overflow-hidden border border-line bg-panel clip-chamfer">
-      {/* Compact Header with Inline Missing Lanes & Unlocked Heroes */}
-      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-line px-3 py-2 sm:px-3.5">
+      {/* Compact Header with Inline Lane Filter Tabs, Missing Lanes & Unlocked Heroes */}
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-line px-3 py-1.5 sm:px-3.5">
         <div className="flex min-w-0 items-center gap-2">
           <Sparkles className="h-4 w-4 shrink-0 text-gold" />
           <h2 className="truncate font-display text-xs font-bold tracking-wider sm:text-base">
@@ -193,23 +237,36 @@ export function AiPanel({
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-          {!isBan && missingAllyLanes.length > 0 && missingAllyLanes.length < 5 && (
-            <div className="flex flex-wrap items-center gap-1">
-              <span className="text-[10px] font-semibold text-good sm:text-[11px]">ขาดเลน:</span>
-              {missingAllyLanes.map((lane) => {
-                const k = laneKey(lane);
-                return (
-                  <span
-                    key={lane}
-                    className="border border-good/50 bg-good/10 px-1.5 py-0.2 font-mono text-[9.5px] font-bold text-good sm:text-[10px]"
-                  >
-                    {LANE_SHORT[k]?.en ?? k}
-                  </span>
-                );
-              })}
-            </div>
-          )}
-          <span className="hidden font-mono text-[10px] text-dim xl:inline">
+          {/* Interactive Lane Filter Tabs */}
+          <div className="flex flex-wrap items-center gap-1" role="group" aria-label="กรองตำแหน่งที่แนะนำ">
+            {LANE_FILTER_TABS.map((tab) => {
+              const active = selectedLane === tab.key;
+              const isMissing = !isBan && tab.key !== "ALL" && missing.size < 5 && missing.has(tab.key);
+              return (
+                <button
+                  type="button"
+                  key={tab.key}
+                  onClick={() => toggleLane(tab.key)}
+                  title={
+                    tab.key === "ALL"
+                      ? "แสดงคำแนะนำทุกตำแหน่ง"
+                      : `กรองเฉพาะตำแหน่ง ${tab.label}${isMissing ? " (เลนที่ทีมยังขาด)" : ""}`
+                  }
+                  className={`border px-1.5 py-0.5 font-mono text-[9.5px] font-bold transition-colors sm:px-2 sm:text-[10px] ${
+                    active
+                      ? "border-gold bg-gold text-bg shadow-sm"
+                      : isMissing
+                        ? "border-good/60 bg-good/10 text-good hover:bg-good/20"
+                        : "border-line bg-bg text-muted hover:border-line-strong hover:text-ink"
+                  }`}
+                >
+                  {isMissing && !active ? `+${tab.label}` : tab.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <span className="hidden font-mono text-[10px] text-dim 2xl:inline">
             {useLookahead ? "POLICY + MINIMAX d2" : "POLICY HEAD"}
           </span>
         </div>
@@ -249,13 +306,18 @@ export function AiPanel({
           isLoading ? "opacity-50" : ""
         }`}
       >
-        {shown.length === 0 &&
+        {isLoading && shown.length === 0 &&
           Array.from({ length: 5 }).map((_, i) => (
             <li key={i} className="flex h-[60px] items-center gap-3 px-3 lg:h-[128px] lg:flex-col lg:justify-center">
               <div className="h-11 w-11 animate-pulse bg-panel-2" />
               <div className="h-3.5 w-24 animate-pulse bg-panel-2" />
             </li>
           ))}
+        {!isLoading && shown.length === 0 && (
+          <li className="col-span-5 flex h-[60px] items-center justify-center p-4 font-mono text-xs text-muted lg:h-[128px]">
+            ไม่มีคำแนะนำสำหรับตำแหน่งนี้
+          </li>
+        )}
         {shown.map((rec, idx) => {
           const hero = heroMap.get(rec.hero_name);
           const win = rec.lookahead_win_rate_pct ?? rec.predicted_win_rate_pct;

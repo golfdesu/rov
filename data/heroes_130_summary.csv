@@ -7,7 +7,7 @@
 6,Annette,Support,Mage,Control,Ranged,B,52.0,12.8,6.1,4,False,False,True,True,True,False,True,True,True,True,Passive: Whisperwind | Skill 1: Gust Force | Skill 2: Diviner | Ultimate: Hurricane Wall
 7,Aoi,Assassin,,Mobility,Melee,C,40.0,4.3,2.6,4,False,True,False,True,True,False,True,True,True,False,Passive: Dragon's Blessing | Skill 1: Dragon Slash | Skill 2: Dragon Claw | Ultimate: Dragon's Wrath
 8,Arduin,Warrior,Tank,Initiator,Melee,C,20.0,0.9,0.2,4,True,True,True,True,True,False,True,False,True,True,Passive: Bloodlust | Skill 1: Rend | Skill 2: Undying Protector | Ultimate: Cull
-9,Arthur,Warrior,,,Melee,A,20.0,0.9,0.2,4,False,True,True,True,True,False,True,False,False,False,Passive: Floating Light | Skill 1: Holy Light | Skill 2: Void Portal | Ultimate: Sacred Ground
+9,Mortos,Warrior,,,Melee,A,20.0,0.9,0.2,4,False,True,True,True,True,False,True,False,False,False,Passive: Floating Light | Skill 1: Holy Light | Skill 2: Void Portal | Ultimate: Sacred Ground
 10,Arum,Tank,,Initiator,Ranged,C,0.0,0.3,0.0,4,False,False,True,True,False,True,True,False,False,False,Passive: Snare | Skill 1: Uncaged | Skill 2: Lion Tamer | Ultimate: Ravenous Beasts
 11,Astrid,Warrior,,,Melee,C,57.9,6.5,3.1,4,True,True,False,True,True,False,True,True,False,False,Passive Skill: Bladed Guardian | Skill 1: Spin Slash | Skill 2: Fearless Charge | Skill 3: Dire Blow
 12,Ata,Tank,Warrior,Crowd Controller,Melee,B,0.0,0.2,0.0,4,False,True,False,True,True,False,True,False,True,False,Passive: Passive Child of the Sea | Skill 1: Skill 1 Wavewalking | Skill 2: Skill 2 Sea Anchor | Ultimate: Skill 3 Ghost Ship
@@ -20,7 +20,7 @@
 19,Bolt Baron,Warrior,,Mobility/Finisher,Range,B,50.0,0.0,0.0,4,False,True,True,True,False,False,True,True,False,True,Passive: Thunder Conductor | Skill 1: Thunder Plunge | Skill 2: Thunder Blast | Ultimate: Gathering Thunder
 20,Bonnie,Mage,,,Long Range,A,50.0,0.0,0.0,4,False,False,True,True,False,False,True,False,False,False,Passive: Bonnie Smack! | Skill 1: Gina Thwack! | Skill 2: Allan Kaboom! | Ultimate: Don't Test Me
 21,Bright,Assassin,Marksman,Mobility/Finisher,Melee,B,50.0,0.3,0.2,4,True,True,False,True,False,False,True,False,False,False,Passive: Revelation of Light | Skill 1: Dual Flash | Skill 2: Sacred Light Verdict | Ultimate: The Holy Soul Returns
-22,Brunhilda,Marksman,,Marksman,Ranged,A,50.0,0.0,0.0,4,False,True,False,False,False,False,True,False,False,True,Passive: Redeploy | Skill 1: Sentry | Skill 2: Entrench | Ultimate: Ballistics
+22,Celica,Marksman,,Marksman,Ranged,A,50.0,0.0,0.0,4,False,True,False,False,False,False,True,False,False,True,Passive: Redeploy | Skill 1: Sentry | Skill 2: Entrench | Ultimate: Ballistics
 23,Butterfly,Assassin,,,Melee,A,75.8,5.6,2.6,4,True,True,False,False,True,False,True,True,True,True,Passive: Assassin | Skill 1: Whirlwind | Skill 2: Sword Propel | Ultimate: Backstab
 24,Capheny,Marksman,,Marksman,Ranged,A,48.7,25.9,7.2,4,False,True,False,False,False,False,True,False,False,False,Passive: Aquamarine | Skill 1: Pulse Shot | Skill 2: Armorbreaker | Ultimate: Fusillade
 25,Charlotte,Warrior,,Jungle/Slayer,Near,B,0.0,0.2,0.0,4,False,True,False,True,True,False,True,True,False,False,Passive: Splash Gradation | Skill 1: Tri-Slash | Skill 2: Splash Fount | Ultimate: Power Gradation
@@ -86,7 +86,7 @@
 85,Qi,Warrior,Tank,Mobility / Control,Melee,A,47.2,27.5,16.2,4,False,True,False,True,False,False,True,False,True,False,Passive Skill: Protection Aura | Skill 1: Meteoroid | Skill 2: Mountain Shaker | Skill 3: Brawler
 86,Quillen,Assassin,,,,A,50.0,0.0,0.0,4,False,True,False,False,False,False,True,False,True,False,Passive: Spinal Stab | Skill 1: Mutilate | Skill 2: Decimate | Ultimate: Assassinate
 87,Raz,Mage,Assassin,Middle Lane,Melee,A,54.5,1.9,0.0,4,False,False,True,True,True,False,True,False,True,False,Passive: Fancy Footwork | Skill 1: Rising Uppercut /Rising Dragon Fist | Skill 2: Power Surge | Ultimate: Explosive KO / Odin Fist
-88,Richter,Warrior,Assassin,Mobility / Finisher / Semi support,Melee,A,50.0,0.0,0.0,4,True,True,True,True,True,False,True,True,True,False,Passive: Battle Instinct | Skill 1: Jungle Strike | Skill 2: Retaliate | Ultimate: Mark of the Hunter
+88,Riktor,Warrior,Assassin,Mobility / Finisher / Semi support,Melee,A,50.0,0.0,0.0,4,True,True,True,True,True,False,True,True,True,False,Passive: Battle Instinct | Skill 1: Jungle Strike | Skill 2: Retaliate | Ultimate: Mark of the Hunter
 89,Rouie,Support,,Buffs,Ranged,A,51.7,20.5,69.3,4,False,False,True,False,False,False,True,False,False,False,Passive: Floating Light | Skill 1: Holy Light | Skill 2: Void Portal | Ultimate: Sacred Ground
 90,Rourke,Warrior,Marksman,Jungling,Ranged,B,50.0,0.0,0.0,4,False,True,False,True,False,False,True,True,False,True,Passive: Determination | Skill 1: Bolt | Skill 2: Charged Shot | Ultimate: Scattershot
 91,Roxie,Tank,Warrior,Mobility,Melee,C,62.5,1.4,0.2,4,False,False,True,True,False,False,True,True,True,True,Passive: Fire Spirit | Skill 1: Wild Fire | Skill 2: Blazing Shield | Ultimate: Agnie's Grasp

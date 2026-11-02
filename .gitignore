@@ -41,3 +41,4 @@ data/patches_part*.json
 data/patch_skills_batch1.json
 data/draft_session_state.json
 data/draft_session_state.json.tmp
+exports/

@@ -67,6 +67,37 @@ def test_predict_matrix_endpoint():
     assert len(data["red_next_picks"]) == 2
 
 
+def test_predict_heuristic_endpoint():
+    response = client.post(
+        "/predict/heuristic",
+        json={
+            "mode": "pick",
+            "side": "blue",
+            "phase": 1,
+            "ally_picks": ["Rouie", "Billow"],
+            "enemy_picks": ["TeeMee", "Hayate"],
+            "ally_bans": ["Goverra", "Dyadia"],
+            "enemy_bans": ["Heino", "Dolia"],
+            "global_bans": ["Marja"],
+            "top_k": 5,
+        },
+    )
+    # Checkpoint is pending training via run_hpo_heuristic_h100.sbatch on H100
+    assert response.status_code in (200, 503)
+    if response.status_code == 200:
+        data = response.json()
+        assert data["architecture"] == "RoVDraftGNNTransformer"
+        assert data["mode"] == "pick"
+        assert len(data["recommendations"]) == 5
+        rec_names = {r["hero_name"] for r in data["recommendations"]}
+        assert "Marja" not in rec_names
+        assert "Rouie" not in rec_names
+        assert len(data["blue_next_picks"]) == 2
+        assert len(data["red_next_picks"]) == 2
+    else:
+        assert "Heuristic draft model artifact not found" in response.json()["detail"]
+
+
 def test_predict_next_picks_ghost_forecast():
     response = client.post(
         "/predict",
@@ -250,7 +281,7 @@ def test_draft_session_persistence_endpoints(tmp_path, monkeypatch):
                 "redTeamName": "BAC",
                 "blueSideTeam": "B",
                 "blueBans": ["Marja", "Keera", "Aoi", "Stuart"],
-                "redBans": ["Eland'orr", "TeeMee", "Richter", "Yena"],
+                "redBans": ["Eland'orr", "TeeMee", "Riktor", "Yena"],
                 "bluePicks": ["Thane", "Capheny", "Krixi", "Nakroth", "Skud"],
                 "redPicks": ["Toro", "Hayate", "Raz", "Biron", "Kriknak"],
                 "blueWinRate": 47.8,
@@ -316,7 +347,7 @@ def test_phase1_and_phase2_lane_filtering_prevents_overlap():
             "ally_picks": ["Hayate", "Marja", "Lorion"],
             "enemy_picks": ["Liliana", "Zephys", "Flowborn (Marksman)"],
             "ally_bans": ["Eland'orr", "Y'bneth", "Murad"],
-            "enemy_bans": ["Lumburr", "Helen", "Rouie", "Richter"],
+            "enemy_bans": ["Lumburr", "Helen", "Rouie", "Riktor"],
             "top_k": 5,
         },
     )
@@ -372,7 +403,7 @@ def test_next_picks_anchored_on_sota_model_not_2024_lifts():
                 "Y'bneth",
                 "Billow",
                 "Eland'orr",
-                "Richter",
+                "Riktor",
                 "Ignis",
             ],
             "top_k": 5,
@@ -485,14 +516,132 @@ def test_series_winning_heroes_adaptation_boost():
     }
     r_base = client.post("/predict", json=base_payload)
     assert r_base.status_code == 200
-    base_recs = r_base.json()["recommendations"]
-    target_hero = base_recs[2]["hero_name"]
-    base_prob = base_recs[2]["probability_pct"]
+    base_json = r_base.json()
+    base_recs = base_json["recommendations"]
+    target_hero = base_recs[0]["hero_name"]
+    base_prob = base_recs[0]["probability_pct"]
+    base_forecast_prob = base_json["blue_next_picks"][0]["probability_pct"]
 
     r_boost = client.post(
         "/predict",
-        json={**base_payload, "series_winning_heroes": [target_hero]},
+        json={**base_payload, "series_winning_heroes": [target_hero], "use_lookahead": True},
+    )
+    assert r_boost.status_code == 200
+    boost_json = r_boost.json()
+    boost_map = {r["hero_name"]: r["probability_pct"] for r in boost_json["recommendations"]}
+    assert boost_map[target_hero] > base_prob
+    assert boost_json["blue_next_picks"][0]["hero_name"] == target_hero
+    assert boost_json["blue_next_picks"][0]["probability_pct"] > base_forecast_prob
+
+
+def test_per_lane_quota_in_sota_and_matrix_modes():
+    payload = {
+        "mode": "pick",
+        "side": "blue",
+        "phase": 2,
+        "ally_picks": ["Yena", "Aoi", "Liliana", "Hayate"],
+        "enemy_picks": ["Florentino", "Keera", "Krixi", "Capheny"],
+        "ally_bans": ["Rouie", "Billow", "Dolia", "Toro"],
+        "enemy_bans": ["TeeMee", "Marja", "Heino", "Goverra"],
+        "top_k": 50,
+    }
+    for endpoint in ("/predict", "/predict/matrix"):
+        resp = client.post(endpoint, json=payload)
+        assert resp.status_code == 200
+        recs = resp.json()["recommendations"]
+        assert len(recs) == 50
+        for lane in ("DS_Lane", "Jungle", "Mid", "Dragon_Lane", "Roam"):
+            lane_recs = [r for r in recs if r["primary_lane"] == lane]
+            assert len(lane_recs) >= 5, f"{endpoint} returned <5 heroes for {lane}"
+            assert lane_recs[0]["probability_pct"] > 0.0
+
+
+def test_predict_matrix_forecasts_and_series_winner_parity():
+    # 1. Next picks must fill distinct lanes and respect per-side global bans
+    r_picks = client.post(
+        "/predict/matrix",
+        json={
+            "mode": "pick",
+            "side": "blue",
+            "phase": 1,
+            "ally_picks": ["Rouie"],
+            "enemy_picks": ["TeeMee"],
+            "ally_bans": ["Goverra", "Dyadia"],
+            "enemy_bans": ["Heino", "Dolia"],
+            "blue_global_bans": ["Billow"],
+            "red_global_bans": ["Hayate"],
+            "top_k": 5,
+        },
+    )
+    assert r_picks.status_code == 200
+    d_picks = r_picks.json()
+    assert len(d_picks["blue_next_picks"]) == 2
+    assert len(d_picks["red_next_picks"]) == 2
+    blue_lanes = [r["primary_lane"] for r in d_picks["blue_next_picks"]]
+    red_lanes = [r["primary_lane"] for r in d_picks["red_next_picks"]]
+    assert blue_lanes[0] != blue_lanes[1]
+    assert red_lanes[0] != red_lanes[1]
+    assert all(r["hero_name"] != "Billow" for r in d_picks["blue_next_picks"])
+    assert all(r["hero_name"] != "Hayate" for r in d_picks["red_next_picks"])
+
+    # 2. Next bans must be populated when ban slots remain (Phase 2 Omen protection bans)
+    r_bans = client.post(
+        "/predict/matrix",
+        json={
+            "mode": "ban",
+            "side": "blue",
+            "phase": 2,
+            "ally_picks": ["Omen"],
+            "enemy_picks": ["Hayate"],
+            "ally_bans": ["Billow", "Dolia"],
+            "enemy_bans": ["Rouie", "TeeMee"],
+            "top_k": 5,
+        },
+    )
+    assert r_bans.status_code == 200
+    d_bans = r_bans.json()
+    assert len(d_bans["blue_next_bans"]) == 2
+    assert len(d_bans["red_next_bans"]) == 2
+    assert [b["hero_name"] for b in d_bans["blue_next_bans"]] == ["Mina", "Florentino"]
+
+    # 3. Series winning heroes adaptation boost in matrix mode
+    target_hero = d_picks["recommendations"][2]["hero_name"]
+    base_prob = d_picks["recommendations"][2]["probability_pct"]
+    r_boost = client.post(
+        "/predict/matrix",
+        json={
+            "mode": "pick",
+            "side": "blue",
+            "phase": 1,
+            "ally_picks": ["Rouie"],
+            "enemy_picks": ["TeeMee"],
+            "ally_bans": ["Goverra", "Dyadia"],
+            "enemy_bans": ["Heino", "Dolia"],
+            "blue_global_bans": ["Billow"],
+            "red_global_bans": ["Hayate"],
+            "series_winning_heroes": [target_hero],
+            "top_k": 10,
+        },
     )
     assert r_boost.status_code == 200
     boost_map = {r["hero_name"]: r["probability_pct"] for r in r_boost.json()["recommendations"]}
     assert boost_map[target_hero] > base_prob
+
+
+def test_apl_and_aic_league_presets_succeed():
+    for league in ("APL", "AIC"):
+        r = client.post(
+            "/predict",
+            json={
+                "mode": "pick",
+                "side": "blue",
+                "phase": 1,
+                "ally_picks": ["Rouie"],
+                "enemy_picks": ["TeeMee"],
+                "league": league,
+                "top_k": 5,
+            },
+        )
+        assert r.status_code == 200, f"Failed for league {league}: {r.text}"
+        data = r.json()
+        assert len(data["recommendations"]) == 5

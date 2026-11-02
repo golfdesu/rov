@@ -19,7 +19,8 @@
     "magic_life_steal": "pct",
     "hp_regen_5s": "flat",
     "mana_regen_5s": "flat",
-    "ability_power_pct": "pct"
+    "ability_power_pct": "pct",
+    "critical_damage": "pct"
   },
   "count": 114,
   "items": [
@@ -356,7 +357,9 @@
       "tier": 3,
       "price": 2120,
       "stats": {
-        "attack_damage": 100.0
+        "attack_damage": 100.0,
+        "critical_chance": 25.0,
+        "critical_damage": 40.0
       },
       "stats_raw": [
         "+100 พลังโจมตี"

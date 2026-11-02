@@ -98,7 +98,7 @@
       "resource_regen_5s": 15,
       "source": "heroes/Arduin/status/status_lv1.jpg"
     },
-    "Arthur": {
+    "Mortos": {
       "hp": 3922,
       "attack_damage": 164,
       "armor": 149,
@@ -256,7 +256,7 @@
       "resource_regen_5s": 15,
       "source": "heroes/Bright/status/status_lv1.jpg"
     },
-    "Brunhilda": {
+    "Celica": {
       "hp": 3526,
       "attack_damage": 178,
       "armor": 131,
@@ -1056,7 +1056,7 @@
       "resource_regen_5s": 50,
       "source": "heroes/Raz/status/status_lv1.jpg"
     },
-    "Richter": {
+    "Riktor": {
       "hp": 3765,
       "attack_damage": 170,
       "armor": 142,

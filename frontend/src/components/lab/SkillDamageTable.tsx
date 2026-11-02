@@ -74,20 +74,22 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
     }
   };
 
-  const isDamagingSlot = (s: SkillDamageRow) => !s.slot.startsWith("Passive") || s.final_damage > 0 || s.raw_damage > 0;
+  const isDamagingSlot = (s: SkillDamageRow) =>
+    s.damage_type !== "none" && (!s.slot.startsWith("Passive") || s.final_damage > 0 || s.raw_damage > 0);
   const allActiveSlots = side.skills.filter(isDamagingSlot).map((s) => s.slot);
 
   const isSlotInCombo = (slot: string) => {
     if (build.active_combo_slots != null) {
       return build.active_combo_slots.includes(slot);
     }
-    return !slot.startsWith("Passive");
+    const sk = side.skills.find((s) => s.slot === slot);
+    return sk != null && isDamagingSlot(sk);
   };
 
   const toggleSlotInCombo = (slot: string) => {
     const currentSlots = build.active_combo_slots != null
       ? [...build.active_combo_slots]
-      : side.skills.filter((s) => !s.slot.startsWith("Passive")).map((s) => s.slot);
+      : allActiveSlots;
     const next = currentSlots.includes(slot)
       ? currentSlots.filter((s) => s !== slot)
       : [...currentSlots, slot];
@@ -228,14 +230,14 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                 <tr
                   key={s.slot}
                   className={`border-t border-line/50 align-top transition-colors ${
-                    !isPassive && !inCombo ? "opacity-50 bg-bg/10" : ""
+                    isDamagingSlot(s) && !inCombo ? "opacity-50 bg-bg/10" : ""
                   }`}
                 >
                   <td colSpan={8} className="p-0">
                     <div className="flex items-center p-1.5 hover:bg-panel-2/40 transition-colors">
                       {/* Combo Checkbox */}
                       <div className="w-7 shrink-0 text-center">
-                        {isPassive && !isDamagingSlot(s) ? (
+                        {!isDamagingSlot(s) ? (
                           <span className="text-dim text-[10px]">—</span>
                         ) : (
                           <input

@@ -153,17 +153,26 @@ export function GlobalBanModal({
     };
     const maxUnlocked = getMaxUnlockedGame(clearedState, seriesGames);
     const nextGame = Math.min(globalBans.gameNumber, maxUnlocked);
-    onChange({
-      ...clearedState,
-      gameNumber: nextGame,
-    });
+    if (nextGame !== globalBans.gameNumber && onSelectGameNumber) {
+      onChange(clearedState);
+      onSelectGameNumber(nextGame);
+    } else {
+      onChange({
+        ...clearedState,
+        gameNumber: nextGame,
+      });
+    }
   };
 
   const handleClose = () => {
     const currentStatus = getGameUnlockStatus(globalBans.gameNumber, globalBans, seriesGames);
     if (!currentStatus.isUnlocked) {
       const maxUnlocked = getMaxUnlockedGame(globalBans, seriesGames);
-      onChange({ ...globalBans, gameNumber: maxUnlocked });
+      if (onSelectGameNumber) {
+        onSelectGameNumber(maxUnlocked);
+      } else {
+        onChange({ ...globalBans, gameNumber: maxUnlocked });
+      }
     }
     onClose();
   };
@@ -222,7 +231,8 @@ export function GlobalBanModal({
               }
               onBlur={(e) => {
                 if (!e.target.value.trim()) {
-                  onChange({ ...globalBans, [blueTeamNameField]: "TEAM BLUE" });
+                  const fallback = blueTeamNameField === "teamAName" ? "TEAM A" : "TEAM B";
+                  onChange({ ...globalBans, [blueTeamNameField]: fallback });
                 }
               }}
               maxLength={14}
@@ -253,7 +263,8 @@ export function GlobalBanModal({
               }
               onBlur={(e) => {
                 if (!e.target.value.trim()) {
-                  onChange({ ...globalBans, [redTeamNameField]: "TEAM RED" });
+                  const fallback = redTeamNameField === "teamAName" ? "TEAM A" : "TEAM B";
+                  onChange({ ...globalBans, [redTeamNameField]: fallback });
                 }
               }}
               maxLength={14}

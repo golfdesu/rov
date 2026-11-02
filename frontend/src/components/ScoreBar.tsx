@@ -42,6 +42,9 @@ interface ScoreBarProps {
   onUndo: () => void;
   onReset: () => void;
   canUndo: boolean;
+  modelBadge?: string;
+  modelVariant?: "sota" | "heuristic";
+  modelTooltip?: string;
 }
 
 export function ScoreBar({
@@ -57,6 +60,9 @@ export function ScoreBar({
   onUndo,
   onReset,
   canUndo,
+  modelBadge,
+  modelVariant = "sota",
+  modelTooltip,
 }: ScoreBarProps) {
   const blue = Math.min(Math.max(blueWinRate, 0), 100);
   const red = 100 - blue;
@@ -71,9 +77,23 @@ export function ScoreBar({
             <span className="font-display text-sm font-bold text-gold">R</span>
           </div>
           <div className="flex flex-col leading-tight">
-            <span className="font-mono text-[9.5px] font-semibold text-dim sm:text-xs">
-              STEP {Math.min(currentStepIndex + 1, totalSteps)}/{totalSteps}
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="font-mono text-[9.5px] font-semibold text-dim sm:text-xs">
+                STEP {Math.min(currentStepIndex + 1, totalSteps)}/{totalSteps}
+              </span>
+              {modelBadge && (
+                <span
+                  title={modelTooltip}
+                  className={`px-1.5 py-0.5 font-mono text-[9px] font-bold tracking-wider uppercase ${
+                    modelVariant === "heuristic"
+                      ? "border border-amber-500/60 bg-amber-500/15 text-amber-400"
+                      : "border border-gold/60 bg-gold/15 text-gold"
+                  }`}
+                >
+                  {modelBadge}
+                </span>
+              )}
+            </div>
             {currentStep ? (
               <span
                 className={`font-display text-xs font-bold tracking-wide sm:text-base ${

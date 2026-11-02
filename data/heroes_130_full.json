@@ -1244,7 +1244,7 @@
   },
   {
     "hero_id": 9,
-    "name": "Arthur",
+    "name": "Mortos",
     "slug": "arthur",
     "primary_role": "Warrior",
     "secondary_role": null,
@@ -1294,7 +1294,7 @@
         "base_damage": [],
         "scaling": {},
         "desc_th": "Mortos จะฟื้นฟู 2% HP ทุก 2 วิ",
-        "description": "Arthur regenerates 2% of maximum HP every 2 seconds.",
+        "description": "Mortos regenerates 2% of maximum HP every 2 seconds.",
         "icon_url": "/skills/Arthur/0_floatinglight.png"
       },
       {
@@ -1330,7 +1330,7 @@
           "ad_pct": 100.0
         },
         "desc_th": "Mortos เพิ่มความเร็วให้ตัวเอง 30% เป็นเวลา 3 วิ และการโจมตีปกติครั้งต่อไปจะพุ่งไปฟันศัตรู สร้างความเสียหายกายภาพ 180 (+100%AD) พร้อมกับใบ้ศัตรู 1.25 วิ\nเอฟเฟกต์วิ่งเร็วจะหมดทันทีหลังโจมตี\nจากนั้นเป้าหมายที่ถูกโจมตีจะติดสัญลักษณ์ Judgment เป็นเวลา 5 วิ ระหว่างนี้หาก Mortos โจมตีปกติ หรือใช้สกิลใส่เป้าหมายดังกล่าว จะสร้างโบนัสความเสียหายเวท 1% Max HP ของเป้าหมาย\nพันธมิตรที่อยู่ใกล้ศัตรูที่ติดสัญลักษณ์จะวิ่งเร็วขึ้น 10%",
-        "description": "Arthur increases his movement speed by 30% for 3s. His next normal attack lunges at the enemy, dealing 180 (+100% AD) physical damage and silencing them for 1.25s. The target is marked with Judgment for 5s; attacks and abilities against the marked target deal bonus magic damage equal to 1% of the target's max HP, and nearby allies gain 10% movement speed.",
+        "description": "Mortos increases his movement speed by 30% for 3s. His next normal attack lunges at the enemy, dealing 180 (+100% AD) physical damage and silencing them for 1.25s. The target is marked with Judgment for 5s; attacks and abilities against the marked target deal bonus magic damage equal to 1% of the target's max HP, and nearby allies gain 10% movement speed.",
         "icon_url": "/skills/Arthur/1_holylight.png"
       },
       {
@@ -1366,7 +1366,7 @@
           "ad_pct": 45.0
         },
         "desc_th": "Mortos สร้างความเสียหายต่อเนื่องแก่ศัตรูใกล้เคียงเป็นเวลา 5 วิ ซึ่งทุก 0.5 วิจะสร้างความเสียหายกายภาพ 70(+45%AD) หน่วย\nขณะเดียวกันจะได้รับโล่ที่ดูดซับความเสียหาย 150(+4% HP สูงสุด) หน่วยเป็นเวลา 2 วิ",
-        "description": "Arthur deals continuous damage to nearby enemies for 5 seconds, dealing 70 (+45% AD) physical damage every 0.5s. Simultaneously, he gains a shield that absorbs 150 (+4% max HP) damage for 2s.",
+        "description": "Mortos deals continuous damage to nearby enemies for 5 seconds, dealing 70 (+45% AD) physical damage every 0.5s. Simultaneously, he gains a shield that absorbs 150 (+4% max HP) damage for 2s.",
         "icon_url": "/skills/Arthur/2_voidportal.png"
       },
       {
@@ -1394,7 +1394,7 @@
           "target_hp_pct": 14.0
         },
         "desc_th": "Mortos กระโดดโจมตีศัตรูในระยะ สร้าง ความเสียหายเวท 14% Max HP พร้อมกับทำให้ศัตรูในระยะลอยขึ้น 0.5 วิ\nในขณะเดียวกัน ดาบศักดิสิทธิ์จะปรากฏขึ้นที่พื้น สร้าง ความเสียหายเวท 100 (+35%AD) แก่ศัตรูในรัศมี ทุก 1 วิ เป็นเวลา 5 วิ",
-        "description": "Arthur jumps at a target enemy, dealing 14% target max HP as magic damage and knocking surrounding enemies airborne for 0.5s. Simultaneously, holy swords pierce the ground, dealing 100 (+35% AD) magic damage per second for 5s to enemies within range.",
+        "description": "Mortos jumps at a target enemy, dealing 14% target max HP as magic damage and knocking surrounding enemies airborne for 0.5s. Simultaneously, holy swords pierce the ground, dealing 100 (+35% AD) magic damage per second for 5s to enemies within range.",
         "icon_url": "/skills/Arthur/3_sacredground.png"
       }
     ]
@@ -3335,7 +3335,7 @@
   },
   {
     "hero_id": 22,
-    "name": "Brunhilda",
+    "name": "Celica",
     "slug": "brunhilda",
     "primary_role": "Marksman",
     "secondary_role": null,
@@ -3408,7 +3408,7 @@
         "scaling": {},
         "icon_url": "/skills/Brunhilda/1_redeploy.png",
         "desc_th": "Celica วิ่งเร็วขึ้น 80% เป็นเวลา 3 วิ (ลดลงเรื่อยๆ ) และสามารถยกเลิกการตั้งป้อมได้ทันที\nสกิลติดตัว: เพิ่มพลังโจมตี Celica ขึ้น 35 หน่วย หากสกิลทำงานจะเพิ่มขึ้นเป็นสองเท่า",
-        "description": "Brunhilda gains 80% movement speed (decaying over 3s) and can immediately cancel siege mode.\nPassive: Increases Brunhilda's Attack Damage by 35/42/49/56/63/70, which is doubled while this ability is active."
+        "description": "Celica gains 80% movement speed (decaying over 3s) and can immediately cancel siege mode.\nPassive: Increases Celica's Attack Damage by 35/42/49/56/63/70, which is doubled while this ability is active."
       },
       {
         "name": "Sentry",
@@ -3439,7 +3439,7 @@
         },
         "icon_url": "/skills/Brunhilda/2_sentry.png",
         "desc_th": "Celica ปา Sentry ไปยังจุดที่กำหนด (เมื่อกับระเบิดถูกวางอยู่บนพุ่มไม้ ฮีโร่พันธมิตรจะได้รับวิสัยทัศน์ของหญ้ารอบๆ) สร้างความเสียหายกายภาพ 200(+50%AD) แก่ศัตรูที่เดินมาเหยียบ หากเป็นฮีโร่ จะทำให้วิ่งช้าลง 30% และลดเกราะลง 15% เป็นเวลา 2 วิ ส่วน Celica จะได้รับโล่เป็นเวลา 3 วิ ซึ่งสามารถดูดซับความเสียหาย 200(+50%AD)หน่วย สามารถวาง Sentry ได้พร้อมกันสูงสุด 2 ชิ้น",
-        "description": "Throws a Sentry to target location (grants vision of brush when placed inside). Triggers deal 200/240/280/320/360/400 (+50% AD) physical damage, slow heroes by 30%, and shred 15/18/21/24/27/30% armor for 2s. Brunhilda gains a 200/240/280/320/360/400 (+50% AD) shield for 3s. Can hold up to 2 Sentries."
+        "description": "Throws a Sentry to target location (grants vision of brush when placed inside). Triggers deal 200/240/280/320/360/400 (+50% AD) physical damage, slow heroes by 30%, and shred 15/18/21/24/27/30% armor for 2s. Celica gains a 200/240/280/320/360/400 (+50% AD) shield for 3s. Can hold up to 2 Sentries."
       },
       {
         "name": "Entrench",
@@ -5943,7 +5943,7 @@
       "has_soft_cc": true,
       "has_suppress": false,
       "has_mobility": true,
-      "has_immunity": true,
+      "has_immunity": false,
       "has_heal_sustain": true,
       "has_shield": false
     },
@@ -13827,7 +13827,7 @@
   },
   {
     "hero_id": 88,
-    "name": "Richter",
+    "name": "Riktor",
     "slug": "riktor",
     "primary_role": "Warrior",
     "secondary_role": "Assassin",
@@ -13858,7 +13858,7 @@
       "has_soft_cc": true,
       "has_suppress": false,
       "has_mobility": true,
-      "has_immunity": true,
+      "has_immunity": false,
       "has_heal_sustain": true,
       "has_shield": false
     },
@@ -15881,7 +15881,7 @@
         "scaling": {
           "bonus_ad_pct": 28.0,
           "level_scaling": 13.0,
-          "hp_pct": 2.0
+          "heal_bonus_hp_pct": 2.0
         },
         "desc_th": "สกิลติดตัว\nหลังจาก Tamyn เก็บหอกศักดิ์สิทธิ์ จะเสริมพลังให้การโจมตีปกติกลายเป็นการโจมตีพิเศษ (เป็นเวลา 4 วิ สูงสุด 2 ครั้ง) พร้อมได้รับความเร็วเคลื่อนที่เพิ่มขึ้น 20-40 หน่วย (เป็นเวลา 4 วิ เมื่อ 2 วิจะถึงขีดจำกัด)\nการโจมตีพิเศษโจมตีโดนจะสร้างโบนัสความเสียหายกายภาพ 182-364 (เพิ่มขึ้นตาม LV) + (28% โบนัส AD) หน่วย (โบนัสความเสียหายไม่ติดคริ) พร้อมกับลดคูลดาวน์ของสกิลทั้งหมดลง 1 วิ\nการเก็บหอกศักดิ์สิทธิ์ จะฟื้นฟูพลังชีวิต 100-198 (เพิ่มขึ้นตาม LV) (+2% โบนัสพลังชีวิต) หน่วยให้ Tamyn การโจมตีพิเศษโจมตีโดนจะได้รับการฟื้นฟูเป็น 2 เท่า\nเมื่อ Tamyn ใช้สกิลจะได้รับความเร็วเคลื่อนที่ 2% (เป็นเวลา 5 วิ สูงสุด 3 ครั้ง)\nโบนัสความเร็วเคลื่อนที่จะเพิ่มความเสียหายสกิลและการโจมตีพิเศษของ Tamyn ในค่าที่เท่ากัน\nหลังจากหอกศักดิ์สิทธิ์หายไป 5 วิจะฟื้นฟูอัตโนมัติ",
         "description": "Passive: Collecting a Sacred Spear enhances Tamyn's next basic attacks into special attacks (up to 2 stacks for 4s) and grants 20-40 movement speed for 4s. Special attacks deal 182-364 (+13/lv) (+28% bonus AD) bonus physical damage (cannot crit) and reduce all skill cooldowns by 1s. Collecting a spear heals 100-198 (+7/lv) (+2% bonus HP), doubled when a special attack hits. Skill casts grant 2% movement speed for 5s (stacks up to 3 times). Movement speed bonuses increase skill and special attack damage equally. Spears regenerate automatically 5s after expiring.",

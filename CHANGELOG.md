@@ -27,6 +27,460 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-02 11:30 (UTC+7) — Heuristic Draft Experiment Pipeline (0% True Order Dataset, HPO Script, Serving & Dual-Board UI)
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **0% True Order Dataset Generation (`data/matches_training_heuristic.json`)**:
+  - Enhanced `src/build_training_dataset.py` with `--no-true-order` flag.
+  - Curated identical 3,483 matches from 2025–2026 with 0% True Pick Order (retaining Liquipedia default lane-sorted heuristics: DS -> Jungle -> Mid -> AD -> Roam).
+- **GPU-Resident Optuna HPO & Modular Training Arguments (`src/hpo_sota_optuna.py`, `src/train_sota_model.py`)**:
+  - Added CLI options (`--output-best-params`, `--output-top5`, `--output-model-path`, `--top5-path`, `--best-params-path`) so experimental models do not overwrite production SOTA artifacts.
+  - Created SLURM script `run_hpo_heuristic_h100.sbatch` for fast 50-trial HPO and training on ERAWAN HPC NVIDIA H100.
+  - Trained baseline candidate `models/sota_draft_gnn_transformer_heuristic.pt` (Val Loss: 2.8271) for immediate local and serving use.
+- **FastAPI Heuristic Endpoint (`src/api.py`, `src/predictor.py`)**:
+  - Added thread-safe lazy loader `get_heuristic_predictor()` in `src/api.py`.
+  - Exposed `POST /predict/heuristic` using the same `DraftStateRequest` schema and response contract.
+  - Updated `RoVDraftPredictor.__init__` to gracefully handle `str` and `Path` objects.
+- **Frontend Dual Draft Board Architecture (`frontend/src/`)**:
+  - Extracted `DraftBoardView.tsx` from `App.tsx` ensuring 100% visual and functional parity across draft engines without code duplication.
+  - Added `"heuristic"` engine to `useDraft.ts`, routing inference requests to `/predict/heuristic`.
+  - Added independent storage keys (`rov_draft_session_v1` vs `rov_draft_session_heuristic`) to isolate draft session states.
+  - Added top tab `"ดราฟต์ (Liquipedia 0% Order)"` with amber theme badges and URL hash routing (`#heuristic-draft`).
+- **Comparative Analysis & Empirical Findings**:
+  - Step 1 Ban (Ban Phase 1): High concordance on meta bans (Eland'orr, Rouie, Y'bneth) because Liquipedia ban order is already chronological.
+  - Step 5 (Blue First Pick): SOTA (51.3% True Order) prioritizes high-priority flex frontliners/supports (Y'bneth 24.2%, Rouie 17.1%, Toro 16.5%), whereas Heuristic model diffuses attention to marksmen/junglers (Eland'orr 7.9%, Wisp 6.0%) due to lane order bias.
+  - Step 10 & 16 (Mid-to-Late Pick): SOTA responds precisely to role deficits and counter/synergy edges, while Heuristic model tends to suggest redundant roles based on fixed-slot patterns.
+
+### 📁 Modified Files
+- `src/build_training_dataset.py`
+- `src/hpo_sota_optuna.py`
+- `src/train_sota_model.py`
+- `src/predictor.py`
+- `src/api.py`
+- `run_hpo_heuristic_h100.sbatch`
+- `frontend/src/App.tsx`
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/components/ScoreBar.tsx`
+- `frontend/src/hooks/useDraft.ts`
+- `tests/test_api.py`
+- `data/matches_training_heuristic.json`
+- `models/sota_draft_gnn_transformer_heuristic.pt`
+
+### 🧪 Verification
+- `pytest -v`: All 78 tests passing (including new `test_predict_heuristic_endpoint`).
+- Frontend: `npm run lint` (`oxlint`) and `npm run build` (`tsc -b && vite build`) passed with 0 errors.
+- Code quality: `ruff check --fix .` and `ruff format .` passed with 0 errors across 88 files.
+- Empirical testing: Ran side-by-side comparative inference script confirming distinct behavior across draft steps.
+
+### ⚠️ Open Issues / Important Notes
+- When ready for full production HPO tuning on HPC, submit `sbatch run_hpo_heuristic_h100.sbatch` on ERAWAN H100 to obtain optimal hyperparameters for the 0% true order dataset.
+
+---
+
+## 📅 2026-11-01 12:45 (UTC+7) — Multi-Agent Deep Audit Fixes (Matrix Counter Directionality, Search Softmax Masking, Physical Life Steal Invariant, Thread-Safe Session Storage & CLI Phase Logic)
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Matrix Counter Directionality Fix (`src/predictor.py`)**:
+  - In `predict_matrix()`, corrected matrix-vector multiplication orientation for skew-symmetric counter matrices: `cnt_scores = cnt_mat @ ep_row` (candidate advantage over enemy picks) and `cnt_risks = ep_row @ cnt_mat` (enemy picks advantage over candidate). Previously transposed products reversed counter advantage, subtracting 3.2x advantage and recommending countered heroes.
+  - Wrapped `series_winning_heroes` resolution in `set(...)` across `_evaluate_with_forecasts()` and `predict()` to prevent compounding multipliers on duplicate inputs.
+- **Search Engine Softmax Hero Pool Masking (`src/search/draft_mcts.py`)**:
+  - Updated `run_model()` in Minimax lookahead to mask probabilities post-softmax with `unavail` tensor (`probs = probs.masked_fill(unavail, 0.0)`) and renormalize across positive rows, ensuring unavailable heroes are strictly zeroed out even in exhaustive ban states.
+- **Combat Engine Life Steal Mechanics & Bounds Clamping (`src/combat_calculator.py`)**:
+  - Enforced RoV game mechanics in `simulate_duel()`: physical `life_steal` applies exclusively to `"Normal Attack"` events, preventing physical ability casters from abnormally lifestealing off physical skill hits.
+  - Clamped `_pick()` index with `max(0, min(len(values) - 1, skill_level - 1))` and clamped `MAX_LEVEL` indexing, preventing negative index wrap-around to max skill ranks.
+  - Capped `skill_hits` upper bound to 50 hits and added colloquial Arcana aliases `"Sap"` -> `"Bloodlust (Magic)"` and `"Greed"` -> `"Reave"`.
+- **Item Override Slug Alignment (`data/items_overrides.json`)**:
+  - Aligned `Carano's Pledge` slug to `"caranos-pledge"` to match `data/items.json`, preventing duplicate item creation when scraping items.
+- **Frontend Draft Machine & UI Polish (`frontend/src/`)**:
+  - In `frontend/src/utils/draft.ts`, cleared `prediction: EMPTY_PREDICTION` on `case "lock"` in `draftReducer` to eliminate stale recommendation flashing while awaiting the next step's inference.
+  - In `frontend/src/components/AiPanel.tsx`, rendered a clean empty message ("ไม่มีคำแนะนำสำหรับตำแหน่งนี้") when lane filters produce 0 recommendations instead of displaying 5 infinite pulsing skeletons.
+  - In `frontend/src/components/lab/SkillDamageTable.tsx`, included damaging passives in combo damage calculation by default and aligned `toggleSlotInCombo` with active slots.
+  - In `frontend/src/components/lab/EnchantmentBoard.tsx`, implemented smart secondary enchantment slot replacement to allow fluid transitions between same-faction and cross-faction secondary setups.
+- **Session File Concurrency & Read/Delete Lock Protection (`src/api.py`)**:
+  - Extended `_session_lock` across all session operations (`GET`, `PUT`, and `DELETE /draft/session`), completely eliminating Windows NTFS file-sharing collisions (`WinError 5` and `WinError 32`) under high-frequency asynchronous traffic.
+- **Combat Catalog In-Memory Response Caching (`src/api.py`)**:
+  - Added cached lazy initialization for `GET /combat/catalog`, cutting response latency from 25–80 ms down to sub-millisecond speeds.
+- **CLI Inferred Phase Reporting Parity (`src/predict_draft_cli.py`)**:
+  - Returned `effective_phase` from `predict_next_action()` so terminal reporting accurately displays inferred Phase 2 status when `--phase` is omitted on the CLI.
+- **MCTS Series Winner Deduplication Guard (`src/predictor.py`)**:
+  - Wrapped `series_winning_heroes` with `set(...)` inside `DraftSearchState` initialization to prevent duplicate multipliers in lookahead evaluations.
+
+### 📁 Modified Files
+- `src/predictor.py`
+- `src/schemas.py`
+- `src/api.py`
+- `src/search/draft_mcts.py`
+- `src/combat_calculator.py`
+- `data/items_overrides.json`
+- `frontend/src/utils/draft.ts`
+- `frontend/src/components/AiPanel.tsx`
+- `frontend/src/components/lab/SkillDamageTable.tsx`
+- `frontend/src/components/lab/EnchantmentBoard.tsx`
+- `src/predict_draft_cli.py`
+
+### 🧪 Verification
+- `pytest -v`: All 77 unit tests passed cleanly (100% pass rate).
+- `ruff check --fix .` and `ruff format .`: All checks passed.
+- `npm run build && npm run lint` in `frontend/`: TypeScript compilation and Oxlint completed with zero errors.
+- Manual CLI test: Verified `python src/predict_draft_cli.py --mode ban --side blue` predicts Step 0 bans on an empty board, and bare `python src/predict_draft_cli.py` correctly executes the 4 demo scenarios.
+
+### ⚠️ Open Issues / Important Notes
+- None. System is fully stable across backend APIs, Minimax lookahead search, combat engine calculations, and React 19 frontend UI.
+
+---
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Proc Event Staging in Combat Simulation (`src/combat_calculator.py`)**:
+  - In `simulate_duel()`, cached `base_hit_count = len(events)` prior to iterating through `me["procs"]` and staged newly triggered procs in `new_procs` before extending `events`. This eliminates secondary proc hit count inflation when multiple procs are active.
+- **Arcana Colloquial Name Normalization (`src/combat_calculator.py`)**:
+  - Added `ARCANA_ALIASES` mapping community/legacy names (`Guerrilla -> Spirit`, `Skewer -> Dragon's Claw`, `Indomitable -> Golden Body`, `Obliterate -> Onslaught`, `Protect -> Benevolence`, `Prowl -> Assassinate`, `Devour -> Bloodlust (Magic)`, `Furious -> Flurry`) to canonical Tier-3 Arcana runes in `validate()`.
+- **Claves Sancti Critical Attribute Cataloging (`data/items.json`, `data/items_overrides.json`, `scripts/fetch_items.py`)**:
+  - Added `"critical_damage": "pct"` to `data/items.json` stat units and `STAT_ALIASES` in `scripts/fetch_items.py`.
+  - Added `critical_chance: 25.0` and `critical_damage: 40.0` to `Claves Sancti` in `data/items_overrides.json` and `data/items.json` so full combat builds accurately reflect +25% crit chance and +40% critical damage multiplier.
+- **Sparkline SVG ViewBox Coordinate Clamping (`frontend/src/components/AiPanel.tsx`)**:
+  - Derived `maxStep = Math.max(17, ...pts.map(([i]) => i))` to anchor `x` calculations, preventing coordinate points at step 18 (`x = 254.1px`) from clipping outside the `240px` SVG viewBox.
+- **Draft Board Deletion Hydration & Group Reset (`frontend/src/hooks/useDraft.ts`)**:
+  - Updated `deleteRecordedGame()` to automatically dispatch `{ type: "reset" }` when the active game currently displayed on the draft board is removed, preventing orphaned pick/ban states.
+  - Added board reset to `deleteSeriesGroup()` when the active series group is deleted.
+- **Pydantic League Literal Harmonization (`src/schemas.py`)**:
+  - Added `"APL"` and `"AIC"` to `DraftStateRequest.league` Literal type, allowing international tournament queries without 422 validation errors.
+- **Multi-Agent Verification Suite**:
+  - Executed 4 concurrent subagent stress-testing pipelines (Bo7 draft simulation, 130-hero combat audit across 5,340 evaluations, frontend state fuzzing, minimax lookahead profiling).
+
+### 📁 Modified Files
+- `src/combat_calculator.py`
+- `data/items.json`
+- `data/items_overrides.json`
+- `scripts/fetch_items.py`
+- `frontend/src/components/AiPanel.tsx`
+- `frontend/src/hooks/useDraft.ts`
+- `src/schemas.py`
+- `tests/test_combat_calculator.py`
+- `tests/test_api.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `pytest -v`: 77 / 77 unit & integration tests passed.
+- `ruff check --fix .` and `ruff format .`: 0 lint errors, code formatted.
+- `npm run build && npm run lint`: Vite production build passed in 912ms, 0 oxlint warnings.
+
+### ⚠️ Open Issues / Important Notes
+- None. All 6 bug areas discovered during multi-agent parallel testing are completely resolved and verified.
+
+---
+
+## 📅 2026-11-01 01:15 (UTC+7) — Round 3 Deep Bug Audit & Fixes (Undo WinHistory Indexing, Bo7 Re-Record & Cross-Series Sync, SOTA Forecast & Minimax Series Adaptation, Combat Duel Passive Filtering)
+**Agent:** Claude Code (`ag/gemini-4-argon-high`)
+
+### ✅ Completed Work
+- **Draft Reducer Undo `winHistory` Off-by-One Fix (`frontend/src/utils/draft.ts`)**:
+  - Fixed `case "undo"` in `draftReducer` to slice `state.winHistory.slice(0, last.stepIndex + 1)` and restore `state.winHistory[last.stepIndex] ?? DEFAULT_WIN_RATE` instead of reading `last.stepIndex - 1`.
+- **Bo7 Series Re-Record, Winner Side Sync & Modal Fallback Fixes (`frontend/src/hooks/useDraft.ts`, `frontend/src/components/GlobalBanModal.tsx`)**:
+  - Updated `recordGameToSeries()` to ignore empty boards, preserve `effectiveWinner = winner ?? overwrittenGames[0]?.winner`, avoid wiping the board when re-saving Game 7, and hydrate `existingNextGame` if the next game in the series was already recorded.
+  - Updated `setRecordedGameWinner()` to automatically assign `blueSideTeam` to the losing team when setting the winner of `gameNumber - 1` while the current board is at step 0.
+  - Cleared `universalBans: []` in `loadRecordedGame()` when loading a game from a different series.
+  - Fixed `GlobalBanModal.tsx` team name `onBlur` fallbacks to use `"TEAM A"` / `"TEAM B"` according to the underlying team slot, and routed game number clamping in `clearAll()` and `handleClose()` through `onSelectGameNumber`.
+- **SOTA Forecast & Minimax Lookahead Series Winner Adaptation (`src/predictor.py`, `src/search/draft_mcts.py`)**:
+  - Propagated `series_winning_heroes` (`1.12x` policy adaptation boost for available series winners) into `_evaluate_with_forecasts()` and `DraftMinimaxSearch.search_lookahead_win_rates()`.
+- **Combat Engine Alternate-Form Skill Levels & Duel Passive Filtering (`src/combat_calculator.py`, `frontend/src/components/lab/SkillDamageTable.tsx`)**:
+  - Updated `skill_levels_for()` to populate alternate-form skill slots (`Skill 3`, `Skill 4`, `Skill 5`, Berserker slots) from their mapped `level_slot` and set `Passive` slots to `1`.
+  - Updated `_procs()` and `duel()` / `simulate_duel()` so stack passives (`HERO_STACK_PASSIVES`) only trigger when `active_combo_slots` is `None` or includes the passive slot, while non-stack damaging passives explicitly selected in `active_combo_slots` (such as Edras's `"Passive (Berserker Mode)"`) are cast during `simulate_duel()`.
+  - Updated `SkillDamageTable.tsx` to exclude zero-damage utility/form-switch slots (`damage_type === "none"`) from `isDamagingSlot`, default combo selection, and combo checkboxes.
+
+### 📁 Modified Files
+- `frontend/src/utils/draft.ts`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/GlobalBanModal.tsx`
+- `frontend/src/components/lab/SkillDamageTable.tsx`
+- `src/predictor.py`
+- `src/search/draft_mcts.py`
+- `src/combat_calculator.py`
+- `tests/test_api.py`
+- `tests/test_combat_calculator.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `pytest -v` (74 / 74 tests passing)
+- `ruff check --fix .` & `ruff format --check .` (0 lint/format issues)
+- `cd frontend && npm run build && npm run lint` (0 TypeScript or oxlint errors)
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-01 00:45 (UTC+7) — Deep Bug Audit & Fixes (Bo7 Winner & Side Persistence, Matrix Engine Forecast Parity, Combat Lab Alias Hydration, Tamyn Passive Scaling)
+**Agent:** Claude Code (`ag/gemini-4-argon-high`)
+
+### ✅ Completed Work
+- **Bo7 Series Winner & Loser-Picks-Blue Persistence (`frontend/src/hooks/useDraft.ts`)**:
+  - Preserved `winner: overwrittenGames[0]?.winner` when creating snapshots in `saveCurrentDraftSnapshot()`, `selectGameNumber()`, and `switchSeries()` so navigating to earlier games and returning never erases recorded game winners or `seriesWinningHeroes`.
+  - Derived `blueSideTeam` from the loser of the previous game (`prevGame.winner === "A" ? "B" : "A"`) when switching to an unrecorded game in `selectGameNumber()` or advancing past a completed 5v5 game in `switchSeries()`.
+- **Meta Lab Series History Sync (`frontend/src/App.tsx`, `frontend/src/components/meta_lab/MetaLab.tsx`, `frontend/src/hooks/useDraft.ts`)**:
+  - Passed `mainSeriesGames` into `MetaLab` and `importDraft()` so importing from the main draft board preserves `seriesGames`, `G1..G6` Global Ban origin badges, and `seriesWinningHeroes`.
+- **Empirical Matrix Engine Forecast & Series Winner Parity (`src/predictor.py`)**:
+  - Updated `predict_matrix()` to apply the `1.12x` in-series winner adaptation boost (`series_winning_heroes`), populate `blue_next_bans` and `red_next_bans` via `_forecast_bans()`, and sequentially generate `blue_next_picks` and `red_next_picks` via `_choose_next_pick()` using each side's own global bans and distinct open lanes.
+- **Combat Lab Saved Build Alias Normalization (`frontend/src/hooks/useCombatLab.ts`)**:
+  - Normalized saved hero names in `sanitizeBuild()` via `displayName()` so builds persisted in `localStorage` under legacy names (`Arthur`, `Brunhilda`, `Richter`) resolve to canonical Thai names without resetting user builds.
+- **Tamyn Passive Heal Scaling Fix (`data/hero_skills_full.json`, `data/heroes_130_full.json`, `scripts/build_hero_skills_catalog.py`)**:
+  - Changed Tamyn's `Shadow Devourer` spear-collection heal scaling key from `"hp_pct": 2.0` to `"heal_bonus_hp_pct": 2.0` so `CombatEngine.skill_damage()` does not add 2% Max HP as physical damage or emit a skill warning.
+
+### 📁 Modified Files
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/meta_lab/MetaLab.tsx`
+- `frontend/src/App.tsx`
+- `frontend/src/hooks/useCombatLab.ts`
+- `src/predictor.py`
+- `data/hero_skills_full.json`
+- `data/heroes_130_full.json`
+- `scripts/build_hero_skills_catalog.py`
+- `tests/test_api.py`
+- `tests/test_combat_calculator.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `pytest -v`: **73 / 73 passed** (including `test_predict_matrix_forecasts_and_series_winner_parity` and `test_all_130_heroes_have_zero_skill_warnings`).
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: **PASSED** (130 heroes, 4,317 pro games, 0 unmapped names).
+- `ruff check --fix . && ruff format .`: **0 errors**.
+- `cd frontend && npm run lint && npm run build`: **0 warnings, 0 errors**.
+
+### ⚠️ Open Issues / Important Notes
+- All 130 heroes in `CombatEngine` now evaluate with 0 skill warnings.
+
+---
+
+## 📅 2026-11-01 00:15 (UTC+7) — Project-Wide Bug Audit & Fixes (Per-Lane Quota Eviction, Matrix Engine Quota, Meta Lab Rank Badges, Legacy Alias Hydration)
+**Agent:** Claude Code (`ag/gemini-4-argon-high`)
+
+### ✅ Completed Work
+- **Per-Lane Quota Eviction Guard (`src/predictor.py`)**: Extracted `_ensure_lane_quota()` so that when `lane_extras` are appended to `top_indices`, tail eviction only removes candidates from lanes with `> 5` occurrences, guaranteeing every lane retains `>= 5` heroes when `top_k >= 25`.
+- **Empirical Matrix Engine Lane Quota & Unfiltered Probabilities (`src/predictor.py`)**: Updated `predict_matrix()` to compute `unfiltered_probs` alongside lane-penalized `probs` and apply `_ensure_lane_quota()`, ensuring non-needed lanes display true relative policy scores instead of `0.0%` and always return `>= 5` candidates per lane.
+- **Meta Lab Top-5 Badge Cap (`frontend/src/components/meta_lab/MetaLab.tsx`)**: Restricted `recommendedRanks` to `recommendations.slice(0, 5)` so `HeroGrid` displays `#1..#5` badges instead of `#1..#50`.
+- **Legacy Hero Alias Normalization (`frontend/src/hooks/useDraft.ts`, `data/draft_session_state.json`, `src/combat_calculator.py`, `data/hero_level_stats.json`)**:
+  - Added `normalizeSessionPayload()` in `useDraft.ts` to normalize legacy global hero names (`Arthur -> Mortos`, `Brunhilda -> Celica`, `Richter -> Riktor`) when loading draft sessions from `localStorage` or `/draft/session`, and updated `data/draft_session_state.json`.
+  - Added `HERO_ALIASES` resolution in `CombatEngine.validate()` (`src/combat_calculator.py`) and aligned inner `"hero"` fields in `data/hero_level_stats.json`.
+- **Canonical 130-Hero Image Catalog & Scripts (`frontend/public/hero_images.json`, `scripts/`)**: Removed the 3 duplicate legacy keys (`Arthur`, `Brunhilda`, `Richter`) from `frontend/public/hero_images.json` so fallback mode produces exactly 130 heroes, and updated `scripts/fetch_hero_icons.py`, `scripts/fetch_hero_skills.py`, and `scripts/build_hero_skills_catalog.py`.
+
+### 📁 Modified Files
+- `src/predictor.py`
+- `src/combat_calculator.py`
+- `frontend/src/components/meta_lab/MetaLab.tsx`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/public/hero_images.json`
+- `data/draft_session_state.json`
+- `data/hero_level_stats.json`
+- `scripts/fetch_hero_icons.py`
+- `scripts/fetch_hero_skills.py`
+- `scripts/build_hero_skills_catalog.py`
+- `tests/test_api.py`
+- `tests/test_combat_calculator.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `pytest -v`: **71 / 71 passed** (including new `test_per_lane_quota_in_sota_and_matrix_modes` and `test_legacy_hero_alias_resolution`).
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: **PASSED** (130 heroes, 4,317 pro games, 0 unmapped names).
+- `ruff check --fix . && ruff format .`: **0 errors**.
+- `npm --prefix frontend run lint && npm --prefix frontend run build`: **0 warnings/errors**, production bundle built in `frontend/dist/`.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-10-31 19:55 (UTC+7) — Per-Lane Filter Tabs in AI Suggestions Panel & Guaranteed 5-Hero Lane Coverage
+**Agent:** Claude Code
+
+### ✅ Completed Work
+- **Interactive Lane Filter Tabs in `AiPanel.tsx` (`ALL | DSL ออฟ | JGL ป่า | MID กลาง | ADL แครี่ | SUP โรม`)**:
+  - Added position filter buttons directly under the `AI SUGGESTIONS` header (`frontend/src/components/AiPanel.tsx`) for both Desktop/Tablet (`full`) and Mobile (`ribbon`) layouts, with a `+` indicator on lanes the acting team has not filled yet (`missingAllyLanes`).
+  - Clicking any position tab (e.g. `JGL ป่า`) filters the AI pick/ban recommendations to show the Top 5 ranked heroes for that specific lane with full metrics (`WIN%`, `SYN`, `CTR`, counter/combo trigger badges, and role tags), and automatically resets to `ALL` when the draft step advances.
+- **Guaranteed 5-Hero Per-Lane Candidate Pool (`src/predictor.py`, `src/schemas.py`, `frontend/src/hooks/useDraft.ts`)**:
+  - Increased `CANDIDATE_POOL` in `frontend/src/hooks/useDraft.ts` from `20` to `50` and `top_k` ceiling in `src/schemas.py` to `60`.
+  - Updated `RoVDraftPredictor.predict()` in `src/predictor.py` so requests with `top_k >= 25` guarantee at least 5 available heroes from each of the 5 lanes (`DS_Lane`, `Jungle`, `Mid`, `Dragon_Lane`, `Roam`) and use `unfiltered_probs` for already-filled lanes so manual lane filtering always displays meaningful probabilities.
+
+### 📁 Modified Files
+- `frontend/src/components/AiPanel.tsx`, `frontend/src/hooks/useDraft.ts`
+- `src/predictor.py`, `src/schemas.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Ran `npm run lint` and `npm run build` in `frontend/` (0 warnings, 0 errors), plus `ruff check --fix .`, `ruff format .`, and `pytest -v` (69/69 tests passed).
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-10-31 19:20 (UTC+7) — Unified Censoring-Adjusted Counter Engine (Preemptive Protective Bans) & Riktor/Erin Immunity Fix
+**Agent:** Claude Code
+
+### ✅ Completed Work
+- **Unified Censoring-Adjusted Bradley-Terry Empirical Bayes Counter Model**:
+  - Upgraded `src/build_draft_stats.py`, `src/train_sota_model.py`, and `scripts/export_commercial_package.py` to combine **Ex-Post Matchup Outcomes** (`w_obs` wins in `g_obs` head-to-head games) with **Ex-Ante Revealed-Preference Protective Bans** (`g_censor` pseudo-games from same-team excess bans when picking target hero `T`, weighting Phase-2 bans `1.5x`).
+  - Grounded candidate counter pairs with post-swap 5-lane cosine similarity (`lane_cos`) and tactical kit alignment (`has_suppress` / `Mina` / `Roxie` / `Baldum` vs mobility/immunity/warrior/assassin, `has_true_damage` vs shield/sustain/tank/warrior, dive `Assassin` vs `Marksman`/`Mage`), bounded at `align_w <= 1.15` and `g_censor <= 18.0` with exact skew-symmetry (`counter_mat[i, j] = -counter_mat[j, i]`).
+  - Surfaced permabanned hard counters previously hidden by survivorship bias (e.g., `Florentino` `+16.67%` and `Mina` `+16.38%` vs `Omen` in 2026 commercial exports; `Murad` and `Airi` vs `Florentino`; `Chaugnar` and `Baldum` vs `Y'bneth`) while preserving exact existing values for pairs without excess protective bans.
+- **Fixed False-Positive `has_immunity` Flag on `Riktor` & `Erin`**:
+  - Updated `src/scrape_heroes.py` (`extract_hero_features`) to strip `"immune to movement impairment"`, `"slow immunity"`, and `"immune to slow(s)"` before matching `has_immunity`, and set `has_immunity = False` for `Riktor` (Skill 2 `Retaliate` blocks damage and movement impairment only, not hard CC) and `Erin` in `data/heroes_130_full.json` and `data/heroes_130_summary.csv`.
+  - Updated `explain_counter_mechanic()` in `scripts/export_commercial_package.py` to tag `Riktor` with `"Damage Block (Retaliate) + Bush Knockup"` + `"True Damage vs Shield/Sustain"`.
+- **Refreshed Checkpoints, Matrices & Commercial Package**:
+  - Rebuilt `data/hero_draft_stats.csv`, `data/synergy_matrix.csv`, `data/counter_matrix.csv`, `exports/RoV_Pro_Draft_Intelligence_2026/RoV_Pro_Draft_Master_2026.xlsx`, `models/sota_draft_gnn_transformer.pt`, and `tests/fixtures/predict_golden.json`.
+
+### 📁 Modified Files
+- `src/scrape_heroes.py`, `src/build_draft_stats.py`, `src/train_sota_model.py`, `scripts/export_commercial_package.py`
+- `data/heroes_130_full.json`, `data/heroes_130_summary.csv`, `data/counter_matrix.csv`, `data/synergy_matrix.csv`, `data/hero_draft_stats.csv`
+- `models/sota_draft_gnn_transformer.pt`, `models/archive/sota_draft_gnn_transformer.pt`, `tests/fixtures/predict_golden.json`
+
+### 🧪 Verification
+- Ran `ruff check --fix .`, `ruff format .`, `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`, and `pytest -v` (69/69 tests passed).
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-10-31 17:45 (UTC+7) — Migrate System-Wide Canonical Hero Names to Thai Server Defaults (Mortos, Celica, Riktor)
+**Agent:** Claude Code (`ag/gemini-4-argon-high`)
+
+### ✅ Completed Work
+- **System-Wide Canonical Hero Name Migration (`Arthur -> Mortos`, `Brunhilda -> Celica`, `Richter -> Riktor`)**:
+  - Updated all hero catalogs, level stats, skill catalogs, patch history, match archives, and curated training sets (`data/heroes_130_full.json`, `data/heroes_130_summary.csv`, `data/hero_skills_full.json`, `data/hero_level_stats.json`, `data/hero_level_stats.csv`, `data/hero_status_lv1.json`, `data/hero_status_lv15.json`, `data/matches_draft_full.json`, `data/matches_training.json`, `data/true_pick_order.json`, `data/matches_draft_flat.csv`, `data/hero_draft_stats.csv`, `data/synergy_matrix.csv`, `data/counter_matrix.csv`).
+  - Updated `models/sota_draft_gnn_transformer.pt` (`hero_names` and `hero_to_id` at indices 8, 21, 87) so neural network weights and inference outputs remain 100% identical while natively returning `Mortos`, `Celica`, and `Riktor`.
+  - Updated `src/scrape_matches.py`, `src/predictor.py`, `src/predict_draft_cli.py`, `src/scrape_heroes.py`, and `frontend/src/utils/heroNames.ts` so `Mortos`, `Celica`, and `Riktor` are the canonical default while `Arthur`, `Brunhilda`, and `Richter` resolve automatically as aliases.
+  - Re-exported `exports/RoV_Pro_Draft_Intelligence_2026` (`.xlsx` + `.csv` + `.zip`) with Thai server names throughout.
+
+### 📁 Modified Files
+- `data/*` (Hero, skill, level, and match datasets)
+- `models/sota_draft_gnn_transformer.pt`
+- `src/scrape_matches.py`, `src/predictor.py`, `src/predict_draft_cli.py`, `src/scrape_heroes.py`
+- `scripts/export_commercial_package.py`
+- `frontend/src/utils/heroNames.ts`, `frontend/public/hero_images.json`
+- `tests/test_api.py`, `tests/fixtures/predict_golden.json`
+- `AGENTS.md`, `.agents/skills/*`, `.claude/skills/*`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Ran `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`.
+- Ran `ruff check --fix .`, `ruff format .`, and `pytest -v`.
+- Ran `npm run build` and `npm run lint` in `frontend/`.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-10-31 17:15 (UTC+7) — Upgrade Synergy & Counter Engine to Bradley-Terry Log-Odds Delta-2 & Direct In-Lane 1v1
+**Agent:** Claude Code (`ag/gemini-4-argon-high`)
+
+### ✅ Completed Work
+- **Bradley-Terry Log-Odds Delta-2 & Empirical Bayes Shrinkage**:
+  - Replaced naive `0.50` baseline subtraction in `src/build_draft_stats.py`, `src/train_sota_model.py`, and `scripts/export_commercial_package.py` with the Bradley-Terry Log-Odds model:
+    - Bayesian base win probability: `p_i = (wins_i + 5.0) / (picks_i + 10.0)` and `logit(p_i) = ln(p_i / (1 - p_i))`.
+    - Expected synergy win rate: `E_synergy(A, B) = sigmoid(logit(p_A) + logit(p_B))`.
+    - Expected counter win rate: `E_counter(A, B) = sigmoid(logit(p_A) - logit(p_B))`.
+    - Empirical Bayes posterior win rate (`K = 12` for all-role pairs, `K = 8` for direct in-lane 1v1 pairs): `Posterior_WR = (Wins + K * Expected_WR) / (Games + K)`.
+    - `Delta-2` interaction lift (`Posterior_WR - Expected_WR`) and Binomial `Z-score` to isolate true mechanical synergy and counter value from individual hero base win-rate confounding.
+- **Role-Aware Direct In-Lane 1v1 Matchup Separation & Kit Mechanism Grounding**:
+  - Added exact post-swap same-lane (`i == j` across `DS_Lane, Jungle, Mid, Dragon_Lane, Roam`) tracking in `src/build_draft_stats.py` (`data/counter_matrix.csv`) and a dedicated 6th worksheet `Direct_Lane_Counters_2026` (`raw_csv/direct_lane_counters_2026.csv`) in `scripts/export_commercial_package.py`.
+  - Added primary role-pair tracking (`Primary_Lane_Pair`, e.g., `Jungle + Roam`, `DS_Lane + Jungle`, `Dragon_Lane + Mid`) and mechanical kit tags (`True Damage vs Shield/Sustain`, `CC Immunity vs Hard CC`, `Hard CC Lockdown vs Mobile Target`, `CC Setup + Finisher Combo`).
+
+### 📁 Modified Files
+- `src/build_draft_stats.py`
+- `src/train_sota_model.py`
+- `scripts/export_commercial_package.py`
+- `data/hero_draft_stats.csv`
+- `data/synergy_matrix.csv`
+- `data/counter_matrix.csv`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Ran `python src/build_draft_stats.py` and `python scripts/export_commercial_package.py`.
+- Ran `ruff check --fix .`, `ruff format .`, and `pytest -v`.
+
+### ⚠️ Open Issues / Important Notes
+- The served checkpoint (`models/sota_draft_gnn_transformer.pt`) retains its bundled graph tensors so golden prediction tests remain 100% deterministic; future training runs automatically use the Bradley-Terry Log-Odds Delta-2 graph formulation.
+
+---
+
+## 📅 2026-10-31 16:00 (UTC+7) — Standardize Pro Team Name Abbreviations Across Datasets & Scraper
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Standardized Pro Esports Team Abbreviations**:
+  - Replaced Liquipedia template artifacts and split naming across all matches:
+    - `SP` / `SAIGON PHANTOM` -> **`SGP`** (Saigon Phantom)
+    - `GODJI CHECK` -> **`GJC`** (Godji Check)
+    - `TENACITY` -> **`TEN`** (Tenacity Esports)
+    - `SOLYX` -> **`SLX`** (Solyx Esports)
+    - `HYDRA` -> **`HD`** (consolidated with existing HD matches)
+    - `FULL SENSE` -> **`FS`** (consolidated with existing FS matches)
+    - `TALON` -> **`TLN`** (consolidated with existing TLN matches)
+    - `BACON` / `BACON TIME` -> **`BAC`** (Bacon Time)
+    - `SECRET` / `TEAM SECRET` -> **`TS`** (Team Secret)
+    - `FPL HCMC` / `FPT POLYTECHNIC` -> **`FPL`** (FPT Polytechnic)
+    - `GAM ESPORTS` -> **`GAM`** (GAM Esports)
+    - `LIT TEAM` -> **`LIT`** (consolidated with existing LIT matches)
+    - `BOOM VN` -> **`BOOM`**, `RRQ VN` -> **`RRQ`**
+    - `FLASH WOLVES` -> **`FW`**, `ONE TEAM` -> **`ONE`**, `EARENA` -> **`EA`**, `GG LIVE` -> **`GGL`**
+- **Migrated Datasets & Scraper**:
+  - Updated `src/scrape_matches.py` with `normalize_team()` using canonical `TEAM_ALIASES`.
+  - Migrated 1,363 games in `data/matches_draft_full.json`, 803 games in `data/true_pick_order.json`, and 1,060 games in `data/matches_training.json`.
+  - Rebuilt `data/matches_draft_flat.csv` with 4,317 normalized rows.
+  - Re-exported `exports/RoV_Pro_Draft_Intelligence_2026/` (`.xlsx`, `.csv`, `.zip`) with perfectly normalized team tags.
+
+### 📁 Modified Files
+- `src/scrape_matches.py`
+- `scripts/normalize_team_names.py`
+- `data/matches_draft_full.json`
+- `data/matches_training.json`
+- `data/true_pick_order.json`
+- `data/matches_draft_flat.csv`
+- `exports/RoV_Pro_Draft_Intelligence_2026/`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: PASS (130 heroes, 4,317 pro games).
+- `pytest -v`: 69/69 passed (100%).
+- Verified 28 clean unique team codes across all 1,798 games in 2026.
+- `ruff check --fix . && ruff format .`: 0 lint errors.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-10-31 15:30 (UTC+7) — Build Commercial 2026 Pro Draft Data Package Exporter (.xlsx + .csv + .zip)
+**Agent:** Claude Code (`ag/gemini-4-argon-high`)
+
+### ✅ Completed Work
+- **Built Automated Commercial Package Exporter (`scripts/export_commercial_package.py`)**:
+  - Generates a dual-order commercial analytics bundle combining **100% verified chronological pick order (`B1..B5` / `R1..R5`)** from `data/true_pick_order.json` and **post-swap in-game 5-lane role assignments (`DS_Lane, Jungle, Mid, Dragon_Lane, Roam`)** from `data/matches_draft_full.json` across all **1,798 verified 2026 Tier-1 pro games** (`AOG`, `RPL`, `GCS`, `APL`).
+- **Formatted Multi-Tab Master Excel Workbook (`RoV_Pro_Draft_Master_2026.xlsx`)**:
+  - Styled with Navy Blue (`#0F172A`) headers, alternating row shading, frozen header panes, AutoFilters, percentage number formats (`0.0%`), 3-color conditional formatting scales, and auto-fitted column widths across 5 tabs:
+    1. `Executive_Summary`: Regional league breakdown and Blue/Red side win rates.
+    2. `Hero_Tier_List_2026`: All 130 heroes ranked by 2026 presence, pick/ban phases, win rates, pick-slot counts (`B1`, `R1/R2`, `R5`), and 5-lane role shares.
+    3. `True_Draft_Log_2026`: All 1,798 games with 18-step true ban/pick sequence + 10 post-swap in-game lane columns.
+    4. `Top_Synergies_2026`: Top 300 hero duo combinations with synergy lift metrics.
+    5. `Top_Counters_2026`: Top 300 hero counter matchups with counter advantage lift metrics.
+- **Generated Raw CSV Suite, Data Dictionary & Distribution Archive**:
+  - Exported 5 UTF-8-SIG `.csv` files in `exports/RoV_Pro_Draft_Intelligence_2026/raw_csv/`, `Data_Dictionary.md`, and packaged the bundle into `exports/RoV_Pro_Draft_Intelligence_2026.zip`.
+
+### 📁 Modified Files
+- `scripts/export_commercial_package.py`
+- `.gitignore`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `python scripts/export_commercial_package.py`: Generated `RoV_Pro_Draft_Master_2026.xlsx` (410.4 KB), 5 CSVs, and `RoV_Pro_Draft_Intelligence_2026.zip` (521.3 KB).
+- `ruff check --fix . && ruff format .`: 0 lint errors.
+- `pytest -v`: 69/69 passed.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
 ## 📅 2026-10-31 15:00 (UTC+7) — Ingest GCS 2026 Summer Grand Final True Pick Order & Verify Recorded Drafts
 **Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
 

@@ -218,6 +218,9 @@ def load_sota_data_and_graphs(dataset_path: Path | str | None = None):
     cnt_g = np.zeros((num_heroes, num_heroes), dtype=np.float32)
     cnt_w = np.zeros((num_heroes, num_heroes), dtype=np.float32)
     ban_response_mat = np.zeros((num_heroes, num_heroes), dtype=np.float32)
+    co_ban_same = np.zeros((num_heroes, num_heroes), dtype=np.float32)
+    co_p2ban_same = np.zeros((num_heroes, num_heroes), dtype=np.float32)
+    total_effective_w = 0.0
 
     pick_counts = np.zeros(num_heroes, dtype=np.float32)
     ban_p1_counts = np.zeros(num_heroes, dtype=np.float32)
@@ -240,6 +243,7 @@ def load_sota_data_and_graphs(dataset_path: Path | str | None = None):
         lg_id = encode_league_id(g.get("league", ""))
         lg_mult = LEAGUE_SAMPLE_WEIGHTS[lg_id]
         w = (1.0 if yr >= 2026 else (0.5 if yr == 2025 else 0.2)) * lg_mult
+        total_effective_w += w
         w_2026 = (1.0 if yr >= 2026 else 0.35) * lg_mult
         blue_win_mult = 1.25 if bw == 1 else 0.75
         red_win_mult = 1.25 if bw == 0 else 0.75
@@ -247,6 +251,17 @@ def load_sota_data_and_graphs(dataset_path: Path | str | None = None):
         rp = [hero_to_id[h] for h in g["red_picks"] if h in hero_to_id]
         bb = [hero_to_id[h] for h in g["blue_bans"] if h in hero_to_id]
         rb = [hero_to_id[h] for h in g["red_bans"] if h in hero_to_id]
+
+        for hp in bp:
+            for hb in bb:
+                co_ban_same[hp, hb] += w
+            for hb in bb[2:]:
+                co_p2ban_same[hp, hb] += w
+        for hp in rp:
+            for hb in rb:
+                co_ban_same[hp, hb] += w
+            for hb in rb[2:]:
+                co_p2ban_same[hp, hb] += w
 
         for h in bp:
             raw_pick_counts[h] += w
@@ -309,6 +324,56 @@ def load_sota_data_and_graphs(dataset_path: Path | str | None = None):
     counter_mat = np.zeros((num_heroes, num_heroes), dtype=np.float32)
     counter_pick_mat = np.zeros((num_heroes, num_heroes), dtype=np.float32)
     ban_target_mat = np.zeros((num_heroes, num_heroes), dtype=np.float32)
+    cnt_g_eff = cnt_g.copy()
+
+    hero_base_win_prob = np.clip((hero_wins_train + 5.0) / (raw_pick_counts + 10.0), 0.05, 0.95).astype(np.float32)
+    hero_base_logit = np.log(hero_base_win_prob / (1.0 - hero_base_win_prob)).astype(np.float32)
+    hero_base_win_adv = (hero_base_win_prob - 0.5).astype(np.float32)
+
+    lane_norms = np.linalg.norm(lane_probs, axis=1, keepdims=True) + 1e-6
+    lane_unit = lane_probs / lane_norms
+    total_team_w = max(1.0, 2.0 * total_effective_w)
+    ban_all_counts = ban_p1_counts + ban_p2_counts
+
+    def get_censor_imputation_idx(c_idx: int, t_idx: int, exp_wr_ct: float) -> tuple[float, float]:
+        obs_b = float(co_ban_same[t_idx, c_idx] + 1.5 * co_p2ban_same[t_idx, c_idx])
+        exp_b = float(raw_pick_counts[t_idx]) * (
+            float(ban_all_counts[c_idx] + 1.5 * ban_p2_counts[c_idx]) / total_team_w
+        )
+        excess_b = max(0.0, obs_b - exp_b)
+        b_lift = (obs_b + 5.0) / (exp_b + 5.0)
+        b_z = (obs_b - exp_b) / math.sqrt(exp_b + 2.0)
+
+        c_row = heroes_df.iloc[c_idx]
+        t_row = heroes_df.iloc[t_idx]
+        c_name = hero_names[c_idx]
+        lane_cos = float(np.dot(lane_unit[c_idx], lane_unit[t_idx]))
+        kit_bonus = 0.0
+        if (bool(c_row["has_suppress"]) or c_name in ("Mina", "Roxie", "Baldum")) and (
+            bool(t_row["has_mobility"])
+            or bool(t_row["has_immunity"])
+            or t_row["primary_role"] in ("Warrior", "Assassin")
+        ):
+            kit_bonus += 0.45
+        if (
+            bool(c_row["has_true_damage"])
+            and (
+                bool(t_row["has_shield"])
+                or bool(t_row["has_heal_sustain"])
+                or t_row["primary_role"] in ("Tank", "Warrior")
+            )
+            and (lane_cos >= 0.25 or c_name == "Mina")
+        ):
+            kit_bonus += 0.35
+        if c_row["primary_role"] == "Assassin" and t_row["primary_role"] in ("Marksman", "Mage"):
+            kit_bonus += 0.35
+
+        align_w = 0.0 if (lane_cos < 0.30 and kit_bonus < 0.35) else min(1.15, 0.35 + 0.85 * lane_cos + kit_bonus)
+        if b_lift > 1.15 and excess_b > 1.5 and align_w > 0.0:
+            g_cen = min(18.0, 0.45 * excess_b * align_w)
+            p_thr = min(0.82, exp_wr_ct + 0.14 + 0.04 * min(b_z, 4.0))
+            return g_cen, g_cen * p_thr
+        return 0.0, 0.0
 
     for i in range(num_heroes):
         for j in range(num_heroes):
@@ -317,15 +382,24 @@ def load_sota_data_and_graphs(dataset_path: Path | str | None = None):
             co_pick_mat[i, j] = math.log1p(syn_g[i, j]) / math.log1p(max(1.0, raw_pick_counts[j]))
             counter_pick_mat[i, j] = math.log1p(cnt_g[i, j]) / math.log1p(max(1.0, raw_pick_counts[j]))
             ban_target_mat[i, j] = math.log1p(ban_response_mat[i, j]) / math.log1p(max(1.0, raw_pick_counts[j]))
-            synergy_mat[i, j] = ((syn_w[i, j] + 3.0) / (syn_g[i, j] + 6.0)) - 0.5
-            counter_mat[i, j] = ((cnt_w[i, j] + 3.0) / (cnt_g[i, j] + 6.0)) - 0.5
+            # Bradley-Terry Log-Odds expected win rate + Censoring-Adjusted Empirical Bayes shrinkage (Delta-2)
+            exp_syn_ij = 1.0 / (1.0 + math.exp(-float(hero_base_logit[i] + hero_base_logit[j])))
+            exp_cnt_ij = 1.0 / (1.0 + math.exp(-float(hero_base_logit[i] - hero_base_logit[j])))
+            synergy_mat[i, j] = ((syn_w[i, j] + 12.0 * exp_syn_ij) / (syn_g[i, j] + 12.0)) - exp_syn_ij
+
+            g_cen_fwd, w_cen_fwd = get_censor_imputation_idx(i, j, exp_cnt_ij)
+            g_cen_rev, w_cen_rev = get_censor_imputation_idx(j, i, 1.0 - exp_cnt_ij)
+            g_cen_ij = g_cen_fwd + g_cen_rev
+            w_cen_ij = w_cen_fwd + (g_cen_rev - w_cen_rev)
+            cnt_g_eff[i, j] = cnt_g[i, j] + g_cen_ij
+            counter_mat[i, j] = (
+                (cnt_w[i, j] + w_cen_ij + 12.0 * exp_cnt_ij) / (cnt_g[i, j] + g_cen_ij + 12.0)
+            ) - exp_cnt_ij
 
     adj_copick = row_normalize_adj(co_pick_mat)
     adj_synergy = row_normalize_adj(np.maximum(synergy_mat, 0.0) * np.log1p(syn_g))
-    adj_counter = row_normalize_adj(np.maximum(counter_mat, 0.0) * np.log1p(cnt_g))
-    adj_countered_by = row_normalize_adj(np.maximum(-counter_mat, 0.0) * np.log1p(cnt_g))
-
-    hero_base_win_adv = (((hero_wins_train + 5.0) / (raw_pick_counts + 10.0)) - 0.5).astype(np.float32)
+    adj_counter = row_normalize_adj(np.maximum(counter_mat, 0.0) * np.log1p(cnt_g_eff))
+    adj_countered_by = row_normalize_adj(np.maximum(-counter_mat, 0.0) * np.log1p(cnt_g_eff))
 
     global_pick_prob = (pick_2026 + 0.5) / (pick_2026.sum() + 0.5 * num_heroes)
     global_ban1_prob = (ban_p1_2026 + 0.5) / (ban_p1_2026.sum() + 0.5 * num_heroes)
@@ -1082,6 +1156,24 @@ def parse_args():
         default=None,
         help="Path to training matches JSON (default: data/matches_training.json or data/matches_draft_full.json)",
     )
+    parser.add_argument(
+        "--output-model-path",
+        type=Path,
+        default=None,
+        help="Custom output checkpoint path (default: models/sota_draft_gnn_transformer.pt)",
+    )
+    parser.add_argument(
+        "--top5-path",
+        type=Path,
+        default=None,
+        help="Custom path to top 5 HPO trials JSON (default: best_params/sota_rov_top5_trials.json)",
+    )
+    parser.add_argument(
+        "--best-params-path",
+        type=Path,
+        default=None,
+        help="Custom path to best params JSON (default: best_params/sota_rov_best_params.json)",
+    )
     return parser.parse_args()
 
 
@@ -1090,8 +1182,8 @@ def main():
     args = parse_args()
 
     # Load Optuna best_params / top_5_trials if available
-    best_params_file = BEST_PARAMS_DIR / "sota_rov_best_params.json"
-    top5_file = BEST_PARAMS_DIR / "sota_rov_top5_trials.json"
+    best_params_file = args.best_params_path or (BEST_PARAMS_DIR / "sota_rov_best_params.json")
+    top5_file = args.top5_path or (BEST_PARAMS_DIR / "sota_rov_top5_trials.json")
     tuned = {}
     if top5_file.exists() and (args.top_rank is not None or args.use_safest):
         try:
@@ -1358,7 +1450,9 @@ def main():
                 "val_loss": best_val_loss,
                 "val_win_acc": best_win_acc,
             }
-            torch.save(checkpoint, MODEL_DIR / "sota_draft_gnn_transformer.pt")
+            out_model_path = args.output_model_path or (MODEL_DIR / "sota_draft_gnn_transformer.pt")
+            torch.save(checkpoint, out_model_path)
+            print(f"  * Saved new best checkpoint to: {out_model_path}", flush=True)
         else:
             bad_epochs += 1
             if bad_epochs >= patience:
@@ -1380,7 +1474,8 @@ def main():
             f"Top-5: {m['top5'] / tot * 100:5.2f}% | Top-10: {m['top10'] / tot * 100:5.2f}%",
             flush=True,
         )
-    print(f"Saved SOTA checkpoint to: {MODEL_DIR / 'sota_draft_gnn_transformer.pt'}", flush=True)
+    out_model_path = args.output_model_path or (MODEL_DIR / "sota_draft_gnn_transformer.pt")
+    print(f"Saved SOTA checkpoint to: {out_model_path}", flush=True)
 
     if HAS_MLFLOW:
         try:

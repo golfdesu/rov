@@ -22,6 +22,12 @@ SKILL_CAST_GAP = 0.3
 DUEL_DT = 0.05
 DUEL_MAX_SECONDS = 60.0
 
+HERO_ALIASES: dict[str, str] = {
+    "Arthur": "Mortos",
+    "Brunhilda": "Celica",
+    "Richter": "Riktor",
+}
+
 ACTIVE_SLOTS = (
     "Skill 1",
     "Skill 2",
@@ -44,6 +50,19 @@ ARCANA_KEY_MAP = {
     "magic_life_steal_pct": "magic_life_steal",
     "armor_pierce": "armor_pierce_flat",
     "magic_pierce": "magic_pierce_flat",
+}
+
+ARCANA_ALIASES: dict[str, str] = {
+    "Guerrilla": "Spirit",
+    "Skewer": "Dragon's Claw",
+    "Indomitable": "Golden Body",
+    "Obliterate": "Onslaught",
+    "Protect": "Benevolence",
+    "Prowl": "Assassinate",
+    "Devour": "Bloodlust (Magic)",
+    "Furious": "Flurry",
+    "Sap": "Bloodlust (Magic)",
+    "Greed": "Reave",
 }
 
 STAT_KEYS = (
@@ -395,6 +414,7 @@ class CombatEngine:
 
     # ---------- validation ----------
     def validate(self, build: Build) -> None:
+        build.hero = HERO_ALIASES.get(build.hero, build.hero)
         if build.hero not in self.level_stats:
             raise ValueError(f"Unknown hero: {build.hero}")
         if not 1 <= build.level <= MAX_LEVEL:
@@ -406,6 +426,11 @@ class CombatEngine:
             if name not in self.items:
                 raise ValueError(f"Unknown item: {name}")
         per_color: dict[str, int] = {}
+        norm_arcana: dict[str, int] = {}
+        for name, count in build.arcana.items():
+            canonical_name = ARCANA_ALIASES.get(name, name)
+            norm_arcana[canonical_name] = norm_arcana.get(canonical_name, 0) + count
+        build.arcana = norm_arcana
         for name, count in build.arcana.items():
             if name not in self.arcana:
                 raise ValueError(f"Unknown Tier 3 arcana: {name}")
@@ -568,7 +593,14 @@ class CombatEngine:
     # ---------- skills ----------
     def skill_levels_for(self, build: Build) -> dict[str, int]:
         levels = auto_skill_levels(build.level)
-        skill_by_slot = {s["slot"]: s for s in self.skills.get(build.hero, [])}
+        hero_skills = self.skills.get(build.hero, [])
+        for sk in hero_skills:
+            slot = sk["slot"]
+            if slot.startswith("Passive"):
+                levels[slot] = 1
+            elif "level_slot" in sk:
+                levels[slot] = levels.get(sk["level_slot"], 0)
+        skill_by_slot = {s["slot"]: s for s in hero_skills}
         for slot, val in build.skill_levels.items():
             sk = skill_by_slot.get(slot, {})
             lv_slot = sk.get("level_slot", slot)
@@ -582,7 +614,7 @@ class CombatEngine:
         if not values:
             return 0
         if len(values) == MAX_LEVEL:
-            return values[hero_level - 1]
+            return values[max(0, min(MAX_LEVEL - 1, hero_level - 1))]
         return values[max(0, min(len(values) - 1, skill_level - 1))]
 
     def skill_damage(self, attacker: dict, defender: dict, build: Build) -> list[dict]:
@@ -659,7 +691,7 @@ class CombatEngine:
                 parts = {k: 0.0 for k in parts}
             raw = sum(parts.values())
             mult = type_mult.get(dtype, 0.0)
-            hits = max(1, int(build.skill_hits.get(slot, skill.get("hits", 1))))
+            hits = max(1, min(50, int(build.skill_hits.get(slot, skill.get("hits", 1)))))
             final = raw * mult * dealt_mult * hits
             cd = float(self._pick(skill["cooldown"], max(sl, 1), build.level) or 0)
             cdr = a["cooldown_reduction"]
@@ -744,20 +776,22 @@ class CombatEngine:
         # Hero-specific stack passives that trigger bonus damage/effects on hitting enemies
         if skills and build.hero in HERO_STACK_PASSIVES:
             p_info = HERO_STACK_PASSIVES[build.hero]
-            for sk in skills:
-                if sk["slot"] == p_info["slot"] and sk["final_damage"] > 0:
-                    mult_trigger = p_info.get("procs_per_trigger", 1)
-                    dmg = (sk["final_damage"] / max(1, sk["hits"])) * mult_trigger
-                    out.append(
-                        {
-                            "name": f"{sk['name']} (Passive)",
-                            "damage": dmg,
-                            "damage_type": sk["damage_type"],
-                            "cooldown": p_info.get("cooldown", 0.0),
-                            "hits_needed": p_info["hits_needed"],
-                        }
-                    )
-                    break
+            p_slot = p_info["slot"]
+            if build.active_combo_slots is None or p_slot in build.active_combo_slots:
+                for sk in skills:
+                    if sk["slot"] == p_slot and sk["final_damage"] > 0:
+                        mult_trigger = p_info.get("procs_per_trigger", 1)
+                        dmg = (sk["final_damage"] / max(1, sk["hits"])) * mult_trigger
+                        out.append(
+                            {
+                                "name": f"{sk['name']} (Passive)",
+                                "damage": dmg,
+                                "damage_type": sk["damage_type"],
+                                "cooldown": p_info.get("cooldown", 0.0),
+                                "hits_needed": p_info["hits_needed"],
+                            }
+                        )
+                        break
         return out
 
     # ---------- duel ----------
@@ -772,16 +806,18 @@ class CombatEngine:
         skills_b = self.skill_damage(stats_b, stats_a, build_b)
         slots_a = set(build_a.active_combo_slots) if build_a.active_combo_slots is not None else set(ACTIVE_SLOTS)
         slots_b = set(build_b.active_combo_slots) if build_b.active_combo_slots is not None else set(ACTIVE_SLOTS)
+        proc_slot_a = HERO_STACK_PASSIVES.get(build_a.hero, {}).get("slot")
+        proc_slot_b = HERO_STACK_PASSIVES.get(build_b.hero, {}).get("slot")
         sim = simulate_duel(
             (
                 stats_a,
-                [sk for sk in skills_a if sk["slot"] in slots_a],
+                [sk for sk in skills_a if sk["slot"] in slots_a and sk["slot"] != proc_slot_a],
                 self.basic_attack(stats_a, stats_b),
                 self._procs(stats_a, build_a, stats_b, skills_a),
             ),
             (
                 stats_b,
-                [sk for sk in skills_b if sk["slot"] in slots_b],
+                [sk for sk in skills_b if sk["slot"] in slots_b and sk["slot"] != proc_slot_b],
                 self.basic_attack(stats_b, stats_a),
                 self._procs(stats_b, build_b, stats_a, skills_b),
             ),
@@ -839,7 +875,15 @@ def simulate_duel(side_a, side_b) -> dict:
                 "max_hp": s["max_hp"],
                 "steal": {"physical": s["life_steal"] / 100, "magic": s["magic_life_steal"] / 100},
                 "skills": [
-                    {**sk, "ready": 0.0} for sk in skills if sk["slot"] in ACTIVE_SLOTS and sk["final_damage"] > 0
+                    {
+                        **sk,
+                        "cooldown": sk["cooldown"]
+                        if sk["cooldown"] > 0
+                        else (5.0 if sk["slot"].startswith("Passive") else 0.5),
+                        "ready": 0.0,
+                    }
+                    for sk in skills
+                    if sk["final_damage"] > 0
                 ],
                 "attack_interval": 1 / ba["attacks_per_sec"],
                 "attack_damage": ba["final_per_hit"],
@@ -869,17 +913,25 @@ def simulate_duel(side_a, side_b) -> dict:
                 events.append(("Normal Attack", me["attack_damage"], "physical"))
                 me["next_attack"] = t + me["attack_interval"]
             if events:
+                base_hit_count = len(events)
+                new_procs = []
                 for p in me["procs"]:
-                    p["hits"] += len(events)
+                    p["hits"] += base_hit_count
                     if t >= p["ready"] and p["hits"] >= p["hits_needed"]:
-                        events.append((p["name"], p["damage"], p["damage_type"]))
+                        new_procs.append((p["name"], p["damage"], p["damage_type"]))
                         p["ready"] = t + p["cooldown"]
                         p["hits"] -= p["hits_needed"]
+                if new_procs:
+                    events.extend(new_procs)
             for name, dmg, dtype in events:
                 incoming[1 - i] += dmg
                 me["dealt"] += dmg
                 me["breakdown"][name] = me["breakdown"].get(name, 0.0) + dmg
-                me["hp"] = min(me["max_hp"], me["hp"] + dmg * me["steal"].get(dtype, 0.0))
+                if dtype == "physical":
+                    if name == "Normal Attack":
+                        me["hp"] = min(me["max_hp"], me["hp"] + dmg * me["steal"].get("physical", 0.0))
+                elif dtype == "magic":
+                    me["hp"] = min(me["max_hp"], me["hp"] + dmg * me["steal"].get("magic", 0.0))
         for i in (0, 1):
             sides[i]["hp"] -= incoming[i]
         dead = [s["hp"] <= 0 for s in sides]

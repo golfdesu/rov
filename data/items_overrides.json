@@ -76,7 +76,7 @@
       ]
     },
     {
-      "slug": "caranos-vow",
+      "slug": "caranos-pledge",
       "stats": {
         "ability_power": 180,
         "magic_life_steal": 12,
@@ -158,6 +158,18 @@
       ],
       "patch": "Full Element Assault, Apr 2026",
       "sources": ["https://moba.garena.tw/news/show/5528"]
+    },
+    {
+      "slug": "claves-sancti",
+      "stats_update": {
+        "critical_chance": 25.0,
+        "critical_damage": 40.0
+      },
+      "patch": "Base Attributes",
+      "sources": [
+        "https://www.rov.in.th/patch-notes",
+        "https://moba.garena.tw/news"
+      ]
     }
   ]
 }
