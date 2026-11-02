@@ -27,6 +27,33 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-02 12:15 (UTC+7) — Integrated H100 Optuna HPO Results for 0% True Order Heuristic Model
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **HPC Ingestion & Checkpoint Integration**:
+  - Pulled `best_params/heuristic_sota_best_params.json`, `best_params/heuristic_sota_top5_trials.json`, and `models/sota_draft_gnn_transformer_heuristic.pt` trained on ERAWAN HPC NVIDIA H100.
+  - Selected Safest Candidate: **Trial #43** (`val_loss: 2.8009`, `train_pol_loss: 2.5925`, `overfit_gap: 0.1873`, `d_model: 256`, `nhead: 4`, `num_layers: 1`, `dropout: 0.250`, `neural_scale: 0.357`, `win_loss_weight: 0.269`).
+  - Added unit test `test_heuristic_checkpoint_exists_and_loads()` in `tests/test_model_pipeline.py`.
+- **Empirical Comparative Evaluation (SOTA vs HPO-Trained Heuristic)**:
+  - **Ban Phase 1**: Identical top bans (Eland'orr ~21-22%, Rouie ~15-16%, Marja ~8-9%) because Liquipedia records bans chronologically.
+  - **First Pick (Step 5)**: SOTA concentrates probability on high-priority frontline/flex heroes (Toro 19.8%, Y'bneth 18.7%, Rouie 9.0%), whereas the 0% True Order Heuristic model diffuses picks across lanes (Eland'orr 3.8%, Lorion 3.3%, Marja 3.2%) due to Liquipedia's default DS-lane sorting bias.
+  - **Mid-to-Late Turns**: Heuristic model exhibits strong lane-slot conditioning (preferring Mid laners at Step 10), while SOTA dynamically adapts to composition gaps and counter advantages.
+
+### 📁 Modified Files
+- `best_params/heuristic_sota_best_params.json`
+- `best_params/heuristic_sota_top5_trials.json`
+- `models/sota_draft_gnn_transformer_heuristic.pt`
+- `tests/test_model_pipeline.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `pytest -v`: All 79 tests passing (100%).
+- Frontend: `npm run build` completed cleanly in 1.62s.
+- `ruff check --fix .` and `ruff format .`: 0 errors across all 88 files.
+
+---
+
 ## 📅 2026-11-02 11:30 (UTC+7) — Heuristic Draft Experiment Pipeline (0% True Order Dataset, HPO Script, Serving & Dual-Board UI)
 **Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
 

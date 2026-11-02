@@ -163,3 +163,13 @@ def test_league_conditioning_encoding_and_forward():
     # Row 0 (RPL) should favor Hero 0 relative to Row 1 (GCS), and Row 1 (GCS) should favor Hero 1
     assert float(logits[0, 0] - logits[1, 0]) > 0.5
     assert float(logits[1, 1] - logits[0, 1]) > 0.5
+
+
+def test_heuristic_checkpoint_exists_and_loads():
+    heuristic_model_path = config.paths.models_dir / "sota_draft_gnn_transformer_heuristic.pt"
+    if not heuristic_model_path.exists():
+        pytest.skip("Heuristic model checkpoint not found (pending pull from H100)")
+    predictor = RoVDraftPredictor(model_path=heuristic_model_path)
+    assert len(predictor.hero_names) == 130
+    assert predictor.val_loss < 3.0
+    assert predictor.architecture == "RoVDraftGNNTransformer"
