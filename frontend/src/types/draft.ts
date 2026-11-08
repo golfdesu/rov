@@ -7,8 +7,17 @@ export interface Hero {
   name: string;
   role: RoleType;
   lane: string;
+  main_pro_lane?: string;
   tier: "S+" | "S" | "A" | "B" | "C";
+  rank?: number;
   image_url?: string;
+  presence_rate?: number;
+  win_rate?: number;
+  pick_rate?: number;
+  ban_rate?: number;
+  total_picks?: number;
+  total_bans?: number;
+  tier_reason?: string;
 }
 
 export interface DraftStep {
@@ -95,6 +104,7 @@ export interface DraftSessionPayload {
   winHistory: (number | null)[];
   blueWinRate: number;
   useLookahead: boolean;
+  engine?: "sota" | "heuristic" | "matrix";
   league?: LeagueCode;
   globalBans: GlobalBanState;
   seriesGames: RecordedDraftGame[];
@@ -128,6 +138,40 @@ export const CANONICAL_DRAFT_STEPS: DraftStep[] = [
   { step: 15, phase: 2, action: "pick", side: "blue", label: "Blue Pick 4" },
   { step: 16, phase: 2, action: "pick", side: "blue", label: "Blue Pick 5" },
   { step: 17, phase: 2, action: "pick", side: "red", label: "Red Pick 5" },
+];
+
+export type DraftEngineKey = "sota" | "heuristic" | "matrix";
+
+export interface DraftEngineOption {
+  id: DraftEngineKey;
+  label: string;
+  badge: string;
+  shortLabel: string;
+  description: string;
+}
+
+export const ENGINE_OPTIONS: DraftEngineOption[] = [
+  {
+    id: "sota",
+    label: "SOTA (51%)",
+    badge: "SOTA 51%",
+    shortLabel: "SOTA",
+    description: "Production GNN-Transformer trained on 2025-2026 pro matches with 51.3% verified True Pick Order from broadcast screenshots",
+  },
+  {
+    id: "heuristic",
+    label: "Heuristic (0%)",
+    badge: "Heuristic 0%",
+    shortLabel: "Heuristic",
+    description: "Heuristic model trained on 2025-2026 pro matches with 0% True Order (ordered by Liquipedia in-game lane positions)",
+  },
+  {
+    id: "matrix",
+    label: "Matrix (Stat)",
+    badge: "Bayes Matrix",
+    shortLabel: "Matrix",
+    description: "Statistical co-pick synergy and counter matrix with Bradley-Terry log-odds and Empirical Bayes shrinkage",
+  },
 ];
 
 export interface DamageProfile {

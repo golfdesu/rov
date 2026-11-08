@@ -1,9 +1,9 @@
 import json
 import threading
+import time
 import uuid
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 
 from src.combat_calculator import Build, get_engine
 from src.config import config
-from src.predictor import LANE_LABELS, RoVDraftPredictor
+from src.predictor import RoVDraftPredictor
 from src.schemas import (
     CombatDuelRequest,
     CombatStatsRequest,
@@ -66,36 +66,135 @@ def get_heuristic_predictor() -> RoVDraftPredictor:
 # Precompute rich hero metadata catalog
 hero_summary_path = DATA_DIR / "heroes_130_summary.csv"
 hero_images_path = FRONTEND_DIR / "public" / "hero_images.json"
+hero_tier_stats_path = (
+    DATA_DIR.parent / "exports" / "RoV_Pro_Draft_Intelligence_2026" / "raw_csv" / "hero_tier_stats_2026.csv"
+)
+hero_tier_overrides_path = getattr(config.paths, "hero_tier_overrides_path", DATA_DIR / "hero_tier_overrides.json")
 
 hero_details_cache: list[dict] = []
 try:
     summary_df = pd.read_csv(hero_summary_path).set_index("name") if hero_summary_path.exists() else None
+    tier_stats_df = pd.read_csv(hero_tier_stats_path).set_index("Hero") if hero_tier_stats_path.exists() else None
     images_dict = json.loads(hero_images_path.read_text(encoding="utf-8")) if hero_images_path.exists() else {}
 
-    lane_probs = predictor.ckpt.get("lane_probs")
+    tier_overrides: dict[str, str] = {}
+    tier_reasons: dict[str, str] = {}
+    if hero_tier_overrides_path.exists():
+        try:
+            raw_overrides = json.loads(hero_tier_overrides_path.read_text(encoding="utf-8"))
+            for k, v in raw_overrides.get("overrides", {}).items():
+                tier_overrides[k] = v["tier"] if isinstance(v, dict) and "tier" in v else str(v)
+                if isinstance(v, dict) and "reason" in v:
+                    tier_reasons[k] = str(v["reason"])
+        except Exception:
+            tier_overrides = {}
+            tier_reasons = {}
+
+    canonical_to_legacy = {"Mortos": "Arthur", "Celica": "Brunhilda", "Riktor": "Richter"}
+    legacy_to_canonical = {"Arthur": "Mortos", "Brunhilda": "Celica", "Richter": "Riktor"}
+    role_fallback = {
+        "Warrior": "DS_Lane",
+        "Assassin": "Jungle",
+        "Mage": "Mid",
+        "Marksman": "Dragon_Lane",
+        "Support": "Roam",
+        "Tank": "Roam",
+    }
+    lane_cols = [
+        ("DS_Lane", "DS_Lane_Share"),
+        ("Jungle", "Jungle_Share"),
+        ("Mid", "Mid_Share"),
+        ("Dragon_Lane", "Dragon_Lane_Share"),
+        ("Roam", "Roam_Share"),
+    ]
+
     for i, name in enumerate(predictor.hero_names):
+        lookup_name = legacy_to_canonical.get(name, name)
         role = "Warrior"
-        tier = "A"
-        if summary_df is not None and name in summary_df.index:
-            row = summary_df.loc[name]
+        tier = "C"
+        rank = 999
+        main_pro_lane = "DS_Lane"
+        lane = "DS_Lane"
+        presence_rate = 0.0
+        pick_rate = 0.0
+        ban_rate = 0.0
+        win_rate = 50.0
+        total_picks = 0
+        total_bans = 0
+
+        if tier_stats_df is not None and lookup_name in tier_stats_df.index:
+            t_row = tier_stats_df.loc[lookup_name]
+            if isinstance(t_row, pd.DataFrame):
+                t_row = t_row.iloc[0]
+            rank = int(t_row["Rank"]) if pd.notna(t_row.get("Rank")) else 999
+            tier = str(t_row["Tier_2026"]) if pd.notna(t_row.get("Tier_2026")) else "C"
+            role = str(t_row["Primary_Role"]) if pd.notna(t_row.get("Primary_Role")) else "Warrior"
+            main_pro_lane = str(t_row["Main_Pro_Lane"]) if pd.notna(t_row.get("Main_Pro_Lane")) else "Unpicked"
+            if pd.notna(t_row.get("Presence_Rate")):
+                presence_rate = round(float(t_row["Presence_Rate"]) * 100, 1)
+            if pd.notna(t_row.get("Pick_Rate")):
+                pick_rate = round(float(t_row["Pick_Rate"]) * 100, 1)
+            if pd.notna(t_row.get("Ban_Rate")):
+                ban_rate = round(float(t_row["Ban_Rate"]) * 100, 1)
+            if pd.notna(t_row.get("Win_Rate")):
+                win_rate = round(float(t_row["Win_Rate"]) * 100, 1)
+            if pd.notna(t_row.get("Total_Picks")):
+                total_picks = int(t_row["Total_Picks"])
+            if pd.notna(t_row.get("Total_Bans")):
+                total_bans = int(t_row["Total_Bans"])
+
+            if main_pro_lane == "Unpicked":
+                lane = role_fallback.get(role, "DS_Lane")
+            else:
+                active_lanes = [main_pro_lane]
+                for lname, col in lane_cols:
+                    if lname != main_pro_lane and pd.notna(t_row.get(col)) and float(t_row[col]) >= 0.15:
+                        active_lanes.append(lname)
+                lane = ", ".join(active_lanes)
+        elif summary_df is not None and lookup_name in summary_df.index:
+            row = summary_df.loc[lookup_name]
             if isinstance(row, pd.DataFrame):
                 row = row.iloc[0]
             role = str(row["primary_role"]) if pd.notna(row.get("primary_role")) else "Warrior"
-            tier = str(row["meta_tier_2026"]) if pd.notna(row.get("meta_tier_2026")) else "A"
+            tier = str(row["meta_tier_2026"]) if pd.notna(row.get("meta_tier_2026")) else "C"
+            lane = role_fallback.get(role, "DS_Lane")
+            main_pro_lane = lane
+            if pd.notna(row.get("pro_win_rate_2026")):
+                win_rate = round(float(row["pro_win_rate_2026"]), 1)
+            if pd.notna(row.get("pro_pick_rate_2026")):
+                pick_rate = round(float(row["pro_pick_rate_2026"]), 1)
+            if pd.notna(row.get("pro_ban_rate_2026")):
+                ban_rate = round(float(row["pro_ban_rate_2026"]), 1)
 
-        primary_lane = "DS_Lane (ออฟเลน)"
-        if lane_probs is not None and i < len(lane_probs):
-            lane_idx = int(np.argmax(lane_probs[i]))
-            primary_lane = LANE_LABELS[lane_idx] if lane_idx < len(LANE_LABELS) else primary_lane
+        if name in tier_overrides:
+            tier = tier_overrides[name]
+        elif lookup_name in tier_overrides:
+            tier = tier_overrides[lookup_name]
 
+        tier_reason = tier_reasons.get(name) or tier_reasons.get(lookup_name) or ""
+
+        img_url = (
+            images_dict.get(name)
+            or images_dict.get(legacy_to_canonical.get(name, ""))
+            or images_dict.get(canonical_to_legacy.get(name, ""))
+        )
         hero_details_cache.append(
             {
                 "id": i,
                 "name": name,
                 "role": role,
-                "lane": primary_lane,
+                "lane": lane,
+                "main_pro_lane": main_pro_lane,
                 "tier": tier,
-                "image_url": images_dict.get(name),
+                "rank": rank,
+                "presence_rate": presence_rate,
+                "win_rate": win_rate,
+                "pick_rate": pick_rate,
+                "ban_rate": ban_rate,
+                "total_picks": total_picks,
+                "total_bans": total_bans,
+                "tier_reason": tier_reason,
+                "image_url": img_url,
             }
         )
 except Exception:
@@ -161,13 +260,19 @@ def save_draft_session(session: DraftSessionStateSchema):
     session_path = config.paths.draft_session_path
     session_path.parent.mkdir(parents=True, exist_ok=True)
     with _session_lock:
+        payload = json.dumps(session.model_dump(), ensure_ascii=False, indent=2)
         tmp_path = session_path.with_name(f"{session_path.stem}_{uuid.uuid4().hex[:8]}.tmp")
         try:
-            tmp_path.write_text(
-                json.dumps(session.model_dump(), ensure_ascii=False, indent=2),
-                encoding="utf-8",
-            )
-            tmp_path.replace(session_path)
+            tmp_path.write_text(payload, encoding="utf-8")
+            for attempt in range(3):
+                try:
+                    tmp_path.replace(session_path)
+                    break
+                except PermissionError:
+                    if attempt == 2:
+                        session_path.write_text(payload, encoding="utf-8")
+                    else:
+                        time.sleep(0.05)
         finally:
             tmp_path.unlink(missing_ok=True)
     return session
@@ -186,7 +291,7 @@ def clear_draft_session():
 def predict_draft(request: DraftStateRequest):
     try:
         return predictor.predict(request)
-    except ValueError as exc:
+    except (ValueError, KeyError, IndexError) as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
@@ -194,7 +299,7 @@ def predict_draft(request: DraftStateRequest):
 def predict_matrix_draft(request: DraftStateRequest):
     try:
         return predictor.predict_matrix(request)
-    except ValueError as exc:
+    except (ValueError, KeyError, IndexError) as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
@@ -202,7 +307,7 @@ def predict_matrix_draft(request: DraftStateRequest):
 def predict_heuristic_draft(request: DraftStateRequest):
     try:
         return get_heuristic_predictor().predict(request)
-    except ValueError as exc:
+    except (ValueError, KeyError, IndexError) as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 

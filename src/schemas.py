@@ -209,6 +209,7 @@ class DraftSessionStateSchema(BaseModel):
     winHistory: list[float | None] = Field(default_factory=list)
     blueWinRate: float = 50.0
     useLookahead: bool = False
+    engine: Literal["sota", "heuristic", "matrix"] = "sota"
     league: Literal["RPL", "AOG", "GCS", "INTL", "APL", "AIC", "GLOBAL"] = "GLOBAL"
     globalBans: GlobalBanStateSchema = Field(default_factory=GlobalBanStateSchema)
     seriesGames: list[RecordedDraftGameSchema] = Field(default_factory=list)

@@ -80,10 +80,10 @@ def main():
         bb, rb = g.get("blue_bans", []), g.get("red_bans", [])
         if len(bp) != 5 or len(rp) != 5:
             invalid_games += 1
-        if len(bp) == 5 and len(rp) == 5 and len(bb) == 4 and len(rb) == 4:
+        if len(bp) == 5 and len(rp) == 5 and len([h for h in bb if h]) == 4 and len([h for h in rb if h]) == 4:
             full_18_games += 1
         for h in bp + rp + bb + rb:
-            if h not in hero_set:
+            if h and h not in hero_set:
                 unmapped.add(h)
 
     if unmapped or invalid_games > 0:

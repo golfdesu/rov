@@ -530,7 +530,7 @@ class RoVDraftPredictor:
         to_evict = max(0, len(top_indices) + len(lane_extras) - top_k)
         if to_evict > 0:
             evicted_positions: set[int] = set()
-            for pos in range(len(top_indices) - 1, 4, -1):
+            for pos in range(len(top_indices) - 1, -1, -1):
                 if to_evict <= 0:
                     break
                 lk = self._lane_key[top_indices[pos]]
@@ -540,8 +540,12 @@ class RoVDraftPredictor:
                     to_evict -= 1
             top_indices = [idx for pos, idx in enumerate(top_indices) if pos not in evicted_positions]
 
-        top_indices.extend(lane_extras)
-        return top_indices[:top_k]
+        combined = top_indices + lane_extras
+        if len(combined) > top_k:
+            overflow = len(combined) - top_k
+            top_indices = top_indices[:-overflow] if overflow < len(top_indices) else []
+            combined = top_indices + lane_extras
+        return combined[:top_k]
 
     def _choose_next_pick(
         self,
@@ -1082,7 +1086,7 @@ class RoVDraftPredictor:
         b_syn = sum(float(syn_mat[ids[b1], ids[b2]]) for i, b1 in enumerate(b_picks) for b2 in b_picks[i + 1 :])
         r_syn = sum(float(syn_mat[ids[r1], ids[r2]]) for i, r1 in enumerate(r_picks) for r2 in r_picks[i + 1 :])
         b_cnt = sum(float(cnt_mat[ids[b], ids[r]]) for b in b_picks for r in r_picks)
-        base_matchup_win = float(np.clip(0.50 + (b_syn - r_syn + b_cnt), 0.30, 0.70))
+        base_matchup_win = float(np.clip(0.50 + (b_syn - r_syn + b_cnt) * 0.20, 0.30, 0.70))
 
         # Hero win prob when chosen
         win_probs = np.zeros(num_heroes, dtype=np.float32)

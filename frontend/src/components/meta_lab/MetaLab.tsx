@@ -74,8 +74,10 @@ export function MetaLab({
     unavailableHeroes,
     lockHero,
     undo,
+    redo,
     reset,
     canUndo,
+    canRedo,
     importDraft,
   } = useDraft({
     engine: "matrix",
@@ -160,7 +162,7 @@ export function MetaLab({
                 <span className="font-display text-xs font-bold tracking-wide text-ink sm:text-sm">
                   Matrix & Rule Draft
                 </span>
-                <span className="shrink-0 border border-gold/40 bg-gold/10 px-1.5 py-0.2 font-mono text-[9px] font-bold text-gold uppercase">
+                <span className="shrink-0 border border-gold/40 bg-gold/10 px-1.5 py-0.5 font-mono text-[9px] font-bold text-gold uppercase">
                   Zero-Neural
                 </span>
               </div>
@@ -211,11 +213,11 @@ export function MetaLab({
         currentStep={currentStep}
         currentStepIndex={currentStepIndex}
         totalSteps={totalSteps}
-        useLookahead={false}
-        setUseLookahead={() => {}}
         onUndo={undo}
+        onRedo={redo}
         onReset={reset}
         canUndo={canUndo}
+        canRedo={canRedo}
       />
 
       {globalBanModalCat !== null && (
@@ -407,7 +409,6 @@ export function MetaLab({
                   currentStep={currentStep}
                   heroMap={heroMap}
                   isLoading={isLoading}
-                  useLookahead={false}
                   blueWinRate={blueWinRate}
                   winHistory={winHistory}
                   onLockHero={lockHero}
@@ -429,7 +430,6 @@ export function MetaLab({
                 currentStep={currentStep}
                 heroMap={heroMap}
                 isLoading={isLoading}
-                useLookahead={false}
                 blueWinRate={blueWinRate}
                 winHistory={winHistory}
                 onLockHero={lockHero}

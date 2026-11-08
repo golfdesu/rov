@@ -1294,7 +1294,7 @@
         ],
         "scaling": {
           "target_hp_pct": 8.0,
-          "ad_pct": 1.0
+          "target_hp_per_100_ad_pct": 1.0
         },
         "icon_url": "/skills/Astrid/3_direblow.png",
         "desc_th": "Astrid ชาร์จพลัง 1 วิ ระหว่างนี้เธอจะเป็นอมตะและป้องกันสถานะ จากนั้นเธอจะสร้างความเสียหายจริง 200 (+8% ของพลังชีวิตสูงสุดของเป้าหมาย) (+1% ทุก 100 พลังโจมตีกายภาพ) (ความเสียหายที่สร้างตามพลังชีวิตสูงสุดสำหรับมอนสเตอร์ป่า สูงสุด 1000 หน่วย) พร้อมกับสตั๊น 1 วิ (ระหว่างนี้ Astrid จะป้องกันสถานะ)\nความเสียหายจริงที่โดนฮีโร่จะมีเอฟเฟกต์ดูดเลือด 50%",
@@ -14138,7 +14138,7 @@
         "base_damage": [],
         "scaling": {
           "ap_pct": 15.0,
-          "own_hp_pct": 1.5
+          "bonus_max_hp_pct": 1.5
         },
         "description": "Xeniel gains 1 Holy Brand stack every second, up to 4. His next normal attack deals bonus magic damage equal to (+15% AP) (+1.5% bonus max HP) per stack. At 4 stacks, the attack switches to ranged mode.",
         "icon_url": "/skills/Xeniel/0_holybrand.png",

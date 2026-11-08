@@ -23,6 +23,7 @@ import {
   redUsedHeroes,
   resolveSeriesName,
 } from "../utils/draft";
+import { ENGINE_OPTIONS } from "../types/draft";
 import { displayName } from "../utils/heroNames";
 import { AiPanel } from "./AiPanel";
 import { Alert } from "./Alert";
@@ -37,9 +38,9 @@ export type MobileDraftView = "draft" | "ai" | "teams";
 
 export interface DraftBoardViewProps {
   draft: ReturnType<typeof useDraft>;
-  modelVariant: "sota" | "heuristic";
-  modelBadge: string;
-  modelTooltip: string;
+  modelVariant?: "sota" | "heuristic" | "matrix";
+  modelBadge?: string;
+  modelTooltip?: string;
   isActiveTab: boolean;
 }
 
@@ -75,8 +76,8 @@ export function DraftBoardView({
     recordGameToSeries,
     setRecordedGameWinner,
     unavailableHeroes,
-    useLookahead,
-    setUseLookahead,
+    engine,
+    setEngine,
     league,
     setLeague,
     recommendations,
@@ -94,8 +95,10 @@ export function DraftBoardView({
     heroesFallback,
     lockHero,
     undo,
+    redo,
     reset,
     canUndo,
+    canRedo,
   } = draft;
 
   const searchRef = useRef<HTMLInputElement>(null);
@@ -153,18 +156,27 @@ export function DraftBoardView({
   const hasAnyAction = bluePicks.length + redPicks.length + blueBans.length + redBans.length > 0;
   const isDraftComplete = currentStep === null;
 
-  // Keyboard shortcuts: "/" focus search, Enter lock top suggestion, Ctrl/Cmd+Z undo
+  // Keyboard shortcuts: "/" focus search, Enter lock top suggestion, Ctrl/Cmd+Z undo, Ctrl/Cmd+Shift+Z or Ctrl/Cmd+Y redo
   useEffect(() => {
     if (!isActiveTab || globalBanModalCat !== null || isHistoryModalOpen || isNewSeriesModalOpen) return;
     function onKey(e: KeyboardEvent) {
       const typing = e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement;
+      if (typing) return;
+
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
         e.preventDefault();
-        undo();
-      } else if (!typing && e.key === "/") {
+        if (e.shiftKey) {
+          redo();
+        } else {
+          undo();
+        }
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {
+        e.preventDefault();
+        redo();
+      } else if (e.key === "/") {
         e.preventDefault();
         searchRef.current?.focus();
-      } else if (!typing && e.key === "Enter" && !(e.target instanceof HTMLButtonElement)) {
+      } else if (e.key === "Enter" && !(e.target instanceof HTMLButtonElement)) {
         const top = recommendations[0];
         if (top && currentStep && !isLoading && !unavailableHeroes.has(top.hero_name)) lockHero(top.hero_name);
       }
@@ -177,6 +189,7 @@ export function DraftBoardView({
     isHistoryModalOpen,
     isNewSeriesModalOpen,
     undo,
+    redo,
     lockHero,
     recommendations,
     currentStep,
@@ -192,14 +205,16 @@ export function DraftBoardView({
           {/* Left: Model Indicator and Series Name */}
           <div className="flex shrink-0 items-center gap-2">
             <span
-              title={modelTooltip}
+              title={modelTooltip || ENGINE_OPTIONS.find((o) => o.id === engine)?.description}
               className={`px-2 py-0.5 font-mono text-[10px] font-bold tracking-wider uppercase ${
-                modelVariant === "heuristic"
-                  ? "border border-amber-500/60 bg-amber-500/15 text-amber-400"
-                  : "border border-gold/60 bg-gold/15 text-gold"
+                engine === "sota"
+                  ? "border border-gold/60 bg-gold/15 text-gold"
+                  : engine === "heuristic"
+                    ? "border border-amber-500/60 bg-amber-500/15 text-amber-400"
+                    : "border border-cyan-500/60 bg-cyan-500/15 text-cyan-400"
               }`}
             >
-              {modelBadge}
+              {modelBadge || ENGINE_OPTIONS.find((o) => o.id === engine)?.badge}
             </span>
             <span
               className="hidden max-w-[220px] truncate border-l border-line pl-2.5 font-display text-xs font-bold tracking-wider text-muted sm:inline-block"
@@ -403,15 +418,17 @@ export function DraftBoardView({
         currentStep={currentStep}
         currentStepIndex={currentStepIndex}
         totalSteps={totalSteps}
-        useLookahead={useLookahead}
-        setUseLookahead={setUseLookahead}
         league={league}
         setLeague={setLeague}
         onUndo={undo}
+        onRedo={redo}
         onReset={reset}
         canUndo={canUndo}
+        canRedo={canRedo}
+        engine={engine}
+        setEngine={setEngine}
         modelBadge={modelBadge}
-        modelVariant={modelVariant}
+        modelVariant={modelVariant ?? engine}
         modelTooltip={modelTooltip}
       />
 
@@ -631,7 +648,6 @@ export function DraftBoardView({
                   currentStep={currentStep}
                   heroMap={heroMap}
                   isLoading={isLoading}
-                  useLookahead={useLookahead}
                   blueWinRate={blueWinRate}
                   winHistory={winHistory}
                   onLockHero={lockHero}
@@ -653,7 +669,6 @@ export function DraftBoardView({
                 currentStep={currentStep}
                 heroMap={heroMap}
                 isLoading={isLoading}
-                useLookahead={useLookahead}
                 blueWinRate={blueWinRate}
                 winHistory={winHistory}
                 onLockHero={lockHero}

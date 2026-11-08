@@ -250,6 +250,7 @@ PIERCE_PATTERNS = (
     (re.compile(rf"Magic Pierce \+{_NUM}%"), "magic_pierce_pct"),
     (re.compile(rf"Magic Pierce \+{_FLAT}"), "magic_pierce_flat"),
     (re.compile(rf"\+{_FLAT} Magic Pierce"), "magic_pierce_flat"),
+    (re.compile(r"Magic Pierce by (\d+)\s*-\s*(\d+)", re.I), "magic_pierce_flat_range"),
     (
         re.compile(r"Gain (\d+)\s*-\s*(\d+) (?:\(\+(\d+)% bonus HP\) )?Magic Pierce(?:, up to a maximum of (\d+))?"),
         "magic_pierce_flat_range",
@@ -272,7 +273,7 @@ def lerp_by_level(value, level: int) -> float:
 
 
 def mitigation_multiplier(defense: float, flat_pierce: float, pct_pierce: float) -> float:
-    effective = max(0.0, (defense - flat_pierce) * (1 - pct_pierce / 100.0))
+    effective = max(0.0, max(0.0, defense - max(0.0, flat_pierce)) * max(0.0, 1.0 - pct_pierce / 100.0))
     return DEFENSE_CONSTANT / (DEFENSE_CONSTANT + effective)
 
 
@@ -696,7 +697,7 @@ class CombatEngine:
             cd = float(self._pick(skill["cooldown"], max(sl, 1), build.level) or 0)
             cdr = a["cooldown_reduction"]
             if skill.get("level_slot", slot) == "Ultimate":
-                cdr = min(CDR_CAP, cdr + a["ultimate_cdr_bonus"])
+                cdr = min(50.0, a.get("cooldown_reduction_uncapped", cdr) + a.get("ultimate_cdr_bonus", 0.0))
             rows.append(
                 {
                     "name": skill["name"],
@@ -905,25 +906,26 @@ def simulate_duel(side_a, side_b) -> dict:
             if t >= me["next_cast"]:
                 for sk in me["skills"]:
                     if t >= sk["ready"]:
-                        events.append((sk["name"], sk["final_damage"], sk["damage_type"]))
+                        events.append((sk["name"], sk["final_damage"], sk["damage_type"], sk.get("hits", 1)))
                         sk["ready"] = t + max(sk["cooldown"], 0.5)
                         me["next_cast"] = t + SKILL_CAST_GAP
                         break
             if t >= me["next_attack"]:
-                events.append(("Normal Attack", me["attack_damage"], "physical"))
+                events.append(("Normal Attack", me["attack_damage"], "physical", 1))
                 me["next_attack"] = t + me["attack_interval"]
             if events:
-                base_hit_count = len(events)
+                base_hit_count = sum(ev[3] for ev in events)
                 new_procs = []
                 for p in me["procs"]:
                     p["hits"] += base_hit_count
                     if t >= p["ready"] and p["hits"] >= p["hits_needed"]:
-                        new_procs.append((p["name"], p["damage"], p["damage_type"]))
+                        new_procs.append((p["name"], p["damage"], p["damage_type"], 1))
                         p["ready"] = t + p["cooldown"]
                         p["hits"] -= p["hits_needed"]
                 if new_procs:
                     events.extend(new_procs)
-            for name, dmg, dtype in events:
+            proc_names = {p["name"] for p in me["procs"]}
+            for name, dmg, dtype, _hits in events:
                 incoming[1 - i] += dmg
                 me["dealt"] += dmg
                 me["breakdown"][name] = me["breakdown"].get(name, 0.0) + dmg
@@ -931,7 +933,8 @@ def simulate_duel(side_a, side_b) -> dict:
                     if name == "Normal Attack":
                         me["hp"] = min(me["max_hp"], me["hp"] + dmg * me["steal"].get("physical", 0.0))
                 elif dtype == "magic":
-                    me["hp"] = min(me["max_hp"], me["hp"] + dmg * me["steal"].get("magic", 0.0))
+                    if name not in proc_names:
+                        me["hp"] = min(me["max_hp"], me["hp"] + dmg * me["steal"].get("magic", 0.0))
         for i in (0, 1):
             sides[i]["hp"] -= incoming[i]
         dead = [s["hp"] <= 0 for s in sides]

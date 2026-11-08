@@ -6,6 +6,7 @@ import random
 import sqlite3
 import time
 import warnings
+from datetime import datetime
 from pathlib import Path
 
 import numpy as np
@@ -201,13 +202,20 @@ def load_sota_data_and_graphs(dataset_path: Path | str | None = None):
     print(f"Loaded {len(games)} draft games from {dataset_path.name}", flush=True)
 
     # Chronological sort (2024 -> 2025 -> 2026) so validation set is strictly current 2026 pro meta
-    games = sorted(
-        games,
-        key=lambda g: (
-            int(g.get("year", 2025)) if str(g.get("year", "2025")).isdigit() else 2025,
-            str(g.get("date", "")),
-        ),
-    )
+    def _parse_game_date(g):
+        y = int(g.get("year", 2025)) if str(g.get("year", "2025")).isdigit() else 2025
+        date_str = str(g.get("date", "")).strip()
+        if date_str:
+            cleaned = date_str.split("-")[0].strip()
+            for fmt in ("%B %d, %Y", "%Y-%m-%d", "%b %d, %Y"):
+                try:
+                    dt = datetime.strptime(cleaned, fmt)
+                    return (dt.year, dt.month, dt.day)
+                except Exception:
+                    pass
+        return (y, 1, 1)
+
+    games = sorted(games, key=_parse_game_date)
 
     n_train_games = int(len(games) * 0.85)
     train_games = games[:n_train_games]
@@ -463,8 +471,9 @@ def order_team_picks_by_draft_logic(team_picks_ids, enemy_phase2_ban_ids, lane_p
         enemy_p2_lanes.add(int(np.argmax(lane_probs[b_id])))
 
     scored = []
-    for slot_idx, h_id in enumerate(team_picks_ids):
-        targeted_in_p2 = 1 if slot_idx in enemy_p2_lanes else 0
+    for _slot_idx, h_id in enumerate(team_picks_ids):
+        hero_lane = int(np.argmax(lane_probs[h_id]))
+        targeted_in_p2 = 1 if hero_lane in enemy_p2_lanes else 0
         score = priority_scores[h_id] - (50.0 if targeted_in_p2 else 0.0)
         scored.append((score, h_id))
 
@@ -483,9 +492,15 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
     for g in games:
         bp = [hero_to_id[h] for h in g["blue_picks"] if h in hero_to_id]
         rp = [hero_to_id[h] for h in g["red_picks"] if h in hero_to_id]
-        bb = [hero_to_id[h] for h in g["blue_bans"] if h in hero_to_id]
-        rb = [hero_to_id[h] for h in g["red_bans"] if h in hero_to_id]
-        if len(bp) == 5 and len(rp) == 5 and len(bb) == 4 and len(rb) == 4:
+        bb = [hero_to_id.get(h, -1) for h in g["blue_bans"]]
+        rb = [hero_to_id.get(h, -1) for h in g["red_bans"]]
+        if (
+            len(bp) == 5
+            and len(rp) == 5
+            and len(bb) == 4
+            and len(rb) == 4
+            and (sum(1 for x in bb if x == -1) + sum(1 for x in rb if x == -1) <= 1)
+        ):
             valid_games.append((g, bp, rp, bb, rb))
 
     eff_aug = max(1, min(int(augment_factor), 2))
@@ -524,8 +539,10 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
             bp_canonical = list(b_picks_raw)
             rp_canonical = list(r_picks_raw)
         else:
-            bp_canonical = order_team_picks_by_draft_logic(b_picks_raw, r_bans[2:4], lane_probs, priority_scores)
-            rp_canonical = order_team_picks_by_draft_logic(r_picks_raw, b_bans[2:4], lane_probs, priority_scores)
+            r_p2_bans = [x for x in r_bans[2:4] if x != -1]
+            b_p2_bans = [x for x in b_bans[2:4] if x != -1]
+            bp_canonical = order_team_picks_by_draft_logic(b_picks_raw, r_p2_bans, lane_probs, priority_scores)
+            rp_canonical = order_team_picks_by_draft_logic(r_picks_raw, b_p2_bans, lane_probs, priority_scores)
 
         orderings = [(bp_canonical, rp_canonical)]
         if eff_aug >= 2:
@@ -581,11 +598,13 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
                     ep_arr[row_idx, h] = 1.0
                     mask_arr[row_idx, h] = True
                 for h in ally_bans:
-                    ab_arr[row_idx, h] = 1.0
-                    mask_arr[row_idx, h] = True
+                    if h != -1:
+                        ab_arr[row_idx, h] = 1.0
+                        mask_arr[row_idx, h] = True
                 for h in enemy_bans:
-                    eb_arr[row_idx, h] = 1.0
-                    mask_arr[row_idx, h] = True
+                    if h != -1:
+                        eb_arr[row_idx, h] = 1.0
+                        mask_arr[row_idx, h] = True
 
                 if action_type == 1:
                     for h in ally_gbans:
@@ -593,7 +612,11 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
                 else:
                     for h in enemy_gbans:
                         mask_arr[row_idx, h] = True
-                mask_arr[row_idx, target_hero] = False
+
+                is_missing_step = target_hero == -1
+                safe_target = 0 if is_missing_step else target_hero
+                if not is_missing_step:
+                    mask_arr[row_idx, target_hero] = False
 
                 for i, (h_ev, act_ev, side_ev, s_ev) in enumerate(history_events):
                     same_side = side_ev == side
@@ -615,7 +638,7 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
                 ]
                 act_arr[row_idx] = action_type
                 ph_arr[row_idx] = phase
-                target_arr[row_idx] = target_hero
+                target_arr[row_idx] = safe_target
                 win_arr[row_idx] = acting_win
 
                 # Decoupled supervision:
@@ -624,7 +647,10 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
 
                 # 2. Policy loss applies to all bans (chronological on Liquipedia) and verified picks,
                 #    with Advantage-Weighted Policy Imitation (1.25x for winning side picks, 0.75x for losing side picks)
-                if action_type == 0:
+                #    For missing ban steps, pol_weight is strictly 0.0 (Masked Loss: no gradient)
+                if is_missing_step:
+                    pol_weight_arr[row_idx] = 0.0
+                elif action_type == 0:
                     pol_weight_arr[row_idx] = recency_w
                 elif is_true_order:
                     win_mult = 1.25 if acting_win >= 0.5 else 0.75
@@ -632,17 +658,18 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
                 else:
                     pol_weight_arr[row_idx] = 0.0
 
-                history_events.append((target_hero, action_type, side, step_idx))
-                if action_type == 0:
-                    if side == 0:
-                        cur_b_bans.append(target_hero)
+                if not is_missing_step:
+                    history_events.append((target_hero, action_type, side, step_idx))
+                    if action_type == 0:
+                        if side == 0:
+                            cur_b_bans.append(target_hero)
+                        else:
+                            cur_r_bans.append(target_hero)
                     else:
-                        cur_r_bans.append(target_hero)
-                else:
-                    if side == 0:
-                        cur_b_picks.append(target_hero)
-                    else:
-                        cur_r_picks.append(target_hero)
+                        if side == 0:
+                            cur_b_picks.append(target_hero)
+                        else:
+                            cur_r_picks.append(target_hero)
                 row_idx += 1
 
     return TensorDataset(
@@ -1043,7 +1070,7 @@ class RoVDraftGNNTransformer(nn.Module):
         is_phase2 = (phase == 2).unsqueeze(-1)
         ban_logits = torch.where(is_phase2, ban2_logits, ban1_logits)
         policy_logits = torch.where(is_pick, pick_logits, ban_logits)
-        policy_logits = policy_logits.masked_fill(unavailable_mask, -1e9)
+        policy_logits = policy_logits.masked_fill(unavailable_mask, -1e4)
 
         v_state = self.state_value_head(joint_state)
         neural_adv = torch.matmul(self.action_adv_proj(joint_state), H_gnn.t()) * scale
@@ -1345,7 +1372,15 @@ def main():
             logging.getLogger("mlflow").setLevel(logging.ERROR)
             HAS_MLFLOW = False
 
-    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
+    decay_params = [p for n, p in model.named_parameters() if p.requires_grad and "neural_temp" not in n]
+    no_decay_params = [p for n, p in model.named_parameters() if p.requires_grad and "neural_temp" in n]
+    optimizer = torch.optim.AdamW(
+        [
+            {"params": decay_params, "weight_decay": weight_decay},
+            {"params": no_decay_params, "weight_decay": 0.0},
+        ],
+        lr=lr,
+    )
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
     use_amp = device.type == "cuda" and torch.cuda.is_bf16_supported()
 
@@ -1403,14 +1438,16 @@ def main():
 
         val_loss, val_metrics, val_win_acc = evaluate_sota_model(model, val_loader, device)
         ov = val_metrics["overall"]
-        t1 = ov["top1"] / ov["total"] * 100
-        t3 = ov["top3"] / ov["total"] * 100
-        t5 = ov["top5"] / ov["total"] * 100
-        t10 = ov["top10"] / ov["total"] * 100
+        tot = max(1, ov["total"])
+        t1 = ov["top1"] / tot * 100
+        t3 = ov["top3"] / tot * 100
+        t5 = ov["top5"] / tot * 100
+        t10 = ov["top10"] / tot * 100
         is_best = val_loss < best_val_loss
         marker = " *BEST*" if is_best else ""
+        train_loss_display = train_pol_loss / max(1, train_n)
         print(
-            f"  Epoch {epoch:02d}/{epochs:02d} ({time.time() - ep_start:.1f}s) | Pol Loss: {train_pol_loss / train_n:.4f} | "
+            f"  Epoch {epoch:02d}/{epochs:02d} ({time.time() - ep_start:.1f}s) | Pol Loss: {train_loss_display:.4f} | "
             f"Val Loss: {val_loss:.4f} | Top-1: {t1:.2f}% | Top-3: {t3:.2f}% | Top-5: {t5:.2f}% | Top-10: {t10:.2f}% | WinAcc: {val_win_acc:.1f}%{marker}",
             flush=True,
         )

@@ -1,0 +1,117 @@
+{
+  "_description": "Hand-maintained tier overrides for heroes with low pro tournament sample sizes, new releases, perma-ban priorities, high win-rate playoff pocket picks, or legacy meta adjustments",
+  "overrides": {
+    "Evita": {
+      "tier": "S",
+      "reason": "New release (Oct 2026), dominant high-rank presence, tournament pick sample size lag"
+    },
+    "Zanis": {
+      "tier": "A",
+      "reason": "Reworked true damage burst with 60% pro win rate, emerging jungle/DS lane priority"
+    },
+    "Ata": {
+      "tier": "A",
+      "reason": "High-sustain terrain control tank, strong counter-pick into heavy melee dive comps"
+    },
+    "Tamyn": {
+      "tier": "S",
+      "reason": "Released Jul 2026, 100% presence in 2026 Grand Finals (17 bans, 2 picks), 61.9% win rate, near-perma-ban priority in playoffs"
+    },
+    "Rouie": {
+      "tier": "S+",
+      "reason": "Undisputed #1 ban priority in competitive play (90.8% playoff presence, 160 bans in 218 games, 88.5% 2026 presence)"
+    },
+    "Marja": {
+      "tier": "S+",
+      "reason": "#2 playoff presence (70.6%, 57 picks, 97 bans), 80.0% win rate in 2026 Grand Finals, dominant flex Mid/DS lane sustain mage"
+    },
+    "Eland'orr": {
+      "tier": "S+",
+      "reason": "#3 presence overall in 2026 (71.5%, 555 picks, 730 bans), 60.0% win rate in playoffs, premier contested marksman/jungle"
+    },
+    "Astrid": {
+      "tier": "S",
+      "reason": "Dominant late-series decisive weapon (71.4% win rate over 28 playoff games, 100.0% in Grand Finals, 83.3% in RPL playoffs), unmatched invulnerable true damage execution in Global BP"
+    },
+    "Alice": {
+      "tier": "A",
+      "reason": "Playoff win rate surge (77.8% win rate over 18 games, 41 bans), +14.7% presence surge in playoffs, team-fight mobility acceleration"
+    },
+    "Annette": {
+      "tier": "A",
+      "reason": "Premier anti-dive support in playoffs (70.0% win rate over 30 games, 85.7% in GCS, 77.8% in AOG), wind wall zone denial"
+    },
+    "Airi": {
+      "tier": "S",
+      "reason": "Late-game true damage split-pusher and diver (62.5% playoff win rate over 48 games, 69.2% in GCS playoffs)"
+    },
+    "Mina": {
+      "tier": "S",
+      "reason": "Consistent frontline control tank (57.1% win rate over 189 picks and 277 bans in 2026, 25.9% presence)"
+    },
+    "Krizzix": {
+      "tier": "B",
+      "reason": "High-impact stealth initiation support (66.7% playoff win rate over 12 picks and 21 bans, 56.5% 2026 win rate)"
+    },
+    "Wisp": {
+      "tier": "S",
+      "reason": "#4 picked marksman in 2026 (406 picks, 52 bans, 25.5% presence, 53.2% win rate), heavy AOE splash crit damage and self-peel"
+    },
+    "Toro": {
+      "tier": "S+",
+      "reason": "#4 presence overall in 2026 (47.9% presence, 560 picks, 302 bans), primary contested frontline tank alongside Y'bneth"
+    },
+    "Murad": {
+      "tier": "S",
+      "reason": "High-ban priority assassin (32.0% presence, 384 bans, 192 picks), un-targetable invulnerability poke"
+    },
+    "Mganga": {
+      "tier": "S",
+      "reason": "Mid-lane poison sustain and death-ball engine (28.5% presence, 271 picks, 241 bans, 57.4% playoff win rate)"
+    },
+    "Valhein": {
+      "tier": "S",
+      "reason": "Premier early tempo lane-bully marksman (26.4% presence, 289 picks, 186 bans)"
+    },
+    "Skud": {
+      "tier": "S",
+      "reason": "Flex Offlane/Jungle HP bruiser and initiator (27.5% presence, 332 picks, 163 bans)"
+    },
+    "Enzo": {
+      "tier": "S",
+      "reason": "Flex Jungle/Support pick-off specialist (25.3% presence, 278 picks, 177 bans, 54.1% playoff win rate)"
+    },
+    "Taara": {
+      "tier": "S",
+      "reason": "High-sustain split-pusher and frontline disruption (25.5% presence, 279 picks, 180 bans)"
+    },
+    "Edras": {
+      "tier": "A",
+      "reason": "Flex warrior with high playoff impact (22.8% presence, 238 picks, 172 bans, 83.3% win rate in AOG playoffs)"
+    },
+    "Chaugnar": {
+      "tier": "B",
+      "reason": "Premier CC-cleanse counter-pick (69 picks, 43 bans, 55.1% win rate in 2026)"
+    },
+    "Cresht": {
+      "tier": "A",
+      "reason": "Solid team-fight shield metamorphosis tank (204 picks, 55 bans, 14.4% presence in 2026, 18.8% in playoffs)"
+    },
+    "Wiro": {
+      "tier": "A",
+      "reason": "High-disruption resurrection tank (213 picks, 42 bans, 14.2% presence in 2026, 21.1% in playoffs)"
+    },
+    "Aya": {
+      "tier": "B",
+      "reason": "Normalized from legacy S+: 2026 presence dropped to 8.8% (70 picks, 89 bans, 47.1% win rate), 4.6% in playoffs"
+    },
+    "Bijan": {
+      "tier": "C",
+      "reason": "Normalized from legacy S: dormant in 2026 competitive play (only 3 picks, 0.2% presence)"
+    },
+    "Flowborn (Mage)": {
+      "tier": "C",
+      "reason": "Normalized from legacy S: low competitive usage (9 picks, 0.5% presence, 33.3% win rate) while Flowborn Marksman remains dominant"
+    }
+  }
+}

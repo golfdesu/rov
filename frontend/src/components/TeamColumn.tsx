@@ -113,7 +113,7 @@ export function TeamColumn({
               {teamName}
             </span>
             {isMyTurn && (
-              <span className="shrink-0 bg-gold px-1.5 py-0.2 font-display text-[10px] font-bold text-bg">
+              <span className="shrink-0 bg-gold px-1.5 py-0.5 font-display text-[10px] font-bold text-bg">
                 {currentStep?.action === "ban" ? "BAN" : "PICK"}
               </span>
             )}
@@ -146,9 +146,8 @@ export function TeamColumn({
         </div>
 
         {/* 5 Horizontal Pick Slots */}
-        <div className={`grid grid-cols-5 gap-1 sm:gap-1.5 ${isBlue ? "" : "direction-rtl"}`}>
-          {Array.from({ length: 5 }).map((_, idx) => {
-            const i = isBlue ? idx : 4 - idx;
+        <div className={`grid grid-cols-5 gap-1 sm:gap-1.5 ${isBlue ? "" : "[direction:rtl]"}`}>
+          {Array.from({ length: 5 }).map((_, i) => {
             const name = picks[i];
             const hero = name ? heroMap.get(name) : undefined;
             const isActive = i === activePickSlot;
@@ -168,7 +167,7 @@ export function TeamColumn({
                       ? `คาดเดา: ${displayName(ghost.hero_name)} (${ghost.probability_pct.toFixed(0)}%)`
                       : `Pick ${i + 1}`
                 }
-                className={`relative h-12 min-w-0 overflow-hidden border bg-bg sm:h-16 ${
+                className={`relative h-12 min-w-0 overflow-hidden border bg-bg [direction:ltr] sm:h-16 ${
                   isActive
                     ? "border-gold animate-slot-pulse"
                     : ghost
@@ -473,7 +472,7 @@ export function TeamColumn({
               GLOBAL BAN · {teamName}
             </span>
             <span
-              className={`shrink-0 px-1 py-0.2 font-mono text-[9px] font-bold sm:px-1.5 sm:text-[10px] ${
+              className={`shrink-0 px-1 py-0.5 font-mono text-[9px] font-bold sm:px-1.5 sm:text-[10px] ${
                 usedHeroes.length > 0
                   ? isBlue
                     ? "bg-blue/20 text-blue"

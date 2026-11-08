@@ -73,8 +73,10 @@ For batch processing new screenshots rapidly with Global Hungarian Bipartite Mat
      `data/draft_screenshots/2026_apl/<stage>/2026_<stage_code>_d<day>_m<match>_g<game>_apl_<teamA>_vs_<teamB>.png`
      where `<stage>` / `<stage_code>` is `wildcard` (`wc`), `swiss_stage` (`ss`), or `playoffs` (`po`), and `<match>` is the chronological match number within that day (e.g. `2026_apl/wildcard/2026_wc_d1_m1_g1_apl_cfx_vs_box.png`).
    - **Team codes (lowercase)**:
+   - **Canonical Match Team Naming Invariant**: In all screenshot filenames for a given series/match, `<teamA>_vs_<teamB>` MUST remain constant across all games of that match (anchored on Game 1's team order, e.g. `bru_vs_fs` for all G1–G5). NEVER swap team order across games when sides swap (do not use `fs_vs_bru`).
      - RPL: `kog`, `bru`, `gjc`, `hd`, `ten`, `fs`, `bac`, `ea`, `slx`
-     - AOG: `rrq`, `boom`, `fl`, `fpl`, `gam`, `box`, `1s`, `secret`, `sp`
+     - AOG: `rrq`, `boom`, `fl`, `fpl`, `gam`, `box`, `1s`, `secret`, `sgp`
+     - Saigon Phantom: strictly `sgp` (never `sp`), Supernova is `spn`
      - GCS & APL: `cfx`, `tl`, `one`, `hka`, `ank`, `bmg`, `dcg`, `fw`, `lit`
 7. **Record** in `data/true_pick_order.json` under `games`:
    ```json

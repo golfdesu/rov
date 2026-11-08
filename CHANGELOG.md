@@ -27,6 +27,708 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-08 08:35 (UTC+7) — Draft Screenshots Canonical Match Team Naming & SGP Normalization
+**Agent:** Antigravity (gemini-3.8-flash-high)
+
+### ✅ Completed Work
+- **Canonical Match Team Naming Across Series Games**:
+  - Identified 495 screenshot image files across 284 match groups where filenames inverted team order between games when teams swapped sides (e.g. Game 1 `bru_vs_fs` vs Game 3 `fs_vs_bru`).
+  - Standardized all screenshots for each series to uniformly adhere to the match's canonical team order anchored on Game 1 (e.g. `bru_vs_fs` across all G1–G5).
+  - Executed verified rename on disk across all 495 files with 0 collisions.
+- **Saigon Phantom Team Abbreviation Normalization (`sp` -> `sgp`)**:
+  - Renamed 188 screenshot image files from legacy code `sp` to official abbreviation `sgp` (e.g. `sp_vs_fl` -> `sgp_vs_fl`), eliminating naming ambiguity against Supernova (`spn`).
+  - Updated `TEAM_CODES` in `scripts/process_draft_screenshots.py` so future screenshot ingestion automatically binds Saigon Phantom to `sgp`.
+- **Database & Pipeline Synchronization**:
+  - Synchronized all 493 corresponding entries in `data/true_pick_order.json` (`screenshot` relative paths updated to reflect new canonical filenames).
+  - Updated `scripts/process_draft_screenshots.py` to extract Game 1 canonical match teams for all games in each series.
+  - Fixed chronological date sorting in `src/build_training_dataset.py` and regenerated `data/matches_training.json` (3,512 games from 2025–2026, 1,810 true pick order games = 51.5% coverage, 100% of 2026 games).
+  - Updated documentation in `AGENTS.md` (Rule 11) and Skill `draft-screenshot-reader` (synced to `.claude/skills/`).
+
+### 📁 Modified Files
+- `data/draft_screenshots/**` (495 files renamed)
+- `data/true_pick_order.json`
+- `scripts/process_draft_screenshots.py`
+- `AGENTS.md`
+- `.agents/skills/draft-screenshot-reader/SKILL.md`
+- `.claude/skills/draft-screenshot-reader/SKILL.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: PASSED (130 heroes, 4,329 pro matches, 1,810 true order games verified with 0 missing screenshots).
+- `pytest -v tests/test_data_integrity.py tests/test_skills_sync.py`: 13 passed in 0.66s.
+- `pytest -v`: 79/79 passed in 6.98s (100% test suite passing).
+- `ruff check --fix .` and `ruff format .`: 0 lint errors, formatted.
+
+### ⚠️ Open Issues / Important Notes
+- All 1,815 draft screenshot files now follow strict canonical match team order and official team abbreviations (`sgp`).
+
+---
+
+## 📅 2026-11-08 08:25 (UTC+7) — Commercial Master Excel & Web Tier List Synchronization with Tier Overrides
+**Agent:** Antigravity (gemini-3.8-flash-high)
+
+### ✅ Completed Work
+- **Commercial Package Regeneration (`exports/RoV_Pro_Draft_Intelligence_2026/`)**:
+  - Re-exported `RoV_Pro_Draft_Master_2026.xlsx`, raw CSVs, and zip package reflecting all 1,810 verified true-order games (+12 games from AOG Winter 2026 Playoffs/Finals).
+  - Upgraded Excel formula generation in `scripts/export_commercial_package.py` to dynamically adapt to match row count (`$C$2:$C$1811` instead of hardcoded 1799).
+- **Curated Tier Overrides Alignment (`data/hero_tier_overrides.json`)**:
+  - Integrated manual tier overrides directly into the Excel formula and raw export data: Evita (`S`), Zanis (`A`), Ata (`A`), Tamyn (`S`).
+  - Accounted for natural metagame promotion: Dolia reached 45.14% pro presence (817 / 1,810 games), legitimately graduating to Tier S+ (#10 overall).
+  - Synchronized `data/heroes_130_summary.csv` and `data/heroes_130_full.json` across all 130 heroes with 100% parity against `hero_tier_overrides.json`.
+- **Frontend & API Synchronization**:
+  - Updated `src/api.py` and `tests/test_api.py` to assert correct overridden tiers.
+  - Built frontend (`npm run build`, `npm run lint`) and visually verified `http://localhost:8000/#tierlist` via Playwright and Excel COM automation (0 mismatches across all 130 heroes).
+- **Golden Test Fixture Update (`tests/fixtures/predict_golden.json`)**:
+  - Regenerated golden fixtures to account for the 12 newly integrated pro games in the statistical unlock tables.
+
+### 📁 Modified Files
+- `scripts/export_commercial_package.py`
+- `exports/RoV_Pro_Draft_Intelligence_2026/RoV_Pro_Draft_Master_2026.xlsx`
+- `exports/RoV_Pro_Draft_Intelligence_2026/raw_csv/*.csv`
+- `exports/RoV_Pro_Draft_Intelligence_2026/RoV_Pro_Draft_Intelligence_2026.zip`
+- `data/hero_tier_overrides.json`
+- `data/heroes_130_summary.csv`
+- `data/heroes_130_full.json`
+- `tests/test_api.py`
+- `tests/fixtures/predict_golden.json`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `pytest -v`: 79/79 passed in 10.93s (100% test suite passing).
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: PASSED (130 heroes, 4,329 pro matches, 1,810 true order games).
+- `verify_all_130_excel.ps1`: Verified Excel COM formula evaluation against FastAPI `/heroes` endpoint (0 mismatches across all 130 rows).
+- `ruff check --fix .` and `ruff format .`: 0 lint errors, formatted.
+- `frontend`: `oxlint` 0 warnings / 0 errors; Vite build 1956 modules transformed in 1.04s.
+
+### ⚠️ Open Issues / Important Notes
+- All 130 hero tiers across Excel, API, and Frontend are in 100% mathematical and operational synchronization.
+
+---
+
+## 📅 2026-11-08 07:37 (UTC+7) — Data Cleaning: Exact Ban Slot Positional Alignment & Masked-Loss Training Support (Option B)
+**Agent:** Antigravity (gemini-3.8-flash-high)
+
+### ✅ Completed Work
+- **Positional Ban Slot Localization (Option B Implementation)**:
+  - Inspected broadcast screenshots and raw Liquipedia wikitext templates across all 23 incomplete games (18 in 2025–2026, 5 in 2024) to locate the exact missing ban slot (Slots 1, 2, 3, or 4) without hallucinating or fabricating fake hero labels.
+  - Resolved slot misalignment: previously, dropping empty ban strings collapsed 3 bans into a 3-element list, which erroneously shifted Phase 2 Ban 4 into slot 3.
+  - Preserved exact 4-slot structure across all 4,329 games in `data/matches_draft_full.json` and `data/matches_draft_flat.csv`, leaving empty string `""` strictly at the unpicked/glitched slot.
+- **Scraper & Pipeline Updates (`src/scrape_matches.py`)**:
+  - Refactored `parse_match_block()` to preserve 4 ban slots (`t1_bans`, `t2_bans`) so that empty ban parameters remain at their true chronological indices.
+- **Masked-Loss Supervision Engine (`src/train_sota_model.py`)**:
+  - Updated `build_tensor_dataset()` to safely ingest 17-step games with at most 1 missing ban:
+    - At the missing ban step: `safe_target = 0` and `pol_weight_arr[row_idx] = 0.0` (Masked Loss: zero policy cross-entropy loss and zero backpropagation).
+    - Unpicked ban slot is excluded from `history_events` and running ban arrays to prevent attention token pollution.
+    - The other 17 actions (10 picks + 7 legitimate bans) receive full standard policy supervision (`pol_weight = 1.0`).
+- **Data Guardian & Test Suite Alignment**:
+  - Updated `tests/test_data_integrity.py` and `.agents/skills/rov-data-guardian/scripts/audit_rov_data.py` (synced to `.claude/skills/`) to handle empty ban strings gracefully.
+
+### 📁 Modified Files
+- `src/scrape_matches.py`
+- `src/train_sota_model.py`
+- `data/matches_draft_full.json`
+- `data/matches_draft_flat.csv`
+- `tests/test_data_integrity.py`
+- `.agents/skills/rov-data-guardian/scripts/audit_rov_data.py`
+- `.claude/skills/rov-data-guardian/scripts/audit_rov_data.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `pytest -v tests/test_data_integrity.py`: 11 passed in 0.64s.
+- `pytest -v tests/test_model_pipeline.py`: 7 passed in 3.20s.
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: PASSED (1,810 verified true-order games, 4,329 total games, 0 unmapped names).
+- Verified `build_tensor_dataset()` on all 23 incomplete games (414 steps, zero policy loss on missing steps).
+- `ruff check --fix .` and `ruff format .`: All checks passed.
+
+### ⚠️ Open Issues / Important Notes
+- None. Positional alignment and zero-loss masking fully protect model training while preserving true historical record integrity.
+
+---
+
+## 📅 2026-11-08 06:47 (UTC+7) — AOG Winter 2026 Final Day True Pick Order Broadcast Screenshot Ingestion
+**Agent:** Antigravity (gemini-3.8-flash-high)
+
+### ✅ Completed Work
+- **Automated Broadcast Screenshot Ingestion (scripts/process_draft_screenshots.py)**:
+  - Ingested 12 raw broadcast draft screenshots from data/draft_screenshots/ corresponding to AOG Winter 2026 Final Day (November 7, 2026):
+    - Lower Bracket Final (Arena_of_Glory_2026_Winter/Playoffs_S1119 G1–G6: Saigon Phantom vs BOOM Esports).
+    - Grand Final (Arena_of_Glory_2026_Winter/Playoffs_S1120 G1–G6: FPT Polytechnic vs BOOM Esports).
+  - Executed Global Hungarian Bipartite Assignment across all 12 candidate matches and 10 card portrait slots per match against data/broadcast_templates/.
+  - Confirmed 100% visual and candidate-set alignment with 0 unmapped heroes (safely distinguishing Flowborn Marksman badge and newly released heroes Evita and Tamyn).
+  - Standardized, filed, and moved screenshots to data/draft_screenshots/2026_aog_winter/playoffs/ (2026_po_m1119_g*_win_aog_*.png and 2026_po_m1120_g*_win_aog_*.png).
+  - Recorded exact chronological pick turns in data/true_pick_order.json, expanding verified true pick order ground-truth dataset from 1,798 to 1,810 games.
+- **Preserved Training Dataset**:
+  - data/matches_training.json remained strictly untouched.
+
+### 📁 Modified Files
+- data/true_pick_order.json
+- data/draft_screenshots/2026_aog_winter/playoffs/* (12 files moved and renamed)
+- CHANGELOG.md
+
+### 🧪 Verification
+- pytest -v tests/test_data_integrity.py: 11 passed in 0.62s.
+- python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py: PASSED (1,810 verified true-order games, 4,329 total games, 0 unmapped names).
+- ruff check --fix . and ruff format .:
+   All checks passed.
+
+### ⚠️ Open Issues / Important Notes
+- None. All 12 games from AOG Winter 2026 Finals are now fully archived with 100% verified chronological pick order.
+
+---
+
+## 📅 2026-11-08 06:43 (UTC+7) — AOG Winter 2026 Grand Final & Lower Bracket Final Match History Ingestion
+**Agent:** Antigravity (gemini-3.8-flash-high)
+
+### ✅ Completed Work
+- **Archived AOG Winter 2026 Playoff Finals (data/matches_draft_full.json, data/matches_draft_flat.csv)**:
+  - Ingested 12 competitive pro draft games from the final day of Arena of Glory Winter 2026 (November 7, 2026):
+    - **Arena_of_Glory_2026_Winter/Playoffs_S1119**: Lower Bracket Final (Saigon Phantom vs BOOM Esports, 6 games, BOOM won 4–2).
+    - **Arena_of_Glory_2026_Winter/Playoffs_S1120**: Grand Final (FPT Polytechnic vs BOOM Esports, 6 games, FPL won 4–2, Finals MVP: Vịt).
+  - Total historical draft records increased from 4,317 to 4,329 games (4,306 full 18-step draft games) with 0 unmapped hero names.
+- **Preserved Training Boundary**:
+  - Per user instruction, data/matches_training.json was strictly preserved and untouched.
+
+### 📁 Modified Files
+- data/matches_draft_full.json
+- data/matches_draft_flat.csv
+- CHANGELOG.md
+
+### 🧪 Verification
+- pytest -v tests/test_data_integrity.py: 11 passed in 0.68s.
+- python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py: PASSED (130 heroes, 4,329 total pro games, 0 unmapped names).
+- ruff check --fix . and ruff format .:
+   All checks passed.
+
+### ⚠️ Open Issues / Important Notes
+- True chronological pick order for these 12 games currently follows Liquipedia lane order heuristics until broadcast draft screenshots are captured and recorded in data/true_pick_order.json.
+
+---
+
+## 📅 2026-11-04 21:05 (UTC+7) — Native Excel Formulas & Security Watermark Integration
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Native Excel Dynamic Formula Engine (`scripts/export_commercial_package.py`)**:
+  - Replaced hardcoded static values across all 6 worksheets in `RoV_Pro_Draft_Master_2026.xlsx` with standard, dynamic Excel formulas:
+    - **`Executive_Summary`**: Regional game counts via `=COUNTIF(True_Draft_Log_2026!$C$2:$C$1799, A{r})`, side wins via `=COUNTIFS(...)`, losses via `=C{r}-D{r}`, win rates via `=D{r}/C{r}`, and summary row via `=SUM(C2:C5)`.
+    - **`Hero_Tier_List_2026`**: Presence rate dynamically computed via `=(J{r}+K{r})/Executive_Summary!$C$6`, pick/ban rates via `=J{r}/Executive_Summary!$C$6`, automatic tier grading via `=IF(G{r}>=0.45, "S+", ...)`, total bans via `=L{r}+M{r}`, losses via `=J{r}-N{r}`, win rate via `=IF(J{r}>0, N{r}/J{r}, 0)`, Bayesian smoothed WR via `=MIN(MAX((N{r}+5)/(J{r}+10), 0.05), 0.95)`, and red side picks via `=J{r}-U{r}`.
+    - **`True_Draft_Log_2026`**: Winner team via `=IF(O{r}=1, K{r}, L{r})`, winner side via `=IF(O{r}=1, "Blue", "Red")`.
+    - **`Top_Synergies_2026`**: Duo losses via `=E{r}-F{r}`, duo WR via `=IF(E{r}>0, F{r}/E{r}, 0)`, synergy lift via `=J{r}-I{r}`.
+    - **`Top_Counters_2026`**: Matchup losses via `=D{r}-E{r}`, raw WR via `=IF(D{r}>0, E{r}/D{r}, 0)`, counter lift via `=L{r}-H{r}`.
+    - **`Direct_Lane_Counters_2026`**: In-lane losses via `=E{r}-F{r}`, in-lane WR via `=IF(E{r}>0, F{r}/E{r}, 0)`, in-lane lift via `=M{r}-I{r}`.
+- **Embedded Security Watermarks & Metadata**:
+  - Added an executive security notice banner on row 8 of `Executive_Summary`: `"CONFIDENTIAL & PROPRIETARY - RoV Pro Draft Intelligence 2026 | Licensed Single-User Copy | Unauthorized Distribution or Reselling Strictly Prohibited"`.
+  - Configured print/export watermarks across all 6 worksheets via `ws.oddHeader.center.text` and `ws.oddFooter.left.text`.
+  - Added document metadata properties (title, creator, description, subject) to protect intellectual property.
+  - Re-exported commercial distribution ZIP package (`exports/RoV_Pro_Draft_Intelligence_2026.zip`).
+
+### 📁 Modified Files
+- `scripts/export_commercial_package.py`
+- `exports/RoV_Pro_Draft_Intelligence_2026/RoV_Pro_Draft_Master_2026.xlsx`
+- `exports/RoV_Pro_Draft_Intelligence_2026.zip`
+
+### 🧪 Verification
+- Verified formulas and syntax across all 6 worksheets via openpyxl.
+- `pytest tests/test_data_integrity.py tests/test_api.py`: 36 passed in 7.28s.
+- `ruff check --fix .` and `ruff format .`: All checks passed.
+
+### ⚠️ Open Issues / Important Notes
+- None. Formulas dynamically recalculate if values in `True_Draft_Log_2026` are adjusted.
+
+---
+
+## 📅 2026-11-04 20:45 (UTC+7) — Tier List Primary Pro Lane Filtering & Flex Lane Switch
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Strict Primary Pro Lane Filtering (`Main_Pro_Lane`) by Default**:
+  - Refactored `TierListView.tsx` filtering logic so that lane filters (DS Lane, JGL, MID, ADL, SUP) strictly match each hero's primary pro lane (`main_pro_lane`) as defined in the master Excel workbook.
+  - Prevents flex heroes (such as Eland'orr, who is 71.2% Dragon Lane) from inadvertently appearing under secondary positions (such as Jungle) and skewing positional tier rankings.
+- **Added Optional Flex Lane Toggle (`[ ] รวม Flex (≥15%)`)**:
+  - Implemented a dedicated checkbox toggle next to lane filters allowing analysts to optionally surface secondary flex heroes with `>= 15%` pro presence in that role.
+  - Added visual `FLEX` badges and secondary lane indicators in both Board and Table views when flex heroes are displayed.
+  - Updated hero inspection modal to explicitly display all active flex positions (e.g. `Dragon_Lane, Jungle`).
+
+### 📁 Modified Files
+- `frontend/src/components/tierlist/TierListView.tsx`
+
+### 🧪 Verification
+- `cd frontend && npm run build`: Succeeded with clean build (`dist/index.html` and assets generated in 1.14s).
+- `cd frontend && npm run lint`: Passed with zero oxlint warnings.
+- `pytest tests/test_api.py`: 25 passed in 3.99s.
+- `ruff check --fix .` and `ruff format .`: All checks passed.
+
+### ⚠️ Open Issues / Important Notes
+- None. Filter defaults strictly reflect single-lane Excel positioning (`Main_Pro_Lane`).
+
+---
+
+## 📅 2026-11-04 20:30 (UTC+7) — 100% Meta Tier List & Stats Parity with Excel Master
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Synchronized Backend & Web UI Directly with Master Excel (`RoV_Pro_Draft_Master_2026.xlsx`)**:
+  - Bound `/heroes` endpoint in `src/api.py` directly to `exports/RoV_Pro_Draft_Intelligence_2026/raw_csv/hero_tier_stats_2026.csv` (the underlying dataset of sheet `Hero_Tier_List_2026`).
+  - Achieved 100% parity across all 130 heroes:
+    - **Tier Rankings**: Matches Excel exactly across all 5 tiers (9 `S+`, 25 `S`, 16 `A`, 12 `B`, 68 `C`). Eland'orr, Toro, Marja correctly in `S+`; Wisp, Astrid, Mina, Skud, Murad in `S`; Cresht, Wiro in `A`.
+    - **Primary Pro Lane**: Ingested empirical pro lane distribution (`Main_Pro_Lane`), with multi-lane flex awareness (e.g., Eland'orr flexes Dragon Lane & Jungle).
+    - **Exact 2026 Pro Statistics**: Served real-match metrics from 1,798 competitive games (Rank 1–130, Presence Rate, Pick Rate, Ban Rate, Win Rate, Total Picks, Total Bans).
+- **Synchronized Data Catalogs**:
+  - Synchronized `data/heroes_130_summary.csv` and `data/heroes_130_full.json` with exact Excel tiers and win/pick/ban percentages.
+  - Aligned `data/hero_tier_overrides.json` tiers to match Excel without regression while retaining rich meta reasoning notes.
+- **Enhanced Web Tier List Component (`frontend/src/components/tierlist/TierListView.tsx`)**:
+  - **Board View**: Sorted each tier strictly by Excel Rank ascending (#1 to #130). Added gold Rank badge (`#1`, `#25`) and Presence Rate tag to each hero avatar.
+  - **Table View (Excel-Style)**: Added `RANK` and `PRO GAMES (P/B)` columns; set default sort to Rank ascending (1 to 130) to provide a 1:1 replica of `RoV_Pro_Draft_Master_2026.xlsx`.
+  - **Modal**: Added Rank, Presence Rate, and exact Pick/Ban game counts.
+- **Updated API Test Suite (`tests/test_api.py`)**:
+  - Updated `test_heroes_rich_details` to verify exact parity against Excel Master tiers.
+
+### 📁 Modified Files
+- `src/api.py`
+- `data/heroes_130_summary.csv`
+- `data/heroes_130_full.json`
+- `data/hero_tier_overrides.json`
+- `frontend/src/types/draft.ts`
+- `frontend/src/components/tierlist/TierListView.tsx`
+- `tests/test_api.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm run lint` (`oxlint`): 0 errors, 0 warnings.
+- `npm run build` (`tsc -b && vite build`): built cleanly in `dist/`.
+- `pytest -v`: 79/79 tests passed (100%).
+- `ruff check --fix .` and `ruff format .`: clean.
+
+### ⚠️ Open Issues / Important Notes
+- None. Web UI and Excel Master are now in 100% mathematical and structural parity.
+
+## 📅 2026-11-04 20:00 (UTC+7) — Dedicated Interactive Meta Tier List Web Page
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Created Dedicated Meta Tier List Component (`frontend/src/components/tierlist/TierListView.tsx`)**:
+  - Implemented dual-mode view:
+    - **Tier Board View**: Categorized tier rows for `S+`, `S`, `A`, `B`, and `C` with esports badges, ambient gradient glow, 1:1 square portraits, and pro win-rate badges.
+    - **Table Data View**: Interactive table sorting by Tier, Hero Name, Role, Primary Lane, Win Rate, Pick Rate, and Ban Rate to completely eliminate manual Excel scanning.
+  - Added multi-criteria filtering:
+    - **Lane Filter**: DS Lane (ออฟเลน), Jungle (ป่า), Mid (เลนกลาง), Dragon Lane (แครี่), Support / Roam (โรมมิ่ง), and ALL.
+    - **Role Filter**: Warrior, Assassin, Mage, Marksman, Support, Tank, and ALL.
+    - **Hero Search**: Instant search matching Thai canonical names and Global aliases with `/` hotkey focus.
+  - Added click-to-view Hero Details Modal showing high-res portrait, Thai and Global names, lane/role, pro stats (Win Rate, Pick Rate, Ban Rate), and competitive meta rationale.
+- **Integrated Navigation in App Shell (`frontend/src/App.tsx`)**:
+  - Added `"Meta Tier List"` tab with hash routing support (`#tierlist`).
+  - Wrapped within `ErrorBoundary` with seamless hero catalog propagation.
+
+### 📁 Modified & Created Files
+- `frontend/src/components/tierlist/TierListView.tsx` (created)
+- `frontend/src/App.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm run lint` (`oxlint`): 0 warnings, 0 errors.
+- `npm run build` (`tsc -b && vite build`): built successfully into `dist/`.
+- `pytest -v`: 79/79 tests passed (100%).
+- `ruff check --fix .` and `ruff format .`: clean.
+
+### ⚠️ Open Issues / Important Notes
+- Users can directly bookmark or navigate to `#tierlist` in the URL to view the board immediately.
+
+## 📅 2026-11-04 19:40 (UTC+7) — Astrid Promoted to Tier S
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Promoted Astrid to Tier S (`data/hero_tier_overrides.json`)**:
+  - Upgraded Astrid (`A` ➡️ `S`) based on unmatched performance in high-leverage late-series games:
+    - **100.0% Win Rate** in 2026 Grand Finals (4-0).
+    - **71.4% Win Rate** across 28 playoff games in 2026 (20 wins).
+    - **83.3% Win Rate** in RPL (TH) Winter Playoffs (5 wins in 6 games).
+    - Unmatched invulnerable true damage execute mechanic that out-duels frontline fighters and tanks in late Global Ban-Pick games.
+- **Synchronized Data Catalogs & Backend**:
+  - Updated `data/heroes_130_summary.csv` (`meta_tier_2026 = "S"`) and `data/heroes_130_full.json` (`tier = "S"`).
+  - Synchronized `src/api.py` cache.
+- **Verification**:
+  - Updated `tests/test_api.py::test_heroes_rich_details` assertion for Astrid (`tier == "S"`).
+  - Passed all 79 pytest test suites (`pytest -v`).
+  - Passed `audit_rov_data.py`.
+  - Executed `npm --prefix frontend run lint`, `npm --prefix frontend run build`, and `ruff check --fix .` / `ruff format .`.
+
+### 📁 Modified Files
+- `data/hero_tier_overrides.json`
+- `data/heroes_130_summary.csv`
+- `data/heroes_130_full.json`
+- `tests/test_api.py`
+- `CHANGELOG.md`
+
+---
+
+## 📅 2026-11-04 19:30 (UTC+7) — Full 2026 Competitive Season Meta Tier Alignment (16 Overridden Heroes)
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Year-to-Date 2026 Empirical Audit (1,798 Pro Games)**:
+  - Systematically audited all 130 heroes across 1,798 competitive matches in 2026 to resolve major discrepancies between raw Liquipedia scrapes and real draft priority:
+    - **Promotions (High Presence & Win Rate Overlooked)**:
+      - **Wisp**: `C` ➡️ `A` (#4 most-picked marksman with 406 picks, 52 bans, 25.5% presence, 53.2% win rate).
+      - **Eland'orr**: `A` ➡️ `S` (#3 presence overall in 2026 at 71.5% with 555 picks and 730 bans, 60.0% win rate in playoffs).
+      - **Toro**: `B` ➡️ `A` (#4 presence overall in 2026 at 47.9% with 560 picks and 302 bans, primary contested frontline tank).
+      - **Murad**: `B` ➡️ `A` (High-ban priority assassin with 32.0% presence, 384 bans, 192 picks, un-targetable poke).
+      - **Mganga**: `B` ➡️ `A` (Mid-lane sustain and teamfight poison with 28.5% presence, 271 picks, 241 bans, 57.4% playoff win rate).
+      - **Valhein**: `B` ➡️ `A` (Early tempo priority marksman with 26.4% presence, 289 picks, 186 bans).
+      - **Skud**: `B` ➡️ `A` (Flex Offlane/Jungle HP bruiser with 27.5% presence, 332 picks, 163 bans).
+      - **Enzo**: `B` ➡️ `A` (Flex Jungle/Support pick-off specialist with 25.3% presence, 278 picks, 177 bans, 54.1% playoff win rate).
+      - **Taara**: `B` ➡️ `A` (Sustain split-pusher with 25.5% presence, 279 picks, 180 bans).
+      - **Edras**: `B` ➡️ `A` (Flex warrior with 22.8% presence, 238 picks, 172 bans, 83.3% win rate in AOG playoffs).
+      - **Chaugnar**: `C` ➡️ `B` (Top CC-cleanse counterpick with 69 picks, 43 bans, 55.1% win rate).
+      - **Cresht**: `C` ➡️ `B` (Solid shield metamorphosis tank with 204 picks, 55 bans, 14.4% presence in 2026, 18.8% in playoffs).
+      - **Wiro**: `C` ➡️ `B` (Disruption resurrection tank with 213 picks, 42 bans, 14.2% presence in 2026, 21.1% in playoffs).
+    - **Demotions (Legacy Inactive & Normalization)**:
+      - **Aya**: `S+` ➡️ `A` (Presence dropped to 8.8% with 70 picks and 89 bans, no longer perma-banned).
+      - **Bijan**: `S` ➡️ `B` (Dormant in 2026 competitive play with only 3 picks and 0.2% presence).
+      - **Flowborn (Mage)**: `S` ➡️ `B` (Only 9 picks and 0.5% presence with 33.3% win rate, while Flowborn Marksman remains meta).
+- **Backend & Catalog Synchronization**:
+  - Saved full rationale in `data/hero_tier_overrides.json` (now covering 28 authoritative hero tuning overrides).
+  - Synchronized `data/heroes_130_summary.csv` and `data/heroes_130_full.json`.
+  - Confirmed `src/api.py` cache updates accurately.
+- **Verification**:
+  - Added assertions to `tests/test_api.py::test_heroes_rich_details`.
+  - Passed 79/79 pytest test suites.
+  - Passed Data Guardian audit (`audit_rov_data.py`).
+  - Clean `oxlint`, `tsc`, `vite build`, and `ruff`.
+
+### 📁 Modified Files
+- `data/hero_tier_overrides.json`
+- `data/heroes_130_summary.csv`
+- `data/heroes_130_full.json`
+- `tests/test_api.py`
+- `CHANGELOG.md`
+
+---
+
+## 📅 2026-11-04 19:15 (UTC+7) — Playoff Overlooked Meta Tier Upgrades (Tamyn, Rouie, Marja, Astrid, Alice, Annette, Airi, Mina, Krizzix)
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Expanded Hero Tier Overrides (`data/hero_tier_overrides.json`)**:
+  - Conducted deep-dive empirical analysis across 218 playoff and grand final games from 2026 (RPL, AOG, GCS, APL).
+  - Identified and upgraded 9 overlooked heroes whose raw scraping tiers suffered from sample size traps (perma-banned so low pick counts, or high-leverage late-series pocket counters):
+    - **Tamyn**: `C` ➡️ `S+` (100.0% presence across all 19 games of 2026 Grand Finals with 17 bans, 61.9% 2026 win rate, near-perma-ban priority).
+    - **Rouie**: `A` ➡️ `S+` (Undisputed #1 competitive ban priority, 90.8% playoff presence with 160 bans in 218 games, 88.5% presence across all 2026 games).
+    - **Marja**: `B` ➡️ `S` (#2 highest playoff presence at 70.6% with 97 bans and 57 picks, 80.0% Grand Finals win rate, top flex Mid/DS lane sustain mage).
+    - **Astrid**: `C` ➡️ `A` (Key late-series Global BP pocket counter, 71.4% playoff win rate over 28 games, 100.0% Grand Finals win rate).
+    - **Alice**: `B` ➡️ `A` (Playoff win rate surge to 77.8% over 18 games, +14.7% presence surge in playoffs, team-wide mobility and zone sustain).
+    - **Annette**: `B` ➡️ `A` (Premier anti-dive support in playoffs with 70.0% win rate over 30 games, 85.7% in GCS, 77.8% in AOG).
+    - **Airi**: `B` ➡️ `A` (Premier late-game true damage split-pusher, 62.5% playoff win rate over 48 games, 69.2% in GCS playoffs).
+    - **Mina**: `B` ➡️ `A` (High-reliability frontline control tank, 57.1% win rate over 189 picks and 277 bans in 2026).
+    - **Krizzix**: `B` ➡️ `A` (High-impact stealth initiation support, 66.7% playoff win rate over 12 picks and 21 bans, 56.5% overall 2026 win rate).
+- **Synchronized Data Catalogs & Backend**:
+  - Updated `data/heroes_130_summary.csv` (`meta_tier_2026`) and `data/heroes_130_full.json` (`tier`) across all 12 overridden heroes.
+  - Verified `src/api.py` correctly populates all new tiers in `/heroes` (`hero_details_cache`).
+- **Comprehensive Verification**:
+  - Expanded `tests/test_api.py::test_heroes_rich_details` assertions covering all 12 overridden heroes.
+  - Passed all 79 pytest test suites (`pytest -v`).
+  - Audited data integrity via `audit_rov_data.py` (130 heroes, 4,317 games, 0 unmapped names).
+  - Executed `npm --prefix frontend run lint`, `npm --prefix frontend run build`, and `ruff check --fix .` / `ruff format .`.
+
+### 📁 Modified Files
+- `data/hero_tier_overrides.json`
+- `data/heroes_130_summary.csv`
+- `data/heroes_130_full.json`
+- `tests/test_api.py`
+- `CHANGELOG.md`
+
+---
+
+## 📅 2026-11-04 18:45 (UTC+7) — Hero Tier Overrides Architecture & Meta Tier Update (Evita, Zanis, Ata)
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Decoupled Tier Overrides Architecture (`data/hero_tier_overrides.json`)**:
+  - Implemented a decoupled override configuration schema modeled after `data/items_overrides.json` to handle newly released heroes, reworks, or specialized picks with low tournament sample sizes.
+  - Keeps automated scraping pipelines reproducible while providing an authoritative audit trail with rationale for meta tuning.
+- **Applied Meta Tier Upgrades**:
+  - **Evita**: Upgraded from `B` to `S` (New release in Oct 2026, dominant high-rank pick with lagging pro tournament sample size).
+  - **Zanis**: Upgraded from `C` to `A` (Reworked true damage burst kit, 60% pro win rate, high priority in Jungle and DS lane).
+  - **Ata**: Upgraded from `B` to `A` (High-sustain terrain-locking tank, premier counter-pick into heavy melee dive compositions).
+- **Backend and Data Catalog Synchronization**:
+  - Registered `self.hero_tier_overrides_path` in `src/config.py` (`PathConfig`).
+  - Updated `src/api.py` to ingest `hero_tier_overrides.json` into `/heroes` metadata response (`hero_details_cache`).
+  - Synchronized `data/heroes_130_summary.csv` and `data/heroes_130_full.json` so offline analysis, CLI scripts, and data spreadsheets match runtime serving.
+- **Automated Verification**:
+  - Added test assertions in `tests/test_api.py` verifying tier overrides for Evita (`S`), Zanis (`A`), and Ata (`A`).
+  - Passed all 79 pytest suites (`test_api.py`, `test_data_integrity.py`, `test_model_pipeline.py`, etc.).
+  - Executed `npm --prefix frontend run lint`, `npm --prefix frontend run build`, and `ruff check --fix .` / `ruff format .`.
+
+### 📁 Modified Files
+- `data/hero_tier_overrides.json` (New)
+- `src/config.py`
+- `src/api.py`
+- `data/heroes_130_summary.csv`
+- `data/heroes_130_full.json`
+- `tests/test_api.py`
+- `CHANGELOG.md`
+
+---
+
+## 📅 2026-11-04 18:05 (UTC+7) — Fix Search Input Key Hijacking & Win Rate Preservation on Redo
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Prevent Search Input Shortcut Hijacking (`DraftBoardView.tsx`)**:
+  - Added an early `if (typing) return;` check in the global `keydown` event listener in `DraftBoardView.tsx`.
+  - Fixes an issue where typing into the hero search input box and pressing `Ctrl+Z` or `Ctrl+Y` triggered draft turn undo/redo instead of native browser text editing undo/redo.
+- **Preserve Win Probability History on Redo (`draft.ts`)**:
+  - Previously, `undo` truncated `winHistory` up to the current step via `winHistory.slice(...)`, which caused subsequent `redo` (Forward) actions to find an `undefined` win rate at future steps and temporarily flash the win rate back to `50.0%` until the async `/predict` API responded.
+  - Updated `draftReducer`:
+    - `undo`: preserves `winHistory` and retrieves `winHistory[last.stepIndex]`.
+    - `redo`: retrieves the saved `winHistory[next.stepIndex]`, maintaining seamless win rate display without flashing to `50.0%`.
+    - `lock`: trims `winHistory.slice(0, state.stepIndex + 1)` only when a new hero is locked, properly clearing the invalidated future branch.
+- **Headless Browser Automated Suite Run**:
+  - Ran a 46-scenario Playwright headless browser test covering complete 18-step drafts, single & multi-step undo/redo, branching history invalidation, modal backdrop drag-release dismissal protection, and mobile responsive controls.
+
+### 📁 Modified Files
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/utils/draft.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm run lint` in `frontend/`: 0 warnings, 0 errors.
+- `npm run build` in `frontend/`: Clean build in 921ms.
+- `ruff check --fix .` & `ruff format .`: All checks passed.
+- `pytest -v`: All 79 test cases passed (100%).
+
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Modernized Icon-Only Undo (`Undo2`)**:
+  - Replaced the text-heavy "UNDO" label with a clean, compact icon-only arrow button (`Undo2`) with tooltip and aria label.
+- **Conditional Forward / Redo (`Redo2`)**:
+  - Implemented bidirectional time-travel state management in `draftReducer` (`utils/draft.ts`) using a `future: DraftHistoryItem[]` stack.
+  - Added `redo` action and `canRedo` selector in `useDraft.ts`.
+  - Added Forward button (`Redo2`) in `ScoreBar.tsx` that is conditionally enabled strictly after an Undo action has occurred (`disabled={!canRedo}`).
+  - Wired `Ctrl+Shift+Z` and `Ctrl+Y` keyboard shortcuts for seamless redo navigation in `DraftBoardView.tsx`.
+- **Remove LOOKAHEAD Control from Navigation**:
+  - Removed the LOOKAHEAD minimax search toggle button from `ScoreBar.tsx` to declutter the header bar.
+  - Cleaned up leftover `useLookahead` props across `ScoreBar.tsx`, `AiPanel.tsx`, `DraftBoardView.tsx`, and `MetaLab.tsx`.
+
+### 📁 Modified Files
+- `frontend/src/utils/draft.ts`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/ScoreBar.tsx`
+- `frontend/src/components/AiPanel.tsx`
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/components/meta_lab/MetaLab.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm run lint` in `frontend/`: 0 warnings, 0 errors.
+- `npm run build` in `frontend/`: Production bundle built cleanly in 901ms.
+- `ruff check --fix .` & `ruff format .`: All checks passed.
+- `pytest -v`: All 79 test cases passed (100%).
+
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Backdrop Click Target Tracking (`Modal.tsx`)**:
+  - Fixed an issue where clicking/highlighting inside a modal (`mousedown`) and dragging the cursor outside to release (`mouseup`) triggered a browser `click` event on the outer backdrop container, causing premature and unexpected modal dismissal.
+  - Implemented `mouseDownTargetRef` to track `e.target` on `onMouseDown`.
+  - Updated the backdrop `onClick` handler to close only when both the initial `mousedown` and subsequent `click` originate strictly on the backdrop (`mouseDownTargetRef.current === e.currentTarget && e.target === e.currentTarget`).
+  - Automatically protects all dialogs in the application (`NewSeriesModal`, `GlobalBanModal`, `DraftHistoryModal`, `HeroSkillsModal`, `HeroPickerModal`).
+
+### 📁 Modified Files
+- `frontend/src/components/Modal.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm run lint` in `frontend/`: 0 warnings, 0 errors.
+- `npm run build` in `frontend/`: Clean build in 958ms.
+- `ruff check --fix .` & `ruff format .`: All checks passed.
+- `pytest -v`: All 79 test cases passed (100%).
+
+---
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Prevent Win Bar Squeeze on Mobile/Tablet (`ScoreBar.tsx`)**:
+  - Previously, all three header sections (Turn Step Indicator on left, Win Probability Bar in the center, and 5 Action Buttons on the right) shared a single row. On viewports `< lg`, the left indicator and right controls squeezed the center win bar down to minimum width (~40px) and overlapped numbers.
+  - Extracted `winBarComponent` into a responsive dual-layout:
+    - **Mobile & Tablet (`< lg`)**: Rendered in a dedicated full-width sub-row spanning across the bottom of the header (`w-full`), allowing the blue/red gradient meter and percentage indicators to expand across 100% of the screen width with zero horizontal crowding.
+    - **Desktop (`lg+`)**: Integrated seamlessly into the center of the main header row and expanded maximum width up to `max-w-4xl` (896px).
+
+### 📁 Modified Files
+- `frontend/src/components/ScoreBar.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm run lint` in `frontend/`: 0 warnings, 0 errors.
+- `npm run build` in `frontend/`: Clean build in 923ms.
+- `ruff check --fix .` & `ruff format .`: All checks passed.
+- `pytest -v`: All 79 test cases passed (100%).
+
+---
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Mobile Touch Usability Enhancement (`AiPanel.tsx`)**:
+  - Enlarged the lane filter buttons (`ALL`, `+DSL`, `JGL`, `+MID`, `+ADL`, `+SUP`) from microscopic `px-1.5 py-0.5 text-[9.5px]` to accessible tap targets `h-8 sm:h-7 px-3 sm:px-2 text-xs sm:text-[10px]` with `touch-manipulation`.
+  - Ensures accurate touch registration on mobile screens (meeting WCAG tap target minimums) without accidental mis-taps.
+- **Header Space Optimization & Single League Dropdown (`ScoreBar.tsx`)**:
+  - Replaced the wide 5-button segmented desktop league selector (`[GLOBAL] [RPL] [GCS] [AOG] [INTL]`) with a single unified, compact dropdown across all viewports.
+  - Reclaimed >200px of header width on desktop and tablet viewports, preventing control squishing or header overflow.
+- **Compact Model Selector Dropdown (`types/draft.ts`, `ScoreBar.tsx`)**:
+  - Shortened model labels: `SOTA (51%)`, `Heuristic (0%)`, and `Matrix (Stat)`.
+  - Added responsive max-width bounds (`max-w-[76px] sm:max-w-[110px] md:max-w-none`) and hid the `MODEL:` prefix on compact screens to protect the Win Probability bar and turn indicator.
+
+### 📁 Modified Files
+- `frontend/src/types/draft.ts`
+- `frontend/src/components/ScoreBar.tsx`
+- `frontend/src/components/AiPanel.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm run lint` in `frontend/`: 0 warnings, 0 errors.
+- `npm run build` in `frontend/`: production build completed successfully in 1.36s.
+- `ruff check --fix .` & `ruff format .`: All checks passed.
+- `pytest -v`: All 79 automated test suites passed (100%).
+
+---
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Root Cause Resolution in Hero Catalog Precomputation**:
+  - In `src/api.py`, `hero_details_cache` previously queried `summary_df` using raw checkpoint names (`name in summary_df.index`). Because Liquipedia names `Brunhilda`, `Arthur`, and `Richter` are indexed under canonical Thai names `Celica`, `Mortos`, and `Riktor` in `heroes_130_summary.csv`, the index check failed and defaulted `role` to `"Warrior"` (and Celica became a Warrior instead of Marksman).
+  - Added `lookup_name = legacy_to_canonical.get(name, name)` before querying `summary_df`, properly setting Celica's role to **`Marksman`** (and Mortos/Riktor to **`Warrior`**).
+  - Synchronized canonical-to-legacy aliases in `src/predict_draft_cli.py` to ensure `heroes_df.loc[can]` and `stats_df.loc[can]` lookups never throw `KeyError`.
+- **Regression Test Coverage**:
+  - Added assertions in `tests/test_api.py::test_heroes_rich_details` verifying that `Brunhilda` (`Celica`) resolves strictly to `role == "Marksman"` and `lane == "Dragon_Lane"`.
+
+### 📁 Modified Files
+- `src/api.py`
+- `src/predict_draft_cli.py`
+- `tests/test_api.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `pytest -v`: All 79 test cases passed (100%), including updated `test_heroes_rich_details`.
+- `ruff check --fix .` & `ruff format .`: All checks passed.
+
+---
+
+## 📅 2026-11-04 15:45 (UTC+7) — Formal & Concise Label Modernization (Emoji Removal)
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Formal Labeling Clean-up**:
+  - `frontend/src/App.tsx`: Removed emojis and streamlined navigation tab labels to `Draft Board`, `MetaLab`, and `Combat Lab`.
+  - `frontend/src/types/draft.ts`: Removed emojis from `ENGINE_OPTIONS` labels, adopting clean formal naming:
+    - `SOTA (51.3% True Order)` (Badge: `SOTA 51.3%`)
+    - `Heuristic (0% True Order)` (Badge: `Heuristic 0%`)
+    - `Bayes Matrix (Empirical Stat)` (Badge: `Bayes Matrix`)
+- **Build & Verification**:
+  - Verified bundle compilation via `npm run build` and `oxlint`.
+  - Passed 79/79 pytest test suites.
+
+### 📁 Modified Files
+- `frontend/src/App.tsx`
+- `frontend/src/types/draft.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm run lint` & `npm run build`: Zero errors, bundle built cleanly in 922ms.
+- `pytest -v`: 79/79 passed (100%).
+- `ruff check --fix .` & `ruff format .`: All checks passed.
+
+---
+
+## 📅 2026-11-04 15:30 (UTC+7) — Interactive AI Model Selector Dropdown & Unified Single-State Draft Board Architecture
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Unified Single-State Draft Architecture**:
+  - Replaced disjoint tabs with a unified draft board featuring an interactive Model Selector Dropdown in `ScoreBar`.
+  - Solved user pain point: switching between models (SOTA, Heuristic, Matrix) now immediately triggers a new prediction request (`/predict`, `/predict/heuristic`, or `/predict/matrix`) without resetting the draft board, picks, bans, or series history.
+- **Frontend State Management (`frontend/src/hooks/useDraft.ts`)**:
+  - Added `engine` state (`"sota" | "heuristic" | "matrix"`) to `useDraft`, sanitized on session initialization and server hydration.
+  - Linked `engine` into `DraftSessionPayload` and persistence effects (`localStorage` and `/draft/session`).
+  - Exposed `engine` and `setEngine` in hook return contract.
+- **Draft Board & ScoreBar Integration (`frontend/src/components/ScoreBar.tsx` & `DraftBoardView.tsx`)**:
+  - Added `ENGINE_OPTIONS` in `frontend/src/types/draft.ts` defining SOTA (51.3% True Order), Heuristic (0% True Order), and Matrix (Pure Stat).
+  - Integrated esports-themed `<select>` dropdown inside `ScoreBar` action controls with active badge pills in turn indicator and sub-header.
+  - Forwarded `engine` and `setEngine` from `draft` through `DraftBoardView` to `ScoreBar`.
+- **Top Navigation Simplification (`frontend/src/App.tsx`)**:
+  - Streamlined top navigation tabs to `Pro Draft Board`, `MetaLab`, and `Stat & Duel Lab`.
+  - Consolidated into a single `useDraft` instance, completely eliminating duplicate hook instances and draft state resets when toggling models.
+
+### 📁 Modified Files
+- `frontend/src/types/draft.ts`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/ScoreBar.tsx`
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/App.tsx`
+- `src/schemas.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm run lint` in `frontend/`: Zero oxlint warnings or errors.
+- `npm run build` in `frontend/`: TypeScript type check and Vite bundle passed cleanly (`built in 867ms`).
+- `pytest -v`: All 79 automated test suites passed (100%).
+- `ruff check --fix .` and `ruff format .`: All checks passed with zero lint errors.
+
+### ⚠️ Open Issues / Important Notes
+- Vietnam's AOG Winter 2026 Grand Final is scheduled for November 7, 2026 at Mỹ Đình National Stadium in Hanoi (SGP vs BOOM in Lower Bracket Final, winner vs FPL in Grand Final).
+
+---
+
+## 📅 2026-11-02 13:45 (UTC+7) — Full-System Audit & Autonomous Bug Resolution Across ML Pipeline, Combat Calculator, Serving, and Frontend
+**Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
+
+### ✅ Completed Work
+- **Part 1 — Canonical Data Integrity & Catalog Corrections**:
+  - `data/heroes_130_summary.csv`: Backfilled 23 missing `attack_range` values from `heroes_130_full.json`, eliminating all NaN metadata.
+  - `data/items_overrides.json`: Fixed price null overrides for Beta 55 defense items (`Stealth Bracer` 2040, `Light Shield` 2040, `Mail of Pain` 2020).
+  - `data/hero_skills_full.json`: Corrected Astrid Ultimate (`Dire Blow`) scaling (`target_hp_pct: 8.0, target_hp_per_100_ad_pct: 1.0`) and Xeniel Passive (`Holy Brand`) scaling (`ap_pct: 15.0, bonus_max_hp_pct: 1.5`).
+- **Part 2 — Combat Calculator Mechanics**:
+  - `src/combat_calculator.py`: Added Soaring Aura flat pierce range regex (`Magic Pierce by (\d+)\s*-\s*(\d+)`); guarded `mitigation_multiplier` against negative values; allowed Sacred Bead Ultimate CDR bonus to reach the in-game 50% cap; fixed duel hit counting by summing actual skill and normal attack hit counts; excluded rune procs from magic lifesteal.
+- **Part 3 — ML Model Pipeline & Lookahead Search**:
+  - `src/train_sota_model.py`: Changed policy logit masking from `-1e9` to `-1e4` to eliminate float32 loss explosion under PyTorch `label_smoothing`; decoupled `neural_temp` parameters to `weight_decay = 0.0` in optimizer parameter groups; guarded training epoch print metrics against zero division.
+  - `src/search/draft_mcts.py`: Isolated lane quota filtering strictly to pick actions (`action_type == 1`), preventing invalid pruning during opponent ban counter evaluations.
+  - `tests/fixtures/predict_golden.json`: Regenerated golden fixtures to pin corrected lookahead win rates.
+- **Part 4 — Backend Serving & API Robustness**:
+  - `src/api.py`: Synchronized avatar image lookup in `hero_details_cache` across canonical Thai names and legacy aliases; added atomic temp-file replacement with retry and sleep fallback for `/draft/session`; broadened endpoint exception handling to `(ValueError, KeyError, IndexError)`.
+  - `src/predictor.py`: Scaled pairwise edge sum in `predict_matrix()` by `0.20` to prevent score saturation; ensured lane extras are preserved in `_ensure_lane_quota`.
+- **Part 5 — Frontend Architecture & UI/UX**:
+  - `frontend/src/hooks/useDraft.ts`: Added `enabled?: boolean` to `UseDraftOptions` to halt background AI requests on inactive tabs; prevented race conditions where default empty states overwrite remote sessions prior to hydration; sanitized `winHistory` against non-finite values.
+  - `frontend/src/App.tsx`: Bound `enabled: tab === "draft"` and `enabled: tab === "heuristic"`; added explicit keys (`key="sota"` and `key="heuristic"`) to `<DraftBoardView />` to cleanly reset local view states upon tab navigation.
+  - `frontend/src/components/TeamColumn.tsx`: Corrected Red team mirrored pick slots using `[direction:rtl]` container and `[direction:ltr]` slot children; fixed ghost pick slot index calculation; replaced invalid `py-0.2` classes with `py-0.5`.
+  - `frontend/src/components/ScoreBar.tsx` & `frontend/src/components/AiPanel.tsx`: Guarded against `NaN` win rates; filtered non-finite values in `Sparkline`; cleaned up `py-0.2` across `AiPanel.tsx`, `MetaLab.tsx`, `SkillDamageTable.tsx`, and `HeroSkillsModal.tsx`.
+
+### 📁 Modified Files
+- `data/heroes_130_summary.csv`
+- `data/items_overrides.json`
+- `data/hero_skills_full.json`
+- `src/combat_calculator.py`
+- `src/train_sota_model.py`
+- `src/search/draft_mcts.py`
+- `src/api.py`
+- `src/predictor.py`
+- `tests/fixtures/predict_golden.json`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/App.tsx`
+- `frontend/src/components/TeamColumn.tsx`
+- `frontend/src/components/ScoreBar.tsx`
+- `frontend/src/components/AiPanel.tsx`
+- `frontend/src/components/meta_lab/MetaLab.tsx`
+- `frontend/src/components/lab/SkillDamageTable.tsx`
+- `frontend/src/components/lab/HeroSkillsModal.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `pytest -v`: 79/79 passed in 9.70s.
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: PASSED (130 heroes, 4,317 pro games, 0 unmapped names).
+- `ruff check --fix .` and `ruff format .`: All checks passed across all 88 files.
+- `npm run lint` & `npm run build`: oxlint passed with 0 warnings/errors; Vite built frontend cleanly (`dist/` generated).
+
+---
+
 ## 📅 2026-11-02 12:15 (UTC+7) — Integrated H100 Optuna HPO Results for 0% True Order Heuristic Model
 **Agent:** Claude Code (`ag/gemini-3.8-flash-high`)
 

@@ -5017,7 +5017,8 @@
     "red_bans": [
       "Rouie",
       "Y'bneth",
-      "Taara"
+      "Taara",
+      ""
     ],
     "blue_picks": [
       "Florentino",
@@ -5760,7 +5761,8 @@
     "red_bans": [
       "Tamyn",
       "Dolia",
-      "Yue"
+      "Yue",
+      ""
     ],
     "blue_picks": [
       "Marja",
@@ -7147,6 +7149,7 @@
     "blue_bans": [
       "Butterfly",
       "Rouie",
+      "",
       "Omen"
     ],
     "red_bans": [
@@ -8004,7 +8007,8 @@
     "red_bans": [
       "TeeMee",
       "Rouie",
-      "Keera"
+      "Keera",
+      ""
     ],
     "blue_picks": [
       "Florentino",
@@ -41235,7 +41239,8 @@
     "red_bans": [
       "Valhein",
       "Tachi",
-      "TeeMee"
+      "TeeMee",
+      ""
     ],
     "blue_picks": [
       "Yena",
@@ -46334,7 +46339,8 @@
     "red_bans": [
       "Valhein",
       "Billow",
-      "Nakroth"
+      "Nakroth",
+      ""
     ],
     "blue_picks": [
       "Maloch",
@@ -47257,6 +47263,7 @@
     "red_bans": [
       "Billow",
       "TeeMee",
+      "",
       "Bolt Baron"
     ],
     "blue_picks": [
@@ -47409,6 +47416,7 @@
     "blue_win": 1,
     "blue_bans": [
       "Keera",
+      "",
       "Skud",
       "Aoi"
     ],
@@ -51465,6 +51473,7 @@
     "red_team": "FPL",
     "blue_win": 0,
     "blue_bans": [
+      "",
       "Dolia",
       "Ryoma",
       "Mina"
@@ -58439,6 +58448,7 @@
     "blue_win": 1,
     "blue_bans": [
       "Ryoma",
+      "",
       "Qi",
       "Omen"
     ],
@@ -62255,7 +62265,8 @@
     "red_bans": [
       "Valhein",
       "TeeMee",
-      "Maloch"
+      "Maloch",
+      ""
     ],
     "blue_picks": [
       "Murad",
@@ -66006,7 +66017,8 @@
     "red_bans": [
       "Valhein",
       "Rouie",
-      "Iggy"
+      "Iggy",
+      ""
     ],
     "blue_picks": [
       "Florentino",
@@ -68543,7 +68555,8 @@
     "red_bans": [
       "Kaine",
       "Valhein",
-      "Wonder Woman"
+      "Wonder Woman",
+      ""
     ],
     "blue_picks": [
       "Yena",
@@ -74462,7 +74475,8 @@
     "red_bans": [
       "Aya",
       "Rouie",
-      "Murad"
+      "Murad",
+      ""
     ],
     "blue_picks": [
       "Ryoma",
@@ -112378,6 +112392,7 @@
     ],
     "red_bans": [
       "Keera",
+      "",
       "Sinestrea",
       "Rouie"
     ],
@@ -128862,7 +128877,8 @@
     "blue_bans": [
       "Eland'orr",
       "Hayate",
-      "Florentino"
+      "Florentino",
+      ""
     ],
     "red_bans": [
       "Sinestrea",
@@ -175565,6 +175581,7 @@
     "red_bans": [
       "Maloch",
       "Florentino",
+      "",
       "Rouie"
     ],
     "blue_picks": [
@@ -190132,7 +190149,8 @@
     "blue_bans": [
       "Eland'orr",
       "Zata",
-      "Florentino"
+      "Florentino",
+      ""
     ],
     "red_bans": [
       "Rouie",
@@ -194597,7 +194615,8 @@
     "blue_bans": [
       "Rouie",
       "Toro",
-      "Iggy"
+      "Iggy",
+      ""
     ],
     "red_bans": [
       "Sinestrea",
@@ -198358,7 +198377,8 @@
     "blue_bans": [
       "Rouie",
       "Toro",
-      "Marja"
+      "Marja",
+      ""
     ],
     "red_bans": [
       "Sinestrea",
@@ -250424,6 +250444,7 @@
     ],
     "red_bans": [
       "Tamyn",
+      "",
       "Omen",
       "Thane"
     ],
@@ -251511,6 +251532,7 @@
     "blue_win": 1,
     "blue_bans": [
       "Zata",
+      "",
       "Baldum",
       "Marja"
     ],
@@ -256019,6 +256041,830 @@
       "Airi",
       "Dyadia",
       "Zephys"
+    ]
+  },
+  {
+    "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1119",
+    "league": "Arena of Glory",
+    "year": "2026",
+    "stage": "Winter/Playoffs",
+    "date": "November 7, 2026 - 13:00",
+    "bestof": 7,
+    "game_number": 1,
+    "is_ultimate_battle": false,
+    "length": "20:12",
+    "blue_team": "SGP",
+    "red_team": "BOOM",
+    "blue_win": 0,
+    "blue_bans": [
+      "Eland'orr",
+      "Valhein",
+      "Lorion",
+      "Hayate"
+    ],
+    "red_bans": [
+      "Tamyn",
+      "Rouie",
+      "Mganga",
+      "Dolia"
+    ],
+    "blue_picks": [
+      "Marja",
+      "Sinestrea",
+      "Liliana",
+      "Flowborn (Marksman)",
+      "Baldum"
+    ],
+    "red_picks": [
+      "Ryoma",
+      "Zephys",
+      "Yue",
+      "Edras",
+      "Y'bneth"
+    ],
+    "blue_global_bans": [],
+    "red_global_bans": []
+  },
+  {
+    "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1119",
+    "league": "Arena of Glory",
+    "year": "2026",
+    "stage": "Winter/Playoffs",
+    "date": "November 7, 2026 - 13:00",
+    "bestof": 7,
+    "game_number": 2,
+    "is_ultimate_battle": false,
+    "length": "10:01",
+    "blue_team": "SGP",
+    "red_team": "BOOM",
+    "blue_win": 0,
+    "blue_bans": [
+      "Zata",
+      "Astrid",
+      "Tachi",
+      "Eland'orr"
+    ],
+    "red_bans": [
+      "Tamyn",
+      "Rouie",
+      "Zephys",
+      "Billow"
+    ],
+    "blue_picks": [
+      "Qi",
+      "Butterfly",
+      "Mganga",
+      "Stuart",
+      "Dyadia"
+    ],
+    "red_picks": [
+      "Mina",
+      "Zanis",
+      "Iggy",
+      "Marja",
+      "TeeMee"
+    ],
+    "blue_global_bans": [
+      "Marja",
+      "Sinestrea",
+      "Liliana",
+      "Flowborn (Marksman)",
+      "Baldum"
+    ],
+    "red_global_bans": [
+      "Ryoma",
+      "Zephys",
+      "Yue",
+      "Edras",
+      "Y'bneth"
+    ]
+  },
+  {
+    "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1119",
+    "league": "Arena of Glory",
+    "year": "2026",
+    "stage": "Winter/Playoffs",
+    "date": "November 7, 2026 - 13:00",
+    "bestof": 7,
+    "game_number": 3,
+    "is_ultimate_battle": false,
+    "length": "18:35",
+    "blue_team": "SGP",
+    "red_team": "BOOM",
+    "blue_win": 1,
+    "blue_bans": [
+      "Sinestrea",
+      "Valhein",
+      "Lorion",
+      "Zata"
+    ],
+    "red_bans": [
+      "Tamyn",
+      "Rouie",
+      "Edras",
+      "Billow"
+    ],
+    "blue_picks": [
+      "Florentino",
+      "Zuka",
+      "Annette",
+      "Eland'orr",
+      "Y'bneth"
+    ],
+    "red_picks": [
+      "Airi",
+      "Astrid",
+      "Mganga",
+      "Violet",
+      "Dolia"
+    ],
+    "blue_global_bans": [
+      "Marja",
+      "Sinestrea",
+      "Liliana",
+      "Flowborn (Marksman)",
+      "Baldum",
+      "Qi",
+      "Butterfly",
+      "Mganga",
+      "Stuart",
+      "Dyadia"
+    ],
+    "red_global_bans": [
+      "Ryoma",
+      "Zephys",
+      "Yue",
+      "Edras",
+      "Y'bneth",
+      "Mina",
+      "Zanis",
+      "Iggy",
+      "Marja",
+      "TeeMee"
+    ]
+  },
+  {
+    "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1119",
+    "league": "Arena of Glory",
+    "year": "2026",
+    "stage": "Winter/Playoffs",
+    "date": "November 7, 2026 - 13:00",
+    "bestof": 7,
+    "game_number": 4,
+    "is_ultimate_battle": false,
+    "length": "10:49",
+    "blue_team": "BOOM",
+    "red_team": "SGP",
+    "blue_win": 1,
+    "blue_bans": [
+      "Dolia",
+      "Mina",
+      "Maloch",
+      "Omen"
+    ],
+    "red_bans": [
+      "Tamyn",
+      "Rouie",
+      "Baldum",
+      "Wiro"
+    ],
+    "blue_picks": [
+      "Biron",
+      "Tachi",
+      "Annette",
+      "Valhein",
+      "Omega"
+    ],
+    "red_picks": [
+      "Skud",
+      "Billow",
+      "Lorion",
+      "Hayate",
+      "Thane"
+    ],
+    "blue_global_bans": [
+      "Ryoma",
+      "Zephys",
+      "Yue",
+      "Edras",
+      "Y'bneth",
+      "Mina",
+      "Zanis",
+      "Iggy",
+      "Marja",
+      "TeeMee",
+      "Airi",
+      "Astrid",
+      "Mganga",
+      "Violet",
+      "Dolia"
+    ],
+    "red_global_bans": [
+      "Marja",
+      "Sinestrea",
+      "Liliana",
+      "Flowborn (Marksman)",
+      "Baldum",
+      "Qi",
+      "Butterfly",
+      "Mganga",
+      "Stuart",
+      "Dyadia",
+      "Florentino",
+      "Zuka",
+      "Annette",
+      "Eland'orr",
+      "Y'bneth"
+    ]
+  },
+  {
+    "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1119",
+    "league": "Arena of Glory",
+    "year": "2026",
+    "stage": "Winter/Playoffs",
+    "date": "November 7, 2026 - 13:00",
+    "bestof": 7,
+    "game_number": 5,
+    "is_ultimate_battle": false,
+    "length": "11:57",
+    "blue_team": "SGP",
+    "red_team": "BOOM",
+    "blue_win": 1,
+    "blue_bans": [
+      "Eland'orr",
+      "Lorion",
+      "D'Arcy",
+      "Stuart"
+    ],
+    "red_bans": [
+      "Dolia",
+      "Rouie",
+      "Mina",
+      "Yena"
+    ],
+    "blue_picks": [
+      "Allain",
+      "Tamyn",
+      "Alice",
+      "Violet",
+      "TeeMee"
+    ],
+    "red_picks": [
+      "Omen",
+      "Billow",
+      "Evita",
+      "Hayate",
+      "Thane"
+    ],
+    "blue_global_bans": [
+      "Marja",
+      "Sinestrea",
+      "Liliana",
+      "Flowborn (Marksman)",
+      "Baldum",
+      "Qi",
+      "Butterfly",
+      "Mganga",
+      "Stuart",
+      "Dyadia",
+      "Florentino",
+      "Zuka",
+      "Annette",
+      "Eland'orr",
+      "Y'bneth",
+      "Skud",
+      "Billow",
+      "Lorion",
+      "Hayate",
+      "Thane"
+    ],
+    "red_global_bans": [
+      "Ryoma",
+      "Zephys",
+      "Yue",
+      "Edras",
+      "Y'bneth",
+      "Mina",
+      "Zanis",
+      "Iggy",
+      "Marja",
+      "TeeMee",
+      "Airi",
+      "Astrid",
+      "Mganga",
+      "Violet",
+      "Dolia",
+      "Biron",
+      "Tachi",
+      "Annette",
+      "Valhein",
+      "Omega"
+    ]
+  },
+  {
+    "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1119",
+    "league": "Arena of Glory",
+    "year": "2026",
+    "stage": "Winter/Playoffs",
+    "date": "November 7, 2026 - 13:00",
+    "bestof": 7,
+    "game_number": 6,
+    "is_ultimate_battle": false,
+    "length": "17:17",
+    "blue_team": "BOOM",
+    "red_team": "SGP",
+    "blue_win": 1,
+    "blue_bans": [
+      "Dolia",
+      "Maloch",
+      "Zata",
+      "Airi"
+    ],
+    "red_bans": [
+      "Tamyn",
+      "Rouie",
+      "Stuart",
+      "Eland'orr"
+    ],
+    "blue_picks": [
+      "Florentino",
+      "Zuka",
+      "Lorion",
+      "Flowborn (Marksman)",
+      "Wiro"
+    ],
+    "red_picks": [
+      "Murad",
+      "Astrid",
+      "Heino",
+      "Valhein",
+      "Toro"
+    ],
+    "blue_global_bans": [
+      "Ryoma",
+      "Zephys",
+      "Yue",
+      "Edras",
+      "Y'bneth",
+      "Mina",
+      "Zanis",
+      "Iggy",
+      "Marja",
+      "TeeMee",
+      "Airi",
+      "Astrid",
+      "Mganga",
+      "Violet",
+      "Dolia",
+      "Biron",
+      "Tachi",
+      "Annette",
+      "Valhein",
+      "Omega",
+      "Omen",
+      "Billow",
+      "Evita",
+      "Hayate",
+      "Thane"
+    ],
+    "red_global_bans": [
+      "Marja",
+      "Sinestrea",
+      "Liliana",
+      "Flowborn (Marksman)",
+      "Baldum",
+      "Qi",
+      "Butterfly",
+      "Mganga",
+      "Stuart",
+      "Dyadia",
+      "Florentino",
+      "Zuka",
+      "Annette",
+      "Eland'orr",
+      "Y'bneth",
+      "Skud",
+      "Billow",
+      "Lorion",
+      "Hayate",
+      "Thane",
+      "Allain",
+      "Tamyn",
+      "Alice",
+      "Violet",
+      "TeeMee"
+    ]
+  },
+  {
+    "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1120",
+    "league": "Arena of Glory",
+    "year": "2026",
+    "stage": "Winter/Playoffs",
+    "date": "November 7, 2026 - 18:30",
+    "bestof": 7,
+    "game_number": 1,
+    "is_ultimate_battle": false,
+    "length": "11:37",
+    "blue_team": "FPL",
+    "red_team": "BOOM",
+    "blue_win": 0,
+    "blue_bans": [
+      "Sinestrea",
+      "Astrid",
+      "Nakroth",
+      "Butterfly"
+    ],
+    "red_bans": [
+      "Tamyn",
+      "Rouie",
+      "Yue",
+      "Marja"
+    ],
+    "blue_picks": [
+      "Yena",
+      "Tachi",
+      "Lorion",
+      "Eland'orr",
+      "Y'bneth"
+    ],
+    "red_picks": [
+      "Qi",
+      "Airi",
+      "Annette",
+      "Valhein",
+      "Dolia"
+    ],
+    "blue_global_bans": [],
+    "red_global_bans": []
+  },
+  {
+    "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1120",
+    "league": "Arena of Glory",
+    "year": "2026",
+    "stage": "Winter/Playoffs",
+    "date": "November 7, 2026 - 18:30",
+    "bestof": 7,
+    "game_number": 2,
+    "is_ultimate_battle": false,
+    "length": "17:17",
+    "blue_team": "BOOM",
+    "red_team": "FPL",
+    "blue_win": 0,
+    "blue_bans": [
+      "Dolia",
+      "Marja",
+      "Maloch",
+      "Astrid"
+    ],
+    "red_bans": [
+      "Rouie",
+      "Tamyn",
+      "Butterfly",
+      "Billow"
+    ],
+    "blue_picks": [
+      "Biron",
+      "Nakroth",
+      "Lorion",
+      "Edras",
+      "Y'bneth"
+    ],
+    "red_picks": [
+      "Florentino",
+      "Sinestrea",
+      "Liliana",
+      "Flowborn (Marksman)",
+      "TeeMee"
+    ],
+    "blue_global_bans": [
+      "Qi",
+      "Airi",
+      "Annette",
+      "Valhein",
+      "Dolia"
+    ],
+    "red_global_bans": [
+      "Yena",
+      "Tachi",
+      "Lorion",
+      "Eland'orr",
+      "Y'bneth"
+    ]
+  },
+  {
+    "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1120",
+    "league": "Arena of Glory",
+    "year": "2026",
+    "stage": "Winter/Playoffs",
+    "date": "November 7, 2026 - 18:30",
+    "bestof": 7,
+    "game_number": 3,
+    "is_ultimate_battle": false,
+    "length": "26:21",
+    "blue_team": "BOOM",
+    "red_team": "FPL",
+    "blue_win": 1,
+    "blue_bans": [
+      "Dolia",
+      "Valhein",
+      "Dyadia",
+      "Zata"
+    ],
+    "red_bans": [
+      "Tamyn",
+      "Rouie",
+      "Ryoma",
+      "Taara"
+    ],
+    "blue_picks": [
+      "Mina",
+      "Zephys",
+      "Iggy",
+      "Violet",
+      "TeeMee"
+    ],
+    "red_picks": [
+      "Marja",
+      "Billow",
+      "Yue",
+      "Stuart",
+      "Thane"
+    ],
+    "blue_global_bans": [
+      "Qi",
+      "Airi",
+      "Annette",
+      "Valhein",
+      "Dolia",
+      "Biron",
+      "Nakroth",
+      "Lorion",
+      "Edras",
+      "Y'bneth"
+    ],
+    "red_global_bans": [
+      "Yena",
+      "Tachi",
+      "Lorion",
+      "Eland'orr",
+      "Y'bneth",
+      "Florentino",
+      "Sinestrea",
+      "Liliana",
+      "Flowborn (Marksman)",
+      "TeeMee"
+    ]
+  },
+  {
+    "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1120",
+    "league": "Arena of Glory",
+    "year": "2026",
+    "stage": "Winter/Playoffs",
+    "date": "November 7, 2026 - 18:30",
+    "bestof": 7,
+    "game_number": 4,
+    "is_ultimate_battle": false,
+    "length": "19:37",
+    "blue_team": "FPL",
+    "red_team": "BOOM",
+    "blue_win": 1,
+    "blue_bans": [
+      "Billow",
+      "Butterfly",
+      "Omen",
+      "Eland'orr"
+    ],
+    "red_bans": [
+      "Tamyn",
+      "Rouie",
+      "Mina",
+      "Airi"
+    ],
+    "blue_picks": [
+      "Biron",
+      "Astrid",
+      "Zata",
+      "Violet",
+      "Dolia"
+    ],
+    "red_picks": [
+      "Maloch",
+      "Sinestrea",
+      "Yue",
+      "Stuart",
+      "Thane"
+    ],
+    "blue_global_bans": [
+      "Yena",
+      "Tachi",
+      "Lorion",
+      "Eland'orr",
+      "Y'bneth",
+      "Florentino",
+      "Sinestrea",
+      "Liliana",
+      "Flowborn (Marksman)",
+      "TeeMee",
+      "Marja",
+      "Billow",
+      "Yue",
+      "Stuart",
+      "Thane"
+    ],
+    "red_global_bans": [
+      "Qi",
+      "Airi",
+      "Annette",
+      "Valhein",
+      "Dolia",
+      "Biron",
+      "Nakroth",
+      "Lorion",
+      "Edras",
+      "Y'bneth",
+      "Mina",
+      "Zephys",
+      "Iggy",
+      "Violet",
+      "TeeMee"
+    ]
+  },
+  {
+    "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1120",
+    "league": "Arena of Glory",
+    "year": "2026",
+    "stage": "Winter/Playoffs",
+    "date": "November 7, 2026 - 18:30",
+    "bestof": 7,
+    "game_number": 5,
+    "is_ultimate_battle": false,
+    "length": "13:12",
+    "blue_team": "FPL",
+    "red_team": "BOOM",
+    "blue_win": 1,
+    "blue_bans": [
+      "Marja",
+      "Omen",
+      "Ignis",
+      "Liliana"
+    ],
+    "red_bans": [
+      "Rouie",
+      "Tamyn",
+      "Dyadia",
+      "Annette"
+    ],
+    "blue_picks": [
+      "Airi",
+      "Zanis",
+      "Mganga",
+      "Valhein",
+      "Cresht"
+    ],
+    "red_picks": [
+      "Murad",
+      "Astrid",
+      "Heino",
+      "Flowborn (Marksman)",
+      "Toro"
+    ],
+    "blue_global_bans": [
+      "Yena",
+      "Tachi",
+      "Lorion",
+      "Eland'orr",
+      "Y'bneth",
+      "Florentino",
+      "Sinestrea",
+      "Liliana",
+      "Flowborn (Marksman)",
+      "TeeMee",
+      "Marja",
+      "Billow",
+      "Yue",
+      "Stuart",
+      "Thane",
+      "Biron",
+      "Astrid",
+      "Zata",
+      "Violet",
+      "Dolia"
+    ],
+    "red_global_bans": [
+      "Qi",
+      "Airi",
+      "Annette",
+      "Valhein",
+      "Dolia",
+      "Biron",
+      "Nakroth",
+      "Lorion",
+      "Edras",
+      "Y'bneth",
+      "Mina",
+      "Zephys",
+      "Iggy",
+      "Violet",
+      "TeeMee",
+      "Maloch",
+      "Sinestrea",
+      "Yue",
+      "Stuart",
+      "Thane"
+    ]
+  },
+  {
+    "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1120",
+    "league": "Arena of Glory",
+    "year": "2026",
+    "stage": "Winter/Playoffs",
+    "date": "November 7, 2026 - 18:30",
+    "bestof": 7,
+    "game_number": 6,
+    "is_ultimate_battle": false,
+    "length": "14:24",
+    "blue_team": "BOOM",
+    "red_team": "FPL",
+    "blue_win": 0,
+    "blue_bans": [
+      "Edras",
+      "Mina",
+      "",
+      "Baldum"
+    ],
+    "red_bans": [
+      "Rouie",
+      "Tamyn",
+      "Eland'orr",
+      "Marja"
+    ],
+    "blue_picks": [
+      "Omen",
+      "Billow",
+      "Liliana",
+      "Wisp",
+      "Wiro"
+    ],
+    "red_picks": [
+      "Maloch",
+      "Keera",
+      "Alice",
+      "Capheny",
+      "Toro"
+    ],
+    "blue_global_bans": [
+      "Qi",
+      "Airi",
+      "Annette",
+      "Valhein",
+      "Dolia",
+      "Biron",
+      "Nakroth",
+      "Lorion",
+      "Edras",
+      "Y'bneth",
+      "Mina",
+      "Zephys",
+      "Iggy",
+      "Violet",
+      "TeeMee",
+      "Maloch",
+      "Sinestrea",
+      "Yue",
+      "Stuart",
+      "Thane",
+      "Murad",
+      "Astrid",
+      "Heino",
+      "Flowborn (Marksman)",
+      "Toro"
+    ],
+    "red_global_bans": [
+      "Yena",
+      "Tachi",
+      "Lorion",
+      "Eland'orr",
+      "Y'bneth",
+      "Florentino",
+      "Sinestrea",
+      "Liliana",
+      "Flowborn (Marksman)",
+      "TeeMee",
+      "Marja",
+      "Billow",
+      "Yue",
+      "Stuart",
+      "Thane",
+      "Biron",
+      "Astrid",
+      "Zata",
+      "Violet",
+      "Dolia",
+      "Airi",
+      "Zanis",
+      "Mganga",
+      "Valhein",
+      "Cresht"
     ]
   }
 ]

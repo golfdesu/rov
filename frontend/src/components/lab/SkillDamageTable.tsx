@@ -286,7 +286,7 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                                 )}
                               </button>
                               {badge && (
-                                <span className={`rounded border px-1 py-0.2 font-mono text-[9px] font-semibold ${badge.style}`}>
+                                <span className={`rounded border px-1 py-0.5 font-mono text-[9px] font-semibold ${badge.style}`}>
                                   {badge.label}
                                 </span>
                               )}
@@ -384,7 +384,7 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                           <div className="flex items-center gap-2">
                             <span className="font-mono text-[10px] font-bold text-gold">{s.slot}</span>
                             {badge && (
-                              <span className={`rounded border px-1 py-0.2 font-mono text-[9px] font-semibold ${badge.style}`}>
+                              <span className={`rounded border px-1 py-0.5 font-mono text-[9px] font-semibold ${badge.style}`}>
                                 {badge.label}
                               </span>
                             )}

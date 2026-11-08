@@ -21,7 +21,6 @@ interface AiPanelProps {
   currentStep: DraftStep | null;
   heroMap: Map<string, Hero>;
   isLoading: boolean;
-  useLookahead: boolean;
   blueWinRate: number;
   winHistory: number[];
   onLockHero: (name: string) => void;
@@ -29,7 +28,9 @@ interface AiPanelProps {
 }
 
 function Sparkline({ values }: { values: number[] }) {
-  const pts = values.map((v, i) => [i, v] as const).filter(([, v]) => v !== undefined);
+  const pts = values
+    .map((v, i) => [i, v] as const)
+    .filter(([, v]) => typeof v === "number" && Number.isFinite(v));
   if (pts.length < 2) return null;
   const w = 240;
   const h = 36;
@@ -54,7 +55,6 @@ export function AiPanel({
   currentStep,
   heroMap,
   isLoading,
-  useLookahead,
   blueWinRate,
   winHistory,
   onLockHero,
@@ -160,7 +160,7 @@ export function AiPanel({
                 type="button"
                 key={u.hero_name}
                 onClick={() => onLockHero(u.hero_name)}
-                className="flex items-center gap-1 border border-gold/50 bg-gold/10 px-1.5 py-0.2 font-display text-[10px] font-bold text-gold"
+                className="flex items-center gap-1 border border-gold/50 bg-gold/10 px-1.5 py-0.5 font-display text-[10px] font-bold text-gold"
               >
                 <Flame className="h-3 w-3" />
                 <span>{displayName(u.hero_name)}</span>
@@ -238,7 +238,7 @@ export function AiPanel({
 
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           {/* Interactive Lane Filter Tabs */}
-          <div className="flex flex-wrap items-center gap-1" role="group" aria-label="กรองตำแหน่งที่แนะนำ">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-1" role="group" aria-label="กรองตำแหน่งที่แนะนำ">
             {LANE_FILTER_TABS.map((tab) => {
               const active = selectedLane === tab.key;
               const isMissing = !isBan && tab.key !== "ALL" && missing.size < 5 && missing.has(tab.key);
@@ -252,7 +252,7 @@ export function AiPanel({
                       ? "แสดงคำแนะนำทุกตำแหน่ง"
                       : `กรองเฉพาะตำแหน่ง ${tab.label}${isMissing ? " (เลนที่ทีมยังขาด)" : ""}`
                   }
-                  className={`border px-1.5 py-0.5 font-mono text-[9.5px] font-bold transition-colors sm:px-2 sm:text-[10px] ${
+                  className={`border h-8 sm:h-7 px-3 sm:px-2 font-mono text-xs sm:text-[10px] font-bold transition-colors touch-manipulation inline-flex items-center justify-center shrink-0 ${
                     active
                       ? "border-gold bg-gold text-bg shadow-sm"
                       : isMissing
@@ -267,7 +267,7 @@ export function AiPanel({
           </div>
 
           <span className="hidden font-mono text-[10px] text-dim 2xl:inline">
-            {useLookahead ? "POLICY + MINIMAX d2" : "POLICY HEAD"}
+            POLICY HEAD
           </span>
         </div>
       </div>
@@ -491,7 +491,7 @@ export function AiPanel({
                       {triggerNames.length > 0 ? (
                         <div className="mt-0.5 min-w-0" title={triggerTitle}>
                           <span
-                            className={`block max-w-full truncate border px-1 py-0.2 font-mono text-[9px] leading-tight ${triggerBadgeClass}`}
+                            className={`block max-w-full truncate border px-1 py-0.5 font-mono text-[9px] leading-tight ${triggerBadgeClass}`}
                           >
                             {triggerBadgeText}
                           </span>

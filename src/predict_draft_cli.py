@@ -50,6 +50,16 @@ def load_predictor():
 
     heroes_df = pd.read_csv(DATA_DIR / "heroes_130_summary.csv").set_index("name")
     stats_df = pd.read_csv(DATA_DIR / "hero_draft_stats.csv").set_index("name")
+    canonical_to_legacy = {"Mortos": "Arthur", "Celica": "Brunhilda", "Riktor": "Richter"}
+    for can, leg in canonical_to_legacy.items():
+        if leg in heroes_df.index and can not in heroes_df.index:
+            heroes_df.loc[can] = heroes_df.loc[leg]
+        elif can in heroes_df.index and leg not in heroes_df.index:
+            heroes_df.loc[leg] = heroes_df.loc[can]
+        if leg in stats_df.index and can not in stats_df.index:
+            stats_df.loc[can] = stats_df.loc[leg]
+        elif can in stats_df.index and leg not in stats_df.index:
+            stats_df.loc[leg] = stats_df.loc[can]
     return model, ckpt, hero_names, hero_to_id, heroes_df, stats_df
 
 

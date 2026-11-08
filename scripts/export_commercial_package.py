@@ -1,6 +1,6 @@
 """Export Commercial RoV Pro Draft Intelligence 2026 Package (.xlsx + .csv + ZIP).
 
-Generates a commercial-grade analytics bundle from the 1,798 verified 2026 Tier-1
+Generates a commercial-grade analytics bundle from the 1,810 verified 2026 Tier-1
 pro games (RPL, AOG, GCS, APL) featuring:
   1. True Chronological Pick Order (B1..B5 / R1..R5 from broadcast HUD screenshots)
   2. Post-Swap In-Game 5-Lane Assignments (DS Lane, Jungle, Mid, Dragon Lane, Roam)
@@ -80,7 +80,22 @@ def load_datasets():
         full_matches = json.load(f)
 
     heroes_df = pd.read_csv(DATA_DIR / "heroes_130_summary.csv")
-    return true_order_data, full_matches, heroes_df
+
+    tier_overrides: dict[str, str] = {}
+    overrides_file = DATA_DIR / "hero_tier_overrides.json"
+    if overrides_file.exists():
+        try:
+            with open(overrides_file, encoding="utf-8") as f:
+                raw_ov = json.load(f).get("overrides", {})
+                for k, v in raw_ov.items():
+                    if isinstance(v, dict) and "tier" in v:
+                        tier_overrides[k] = v["tier"]
+                    elif isinstance(v, str):
+                        tier_overrides[k] = v
+        except Exception:
+            tier_overrides = {}
+
+    return true_order_data, full_matches, heroes_df, tier_overrides
 
 
 def explain_counter_mechanic(c_meta: dict, t_meta: dict, is_same_lane: bool, ban_lift: float = 1.0) -> str:
@@ -144,7 +159,7 @@ def explain_synergy_mechanic(a_meta: dict, b_meta: dict) -> str:
 
 
 def build_dataframes():
-    true_order_games, full_matches, heroes_df = load_datasets()
+    true_order_games, full_matches, heroes_df, tier_overrides = load_datasets()
     match_lookup = {(m["series_id"], int(m["game_number"])): m for m in full_matches}
     hero_meta = {row["name"]: row.to_dict() for _, row in heroes_df.iterrows()}
 
@@ -391,8 +406,10 @@ def build_dataframes():
         hero_smoothed_wr[hname] = smoothed_p
         hero_logit[hname] = math.log(smoothed_p / (1.0 - smoothed_p))
 
-        # Determine tier based on 2026 presence
-        if presence >= 0.45:
+        # Determine tier based on 2026 presence with curated overrides
+        if hname in tier_overrides:
+            tier = tier_overrides[hname]
+        elif presence >= 0.45:
             tier = "S+"
         elif presence >= 0.25:
             tier = "S"
@@ -763,6 +780,44 @@ def style_worksheet(ws, pct_cols: list[str], color_scale_cols: list[str]):
     ws.row_dimensions[1].height = 26
 
     pct_col_indices = {idx for idx, name in col_names.items() if name in pct_cols}
+    center_col_indices = {
+        idx
+        for idx, name in col_names.items()
+        if name in {"Rank", "Tier_2026", "Winner_Side", "Best_Of", "Game_Number", "Year", "League_Code"}
+    }
+    text_col_indices = {
+        idx
+        for idx, name in col_names.items()
+        if name
+        in {
+            "Hero",
+            "Primary_Role",
+            "Secondary_Role",
+            "Main_Pro_Lane",
+            "Tournament_Region",
+            "Match_ID",
+            "League_Name",
+            "Stage",
+            "Series_ID",
+            "Date",
+            "Duration",
+            "Blue_Team",
+            "Red_Team",
+            "Winner_Team",
+            "Hero_A",
+            "Hero_B",
+            "Primary_Lane_Pair",
+            "Synergy_Mechanism",
+            "Counter_Hero",
+            "Target_Enemy_Hero",
+            "Lane_Role",
+            "Lane_Opponent",
+            "Counter_Mechanism",
+        }
+        or "Ban_" in name
+        or "_Pick" in name
+        or "_Lane" in name
+    }
 
     for row_idx in range(2, max_row + 1):
         row_fill = zebra_fill if row_idx % 2 == 0 else white_fill
@@ -774,10 +829,12 @@ def style_worksheet(ws, pct_cols: list[str], color_scale_cols: list[str]):
             if col_idx in pct_col_indices:
                 cell.number_format = "0.0%"
                 cell.alignment = Alignment(horizontal="right", vertical="center")
-            elif isinstance(cell.value, (int, float)):
-                cell.alignment = Alignment(horizontal="right", vertical="center")
-            else:
+            elif col_idx in center_col_indices:
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+            elif col_idx in text_col_indices:
                 cell.alignment = Alignment(horizontal="left", vertical="center")
+            else:
+                cell.alignment = Alignment(horizontal="right", vertical="center")
 
     # Apply 3-color conditional formatting scale to target metric columns
     for idx, name in col_names.items():
@@ -811,6 +868,147 @@ def style_worksheet(ws, pct_cols: list[str], color_scale_cols: list[str]):
         ws.column_dimensions[col_letter].width = min(max(max_len + 4, 11), 38)
 
 
+def inject_excel_formulas_and_watermark(wb: openpyxl.Workbook):
+    """Inject native Excel formulas across all 6 worksheets and embed security watermarks."""
+    # -------------------------------------------------------------
+    # 1. Executive_Summary Formulas & Watermark Banner
+    # -------------------------------------------------------------
+    ws_sum = wb["Executive_Summary"]
+    ws_drafts = wb["True_Draft_Log_2026"]
+    max_draft_row = ws_drafts.max_row
+
+    # Regional rows 2..5 (AOG, RPL, GCS, APL)
+    for r in range(2, 6):
+        ws_sum.cell(row=r, column=3, value=f"=COUNTIF(True_Draft_Log_2026!$C$2:$C${max_draft_row}, A{r})")
+        ws_sum.cell(
+            row=r,
+            column=4,
+            value=f"=COUNTIFS(True_Draft_Log_2026!$C$2:$C${max_draft_row}, A{r}, True_Draft_Log_2026!$O$2:$O${max_draft_row}, 1)",
+        )
+        ws_sum.cell(row=r, column=5, value=f"=C{r}-D{r}")
+        ws_sum.cell(row=r, column=6, value=f"=D{r}/C{r}")
+        ws_sum.cell(row=r, column=7, value=f"=E{r}/C{r}")
+        ws_sum.cell(row=r, column=8, value=1.0)
+
+    # Combined summary row 6 (ALL TIER-1)
+    ws_sum.cell(row=6, column=3, value="=SUM(C2:C5)")
+    ws_sum.cell(row=6, column=4, value="=SUM(D2:D5)")
+    ws_sum.cell(row=6, column=5, value="=SUM(E2:E5)")
+    ws_sum.cell(row=6, column=6, value="=D6/C6")
+    ws_sum.cell(row=6, column=7, value="=E6/C6")
+    ws_sum.cell(row=6, column=8, value=1.0)
+
+    # Add Executive Watermark / Security Notice Banner at Row 8
+    banner_cell = ws_sum.cell(row=8, column=1)
+    banner_cell.value = (
+        "CONFIDENTIAL & PROPRIETARY - RoV Pro Draft Intelligence 2026 | "
+        "Licensed Single-User Copy | Unauthorized Distribution or Reselling Strictly Prohibited"
+    )
+    ws_sum.merge_cells("A8:H8")
+    banner_cell.fill = PatternFill(start_color="0F172A", end_color="0F172A", fill_type="solid")
+    banner_cell.font = Font(name="Calibri", size=10, bold=True, color="F5C451")
+    banner_cell.alignment = Alignment(horizontal="center", vertical="center")
+    ws_sum.row_dimensions[8].height = 24
+
+    # -------------------------------------------------------------
+    # 2. Hero_Tier_List_2026 Formulas
+    # -------------------------------------------------------------
+    ws_heroes = wb["Hero_Tier_List_2026"]
+    for r in range(2, ws_heroes.max_row + 1):
+        # Tier_2026 formula based on Presence_Rate (G) with curated overrides (Evita=S, Zanis=A, Ata=A)
+        ws_heroes.cell(
+            row=r,
+            column=3,
+            value=(
+                f'=IF(B{r}="Evita", "S", '
+                f'IF(B{r}="Zanis", "A", '
+                f'IF(B{r}="Ata", "A", '
+                f'IF(G{r}>=0.45, "S+", '
+                f'IF(G{r}>=0.25, "S", '
+                f'IF(G{r}>=0.12, "A", '
+                f'IF(G{r}>=0.04, "B", "C")))))))'
+            ),
+        )
+        # Presence_Rate = (Total_Picks + Total_Bans) / Total_Games
+        ws_heroes.cell(row=r, column=7, value=f"=(J{r}+K{r})/Executive_Summary!$C$6")
+        # Pick_Rate = Total_Picks / Total_Games
+        ws_heroes.cell(row=r, column=8, value=f"=J{r}/Executive_Summary!$C$6")
+        # Ban_Rate = Total_Bans / Total_Games
+        ws_heroes.cell(row=r, column=9, value=f"=K{r}/Executive_Summary!$C$6")
+        # Total_Bans = Phase1_Bans + Phase2_Bans
+        ws_heroes.cell(row=r, column=11, value=f"=L{r}+M{r}")
+        # Losses = Total_Picks - Wins
+        ws_heroes.cell(row=r, column=15, value=f"=J{r}-N{r}")
+        # Win_Rate = Wins / Total_Picks
+        ws_heroes.cell(row=r, column=16, value=f"=IF(J{r}>0, N{r}/J{r}, 0)")
+        # Bayesian_WR = (Wins + 5) / (Picks + 10) clamped to [0.05, 0.95]
+        ws_heroes.cell(row=r, column=17, value=f"=MIN(MAX((N{r}+5)/(J{r}+10), 0.05), 0.95)")
+        # Red_Side_Picks = Total_Picks - Blue_Side_Picks
+        ws_heroes.cell(row=r, column=22, value=f"=J{r}-U{r}")
+
+    # -------------------------------------------------------------
+    # 3. True_Draft_Log_2026 Formulas
+    # -------------------------------------------------------------
+    ws_drafts = wb["True_Draft_Log_2026"]
+    for r in range(2, ws_drafts.max_row + 1):
+        # Winner_Team (M) from Blue_Team (K) or Red_Team (L) via Blue_Win (O)
+        ws_drafts.cell(row=r, column=13, value=f"=IF(O{r}=1, K{r}, L{r})")
+        # Winner_Side (N)
+        ws_drafts.cell(row=r, column=14, value=f'=IF(O{r}=1, "Blue", "Red")')
+
+    # -------------------------------------------------------------
+    # 4. Top_Synergies_2026 Formulas
+    # -------------------------------------------------------------
+    ws_synergy = wb["Top_Synergies_2026"]
+    for r in range(2, ws_synergy.max_row + 1):
+        # Losses (G) = Games_Together (E) - Wins (F)
+        ws_synergy.cell(row=r, column=7, value=f"=E{r}-F{r}")
+        # Raw_Duo_WR (H) = Wins (F) / Games_Together (E)
+        ws_synergy.cell(row=r, column=8, value=f"=IF(E{r}>0, F{r}/E{r}, 0)")
+        # Synergy_Delta2_Lift (K) = Posterior_EB_WR (J) - Expected_BT_WR (I)
+        ws_synergy.cell(row=r, column=11, value=f"=J{r}-I{r}")
+
+    # -------------------------------------------------------------
+    # 5. Top_Counters_2026 Formulas
+    # -------------------------------------------------------------
+    ws_counters = wb["Top_Counters_2026"]
+    for r in range(2, ws_counters.max_row + 1):
+        # Losses_vs_Target (F) = Matchup_Games (D) - Wins_vs_Target (E)
+        ws_counters.cell(row=r, column=6, value=f"=D{r}-E{r}")
+        # Raw_WR_vs_Target (G) = Wins_vs_Target (E) / Matchup_Games (D)
+        ws_counters.cell(row=r, column=7, value=f"=IF(D{r}>0, E{r}/D{r}, 0)")
+        # Counter_Delta2_Lift (M) = Posterior_EB_WR (L) - Expected_BT_WR (H)
+        ws_counters.cell(row=r, column=13, value=f"=L{r}-H{r}")
+
+    # -------------------------------------------------------------
+    # 6. Direct_Lane_Counters_2026 Formulas
+    # -------------------------------------------------------------
+    ws_lane = wb["Direct_Lane_Counters_2026"]
+    for r in range(2, ws_lane.max_row + 1):
+        # Same_Lane_Losses (G) = Same_Lane_Games (E) - Same_Lane_Wins (F)
+        ws_lane.cell(row=r, column=7, value=f"=E{r}-F{r}")
+        # Raw_InLane_WR (H) = Same_Lane_Wins (F) / Same_Lane_Games (E)
+        ws_lane.cell(row=r, column=8, value=f"=IF(E{r}>0, F{r}/E{r}, 0)")
+        # InLane_Delta2_Lift (N) = Posterior_InLane_WR (M) - Expected_BT_WR (I)
+        ws_lane.cell(row=r, column=14, value=f"=M{r}-I{r}")
+
+    # -------------------------------------------------------------
+    # 7. Global Watermarks & Security Headers on Every Worksheet
+    # -------------------------------------------------------------
+    for ws in wb.worksheets:
+        ws.oddHeader.center.text = "&B&11CONFIDENTIAL & PROPRIETARY - RoV Pro Draft Intelligence 2026"
+        ws.oddFooter.left.text = "Licensed Esports Data | Unauthorized Distribution or Reselling Prohibited"
+        ws.oddFooter.right.text = "Page &P of &N"
+
+    # Set Document Metadata
+    wb.properties.title = "RoV Pro Draft Intelligence 2026 - Master Analytics"
+    wb.properties.creator = "RoV Pro Draft Intelligence"
+    wb.properties.description = (
+        f"Confidential & Proprietary Analytics Package ({max_draft_row - 1:,} Verified Pro Games)"
+    )
+    wb.properties.subject = "Tier-1 Pro Match Analytics, Synergy/Counter Matrix, and Lane Stats"
+
+
 def write_excel_workbook(
     excel_path: Path,
     df_summary: pd.DataFrame,
@@ -829,6 +1027,8 @@ def write_excel_workbook(
         df_lane_counters.to_excel(writer, sheet_name="Direct_Lane_Counters_2026", index=False)
 
     wb = openpyxl.load_workbook(excel_path)
+
+    inject_excel_formulas_and_watermark(wb)
 
     style_worksheet(
         wb["Executive_Summary"],

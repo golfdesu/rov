@@ -17,6 +17,7 @@ interface ModalProps {
 export function Modal({ labelledBy, className = "", initialFocusRef, onClose, children }: ModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
+  const mouseDownTargetRef = useRef<EventTarget | null>(null);
 
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -60,7 +61,14 @@ export function Modal({ labelledBy, className = "", initialFocusRef, onClose, ch
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3 backdrop-blur-sm"
-      onClick={onClose}
+      onMouseDown={(e) => {
+        mouseDownTargetRef.current = e.target;
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget && mouseDownTargetRef.current === e.currentTarget) {
+          onClose();
+        }
+      }}
     >
       <div
         ref={panelRef}

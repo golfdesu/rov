@@ -241,7 +241,7 @@ export function HeroSkillsModal({
                 <div className="flex items-center gap-1">
                   <span className="text-[10px] leading-tight text-dim">{slotLabelTh(s.slot)}</span>
                   {badge && (
-                    <span className={`rounded border px-1 py-0.2 font-mono text-[8px] font-semibold ${badge.style}`}>
+                    <span className={`rounded border px-1 py-0.5 font-mono text-[8px] font-semibold ${badge.style}`}>
                       {badge.label}
                     </span>
                   )}

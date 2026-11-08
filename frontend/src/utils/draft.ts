@@ -87,6 +87,7 @@ export interface PredictionState {
 export interface DraftMachineState extends DraftState {
   stepIndex: number;
   history: DraftHistoryItem[];
+  future?: DraftHistoryItem[];
   prediction: PredictionState;
   blueWinRate: number;
   /** Blue win-rate estimate recorded at each draft step (index = step), used for trend + deltas */
@@ -96,6 +97,7 @@ export interface DraftMachineState extends DraftState {
 export type DraftAction =
   | { type: "lock"; hero: string }
   | { type: "undo" }
+  | { type: "redo" }
   | { type: "reset" }
   | {
       type: "hydrate";
@@ -131,6 +133,7 @@ export const INITIAL_DRAFT_STATE: DraftMachineState = {
   blueBans: [],
   redBans: [],
   history: [],
+  future: [],
   prediction: EMPTY_PREDICTION,
   blueWinRate: DEFAULT_WIN_RATE,
   winHistory: [],
@@ -435,20 +438,49 @@ export function draftReducer(state: DraftMachineState, action: DraftAction): Dra
         [key]: [...state[key], action.hero],
         stepIndex: state.stepIndex + 1,
         history: [...state.history, snapshot],
+        future: [],
         prediction: EMPTY_PREDICTION,
+        winHistory: state.winHistory.slice(0, state.stepIndex + 1),
       };
     }
     case "undo": {
       const last = state.history.at(-1);
       if (!last) return state;
+      const currentSnapshot: DraftHistoryItem = {
+        stepIndex: state.stepIndex,
+        bluePicks: state.bluePicks,
+        redPicks: state.redPicks,
+        blueBans: state.blueBans,
+        redBans: state.redBans,
+      };
       return {
         ...state,
         ...last,
         history: state.history.slice(0, -1),
+        future: [...(state.future ?? []), currentSnapshot],
         // Drop stale derived state; useDraft refetches for the restored step
         prediction: EMPTY_PREDICTION,
-        winHistory: state.winHistory.slice(0, last.stepIndex + 1),
         blueWinRate: state.winHistory[last.stepIndex] ?? DEFAULT_WIN_RATE,
+      };
+    }
+    case "redo": {
+      const next = state.future?.at(-1);
+      if (!next) return state;
+      const currentSnapshot: DraftHistoryItem = {
+        stepIndex: state.stepIndex,
+        bluePicks: state.bluePicks,
+        redPicks: state.redPicks,
+        blueBans: state.blueBans,
+        redBans: state.redBans,
+      };
+      return {
+        ...state,
+        ...next,
+        history: [...state.history, currentSnapshot],
+        future: (state.future ?? []).slice(0, -1),
+        // Drop stale derived state; useDraft refetches for the advanced step
+        prediction: EMPTY_PREDICTION,
+        blueWinRate: state.winHistory[next.stepIndex] ?? DEFAULT_WIN_RATE,
       };
     }
     case "reset":
@@ -457,6 +489,7 @@ export function draftReducer(state: DraftMachineState, action: DraftAction): Dra
       return {
         ...state,
         ...action.payload,
+        future: [],
         prediction: EMPTY_PREDICTION,
       };
     case "predicted": {

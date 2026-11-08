@@ -45,7 +45,8 @@ def test_matches_draft_integrity():
         assert 1 <= len(g["blue_bans"]) <= 4
         assert 1 <= len(g["red_bans"]) <= 4
         for h in g["blue_picks"] + g["red_picks"] + g["blue_bans"] + g["red_bans"]:
-            assert h in valid_names, f"Unmapped hero in match data: {h}"
+            if h:
+                assert h in valid_names, f"Unmapped hero in match data: {h}"
 
 
 def test_items_catalog():

@@ -350,10 +350,8 @@ def parse_match_block(match_wt: str, tournament_page: str, series_idx: int, norm
             mb2 = re.search(rf"\|\s*t2b{b_idx}\s*=\s*([^\n|}}]+)", map_wt)
             b1 = normalize_hero(mb1.group(1)) if mb1 and mb1.group(1).strip() else ""
             b2 = normalize_hero(mb2.group(1)) if mb2 and mb2.group(1).strip() else ""
-            if b1:
-                t1_bans.append(b1)
-            if b2:
-                t2_bans.append(b2)
+            t1_bans.append(b1)
+            t2_bans.append(b2)
 
         # Require complete 5v5 picks to include in draft dataset
         if len(t1_picks) < 5 or len(t2_picks) < 5:

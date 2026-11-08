@@ -205,6 +205,47 @@ def test_heroes_rich_details():
     assert "lane" in first
     assert "tier" in first
 
+    # Verify alias-normalized roles
+    hero_by_name = {h["name"]: h for h in data["hero_details"]}
+    # Brunhilda (Celica) must resolve to Marksman, not fallback to Warrior
+    assert hero_by_name["Brunhilda"]["role"] == "Marksman"
+    assert "Dragon_Lane" in hero_by_name["Brunhilda"]["lane"]
+    assert hero_by_name["Arthur"]["role"] == "Warrior"
+    assert hero_by_name["Richter"]["role"] == "Warrior"
+
+    # Verify exact parity with RoV_Pro_Draft_Master_2026.xlsx Hero_Tier_List_2026 sheet
+    assert hero_by_name["Rouie"]["tier"] == "S+"
+    assert hero_by_name["Sinestrea"]["tier"] == "S+"
+    assert hero_by_name["Marja"]["tier"] == "S+"
+    assert hero_by_name["Eland'orr"]["tier"] == "S+"
+    assert hero_by_name["Toro"]["tier"] == "S+"
+    assert hero_by_name["Dolia"]["tier"] == "S+"
+    assert hero_by_name["Florentino"]["tier"] == "S"
+    assert hero_by_name["Tamyn"]["tier"] == "S"
+    assert hero_by_name["Astrid"]["tier"] == "S"
+    assert hero_by_name["Wisp"]["tier"] == "S"
+    assert hero_by_name["Airi"]["tier"] == "S"
+    assert hero_by_name["Mina"]["tier"] == "S"
+    assert hero_by_name["Murad"]["tier"] == "S"
+    assert hero_by_name["Mganga"]["tier"] == "S"
+    assert hero_by_name["Valhein"]["tier"] == "S"
+    assert hero_by_name["Skud"]["tier"] == "S"
+    assert hero_by_name["Enzo"]["tier"] == "S"
+    assert hero_by_name["Taara"]["tier"] == "S"
+    assert hero_by_name["Evita"]["tier"] == "S"
+    assert hero_by_name["Alice"]["tier"] == "A"
+    assert hero_by_name["Annette"]["tier"] == "A"
+    assert hero_by_name["Edras"]["tier"] == "A"
+    assert hero_by_name["Cresht"]["tier"] == "A"
+    assert hero_by_name["Wiro"]["tier"] == "A"
+    assert hero_by_name["Zanis"]["tier"] == "A"
+    assert hero_by_name["Ata"]["tier"] == "A"
+    assert hero_by_name["Chaugnar"]["tier"] == "B"
+    assert hero_by_name["Aya"]["tier"] == "B"
+    assert hero_by_name["Krizzix"]["tier"] == "B"
+    assert hero_by_name["Bijan"]["tier"] == "C"
+    assert hero_by_name["Flowborn (Mage)"]["tier"] == "C"
+
 
 def test_combat_catalog():
     data = client.get("/combat/catalog").json()

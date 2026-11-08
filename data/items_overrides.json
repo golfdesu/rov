@@ -6,7 +6,7 @@
       "slug": "stealth-bracer",
       "category": "attack",
       "tier": 3,
-      "price": null,
+      "price": 2040,
       "stats": {
         "attack_damage": 40,
         "attack_speed": 20,
@@ -28,7 +28,7 @@
       "slug": "light-shield",
       "category": "defense",
       "tier": 3,
-      "price": null,
+      "price": 2040,
       "stats": {
         "cooldown_reduction": 10,
         "armor": 180,
@@ -48,7 +48,7 @@
       "slug": "mail-of-pain",
       "category": "defense",
       "tier": 3,
-      "price": null,
+      "price": 2020,
       "stats": {
         "attack_damage": 50,
         "armor": 300,

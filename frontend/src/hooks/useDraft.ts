@@ -42,6 +42,10 @@ function sanitizeLeague(v: unknown): LeagueCode {
   return typeof v === "string" && VALID_LEAGUES.includes(v as LeagueCode) ? (v as LeagueCode) : "GLOBAL";
 }
 
+function sanitizeEngine(v: unknown): "sota" | "heuristic" | "matrix" {
+  return v === "heuristic" || v === "matrix" ? v : "sota";
+}
+
 function sanitizeWinHistory(arr: unknown): number[] {
   if (!Array.isArray(arr)) return [];
   const out: number[] = [];
@@ -93,6 +97,7 @@ function normalizeSessionPayload(parsed: Partial<DraftSessionPayload>): DraftSes
     winHistory: Array.isArray(parsed.winHistory) ? parsed.winHistory : [],
     blueWinRate: typeof parsed.blueWinRate === "number" ? parsed.blueWinRate : DEFAULT_WIN_RATE,
     useLookahead: Boolean(parsed.useLookahead),
+    engine: sanitizeEngine(parsed.engine),
     league: sanitizeLeague(parsed.league),
     globalBans,
     seriesGames,
@@ -195,18 +200,23 @@ export interface UseDraftOptions {
   engine?: "sota" | "matrix" | "heuristic";
   persistSession?: boolean;
   storageKey?: string;
+  enabled?: boolean;
 }
 
 export function useDraft(options: UseDraftOptions = {}) {
   const {
-    engine = "sota",
+    engine: initialEngine = "sota",
     persistSession = true,
     storageKey = SESSION_STORAGE_KEY,
+    enabled = true,
   } = options;
 
   const catalog = useHeroCatalog();
   const [initialSession] = useState<DraftSessionPayload | null>(() => loadLocalSession(storageKey));
 
+  const [engine, setEngine] = useState<"sota" | "heuristic" | "matrix">(
+    () => initialSession?.engine ?? initialEngine,
+  );
   const [state, dispatch] = useReducer(draftReducer, initialSession, initMachineState);
   const [globalBans, setGlobalBans] = useState<GlobalBanState>(
     () => initialSession?.globalBans ?? EMPTY_GLOBAL_BANS,
@@ -253,6 +263,9 @@ export function useDraft(options: UseDraftOptions = {}) {
           });
           setGlobalBans(remote.globalBans);
           setUseLookahead(Boolean(remote.useLookahead));
+          if (remote.engine) {
+            setEngine(remote.engine);
+          }
           setLeague(sanitizeLeague(remote.league));
           setSeriesGames(remote.seriesGames);
           saveLocalSession(remote, storageKey);
@@ -275,22 +288,9 @@ export function useDraft(options: UseDraftOptions = {}) {
       isHydratingRemoteRef.current = false;
       return;
     }
-    const isDefaultEmpty =
-      stepIndex === 0 &&
-      bluePicks.length === 0 &&
-      redPicks.length === 0 &&
-      blueBans.length === 0 &&
-      redBans.length === 0 &&
-      seriesGames.length === 0 &&
-      globalBans.teamAUsed.length === 0 &&
-      globalBans.teamBUsed.length === 0 &&
-      globalBans.universalBans.length === 0 &&
-      globalBans.gameNumber === 1 &&
-      globalBans.teamAName === "TEAM A" &&
-      globalBans.teamBName === "TEAM B";
 
-    // Avoid overwriting a non-empty remote session before initial GET /draft/session finishes
-    if (persistSession && !hasCompletedInitialSyncRef.current && isDefaultEmpty && lastSavedAtRef.current === 0) {
+    // Avoid overwriting a remote session before initial GET /draft/session finishes
+    if (persistSession && !hasCompletedInitialSyncRef.current) {
       return;
     }
 
@@ -306,6 +306,7 @@ export function useDraft(options: UseDraftOptions = {}) {
       winHistory: state.winHistory.map((v) => (typeof v === "number" && Number.isFinite(v) ? v : null)),
       blueWinRate: state.blueWinRate,
       useLookahead,
+      engine,
       league,
       globalBans,
       seriesGames,
@@ -334,6 +335,7 @@ export function useDraft(options: UseDraftOptions = {}) {
     state.winHistory,
     state.blueWinRate,
     useLookahead,
+    engine,
     league,
     globalBans,
     seriesGames,
@@ -354,6 +356,7 @@ export function useDraft(options: UseDraftOptions = {}) {
   // Fetch AI recommendations whenever the draft or lookahead setting changes.
   // Aborting on cleanup guarantees stale responses never overwrite newer state.
   useEffect(() => {
+    if (!enabled) return;
     const ctrl = new AbortController();
     const draft = { bluePicks, redPicks, blueBans, redBans };
     const step = CANONICAL_DRAFT_STEPS[stepIndex];
@@ -426,6 +429,7 @@ export function useDraft(options: UseDraftOptions = {}) {
     run();
     return () => ctrl.abort();
   }, [
+    enabled,
     engine,
     stepIndex,
     bluePicks,
@@ -446,6 +450,7 @@ export function useDraft(options: UseDraftOptions = {}) {
     [unavailableHeroes],
   );
   const undo = useCallback(() => dispatch({ type: "undo" }), []);
+  const redo = useCallback(() => dispatch({ type: "redo" }), []);
   const reset = useCallback(() => {
     dispatch({ type: "reset" });
     setPredictError(null);
@@ -1017,6 +1022,8 @@ export function useDraft(options: UseDraftOptions = {}) {
     unavailableHeroes,
     useLookahead,
     setUseLookahead,
+    engine,
+    setEngine,
     league,
     setLeague,
     ...state.prediction,
@@ -1028,7 +1035,9 @@ export function useDraft(options: UseDraftOptions = {}) {
     heroesFallback: catalog.isFallback,
     lockHero,
     undo,
+    redo,
     reset,
     canUndo: state.history.length > 0,
+    canRedo: (state.future?.length ?? 0) > 0,
   };
 }

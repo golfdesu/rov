@@ -131,10 +131,13 @@ def build_training_dataset(
     true_order_count = 0
 
     for g in all_games:
-        # Check complete 18-step draft (5 picks each, 4 bans each)
+        # Check complete 18-step draft (5 picks each, 4 bans each, at most 1 unpicked ban slot "")
         if len(g.get("blue_picks", [])) < 5 or len(g.get("red_picks", [])) < 5:
             continue
         if len(g.get("blue_bans", [])) < 4 or len(g.get("red_bans", [])) < 4:
+            continue
+        missing_bans = sum(1 for x in g.get("blue_bans", []) + g.get("red_bans", []) if not x)
+        if missing_bans > 1:
             continue
 
         # Year filter
@@ -183,14 +186,19 @@ def build_training_dataset(
         stats_by_year[year_val] = stats_by_year.get(year_val, 0) + 1
 
     # Chronological sort
-    curated_games.sort(
-        key=lambda x: (
-            int(x.get("year", 2026)) if str(x.get("year", "2026")).isdigit() else 2026,
+    def _sort_key(x):
+        yr = int(x.get("year", 2026)) if str(x.get("year", "2026")).isdigit() else 2026
+        dt = parse_match_date(x.get("date", ""))
+        dt_tuple = (dt.year, dt.month, dt.day) if dt else (yr, 1, 1)
+        return (
+            yr,
+            dt_tuple,
             str(x.get("date", "")),
             x.get("series_id", ""),
             int(x.get("game_number", 0)),
         )
-    )
+
+    curated_games.sort(key=_sort_key)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:

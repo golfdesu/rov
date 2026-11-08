@@ -75,7 +75,9 @@ TEAM_CODES = {
     "1S": "1s",
     "SECRET": "secret",
     "TEAM SECRET": "secret",
-    "SP": "sp",
+    "SP": "sgp",
+    "SGP": "sgp",
+    "SAIGON PHANTOM": "sgp",
     # RPL
     "KOG": "kog",
     "BRU": "bru",
@@ -304,6 +306,12 @@ def process_screenshots(input_files, dry_run=False, league="aog", input_dir: Pat
     existing_keys = {(g["series_id"], g["game_number"]) for g in true_order_data["games"]}
     candidate_games = filter_candidates_for_target(all_matches, existing_keys, league, input_dir)
     apl_schedule = build_apl_series_schedule(all_matches) if league == "apl" else {}
+    series_canonical_teams = {}
+    for m in all_matches:
+        sid_m = m.get("series_id")
+        gnum_m = m.get("game_number")
+        if sid_m and (gnum_m == 1 or sid_m not in series_canonical_teams):
+            series_canonical_teams[sid_m] = (m.get("blue_team"), m.get("red_team"))
 
     print(
         f"Loaded {len(templates)} templates, {len(candidate_games)} unrecorded candidate games for league '{league}'."
@@ -347,7 +355,8 @@ def process_screenshots(input_files, dry_run=False, league="aog", input_dir: Pat
         second_cost = float(sorted_row_costs[1]) if len(sorted_row_costs) > 1 else best_cost
         gap = second_cost - best_cost
 
-        rel_dest = format_dest_path(league, sid, gnum, best_game["blue_team"], best_game["red_team"], apl_schedule)
+        canon_blue, canon_red = series_canonical_teams.get(sid, (best_game["blue_team"], best_game["red_team"]))
+        rel_dest = format_dest_path(league, sid, gnum, canon_blue, canon_red, apl_schedule)
         dest_abs = DATA_DIR / "draft_screenshots" / rel_dest
 
         row_min = float(cost_matrix[i].min())
