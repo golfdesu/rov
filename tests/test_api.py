@@ -207,11 +207,19 @@ def test_heroes_rich_details():
 
     # Verify alias-normalized roles
     hero_by_name = {h["name"]: h for h in data["hero_details"]}
-    # Brunhilda (Celica) must resolve to Marksman, not fallback to Warrior
-    assert hero_by_name["Brunhilda"]["role"] == "Marksman"
-    assert "Dragon_Lane" in hero_by_name["Brunhilda"]["lane"]
-    assert hero_by_name["Arthur"]["role"] == "Warrior"
-    assert hero_by_name["Richter"]["role"] == "Warrior"
+    # Celica (Brunhilda) must resolve to Marksman, not fallback to Warrior
+    celica_hero = hero_by_name.get("Celica") or hero_by_name.get("Brunhilda")
+    assert celica_hero is not None
+    assert celica_hero["role"] == "Marksman"
+    assert "Dragon_Lane" in celica_hero["lane"]
+
+    mortos_hero = hero_by_name.get("Mortos") or hero_by_name.get("Arthur")
+    assert mortos_hero is not None
+    assert mortos_hero["role"] == "Warrior"
+
+    riktor_hero = hero_by_name.get("Riktor") or hero_by_name.get("Richter")
+    assert riktor_hero is not None
+    assert riktor_hero["role"] == "Warrior"
 
     # Verify exact parity with RoV_Pro_Draft_Master_2026.xlsx Hero_Tier_List_2026 sheet
     assert hero_by_name["Rouie"]["tier"] == "S+"

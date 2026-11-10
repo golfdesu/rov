@@ -27,6 +27,36 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-10 07:58 (UTC+7) — Integrate Retrained SOTA Checkpoint from ERAWAN H100 with AOG Finals & Masked Loss
+**Agent:** Antigravity (gemini-3.8-flash-high)
+
+### ✅ Completed Work
+- **Retrained Model Integration (`models/sota_draft_gnn_transformer.pt`)**:
+  - Pulled newly retrained SOTA RoVDraftGNNTransformer checkpoint from ERAWAN HPC H100 (`gpu-h100`, `compute4`).
+  - Model incorporates all 3,512 games from 2025–2026 (including all 12 games from AOG 2026 Winter Finals & Playoffs up to Nov 7, 2026 with 100% verified true pick order), trained with the new masked-loss ban handling and Hopper BF16 numerical stability.
+  - Champion Safest Candidate (Trial #1): Val Loss = `2.83993`, Overfit Gap = `+0.29107`, Top-1 = `20.86%`, Top-5 = `59.94%`, WinAcc = `51.47%` across 130 heroes.
+- **HPO & Parsimony Config Sync (`configs/selected_production_params.json`)**:
+  - Updated production hyperparameters and trial leaderboards to match the new 50-trial H100 Optuna run (`best_params/sota_rov_top5_trials.json`).
+- **Golden Fixture & API Test Alignment (`tests/fixtures/predict_golden.json`, `tests/test_api.py`)**:
+  - Regenerated 72 golden draft scenarios to pin recommendations to the new model weights.
+  - Aligned `test_heroes_rich_details` to support canonical Thai server hero names (`Celica`, `Mortos`, `Riktor`) with legacy fallback.
+
+### 📁 Modified Files
+- `models/sota_draft_gnn_transformer.pt`
+- `best_params/sota_rov_best_params.json`
+- `best_params/sota_rov_top5_trials.json`
+- `configs/selected_production_params.json`
+- `tests/fixtures/predict_golden.json`
+- `tests/test_api.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `python .agents/skills/hpo-parsimony-selector/scripts/select_parsimonious_params.py`: Clean match between served checkpoint and Safest Trial #1.
+- `ruff check --fix . && ruff format .`: 0 errors.
+- `pytest -v`: 79/79 passed in 9.90s (100% test suite passing).
+
+---
+
 ## 📅 2026-11-10 07:51 (UTC+7) — Fix Flex-Lane Comma Parsing and Restore Missing Lane Tags for 130 Heroes
 **Agent:** Antigravity (gemini-3.8-flash-high)
 
