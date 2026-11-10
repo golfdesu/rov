@@ -27,10 +27,10 @@ interface GlobalBanModalProps {
 }
 
 const ROLE_LABELS: Record<RoleType, string> = {
-  Warrior: "ไฟต์เตอร์",
+  Fighter: "ไฟต์เตอร์",
   Assassin: "แอสซาซิน",
   Mage: "เมจ",
-  Marksman: "แครี่",
+  Carry: "แครี่",
   Tank: "แทงค์",
   Support: "ซัพพอร์ต",
 };

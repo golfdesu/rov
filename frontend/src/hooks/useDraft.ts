@@ -177,7 +177,7 @@ function useHeroCatalog() {
           Object.entries(images).map(([name, image_url], idx) => ({
             id: idx,
             name,
-            role: "Warrior",
+            role: "Fighter",
             lane: "DS_Lane (ออฟเลน)",
             tier: "A",
             image_url,

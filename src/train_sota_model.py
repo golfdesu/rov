@@ -120,7 +120,8 @@ def load_sota_data_and_graphs(dataset_path: Path | str | None = None):
     hero_to_id = {name: i for i, name in enumerate(hero_names)}
     num_heroes = len(hero_names)
 
-    roles = ["Warrior", "Mage", "Marksman", "Tank", "Assassin", "Support"]
+    roles = ["Fighter", "Mage", "Carry", "Tank", "Assassin", "Support"]
+    role_map = {"Warrior": "Fighter", "Marksman": "Carry"}
     feature_list = []
     lane_probs_list = []
     skill_flags_list = []
@@ -131,10 +132,13 @@ def load_sota_data_and_graphs(dataset_path: Path | str | None = None):
         s_row = stats_df.iloc[i]
 
         r_vec = [0.0] * len(roles)
-        if h_row["primary_role"] in roles:
-            r_vec[roles.index(h_row["primary_role"])] = 1.0
-        if pd.notna(h_row["secondary_role"]) and h_row["secondary_role"] in roles:
-            r_vec[roles.index(h_row["secondary_role"])] = 0.5
+        p_role = role_map.get(h_row["primary_role"], h_row["primary_role"])
+        if p_role in roles:
+            r_vec[roles.index(p_role)] = 1.0
+        if pd.notna(h_row["secondary_role"]):
+            s_role = role_map.get(h_row["secondary_role"], h_row["secondary_role"])
+            if s_role in roles:
+                r_vec[roles.index(s_role)] = 0.5
 
         lane_counts = np.array(
             [

@@ -424,7 +424,7 @@
     },
     "Allain": {
       "hero": "Allain",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 350.0,
         "armor_growth": 20.0,
@@ -564,7 +564,7 @@
     },
     "Amily": {
       "hero": "Amily",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 302.5,
         "armor_growth": 23.571428571428573,
@@ -984,7 +984,7 @@
     },
     "Arduin": {
       "hero": "Arduin",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 353.7857142857143,
         "armor_growth": 24.642857142857142,
@@ -1124,7 +1124,7 @@
     },
     "Mortos": {
       "hero": "Mortos",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 381.2857142857143,
         "armor_growth": 25.071428571428573,
@@ -1404,7 +1404,7 @@
     },
     "Astrid": {
       "hero": "Astrid",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 320.0,
         "armor_growth": 23.0,
@@ -2104,7 +2104,7 @@
     },
     "Bijan": {
       "hero": "Bijan",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 344.5,
         "armor_growth": 26.5,
@@ -2244,7 +2244,7 @@
     },
     "Billow": {
       "hero": "Billow",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 300.0,
         "armor_growth": 22.0,
@@ -2384,7 +2384,7 @@
     },
     "Biron": {
       "hero": "Biron",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 350.0,
         "armor_growth": 25.0,
@@ -2524,7 +2524,7 @@
     },
     "Bolt Baron": {
       "hero": "Bolt Baron",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 255.0,
         "armor_growth": 18.0,
@@ -2944,7 +2944,7 @@
     },
     "Celica": {
       "hero": "Celica",
-      "primary_class": "Marksman",
+      "primary_class": "Carry",
       "growth_rates": {
         "hp_growth": 248.28571428571428,
         "armor_growth": 19.785714285714285,
@@ -3224,7 +3224,7 @@
     },
     "Capheny": {
       "hero": "Capheny",
-      "primary_class": "Marksman",
+      "primary_class": "Carry",
       "growth_rates": {
         "hp_growth": 255.64285714285714,
         "armor_growth": 18.571428571428573,
@@ -3364,7 +3364,7 @@
     },
     "Charlotte": {
       "hero": "Charlotte",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 300.0,
         "armor_growth": 22.0,
@@ -3924,7 +3924,7 @@
     },
     "Dextra": {
       "hero": "Dextra",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 353.7857142857143,
         "armor_growth": 24.642857142857142,
@@ -4624,7 +4624,7 @@
     },
     "Edras": {
       "hero": "Edras",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 274.35714285714283,
         "armor_growth": 18.5,
@@ -4764,7 +4764,7 @@
     },
     "Eland'orr": {
       "hero": "Eland'orr",
-      "primary_class": "Marksman",
+      "primary_class": "Carry",
       "growth_rates": {
         "hp_growth": 232.07142857142858,
         "armor_growth": 20.5,
@@ -4904,7 +4904,7 @@
     },
     "Elsu": {
       "hero": "Elsu",
-      "primary_class": "Marksman",
+      "primary_class": "Carry",
       "growth_rates": {
         "hp_growth": 250.14285714285714,
         "armor_growth": 20.285714285714285,
@@ -5184,7 +5184,7 @@
     },
     "Erin": {
       "hero": "Erin",
-      "primary_class": "Marksman",
+      "primary_class": "Carry",
       "growth_rates": {
         "hp_growth": 260.0,
         "armor_growth": 21.5,
@@ -5324,7 +5324,7 @@
     },
     "Errol": {
       "hero": "Errol",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 352.5,
         "armor_growth": 22.285714285714285,
@@ -5604,7 +5604,7 @@
     },
     "Fennik": {
       "hero": "Fennik",
-      "primary_class": "Marksman",
+      "primary_class": "Carry",
       "growth_rates": {
         "hp_growth": 259.14285714285717,
         "armor_growth": 21.571428571428573,
@@ -5744,7 +5744,7 @@
     },
     "Florentino": {
       "hero": "Florentino",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 300.0,
         "armor_growth": 21.142857142857142,
@@ -6024,7 +6024,7 @@
     },
     "Flowborn (Marksman)": {
       "hero": "Flowborn (Marksman)",
-      "primary_class": "Marksman",
+      "primary_class": "Carry",
       "growth_rates": {
         "hp_growth": 260.0,
         "armor_growth": 21.0,
@@ -6584,7 +6584,7 @@
     },
     "Hayate": {
       "hero": "Hayate",
-      "primary_class": "Marksman",
+      "primary_class": "Carry",
       "growth_rates": {
         "hp_growth": 235.0,
         "armor_growth": 21.571428571428573,
@@ -8124,7 +8124,7 @@
     },
     "Kil'Groth": {
       "hero": "Kil'Groth",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 335.35714285714283,
         "armor_growth": 25.571428571428573,
@@ -8824,7 +8824,7 @@
     },
     "Laville": {
       "hero": "Laville",
-      "primary_class": "Marksman",
+      "primary_class": "Carry",
       "growth_rates": {
         "hp_growth": 267.0,
         "armor_growth": 20.285714285714285,
@@ -9104,7 +9104,7 @@
     },
     "Lindis": {
       "hero": "Lindis",
-      "primary_class": "Marksman",
+      "primary_class": "Carry",
       "growth_rates": {
         "hp_growth": 263.0,
         "armor_growth": 20.285714285714285,
@@ -9384,7 +9384,7 @@
     },
     "Lu Bu": {
       "hero": "Lu Bu",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 356.5,
         "armor_growth": 22.571428571428573,
@@ -9664,7 +9664,7 @@
     },
     "Maloch": {
       "hero": "Maloch",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 335.0,
         "armor_growth": 24.0,
@@ -9944,7 +9944,7 @@
     },
     "Max": {
       "hero": "Max",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 335.35714285714283,
         "armor_growth": 25.571428571428573,
@@ -10504,7 +10504,7 @@
     },
     "Moren": {
       "hero": "Moren",
-      "primary_class": "Marksman",
+      "primary_class": "Carry",
       "growth_rates": {
         "hp_growth": 265.0,
         "armor_growth": 21.857142857142858,
@@ -11204,7 +11204,7 @@
     },
     "Omen": {
       "hero": "Omen",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 335.35714285714283,
         "armor_growth": 25.571428571428573,
@@ -11764,7 +11764,7 @@
     },
     "Qi": {
       "hero": "Qi",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 345.5,
         "armor_growth": 26.357142857142858,
@@ -12184,7 +12184,7 @@
     },
     "Riktor": {
       "hero": "Riktor",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 327.5,
         "armor_growth": 24.285714285714285,
@@ -12464,7 +12464,7 @@
     },
     "Rourke": {
       "hero": "Rourke",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 327.5,
         "armor_growth": 22.642857142857142,
@@ -12744,7 +12744,7 @@
     },
     "Ryoma": {
       "hero": "Ryoma",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 340.0,
         "armor_growth": 24.642857142857142,
@@ -13164,7 +13164,7 @@
     },
     "Skud": {
       "hero": "Skud",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 356.5,
         "armor_growth": 22.5,
@@ -13304,7 +13304,7 @@
     },
     "Slimz": {
       "hero": "Slimz",
-      "primary_class": "Marksman",
+      "primary_class": "Carry",
       "growth_rates": {
         "hp_growth": 254.0,
         "armor_growth": 21.857142857142858,
@@ -13444,7 +13444,7 @@
     },
     "Stuart": {
       "hero": "Stuart",
-      "primary_class": "Marksman",
+      "primary_class": "Carry",
       "growth_rates": {
         "hp_growth": 257.2857142857143,
         "armor_growth": 21.0,
@@ -13584,7 +13584,7 @@
     },
     "Superman": {
       "hero": "Superman",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 335.35714285714283,
         "armor_growth": 23.857142857142858,
@@ -13864,7 +13864,7 @@
     },
     "Tachi": {
       "hero": "Tachi",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 272.0,
         "armor_growth": 21.142857142857142,
@@ -14004,7 +14004,7 @@
     },
     "Tamyn": {
       "hero": "Tamyn",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 312.0,
         "armor_growth": 22.0,
@@ -14284,7 +14284,7 @@
     },
     "Teeri": {
       "hero": "Teeri",
-      "primary_class": "Marksman",
+      "primary_class": "Carry",
       "growth_rates": {
         "hp_growth": 267.0,
         "armor_growth": 20.285714285714285,
@@ -14424,7 +14424,7 @@
     },
     "Tel'Annas": {
       "hero": "Tel'Annas",
-      "primary_class": "Marksman",
+      "primary_class": "Carry",
       "growth_rates": {
         "hp_growth": 255.78571428571428,
         "armor_growth": 20.857142857142858,
@@ -14844,7 +14844,7 @@
     },
     "Thorne": {
       "hero": "Thorne",
-      "primary_class": "Marksman",
+      "primary_class": "Carry",
       "growth_rates": {
         "hp_growth": 260.0,
         "armor_growth": 20.0,
@@ -15264,7 +15264,7 @@
     },
     "Valhein": {
       "hero": "Valhein",
-      "primary_class": "Marksman",
+      "primary_class": "Carry",
       "growth_rates": {
         "hp_growth": 241.28571428571428,
         "armor_growth": 20.857142857142858,
@@ -15544,7 +15544,7 @@
     },
     "Veres": {
       "hero": "Veres",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 375.0,
         "armor_growth": 29.0,
@@ -15684,7 +15684,7 @@
     },
     "Violet": {
       "hero": "Violet",
-      "primary_class": "Marksman",
+      "primary_class": "Carry",
       "growth_rates": {
         "hp_growth": 263.5,
         "armor_growth": 21.857142857142858,
@@ -15824,7 +15824,7 @@
     },
     "Volkath": {
       "hero": "Volkath",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 312.5,
         "armor_growth": 25.642857142857142,
@@ -16104,7 +16104,7 @@
     },
     "Wisp": {
       "hero": "Wisp",
-      "primary_class": "Marksman",
+      "primary_class": "Carry",
       "growth_rates": {
         "hp_growth": 267.0,
         "armor_growth": 21.571428571428573,
@@ -16244,7 +16244,7 @@
     },
     "Wonder Woman": {
       "hero": "Wonder Woman",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 356.57142857142856,
         "armor_growth": 25.857142857142858,
@@ -16804,7 +16804,7 @@
     },
     "Yan": {
       "hero": "Yan",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 353.7857142857143,
         "armor_growth": 22.285714285714285,
@@ -16944,7 +16944,7 @@
     },
     "Yena": {
       "hero": "Yena",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 300.0,
         "armor_growth": 22.285714285714285,
@@ -17084,7 +17084,7 @@
     },
     "Yorn": {
       "hero": "Yorn",
-      "primary_class": "Marksman",
+      "primary_class": "Carry",
       "growth_rates": {
         "hp_growth": 255.0,
         "armor_growth": 20.285714285714285,
@@ -17364,7 +17364,7 @@
     },
     "Zanis": {
       "hero": "Zanis",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 356.57142857142856,
         "armor_growth": 25.857142857142858,
@@ -17644,7 +17644,7 @@
     },
     "Zephys": {
       "hero": "Zephys",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 312.5,
         "armor_growth": 25.642857142857142,
@@ -18064,7 +18064,7 @@
     },
     "Zuka": {
       "hero": "Zuka",
-      "primary_class": "Warrior",
+      "primary_class": "Fighter",
       "growth_rates": {
         "hp_growth": 275.0,
         "armor_growth": 22.285714285714285,

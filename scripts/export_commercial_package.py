@@ -106,11 +106,13 @@ def explain_counter_mechanic(c_meta: dict, t_meta: dict, is_same_lane: bool, ban
     if (c_meta.get("has_suppress") or c_name in ("Mina", "Roxie", "Baldum")) and (
         t_meta.get("has_mobility")
         or t_meta.get("has_immunity")
-        or t_meta.get("primary_role") in ("Warrior", "Assassin")
+        or t_meta.get("primary_role") in ("Fighter", "Warrior", "Assassin")
     ):
         tags.append("Suppress/Taunt Lockdown vs Mobility")
     if c_meta.get("has_true_damage") and (
-        t_meta.get("has_shield") or t_meta.get("has_heal_sustain") or t_meta.get("primary_role") in ("Tank", "Warrior")
+        t_meta.get("has_shield")
+        or t_meta.get("has_heal_sustain")
+        or t_meta.get("primary_role") in ("Tank", "Fighter", "Warrior")
     ):
         tags.append("True Damage vs Shield/Sustain")
     if c_meta.get("has_immunity") and t_meta.get("has_hard_cc"):
@@ -132,7 +134,7 @@ def explain_synergy_mechanic(a_meta: dict, b_meta: dict) -> str:
     r_a = a_meta.get("primary_role", "")
     r_b = b_meta.get("primary_role", "")
     if (a_meta.get("has_suppress") or b_meta.get("has_suppress")) and (
-        "Assassin" in (r_a, r_b) or "Mage" in (r_a, r_b) or "Marksman" in (r_a, r_b)
+        "Assassin" in (r_a, r_b) or "Mage" in (r_a, r_b) or "Carry" in (r_a, r_b) or "Marksman" in (r_a, r_b)
     ):
         tags.append("Suppress Lockdown + Burst Follow-Up")
     elif (a_meta.get("has_hard_cc") or b_meta.get("has_hard_cc")) and (
@@ -144,7 +146,13 @@ def explain_synergy_mechanic(a_meta: dict, b_meta: dict) -> str:
         or a_meta.get("has_heal_sustain")
         or b_meta.get("has_shield")
         or b_meta.get("has_heal_sustain")
-    ) and ("Marksman" in (r_a, r_b) or "Assassin" in (r_a, r_b) or "Warrior" in (r_a, r_b)):
+    ) and (
+        "Carry" in (r_a, r_b)
+        or "Marksman" in (r_a, r_b)
+        or "Assassin" in (r_a, r_b)
+        or "Fighter" in (r_a, r_b)
+        or "Warrior" in (r_a, r_b)
+    ):
         tags.append("Carry Peel & Sustain")
     if a_meta.get("has_mobility") and b_meta.get("has_mobility"):
         tags.append("High-Tempo Dive & Rotation")
@@ -534,16 +542,22 @@ def build_dataframes():
         lane_cos = sum(a * b for a, b in zip(v_c, v_t))
         kit_bonus = 0.0
         if (cm.get("has_suppress") or c_name in ("Mina", "Roxie", "Baldum")) and (
-            tm.get("has_mobility") or tm.get("has_immunity") or tm.get("primary_role") in ("Warrior", "Assassin")
+            tm.get("has_mobility")
+            or tm.get("has_immunity")
+            or tm.get("primary_role") in ("Fighter", "Warrior", "Assassin")
         ):
             kit_bonus += 0.45
         if (
             cm.get("has_true_damage")
-            and (tm.get("has_shield") or tm.get("has_heal_sustain") or tm.get("primary_role") in ("Tank", "Warrior"))
+            and (
+                tm.get("has_shield")
+                or tm.get("has_heal_sustain")
+                or tm.get("primary_role") in ("Tank", "Fighter", "Warrior")
+            )
             and (lane_cos >= 0.25 or c_name == "Mina")
         ):
             kit_bonus += 0.35
-        if cm.get("primary_role") == "Assassin" and tm.get("primary_role") in ("Marksman", "Mage"):
+        if cm.get("primary_role") == "Assassin" and tm.get("primary_role") in ("Carry", "Marksman", "Mage"):
             kit_bonus += 0.35
         if lane_cos < 0.30 and kit_bonus < 0.35:
             return 0.0

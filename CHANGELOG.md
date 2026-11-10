@@ -27,6 +27,55 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-10 08:30 (UTC+7) — Align Hero Roles to Thai Server Conventions (Warrior -> Fighter, Marksman -> Carry)
+**Agent:** Antigravity (gemini-3.8-flash-high)
+
+### ✅ Completed Work
+- **Canonical 130 Hero Data Catalogs**:
+  - Migrated all 130 heroes in `data/heroes_130_full.json` and `data/heroes_130_summary.csv` (`primary_role`, `secondary_role`) from `Warrior` to `Fighter` (35 heroes) and `Marksman` to `Carry` (20 heroes).
+  - Updated `data/hero_level_stats.json` and `data/hero_level_stats.csv` (`primary_class`, `class`) to match official Thai server terminology (`Fighter`, `Carry`).
+- **Backend Serving & ML Pipeline**:
+  - `src/api.py`: Updated `/heroes` endpoint to return normalized `Fighter` and `Carry` roles. Updated `role_fallback` with `Fighter` -> `DS_Lane` and `Carry` -> `Dragon_Lane`.
+  - `src/predictor.py`: Normalized `_primary_role` recommendations output.
+  - `src/train_sota_model.py`: Maintained exact vector index ordering `["Fighter", "Mage", "Carry", "Tank", "Assassin", "Support"]` with legacy alias mapping to ensure 100% numerical feature parity with served checkpoints.
+  - `src/build_draft_stats.py`: Updated kit mechanism role checks for `Fighter` and `Carry`.
+  - `scripts/export_commercial_package.py`: Re-exported commercial dataset `RoV_Pro_Draft_Master_2026.xlsx`, raw CSVs, and `RoV_Pro_Draft_Intelligence_2026.zip` reflecting `Fighter` and `Carry`.
+- **Frontend Types, Reducers & UI**:
+  - `frontend/src/types/draft.ts`: Updated `RoleType` to `"Fighter" | "Assassin" | "Mage" | "Carry" | "Support" | "Tank"`.
+  - `frontend/src/utils/draft.ts`: Updated `ROLES` constant and added `normalizeRole` utility.
+  - `GlobalBanModal.tsx`, `HeroPickerModal.tsx`, `TierListView.tsx`: Updated role labels and filters with Thai descriptions (`Fighter (ไฟต์เตอร์)`, `Carry (แครี่)`).
+  - `frontend/src/hooks/useDraft.ts`: Updated catalog fallback to `"Fighter"`.
+- **Test Suite & Golden Verification**:
+  - `tests/test_api.py`: Updated assertions for Celica (`Carry`), Mortos (`Fighter`), Riktor (`Fighter`).
+  - `tests/fixtures/predict_golden.json`: Regenerated 72 golden test fixtures with `Fighter` and `Carry`.
+
+### 📁 Modified Files
+- `data/hero_level_stats.csv`
+- `data/hero_level_stats.json`
+- `data/heroes_130_full.json`
+- `data/heroes_130_summary.csv`
+- `frontend/src/components/GlobalBanModal.tsx`
+- `frontend/src/components/lab/HeroPickerModal.tsx`
+- `frontend/src/components/tierlist/TierListView.tsx`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/types/draft.ts`
+- `frontend/src/utils/draft.ts`
+- `scripts/export_commercial_package.py`
+- `src/api.py`
+- `src/build_draft_stats.py`
+- `src/predictor.py`
+- `src/train_sota_model.py`
+- `tests/fixtures/predict_golden.json`
+- `tests/test_api.py`
+
+### 🧪 Verification
+- `frontend/`: `npm run lint` (0 warnings, 0 errors), `npm run build` succeeded (474 kB JS, 88 kB CSS).
+- `ruff check --fix . && ruff format .` passed (0 errors, clean).
+- `pytest -v`: 79/79 tests passed (100%).
+- `python scripts/export_commercial_package.py`: Re-generated Excel master workbook (523.7 KB) and commercial ZIP (645.6 KB).
+
+---
+
 ## 📅 2026-11-10 08:20 (UTC+7) — Modernize Mobile & Tablet UI with Responsive Dropdown Selectors
 **Agent:** Antigravity (gemini-3.8-flash-high)
 

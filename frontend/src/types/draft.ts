@@ -1,4 +1,4 @@
-export type RoleType = "Warrior" | "Assassin" | "Mage" | "Marksman" | "Support" | "Tank";
+export type RoleType = "Fighter" | "Assassin" | "Mage" | "Carry" | "Support" | "Tank";
 
 export type LeagueCode = "GLOBAL" | "RPL" | "GCS" | "AOG" | "INTL";
 

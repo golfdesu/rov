@@ -54,7 +54,15 @@ export const LANE_SHORT: Record<string, { en: string; th: string }> = {
   Roam: { en: "SUP", th: "โรมมิ่ง" },
 };
 
-export const ROLES: RoleType[] = ["Warrior", "Assassin", "Mage", "Marksman", "Tank", "Support"];
+export const ROLES: RoleType[] = ["Fighter", "Assassin", "Mage", "Carry", "Tank", "Support"];
+
+/** Normalizes legacy global roles (Warrior -> Fighter, Marksman -> Carry) */
+export function normalizeRole(role?: string | null): RoleType {
+  if (!role) return "Fighter";
+  if (role === "Warrior") return "Fighter";
+  if (role === "Marksman") return "Carry";
+  return role as RoleType;
+}
 
 export const TIER_STYLE: Record<string, string> = {
   "S+": "text-gold border-gold/60 bg-gold/10",

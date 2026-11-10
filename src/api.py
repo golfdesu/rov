@@ -99,13 +99,20 @@ try:
     canonical_to_legacy = {"Mortos": "Arthur", "Celica": "Brunhilda", "Riktor": "Richter"}
     legacy_to_canonical = {"Arthur": "Mortos", "Brunhilda": "Celica", "Richter": "Riktor"}
     role_fallback = {
+        "Fighter": "DS_Lane",
         "Warrior": "DS_Lane",
         "Assassin": "Jungle",
         "Mage": "Mid",
+        "Carry": "Dragon_Lane",
         "Marksman": "Dragon_Lane",
         "Support": "Roam",
         "Tank": "Roam",
     }
+
+    def normalize_role(r: str) -> str:
+        aliases = {"Warrior": "Fighter", "Marksman": "Carry"}
+        return aliases.get(r, r)
+
     lane_cols = [
         ("DS_Lane", "DS_Lane_Share"),
         ("Jungle", "Jungle_Share"),
@@ -123,7 +130,7 @@ try:
 
     for i, name in enumerate(predictor.hero_names):
         lookup_name = legacy_to_canonical.get(name, name)
-        role = "Warrior"
+        role = "Fighter"
         tier = "C"
         rank = 999
         main_pro_lane = "DS_Lane"
@@ -141,7 +148,7 @@ try:
                 t_row = t_row.iloc[0]
             rank = int(t_row["Rank"]) if pd.notna(t_row.get("Rank")) else 999
             tier = str(t_row["Tier_2026"]) if pd.notna(t_row.get("Tier_2026")) else "C"
-            role = str(t_row["Primary_Role"]) if pd.notna(t_row.get("Primary_Role")) else "Warrior"
+            role = normalize_role(str(t_row["Primary_Role"])) if pd.notna(t_row.get("Primary_Role")) else "Fighter"
             main_pro_lane = str(t_row["Main_Pro_Lane"]) if pd.notna(t_row.get("Main_Pro_Lane")) else "Unpicked"
             if pd.notna(t_row.get("Presence_Rate")):
                 presence_rate = round(float(t_row["Presence_Rate"]) * 100, 1)
@@ -168,7 +175,7 @@ try:
             row = summary_df.loc[lookup_name]
             if isinstance(row, pd.DataFrame):
                 row = row.iloc[0]
-            role = str(row["primary_role"]) if pd.notna(row.get("primary_role")) else "Warrior"
+            role = normalize_role(str(row["primary_role"])) if pd.notna(row.get("primary_role")) else "Fighter"
             tier = str(row["meta_tier_2026"]) if pd.notna(row.get("meta_tier_2026")) else "C"
             lane = role_fallback.get(role, "DS_Lane")
             main_pro_lane = lane
@@ -243,7 +250,7 @@ try:
 except Exception:
     logger.exception("Failed to initialize hero_details_cache; falling back to default catalog")
     hero_details_cache = [
-        {"id": i, "name": name, "role": "Warrior", "lane": "DS_Lane", "tier": "A"}
+        {"id": i, "name": name, "role": "Fighter", "lane": "DS_Lane", "tier": "A"}
         for i, name in enumerate(predictor.hero_names)
     ]
 

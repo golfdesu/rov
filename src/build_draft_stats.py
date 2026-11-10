@@ -181,16 +181,22 @@ def main():
         lane_cos = float(np.dot(hero_lane_vec[c_name], hero_lane_vec[t_name]))
         kit_bonus = 0.0
         if (cm.get("has_suppress") or c_name in ("Mina", "Roxie", "Baldum")) and (
-            tm.get("has_mobility") or tm.get("has_immunity") or tm.get("primary_role") in ("Warrior", "Assassin")
+            tm.get("has_mobility")
+            or tm.get("has_immunity")
+            or tm.get("primary_role") in ("Fighter", "Warrior", "Assassin")
         ):
             kit_bonus += 0.45
         if (
             cm.get("has_true_damage")
-            and (tm.get("has_shield") or tm.get("has_heal_sustain") or tm.get("primary_role") in ("Tank", "Warrior"))
+            and (
+                tm.get("has_shield")
+                or tm.get("has_heal_sustain")
+                or tm.get("primary_role") in ("Tank", "Fighter", "Warrior")
+            )
             and (lane_cos >= 0.25 or c_name == "Mina")
         ):
             kit_bonus += 0.35
-        if cm.get("primary_role") == "Assassin" and tm.get("primary_role") in ("Marksman", "Mage"):
+        if cm.get("primary_role") == "Assassin" and tm.get("primary_role") in ("Carry", "Marksman", "Mage"):
             kit_bonus += 0.35
         if lane_cos < 0.30 and kit_bonus < 0.35:
             return 0.0

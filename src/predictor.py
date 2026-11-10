@@ -104,7 +104,8 @@ class RoVDraftPredictor:
         stats = self.stats_df.loc[self.hero_names]
         self._main_lane: list[str] = [str(v) for v in stats["main_pro_lane"]]
         self._lane_key: list[str] = [lane.split(" ")[0] for lane in self._main_lane]
-        self._primary_role: list[str] = [str(v) for v in heroes["primary_role"]]
+        role_aliases = {"Warrior": "Fighter", "Marksman": "Carry"}
+        self._primary_role: list[str] = [role_aliases.get(str(v), str(v)) for v in heroes["primary_role"]]
         self._capabilities: list[list[str]] = []
         for row in heroes.itertuples():
             caps = []

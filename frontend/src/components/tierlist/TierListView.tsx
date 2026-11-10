@@ -41,13 +41,13 @@ const LANE_FILTERS: { key: LaneFilter; label: string; th: string }[] = [
 ];
 
 const ROLE_FILTERS: { key: RoleFilter; label: string }[] = [
-  { key: "ALL", label: "All Roles" },
-  { key: "Warrior", label: "Warrior" },
-  { key: "Assassin", label: "Assassin" },
-  { key: "Mage", label: "Mage" },
-  { key: "Marksman", label: "Marksman" },
-  { key: "Support", label: "Support" },
-  { key: "Tank", label: "Tank" },
+  { key: "ALL", label: "All Roles (ทุกสาย)" },
+  { key: "Fighter", label: "Fighter (ไฟต์เตอร์)" },
+  { key: "Assassin", label: "Assassin (แอสซาซิน)" },
+  { key: "Mage", label: "Mage (เมจ)" },
+  { key: "Carry", label: "Carry (แครี่)" },
+  { key: "Support", label: "Support (ซัพพอร์ต)" },
+  { key: "Tank", label: "Tank (แทงค์)" },
 ];
 
 const TIER_ORDER: Record<string, number> = {

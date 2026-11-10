@@ -16,10 +16,10 @@ interface HeroPickerModalProps {
 
 const ROLE_LABELS: Record<RoleType, string> = {
   Tank: "แทงค์",
-  Warrior: "ไฟต์เตอร์",
+  Fighter: "ไฟต์เตอร์",
   Assassin: "แอสซาซิน",
   Mage: "เมจ",
-  Marksman: "แครี่",
+  Carry: "แครี่",
   Support: "ซัพพอร์ต",
 };
 
