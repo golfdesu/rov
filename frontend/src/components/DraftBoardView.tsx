@@ -241,7 +241,45 @@ export function DraftBoardView({
               <span className="hidden sm:inline">+ แมตช์ใหม่</span>
             </button>
 
-            <div className="inline-flex shrink-0 items-center border border-line bg-bg p-0.5">
+            {/* Mobile & iPad Compact Game Selector Dropdown (< lg) */}
+            <div className="relative inline-flex shrink-0 items-center lg:hidden">
+              <select
+                aria-label="Select Game Number"
+                value={globalBans.gameNumber}
+                onChange={(e) => {
+                  const g = Number(e.target.value);
+                  const unlockStatus = getGameUnlockStatus(g, globalBans, seriesGames);
+                  if (!unlockStatus.isUnlocked) {
+                    const missingStr = unlockStatus.missingGames.map((mg) => `Game ${mg}`).join(", ");
+                    const teamAName = globalBans.teamAName || "Team A";
+                    const teamBName = globalBans.teamBName || "Team B";
+                    const wantOpenModal = window.confirm(
+                      `Game ${g} ยังไม่ปลดล็อก!\n\nเงื่อนไขการลัดไป Game ${g}:\n- ต้องบันทึกผล ${missingStr} ให้เสร็จก่อน หรือ\n- ใส่ Global Ban ของทั้งสองทีมอย่างน้อยฝั่งละ ${unlockStatus.requiredCount} ตัวละคร\n\nสถานะปัจจุบัน:\n- ${teamAName}: ${unlockStatus.aCount}/${unlockStatus.requiredCount} ตัว\n- ${teamBName}: ${unlockStatus.bCount}/${unlockStatus.requiredCount} ตัว\n\nต้องการเปิดหน้าต่าง Global Ban เพื่อตั้งค่าฮีโร่ทันทีหรือไม่?`,
+                    );
+                    if (wantOpenModal) {
+                      setGlobalBanModalCat(blueCategoryKey);
+                    }
+                    return;
+                  }
+                  selectGameNumber(g);
+                }}
+                className="h-7 border border-line bg-panel px-2 font-mono text-xs font-bold text-gold cursor-pointer focus:border-gold/60 focus:outline-none"
+              >
+                {[1, 2, 3, 4, 5, 6, 7].map((g) => {
+                  const unlockStatus = getGameUnlockStatus(g, globalBans, seriesGames);
+                  return (
+                    <option key={g} value={g} className="bg-panel text-ink py-1">
+                      Game {g}
+                      {g === 7 ? " (Ultimate)" : ""}
+                      {!unlockStatus.isUnlocked && globalBans.gameNumber !== g ? " [ล็อก]" : ""}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+
+            {/* Desktop Full 7-Button Game Selector (lg+) */}
+            <div className="hidden lg:inline-flex shrink-0 items-center border border-line bg-bg p-0.5">
               {[1, 2, 3, 4, 5, 6, 7].map((g) => {
                 const unlockStatus = getGameUnlockStatus(g, globalBans, seriesGames);
                 const isUnlocked = unlockStatus.isUnlocked;
@@ -291,45 +329,73 @@ export function DraftBoardView({
               })}
             </div>
 
-            <button
-              type="button"
-              onClick={swapTeamSides}
-              title={`สลับฝั่งทีม (${bName} ⇄ ${rName}) — ฮีโร่ที่แต่ละทีมเคยใช้จะย้ายฝั่งตามทีมไปอัตโนมัติ`}
-              className="flex h-7 shrink-0 items-center gap-1.5 border border-gold/60 bg-gold/10 px-2 font-display text-xs font-bold whitespace-nowrap text-gold transition-colors hover:bg-gold hover:text-bg"
-            >
-              <ArrowLeftRight className="h-3.5 w-3.5 shrink-0" />
-              <span className="hidden md:inline">สลับฝั่ง</span>
-            </button>
+            {/* Mobile Actions Dropdown (< sm) */}
+            <div className="relative sm:hidden">
+              <select
+                aria-label="การจัดการซีรีส์"
+                value=""
+                onChange={(e) => {
+                  const act = e.target.value;
+                  if (act === "swap") swapTeamSides();
+                  else if (act === "globalban") setGlobalBanModalCat(blueCategoryKey);
+                  else if (act === "history") setIsHistoryModalOpen(true);
+                  e.target.value = "";
+                }}
+                className="h-7 border border-line bg-panel px-1.5 font-display text-xs font-semibold text-muted cursor-pointer focus:border-gold/60 focus:outline-none"
+              >
+                <option value="" disabled>
+                  จัดการซีรีส์ ▼
+                </option>
+                <option value="swap">สลับฝั่งทีม ({bName} ⇄ {rName})</option>
+                <option value="globalban">
+                  Global Ban ({globalBans.universalBans.length > 0 ? `+${globalBans.universalBans.length}` : "0"})
+                </option>
+                <option value="history">ประวัติซีรีส์ ({seriesGames.length} เกม)</option>
+              </select>
+            </div>
 
-            <button
-              type="button"
-              onClick={() => setGlobalBanModalCat(blueCategoryKey)}
-              title="ตั้งค่าชื่อทีม ฮีโร่ที่เคยใช้ในซีรีส์ และแบนถาวร"
-              className="flex h-7 shrink-0 items-center gap-1.5 border border-line-strong bg-bg px-2 font-display text-xs font-semibold whitespace-nowrap text-muted transition-colors hover:border-gold/60 hover:text-ink"
-            >
-              <Layers className="h-3.5 w-3.5 shrink-0 text-gold" />
-              <span className="hidden lg:inline">Global Ban</span>
-              {globalBans.universalBans.length > 0 && (
-                <span className="bg-gold px-1 font-mono text-[10px] font-bold text-bg">
-                  +{globalBans.universalBans.length}
-                </span>
-              )}
-            </button>
+            {/* Tablet & Desktop Actions Row (sm+) */}
+            <div className="hidden sm:flex shrink-0 items-center gap-1.5">
+              <button
+                type="button"
+                onClick={swapTeamSides}
+                title={`สลับฝั่งทีม (${bName} ⇄ ${rName}) — ฮีโร่ที่แต่ละทีมเคยใช้จะย้ายฝั่งตามทีมไปอัตโนมัติ`}
+                className="flex h-7 shrink-0 items-center gap-1.5 border border-gold/60 bg-gold/10 px-2 font-display text-xs font-bold whitespace-nowrap text-gold transition-colors hover:bg-gold hover:text-bg"
+              >
+                <ArrowLeftRight className="h-3.5 w-3.5 shrink-0" />
+                <span className="hidden md:inline">สลับฝั่ง</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => setIsHistoryModalOpen(true)}
-              title="ดูประวัติการดราฟต์ในซีรีส์ หรือกู้คืนกระดานเกมก่อนหน้า"
-              className="flex h-7 shrink-0 items-center gap-1.5 border border-line-strong bg-bg px-2 font-display text-xs font-semibold whitespace-nowrap text-muted transition-colors hover:border-gold/60 hover:text-ink"
-            >
-              <History className="h-3.5 w-3.5 shrink-0 text-gold" />
-              <span className="hidden lg:inline">ประวัติ</span>
-              {seriesGames.length > 0 && (
-                <span className="bg-gold px-1 font-mono text-[10px] font-bold text-bg">
-                  {seriesGames.length}
-                </span>
-              )}
-            </button>
+              <button
+                type="button"
+                onClick={() => setGlobalBanModalCat(blueCategoryKey)}
+                title="ตั้งค่าชื่อทีม ฮีโร่ที่เคยใช้ในซีรีส์ และแบนถาวร"
+                className="flex h-7 shrink-0 items-center gap-1.5 border border-line-strong bg-bg px-2 font-display text-xs font-semibold whitespace-nowrap text-muted transition-colors hover:border-gold/60 hover:text-ink"
+              >
+                <Layers className="h-3.5 w-3.5 shrink-0 text-gold" />
+                <span className="hidden lg:inline">Global Ban</span>
+                {globalBans.universalBans.length > 0 && (
+                  <span className="bg-gold px-1 font-mono text-[10px] font-bold text-bg">
+                    +{globalBans.universalBans.length}
+                  </span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsHistoryModalOpen(true)}
+                title="ดูประวัติการดราฟต์ในซีรีส์ หรือกู้คืนกระดานเกมก่อนหน้า"
+                className="flex h-7 shrink-0 items-center gap-1.5 border border-line-strong bg-bg px-2 font-display text-xs font-semibold whitespace-nowrap text-muted transition-colors hover:border-gold/60 hover:text-ink"
+              >
+                <History className="h-3.5 w-3.5 shrink-0 text-gold" />
+                <span className="hidden lg:inline">ประวัติ</span>
+                {seriesGames.length > 0 && (
+                  <span className="bg-gold px-1 font-mono text-[10px] font-bold text-bg">
+                    {seriesGames.length}
+                  </span>
+                )}
+              </button>
+            </div>
 
             {isSelectingWinner ? (
               <div className="inline-flex h-7 shrink-0 items-center gap-1 border border-gold bg-panel px-1.5">

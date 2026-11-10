@@ -298,8 +298,8 @@ export function TierListView({ heroes }: TierListViewProps) {
 
           {/* Row 2: Lane Filters & Role Dropdown */}
           <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-            {/* Lane Filter Buttons */}
-            <div className="flex flex-wrap items-center gap-1">
+            {/* Lane Filter Buttons (Desktop md+) */}
+            <div className="hidden md:flex flex-wrap items-center gap-1">
               <span className="mr-1 flex items-center gap-1 text-[11px] font-semibold tracking-wider text-dim uppercase">
                 <Filter className="h-3 w-3" />
                 LANE:
@@ -330,6 +330,37 @@ export function TierListView({ heroes }: TierListViewProps) {
                     className="h-3.5 w-3.5 rounded border-line bg-panel text-gold focus:ring-0 cursor-pointer accent-[#f5c451]"
                   />
                   <span>รวม Flex (≥15%)</span>
+                </label>
+              )}
+            </div>
+
+            {/* Mobile Lane Filter Dropdown (< md) */}
+            <div className="flex md:hidden items-center gap-1.5">
+              <span className="flex items-center gap-1 text-[11px] font-semibold tracking-wider text-dim uppercase">
+                <Filter className="h-3 w-3" />
+                LANE:
+              </span>
+              <select
+                aria-label="กรองตามเลน"
+                value={selectedLane}
+                onChange={(e) => setSelectedLane(e.target.value as LaneFilter)}
+                className="h-7 rounded border border-line bg-bg px-2 text-xs font-medium text-ink focus:border-gold focus:outline-none"
+              >
+                {LANE_FILTERS.map((f) => (
+                  <option key={f.key} value={f.key}>
+                    {f.label} ({f.th})
+                  </option>
+                ))}
+              </select>
+              {selectedLane !== "ALL" && (
+                <label className="ml-1 flex items-center gap-1 cursor-pointer text-[11px] font-medium text-muted hover:text-ink select-none">
+                  <input
+                    type="checkbox"
+                    checked={includeFlex}
+                    onChange={(e) => setIncludeFlex(e.target.checked)}
+                    className="h-3.5 w-3.5 rounded border-line bg-panel text-gold focus:ring-0 cursor-pointer accent-[#f5c451]"
+                  />
+                  <span>Flex</span>
                 </label>
               )}
             </div>

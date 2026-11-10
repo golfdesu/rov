@@ -125,6 +125,23 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
               </kbd>
             )}
           </label>
+          <div className="relative shrink-0">
+            <select
+              aria-label="กรองตามสายอาชีพ"
+              value={role ?? ""}
+              onChange={(e) => setRole(e.target.value ? (e.target.value as RoleType) : null)}
+              className="h-8 border border-line-strong bg-bg px-2 font-display text-[10px] font-semibold tracking-wide text-ink cursor-pointer focus:border-gold/60 focus:outline-none sm:text-[11px]"
+            >
+              <option value="" className="bg-panel text-ink py-1">
+                ทุกสาย (All Roles)
+              </option>
+              {ROLES.map((r) => (
+                <option key={r} value={r} className="bg-panel text-ink py-1">
+                  {r.toUpperCase()}
+                </option>
+              ))}
+            </select>
+          </div>
           <button
             type="button"
             onClick={() => setSortMode(sortMode === "ai" ? "az" : "ai")}
@@ -139,16 +156,10 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
           </span>
         </div>
 
-        <div className="flex gap-1 overflow-x-auto pb-0.5">
-          <button type="button" className={chip(role === null)} onClick={() => setRole(null)}>
+        <div className="flex items-center gap-1 overflow-x-auto pb-0.5">
+          <button type="button" className={chip(lane === null)} onClick={() => setLane(null)}>
             ALL
           </button>
-          {ROLES.map((r) => (
-            <button key={r} type="button" className={chip(role === r)} onClick={() => setRole(role === r ? null : r)}>
-              {r.toUpperCase()}
-            </button>
-          ))}
-          <div className="mx-0.5 w-px shrink-0 bg-line" />
           {LANE_KEYS.map((k) => (
             <button
               key={k}
@@ -160,6 +171,19 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
               {LANE_SHORT[k].en}
             </button>
           ))}
+          {role && (
+            <div className="ml-auto flex shrink-0 items-center gap-1 border border-gold/40 bg-gold/10 px-1.5 py-0.5 text-gold">
+              <span className="font-display text-[10px] font-semibold tracking-wide uppercase">{role}</span>
+              <button
+                type="button"
+                onClick={() => setRole(null)}
+                title="ล้างตัวกรองสายอาชีพ"
+                className="text-gold/70 hover:text-gold"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

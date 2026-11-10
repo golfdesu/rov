@@ -27,6 +27,36 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-10 08:20 (UTC+7) — Modernize Mobile & Tablet UI with Responsive Dropdown Selectors
+**Agent:** Antigravity (gemini-3.8-flash-high)
+
+### ✅ Completed Work
+- **Point 1: Responsive Game 1–7 Selector (`frontend/src/components/DraftBoardView.tsx`)**:
+  - Replaced the wide 7-button series game bar on smartphone and iPad screens (`< lg`) with a compact, touch-friendly `<select>` dropdown. Preserves the full 7-button strip on desktop (`lg+`).
+  - Dropdown options clearly display lock states and Ultimate Battle indicators, while maintaining click/selection guards for locked games.
+- **Point 2: Role Filter Dropdown & Zero-Scroll Lane Chips (`frontend/src/components/HeroGrid.tsx`)**:
+  - Moved the 6 role filter buttons into a dropdown `<select>` adjacent to the search input and sort button.
+  - Simplified the chips bar to only the 5 lane quick chips (`ALL | DSL | JGL | MID | ADL | SUP`), fitting all mobile and tablet viewports without horizontal scrolling.
+  - Added an active role tag indicator with an instant clear button.
+- **Point 3: Compact Mobile Lane Selector (`frontend/src/components/tierlist/TierListView.tsx`)**:
+  - Replaced the 6 wrapping lane buttons on small screens (`< md`) with a compact `<select>` dropdown with lane names and Thai descriptions, alongside a compact Flex toggle.
+  - Retained the horizontal button bar on desktop screens (`md+`).
+- **Point 4: Series Actions Dropdown on Mobile (`frontend/src/components/DraftBoardView.tsx`)**:
+  - Grouped secondary series actions (Swap Sides, Global Ban setup, Match History) into a compact dropdown menu on mobile screens (`< sm`), saving precious header height for the draft board.
+  - Preserved the full action button row on tablet and desktop (`sm+`).
+
+### 📁 Modified Files
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/components/HeroGrid.tsx`
+- `frontend/src/components/tierlist/TierListView.tsx`
+
+### 🧪 Verification
+- `frontend/`: `npm run lint` passed (0 warnings, 0 errors), `npm run build` passed (production build built in 953ms).
+- `ruff check --fix . && ruff format .` passed (88 files clean).
+- `pytest -v` passed all 79 tests (100%).
+
+---
+
 ## 📅 2026-11-10 07:58 (UTC+7) — Integrate Retrained SOTA Checkpoint from ERAWAN H100 with AOG Finals & Masked Loss
 **Agent:** Antigravity (gemini-3.8-flash-high)
 
