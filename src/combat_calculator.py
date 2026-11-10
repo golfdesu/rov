@@ -728,6 +728,7 @@ class CombatEngine:
                 {
                     "name": skill["name"],
                     "slot": slot,
+                    "type": skill.get("type"),
                     "damage_type": dtype,
                     "skill_level": sl,
                     "hits": hits,

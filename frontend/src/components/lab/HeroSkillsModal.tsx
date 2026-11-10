@@ -1,9 +1,10 @@
-import { ChevronRight, Clock, Droplet, Sparkles, Swords, X, Zap } from "lucide-react";
+import { ChevronRight, Clock, Droplet, Heart, Shield, Sparkles, Swords, Target, Wind, X, Zap } from "lucide-react";
 import { useId, useMemo, useState } from "react";
 import type { BuildStats, CatalogHeroSkill, SkillDamageRow } from "../../types/combat";
 import type { Hero } from "../../types/draft";
 import { displayName } from "../../utils/heroNames";
 import { getFormBadge } from "../../utils/heroForms";
+import { parseSkillEffects } from "../../utils/skillEffects";
 import { HeroPortrait } from "../HeroPortrait";
 import { Modal } from "../Modal";
 
@@ -124,6 +125,11 @@ export function HeroSkillsModal({
   const activeSkill = sortedSkills.find((s) => s.slot === selectedSlot) ?? sortedSkills[0];
   const activeRow = skillRows?.find((r) => r.slot === activeSkill?.slot || r.name === activeSkill?.name);
 
+  const skillProfile = useMemo(() => {
+    if (!activeSkill) return null;
+    return parseSkillEffects(activeSkill, hero);
+  }, [activeSkill, hero]);
+
   // Compute live bonus scaling from active hero buildStats
   const bonusScalingVal = useMemo(() => {
     if (!buildStats || !activeSkill?.scaling) return 0;
@@ -165,9 +171,10 @@ export function HeroSkillsModal({
   // Max levels for active skill
   const isPassive = activeSkill?.slot.startsWith("Passive") ?? false;
   const maxLevels = isPassive ? 1 : isUltimateSlot ? 3 : 6;
+  const maxProgLen = skillProfile?.progressions?.reduce((acc, p) => Math.max(acc, p.values.length), 0) ?? 0;
   const numRows = isPassive
     ? Math.max(1, activeSkill?.base_damage?.length ?? 0)
-    : maxLevels;
+    : Math.max(maxLevels, maxProgLen);
 
   return (
     <Modal labelledBy={titleId} className="max-h-[92vh] max-w-4xl" onClose={onClose}>
@@ -299,6 +306,13 @@ export function HeroSkillsModal({
                     >
                       {TYPE_CONFIG[activeSkill.damage_type]?.labelTh || activeSkill.damage_type}
                     </span>
+                    {skillProfile?.summaryBadge && (
+                      <span
+                        className={`rounded px-1.5 py-0.5 text-[10px] font-semibold border ${skillProfile.summaryBadge.badgeClass}`}
+                      >
+                        {skillProfile.summaryBadge.text}
+                      </span>
+                    )}
                   </div>
 
                   <h3 className="font-display text-base font-bold text-ink mt-0.5">
@@ -323,6 +337,30 @@ export function HeroSkillsModal({
                 )}
               </div>
             </div>
+
+            {/* Highlights Grid for Utility / Defense / CC / Key Mechanics */}
+            {skillProfile?.highlights && skillProfile.highlights.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                {skillProfile.highlights.map((h, i) => (
+                  <div key={i} className={`flex items-start gap-2 rounded-lg border p-2 text-xs ${h.badgeClass}`}>
+                    <div className="mt-0.5 shrink-0">
+                      {h.icon === "shield" && <Shield size={14} />}
+                      {h.icon === "heart" && <Heart size={14} />}
+                      {h.icon === "speed" && <Wind size={14} />}
+                      {h.icon === "zap" && <Zap size={14} />}
+                      {h.icon === "swords" && <Swords size={14} />}
+                      {h.icon === "target" && <Target size={14} />}
+                      {h.icon === "clock" && <Clock size={14} />}
+                      {h.icon === "sparkles" && <Sparkles size={14} />}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-bold leading-tight">{h.title}</div>
+                      <div className="text-[11px] leading-tight opacity-90 mt-0.5">{h.detail}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Thai Description */}
             {activeSkill.desc_th && (
@@ -350,7 +388,9 @@ export function HeroSkillsModal({
               <div className="flex items-center gap-2">
                 <Zap size={14} className="text-gold" />
                 <h4 className="font-display text-xs font-bold tracking-wider text-ink">
-                  ตารางสถิติตามเลเวลสกิล (Lv 1 - {maxLevels})
+                  {skillProfile?.isDefensiveOrBuffOnly
+                    ? `ตารางสเกลผลลัพธ์ของสกิล (Lv 1 - ${numRows})`
+                    : `ตารางสถิติตามเลเวลสกิล (Lv 1 - ${maxLevels})`}
                 </h4>
               </div>
               {buildStats && (
@@ -365,13 +405,51 @@ export function HeroSkillsModal({
                 <thead>
                   <tr className="border-b border-line/40 text-left text-[10px] text-dim">
                     <th className="py-1.5 font-normal">เลเวล</th>
-                    <th className="py-1.5 text-right font-normal">ดาเมจพื้นฐาน</th>
-                    {bonusScalingVal > 0 && (
-                      <th className="py-1.5 text-right font-normal">+โบนัสของ/รูน</th>
-                    )}
-                    <th className="py-1.5 text-right font-normal">รวมดาเมจดิบ</th>
-                    {activeRow && activeRow.mitigation_multiplier > 0 && activeRow.mitigation_multiplier < 1 && (
-                      <th className="py-1.5 text-right font-normal">เข้าจริง (ใส่ {enemyName ?? "ศัตรู"})</th>
+                    {skillProfile?.isDefensiveOrBuffOnly ? (
+                      <>
+                        {skillProfile.progressions.length > 0 ? (
+                          skillProfile.progressions.map((prog) => (
+                            <th key={prog.id} className={`py-1.5 text-right font-normal ${prog.textClass}`}>
+                              {prog.label}
+                            </th>
+                          ))
+                        ) : (
+                          <th className="py-1.5 text-center font-normal text-dim">ผลลัพธ์ของสกิล</th>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <th className="py-1.5 text-right font-normal">
+                          {skillProfile?.baseValueType === "shield"
+                            ? "โล่พื้นฐาน"
+                            : skillProfile?.baseValueType === "heal"
+                            ? "ฟื้นฟูพื้นฐาน"
+                            : "ดาเมจพื้นฐาน"}
+                        </th>
+                        {bonusScalingVal > 0 && (
+                          <th className="py-1.5 text-right font-normal">+โบนัสของ/รูน</th>
+                        )}
+                        <th className="py-1.5 text-right font-normal">
+                          {skillProfile?.baseValueType === "shield"
+                            ? "รวมโล่ป้องกัน"
+                            : skillProfile?.baseValueType === "heal"
+                            ? "รวมปริมาณฟื้นฟู"
+                            : "รวมดาเมจดิบ"}
+                        </th>
+                        {skillProfile?.baseValueType === "damage" &&
+                          activeRow &&
+                          activeRow.mitigation_multiplier > 0 &&
+                          activeRow.mitigation_multiplier < 1 && (
+                            <th className="py-1.5 text-right font-normal">เข้าจริง (ใส่ {enemyName ?? "ศัตรู"})</th>
+                          )}
+                        {skillProfile?.progressions
+                          .filter((p) => p.category !== "damage")
+                          .map((prog) => (
+                            <th key={prog.id} className={`py-1.5 text-right font-normal ${prog.textClass}`}>
+                              {prog.shortLabel}
+                            </th>
+                          ))}
+                      </>
                     )}
                     <th className="py-1.5 text-right font-normal">คูลดาวน์</th>
                     <th className="py-1.5 text-right font-normal">มานา</th>
@@ -410,22 +488,64 @@ export function HeroSkillsModal({
                             )}
                           </span>
                         </td>
-                        <td className="py-1.5 text-right tabular-nums text-ink">
-                          {baseDmg > 0 ? baseDmg.toLocaleString() : "—"}
-                        </td>
-                        {bonusScalingVal > 0 && (
-                          <td className="py-1.5 text-right tabular-nums text-gold">
-                            +{bonusScalingVal.toLocaleString()}
-                          </td>
+
+                        {skillProfile?.isDefensiveOrBuffOnly ? (
+                          <>
+                            {skillProfile.progressions.length > 0 ? (
+                              skillProfile.progressions.map((prog) => {
+                                const val = prog.values[Math.min(idx, prog.values.length - 1)];
+                                return (
+                                  <td
+                                    key={prog.id}
+                                    className={`py-1.5 text-right tabular-nums font-bold ${prog.textClass}`}
+                                  >
+                                    {val}
+                                  </td>
+                                );
+                              })
+                            ) : (
+                              <td className="py-1.5 text-center text-dim text-[11px]">
+                                — สกิลสถานะคงที่ —
+                              </td>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <td className="py-1.5 text-right tabular-nums text-ink">
+                              {baseDmg > 0 ? baseDmg.toLocaleString() : "—"}
+                            </td>
+                            {bonusScalingVal > 0 && (
+                              <td className="py-1.5 text-right tabular-nums text-gold">
+                                +{bonusScalingVal.toLocaleString()}
+                              </td>
+                            )}
+                            <td className="py-1.5 text-right tabular-nums font-bold text-ink">
+                              {rawDmg > 0 ? rawDmg.toLocaleString() : "—"}
+                            </td>
+                            {skillProfile?.baseValueType === "damage" &&
+                              activeRow &&
+                              activeRow.mitigation_multiplier > 0 &&
+                              activeRow.mitigation_multiplier < 1 && (
+                                <td className="py-1.5 text-right tabular-nums font-bold text-good">
+                                  {finalDmg > 0 ? finalDmg.toLocaleString() : "—"}
+                                </td>
+                              )}
+                            {skillProfile?.progressions
+                              .filter((p) => p.category !== "damage")
+                              .map((prog) => {
+                                const val = prog.values[Math.min(idx, prog.values.length - 1)];
+                                return (
+                                  <td
+                                    key={prog.id}
+                                    className={`py-1.5 text-right tabular-nums font-semibold ${prog.textClass}`}
+                                  >
+                                    {val}
+                                  </td>
+                                );
+                              })}
+                          </>
                         )}
-                        <td className="py-1.5 text-right tabular-nums font-bold text-ink">
-                          {rawDmg > 0 ? rawDmg.toLocaleString() : "—"}
-                        </td>
-                        {activeRow && activeRow.mitigation_multiplier > 0 && activeRow.mitigation_multiplier < 1 && (
-                          <td className="py-1.5 text-right tabular-nums font-bold text-good">
-                            {finalDmg > 0 ? finalDmg.toLocaleString() : "—"}
-                          </td>
-                        )}
+
                         <td className="py-1.5 text-right tabular-nums text-muted">
                           {baseCd > 0 ? (
                             <span>

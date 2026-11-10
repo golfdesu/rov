@@ -27,6 +27,52 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-10 10:15 (UTC+7) — Dynamic Skill Effects & Defensive Progression Engine (Omen S2 & All 130 Heroes)
+**Agent:** Antigravity (gemini-3.8-flash-high)
+
+### ✅ Completed Work
+- **Universal Skill Progression & Effect Parser (`frontend/src/utils/skillEffects.ts`)**:
+  - Engineered an intelligent parser extracting level-by-level skill progression arrays (`(\d+(?:\.\d+)?%?(?:\s*\/\s*\d+(?:\.\d+)?%?){2,5})`) from skill descriptions and types.
+  - Automatically classifies skill effects into 14 distinct categories: `damage_reduction`, `shield`, `heal`, `move_speed`, `attack_speed`, `slow`, `pierce`, `defense`, `ad_buff`, `ap_buff`, `control`, `duration`, `damage`, and `other`.
+  - Normalizes unit percentages and formats clean Thai display labels with dedicated semantic color tokens.
+  - Generates rich highlight badges and key mechanics cards for defensive, buff, and utility skills (e.g. Omen S2 damage reduction & attack reflection, Stuart S2 physical immunity, Dextra Ult invulnerability & damage-to-heal conversion, Kil'Groth Ult CC immunity & 80% sprint, Taara Ult 6% Max HP + 6% Lost HP regen).
+- **Adaptive Level Progression Table (`frontend/src/components/lab/HeroSkillsModal.tsx`)**:
+  - Replaced rigid, damage-only table columns (`ดาเมจพื้นฐาน`, `รวมดาเมจดิบ`, `เข้าจริง`) with dynamic, skill-adaptive progression columns.
+  - For non-damage/defensive/buff skills (such as Omen Skill 2 Untouchable):
+    - Displays exact damage reduction scaling: `40%`, `44%`, `48%`, `52%`, `56%`, `60%` alongside base and cooldown reductions (`11.0s` to `9.0s`).
+    - Eliminates misleading blank (`—`) or `0` damage columns for all 116 zero-damage defensive/utility skills across the 130-hero roster.
+  - For dual-purpose skills (damage + utility, e.g. Omen S1 slow `25%` to `50%`, Celica S2 shield/slow): displays damage columns alongside secondary utility columns.
+  - For shield skills (Alice S2, Chaugnar Ult, Cresht S2) and heal skills (Helen S1, Quillen Ult): accurately labels base values as `โล่พื้นฐาน` and `ฟื้นฟูพื้นฐาน` rather than damage.
+  - Adds highlight summary cards and quick badges in the skill overview header.
+- **Combat Simulator Table Integration (`frontend/src/components/lab/SkillDamageTable.tsx`)**:
+  - Displays quick summary badges (e.g. `[🛡️ ลดดาเมจ 40-60%]`, `[🛡️ โล่ 550-1100]`, `[💖 ฟื้นฟู 85-170]`) directly beside skill names.
+  - Replaces raw `0` and final `0` text with active skill level values (e.g. `ลด 40%`, `โล่ 550`, `ฮีล 85`) and semantic status chips (`บัฟทน`, `เกราะ`, `ฟื้นฟู`).
+  - Renders expandable key mechanics breakdown cards with Lucide icons.
+- **Data Catalog Alignment (`data/hero_skills_full.json`, `data/heroes_130_full.json`, `src/combat_calculator.py`, `frontend/src/types/combat.ts`)**:
+  - Enriched Omen Skill 2 Thai description (`desc_th`) to explicitly document `40/44/48/52/56/60%` damage reduction progression.
+  - Propagated `"type"` field from hero skill records through `skill_damage()` in `src/combat_calculator.py` and typed `type?: string;` on `CatalogHeroSkill` and `SkillDamageRow`.
+
+### 📁 Modified Files
+- `frontend/src/utils/skillEffects.ts`
+- `frontend/src/components/lab/HeroSkillsModal.tsx`
+- `frontend/src/components/lab/SkillDamageTable.tsx`
+- `frontend/src/types/combat.ts`
+- `src/combat_calculator.py`
+- `data/hero_skills_full.json`
+- `data/heroes_130_full.json`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `oxlint`: 0 warnings, 0 errors across 40 files.
+- `tsc -b && vite build`: compiled successfully in 1.49s.
+- `ruff check --fix . ; ruff format .`: 0 errors, 88 files left unchanged.
+- `pytest -v`: 82 / 82 tests passed (100%).
+
+### ⚠️ Open Issues / Important Notes
+- None. Omen Skill 2 and all defensive/shield/heal/utility skills across all 130 heroes now render their exact level scaling and key mechanics adaptively.
+
+---
+
 ## 📅 2026-11-10 09:00 (UTC+7) — Universal 1v1 Rune Trade Engine & Thai Server Tier 3 Arcana Catalog
 **Agent:** Antigravity (gemini-3.8-flash-high)
 

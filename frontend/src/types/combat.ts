@@ -48,6 +48,7 @@ export interface CatalogHeroSkill {
   name: string;
   slot: string;
   level_slot?: string;
+  type?: string;
   damage_type: "physical" | "magic" | "true" | "none";
   description: string;
   desc_th?: string;
@@ -95,6 +96,7 @@ export interface SkillDamageRow {
   name: string;
   slot: string;
   level_slot?: string;
+  type?: string;
   damage_type: "physical" | "magic" | "true" | "none";
   skill_level: number;
   hits: number;

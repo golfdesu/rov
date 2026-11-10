@@ -1,7 +1,8 @@
-import { ChevronDown, ChevronUp, Clock, Droplet, Sparkles, Swords } from "lucide-react";
+import { ChevronDown, ChevronUp, Clock, Droplet, Heart, Shield, Sparkles, Swords, Target, Wind, Zap } from "lucide-react";
 import { useState } from "react";
 import type { CombatBuild, DuelSide, SkillDamageRow } from "../../types/combat";
 import { getFormBadge } from "../../utils/heroForms";
+import { parseSkillEffects } from "../../utils/skillEffects";
 
 interface SkillDamageTableProps {
   side: DuelSide;
@@ -220,6 +221,19 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
               const inCombo = isSlotInCombo(s.slot);
               const isPassive = s.slot.startsWith("Passive");
               const badge = getFormBadge(build.hero, s.slot);
+              const skillProfile = parseSkillEffects(s, build.hero);
+              const drProg = skillProfile.progressions.find((p) => p.category === "damage_reduction");
+              const currentDrVal = drProg
+                ? drProg.values[Math.min(s.skill_level - 1, drProg.values.length - 1)]
+                : null;
+              const shieldProg = skillProfile.progressions.find((p) => p.category === "shield");
+              const currentShieldVal = shieldProg
+                ? shieldProg.values[Math.min(s.skill_level - 1, shieldProg.values.length - 1)]
+                : null;
+              const healProg = skillProfile.progressions.find((p) => p.category === "heal");
+              const currentHealVal = healProg
+                ? healProg.values[Math.min(s.skill_level - 1, healProg.values.length - 1)]
+                : null;
               const parts = Object.entries(s.components)
                 .filter(([, v]) => v)
                 .map(([k, v]) => `${COMPONENT_LABELS[k] ?? k} ${v.toLocaleString()}`)
@@ -290,6 +304,11 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                                   {badge.label}
                                 </span>
                               )}
+                              {skillProfile.summaryBadge && (
+                                <span className={`rounded border px-1.5 py-0.5 font-mono text-[9px] font-semibold ${skillProfile.summaryBadge.badgeClass}`}>
+                                  {skillProfile.summaryBadge.text}
+                                </span>
+                              )}
                             </div>
                             <div className="text-[10px] text-dim">
                               {s.slot} · {s.damage_type}
@@ -357,17 +376,59 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
 
                         {/* Raw Damage */}
                         <div className="w-14 text-right text-muted tabular-nums">
-                          {s.raw_damage.toLocaleString()}
+                          {s.raw_damage > 0 ? (
+                            s.raw_damage.toLocaleString()
+                          ) : currentDrVal ? (
+                            <span className="text-emerald-400 font-semibold" title="ทน/ลดความเสียหาย">
+                              ลด {currentDrVal}
+                            </span>
+                          ) : currentShieldVal ? (
+                            <span className="text-sky-400 font-semibold" title="โล่ป้องกัน">
+                              โล่ {currentShieldVal}
+                            </span>
+                          ) : currentHealVal ? (
+                            <span className="text-green-400 font-semibold" title="ฟื้นฟูเลือด">
+                              ฮีล {currentHealVal}
+                            </span>
+                          ) : (
+                            "0"
+                          )}
                         </div>
 
                         {/* Final Damage */}
                         <div className="w-16 text-right font-bold text-ink tabular-nums">
-                          {s.final_damage.toLocaleString()}
+                          {s.final_damage > 0 ? (
+                            s.final_damage.toLocaleString()
+                          ) : currentDrVal ? (
+                            <span className="text-emerald-400 font-bold" title="ทน/ลดความเสียหาย">
+                              ลด {currentDrVal}
+                            </span>
+                          ) : currentShieldVal ? (
+                            <span className="text-sky-400 font-bold" title="โล่ป้องกัน">
+                              โล่ {currentShieldVal}
+                            </span>
+                          ) : currentHealVal ? (
+                            <span className="text-green-400 font-bold" title="ฟื้นฟูเลือด">
+                              ฮีล {currentHealVal}
+                            </span>
+                          ) : (
+                            "0"
+                          )}
                         </div>
 
                         {/* % HP */}
                         <div className="w-12 text-right text-dim tabular-nums">
-                          {s.pct_target_hp}%
+                          {s.pct_target_hp > 0 ? (
+                            `${s.pct_target_hp}%`
+                          ) : currentDrVal ? (
+                            <span className="text-emerald-400/80 font-mono text-[10px]">บัฟทน</span>
+                          ) : currentShieldVal ? (
+                            <span className="text-sky-400/80 font-mono text-[10px]">เกราะ</span>
+                          ) : currentHealVal ? (
+                            <span className="text-green-400/80 font-mono text-[10px]">ฟื้นฟู</span>
+                          ) : (
+                            "0%"
+                          )}
                         </div>
 
                         {/* Cooldown */}
@@ -380,6 +441,29 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                     {/* Expandable Skill Details Card */}
                     {isExp && (
                       <div className="border-t border-line/40 bg-panel-2/70 p-3 space-y-2 text-xs">
+                        {/* Highlights Grid */}
+                        {skillProfile.highlights.length > 0 && (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                            {skillProfile.highlights.map((h, i) => (
+                              <div key={i} className={`flex items-start gap-2 rounded-lg border p-2 text-xs ${h.badgeClass}`}>
+                                <div className="mt-0.5 shrink-0">
+                                  {h.icon === "shield" && <Shield size={13} />}
+                                  {h.icon === "heart" && <Heart size={13} />}
+                                  {h.icon === "speed" && <Wind size={13} />}
+                                  {h.icon === "zap" && <Zap size={13} />}
+                                  {h.icon === "swords" && <Swords size={13} />}
+                                  {h.icon === "target" && <Target size={13} />}
+                                  {h.icon === "clock" && <Clock size={13} />}
+                                  {h.icon === "sparkles" && <Sparkles size={13} />}
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="font-bold leading-tight">{h.title}</div>
+                                  <div className="text-[11px] leading-tight opacity-90 mt-0.5">{h.detail}</div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line/50 pb-1.5">
                           <div className="flex items-center gap-2">
                             <span className="font-mono text-[10px] font-bold text-gold">{s.slot}</span>
