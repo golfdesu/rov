@@ -193,21 +193,53 @@ export function HeroSkillsModal({
     const list: ScreenshotItem[] = [];
     const skillImgs = screenshotsData.skill_screenshots || [];
     skillImgs.forEach((url, i) => {
+      const lower = url.toLowerCase();
       let label = `สกิล ${i}`;
       let slotKey = `Skill ${i}`;
-      if (i === 0) {
+
+      if (lower.includes("passive")) {
         label = "สกิลติดตัว (P)";
         slotKey = "Passive";
-      } else if (i === 1) {
+      } else if (lower.includes("skill1")) {
         label = "สกิล 1";
         slotKey = "Skill 1";
-      } else if (i === 2) {
+      } else if (lower.includes("skill2")) {
         label = "สกิล 2";
         slotKey = "Skill 2";
-      } else if (i === 3) {
+      } else if (lower.includes("ultimate") || lower.includes("skill3")) {
         label = "อัลติเมท (Ult)";
         slotKey = "Ultimate";
+      } else if (lower.includes("skill4")) {
+        label = "สกิล 4";
+        slotKey = "Skill 4";
+      } else {
+        if (i === 0) {
+          label = "สกิลติดตัว (P)";
+          slotKey = "Passive";
+        } else if (i === 1) {
+          label = "สกิล 1";
+          slotKey = "Skill 1";
+        } else if (i === 2) {
+          label = "สกิล 2";
+          slotKey = "Skill 2";
+        } else if (i === 3) {
+          label = "อัลติเมท (Ult)";
+          slotKey = "Ultimate";
+        }
       }
+
+      if (lower.includes("_v2")) {
+        label += " (ชุด 2)";
+      } else if (lower.includes("form2")) {
+        label += " (ร่าง 2)";
+      } else if (lower.includes("fox")) {
+        label += " (ร่างจิ้งจอก)";
+      } else if (lower.includes("human")) {
+        label += " (ร่างมนุษย์)";
+      } else if (lower.includes("awakened")) {
+        label += " (ตื่นรู้)";
+      }
+
       list.push({ url, label, type: "skill", slotKey });
     });
 

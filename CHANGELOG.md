@@ -27,6 +27,35 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-10 12:28 (UTC+7) — Universal Image Renaming & Deterministic Skill Slot Labeling
+**Agent:** Antigravity (gemini-3.8-flash-high)
+
+### ✅ Completed Work
+- **Standardized 566 Hero Skill Screenshots (`heroes/<hero>/skill/`)**:
+  - Replaced raw, opaque LINE album filenames (`LINE_ALBUM_Rov_*.jpg`, `S__*.jpg`) with canonical skill slot identifiers:
+    - Standard 4-skill heroes (109 heroes): `passive.jpg`, `skill1.jpg`, `skill2.jpg`, `ultimate.jpg`.
+    - Multi-form and extra-skill heroes: `human_skill*.jpg`, `fox_skill*.jpg` (Liliana), `form1_*.jpg`, `form2_*.jpg` (Yena), `rapid_*.jpg`, `cannon_*.jpg` (Capheny), `passive_v2.jpg`, `skill1_v2.jpg` (Arduin, Rourke, Wisp).
+  - Preserved natural alphabetical sort order: P (`passive`) < S (`skill1`..`skill2`) < U (`ultimate`), ensuring 100% natural alignment without numeric parsing overhead.
+- **Standardized 159 Item Equipment Screenshots (`item/<item_name>/`)**:
+  - Renamed single-card items to `item_card.jpg` (93 items) and multi-tier/support items to `item_card_1.jpg`, `item_card_2.jpg`, etc. (21 items).
+- **Deterministic Skill Screenshot Detection in UI (`frontend/src/components/lab/HeroSkillsModal.tsx`)**:
+  - Updated `allScreenshots` to detect slot key directly from filename tokens (`passive`, `skill1`, `skill2`, `ultimate`, `skill4`, `human`, `fox`, `form2`, `v2`) with graceful index fallback.
+  - Clicking any skill tab now reliably jumps to its exact screenshot without relying on fragile array index assumptions.
+
+### 📁 Modified Files
+- `frontend/src/components/lab/HeroSkillsModal.tsx`
+- On-disk media assets (725 image files in `heroes/` and `item/`)
+
+### 🧪 Verification
+- `pytest -v` -> 83/83 tests passed.
+- `cd frontend && npm run lint && npx tsc -b --noEmit && npm run build` -> 0 errors, build successful.
+- Live API inspection verified: `/combat/hero-screenshots/Veres` and `/combat/hero-screenshots/Omen` serve canonical slot filenames.
+
+### ⚠️ Open Issues / Important Notes
+- `data/draft_screenshots/` left intact as requested.
+
+---
+
 ## 📅 2026-11-10 12:10 (UTC+7) — Resolve 9 Logic, Security, and UI BUGS Across Combat Lab & Screenshots
 **Agent:** Antigravity (gemini-3.8-flash-high)
 
