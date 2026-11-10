@@ -1,10 +1,33 @@
-import { ChevronRight, Clock, Droplet, Heart, Shield, Sparkles, Swords, Target, Wind, X, Zap } from "lucide-react";
-import { useId, useMemo, useState } from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Droplet,
+  ExternalLink,
+  Heart,
+  ImageIcon,
+  LayoutGrid,
+  Shield,
+  Sparkles,
+  Swords,
+  Target,
+  Wind,
+  X,
+  Zap,
+} from "lucide-react";
+import { useEffect, useId, useMemo, useState } from "react";
+import { getJson } from "../../api/client";
 import type { BuildStats, CatalogHeroSkill, SkillDamageRow } from "../../types/combat";
 import type { Hero } from "../../types/draft";
 import { displayName } from "../../utils/heroNames";
 import { getFormBadge } from "../../utils/heroForms";
-import { parseSkillEffects } from "../../utils/skillEffects";
+import {
+  getInGameSkillRows,
+  getInGameTagCapsules,
+  getSlotCircledNumber,
+  parseSkillEffects,
+  tokenizeThaiSkillDescription,
+} from "../../utils/skillEffects";
 import { HeroPortrait } from "../HeroPortrait";
 import { Modal } from "../Modal";
 
@@ -18,6 +41,22 @@ interface HeroSkillsModalProps {
   enemyName?: string;
   onClose: () => void;
 }
+
+interface HeroScreenshotsResponse {
+  hero: string;
+  folder: string;
+  skill_screenshots: string[];
+  status_screenshots: string[];
+}
+
+interface ScreenshotItem {
+  url: string;
+  label: string;
+  type: "skill" | "status";
+  slotKey?: string;
+}
+
+type ViewMode = "ingame" | "screenshot" | "live_calc";
 
 const TYPE_CONFIG: Record<
   CatalogHeroSkill["damage_type"],
@@ -110,8 +149,26 @@ export function HeroSkillsModal({
 }: HeroSkillsModalProps) {
   const dName = displayName(hero);
   const [selectedSlot, setSelectedSlot] = useState<string>(skills[0]?.slot ?? "Passive");
+  const [viewMode, setViewMode] = useState<ViewMode>("ingame");
+  const [screenshotsData, setScreenshotsData] = useState<HeroScreenshotsResponse | null>(null);
+  const [selectedScreenshotIdx, setSelectedScreenshotIdx] = useState<number>(0);
 
   const titleId = useId();
+
+  // Load screenshots from API
+  useEffect(() => {
+    let cancelled = false;
+    getJson<HeroScreenshotsResponse>(`/combat/hero-screenshots/${encodeURIComponent(hero)}`)
+      .then((data) => {
+        if (!cancelled) setScreenshotsData(data);
+      })
+      .catch(() => {
+        if (!cancelled) setScreenshotsData(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [hero]);
 
   const sortedSkills = useMemo(() => {
     return [...skills].sort((a, b) => {
@@ -129,6 +186,54 @@ export function HeroSkillsModal({
     if (!activeSkill) return null;
     return parseSkillEffects(activeSkill, hero);
   }, [activeSkill, hero]);
+
+  // Unified list of screenshot items
+  const allScreenshots = useMemo<ScreenshotItem[]>(() => {
+    if (!screenshotsData) return [];
+    const list: ScreenshotItem[] = [];
+    const skillImgs = screenshotsData.skill_screenshots || [];
+    skillImgs.forEach((url, i) => {
+      let label = `สกิล ${i}`;
+      let slotKey = `Skill ${i}`;
+      if (i === 0) {
+        label = "สกิลติดตัว (P)";
+        slotKey = "Passive";
+      } else if (i === 1) {
+        label = "สกิล 1";
+        slotKey = "Skill 1";
+      } else if (i === 2) {
+        label = "สกิล 2";
+        slotKey = "Skill 2";
+      } else if (i === 3) {
+        label = "อัลติเมท (Ult)";
+        slotKey = "Ultimate";
+      }
+      list.push({ url, label, type: "skill", slotKey });
+    });
+
+    const statusImgs = screenshotsData.status_screenshots || [];
+    statusImgs.forEach((url) => {
+      const isLv15 = url.toLowerCase().includes("lv15");
+      list.push({
+        url,
+        label: isLv15 ? "สเตตัส Lv 15" : "สเตตัส Lv 1",
+        type: "status",
+      });
+    });
+
+    return list;
+  }, [screenshotsData]);
+
+  // Synchronize screenshot selection when switching slot or jumping to screenshot view
+  const jumpToSkillScreenshot = (slot: string) => {
+    const idx = allScreenshots.findIndex(
+      (s) => s.slotKey === slot || (slot.startsWith("Passive") && s.slotKey === "Passive")
+    );
+    if (idx !== -1) {
+      setSelectedScreenshotIdx(idx);
+    }
+    setViewMode("screenshot");
+  };
 
   // Compute live bonus scaling from active hero buildStats
   const bonusScalingVal = useMemo(() => {
@@ -176,10 +281,31 @@ export function HeroSkillsModal({
     ? Math.max(1, activeSkill?.base_damage?.length ?? 0)
     : Math.max(maxLevels, maxProgLen);
 
+  // Authentic in-game table rows
+  const inGameRows = useMemo(() => {
+    if (!activeSkill || !skillProfile) return [];
+    return getInGameSkillRows(activeSkill, skillProfile, maxLevels);
+  }, [activeSkill, skillProfile, maxLevels]);
+
+  const tagCapsules = useMemo(() => {
+    if (!activeSkill) return [];
+    return getInGameTagCapsules(activeSkill);
+  }, [activeSkill]);
+
+  const circledNumber = useMemo(() => {
+    if (!activeSkill) return "①";
+    return getSlotCircledNumber(activeSkill.slot);
+  }, [activeSkill]);
+
+  const thaiTokens = useMemo(() => {
+    const text = activeSkill?.desc_th || activeSkill?.description || "";
+    return tokenizeThaiSkillDescription(text);
+  }, [activeSkill]);
+
   return (
-    <Modal labelledBy={titleId} className="max-h-[92vh] max-w-4xl" onClose={onClose}>
+    <Modal labelledBy={titleId} className="max-h-[94vh] max-w-4xl" onClose={onClose}>
       {/* Modal Header */}
-      <div className="flex items-center justify-between border-b border-line px-4 py-3 bg-panel-2/60">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3 bg-panel-2/70">
         <div className="flex items-center gap-3">
           <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded clip-chamfer ring-1 ring-gold">
             <HeroPortrait name={hero} hero={heroDraft} />
@@ -199,18 +325,63 @@ export function HeroSkillsModal({
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-muted">รายละเอียดสกิล ตัวเลขการอัพเกรดเลเวล 1-6 และดาเมจคำนวณตามของจริง</p>
+            <p className="text-[11px] text-muted">คำอธิบายสกิลทางการ รูปแบบหน้าต่างในเกม และภาพสกรีนช็อตแคปจริง 130 ฮีโร่</p>
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded p-1 text-dim transition-colors hover:bg-panel hover:text-ink"
-          aria-label="ปิด"
-        >
-          <X size={18} />
-        </button>
+        {/* View Mode Toggle Controls */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center rounded-lg border border-line bg-bg p-0.5 text-xs">
+            <button
+              type="button"
+              onClick={() => setViewMode("ingame")}
+              className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 font-semibold transition-all ${
+                viewMode === "ingame"
+                  ? "bg-gold text-bg shadow-sm font-bold"
+                  : "text-muted hover:text-ink hover:bg-panel"
+              }`}
+              title="รูปแบบหน้าต่างทางการเหมือนในเกม RoV"
+            >
+              <LayoutGrid size={13} />
+              <span>หน้าต่างในเกม</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("screenshot")}
+              className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 font-semibold transition-all ${
+                viewMode === "screenshot"
+                  ? "bg-gold text-bg shadow-sm font-bold"
+                  : "text-muted hover:text-ink hover:bg-panel"
+              }`}
+              title="ดูภาพสกรีนช็อตแคปจริงจากในเกม"
+            >
+              <ImageIcon size={13} />
+              <span>รูปแคปจริง ({allScreenshots.length})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("live_calc")}
+              className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 font-semibold transition-all ${
+                viewMode === "live_calc"
+                  ? "bg-gold text-bg shadow-sm font-bold"
+                  : "text-muted hover:text-ink hover:bg-panel"
+              }`}
+              title="ตารางคำนวณดาเมจจริงและการเจาะเกราะตามของที่ใส่"
+            >
+              <Swords size={13} />
+              <span>คำนวณดาเมจจริง</span>
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded p-1 text-dim transition-colors hover:bg-panel hover:text-ink"
+            aria-label="ปิด"
+          >
+            <X size={18} />
+          </button>
+        </div>
       </div>
 
       {/* Skill Slot Selector Tabs */}
@@ -219,11 +390,18 @@ export function HeroSkillsModal({
           const isSelected = s.slot === activeSkill?.slot;
           const tCfg = TYPE_CONFIG[s.damage_type] || TYPE_CONFIG.none;
           const badge = getFormBadge(hero, s.slot);
+          const cNum = getSlotCircledNumber(s.slot);
           return (
             <button
               key={s.slot}
               type="button"
-              onClick={() => setSelectedSlot(s.slot)}
+              onClick={() => {
+                setSelectedSlot(s.slot);
+                if (viewMode === "screenshot") {
+                  const idx = allScreenshots.findIndex((sc) => sc.slotKey === s.slot);
+                  if (idx !== -1) setSelectedScreenshotIdx(idx);
+                }
+              }}
               className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs transition-all ${
                 isSelected
                   ? "border-gold bg-gold/15 font-bold text-gold shadow-sm ring-1 ring-gold"
@@ -240,12 +418,13 @@ export function HeroSkillsModal({
                   }}
                 />
               ) : (
-                <div className="grid h-6 w-6 place-items-center rounded bg-line text-[9px] font-bold">
-                  {s.slot[0]}
+                <div className="grid h-6 w-6 place-items-center rounded bg-line font-display text-xs font-bold text-gold">
+                  {cNum}
                 </div>
               )}
               <div className="text-left">
                 <div className="flex items-center gap-1">
+                  <span className="font-mono text-[10px] font-bold text-gold">{cNum}</span>
                   <span className="text-[10px] leading-tight text-dim">{slotLabelTh(s.slot)}</span>
                   {badge && (
                     <span className={`rounded border px-1 py-0.5 font-mono text-[8px] font-semibold ${badge.style}`}>
@@ -262,329 +441,590 @@ export function HeroSkillsModal({
         })}
       </div>
 
-      {/* Active Skill Content */}
-      {activeSkill && (
+      {/* Main Content Area */}
+      {viewMode === "screenshot" ? (
+        /* SCREENSHOT VIEWER */
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {allScreenshots.length > 0 ? (
+            <div className="flex flex-col gap-3">
+              {/* Screenshot Selector Bar */}
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-line bg-panel p-2">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {allScreenshots.map((item, idx) => {
+                    const isCur = idx === selectedScreenshotIdx;
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setSelectedScreenshotIdx(idx)}
+                        className={`rounded-md border px-2.5 py-1 text-xs font-semibold transition-all ${
+                          isCur
+                            ? "border-gold bg-gold text-bg font-bold shadow-sm"
+                            : "border-line/60 bg-panel-2 text-muted hover:border-line hover:text-ink"
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="flex items-center gap-1 text-xs">
+                  <button
+                    type="button"
+                    disabled={selectedScreenshotIdx <= 0}
+                    onClick={() => setSelectedScreenshotIdx((p) => Math.max(0, p - 1))}
+                    className="rounded border border-line p-1 text-muted hover:bg-panel-2 hover:text-ink disabled:opacity-30"
+                    title="ภาพก่อนหน้า"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <span className="font-mono text-dim text-[11px] px-1">
+                    {selectedScreenshotIdx + 1} / {allScreenshots.length}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={selectedScreenshotIdx >= allScreenshots.length - 1}
+                    onClick={() => setSelectedScreenshotIdx((p) => Math.min(allScreenshots.length - 1, p + 1))}
+                    className="rounded border border-line p-1 text-muted hover:bg-panel-2 hover:text-ink disabled:opacity-30"
+                    title="ภาพถัดไป"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                  <a
+                    href={allScreenshots[selectedScreenshotIdx]?.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-2 flex items-center gap-1 rounded border border-line/80 bg-panel-2 px-2 py-1 text-[11px] font-semibold text-gold hover:border-gold hover:text-gold"
+                    title="เปิดรูปขนาดเต็มในแท็บใหม่"
+                  >
+                    <ExternalLink size={12} />
+                    <span>รูปขนาดเต็ม</span>
+                  </a>
+                </div>
+              </div>
+
+              {/* Large Image View */}
+              <div className="relative flex min-h-[460px] items-center justify-center overflow-hidden rounded-xl border border-line bg-black/80 p-2 shadow-2xl">
+                <img
+                  src={allScreenshots[selectedScreenshotIdx]?.url}
+                  alt={allScreenshots[selectedScreenshotIdx]?.label}
+                  className="max-h-[66vh] w-auto rounded-lg object-contain shadow-md"
+                />
+              </div>
+
+              <div className="flex items-center justify-between text-[11px] text-muted px-1">
+                <span className="font-mono text-dim">
+                  ไฟล์: {allScreenshots[selectedScreenshotIdx]?.url.split("/").pop()}
+                </span>
+                <span className="text-dim">
+                  ภาพสกรีนช็อตของจริงในเกมที่บันทึกไว้ในระบบ (โฟลเดอร์ heroes/{screenshotsData?.folder || hero}/)
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center p-12 text-center">
+              <ImageIcon size={48} className="text-dim mb-3" />
+              <div className="font-display text-sm font-bold text-ink">ยังไม่มีภาพสกรีนช็อตสำหรับ {dName}</div>
+              <p className="text-xs text-muted mt-1 max-w-md">
+                ยังไม่พบไฟล์ภาพในโฟลเดอร์ heroes/{hero}/skill/ สามารถสลับไปดูข้อมูลที่หน้าต่างในเกมได้ทันที
+              </p>
+              <button
+                type="button"
+                onClick={() => setViewMode("ingame")}
+                className="mt-4 rounded-md border border-gold bg-gold/15 px-3 py-1.5 text-xs font-bold text-gold hover:bg-gold/25"
+              >
+                สลับไปดูหน้าต่างในเกม
+              </button>
+            </div>
+          )}
+        </div>
+      ) : viewMode === "ingame" ? (
+        /* AUTHENTIC IN-GAME ROV SKILL CARD */
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {/* Skill Overview Card */}
-          <div className="flex flex-col gap-3 rounded-lg border border-line bg-panel-2/40 p-3.5">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-3">
-                {activeSkill.icon_url ? (
-                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border-2 border-gold/50 bg-bg p-0.5 shadow-md">
-                    <img
-                      src={activeSkill.icon_url}
-                      alt={activeSkill.name}
-                      className="h-full w-full object-contain"
-                    />
+          {activeSkill && (
+            <div className="flex flex-col gap-3.5 rounded-xl border border-gold/30 bg-gradient-to-b from-[#161d2b]/95 to-[#0c121d]/95 p-4 shadow-xl">
+              {/* In-Game Header: Circled Number + Name + In-Game Tag Capsules */}
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line/60 pb-3">
+                <div className="flex items-center gap-3">
+                  {/* Circled Slot Icon */}
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-gold/60 bg-gold/10 font-display text-2xl font-black text-gold shadow-md">
+                    {circledNumber}
+                  </div>
+
+                  <div>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <h3 className="font-display text-lg font-bold tracking-wide text-ink">
+                        {activeSkill.name}
+                      </h3>
+                      {getFormBadge(hero, activeSkill.slot) && (
+                        <span
+                          className={`rounded border px-1.5 py-0.5 font-mono text-[9px] font-semibold ${
+                            getFormBadge(hero, activeSkill.slot)!.style
+                          }`}
+                        >
+                          {getFormBadge(hero, activeSkill.slot)!.label}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Official In-Game Rounded Tag Capsules */}
+                    <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                      {tagCapsules.map((cap, i) => (
+                        <span
+                          key={i}
+                          className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-wider ${cap.bg} ${cap.text} ${cap.border}`}
+                        >
+                          {cap.label}
+                        </span>
+                      ))}
+                      {skillProfile?.summaryBadge && (
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[10px] font-semibold border ${skillProfile.summaryBadge.badgeClass}`}
+                        >
+                          {skillProfile.summaryBadge.text}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Screenshot Link Button */}
+                {allScreenshots.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => jumpToSkillScreenshot(activeSkill.slot)}
+                    className="flex items-center gap-1.5 rounded-lg border border-gold/40 bg-gold/10 px-2.5 py-1 text-xs font-semibold text-gold transition-colors hover:border-gold hover:bg-gold/20"
+                    title="เปิดดูภาพแคปจริงของสกิลนี้"
+                  >
+                    <ImageIcon size={13} />
+                    <span>ดูรูปแคปจริง</span>
+                  </button>
+                )}
+              </div>
+
+              {/* In-Game Resource Stats Bar: Cooldown & Mana */}
+              <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-dim border-b border-line/40 pb-2.5">
+                {activeSkill.cooldown && activeSkill.cooldown.length > 0 ? (
+                  <div className="flex items-center gap-1.5">
+                    <Clock size={13} className="text-muted" />
+                    <span>คูลดาวน์:</span>
+                    <span className="font-bold text-ink">
+                      {activeSkill.cooldown.join(" / ")} วิ
+                    </span>
+                    {heroCdr > 0 && (
+                      <span className="text-[10px] text-gold">
+                        (เหลือ {(activeSkill.cooldown[0] * (1 - heroCdr / 100)).toFixed(1)}วิ ด้วย CDR {heroCdr}%)
+                      </span>
+                    )}
                   </div>
                 ) : (
-                  <div className="grid h-14 w-14 shrink-0 place-items-center rounded-lg border border-line bg-bg text-sm font-bold text-gold">
-                    {activeSkill.slot}
+                  <div className="flex items-center gap-1.5 text-muted">
+                    <Clock size={13} />
+                    <span>คูลดาวน์: ไม่มี</span>
                   </div>
                 )}
 
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-[10px] font-bold tracking-wider text-gold">
-                      {slotLabelTh(activeSkill.slot)}
+                {activeSkill.mana_cost && activeSkill.mana_cost.length > 0 && Math.max(...activeSkill.mana_cost) > 0 ? (
+                  <div className="flex items-center gap-1.5 text-blue">
+                    <Droplet size={13} />
+                    <span>ใช้มานา:</span>
+                    <span className="font-bold text-blue-200">
+                      {activeSkill.mana_cost.join(" / ")}
                     </span>
-                    {getFormBadge(hero, activeSkill.slot) && (
-                      <span
-                        className={`rounded border px-1.5 py-0.5 font-mono text-[9px] font-semibold ${
-                          getFormBadge(hero, activeSkill.slot)!.style
-                        }`}
-                      >
-                        {getFormBadge(hero, activeSkill.slot)!.label}
-                      </span>
-                    )}
-                    <span
-                      className={`rounded px-1.5 py-0.5 text-[10px] font-semibold border ${
-                        TYPE_CONFIG[activeSkill.damage_type]?.bg
-                      } ${TYPE_CONFIG[activeSkill.damage_type]?.color} ${
-                        TYPE_CONFIG[activeSkill.damage_type]?.border
-                      }`}
-                    >
-                      {TYPE_CONFIG[activeSkill.damage_type]?.labelTh || activeSkill.damage_type}
-                    </span>
-                    {skillProfile?.summaryBadge && (
-                      <span
-                        className={`rounded px-1.5 py-0.5 text-[10px] font-semibold border ${skillProfile.summaryBadge.badgeClass}`}
-                      >
-                        {skillProfile.summaryBadge.text}
-                      </span>
-                    )}
                   </div>
+                ) : (
+                  <div className="flex items-center gap-1.5 text-muted">
+                    <Droplet size={13} />
+                    <span>ไม่ใช้มานา / พลังงาน</span>
+                  </div>
+                )}
+              </div>
 
-                  <h3 className="font-display text-base font-bold text-ink mt-0.5">
-                    {activeSkill.name}
-                  </h3>
+              {/* In-Game Syntax-Highlighted Thai Description */}
+              <div className="rounded-lg border border-line/70 bg-bg/60 p-3.5 text-xs leading-relaxed">
+                <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold text-gold">
+                  <Sparkles size={12} />
+                  <span>คำอธิบายสกิล (รายละเอียดทางการในเกม)</span>
+                </div>
+                <div className="whitespace-pre-line text-muted">
+                  {thaiTokens.map((t, idx) => (
+                    <span key={idx} className={t.className}>
+                      {t.text}
+                    </span>
+                  ))}
                 </div>
               </div>
 
-              {/* Cooldown & Mana Quick Pills */}
-              <div className="flex flex-col items-end gap-1 shrink-0 text-xs font-mono">
-                {activeSkill.cooldown && activeSkill.cooldown.length > 0 && (
-                  <div className="flex items-center gap-1 text-dim" title="คูลดาวน์พื้นฐาน">
-                    <Clock size={12} className="text-muted" />
-                    <span>{activeSkill.cooldown.join(" / ")} วิ</span>
-                  </div>
-                )}
-                {activeSkill.mana_cost && activeSkill.mana_cost.length > 0 && activeSkill.mana_cost[0] > 0 && (
-                  <div className="flex items-center gap-1 text-blue" title="การใช้มานา">
-                    <Droplet size={12} />
-                    <span>{activeSkill.mana_cost.join(" / ")}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Highlights Grid for Utility / Defense / CC / Key Mechanics */}
-            {skillProfile?.highlights && skillProfile.highlights.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                {skillProfile.highlights.map((h, i) => (
-                  <div key={i} className={`flex items-start gap-2 rounded-lg border p-2 text-xs ${h.badgeClass}`}>
-                    <div className="mt-0.5 shrink-0">
-                      {h.icon === "shield" && <Shield size={14} />}
-                      {h.icon === "heart" && <Heart size={14} />}
-                      {h.icon === "speed" && <Wind size={14} />}
-                      {h.icon === "zap" && <Zap size={14} />}
-                      {h.icon === "swords" && <Swords size={14} />}
-                      {h.icon === "target" && <Target size={14} />}
-                      {h.icon === "clock" && <Clock size={14} />}
-                      {h.icon === "sparkles" && <Sparkles size={14} />}
+              {/* Authentic In-Game Horizontal Progression Table (LV 1 - LV 6) */}
+              {inGameRows.length > 0 && (
+                <div className="rounded-lg border border-line bg-panel/80 p-3">
+                  <div className="mb-2 flex items-center justify-between border-b border-line/50 pb-2">
+                    <div className="flex items-center gap-2">
+                      <Zap size={14} className="text-gold" />
+                      <h4 className="font-display text-xs font-bold tracking-wider text-ink">
+                        ตารางค่าสถิติสกิลตามเลเวล (LV 1 - LV {maxLevels})
+                      </h4>
                     </div>
-                    <div className="min-w-0">
-                      <div className="font-bold leading-tight">{h.title}</div>
-                      <div className="text-[11px] leading-tight opacity-90 mt-0.5">{h.detail}</div>
-                    </div>
+                    {buildStats && (
+                      <span className="font-mono text-[10px] text-gold">
+                        ★ ไฮไลต์ตามเลเวลฮีโร่ปัจจุบัน (Lv {buildStats.level})
+                      </span>
+                    )}
                   </div>
-                ))}
-              </div>
-            )}
 
-            {/* Thai Description */}
-            {activeSkill.desc_th && (
-              <div className="rounded border border-line/60 bg-bg/50 p-3 text-xs leading-relaxed text-ink">
-                <div className="mb-1 flex items-center gap-1.5 text-[10px] font-bold text-gold">
-                  <Sparkles size={11} />
-                  <span>คำอธิบายสกิล (ไทย)</span>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs font-mono">
+                      <thead>
+                        <tr className="border-b border-line/60 text-left text-[11px] text-dim">
+                          <th className="py-2 pr-3 font-semibold text-ink">สถิติสกิล</th>
+                          {Array.from({ length: maxLevels }, (_, i) => {
+                            const lv = i + 1;
+                            const isCur = activeRow?.skill_level === lv;
+                            return (
+                              <th
+                                key={lv}
+                                className={`py-2 px-2 text-center font-bold transition-colors ${
+                                  isCur
+                                    ? "bg-gold/20 text-gold border-b-2 border-gold font-black"
+                                    : "text-muted"
+                                }`}
+                              >
+                                LV {lv}
+                              </th>
+                            );
+                          })}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {inGameRows.map((row) => (
+                          <tr
+                            key={row.code}
+                            className="border-t border-line/30 transition-colors hover:bg-panel-2/50"
+                          >
+                            <td className="py-2 pr-3 font-bold text-dim">
+                              <span className="rounded bg-panel-2 px-1.5 py-0.5 text-[10px] font-mono text-gold mr-1.5">
+                                {row.code}
+                              </span>
+                              <span className="text-[11px] font-sans font-medium text-ink">
+                                {row.label.split(" (")[0]}
+                              </span>
+                            </td>
+                            {Array.from({ length: maxLevels }, (_, i) => {
+                              const lv = i + 1;
+                              const val = row.values[i] ?? "—";
+                              const isCur = activeRow?.skill_level === lv;
+                              return (
+                                <td
+                                  key={lv}
+                                  className={`py-2 px-2 text-center tabular-nums transition-colors ${
+                                    isCur
+                                      ? "bg-gold/10 font-black text-gold ring-1 ring-gold/40"
+                                      : row.colorClass
+                                  }`}
+                                >
+                                  {val}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-                <p className="whitespace-pre-line text-muted">{activeSkill.desc_th}</p>
-              </div>
-            )}
+              )}
 
-            {/* English Description */}
-            {activeSkill.description && activeSkill.description !== activeSkill.desc_th && (
-              <div className="rounded border border-line/40 bg-bg/20 p-3 text-xs leading-relaxed text-dim">
-                <div className="mb-1 text-[10px] font-semibold text-dim">คำอธิบายสกิล (English)</div>
-                <p className="whitespace-pre-line text-muted/90">{activeSkill.description}</p>
-              </div>
-            )}
-          </div>
-
-          {/* Level Progression Table */}
-          <div className="rounded-lg border border-line bg-panel p-3">
-            <div className="mb-2 flex items-center justify-between border-b border-line/50 pb-2">
-              <div className="flex items-center gap-2">
-                <Zap size={14} className="text-gold" />
-                <h4 className="font-display text-xs font-bold tracking-wider text-ink">
-                  {skillProfile?.isDefensiveOrBuffOnly
-                    ? `ตารางสเกลผลลัพธ์ของสกิล (Lv 1 - ${numRows})`
-                    : `ตารางสถิติตามเลเวลสกิล (Lv 1 - ${maxLevels})`}
-                </h4>
-              </div>
-              {buildStats && (
-                <span className="font-mono text-[10px] text-dim">
-                  คำนวณตามของและรูนปัจจุบัน (CDR {heroCdr}%)
-                </span>
+              {/* Scaling Ratios */}
+              {activeSkill.scaling && Object.keys(activeSkill.scaling).length > 0 && (
+                <div className="rounded-lg border border-line bg-panel/70 p-3">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-gold">
+                    <Swords size={13} />
+                    <span>สูตรการคูณพลังโจมตี (Scaling Ratios)</span>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {formatScaling(activeSkill.scaling).map((s, idx) => (
+                      <span
+                        key={idx}
+                        className="rounded border border-gold/40 bg-gold/10 px-2 py-1 font-mono text-xs font-semibold text-gold"
+                      >
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b border-line/40 text-left text-[10px] text-dim">
-                    <th className="py-1.5 font-normal">เลเวล</th>
-                    {skillProfile?.isDefensiveOrBuffOnly ? (
-                      <>
-                        {skillProfile.progressions.length > 0 ? (
-                          skillProfile.progressions.map((prog) => (
-                            <th key={prog.id} className={`py-1.5 text-right font-normal ${prog.textClass}`}>
-                              {prog.label}
-                            </th>
-                          ))
-                        ) : (
-                          <th className="py-1.5 text-center font-normal text-dim">ผลลัพธ์ของสกิล</th>
-                        )}
-                      </>
+          )}
+        </div>
+      ) : (
+        /* LIVE CALCULATION VIEW (COMBAT SIMULATOR) */
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {activeSkill && (
+            <>
+              {/* Overview info */}
+              <div className="flex flex-col gap-3 rounded-lg border border-line bg-panel-2/40 p-3.5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    {activeSkill.icon_url ? (
+                      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border-2 border-gold/50 bg-bg p-0.5 shadow-md">
+                        <img
+                          src={activeSkill.icon_url}
+                          alt={activeSkill.name}
+                          className="h-full w-full object-contain"
+                        />
+                      </div>
                     ) : (
-                      <>
-                        <th className="py-1.5 text-right font-normal">
-                          {skillProfile?.baseValueType === "shield"
-                            ? "โล่พื้นฐาน"
-                            : skillProfile?.baseValueType === "heal"
-                            ? "ฟื้นฟูพื้นฐาน"
-                            : "ดาเมจพื้นฐาน"}
-                        </th>
-                        {bonusScalingVal > 0 && (
-                          <th className="py-1.5 text-right font-normal">+โบนัสของ/รูน</th>
-                        )}
-                        <th className="py-1.5 text-right font-normal">
-                          {skillProfile?.baseValueType === "shield"
-                            ? "รวมโล่ป้องกัน"
-                            : skillProfile?.baseValueType === "heal"
-                            ? "รวมปริมาณฟื้นฟู"
-                            : "รวมดาเมจดิบ"}
-                        </th>
-                        {skillProfile?.baseValueType === "damage" &&
-                          activeRow &&
-                          activeRow.mitigation_multiplier > 0 &&
-                          activeRow.mitigation_multiplier < 1 && (
-                            <th className="py-1.5 text-right font-normal">เข้าจริง (ใส่ {enemyName ?? "ศัตรู"})</th>
-                          )}
-                        {skillProfile?.progressions
-                          .filter((p) => p.category !== "damage")
-                          .map((prog) => (
-                            <th key={prog.id} className={`py-1.5 text-right font-normal ${prog.textClass}`}>
-                              {prog.shortLabel}
-                            </th>
-                          ))}
-                      </>
+                      <div className="grid h-14 w-14 shrink-0 place-items-center rounded-lg border border-line bg-bg font-display text-xl font-bold text-gold">
+                        {circledNumber}
+                      </div>
                     )}
-                    <th className="py-1.5 text-right font-normal">คูลดาวน์</th>
-                    <th className="py-1.5 text-right font-normal">มานา</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Array.from({ length: numRows }, (_, idx) => {
-                    const lv = idx + 1;
-                    const pickAt = (arr?: number[]) =>
-                      arr && arr.length > 0 ? arr[Math.min(idx, arr.length - 1)] : 0;
-                    const baseDmg = pickAt(activeSkill.base_damage);
-                    const rawDmg = baseDmg + bonusScalingVal;
-                    const baseCd = pickAt(activeSkill.cooldown);
-                    const finalCd = baseCd > 0 ? Number((baseCd * (1 - heroCdr / 100)).toFixed(1)) : 0;
-                    const mana = pickAt(activeSkill.mana_cost);
-                    const isCurrentLv = activeRow?.skill_level === lv;
-                    const finalDmg = activeRow?.mitigation_multiplier
-                      ? Math.round(rawDmg * activeRow.mitigation_multiplier)
-                      : rawDmg;
 
-                    return (
-                      <tr
-                        key={lv}
-                        className={`border-t border-line/30 font-mono transition-colors ${
-                          isCurrentLv
-                            ? "bg-gold/10 font-bold text-gold"
-                            : "hover:bg-panel-2/40 text-muted"
-                        }`}
-                      >
-                        <td className="py-1.5">
-                          <span className="flex items-center gap-1.5">
-                            {isCurrentLv && <ChevronRight size={11} className="text-gold" />}
-                            <span>Lv {lv}</span>
-                            {isCurrentLv && (
-                              <span className="rounded bg-gold/20 px-1 text-[9px] text-gold">ปัจจุบัน</span>
-                            )}
-                          </span>
-                        </td>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[10px] font-bold tracking-wider text-gold">
+                          {slotLabelTh(activeSkill.slot)}
+                        </span>
+                        <span
+                          className={`rounded px-1.5 py-0.5 text-[10px] font-semibold border ${
+                            TYPE_CONFIG[activeSkill.damage_type]?.bg
+                          } ${TYPE_CONFIG[activeSkill.damage_type]?.color} ${
+                            TYPE_CONFIG[activeSkill.damage_type]?.border
+                          }`}
+                        >
+                          {TYPE_CONFIG[activeSkill.damage_type]?.labelTh || activeSkill.damage_type}
+                        </span>
+                      </div>
+                      <h3 className="font-display text-base font-bold text-ink mt-0.5">
+                        {activeSkill.name}
+                      </h3>
+                    </div>
+                  </div>
 
+                  <div className="flex flex-col items-end gap-1 shrink-0 text-xs font-mono">
+                    {activeSkill.cooldown && activeSkill.cooldown.length > 0 && (
+                      <div className="flex items-center gap-1 text-dim">
+                        <Clock size={12} className="text-muted" />
+                        <span>{activeSkill.cooldown.join(" / ")} วิ</span>
+                      </div>
+                    )}
+                    {activeSkill.mana_cost && activeSkill.mana_cost.length > 0 && activeSkill.mana_cost[0] > 0 && (
+                      <div className="flex items-center gap-1 text-blue">
+                        <Droplet size={12} />
+                        <span>{activeSkill.mana_cost.join(" / ")}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Highlights Grid */}
+                {skillProfile?.highlights && skillProfile.highlights.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                    {skillProfile.highlights.map((h, i) => (
+                      <div key={i} className={`flex items-start gap-2 rounded-lg border p-2 text-xs ${h.badgeClass}`}>
+                        <div className="mt-0.5 shrink-0">
+                          {h.icon === "shield" && <Shield size={14} />}
+                          {h.icon === "heart" && <Heart size={14} />}
+                          {h.icon === "speed" && <Wind size={14} />}
+                          {h.icon === "zap" && <Zap size={14} />}
+                          {h.icon === "swords" && <Swords size={14} />}
+                          {h.icon === "target" && <Target size={14} />}
+                          {h.icon === "clock" && <Clock size={14} />}
+                          {h.icon === "sparkles" && <Sparkles size={14} />}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="font-bold leading-tight">{h.title}</div>
+                          <div className="text-[11px] leading-tight opacity-90 mt-0.5">{h.detail}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Combat Damage Calculation Table */}
+              <div className="rounded-lg border border-line bg-panel p-3">
+                <div className="mb-2 flex items-center justify-between border-b border-line/50 pb-2">
+                  <div className="flex items-center gap-2">
+                    <Swords size={14} className="text-gold" />
+                    <h4 className="font-display text-xs font-bold tracking-wider text-ink">
+                      ตารางคำนวณดาเมจและเอฟเฟกต์ตามของสวมใส่ (Lv 1 - {numRows})
+                    </h4>
+                  </div>
+                  {buildStats && (
+                    <span className="font-mono text-[10px] text-dim">
+                      คำนวณตามของและรูนปัจจุบัน (CDR {heroCdr}%)
+                    </span>
+                  )}
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-line/40 text-left text-[10px] text-dim">
+                        <th className="py-1.5 font-normal">เลเวล</th>
                         {skillProfile?.isDefensiveOrBuffOnly ? (
                           <>
                             {skillProfile.progressions.length > 0 ? (
-                              skillProfile.progressions.map((prog) => {
-                                const val = prog.values[Math.min(idx, prog.values.length - 1)];
-                                return (
-                                  <td
-                                    key={prog.id}
-                                    className={`py-1.5 text-right tabular-nums font-bold ${prog.textClass}`}
-                                  >
-                                    {val}
-                                  </td>
-                                );
-                              })
+                              skillProfile.progressions.map((prog) => (
+                                <th key={prog.id} className={`py-1.5 text-right font-normal ${prog.textClass}`}>
+                                  {prog.label}
+                                </th>
+                              ))
                             ) : (
-                              <td className="py-1.5 text-center text-dim text-[11px]">
-                                — สกิลสถานะคงที่ —
-                              </td>
+                              <th className="py-1.5 text-center font-normal text-dim">ผลลัพธ์ของสกิล</th>
                             )}
                           </>
                         ) : (
                           <>
-                            <td className="py-1.5 text-right tabular-nums text-ink">
-                              {baseDmg > 0 ? baseDmg.toLocaleString() : "—"}
-                            </td>
+                            <th className="py-1.5 text-right font-normal">
+                              {skillProfile?.baseValueType === "shield"
+                                ? "โล่พื้นฐาน"
+                                : skillProfile?.baseValueType === "heal"
+                                ? "ฟื้นฟูพื้นฐาน"
+                                : "ดาเมจพื้นฐาน"}
+                            </th>
                             {bonusScalingVal > 0 && (
-                              <td className="py-1.5 text-right tabular-nums text-gold">
-                                +{bonusScalingVal.toLocaleString()}
-                              </td>
+                              <th className="py-1.5 text-right font-normal">+โบนัสของ/รูน</th>
                             )}
-                            <td className="py-1.5 text-right tabular-nums font-bold text-ink">
-                              {rawDmg > 0 ? rawDmg.toLocaleString() : "—"}
-                            </td>
+                            <th className="py-1.5 text-right font-normal">
+                              {skillProfile?.baseValueType === "shield"
+                                ? "รวมโล่ป้องกัน"
+                                : skillProfile?.baseValueType === "heal"
+                                ? "รวมปริมาณฟื้นฟู"
+                                : "รวมดาเมจดิบ"}
+                            </th>
                             {skillProfile?.baseValueType === "damage" &&
                               activeRow &&
                               activeRow.mitigation_multiplier > 0 &&
                               activeRow.mitigation_multiplier < 1 && (
-                                <td className="py-1.5 text-right tabular-nums font-bold text-good">
-                                  {finalDmg > 0 ? finalDmg.toLocaleString() : "—"}
-                                </td>
+                                <th className="py-1.5 text-right font-normal">เข้าจริง (ใส่ {enemyName ?? "ศัตรู"})</th>
                               )}
                             {skillProfile?.progressions
                               .filter((p) => p.category !== "damage")
-                              .map((prog) => {
-                                const val = prog.values[Math.min(idx, prog.values.length - 1)];
-                                return (
-                                  <td
-                                    key={prog.id}
-                                    className={`py-1.5 text-right tabular-nums font-semibold ${prog.textClass}`}
-                                  >
-                                    {val}
-                                  </td>
-                                );
-                              })}
+                              .map((prog) => (
+                                <th key={prog.id} className={`py-1.5 text-right font-normal ${prog.textClass}`}>
+                                  {prog.shortLabel}
+                                </th>
+                              ))}
                           </>
                         )}
-
-                        <td className="py-1.5 text-right tabular-nums text-muted">
-                          {baseCd > 0 ? (
-                            <span>
-                              {finalCd}วิ
-                              {heroCdr > 0 && <span className="text-[10px] text-dim"> ({baseCd}วิ)</span>}
-                            </span>
-                          ) : (
-                            "—"
-                          )}
-                        </td>
-                        <td className="py-1.5 text-right tabular-nums text-blue">
-                          {mana > 0 ? mana : "0"}
-                        </td>
+                        <th className="py-1.5 text-right font-normal">คูลดาวน์</th>
+                        <th className="py-1.5 text-right font-normal">มานา</th>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                    </thead>
+                    <tbody>
+                      {Array.from({ length: numRows }, (_, idx) => {
+                        const lv = idx + 1;
+                        const pickAt = (arr?: number[]) =>
+                          arr && arr.length > 0 ? arr[Math.min(idx, arr.length - 1)] : 0;
+                        const baseDmg = pickAt(activeSkill.base_damage);
+                        const rawDmg = baseDmg + bonusScalingVal;
+                        const baseCd = pickAt(activeSkill.cooldown);
+                        const finalCd = baseCd > 0 ? Number((baseCd * (1 - heroCdr / 100)).toFixed(1)) : 0;
+                        const mana = pickAt(activeSkill.mana_cost);
+                        const isCurrentLv = activeRow?.skill_level === lv;
+                        const finalDmg = activeRow?.mitigation_multiplier
+                          ? Math.round(rawDmg * activeRow.mitigation_multiplier)
+                          : rawDmg;
 
-          {/* Formulas & Component Scaling Pills */}
-          {activeSkill.scaling && Object.keys(activeSkill.scaling).length > 0 && (
-            <div className="rounded-lg border border-line bg-panel p-3">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-gold">
-                <Swords size={13} />
-                <span>สูตรการคูณพลังโจมตี (Scaling Ratios)</span>
+                        return (
+                          <tr
+                            key={lv}
+                            className={`border-t border-line/30 font-mono transition-colors ${
+                              isCurrentLv
+                                ? "bg-gold/10 font-bold text-gold"
+                                : "hover:bg-panel-2/40 text-muted"
+                            }`}
+                          >
+                            <td className="py-1.5">
+                              <span className="flex items-center gap-1.5">
+                                {isCurrentLv && <ChevronRight size={11} className="text-gold" />}
+                                <span>Lv {lv}</span>
+                                {isCurrentLv && (
+                                  <span className="rounded bg-gold/20 px-1 text-[9px] text-gold">ปัจจุบัน</span>
+                                )}
+                              </span>
+                            </td>
+
+                            {skillProfile?.isDefensiveOrBuffOnly ? (
+                              <>
+                                {skillProfile.progressions.length > 0 ? (
+                                  skillProfile.progressions.map((prog) => {
+                                    const val = prog.values[Math.min(idx, prog.values.length - 1)];
+                                    return (
+                                      <td
+                                        key={prog.id}
+                                        className={`py-1.5 text-right tabular-nums font-bold ${prog.textClass}`}
+                                      >
+                                        {val}
+                                      </td>
+                                    );
+                                  })
+                                ) : (
+                                  <td className="py-1.5 text-center text-dim text-[11px]">
+                                    — สกิลสถานะคงที่ —
+                                  </td>
+                                )}
+                              </>
+                            ) : (
+                              <>
+                                <td className="py-1.5 text-right tabular-nums text-ink">
+                                  {baseDmg > 0 ? baseDmg.toLocaleString() : "—"}
+                                </td>
+                                {bonusScalingVal > 0 && (
+                                  <td className="py-1.5 text-right tabular-nums text-gold">
+                                    +{bonusScalingVal.toLocaleString()}
+                                  </td>
+                                )}
+                                <td className="py-1.5 text-right tabular-nums font-bold text-ink">
+                                  {rawDmg > 0 ? rawDmg.toLocaleString() : "—"}
+                                </td>
+                                {skillProfile?.baseValueType === "damage" &&
+                                  activeRow &&
+                                  activeRow.mitigation_multiplier > 0 &&
+                                  activeRow.mitigation_multiplier < 1 && (
+                                    <td className="py-1.5 text-right tabular-nums font-bold text-good">
+                                      {finalDmg > 0 ? finalDmg.toLocaleString() : "—"}
+                                    </td>
+                                  )}
+                                {skillProfile?.progressions
+                                  .filter((p) => p.category !== "damage")
+                                  .map((prog) => {
+                                    const val = prog.values[Math.min(idx, prog.values.length - 1)];
+                                    return (
+                                      <td
+                                        key={prog.id}
+                                        className={`py-1.5 text-right tabular-nums font-semibold ${prog.textClass}`}
+                                      >
+                                        {val}
+                                      </td>
+                                    );
+                                  })}
+                              </>
+                            )}
+
+                            <td className="py-1.5 text-right tabular-nums text-muted">
+                              {baseCd > 0 ? (
+                                <span>
+                                  {finalCd}วิ
+                                  {heroCdr > 0 && <span className="text-[10px] text-dim"> ({baseCd}วิ)</span>}
+                                </span>
+                              ) : (
+                                "—"
+                              )}
+                            </td>
+                            <td className="py-1.5 text-right tabular-nums text-blue">
+                              {mana > 0 ? mana : "0"}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {formatScaling(activeSkill.scaling).map((s, idx) => (
-                  <span
-                    key={idx}
-                    className="rounded border border-gold/40 bg-gold/10 px-2 py-1 font-mono text-xs font-semibold text-gold"
-                  >
-                    {s}
-                  </span>
-                ))}
-              </div>
-            </div>
+            </>
           )}
         </div>
       )}

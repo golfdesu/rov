@@ -715,3 +715,26 @@ def test_apl_and_aic_league_presets_succeed():
         assert r.status_code == 200, f"Failed for league {league}: {r.text}"
         data = r.json()
         assert len(data["recommendations"]) == 5
+
+
+def test_hero_screenshots_endpoint():
+    # Test canonical hero Omen
+    r_omen = client.get("/combat/hero-screenshots/Omen")
+    assert r_omen.status_code == 200
+    d_omen = r_omen.json()
+    assert d_omen["hero"] == "Omen"
+    assert len(d_omen["skill_screenshots"]) >= 4
+    assert len(d_omen["status_screenshots"]) >= 1
+    assert all(s.startswith("/heroes-media/Omen/skill/") for s in d_omen["skill_screenshots"])
+
+    # Test alias Mortos -> Arthur
+    r_mortos = client.get("/combat/hero-screenshots/Mortos")
+    assert r_mortos.status_code == 200
+    d_mortos = r_mortos.json()
+    assert d_mortos["folder"] == "Arthur"
+    assert len(d_mortos["skill_screenshots"]) >= 4
+
+    # Test non-existent hero
+    r_none = client.get("/combat/hero-screenshots/NonExistentHero")
+    assert r_none.status_code == 200
+    assert r_none.json()["skill_screenshots"] == []

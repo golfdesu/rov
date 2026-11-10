@@ -556,3 +556,262 @@ export function parseSkillEffects(skill: SkillLike, heroName?: string): ParsedSk
     summaryBadge,
   };
 }
+
+export interface InGameTableRow {
+  code: string; // "DMG", "CD", "DEF Up", "DEF Down", "SLOW", "SPD Down", "SPD Up", "ATK SPD", "Shield", "Heal", "MANA"
+  label: string; // Full Thai label e.g. "ดาเมจพื้นฐาน (Base DMG)"
+  values: string[]; // ["120", "150", "180", "210", "240", "270"]
+  colorClass: string;
+}
+
+export function getSlotCircledNumber(slot: string): string {
+  if (slot.startsWith("Passive")) return "Ⓟ";
+  if (slot === "Skill 1" || slot.startsWith("Skill 1")) return "①";
+  if (slot === "Skill 2" || slot.startsWith("Skill 2")) return "②";
+  if (slot === "Skill 3" || slot.startsWith("Skill 3")) return "③";
+  if (slot === "Skill 4" || slot.startsWith("Skill 4")) return "④";
+  if (slot === "Skill 5" || slot.startsWith("Skill 5")) return "⑤";
+  if (slot === "Ultimate" || slot.startsWith("Ultimate")) return "③";
+  return "①";
+}
+
+export function getInGameTagCapsules(skill: SkillLike): Array<{ label: string; bg: string; text: string; border: string }> {
+  const list: Array<{ label: string; bg: string; text: string; border: string }> = [];
+  const dtype = skill.damage_type;
+  const stype = (skill.type ?? "").toLowerCase();
+  const desc = (skill.desc_th ?? skill.description ?? "").toLowerCase();
+
+  // Primary damage type pill
+  if (dtype === "physical") {
+    list.push({ label: "กายภาพ", bg: "bg-[#7c2d2d]/80", text: "text-[#fca5a5]", border: "border-[#ef4444]/50" });
+  } else if (dtype === "magic") {
+    list.push({ label: "เวท", bg: "bg-[#581c87]/80", text: "text-[#d8b4fe]", border: "border-[#a855f7]/50" });
+  } else if (dtype === "true") {
+    list.push({ label: "ความเสียหายจริง", bg: "bg-slate-700/80", text: "text-white font-bold", border: "border-slate-400/60" });
+  }
+
+  // Effect pills based on in-game screenshots
+  if (stype.includes("damage reduction") || desc.includes("ลดความเสียหาย") || desc.includes("ทนความเสียหาย")) {
+    list.push({ label: "ลดความเสียหาย", bg: "bg-[#115e59]/80", text: "text-[#5eead4]", border: "border-[#14b8a6]/50" });
+  }
+  if (stype.includes("speed") || desc.includes("ความเร็วเคลื่อนที่") || desc.includes("วิ่งเร็ว")) {
+    list.push({ label: "เพิ่มความเร็ว", bg: "bg-[#1e3a8a]/80", text: "text-[#93c5fd]", border: "border-[#3b82f6]/50" });
+  }
+  if (stype.includes("control") || stype.includes("stun") || stype.includes("restrict") || desc.includes("ควบคุม") || desc.includes("สตั๊น") || desc.includes("ดึง")) {
+    list.push({ label: "ควบคุม", bg: "bg-[#164e63]/80", text: "text-[#67e8f9]", border: "border-[#06b6d4]/50" });
+  }
+  if (stype.includes("heal") || desc.includes("ฟื้นฟู") || desc.includes("รักษา")) {
+    list.push({ label: "ฟื้นฟู", bg: "bg-[#14532d]/80", text: "text-[#86efac]", border: "border-[#22c55e]/50" });
+  }
+  if (stype.includes("shield") || desc.includes("โล่") || desc.includes("เกราะป้องกัน")) {
+    list.push({ label: "โล่ป้องกัน", bg: "bg-[#075985]/80", text: "text-[#7dd3fc]", border: "border-[#0ea5e9]/50" });
+  }
+  if (stype.includes("damage up") || desc.includes("ลดเกราะ") || desc.includes("เพิ่มความเสียหาย")) {
+    list.push({ label: "เพิ่มความเสียหาย", bg: "bg-[#065f46]/80", text: "text-[#6ee7b7]", border: "border-[#10b981]/50" });
+  }
+
+  return list.filter((item, index, self) => index === self.findIndex((t) => t.label === item.label));
+}
+
+export function getInGameSkillRows(
+  skill: SkillLike,
+  profile: ParsedSkillProfile,
+  maxLevels: number
+): InGameTableRow[] {
+  const rows: InGameTableRow[] = [];
+  const bd = skill.base_damage ?? [];
+  const cdArr = Array.isArray(skill.cooldown) ? skill.cooldown : skill.cooldown ? [skill.cooldown] : [];
+  const manaArr = Array.isArray(skill.mana_cost) ? skill.mana_cost : skill.mana_cost ? [skill.mana_cost] : [];
+
+  // 1. DMG or Shield or Heal primary row
+  if (profile.baseValueType === "shield" && bd.length > 0) {
+    rows.push({
+      code: "Shield",
+      label: "โล่ป้องกัน (Shield)",
+      values: bd.map((v) => v.toLocaleString()),
+      colorClass: "text-sky-300 font-bold",
+    });
+  } else if (profile.baseValueType === "heal" && bd.length > 0) {
+    rows.push({
+      code: "Heal",
+      label: "ฟื้นฟูเลือด (Heal)",
+      values: bd.map((v) => v.toLocaleString()),
+      colorClass: "text-green-300 font-bold",
+    });
+  } else if (bd.length > 0 && bd.some((v) => v > 0)) {
+    rows.push({
+      code: "DMG",
+      label: "ดาเมจพื้นฐาน (Base DMG)",
+      values: bd.map((v) => v.toLocaleString()),
+      colorClass: "text-ink font-bold",
+    });
+  }
+
+  // 2. DEF Up row (Damage reduction like Omen S2)
+  const drProg = profile.progressions.find((p) => p.category === "damage_reduction");
+  if (drProg) {
+    rows.push({
+      code: "DEF Up",
+      label: "ลดความเสียหาย (DEF Up)",
+      values: drProg.values,
+      colorClass: "text-emerald-300 font-bold",
+    });
+  }
+
+  // 3. DEF Down row (Armor reduction like Qi S2)
+  const defDownProg = profile.progressions.find(
+    (p) => p.category === "defense" && (skill.desc_th?.includes("ลดเกราะ") || skill.description?.includes("reducing"))
+  );
+  if (defDownProg) {
+    rows.push({
+      code: "DEF Down",
+      label: "ลดเกราะศัตรู (DEF Down)",
+      values: defDownProg.values,
+      colorClass: "text-amber-300 font-bold",
+    });
+  }
+
+  // 4. SLOW row (duration like Omen S1: 1.5, 1.7, 1.9, 2.1, 2.3, 2.5)
+  const slowDurProg = profile.progressions.find(
+    (p) => p.category === "duration" || p.values.some((v) => v.includes("1.5") || v.includes("2.5"))
+  );
+  if (slowDurProg) {
+    rows.push({
+      code: "SLOW",
+      label: "ระยะเวลาสโลว์ (SLOW)",
+      values: slowDurProg.values,
+      colorClass: "text-indigo-300 font-bold",
+    });
+  }
+
+  // 5. SPD Down row (Movement speed slow % like Omen S1: 25%, 30%, 35%, 40%, 45%, 50%)
+  const spdDownProg = profile.progressions.find((p) => p.category === "slow");
+  if (spdDownProg) {
+    rows.push({
+      code: "SPD Down",
+      label: "สโลว์ความเร็ว (SPD Down)",
+      values: spdDownProg.values,
+      colorClass: "text-indigo-300 font-bold",
+    });
+  }
+
+  // 6. SPD Up row (Movement speed boost % like Celica S1)
+  const spdUpProg = profile.progressions.find((p) => p.category === "move_speed");
+  if (spdUpProg) {
+    rows.push({
+      code: "SPD Up",
+      label: "เพิ่มความเร็ว (SPD Up)",
+      values: spdUpProg.values,
+      colorClass: "text-cyan-300 font-bold",
+    });
+  }
+
+  // 7. ATK SPD row (Attack speed % like Erin S2)
+  const atkSpdProg = profile.progressions.find((p) => p.category === "attack_speed");
+  if (atkSpdProg) {
+    rows.push({
+      code: "ATK SPD",
+      label: "เพิ่มความเร็วโจมตี (ATK SPD)",
+      values: atkSpdProg.values,
+      colorClass: "text-amber-300 font-bold",
+    });
+  }
+
+  // 8. Shield row if not added yet
+  const shieldProg = profile.progressions.find((p) => p.category === "shield");
+  if (shieldProg && !rows.some((r) => r.code === "Shield")) {
+    rows.push({
+      code: "Shield",
+      label: "โล่ป้องกัน (Shield)",
+      values: shieldProg.values,
+      colorClass: "text-sky-300 font-bold",
+    });
+  }
+
+  // 9. Heal row if not added yet
+  const healProg = profile.progressions.find((p) => p.category === "heal");
+  if (healProg && !rows.some((r) => r.code === "Heal")) {
+    rows.push({
+      code: "Heal",
+      label: "ฟื้นฟูเลือด (Heal)",
+      values: healProg.values,
+      colorClass: "text-green-300 font-bold",
+    });
+  }
+
+  // 10. Cooldown row (CD)
+  if (cdArr.length > 0) {
+    rows.push({
+      code: "CD",
+      label: "คูลดาวน์ (CD)",
+      values: cdArr.map((v) => (Number.isInteger(v) ? v.toString() : v.toFixed(1))),
+      colorClass: "text-muted font-mono",
+    });
+  }
+
+  // 11. Mana cost row (MANA)
+  if (manaArr.length > 0 && Math.max(...manaArr) > 0 && (new Set(manaArr).size > 1 || rows.length <= 2)) {
+    rows.push({
+      code: "MANA",
+      label: "การใช้มานา (MANA)",
+      values: manaArr.map((v) => v.toString()),
+      colorClass: "text-blue-300 font-mono",
+    });
+  }
+
+  // Pad rows if any row has fewer elements than maxLevels
+  for (const row of rows) {
+    if (row.values.length < maxLevels && row.values.length > 0) {
+      const lastVal = row.values[row.values.length - 1];
+      while (row.values.length < maxLevels) {
+        row.values.push(lastVal);
+      }
+    }
+  }
+
+  return rows;
+}
+
+export interface TextToken {
+  text: string;
+  className?: string;
+}
+
+export function tokenizeThaiSkillDescription(desc: string): TextToken[] {
+  if (!desc) return [];
+  const regex = /(ความเสียหายกายภาพ|ความเสียหายเวท|ความเสียหายจริง|\(\+[\d.]+%?\s*(?:AD|AP|HP|Bonus AD|Max HP)\)|\b\d+(?:\.\d+)?%|\b\d+(?:\.\d+)?\s*วิ)/g;
+  const tokens: TextToken[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(desc)) !== null) {
+    if (match.index > lastIndex) {
+      tokens.push({ text: desc.slice(lastIndex, match.index) });
+    }
+    const val = match[1];
+    let className = "text-ink font-semibold";
+    if (val === "ความเสียหายกายภาพ") {
+      className = "text-[#ff6b6b] font-bold";
+    } else if (val === "ความเสียหายเวท") {
+      className = "text-[#c084fc] font-bold";
+    } else if (val === "ความเสียหายจริง") {
+      className = "text-white font-black underline decoration-slate-400";
+    } else if (val.includes("AD")) {
+      className = "text-amber-300 font-bold";
+    } else if (val.includes("AP")) {
+      className = "text-cyan-300 font-bold";
+    } else if (val.includes("HP")) {
+      className = "text-green-300 font-bold";
+    } else if (val.includes("%") || val.includes("วิ")) {
+      className = "text-white font-semibold";
+    }
+    tokens.push({ text: val, className });
+    lastIndex = regex.lastIndex;
+  }
+
+  if (lastIndex < desc.length) {
+    tokens.push({ text: desc.slice(lastIndex) });
+  }
+
+  return tokens;
+}

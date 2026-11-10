@@ -27,6 +27,59 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-10 10:35 (UTC+7) — Authentic In-Game RoV Skill Window & 130-Hero Screenshot Viewer
+**Agent:** Antigravity (gemini-3.8-flash-high)
+
+### ✅ Completed Work
+- **Static Media Mount & API Endpoint (`src/api.py`, `tests/test_api.py`)**:
+  - Mounted `/heroes-media` pointing to `heroes/` containing 834 high-resolution in-game screenshots across all 130 heroes.
+  - Implemented `GET /combat/hero-screenshots/{hero}` returning skill screenshots (`LINE_ALBUM_Rov_*.jpg`) and level status screenshots (`status_lv1.jpg`, `status_lv15.jpg`).
+  - Added folder alias mapping for Thai canonical hero names (`Mortos -> Arthur`, `Celica -> Brunhilda`, `Riktor -> Richter`).
+  - Verified 100% hero coverage: all 130/130 hero folders contain in-game skill screenshots and level status screenshots.
+  - Added automated test `test_hero_screenshots_endpoint()` in `tests/test_api.py`.
+- **In-Game RoV Skill Window Replica & Syntax Highlighter (`frontend/src/utils/skillEffects.ts`)**:
+  - Implemented `getSlotCircledNumber(slot)` returning authentic slot symbols (`Ⓟ`, `①`, `②`, `③`, `④`, `⑤`).
+  - Implemented `getInGameTagCapsules(skill)` rendering official in-game capsules with exact colors (`[กายภาพ]`, `[ลดความเสียหาย]`, `[เพิ่มความเร็ว]`, `[ควบคุม]`, `[เวท]`, `[ความเสียหายจริง]`).
+  - Implemented `getInGameSkillRows(skill, profile, maxLevels)` generating the official horizontal progression table (`LV 1 .. LV 6`) with stat codes:
+    - `DMG`: Base damage per level.
+    - `DEF Up`: Damage reduction % (e.g. Omen S2 Untouchable: `40%`, `44%`, `48%`, `52%`, `56%`, `60%`).
+    - `DEF Down`: Enemy armor reduction (e.g. Qi S2 Mountain Shaker: `100`, `140`, `180`, `220`, `260`, `300`).
+    - `CD`: Cooldown per level.
+    - `MANA`: Mana / energy cost per level.
+    - `SLOW`, `SPD Down`, `SPD Up`, `ATK SPD`, `Shield`, `Heal`.
+  - Implemented `tokenizeThaiSkillDescription(desc)` rendering official in-game syntax highlighting:
+    - Red (`#ff6b6b`) for physical damage.
+    - Purple (`#c084fc`) for magic damage.
+    - Bold white with underline for true damage.
+    - Amber/yellow (`#fcd34d`) for AD scaling.
+    - Cyan (`#67e8f9`) for AP scaling.
+    - Green (`#86efac`) for HP scaling.
+    - White for percentage / duration tokens.
+- **Three-Mode Modal Architecture (`frontend/src/components/lab/HeroSkillsModal.tsx`)**:
+  - Built a 3-tab view switcher in the modal header:
+    1. `📋 หน้าต่างในเกม` (Authentic In-Game): Replica of the official RoV popup UI with circled slot number, tag capsules, syntax-highlighted Thai description, and horizontal `LV 1 .. LV 6` table with active hero level column highlight.
+    2. `📷 รูปแคปจริง (${count})` (In-Game Screenshots): Responsive high-res image viewer displaying the actual captured screenshots from `heroes/<Hero>/skill/` with thumbnail selector and external full-resolution opener.
+    3. `⚔️ คำนวณดาเมจจริง` (Live Combat Calc): Full combat damage calculations including item bonuses, arcana, and enemy defense mitigation.
+  - Added shortcut button `[📷 ดูรูปแคปจริง]` directly inside each skill card to immediately preview that skill's captured screenshot.
+
+### 📁 Modified Files
+- `src/api.py`
+- `tests/test_api.py`
+- `frontend/src/utils/skillEffects.ts`
+- `frontend/src/components/lab/HeroSkillsModal.tsx`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint`: 0 warnings, 0 errors.
+- `npm --prefix frontend run build`: TypeScript 0 errors, Vite bundle built cleanly.
+- `ruff check --fix . ; ruff format .`: All checks passed.
+- `pytest -v`: All 83 tests passed (100%).
+- Endpoint `/combat/hero-screenshots/{hero}` tested for `Omen`, `Mortos` (alias), and nonexistent hero.
+
+### ⚠️ Open Issues / Important Notes
+- All 130 heroes have complete in-game screenshots and level-scaling status images ready for instant serving via `/heroes-media/`.
+
+---
+
 ## 📅 2026-11-10 10:15 (UTC+7) — Dynamic Skill Effects & Defensive Progression Engine (Omen S2 & All 130 Heroes)
 **Agent:** Antigravity (gemini-3.8-flash-high)
 

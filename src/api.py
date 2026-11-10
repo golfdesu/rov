@@ -26,6 +26,12 @@ from src.search.draft_mcts import DRAFT_STEPS
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 FRONTEND_DIST = FRONTEND_DIR / "dist"
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+HEROES_DIR = Path(__file__).resolve().parent.parent / "heroes"
+HERO_FOLDER_ALIASES = {
+    "Mortos": "Arthur",
+    "Celica": "Brunhilda",
+    "Riktor": "Richter",
+}
 
 app = FastAPI(
     title="RoV SOTA Draft Intelligence API",
@@ -408,6 +414,50 @@ def get_rune_recommendation(
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
+
+@app.get("/combat/hero-screenshots/{hero}")
+def get_hero_screenshots(hero: str):
+    folder_name = HERO_FOLDER_ALIASES.get(hero, hero)
+    hero_dir = HEROES_DIR / folder_name
+    if not hero_dir.is_dir():
+        hero_dir = HEROES_DIR / hero
+    if not hero_dir.is_dir():
+        return {"hero": hero, "skill_screenshots": [], "status_screenshots": []}
+
+    skill_dir = hero_dir / "skill"
+    status_dir = hero_dir / "status"
+
+    skill_files = []
+    if skill_dir.is_dir():
+        skill_files = sorted(
+            [
+                f"/heroes-media/{folder_name}/skill/{f.name}"
+                for f in skill_dir.iterdir()
+                if f.suffix.lower() in (".jpg", ".jpeg", ".png")
+            ]
+        )
+
+    status_files = []
+    if status_dir.is_dir():
+        status_files = sorted(
+            [
+                f"/heroes-media/{folder_name}/status/{f.name}"
+                for f in status_dir.iterdir()
+                if f.suffix.lower() in (".jpg", ".jpeg", ".png")
+            ]
+        )
+
+    return {
+        "hero": hero,
+        "folder": folder_name,
+        "skill_screenshots": skill_files,
+        "status_screenshots": status_files,
+    }
+
+
+# Serve hero in-game screenshot media directly
+if HEROES_DIR.is_dir():
+    app.mount("/heroes-media", StaticFiles(directory=HEROES_DIR), name="heroes_media")
 
 # Mounted last so the API routes above take precedence over static files.
 if FRONTEND_DIST.is_dir():
