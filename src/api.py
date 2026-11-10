@@ -422,7 +422,7 @@ def get_hero_screenshots(hero: str):
     if not hero_dir.is_dir():
         hero_dir = HEROES_DIR / hero
     if not hero_dir.is_dir():
-        return {"hero": hero, "skill_screenshots": [], "status_screenshots": []}
+        return {"hero": hero, "folder": folder_name, "skill_screenshots": [], "status_screenshots": []}
 
     skill_dir = hero_dir / "skill"
     status_dir = hero_dir / "status"

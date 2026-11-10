@@ -754,6 +754,10 @@ def test_hero_screenshots_endpoint(tmp_path, monkeypatch):
     (mock_omen_skill / "skill1.jpg").write_text("fake")
     (mock_omen_status / "status_lv1.jpg").write_text("fake")
 
+    mock_arthur_skill = mock_heroes_dir / "Arthur" / "skill"
+    mock_arthur_skill.mkdir(parents=True)
+    (mock_arthur_skill / "skill1.jpg").write_text("fake")
+
     monkeypatch.setattr(api_mod, "HEROES_DIR", mock_heroes_dir)
 
     r_mock = client.get("/combat/hero-screenshots/Omen")
@@ -763,3 +767,10 @@ def test_hero_screenshots_endpoint(tmp_path, monkeypatch):
     assert len(d_mock["status_screenshots"]) == 1
     assert d_mock["skill_screenshots"][0] == "/heroes-media/Omen/skill/skill1.jpg"
     assert d_mock["status_screenshots"][0] == "/heroes-media/Omen/status/status_lv1.jpg"
+
+    r_mock_mortos = client.get("/combat/hero-screenshots/Mortos")
+    assert r_mock_mortos.status_code == 200
+    d_mock_mortos = r_mock_mortos.json()
+    assert d_mock_mortos["folder"] == "Arthur"
+    assert len(d_mock_mortos["skill_screenshots"]) == 1
+    assert d_mock_mortos["skill_screenshots"][0] == "/heroes-media/Arthur/skill/skill1.jpg"

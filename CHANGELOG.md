@@ -27,6 +27,31 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-10 11:33 (UTC+7) — Full Schema Parity & Headless CI Fix for Hero Screenshots
+**Agent:** Antigravity (gemini-3.8-flash-high)
+
+### ✅ Completed Work
+- **Schema Parity for Missing Hero Directories (`src/api.py`)**:
+  - Fixed `/combat/hero-screenshots/{hero}` returning dictionary without `"folder"` key when hero directory does not exist on disk.
+  - Returns `{"hero": hero, "folder": folder_name, "skill_screenshots": [], "status_screenshots": []}` consistently, preserving API response contract across all environments.
+- **Headless CI-Safe Mock Testing (`tests/test_api.py`)**:
+  - Expanded `test_hero_screenshots_endpoint(tmp_path, monkeypatch)` to mock both canonical (`Omen`) and aliased (`Mortos -> Arthur`) directories with dummy screenshot files.
+  - Guaranteed robust test execution on both local development machines with live assets and headless CI runners where `heroes/` is gitignored.
+
+### 📁 Modified Files
+- `src/api.py`
+- `tests/test_api.py`
+
+### 🧪 Verification
+- `pytest -v tests/test_api.py` -> 27/27 tests passed.
+- `pytest -v` -> 83/83 tests passed.
+- `ruff check --fix . ; ruff format .` -> clean formatting.
+
+### ⚠️ Open Issues / Important Notes
+- None. Remote GitHub Actions CI run pending green status verification.
+
+---
+
 ## 📅 2026-11-10 11:25 (UTC+7) — Fix Headless CI Failure for Hero Screenshots Test
 **Agent:** Antigravity (gemini-3.8-flash-high)
 
