@@ -463,6 +463,19 @@ export function parseSkillEffects(skill: SkillLike, heroName?: string): ParsedSk
       detail: "ฟื้นฟู 6% Max HP + 6% เลือดที่เสีย ทุก 1 วินาที (นาน 5 / 6 / 7 วินาที) + วิ่งเร็ว 30%",
       badgeClass: "border-green-500/40 bg-green-500/10 text-green-400",
     });
+  } else if (heroName === "Qi" && (skill.slot === "Passive" || skill.name === "Protection Aura")) {
+    highlights.push({
+      icon: "shield",
+      title: "เกราะ & ต้านเวท (+30-100 ต่อสแต็ก)",
+      detail: "เพิ่ม 30 (+5 ต่อ Lv.ฮีโร่) เกราะและต้านเวท นาน 5 วิ (สะสมครบ 3 สแต็ก = 90 - 300 หน่วย)",
+      badgeClass: "border-emerald-500/40 bg-emerald-500/10 text-emerald-400",
+    });
+    highlights.push({
+      icon: "swords",
+      title: "โจมตีพิเศษ & ฮีลเลือด (+100% ตีไว)",
+      detail: "สกิลโดนศัตรู ตีไวขึ้น 100% 2 ครั้ง เสริมดาเมจ 30 (+5/Lv) (+25%AD) และฮีล 100 HP (สะสม 4 ครั้ง)",
+      badgeClass: "border-amber-500/40 bg-amber-500/10 text-amber-400",
+    });
   }
 
   // Summary badge for quick cards
@@ -475,7 +488,12 @@ export function parseSkillEffects(skill: SkillLike, heroName?: string): ParsedSk
   const pierceProg = progressions.find((p) => p.category === "pierce");
   const adProg = progressions.find((p) => p.category === "ad_buff");
 
-  if (drProg) {
+  if (heroName === "Qi" && (skill.slot === "Passive" || skill.name === "Protection Aura")) {
+    summaryBadge = {
+      text: "🛡️ เกราะ/ต้านเวท 90-300",
+      badgeClass: CATEGORY_STYLES.defense.badgeClass,
+    };
+  } else if (drProg) {
     const f = drProg.values[0];
     const l = drProg.values[drProg.values.length - 1];
     summaryBadge = {
@@ -622,6 +640,36 @@ export function getInGameSkillRows(
   const bd = skill.base_damage ?? [];
   const cdArr = Array.isArray(skill.cooldown) ? skill.cooldown : skill.cooldown ? [skill.cooldown] : [];
   const manaArr = Array.isArray(skill.mana_cost) ? skill.mana_cost : skill.mana_cost ? [skill.mana_cost] : [];
+
+  // Special handling for Qi's Protection Aura passive (scales with Hero Lv 1 - 15)
+  if (skill.name === "Protection Aura" || (skill.slot === "Passive" && skill.desc_th?.includes("Aura"))) {
+    const lvMilestones = [1, 4, 7, 10, 13, 15];
+    const armorStackValues = lvMilestones.map((lv) => {
+      const perStack = 30 + 5 * (lv - 1);
+      const total3 = perStack * 3;
+      return `${perStack} (${total3})`;
+    });
+    rows.push({
+      code: "DEF Up",
+      label: "เกราะ/ต้านเวท 1สแต็ก (3สแต็ก)",
+      values: armorStackValues,
+      colorClass: "text-emerald-300 font-bold",
+    });
+    const bonusDmgValues = lvMilestones.map((lv) => (30 + 5 * (lv - 1)).toString());
+    rows.push({
+      code: "DMG",
+      label: "ดาเมจพิเศษ (+25%AD)",
+      values: bonusDmgValues,
+      colorClass: "text-ink font-bold",
+    });
+    rows.push({
+      code: "Heal",
+      label: "ฟื้นฟูเลือด (Heal)",
+      values: Array(6).fill("100"),
+      colorClass: "text-green-300 font-bold",
+    });
+    return rows;
+  }
 
   // 1. DMG or Shield or Heal primary row
   if (profile.baseValueType === "shield" && bd.length > 0) {

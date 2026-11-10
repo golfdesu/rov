@@ -27,6 +27,39 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-10 10:52 (UTC+7) — Qi Passive Protection Aura Level Scaling Alignment (+5/Lv)
+**Agent:** Antigravity (gemini-3.8-flash-high)
+
+### ✅ Completed Work
+- **Data Catalog Alignment (`data/hero_skills_full.json`, `data/heroes_130_full.json`)**:
+  - Enriched Qi's Passive `Protection Aura` Thai description (`desc_th`) with explicit growth values verified from Garena TW/TH official patch notes and in-game testing:
+    - Defense: `30 (+5 ต่อ Lv.ฮีโร่) เป็นเวลา 5 วิ (สะสมครบ 3 สแต็ก = 90 - 300 เกราะ/ต้านเวท)`.
+    - Damage: `30 (+5 ต่อ Lv.ฮีโร่)(+25%AD) พร้อมกับฟื้นฟู 100 HP`.
+  - Updated English description (`description`) to reflect `30 (+5 per hero level)` physical and magic defense (max 3 stacks = 90-300).
+  - Aligned `scaling.level_scaling` from `2.0` to official `5.0`.
+- **UI Highlight & Progression Rows (`frontend/src/utils/skillEffects.ts`)**:
+  - Added dedicated highlight cards for Qi's Passive:
+    - 🛡️ `เกราะ & ต้านเวท (+30-100 ต่อสแต็ก)`: `เพิ่ม 30 (+5 ต่อ Lv.ฮีโร่) เกราะและต้านเวท นาน 5 วิ (สะสมครบ 3 สแต็ก = 90 - 300 หน่วย)`.
+    - ⚔️ `โจมตีพิเศษ & ฮีลเลือด (+100% ตีไว)`: `สกิลโดนศัตรู ตีไวขึ้น 100% 2 ครั้ง เสริมดาเมจ 30 (+5/Lv) (+25%AD) และฮีล 100 HP (สะสม 4 ครั้ง)`.
+  - Added custom in-game table row generator for Qi's Passive in `getInGameSkillRows`:
+    - `DEF Up`: `30 (90)`, `45 (135)`, `60 (180)`, `75 (225)`, `90 (270)`, `100 (300)` across hero level milestones (Lv 1, 4, 7, 10, 13, 15).
+    - `DMG`: `30`, `45`, `60`, `75`, `90`, `100` bonus damage (+25% AD).
+    - `Heal`: `100` HP flat per hit.
+  - Added quick summary badge: `🛡️ เกราะ/ต้านเวท 90-300`.
+
+### 📁 Modified Files
+- `data/hero_skills_full.json`
+- `data/heroes_130_full.json`
+- `frontend/src/utils/skillEffects.ts`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint`: 0 warnings, 0 errors.
+- `npm --prefix frontend run build`: Built production bundle cleanly.
+- `ruff check --fix . ; ruff format .`: 0 errors.
+- `pytest -v`: All 83 tests passed.
+
+---
+
 ## 📅 2026-11-10 10:35 (UTC+7) — Authentic In-Game RoV Skill Window & 130-Hero Screenshot Viewer
 **Agent:** Antigravity (gemini-3.8-flash-high)
 

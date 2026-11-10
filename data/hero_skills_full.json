@@ -10211,11 +10211,11 @@
         ],
         "scaling": {
           "ad_pct": 25.0,
-          "level_scaling": 2.0
+          "level_scaling": 5.0
         },
         "icon_url": "/skills/Qi/0_protectionaura.png",
-        "desc_th": "เมื่อ Qi ใช้สกิล เธอจะสะสมค่า Aura ซึ่งสามารถสะสมได้สูงสุด 3 ครั้ง และแต่ละครั้งจะเพิ่มเกราะและต้านทานเวทให้เธอ 30(เพิ่มตามLv.ฮีโร่) เป็นเวลา 5 วิ หากใช้สกิลโดนศัตรู จะทำให้การโจมตีปกติ 2 ครั้งถัดไป จะโจมตีเร็วขึ้น 100% และสร้าง ความเสียหายกายภาพ 30 (เพิ่มตามLv.ฮีโร่)(+25%AD) พร้อมกับฟื้นฟู 100 HP (การโจมตีพิเศษสามารถสะสมการใช้งานได้ 4 ครั้ง)",
-        "description": "Using skills grants Qi an Aura stack (up to 3) granting 30 (+scaling per hero level) physical and magic defense for 5s. Hitting enemies empowers her next 2 normal attacks with 100% attack speed, dealing 30 (+scaling per hero level) (+25% AD) physical damage and restoring 100 HP (stacks up to 4 times)."
+        "desc_th": "เมื่อ Qi ใช้สกิล เธอจะสะสมค่า Aura ซึ่งสามารถสะสมได้สูงสุด 3 ครั้ง และแต่ละครั้งจะเพิ่มเกราะและต้านทานเวทให้เธอ 30 (+5 ต่อ Lv.ฮีโร่) เป็นเวลา 5 วิ (สะสมครบ 3 สแต็ก = 90 - 300 เกราะ/ต้านเวท) หากใช้สกิลโดนศัตรู จะทำให้การโจมตีปกติ 2 ครั้งถัดไป จะโจมตีเร็วขึ้น 100% และสร้าง ความเสียหายกายภาพ 30 (+5 ต่อ Lv.ฮีโร่)(+25%AD) พร้อมกับฟื้นฟู 100 HP (การโจมตีพิเศษสามารถสะสมการใช้งานได้ 4 ครั้ง)",
+        "description": "Using skills grants Qi an Aura stack (up to 3) granting 30 (+5 per hero level) physical and magic defense for 5s (max 3 stacks = 90-300 armor & magic defense). Hitting enemies empowers her next 2 normal attacks with 100% attack speed, dealing 30 (+5 per hero level) (+25% AD) physical damage and restoring 100 HP (stacks up to 4 times)."
       },
       {
         "name": "Starchaser",
