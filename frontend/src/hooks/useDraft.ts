@@ -39,6 +39,7 @@ const SESSION_STORAGE_KEY = "rov_draft_session_v1";
 const VALID_LEAGUES: readonly LeagueCode[] = ["GLOBAL", "RPL", "GCS", "AOG", "INTL"];
 
 function sanitizeLeague(v: unknown): LeagueCode {
+  if (v === "APL" || v === "AIC") return "INTL";
   return typeof v === "string" && VALID_LEAGUES.includes(v as LeagueCode) ? (v as LeagueCode) : "GLOBAL";
 }
 
@@ -317,12 +318,17 @@ export function useDraft(options: UseDraftOptions = {}) {
     if (!persistSession) return;
 
     const ctrl = new AbortController();
-    putJson("/draft/session", payload, ctrl.signal).catch((err) => {
-      if (!isAbortError(err)) {
-        console.warn("Could not persist /draft/session to server:", err);
-      }
-    });
-    return () => ctrl.abort();
+    const timer = window.setTimeout(() => {
+      putJson("/draft/session", payload, ctrl.signal).catch((err) => {
+        if (!isAbortError(err)) {
+          console.warn("Could not persist /draft/session to server:", err);
+        }
+      });
+    }, 250);
+    return () => {
+      window.clearTimeout(timer);
+      ctrl.abort();
+    };
   }, [
     persistSession,
     storageKey,

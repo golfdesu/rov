@@ -99,11 +99,10 @@ export function MetaLab({
   const blueOriginGames = globalBans.blueSideTeam === "A" ? originMap.teamAGameByHero : originMap.teamBGameByHero;
   const redOriginGames = globalBans.blueSideTeam === "A" ? originMap.teamBGameByHero : originMap.teamAGameByHero;
 
-  const recommendedRanks = useMemo(() => {
-    const map = new Map<string, number>();
-    recommendations.slice(0, 5).forEach((r, idx) => map.set(r.hero_name, idx + 1));
-    return map;
-  }, [recommendations]);
+  const recommendedRanks = useMemo(
+    () => new Map(recommendations.slice(0, 5).map((r) => [r.hero_name, r.rank])),
+    [recommendations],
+  );
 
   const hasMainGlobalBans =
     !!mainGlobalBans &&
@@ -167,7 +166,7 @@ export function MetaLab({
                 </span>
               </div>
               <p className="truncate font-mono text-[10px] text-muted sm:text-xs">
-                คำนวณจาก Synergy Matrix + Counter Matrix + สถิติโปร 4,208 เกมโดยตรง (ไม่ใช้โมเดล Deep Learning)
+                คำนวณจาก Synergy Matrix + Counter Matrix + สถิติโปร 4,329 เกมโดยตรง (ไม่ใช้โมเดล Deep Learning)
               </p>
             </div>
           </div>

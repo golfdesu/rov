@@ -156,7 +156,7 @@ export const ENGINE_OPTIONS: DraftEngineOption[] = [
     label: "SOTA (51%)",
     badge: "SOTA 51%",
     shortLabel: "SOTA",
-    description: "Production GNN-Transformer trained on 2025-2026 pro matches with 51.3% verified True Pick Order from broadcast screenshots",
+    description: "Production GNN-Transformer trained on 2025-2026 pro matches with 51.5% verified True Pick Order from broadcast screenshots",
   },
   {
     id: "heuristic",

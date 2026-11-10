@@ -27,6 +27,36 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-08 12:46 (UTC+7) — Full-Stack Code Review Fixes (Token Step Alignment, Docker Catalog Fallback & Session Debounce)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Inference Sequence & Positional Step Alignment (`src/search/draft_mcts.py`)**: Updated `sequence_events()` and `encode_batch()` to reconstruct `(hero_id, token_type, step_idx)` in exact chronological `DRAFT_STEPS` turn order (`B1 -> R1 R2 -> B2 B3 -> R3 ...`), passing the true `step_idx` (`0..17`) into `tok_steps` so `RoVDraftGNNTransformer.step_pos_emb` matches `build_tensor_dataset()` training behavior 100%. Regenerated `tests/fixtures/predict_golden.json`.
+- **Docker / Missing-Export Catalog Fallback (`src/api.py`)**: Added fallback computation from `data/heroes_130_summary.csv` and `data/hero_draft_stats.csv` for `presence_rate`, `total_picks`, `total_bans`, flex lanes (`>= 0.15` share), and 1..130 presence ranks when `exports/` is absent (such as inside Docker containers). Added `logger.exception(...)` to startup catalog error handling.
+- **Session Persistence Debounce & League Normalization (`frontend/src/hooks/useDraft.ts`)**: Added a 250 ms debounce to `PUT /draft/session` (while keeping `localStorage` synchronous) to avoid double disk writes on every hero lock (`stepIndex` change followed by `/predict` `blueWinRate` update), and mapped backend `"APL"` / `"AIC"` league codes to `"INTL"`.
+- **Frontend UI Metadata Sync (`frontend/src/types/draft.ts`, `frontend/src/components/meta_lab/MetaLab.tsx`)**: Updated hardcoded dataset stats (`51.5% verified True Pick Order`, `4,329` pro matches) and aligned `recommendedRanks` in `MetaLab.tsx` to use `r.rank`.
+- **Forecast Slot Name Polish (`frontend/src/components/TeamColumn.tsx`)**: Removed redundant `?` prefix on predicted ghost hero names in compact pick slots and ban slots.
+
+### 📁 Modified Files
+- `src/api.py`
+- `src/search/draft_mcts.py`
+- `tests/fixtures/predict_golden.json`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/types/draft.ts`
+- `frontend/src/components/meta_lab/MetaLab.tsx`
+- `frontend/src/components/TeamColumn.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check --fix .` & `ruff format .`: 0 errors.
+- `pytest -v`: 79/79 passed.
+- `cd frontend && npm run lint && npm run build`: 0 warnings, 0 errors, production bundle built cleanly.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
 ## 📅 2026-11-08 08:35 (UTC+7) — Draft Screenshots Canonical Match Team Naming & SGP Normalization
 **Agent:** Antigravity (gemini-3.8-flash-high)
 

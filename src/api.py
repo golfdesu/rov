@@ -1,4 +1,5 @@
 import json
+import logging
 import threading
 import time
 import uuid
@@ -63,8 +64,11 @@ def get_heuristic_predictor() -> RoVDraftPredictor:
     return heuristic_predictor
 
 
+logger = logging.getLogger(__name__)
+
 # Precompute rich hero metadata catalog
 hero_summary_path = DATA_DIR / "heroes_130_summary.csv"
+hero_draft_stats_path = DATA_DIR / "hero_draft_stats.csv"
 hero_images_path = FRONTEND_DIR / "public" / "hero_images.json"
 hero_tier_stats_path = (
     DATA_DIR.parent / "exports" / "RoV_Pro_Draft_Intelligence_2026" / "raw_csv" / "hero_tier_stats_2026.csv"
@@ -74,6 +78,7 @@ hero_tier_overrides_path = getattr(config.paths, "hero_tier_overrides_path", DAT
 hero_details_cache: list[dict] = []
 try:
     summary_df = pd.read_csv(hero_summary_path).set_index("name") if hero_summary_path.exists() else None
+    draft_stats_df = pd.read_csv(hero_draft_stats_path).set_index("name") if hero_draft_stats_path.exists() else None
     tier_stats_df = pd.read_csv(hero_tier_stats_path).set_index("Hero") if hero_tier_stats_path.exists() else None
     images_dict = json.loads(hero_images_path.read_text(encoding="utf-8")) if hero_images_path.exists() else {}
 
@@ -87,6 +92,7 @@ try:
                 if isinstance(v, dict) and "reason" in v:
                     tier_reasons[k] = str(v["reason"])
         except Exception:
+            logger.exception("Failed to parse hero_tier_overrides.json")
             tier_overrides = {}
             tier_reasons = {}
 
@@ -106,6 +112,13 @@ try:
         ("Mid", "Mid_Share"),
         ("Dragon_Lane", "Dragon_Lane_Share"),
         ("Roam", "Roam_Share"),
+    ]
+    draft_lane_cols = [
+        ("DS_Lane", "ds_lane_picks"),
+        ("Jungle", "jungle_picks"),
+        ("Mid", "mid_picks"),
+        ("Dragon_Lane", "dragon_lane_picks"),
+        ("Roam", "roam_picks"),
     ]
 
     for i, name in enumerate(predictor.hero_names):
@@ -165,6 +178,27 @@ try:
                 pick_rate = round(float(row["pro_pick_rate_2026"]), 1)
             if pd.notna(row.get("pro_ban_rate_2026")):
                 ban_rate = round(float(row["pro_ban_rate_2026"]), 1)
+            presence_rate = round(pick_rate + ban_rate, 1)
+
+            if draft_stats_df is not None and lookup_name in draft_stats_df.index:
+                d_row = draft_stats_df.loc[lookup_name]
+                if isinstance(d_row, pd.DataFrame):
+                    d_row = d_row.iloc[0]
+                if pd.notna(d_row.get("picks")):
+                    total_picks = int(d_row["picks"])
+                b1 = int(d_row["bans_phase1"]) if pd.notna(d_row.get("bans_phase1")) else 0
+                b2 = int(d_row["bans_phase2"]) if pd.notna(d_row.get("bans_phase2")) else 0
+                total_bans = b1 + b2
+                if pd.notna(d_row.get("main_pro_lane")) and str(d_row["main_pro_lane"]) != "Unpicked":
+                    main_pro_lane = str(d_row["main_pro_lane"])
+                    lane_totals = [float(d_row[col]) if pd.notna(d_row.get(col)) else 0.0 for _, col in draft_lane_cols]
+                    sum_lanes = sum(lane_totals)
+                    active_lanes = [main_pro_lane]
+                    if sum_lanes > 0:
+                        for (lname, _), val in zip(draft_lane_cols, lane_totals):
+                            if lname != main_pro_lane and (val / sum_lanes) >= 0.15:
+                                active_lanes.append(lname)
+                    lane = ", ".join(active_lanes)
 
         if name in tier_overrides:
             tier = tier_overrides[name]
@@ -197,7 +231,17 @@ try:
                 "image_url": img_url,
             }
         )
+
+    # Assign fallback 1..N presence ranks when exports CSV is absent (e.g. inside Docker container)
+    if hero_details_cache and all(h["rank"] == 999 for h in hero_details_cache):
+        sorted_by_presence = sorted(
+            hero_details_cache,
+            key=lambda h: (-h["presence_rate"], -h["pick_rate"], h["name"]),
+        )
+        for idx, h_entry in enumerate(sorted_by_presence, start=1):
+            h_entry["rank"] = idx
 except Exception:
+    logger.exception("Failed to initialize hero_details_cache; falling back to default catalog")
     hero_details_cache = [
         {"id": i, "name": name, "role": "Warrior", "lane": "DS_Lane", "tier": "A"}
         for i, name in enumerate(predictor.hero_names)

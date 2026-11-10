@@ -74,18 +74,49 @@ class ModelInput(NamedTuple):
     phase: int
 
 
-def sequence_events(inp: ModelInput) -> list[tuple[int, int]]:
-    """(hero_id, token_type) in the order the model was trained on: phase-1 bans/picks, then phase 2."""
-    return (
-        [(h, 3) for h in inp.ally_bans[:2]]
-        + [(h, 4) for h in inp.enemy_bans[:2]]
-        + [(h, 1) for h in inp.ally_picks[:3]]
-        + [(h, 2) for h in inp.enemy_picks[:3]]
-        + [(h, 3) for h in inp.ally_bans[2:]]
-        + [(h, 4) for h in inp.enemy_bans[2:]]
-        + [(h, 1) for h in inp.ally_picks[3:]]
-        + [(h, 2) for h in inp.enemy_picks[3:]]
-    )
+def sequence_events(inp: ModelInput) -> list[tuple[int, int, int]]:
+    """Reconstruct (hero_id, token_type, step_idx) in exact DRAFT_STEPS turn order matching training."""
+    acting_side = 1 if (len(inp.meta) > 3 and inp.meta[3] >= 0.5) else 0
+    if acting_side == 0:
+        b_picks, r_picks = inp.ally_picks, inp.enemy_picks
+        b_bans, r_bans = inp.ally_bans, inp.enemy_bans
+    else:
+        b_picks, r_picks = inp.enemy_picks, inp.ally_picks
+        b_bans, r_bans = inp.enemy_bans, inp.ally_bans
+
+    bp_i = rp_i = bb_i = rb_i = 0
+    events: list[tuple[int, int, int]] = []
+    for step_idx, _phase, act_ev, side_ev in DRAFT_STEPS:
+        h: int | None = None
+        if act_ev == 0:
+            if side_ev == 0 and bb_i < len(b_bans):
+                h = b_bans[bb_i]
+                bb_i += 1
+            elif side_ev == 1 and rb_i < len(r_bans):
+                h = r_bans[rb_i]
+                rb_i += 1
+        else:
+            if side_ev == 0 and bp_i < len(b_picks):
+                h = b_picks[bp_i]
+                bp_i += 1
+            elif side_ev == 1 and rp_i < len(r_picks):
+                h = r_picks[rp_i]
+                rp_i += 1
+        if h is not None and h != -1:
+            same_side = side_ev == acting_side
+            ttype = (1 if same_side else 2) if act_ev == 1 else (3 if same_side else 4)
+            events.append((h, ttype, step_idx))
+
+    # Append any overflow tokens from custom/non-standard board states
+    for h in b_bans[bb_i:]:
+        events.append((h, 3 if acting_side == 0 else 4, 17))
+    for h in r_bans[rb_i:]:
+        events.append((h, 4 if acting_side == 0 else 3, 17))
+    for h in b_picks[bp_i:]:
+        events.append((h, 1 if acting_side == 0 else 2, 17))
+    for h in r_picks[rp_i:]:
+        events.append((h, 2 if acting_side == 0 else 1, 17))
+    return events
 
 
 def encode_batch(inputs: Sequence[ModelInput], num_heroes: int) -> tuple[np.ndarray, ...]:
@@ -116,8 +147,7 @@ def encode_batch(inputs: Sequence[ModelInput], num_heroes: int) -> tuple[np.ndar
         events = sequence_events(inp)[:MAX_HISTORY_LEN]
         if events:
             k = len(events)
-            tok_heroes[row, :k], tok_types[row, :k] = zip(*events)
-            tok_steps[row, :k] = np.arange(k)
+            tok_heroes[row, :k], tok_types[row, :k], tok_steps[row, :k] = zip(*events)
             tok_pad[row, :k] = False
 
         meta[row] = inp.meta

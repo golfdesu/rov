@@ -197,7 +197,7 @@ export function TeamColumn({
                       {ghost.probability_pct.toFixed(0)}%
                     </span>
                     <div className="absolute inset-x-0 bottom-0 truncate bg-bg/85 px-0.5 text-center font-display text-[8px] font-bold text-ink sm:text-[9px]">
-                      ?{displayName(ghost.hero_name)}
+                      {displayName(ghost.hero_name)}
                     </div>
                   </div>
                 ) : (
@@ -442,7 +442,7 @@ export function TeamColumn({
                     className="saturate-50"
                   />
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 truncate bg-bg/85 px-0.5 py-0.5 text-center font-mono text-[8px] font-bold text-red sm:text-[9px]">
-                    ?{displayName(ghostBan.hero_name)}
+                    {displayName(ghostBan.hero_name)}
                   </div>
                 </div>
               ) : (
