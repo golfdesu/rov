@@ -294,7 +294,12 @@ function categorizeContext(ctx: string): SkillEffectCategory {
 /**
  * Main parser extracting progression effects and UI highlights for any RoV skill.
  */
-export function parseSkillEffects(skill: SkillLike, heroName?: string): ParsedSkillProfile {
+export function parseSkillEffects(
+  skill: SkillLike,
+  heroName?: string,
+  heroLevel?: number,
+  skillLevel?: number
+): ParsedSkillProfile {
   const desc = skill.description ?? "";
   const descTh = skill.desc_th ?? "";
   const stype = (skill.type ?? "").toLowerCase();
@@ -463,23 +468,9 @@ export function parseSkillEffects(skill: SkillLike, heroName?: string): ParsedSk
       detail: "ฟื้นฟู 6% Max HP + 6% เลือดที่เสีย ทุก 1 วินาที (นาน 5 / 6 / 7 วินาที) + วิ่งเร็ว 30%",
       badgeClass: "border-green-500/40 bg-green-500/10 text-green-400",
     });
-  } else if (heroName === "Qi" && (skill.slot === "Passive" || skill.name === "Protection Aura")) {
-    highlights.push({
-      icon: "shield",
-      title: "เกราะ & ต้านเวท (+30-100 ต่อสแต็ก)",
-      detail: "เพิ่ม 30 (+5 ต่อ Lv.ฮีโร่) เกราะและต้านเวท นาน 5 วิ (สะสมครบ 3 สแต็ก = 90 - 300 หน่วย)",
-      badgeClass: "border-emerald-500/40 bg-emerald-500/10 text-emerald-400",
-    });
-    highlights.push({
-      icon: "swords",
-      title: "โจมตีพิเศษ & ฮีลเลือด (+100% ตีไว)",
-      detail: "สกิลโดนศัตรู ตีไวขึ้น 100% 2 ครั้ง เสริมดาเมจ 30 (+5/Lv) (+25%AD) และฮีล 100 HP (สะสม 4 ครั้ง)",
-      badgeClass: "border-amber-500/40 bg-amber-500/10 text-amber-400",
-    });
   }
 
-  // Summary badge for quick cards
-  let summaryBadge: { text: string; badgeClass: string } | undefined;
+  // Progression lookup
   const drProg = progressions.find((p) => p.category === "damage_reduction");
   const shieldProg = progressions.find((p) => p.category === "shield");
   const healProg = progressions.find((p) => p.category === "heal");
@@ -488,75 +479,83 @@ export function parseSkillEffects(skill: SkillLike, heroName?: string): ParsedSk
   const pierceProg = progressions.find((p) => p.category === "pierce");
   const adProg = progressions.find((p) => p.category === "ad_buff");
 
-  if (heroName === "Qi" && (skill.slot === "Passive" || skill.name === "Protection Aura")) {
+  // Check exact hero passive scaling profile first
+  const exactProfile = heroName
+    ? getExactHeroPassiveScaling(heroName, skill.slot, skill.name, heroLevel ?? 1)
+    : null;
+
+  if (exactProfile) {
+    for (const h of exactProfile.highlights) {
+      highlights.push(h);
+    }
+  }
+
+  // Summary badge for quick cards
+  let summaryBadge: { text: string; badgeClass: string } | undefined;
+  if (exactProfile) {
     summaryBadge = {
-      text: "🛡️ เกราะ/ต้านเวท 90-300",
-      badgeClass: CATEGORY_STYLES.defense.badgeClass,
+      text: exactProfile.summaryBadgeText(heroLevel ?? 1),
+      badgeClass: exactProfile.badgeClass,
     };
-  } else if (drProg) {
-    const f = drProg.values[0];
-    const l = drProg.values[drProg.values.length - 1];
-    summaryBadge = {
-      text: `🛡️ ลดดาเมจ ${f}-${l}`,
-      badgeClass: drProg.badgeClass,
+  } else {
+    const pickProgVal = (prog: SkillProgressionEffect): string => {
+      if (skillLevel && skillLevel >= 1 && skillLevel <= prog.values.length) {
+        return `${prog.values[skillLevel - 1]} (Lv ${skillLevel})`;
+      }
+      return `${prog.values[0]} (Lv 1) - ${prog.values[prog.values.length - 1]} (Lv ${prog.values.length})`;
     };
-  } else if (shieldProg) {
-    const f = shieldProg.values[0];
-    const l = shieldProg.values[shieldProg.values.length - 1];
-    summaryBadge = {
-      text: `🛡️ โล่ ${f}-${l}`,
-      badgeClass: shieldProg.badgeClass,
-    };
-  } else if (healProg) {
-    const f = healProg.values[0];
-    const l = healProg.values[healProg.values.length - 1];
-    summaryBadge = {
-      text: `💖 ฟื้นฟู ${f}-${l}`,
-      badgeClass: healProg.badgeClass,
-    };
-  } else if (asProg) {
-    const f = asProg.values[0];
-    const l = asProg.values[asProg.values.length - 1];
-    summaryBadge = {
-      text: `⚡ ตีเร็ว +${f}-${l}`,
-      badgeClass: asProg.badgeClass,
-    };
-  } else if (pierceProg) {
-    const f = pierceProg.values[0];
-    const l = pierceProg.values[pierceProg.values.length - 1];
-    summaryBadge = {
-      text: `🎯 เจาะเกราะ ${f}-${l}`,
-      badgeClass: pierceProg.badgeClass,
-    };
-  } else if (adProg) {
-    const f = adProg.values[0];
-    const l = adProg.values[adProg.values.length - 1];
-    summaryBadge = {
-      text: `⚔️ AD +${f}-${l}`,
-      badgeClass: adProg.badgeClass,
-    };
-  } else if (msProg) {
-    const f = msProg.values[0];
-    const l = msProg.values[msProg.values.length - 1];
-    summaryBadge = {
-      text: `🏃 วิ่งเร็ว +${f}-${l}`,
-      badgeClass: msProg.badgeClass,
-    };
-  } else if (isTypeShield) {
-    summaryBadge = {
-      text: "🛡️ โล่ป้องกัน",
-      badgeClass: CATEGORY_STYLES.shield.badgeClass,
-    };
-  } else if (isTypeHeal) {
-    summaryBadge = {
-      text: "💖 ฟื้นฟูเลือด",
-      badgeClass: CATEGORY_STYLES.heal.badgeClass,
-    };
-  } else if (!hasDamage && isTypeDamageReduction) {
-    summaryBadge = {
-      text: "🛡️ ทนความเสียหาย",
-      badgeClass: CATEGORY_STYLES.damage_reduction.badgeClass,
-    };
+
+    if (drProg) {
+      summaryBadge = {
+        text: `🛡️ ลดดาเมจ ${pickProgVal(drProg)}`,
+        badgeClass: drProg.badgeClass,
+      };
+    } else if (shieldProg) {
+      summaryBadge = {
+        text: `🛡️ โล่ ${pickProgVal(shieldProg)}`,
+        badgeClass: shieldProg.badgeClass,
+      };
+    } else if (healProg) {
+      summaryBadge = {
+        text: `💖 ฟื้นฟู ${pickProgVal(healProg)}`,
+        badgeClass: healProg.badgeClass,
+      };
+    } else if (asProg) {
+      summaryBadge = {
+        text: `⚡ ตีเร็ว +${pickProgVal(asProg)}`,
+        badgeClass: asProg.badgeClass,
+      };
+    } else if (pierceProg) {
+      summaryBadge = {
+        text: `🎯 เจาะเกราะ ${pickProgVal(pierceProg)}`,
+        badgeClass: pierceProg.badgeClass,
+      };
+    } else if (adProg) {
+      summaryBadge = {
+        text: `⚔️ AD +${pickProgVal(adProg)}`,
+        badgeClass: adProg.badgeClass,
+      };
+    } else if (msProg) {
+      summaryBadge = {
+        text: `🏃 วิ่งเร็ว +${pickProgVal(msProg)}`,
+        badgeClass: msProg.badgeClass,
+      };
+    } else if (isTypeShield) {
+      summaryBadge = {
+        text: "🛡️ โล่ป้องกัน",
+        badgeClass: CATEGORY_STYLES.shield.badgeClass,
+      };
+    } else if (isTypeHeal) {
+      summaryBadge = {
+        text: "💖 ฟื้นฟูเลือด",
+        badgeClass: CATEGORY_STYLES.heal.badgeClass,
+      };
+    } else if (!hasDamage && isTypeDamageReduction) {
+      summaryBadge = {
+        text: "🛡️ ทนความเสียหาย",
+        badgeClass: CATEGORY_STYLES.damage_reduction.badgeClass,
+      };
+    }
   }
 
   const isDefensiveOrBuffOnly = !hasDamage;
@@ -580,6 +579,607 @@ export interface InGameTableRow {
   label: string; // Full Thai label e.g. "ดาเมจพื้นฐาน (Base DMG)"
   values: string[]; // ["120", "150", "180", "210", "240", "270"]
   colorClass: string;
+}
+
+export interface ExactHeroPassiveConfig {
+  milestones: number[];
+  rows: InGameTableRow[];
+  highlights: SkillSpecialHighlight[];
+  summaryBadgeText: (level: number) => string;
+  badgeClass: string;
+}
+
+export function getExactHeroPassiveScaling(
+  heroName: string,
+  slot: string,
+  skillName: string,
+  _currentLevel: number = 1
+): ExactHeroPassiveConfig | null {
+  const isPassive = slot.startsWith("Passive") || slot === "Passive";
+  const ms = [1, 4, 7, 10, 13, 15];
+
+  // 1. Qi - Protection Aura
+  if (heroName === "Qi" && (isPassive || skillName === "Protection Aura")) {
+    return {
+      milestones: ms,
+      rows: [
+        {
+          code: "DEF Up",
+          label: "เกราะ/ต้านเวท 1สแต็ก (3สแต็ก)",
+          values: ms.map((lv) => {
+            const p = 30 + 5 * (lv - 1);
+            return `${p} (${p * 3})`;
+          }),
+          colorClass: "text-emerald-300 font-bold",
+        },
+        {
+          code: "DMG",
+          label: "ดาเมจพิเศษ (+25%AD)",
+          values: ms.map((lv) => (30 + 5 * (lv - 1)).toString()),
+          colorClass: "text-ink font-bold",
+        },
+        {
+          code: "Heal",
+          label: "ฟื้นฟูเลือด (Heal)",
+          values: Array(6).fill("100"),
+          colorClass: "text-green-300 font-bold",
+        },
+      ],
+      highlights: [
+        {
+          icon: "shield",
+          title: "เกราะ & ต้านเวท (+30-100 ต่อสแต็ก)",
+          detail: "เพิ่ม 30 (+5 ต่อ Lv.ฮีโร่) เกราะและต้านเวท นาน 5 วิ (สะสมครบ 3 สแต็ก = 90 - 300 หน่วย)",
+          badgeClass: "border-emerald-500/40 bg-emerald-500/10 text-emerald-400",
+        },
+        {
+          icon: "swords",
+          title: "โจมตีพิเศษ & ฮีลเลือด (+100% ตีไว)",
+          detail: "สกิลโดนศัตรู ตีไวขึ้น 100% 2 ครั้ง เสริมดาเมจ 30 (+5/Lv) (+25%AD) และฮีล 100 HP (สะสม 4 ครั้ง)",
+          badgeClass: "border-amber-500/40 bg-amber-500/10 text-amber-400",
+        },
+      ],
+      summaryBadgeText: (lv) => `🛡️ เกราะ/ต้านเวท ${(30 + 5 * (lv - 1)) * 3} (3สแต็ก) [Lv ${lv}]`,
+      badgeClass: CATEGORY_STYLES.defense.badgeClass,
+    };
+  }
+
+  // 2. Veres - Bloody Kiss
+  if (heroName === "Veres" && (isPassive || skillName === "Bloody Kiss")) {
+    return {
+      milestones: ms,
+      rows: [
+        {
+          code: "DMG",
+          label: "ดาเมจรอบตัว (+175%AD)",
+          values: ms.map((lv) => (300 + 25 * (lv - 1)).toString()),
+          colorClass: "text-ink font-bold",
+        },
+        {
+          code: "Heal",
+          label: "ดูดเลือด (Lifesteal)",
+          values: ms.map((lv) => `${(8.0 + (7.0 / 14) * (lv - 1)).toFixed(1)}%`),
+          colorClass: "text-green-300 font-bold",
+        },
+      ],
+      highlights: [
+        {
+          icon: "swords",
+          title: "ดาเมจรอบตัว (+25 ต่อ Lv)",
+          detail: "สร้างความเสียหายกายภาพ 300 (+25 ต่อ Lv.ฮีโร่) (+175%AD) แก่ศัตรูรอบๆ เมื่อสะสมครบ 4 ครั้ง",
+          badgeClass: "border-[#ff9f43]/40 bg-[#ff9f43]/10 text-[#ff9f43]",
+        },
+        {
+          icon: "heart",
+          title: "ดูดเลือด (8% - 15%)",
+          detail: "ดูดเลือด 8% - 15% (เพิ่มขึ้นตาม HP ที่เสียไป สูงสุด 80% - 150%) พร้อมลด CD สกิล 1/2 ลง 1 วิ, สกิล 3 ลง 2 วิ",
+          badgeClass: "border-green-500/40 bg-green-500/10 text-green-400",
+        },
+      ],
+      summaryBadgeText: (lv) => `⚔️ ดาเมจ ${300 + 25 * (lv - 1)} [Lv ${lv}]`,
+      badgeClass: CATEGORY_STYLES.damage.badgeClass,
+    };
+  }
+
+  // 3. Aleister - Wicked Plot
+  if (heroName === "Aleister" && (isPassive || skillName === "Wicked Plot")) {
+    return {
+      milestones: ms,
+      rows: [
+        {
+          code: "DMG",
+          label: "ดาเมจจริง (+30%AP)",
+          values: ms.map((lv) => (84 + 10 * (lv - 1)).toString()),
+          colorClass: "text-ink font-bold",
+        },
+      ],
+      highlights: [
+        {
+          icon: "zap",
+          title: "ดาเมจจริงสายฟ้า (+10 ต่อ Lv)",
+          detail: "สะสมคำสาปครบ 3 ครั้ง ระเบิดความเสียหายจริง 84 (+10 ต่อ Lv.ฮีโร่) (+30%AP)",
+          badgeClass: "border-ink/40 bg-ink/10 text-ink",
+        },
+      ],
+      summaryBadgeText: (lv) => `⚡ ดาเมจจริง ${84 + 10 * (lv - 1)} [Lv ${lv}]`,
+      badgeClass: CATEGORY_STYLES.damage.badgeClass,
+    };
+  }
+
+  // 4. Max - Static Shock
+  if (heroName === "Max" && (isPassive || skillName === "Static Shock")) {
+    return {
+      milestones: ms,
+      rows: [
+        {
+          code: "DMG",
+          label: "ดาเมจจริง/วิ (+35%โบนัส AD)",
+          values: ms.map((lv) => (70 + 5 * (lv - 1)).toString()),
+          colorClass: "text-ink font-bold",
+        },
+        {
+          code: "DEF Down",
+          label: "ลดการฟื้นฟู (Anti-Heal)",
+          values: Array(6).fill("40%"),
+          colorClass: "text-amber-300 font-bold",
+        },
+      ],
+      highlights: [
+        {
+          icon: "zap",
+          title: "ดาเมจจริงช็อตไฟฟ้า (+5 ต่อ Lv)",
+          detail: "สร้างความเสียหายจริง 70 (+5 ต่อ Lv.ฮีโร่) (+35% โบนัส AD) ต่อวินาที นาน 3 วิ",
+          badgeClass: "border-ink/40 bg-ink/10 text-ink",
+        },
+        {
+          icon: "target",
+          title: "ตัดเลือดศัตรู 40%",
+          detail: "ลดความสามารถฟื้นฟูเลือดของศัตรูลง 40% นาน 3 วิ (ไม่ทับซ้อนกับไอเทมตัดเลือด)",
+          badgeClass: "border-amber-500/40 bg-amber-500/10 text-amber-400",
+        },
+      ],
+      summaryBadgeText: (lv) => `⚡ ดาเมจจริง ${70 + 5 * (lv - 1)}/วิ [Lv ${lv}]`,
+      badgeClass: CATEGORY_STYLES.damage.badgeClass,
+    };
+  }
+
+  // 5. Murad - Rift
+  if (heroName === "Murad" && (isPassive || skillName === "Rift")) {
+    return {
+      milestones: ms,
+      rows: [
+        {
+          code: "DEF Down",
+          label: "เจาะเกราะ (Pierce)",
+          values: ms.map((lv) => Math.min(200, 60 + 10 * (lv - 1)).toString()),
+          colorClass: "text-orange-300 font-bold",
+        },
+      ],
+      highlights: [
+        {
+          icon: "target",
+          title: "เจาะเกราะสะสม (+10 ต่อ Lv)",
+          detail: "โจมตีปกติครบ 4 ครั้ง ได้รับเจาะเกราะ 60 (+10 ต่อ Lv.ฮีโร่ สูงสุด 200) และปลดล็อกอัลติเมท 5 วิ",
+          badgeClass: "border-orange-500/40 bg-orange-500/10 text-orange-400",
+        },
+      ],
+      summaryBadgeText: (lv) => `🎯 เจาะเกราะ ${Math.min(200, 60 + 10 * (lv - 1))} [Lv ${lv}]`,
+      badgeClass: CATEGORY_STYLES.pierce.badgeClass,
+    };
+  }
+
+  // 6. Taara - Fighting Spirit
+  if (heroName === "Taara" && (isPassive || skillName === "Fighting Spirit")) {
+    return {
+      milestones: ms,
+      rows: [
+        {
+          code: "DMG",
+          label: "โบนัส AD ต่อ 1% เลือดที่เสีย",
+          values: ms.map((lv) => (3.0 + (4.0 / 14) * (lv - 1)).toFixed(1)),
+          colorClass: "text-gold font-bold",
+        },
+      ],
+      highlights: [
+        {
+          icon: "swords",
+          title: "ยิ่งเลือดยิ่งแรง (+0.29 AD/Lv)",
+          detail: "เสียเลือด 1% ได้รับ 3.0 ถึง 7.0 โบนัส AD (+0.29 ต่อ Lv.ฮีโร่)",
+          badgeClass: "border-gold/40 bg-gold/10 text-gold",
+        },
+      ],
+      summaryBadgeText: (lv) => `⚔️ AD +${(3.0 + (4.0 / 14) * (lv - 1)).toFixed(1)}/1%HP [Lv ${lv}]`,
+      badgeClass: CATEGORY_STYLES.ad_buff.badgeClass,
+    };
+  }
+
+  // 7. Ormarr - Deterrence
+  if (heroName === "Ormarr" && (isPassive || skillName === "Deterrence")) {
+    return {
+      milestones: ms,
+      rows: [
+        {
+          code: "DMG",
+          label: "ดาเมจเวท (% Max HP)",
+          values: ms.map((lv) => `${(4.0 + (4.0 / 14) * (lv - 1)).toFixed(1)}%`),
+          colorClass: "text-purple-300 font-bold",
+        },
+      ],
+      highlights: [
+        {
+          icon: "zap",
+          title: "สตั๊น & ดาเมจ % เลือดสูงสุด",
+          detail: "ความเสียหายมีโอกาสติดสตั๊น 0.75 วิ และทำดาเมจเวท 4.0% (+0.29%/Lv สูงสุด 8.0%) ของ Max HP",
+          badgeClass: "border-purple-500/40 bg-purple-500/10 text-purple-400",
+        },
+      ],
+      summaryBadgeText: (lv) => `💥 ดาเมจ ${(4.0 + (4.0 / 14) * (lv - 1)).toFixed(1)}% HP [Lv ${lv}]`,
+      badgeClass: CATEGORY_STYLES.damage.badgeClass,
+    };
+  }
+
+  // 8. Kil'Groth - The Fanatic
+  if (heroName === "Kil'Groth" && (isPassive || skillName === "The Fanatic")) {
+    return {
+      milestones: ms,
+      rows: [
+        {
+          code: "ATK SPD",
+          label: "ตีไว 1สแต็ก (5สแต็ก)",
+          values: ms.map((lv) => {
+            const one = 8.0 + (6.0 / 14) * (lv - 1);
+            return `${one.toFixed(1)}% (${(one * 5).toFixed(0)}%)`;
+          }),
+          colorClass: "text-amber-300 font-bold",
+        },
+      ],
+      highlights: [
+        {
+          icon: "zap",
+          title: "เร่งความเร็วโจมตี (+0.43%/Lv)",
+          detail: "ตีปกติเพิ่มความเร็วโจมตี 8.0% (+0.43%/Lv) ต่อสแต็ก สะสม 5 สแต็ก = 40% ถึง 70%",
+          badgeClass: "border-amber-500/40 bg-amber-500/10 text-amber-400",
+        },
+      ],
+      summaryBadgeText: (lv) => `⚡ ตีไว +${((8.0 + (6.0 / 14) * (lv - 1)) * 5).toFixed(0)}% (5สแต็ก) [Lv ${lv}]`,
+      badgeClass: CATEGORY_STYLES.attack_speed.badgeClass,
+    };
+  }
+
+  // 9. Lu Bu - Tyrant
+  if (heroName === "Lu Bu" && (isPassive || skillName === "Tyrant")) {
+    return {
+      milestones: ms,
+      rows: [
+        {
+          code: "ATK SPD",
+          label: "เพิ่มความเร็วโจมตี (ATK SPD)",
+          values: ms.map((lv) => `${(35.0 + (35.0 / 14) * (lv - 1)).toFixed(1)}%`),
+          colorClass: "text-amber-300 font-bold",
+        },
+      ],
+      highlights: [
+        {
+          icon: "zap",
+          title: "คลื่นดาบตีไว (+2.5%/Lv)",
+          detail: "ใช้สกิลแล้วตีปกติเปลี่ยนเป็นคลื่นดาบ เพิ่มตีไว +35% (+2.5%/Lv สูงสุด 70%) สะสม 5 ครั้ง",
+          badgeClass: "border-amber-500/40 bg-amber-500/10 text-amber-400",
+        },
+      ],
+      summaryBadgeText: (lv) => `⚡ ตีไว +${(35.0 + (35.0 / 14) * (lv - 1)).toFixed(1)}% [Lv ${lv}]`,
+      badgeClass: CATEGORY_STYLES.attack_speed.badgeClass,
+    };
+  }
+
+  // 10. Lauriel - Divine Punishment
+  if (heroName === "Lauriel" && (isPassive || skillName === "Divine Punishment")) {
+    return {
+      milestones: ms,
+      rows: [
+        {
+          code: "SLOW",
+          label: "สโลว์ศัตรู (Slow)",
+          values: ms.map((lv) => `${(50.0 + (40.0 / 14) * (lv - 1)).toFixed(1)}%`),
+          colorClass: "text-indigo-300 font-bold",
+        },
+        {
+          code: "DMG",
+          label: "ดาเมจจริง (+50%AP)",
+          values: Array(6).fill("160"),
+          colorClass: "text-ink font-bold",
+        },
+        {
+          code: "Heal",
+          label: "ฟื้นฟูเลือด (+1%โบนัส HP)",
+          values: Array(6).fill("140"),
+          colorClass: "text-green-300 font-bold",
+        },
+      ],
+      highlights: [
+        {
+          icon: "target",
+          title: "สโลว์มหาศาล (+2.86%/Lv)",
+          detail: "ระเบิดสัญลักษณ์ สโลว์ศัตรู 50% (+2.86%/Lv สูงสุด 90%) 1 วิ พร้อมดาเมจจริง 160 และฮีล 140",
+          badgeClass: "border-indigo-500/40 bg-indigo-500/10 text-indigo-400",
+        },
+      ],
+      summaryBadgeText: (lv) => `❄️ สโลว์ ${(50.0 + (40.0 / 14) * (lv - 1)).toFixed(1)}% [Lv ${lv}]`,
+      badgeClass: CATEGORY_STYLES.slow.badgeClass,
+    };
+  }
+
+  // 11. Ata - Child of the Sea
+  if (heroName === "Ata" && (isPassive || skillName === "Child of the Sea")) {
+    return {
+      milestones: ms,
+      rows: [
+        {
+          code: "DMG",
+          label: "โบนัสดาเมจตีปกติ (+1% Max HP)",
+          values: ms.map((lv) => (28 + 2 * (lv - 1)).toString()),
+          colorClass: "text-ink font-bold",
+        },
+      ],
+      highlights: [
+        {
+          icon: "swords",
+          title: "โบนัสดาเมจตีปกติ (+2 ต่อ Lv)",
+          detail: "โจมตีปกติสร้างโบนัสดาเมจกายภาพ 28 (+2 ต่อ Lv.ฮีโร่) (+1% Max HP)",
+          badgeClass: "border-[#ff9f43]/40 bg-[#ff9f43]/10 text-[#ff9f43]",
+        },
+      ],
+      summaryBadgeText: (lv) => `⚔️ ดาเมจ ${28 + 2 * (lv - 1)} [Lv ${lv}]`,
+      badgeClass: CATEGORY_STYLES.damage.badgeClass,
+    };
+  }
+
+  // 12. Chaugnar - Faithful Herald
+  if (heroName === "Chaugnar" && (isPassive || skillName === "Faithful Herald")) {
+    return {
+      milestones: ms,
+      rows: [
+        {
+          code: "SPD Up",
+          label: "เพิ่มความเร็วเคลื่อนที่ (SPD Up)",
+          values: ms.map((lv) => `${(6.0 + (4.0 / 14) * (lv - 1)).toFixed(1)}%`),
+          colorClass: "text-cyan-300 font-bold",
+        },
+      ],
+      highlights: [
+        {
+          icon: "speed",
+          title: "วิ่งเร็วขึ้น (+0.29%/Lv)",
+          detail: "เพิ่มความเร็วเคลื่อนที่ 6.0% (+0.29% ต่อ Lv.ฮีโร่ สูงสุด 10.0%)",
+          badgeClass: "border-cyan-500/40 bg-cyan-500/10 text-cyan-400",
+        },
+      ],
+      summaryBadgeText: (lv) => `🏃 วิ่งเร็ว +${(6.0 + (4.0 / 14) * (lv - 1)).toFixed(1)}% [Lv ${lv}]`,
+      badgeClass: CATEGORY_STYLES.move_speed.badgeClass,
+    };
+  }
+
+  // 13. Errol - Blood Drinker
+  if (heroName === "Errol" && (isPassive || skillName === "Blood Drinker")) {
+    return {
+      milestones: ms,
+      rows: [
+        {
+          code: "ATK SPD",
+          label: "ตีไว 1สแต็ก (5สแต็ก)",
+          values: ms.map((lv) => {
+            const one = 7.0 + (7.0 / 14) * (lv - 1);
+            return `${one.toFixed(1)}% (${(one * 5).toFixed(0)}%)`;
+          }),
+          colorClass: "text-amber-300 font-bold",
+        },
+      ],
+      highlights: [
+        {
+          icon: "zap",
+          title: "ตีไวคลั่ง (+0.5%/Lv)",
+          detail: "สัญลักษณ์แต่ละอันเพิ่มตีไว 7.0% (+0.5%/Lv) สะสม 5 อัน = 35% ถึง 70% และดูดเลือด 3.5%",
+          badgeClass: "border-amber-500/40 bg-amber-500/10 text-amber-400",
+        },
+      ],
+      summaryBadgeText: (lv) => `⚡ ตีไว +${((7.0 + (7.0 / 14) * (lv - 1)) * 5).toFixed(0)}% (5สแต็ก) [Lv ${lv}]`,
+      badgeClass: CATEGORY_STYLES.attack_speed.badgeClass,
+    };
+  }
+
+  // 14. Stuart - Drain Charge
+  if (heroName === "Stuart" && (isPassive || skillName === "Drain Charge")) {
+    return {
+      milestones: ms,
+      rows: [
+        {
+          code: "ATK SPD",
+          label: "เพิ่มความเร็วโจมตี (ATK SPD)",
+          values: ms.map((lv) => `${(50.0 + (30.0 / 14) * (lv - 1)).toFixed(1)}%`),
+          colorClass: "text-amber-300 font-bold",
+        },
+        {
+          code: "SPD Up",
+          label: "เพิ่มความเร็วเคลื่อนที่ (SPD Up)",
+          values: ms.map((lv) => `${(20.0 + (10.0 / 14) * (lv - 1)).toFixed(1)}%`),
+          colorClass: "text-cyan-300 font-bold",
+        },
+      ],
+      highlights: [
+        {
+          icon: "zap",
+          title: "สถานะเสริมพลัง ตีไว & วิ่งเร็ว",
+          detail: "ตีไว +50% (+2.14%/Lv สูงสุด 80%) และวิ่งเร็ว +20% (+0.71%/Lv สูงสุด 30%) นาน 6 วิ",
+          badgeClass: "border-amber-500/40 bg-amber-500/10 text-amber-400",
+        },
+      ],
+      summaryBadgeText: (lv) => `⚡ ตีไว +${(50.0 + (30.0 / 14) * (lv - 1)).toFixed(1)}% [Lv ${lv}]`,
+      badgeClass: CATEGORY_STYLES.attack_speed.badgeClass,
+    };
+  }
+
+  // 15. Sephera - Living Water
+  if (heroName === "Sephera" && (isPassive || skillName === "Living Water")) {
+    return {
+      milestones: ms,
+      rows: [
+        {
+          code: "Heal",
+          label: "ฟื้นฟูเลือดพันธมิตร (+10% AP)",
+          values: ms.map((lv) => (50 + 5 * (lv - 1)).toString()),
+          colorClass: "text-green-300 font-bold",
+        },
+      ],
+      highlights: [
+        {
+          icon: "heart",
+          title: "ฟื้นฟูเลือดพันธมิตร (+5 ต่อ Lv)",
+          detail: "ใช้สกิลแล้วฟื้นฟูเลือดให้เพื่อนที่เลือดน้อยสุด 50 (+5 ต่อ Lv.ฮีโร่) (+10% AP)",
+          badgeClass: "border-green-500/40 bg-green-500/10 text-green-400",
+        },
+      ],
+      summaryBadgeText: (lv) => `💖 ฮีล ${50 + 5 * (lv - 1)} [Lv ${lv}]`,
+      badgeClass: CATEGORY_STYLES.heal.badgeClass,
+    };
+  }
+
+  // 16. Bright - The Holy Soul Returns (Melee Bonus)
+  if (heroName === "Bright" && (slot === "Ultimate" || skillName === "The Holy Soul Returns")) {
+    return {
+      milestones: ms,
+      rows: [
+        {
+          code: "DMG",
+          label: "โบนัสดาเมจตีใกล้ (Melee Bonus)",
+          values: ms.map((lv) => (18 + 3 * (lv - 1)).toString()),
+          colorClass: "text-ink font-bold",
+        },
+      ],
+      highlights: [
+        {
+          icon: "swords",
+          title: "ตีใกล้โบนัสดาเมจ (+3 ต่อ Lv)",
+          detail: "ขณะเปิดอัลติเมท ตีปกติระยะใกล้สร้างโบนัสความเสียหายกายภาพ 18 (+3 ต่อ Lv.ฮีโร่ สูงสุด 60)",
+          badgeClass: "border-[#ff9f43]/40 bg-[#ff9f43]/10 text-[#ff9f43]",
+        },
+      ],
+      summaryBadgeText: (lv) => `⚔️ ตีใกล้ +${18 + 3 * (lv - 1)} [Lv ${lv}]`,
+      badgeClass: CATEGORY_STYLES.damage.badgeClass,
+    };
+  }
+
+  // 17. Tamyn - Shadow Devourer
+  if (heroName === "Tamyn" && (isPassive || skillName === "Shadow Devourer")) {
+    return {
+      milestones: ms,
+      rows: [
+        {
+          code: "DMG",
+          label: "โบนัสดาเมจ (+28% โบนัส AD)",
+          values: ms.map((lv) => (182 + 13 * (lv - 1)).toString()),
+          colorClass: "text-ink font-bold",
+        },
+        {
+          code: "Heal",
+          label: "ฟื้นฟูเลือด (+2% โบนัส HP)",
+          values: ms.map((lv) => (100 + 7 * (lv - 1)).toString()),
+          colorClass: "text-green-300 font-bold",
+        },
+      ],
+      highlights: [
+        {
+          icon: "swords",
+          title: "หอกศักดิ์สิทธิ์ (+13 ต่อ Lv)",
+          detail: "โจมตีพิเศษสร้างโบนัสดาเมจ 182 (+13 ต่อ Lv) (+28% โบนัส AD) ลด CD สกิล 1 วิ",
+          badgeClass: "border-[#ff9f43]/40 bg-[#ff9f43]/10 text-[#ff9f43]",
+        },
+        {
+          icon: "heart",
+          title: "ฟื้นฟูเลือด (+7 ต่อ Lv)",
+          detail: "เก็บหอกฟื้นฟู 100 (+7 ต่อ Lv) (+2% โบนัส HP) โจมตีพิเศษโดนฮีล x2",
+          badgeClass: "border-green-500/40 bg-green-500/10 text-green-400",
+        },
+      ],
+      summaryBadgeText: (lv) => `⚔️ ดาเมจ ${182 + 13 * (lv - 1)} [Lv ${lv}]`,
+      badgeClass: CATEGORY_STYLES.damage.badgeClass,
+    };
+  }
+
+  // 18. Flowborn (Mage)
+  if (heroName === "Flowborn (Mage)" && isPassive) {
+    return {
+      milestones: ms,
+      rows: [
+        {
+          code: "DMG",
+          label: "โบนัส AP ในบ่อน้ำพุ",
+          values: ms.map((lv) => (50 + 4 * (lv - 1)).toString()),
+          colorClass: "text-purple-300 font-bold",
+        },
+      ],
+      highlights: [
+        {
+          icon: "sparkles",
+          title: "โบนัส AP ในบ่อ (+4 ต่อ Lv)",
+          detail: "ได้รับพลังเวทในบ่อน้ำพุ 50 (+4 ต่อ Lv.ฮีโร่ สูงสุด 106 AP)",
+          badgeClass: "border-purple-500/40 bg-purple-500/10 text-purple-400",
+        },
+      ],
+      summaryBadgeText: (lv) => `✨ AP +${50 + 4 * (lv - 1)} [Lv ${lv}]`,
+      badgeClass: CATEGORY_STYLES.ap_buff.badgeClass,
+    };
+  }
+
+  // 19. Flowborn (Marksman)
+  if (heroName === "Flowborn (Marksman)" && isPassive) {
+    return {
+      milestones: ms,
+      rows: [
+        {
+          code: "ATK SPD",
+          label: "เพิ่มความเร็วโจมตี (ATK SPD)",
+          values: ms.map((lv) => `${(10.0 + (9.9 / 14) * (lv - 1)).toFixed(1)}%`),
+          colorClass: "text-amber-300 font-bold",
+        },
+      ],
+      highlights: [
+        {
+          icon: "zap",
+          title: "โบนัสตีไวในบ่อ (+0.71%/Lv)",
+          detail: "ได้รับความเร็วโจมตีในบ่อน้ำพุ 10.0% (+0.71% ต่อ Lv.ฮีโร่ สูงสุด 19.9%)",
+          badgeClass: "border-amber-500/40 bg-amber-500/10 text-amber-400",
+        },
+      ],
+      summaryBadgeText: (lv) => `⚡ ตีไว +${(10.0 + (9.9 / 14) * (lv - 1)).toFixed(1)}% [Lv ${lv}]`,
+      badgeClass: CATEGORY_STYLES.attack_speed.badgeClass,
+    };
+  }
+
+  // 20. Omega
+  if (heroName === "Omega" && isPassive) {
+    return {
+      milestones: ms,
+      rows: [
+        {
+          code: "DMG",
+          label: "โบนัสดาเมจใส่ครีป (+6%โบนัส HP)",
+          values: ms.map((lv) => (150 + 10 * (lv - 1)).toString()),
+          colorClass: "text-ink font-bold",
+        },
+      ],
+      highlights: [
+        {
+          icon: "swords",
+          title: "โบนัสดาเมจครีป (+10 ต่อ Lv)",
+          detail: "โจมตีพิเศษสร้างโบนัส 150 (+10 ต่อ Lv.ฮีโร่) (+6% โบนัส HP) ใส่ครีป และสตั๊นป้อม 2 วิ",
+          badgeClass: "border-[#ff9f43]/40 bg-[#ff9f43]/10 text-[#ff9f43]",
+        },
+      ],
+      summaryBadgeText: (lv) => `💥 ดาเมจครีป ${150 + 10 * (lv - 1)} [Lv ${lv}]`,
+      badgeClass: CATEGORY_STYLES.damage.badgeClass,
+    };
+  }
+
+  return null;
 }
 
 export function getSlotCircledNumber(slot: string): string {
@@ -634,41 +1234,25 @@ export function getInGameTagCapsules(skill: SkillLike): Array<{ label: string; b
 export function getInGameSkillRows(
   skill: SkillLike,
   profile: ParsedSkillProfile,
-  maxLevels: number
+  maxLevels: number,
+  heroName?: string
 ): InGameTableRow[] {
   const rows: InGameTableRow[] = [];
   const bd = skill.base_damage ?? [];
   const cdArr = Array.isArray(skill.cooldown) ? skill.cooldown : skill.cooldown ? [skill.cooldown] : [];
   const manaArr = Array.isArray(skill.mana_cost) ? skill.mana_cost : skill.mana_cost ? [skill.mana_cost] : [];
 
-  // Special handling for Qi's Protection Aura passive (scales with Hero Lv 1 - 15)
-  if (skill.name === "Protection Aura" || (skill.slot === "Passive" && skill.desc_th?.includes("Aura"))) {
-    const lvMilestones = [1, 4, 7, 10, 13, 15];
-    const armorStackValues = lvMilestones.map((lv) => {
-      const perStack = 30 + 5 * (lv - 1);
-      const total3 = perStack * 3;
-      return `${perStack} (${total3})`;
-    });
-    rows.push({
-      code: "DEF Up",
-      label: "เกราะ/ต้านเวท 1สแต็ก (3สแต็ก)",
-      values: armorStackValues,
-      colorClass: "text-emerald-300 font-bold",
-    });
-    const bonusDmgValues = lvMilestones.map((lv) => (30 + 5 * (lv - 1)).toString());
-    rows.push({
-      code: "DMG",
-      label: "ดาเมจพิเศษ (+25%AD)",
-      values: bonusDmgValues,
-      colorClass: "text-ink font-bold",
-    });
-    rows.push({
-      code: "Heal",
-      label: "ฟื้นฟูเลือด (Heal)",
-      values: Array(6).fill("100"),
-      colorClass: "text-green-300 font-bold",
-    });
-    return rows;
+  // Exact hero passive level scaling profiles (e.g. Qi, Veres, Aleister, Max, Murad, Taara, etc.)
+  if (heroName) {
+    const exact = getExactHeroPassiveScaling(heroName, skill.slot, skill.name);
+    if (exact) {
+      return exact.rows;
+    }
+  } else if (skill.name === "Protection Aura" || (skill.slot === "Passive" && skill.desc_th?.includes("Aura"))) {
+    const exact = getExactHeroPassiveScaling("Qi", skill.slot, skill.name);
+    if (exact) {
+      return exact.rows;
+    }
   }
 
   // 1. DMG or Shield or Heal primary row

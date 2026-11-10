@@ -221,18 +221,18 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
               const inCombo = isSlotInCombo(s.slot);
               const isPassive = s.slot.startsWith("Passive");
               const badge = getFormBadge(build.hero, s.slot);
-              const skillProfile = parseSkillEffects(s, build.hero);
+              const skillProfile = parseSkillEffects(s, build.hero, build.level, s.skill_level);
               const drProg = skillProfile.progressions.find((p) => p.category === "damage_reduction");
               const currentDrVal = drProg
-                ? drProg.values[Math.min(s.skill_level - 1, drProg.values.length - 1)]
+                ? drProg.values[Math.min(Math.max(0, s.skill_level - 1), drProg.values.length - 1)]
                 : null;
               const shieldProg = skillProfile.progressions.find((p) => p.category === "shield");
               const currentShieldVal = shieldProg
-                ? shieldProg.values[Math.min(s.skill_level - 1, shieldProg.values.length - 1)]
+                ? shieldProg.values[Math.min(Math.max(0, s.skill_level - 1), shieldProg.values.length - 1)]
                 : null;
               const healProg = skillProfile.progressions.find((p) => p.category === "heal");
               const currentHealVal = healProg
-                ? healProg.values[Math.min(s.skill_level - 1, healProg.values.length - 1)]
+                ? healProg.values[Math.min(Math.max(0, s.skill_level - 1), healProg.values.length - 1)]
                 : null;
               const parts = Object.entries(s.components)
                 .filter(([, v]) => v)

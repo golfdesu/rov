@@ -27,6 +27,52 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-10 11:15 (UTC+7) — Exact Per-Level Scaling & Elimination of Vague Ranges in Frontend UI
+**Agent:** Antigravity (gemini-3.8-flash-high)
+
+### ✅ Completed Work
+- **Universal Exact Passive & Level Scaling Engine (`frontend/src/utils/skillEffects.ts`)**:
+  - Implemented `getExactHeroPassiveScaling(heroName, slot, skillName, currentLevel)` providing deterministic per-level values and growth formulas across 20 heroes with previously vague or range-only text:
+    - **Veres**: `300 (+25 per Lv) (+175%AD)` (e.g. Lv 4 = 375, Lv 15 = 650) + 8%-15% Lifesteal.
+    - **Aleister**: `84 (+10 per Lv) (+30%AP)` True Damage (e.g. Lv 4 = 114, Lv 15 = 224).
+    - **Max**: `70 (+5 per Lv) (+35% Bonus AD)` True Damage/s (e.g. Lv 4 = 85, Lv 15 = 140) + 40% Anti-Heal.
+    - **Murad**: `60 (+10 per Lv, max 200)` Armor Pierce (e.g. Lv 4 = 90, Lv 15 = 200).
+    - **Taara**: `+3.0 (+0.29 per Lv) AD` per 1% lost HP (e.g. Lv 4 = +3.9 AD, Lv 15 = +7.0 AD).
+    - **Ormarr**: `4.0% (+0.29% per Lv) Max HP` magic damage (e.g. Lv 4 = 4.9%, Lv 15 = 8.0%).
+    - **Kil'Groth**: `+8.0% (+0.43% per Lv)` ASPD per stack (5 stacks: e.g. Lv 1 = 40%, Lv 4 = 46.4%, Lv 15 = 70%).
+    - **Lu Bu**: `+35.0% (+2.5% per Lv)` ASPD (e.g. Lv 4 = 42.5%, Lv 15 = 70%).
+    - **Lauriel**: `50.0% (+2.86% per Lv)` slow (e.g. Lv 4 = 58.6%, Lv 15 = 90%) + 160 True Dmg + 140 Heal.
+    - **Ata**: `28 (+2 per Lv) (+1% Max HP)` normal attack bonus (e.g. Lv 4 = 34, Lv 15 = 56).
+    - **Chaugnar**: `+6.0% (+0.29% per Lv)` MS (e.g. Lv 4 = 6.9%, Lv 15 = 10.0%).
+    - **Errol**: `+7.0% (+0.5% per Lv)` ASPD per stack (5 stacks: e.g. Lv 4 = 42.5%, Lv 15 = 70%).
+    - **Stuart**: `+50.0% (+2.14% per Lv)` ASPD and `+20.0% (+0.71% per Lv)` MS.
+    - **Sephera**: `50 (+5 per Lv) (+10% AP)` ally heal (e.g. Lv 4 = 65, Lv 15 = 120).
+    - **Bright**: `18 (+3 per Lv)` melee normal attack bonus (e.g. Lv 4 = 27, Lv 15 = 60).
+    - **Flowborn (Mage & Marksman)**: Fountain AP `+50 (+4/Lv)` and ASPD `+10% (+0.71%/Lv)`.
+    - **Tamyn**: Bonus Damage `182 (+13/Lv)` and Heal `100 (+7/Lv)`.
+    - **Omega**: Minion damage `150 (+10/Lv)` and Skill 1 speed `5% (+2.5%/Lv)`.
+  - Updated `parseSkillEffects` signature to accept `(skill, heroName, heroLevel, skillLevel)`.
+  - Replaced vague range badges (`40-60%`, `60-200`) with level-conditioned exact values (e.g. `[🛡️ ลดดาเมจ 40% (Lv 1)]`, `[🎯 เจาะเกราะ 90 (Lv 4)]`).
+- **Modal Horizontal Table Milestone Progression (`frontend/src/components/lab/HeroSkillsModal.tsx`)**:
+  - Dynamically switches header columns for hero-level scaling passives to official game milestones (`LV 1`, `LV 4`, `LV 7`, `LV 10`, `LV 13`, `LV 15`).
+  - Automatically highlights the matching milestone column based on `buildStats.level`.
+- **Combat Lab Table Badge Integration (`frontend/src/components/lab/SkillDamageTable.tsx`)**:
+  - Propagates `build.level` and `s.skill_level` into `parseSkillEffects`.
+  - Displays exact active level values in summary chips and inline stats.
+
+### 📁 Modified Files
+- `frontend/src/utils/skillEffects.ts`
+- `frontend/src/components/lab/HeroSkillsModal.tsx`
+- `frontend/src/components/lab/SkillDamageTable.tsx`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint`: 0 warnings, 0 errors.
+- `npm --prefix frontend run build`: TypeScript 0 errors, Vite production bundle built in 1.03s.
+- `ruff check --fix . ; ruff format .`: 0 errors.
+- `pytest -v`: All 83 tests passed (100%).
+
+---
+
 ## 📅 2026-11-10 10:52 (UTC+7) — Qi Passive Protection Aura Level Scaling Alignment (+5/Lv)
 **Agent:** Antigravity (gemini-3.8-flash-high)
 

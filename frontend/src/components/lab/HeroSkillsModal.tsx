@@ -184,8 +184,8 @@ export function HeroSkillsModal({
 
   const skillProfile = useMemo(() => {
     if (!activeSkill) return null;
-    return parseSkillEffects(activeSkill, hero);
-  }, [activeSkill, hero]);
+    return parseSkillEffects(activeSkill, hero, buildStats?.level, activeRow?.skill_level);
+  }, [activeSkill, hero, buildStats?.level, activeRow?.skill_level]);
 
   // Unified list of screenshot items
   const allScreenshots = useMemo<ScreenshotItem[]>(() => {
@@ -284,8 +284,17 @@ export function HeroSkillsModal({
   // Authentic in-game table rows
   const inGameRows = useMemo(() => {
     if (!activeSkill || !skillProfile) return [];
-    return getInGameSkillRows(activeSkill, skillProfile, maxLevels);
-  }, [activeSkill, skillProfile, maxLevels]);
+    return getInGameSkillRows(activeSkill, skillProfile, maxLevels, hero);
+  }, [activeSkill, skillProfile, maxLevels, hero]);
+
+  const isHeroLevelScaling = isPassive && inGameRows.length > 0 && inGameRows[0].values.length === 6;
+  const milestoneLabels = ["LV 1", "LV 4", "LV 7", "LV 10", "LV 13", "LV 15"];
+  const activeMilestoneIdx = useMemo(() => {
+    if (!isHeroLevelScaling || !buildStats) return -1;
+    const lv = buildStats.level;
+    const ms = [1, 4, 7, 10, 13, 15];
+    return ms.findIndex((m, i, arr) => lv >= m && (i === arr.length - 1 || lv < arr[i + 1]));
+  }, [isHeroLevelScaling, buildStats]);
 
   const tagCapsules = useMemo(() => {
     if (!activeSkill) return [];
@@ -663,7 +672,9 @@ export function HeroSkillsModal({
                     <div className="flex items-center gap-2">
                       <Zap size={14} className="text-gold" />
                       <h4 className="font-display text-xs font-bold tracking-wider text-ink">
-                        ตารางค่าสถิติสกิลตามเลเวล (LV 1 - LV {maxLevels})
+                        {isHeroLevelScaling
+                          ? "ตารางค่าสถิติสกิลตามเลเวลฮีโร่ (LV 1, 4, 7, 10, 13, 15)"
+                          : `ตารางค่าสถิติสกิลตามเลเวล (LV 1 - LV ${maxLevels})`}
                       </h4>
                     </div>
                     {buildStats && (
@@ -678,22 +689,38 @@ export function HeroSkillsModal({
                       <thead>
                         <tr className="border-b border-line/60 text-left text-[11px] text-dim">
                           <th className="py-2 pr-3 font-semibold text-ink">สถิติสกิล</th>
-                          {Array.from({ length: maxLevels }, (_, i) => {
-                            const lv = i + 1;
-                            const isCur = activeRow?.skill_level === lv;
-                            return (
-                              <th
-                                key={lv}
-                                className={`py-2 px-2 text-center font-bold transition-colors ${
-                                  isCur
-                                    ? "bg-gold/20 text-gold border-b-2 border-gold font-black"
-                                    : "text-muted"
-                                }`}
-                              >
-                                LV {lv}
-                              </th>
-                            );
-                          })}
+                          {isHeroLevelScaling
+                            ? milestoneLabels.map((lbl, i) => {
+                                const isCur = activeMilestoneIdx === i;
+                                return (
+                                  <th
+                                    key={lbl}
+                                    className={`py-2 px-2 text-center font-bold transition-colors ${
+                                      isCur
+                                        ? "bg-gold/20 text-gold border-b-2 border-gold font-black"
+                                        : "text-muted"
+                                    }`}
+                                  >
+                                    {lbl}
+                                  </th>
+                                );
+                              })
+                            : Array.from({ length: maxLevels }, (_, i) => {
+                                const lv = i + 1;
+                                const isCur = activeRow?.skill_level === lv;
+                                return (
+                                  <th
+                                    key={lv}
+                                    className={`py-2 px-2 text-center font-bold transition-colors ${
+                                      isCur
+                                        ? "bg-gold/20 text-gold border-b-2 border-gold font-black"
+                                        : "text-muted"
+                                    }`}
+                                  >
+                                    LV {lv}
+                                  </th>
+                                );
+                              })}
                         </tr>
                       </thead>
                       <tbody>
@@ -710,10 +737,12 @@ export function HeroSkillsModal({
                                 {row.label.split(" (")[0]}
                               </span>
                             </td>
-                            {Array.from({ length: maxLevels }, (_, i) => {
+                            {Array.from({ length: isHeroLevelScaling ? 6 : maxLevels }, (_, i) => {
                               const lv = i + 1;
                               const val = row.values[i] ?? "—";
-                              const isCur = activeRow?.skill_level === lv;
+                              const isCur = isHeroLevelScaling
+                                ? activeMilestoneIdx === i
+                                : activeRow?.skill_level === lv;
                               return (
                                 <td
                                   key={lv}
