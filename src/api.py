@@ -6,7 +6,7 @@ import uuid
 from pathlib import Path
 
 import pandas as pd
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -392,6 +392,19 @@ def combat_stats(request: CombatStatsRequest):
 def combat_duel(request: CombatDuelRequest):
     try:
         return get_engine().duel(Build(**request.a.model_dump()), Build(**request.b.model_dump()))
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.get("/combat/rune-recommendation", response_model=dict)
+def get_rune_recommendation(
+    my_hero: str = Query(..., description="My hero name"),
+    enemy_hero: str = Query(..., description="Enemy hero name"),
+    lane: str = Query("DS_Lane", description="Lane: DS_Lane, Jungle, Mid, Dragon_Lane, Roam"),
+    level: int = Query(2, ge=1, le=15, description="Hero level (1-15)"),
+):
+    try:
+        return get_engine().recommend_matchup_runes(my_hero=my_hero, enemy_hero=enemy_hero, lane=lane, level=level)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 

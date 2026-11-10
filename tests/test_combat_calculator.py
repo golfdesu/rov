@@ -419,3 +419,47 @@ def test_claves_sancti_stats(engine):
     res = engine.build_stats(build)
     assert res["stats"]["critical_chance"] >= 25.0
     assert res["stats"]["critical_damage"] >= 240.0  # Base 200 + 40
+
+
+def test_recommend_matchup_runes_all_lanes(engine):
+    # DSL Matchup: Omen vs Biron (flips from draw/loss to win)
+    r_dsl = engine.recommend_matchup_runes(my_hero="Omen", enemy_hero="Biron", lane="DS_Lane", level=2)
+    assert r_dsl["my_hero"] == "Omen"
+    assert r_dsl["enemy_hero"] == "Biron"
+    assert r_dsl["hp_advantage"] > 0
+    assert r_dsl["recommended_preset"]["winner"] == "a"
+    assert len(r_dsl["detailed_runes"]) >= 3
+
+    # DSL Matchup vs True Damage: Skud vs Florentino
+    r_flo = engine.recommend_matchup_runes(my_hero="Skud", enemy_hero="Florentino", lane="DS_Lane", level=2)
+    assert "Anti-True Damage" in r_flo["recommended_preset"]["name"] or "Bulk" in r_flo["recommended_preset"]["name"]
+    assert r_flo["hp_advantage"] >= 500
+
+    # ADL Matchup: Violet vs Hayate
+    r_adl = engine.recommend_matchup_runes(my_hero="Violet", enemy_hero="Hayate", lane="Dragon_Lane", level=2)
+    assert r_adl["my_hero"] == "Violet"
+    assert r_adl["recommended_preset"]["winner"] == "a"
+
+    # MID Matchup: Tulen vs Liliana
+    r_mid = engine.recommend_matchup_runes(my_hero="Tulen", enemy_hero="Liliana", lane="Mid", level=2)
+    assert r_mid["my_hero"] == "Tulen"
+    assert "Magic" in r_mid["standard_preset"]["name"]
+
+
+def test_thai_canonical_arcana_names(engine):
+    assert "Desolate" in engine.arcana
+    assert "Sword" in engine.arcana
+    assert "Rage" in engine.arcana
+    assert "Purity" in engine.arcana
+    assert "Mythril" in engine.arcana
+    assert "Prowess" in engine.arcana
+    assert "Dragon's Claw" in engine.arcana
+    assert "Golden Body" in engine.arcana
+
+    # Aliases resolve to canonical
+    build = Build(hero="Valhein", level=1, arcana={"Violate": 5, "Desolate": 5, "Hex": 10})
+    res = engine.build_stats(build)
+    assert build.arcana["Desolate"] == 10
+    assert build.arcana["Purity"] == 10
+    assert res["sources"]["arcana"]["magic_pierce_flat"] == pytest.approx(24.0)
+    assert res["sources"]["arcana"]["cooldown_reduction"] == pytest.approx(10.0)

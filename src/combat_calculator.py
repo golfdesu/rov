@@ -53,16 +53,29 @@ ARCANA_KEY_MAP = {
 }
 
 ARCANA_ALIASES: dict[str, str] = {
-    "Guerrilla": "Spirit",
-    "Skewer": "Dragon's Claw",
+    # Red aliases
+    "Excalibur": "Sword",
+    "Violate": "Desolate",
+    "Atrocity": "Rage",
     "Indomitable": "Golden Body",
     "Obliterate": "Onslaught",
-    "Protect": "Benevolence",
+    # Purple aliases
+    "Guerrilla": "Spirit",
     "Prowl": "Assassinate",
-    "Devour": "Bloodlust (Magic)",
-    "Furious": "Flurry",
-    "Sap": "Bloodlust (Magic)",
+    "Devour": "Pray",
+    "Sap": "Pray",
+    "Bloodlust (Magic)": "Pray",
+    "Undying": "Protect",
     "Greed": "Reave",
+    "Essence Reaver": "Reave",
+    # Green aliases
+    "Skewer": "Dragon's Claw",
+    "Furious": "Flurry",
+    "Stain": "Flurry",
+    "Valiance": "Prowess",
+    "Hex": "Purity",
+    "Authority": "Mythril",
+    "Diamond": "Hercules",
 }
 
 STAT_KEYS = (
@@ -365,7 +378,20 @@ class CombatEngine:
                 self.enchantment_aliases[e["alias"]] = e["name"]
         heroes = json.loads(paths.heroes_json_path.read_text(encoding="utf-8"))
         self.hero_meta = {
-            h["name"]: {"role": h.get("primary_role"), "ranged": "rang" in (h.get("attack_range") or "").lower()}
+            h["name"]: {
+                "role": h.get("primary_role"),
+                "primary_role": h.get("primary_role"),
+                "secondary_role": h.get("secondary_role"),
+                "ranged": "rang" in (h.get("attack_range") or "").lower(),
+                "damage_type": "Magic"
+                if h.get("has_magic_damage") and not h.get("has_physical_damage")
+                else "Physical",
+                "has_true_damage": bool(h.get("has_true_damage")),
+                "has_hard_cc": bool(h.get("has_hard_cc")),
+                "has_mobility": bool(h.get("has_mobility")),
+                "has_heal_sustain": bool(h.get("has_heal_sustain")),
+                "has_shield": bool(h.get("has_shield")),
+            }
             for h in heroes
         }
 
@@ -862,6 +888,283 @@ class CombatEngine:
                 f"ใช้สกิลทันทีที่คูลดาวน์หมด (เว้น {SKILL_CAST_GAP:g} วินาทีระหว่างสกิล) และตีปกติไปพร้อมกัน",
                 "คริติคอลคิดเป็นค่าเฉลี่ย, สกิล Passive ไม่ถูกนับในคอมโบ",
             ],
+        }
+
+    def recommend_matchup_runes(
+        self,
+        my_hero: str,
+        enemy_hero: str,
+        lane: str = "DS_Lane",
+        level: int = 2,
+    ) -> dict:
+        """Recommends an optimal 30-rune Tier 3 counter setup against an enemy in lane,
+        simulating early-game trades against standard cookie-cutter runes.
+        """
+        my_h = HERO_ALIASES.get(my_hero, my_hero)
+        enemy_h = HERO_ALIASES.get(enemy_hero, enemy_hero)
+
+        if my_h not in self.hero_meta:
+            raise ValueError(f"Unknown hero: {my_hero}")
+        if enemy_h not in self.hero_meta:
+            raise ValueError(f"Unknown hero: {enemy_hero}")
+
+        my_meta = self.hero_meta[my_h]
+        enemy_meta = self.hero_meta[enemy_h]
+        my_role = my_meta.get("primary_role", "Fighter")
+        enemy_role = enemy_meta.get("primary_role", "Fighter")
+
+        def get_standard_rune(hero_name: str, meta: dict) -> tuple[str, dict[str, int]]:
+            role = meta.get("primary_role", "Fighter")
+            dmg_type = meta.get("damage_type", "Physical")
+            if role == "Carry":
+                return "Rampage Crit (มาตรฐานแครี่)", {"Rampage": 10, "Spirit": 10, "Dragon's Claw": 10}
+            if role == "Mage" or dmg_type == "Magic":
+                return "Magic Pierce 88 (มาตรฐานเมจ)", {"Desolate": 10, "Spirit": 10, "Flurry": 10}
+            if role in ("Tank", "Support"):
+                return "Bulky Frontline (มาตรฐานแทงค์/ซัพพอร์ต)", {"Golden Body": 10, "Colossus": 10, "Prowess": 10}
+            return "Armor Pierce 100 (มาตรฐานไฟต์เตอร์/แอสซาซิน)", {"Onslaught": 10, "Spirit": 10, "Dragon's Claw": 10}
+
+        std_my_name, std_my_runes = get_standard_rune(my_h, my_meta)
+        std_enemy_name, std_enemy_runes = get_standard_rune(enemy_h, enemy_meta)
+
+        candidates: list[tuple[str, dict[str, int], str]] = [
+            (std_my_name, std_my_runes, "เซ็ตมาตรฐานประจำสายอาชีพ"),
+        ]
+
+        has_true = enemy_meta.get("has_true_damage") or enemy_h in (
+            "Florentino",
+            "Airi",
+            "Richter",
+            "Hayate",
+            "Maloch",
+            "Lauriel",
+            "Thorne",
+            "Allain",
+        )
+        if has_true:
+            if my_role in ("Fighter", "Tank", "Support"):
+                candidates.append(
+                    (
+                        "Anti-True Damage Bulk (เลือดต้านทรูดาเมจ)",
+                        {"Golden Body": 10, "Colossus": 10, "Prowess": 10},
+                        "ศัตรูมีทรูดาเมจทะลุเกราะ 100% การเสริม Max HP (+1,462 HP) ช่วยให้รอดพ้นคอมโบชุดแรกแล้วเทรดสวนกลับชนะ",
+                    )
+                )
+            elif my_role == "Carry":
+                candidates.append(
+                    (
+                        "Sustain & Spacing (ดูดเลือดเว้นระยะ)",
+                        {"Awake": 10, "Reave": 6, "Spirit": 4, "Dragon's Claw": 10},
+                        "เสริมดูดเลือด 9.6% และความเร็วโจมตีเพื่อยิงตอดและรีเจนเลือด ป้องกันการโดนเข้าประชิด",
+                    )
+                )
+            elif my_role == "Mage":
+                candidates.append(
+                    (
+                        "Max HP Kite (เสริมเลือดเว้นระยะ)",
+                        {"Desolate": 10, "Colossus": 10, "Flurry": 10},
+                        "เสริมเลือด +750 HP ป้องกันการโดนล้วงเบิร์สต์ในจังหวะเดียว",
+                    )
+                )
+
+        is_enemy_magic = (
+            enemy_meta.get("primary_role") == "Mage"
+            or enemy_meta.get("damage_type") == "Magic"
+            or enemy_h
+            in (
+                "Marja",
+                "Mganga",
+                "Zata",
+                "Liliana",
+                "Tulen",
+                "Krixi",
+                "Iggy",
+                "Yue",
+                "Veera",
+                "Diaochan",
+                "Paine",
+                "Keera",
+                "Sephera",
+                "Gwen",
+            )
+        )
+        if is_enemy_magic:
+            if my_role in ("Fighter", "Tank", "Support"):
+                candidates.append(
+                    (
+                        "Anti-Magic Bulwark (ต้านทานเวทยืนเลน)",
+                        {"Golden Body": 10, "Benevolence": 10, "Mythril": 10},
+                        "ศัตรูเน้นการตอดดาเมจเวท เสริมเกราะเวท (+90) และเลือด (+787) ลดทอนดาเมจเวทลงกว่า 25%",
+                    )
+                )
+            elif my_role == "Mage":
+                candidates.append(
+                    (
+                        "Magic Life Steal Sustain (ดูดเลือดเวทชิงจังหวะ)",
+                        {"Desolate": 10, "Pray": 10, "Flurry": 10},
+                        "เพิ่มดูดเลือดเวท 16% ทำให้ยืนเทรดแลกสกิลในเลนกลางได้ต่อเนื่องโดยไม่ต้องกลับบ้าน",
+                    )
+                )
+            elif my_role == "Carry":
+                candidates.append(
+                    (
+                        "Magic Guard Carry (กันเวท & ดูดเลือด)",
+                        {"Rampage": 10, "Prosperity": 10, "Dragon's Claw": 10},
+                        "เพิ่มเกราะเวท +41 และดูดเลือด +10% ต้านทานเวทตอดช่วงต้นเกม",
+                    )
+                )
+
+        is_enemy_phys_burst = (
+            enemy_role in ("Assassin", "Fighter")
+            and not has_true
+            or enemy_h in ("Biron", "Qi", "Kriknak", "Nakroth", "Ryoma", "Batman", "Skud", "Wukong", "Zuka", "Aoi")
+        )
+        if is_enemy_phys_burst:
+            if my_role in ("Fighter", "Tank"):
+                candidates.append(
+                    (
+                        "Anti-Burst Fortification (เสริมเกราะและฟื้นฟู)",
+                        {"Golden Body": 10, "Protect": 10, "Dragon's Claw": 10},
+                        "ศัตรูมีเบิร์สต์กายภาพรุนแรง เสริมเกราะ +23 และเลือด +937 ฟื้นฟู +45 ช่วยทนรับสกิลชุดแรกแล้วเทรดชนะ",
+                    )
+                )
+            elif my_role == "Carry":
+                candidates.append(
+                    (
+                        "Early Armor Shred & Sustain (เจาะเกราะ & ดูดเลือด)",
+                        {"Onslaught": 10, "Reave": 6, "Spirit": 4, "Dragon's Claw": 10},
+                        "เสริมดูดเลือด 9.6% และเจาะเกราะ 100 สำหรับเทรดระยะประชิด",
+                    )
+                )
+
+        if my_h in ("Omen", "Kil'Grooth", "Allain", "Stuart", "Tel'Annas", "Slimz", "Hayate", "Valhein"):
+            candidates.append(
+                (
+                    "Hyper Attack Speed (ตีเร็วเปิด Passive)",
+                    {"Awake": 10, "Spirit": 10, "Dragon's Claw": 10},
+                    "เร่งความเร็วโจมตี +26% ทำให้เปิดติด Passive หรือยิงสกิลได้เร็วกว่าอีกฝ่าย",
+                )
+            )
+
+        if my_role in ("Fighter", "Assassin", "Carry"):
+            candidates.append(
+                (
+                    "Max Armor Shred 100 (เจาะเกราะเต็มพิกัด)",
+                    {"Onslaught": 10, "Spirit": 10, "Dragon's Claw": 10},
+                    "เจาะเกราะ 100 หักล้างเกราะเลเวลต้นของศัตรูเกือบหมด",
+                )
+            )
+
+        build_enemy = Build(
+            hero=enemy_h,
+            level=level,
+            arcana=std_enemy_runes,
+            skill_levels={"1": min(level, 6), "2": 1 if level >= 2 else 0, "3": 1 if level >= 4 else 0},
+        )
+        build_my_std = Build(
+            hero=my_h,
+            level=level,
+            arcana=std_my_runes,
+            skill_levels={"1": min(level, 6), "2": 1 if level >= 2 else 0, "3": 1 if level >= 4 else 0},
+        )
+
+        duel_std = self.duel(build_my_std, build_enemy)
+        std_sim = duel_std["simulation"]
+        std_my_rem = std_sim["a"]["remaining_hp"]
+        std_my_pct = std_sim["a"]["remaining_hp_pct"]
+        std_en_rem = std_sim["b"]["remaining_hp"]
+        std_winner = std_sim["winner"]
+
+        best_preset = {
+            "name": std_my_name,
+            "runes": std_my_runes,
+            "reason": "เซ็ตมาตรฐานตามสายอาชีพ",
+            "winner": std_winner,
+            "my_rem_hp": std_my_rem,
+            "my_rem_pct": std_my_pct,
+            "enemy_rem_hp": std_en_rem,
+            "score": std_my_rem - std_en_rem,
+        }
+
+        for name, runes, reason in candidates:
+            b_cand = Build(
+                hero=my_h,
+                level=level,
+                arcana=runes,
+                skill_levels={"1": min(level, 6), "2": 1 if level >= 2 else 0, "3": 1 if level >= 4 else 0},
+            )
+            d_cand = self.duel(b_cand, build_enemy)
+            sim = d_cand["simulation"]
+            cand_rem = sim["a"]["remaining_hp"]
+            cand_pct = sim["a"]["remaining_hp_pct"]
+            en_rem = sim["b"]["remaining_hp"]
+            winner = sim["winner"]
+            score = cand_rem - en_rem
+
+            if (
+                (winner == "a" and best_preset["winner"] != "a")
+                or (winner == "a" and best_preset["winner"] == "a" and cand_rem > best_preset["my_rem_hp"])
+                or (winner != "a" and best_preset["winner"] != "a" and score > best_preset["score"])
+            ):
+                best_preset = {
+                    "name": name,
+                    "runes": runes,
+                    "reason": reason,
+                    "winner": winner,
+                    "my_rem_hp": cand_rem,
+                    "my_rem_pct": cand_pct,
+                    "enemy_rem_hp": en_rem,
+                    "score": score,
+                }
+
+        hp_advantage = round(best_preset["my_rem_hp"] - std_my_rem, 1)
+
+        detailed_runes = []
+        for rname, count in best_preset["runes"].items():
+            arc_info = self.arcana.get(rname, {})
+            detailed_runes.append(
+                {
+                    "name": rname,
+                    "name_th": arc_info.get("name_th", rname),
+                    "color": arc_info.get("color", "Red"),
+                    "count": count,
+                    "stats": arc_info.get("stats", {}),
+                    "icon": arc_info.get("icon", ""),
+                }
+            )
+
+        if best_preset["winner"] == "a" and std_winner != "a":
+            verdict = f"พลิกสถานการณ์จาก {std_winner.upper()} เป็นชนะเลน! (HP ได้เปรียบขึ้น +{hp_advantage} HP)"
+        elif best_preset["winner"] == "a":
+            verdict = f"ชนะเลนเด็ดขาด (เหลือเลือด {best_preset['my_rem_pct']}%, ได้เปรียบขึ้น +{hp_advantage} HP)"
+        elif hp_advantage > 0:
+            verdict = f"เทรดได้เปรียบเลือดขึ้น +{hp_advantage} HP (เสียเลือดน้อยลง)"
+        else:
+            verdict = "รักษาความได้เปรียบด้วยเซ็ตมาตรฐาน"
+
+        return {
+            "my_hero": my_h,
+            "enemy_hero": enemy_h,
+            "lane": lane,
+            "level": level,
+            "standard_preset": {
+                "name": std_my_name,
+                "runes": std_my_runes,
+                "winner": std_winner,
+                "remaining_hp": std_my_rem,
+                "remaining_hp_pct": std_my_pct,
+            },
+            "recommended_preset": {
+                "name": best_preset["name"],
+                "runes": best_preset["runes"],
+                "winner": best_preset["winner"],
+                "remaining_hp": best_preset["my_rem_hp"],
+                "remaining_hp_pct": best_preset["my_rem_pct"],
+                "tactical_reason": best_preset["reason"],
+            },
+            "hp_advantage": hp_advantage,
+            "trade_verdict": verdict,
+            "detailed_runes": detailed_runes,
         }
 
 

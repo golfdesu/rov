@@ -170,14 +170,14 @@ def test_arcana_catalog():
         data = json.load(f)
 
     arcana = data.get("arcana", [])
-    assert len(arcana) == 90
-    assert data.get("count") == 90
+    assert len(arcana) == 30
+    assert data.get("count") == 30
 
     colors = {a["color"] for a in arcana}
     assert colors == {"Red", "Purple", "Green"}
 
     for a in arcana:
-        assert a["tier"] in (1, 2, 3)
+        assert a["tier"] == 3
         assert len(a["stats"]) >= 1
         for stat_name, stat_val in a["stats"].items():
             assert stat_val > 0, f"{a['name']}: non-positive {stat_name}"

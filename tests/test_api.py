@@ -274,6 +274,27 @@ def test_combat_duel_endpoint():
     assert response.json()["simulation"]["winner"] in {"a", "b", "draw", "timeout"}
 
 
+def test_combat_rune_recommendation_endpoint():
+    response = client.get(
+        "/combat/rune-recommendation",
+        params={"my_hero": "Omen", "enemy_hero": "Biron", "lane": "DS_Lane", "level": 2},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["my_hero"] == "Omen"
+    assert data["enemy_hero"] == "Biron"
+    assert "recommended_preset" in data
+    assert "trade_verdict" in data
+    assert len(data["detailed_runes"]) >= 3
+
+    # Invalid hero returns 422
+    bad_res = client.get(
+        "/combat/rune-recommendation",
+        params={"my_hero": "NonExistentHero", "enemy_hero": "Biron"},
+    )
+    assert bad_res.status_code == 422
+
+
 def test_combat_stats_rejects_bad_build():
     response = client.post("/combat/stats", json={"build": {"hero": "Valhein", "items": ["Not An Item"]}})
     assert response.status_code == 422

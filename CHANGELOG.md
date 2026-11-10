@@ -27,6 +27,40 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-10 09:00 (UTC+7) — Universal 1v1 Rune Trade Engine & Thai Server Tier 3 Arcana Catalog
+**Agent:** Antigravity (gemini-3.8-flash-high)
+
+### ✅ Completed Work
+- **Cleaned & Aligned Tier 3 Arcana Catalog (`data/arcana.json`)**:
+  - Pruned all obsolete Tier 1 and Tier 2 arcana, retaining strictly the 30 official Tier 3 Arcana (10 Red, 10 Purple, 10 Green).
+  - Aligned all Arcana names with official Garena Thailand RoV conventions (e.g. `Desolate`, `Sword`, `Rage`, `Purity`, `Mythril`, `Prowess`, `Golden Body`, `Dragon's Claw`, `Colossus`, `Spirit`).
+  - Added backward-compatible alias resolution in `src/combat_calculator.py` (`ARCANA_ALIASES`) for both legacy English and Chinese names.
+- **Universal 1v1 Rune & Matchup Trade Engine (`src/combat_calculator.py`)**:
+  - Implemented `CombatEngine.recommend_matchup_runes(my_hero, enemy_hero, lane, level)` supporting all 130 heroes across all 5 roles/lanes (DSL, JGL, MID, ADL, SUP).
+  - Evaluates threat patterns (True Damage, Magic Poke, Physical Burst, Sustained Trade) and simulates early-game trades (Lv 2 and Lv 4) comparing cookie-cutter standard builds vs tailored counter builds.
+  - Proves mathematical trade flips (e.g. Omen vs Biron flips from a draw to a decisive win with +588.1 HP advantage; Skud vs Florentino gains +617.7 HP buffer against True Damage bursts).
+- **FastAPI Endpoint (`src/api.py`)**:
+  - Added `GET /combat/rune-recommendation` returning structured trade comparison, net HP differential, verdict, and full 30-rune composition with Thai names, icons, and tactical reasons.
+- **Test Suite Updates**:
+  - Updated `test_arcana_catalog` in `tests/test_data_integrity.py` to assert exactly 30 Tier 3 runes.
+  - Added `test_recommend_matchup_runes_all_lanes` and `test_thai_canonical_arcana_names` in `tests/test_combat_calculator.py`.
+  - Added `test_combat_rune_recommendation_endpoint` in `tests/test_api.py`.
+
+### 📁 Modified Files
+- `data/arcana.json`
+- `src/combat_calculator.py`
+- `src/api.py`
+- `tests/test_data_integrity.py`
+- `tests/test_combat_calculator.py`
+- `tests/test_api.py`
+
+### 🧪 Verification
+- `pytest -v`: 82/82 tests passed (100%).
+- `ruff check --fix . && ruff format .` passed (0 errors, clean).
+- `cd frontend && npm run lint && npm run build` passed (0 errors, 474 kB JS, 88 kB CSS).
+
+---
+
 ## 📅 2026-11-10 08:30 (UTC+7) — Align Hero Roles to Thai Server Conventions (Warrior -> Fighter, Marksman -> Carry)
 **Agent:** Antigravity (gemini-3.8-flash-high)
 
