@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 import threading
 import time
 import uuid
@@ -415,41 +416,58 @@ def get_rune_recommendation(
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
+def _natural_sort_key(file_path: Path):
+    return [int(c) if c.isdigit() else c.lower() for c in re.split(r"(\d+)", file_path.name)]
+
+
 @app.get("/combat/hero-screenshots/{hero}")
 def get_hero_screenshots(hero: str):
+    # Security check: prevent directory traversal
+    if ".." in hero or "/" in hero or "\\" in hero:
+        raise HTTPException(status_code=400, detail="Invalid hero name")
+
     folder_name = HERO_FOLDER_ALIASES.get(hero, hero)
     hero_dir = HEROES_DIR / folder_name
+    actual_folder = folder_name
     if not hero_dir.is_dir():
         hero_dir = HEROES_DIR / hero
+        actual_folder = hero
+
+    try:
+        if HEROES_DIR.is_dir() and hero_dir.exists() and not hero_dir.resolve().is_relative_to(HEROES_DIR.resolve()):
+            raise HTTPException(status_code=400, detail="Invalid hero name")
+    except (ValueError, RuntimeError):
+        raise HTTPException(status_code=400, detail="Invalid hero name")
+
     if not hero_dir.is_dir():
-        return {"hero": hero, "folder": folder_name, "skill_screenshots": [], "status_screenshots": []}
+        return {"hero": hero, "folder": actual_folder, "skill_screenshots": [], "status_screenshots": []}
 
     skill_dir = hero_dir / "skill"
     status_dir = hero_dir / "status"
 
     skill_files = []
     if skill_dir.is_dir():
-        skill_files = sorted(
-            [
-                f"/heroes-media/{folder_name}/skill/{f.name}"
-                for f in skill_dir.iterdir()
-                if f.suffix.lower() in (".jpg", ".jpeg", ".png")
-            ]
-        )
+        skill_files = [
+            f"/heroes-media/{actual_folder}/skill/{f.name}"
+            for f in sorted(
+                [f for f in skill_dir.iterdir() if f.suffix.lower() in (".jpg", ".jpeg", ".png")],
+                key=_natural_sort_key,
+            )
+        ]
 
     status_files = []
     if status_dir.is_dir():
-        status_files = sorted(
-            [
-                f"/heroes-media/{folder_name}/status/{f.name}"
-                for f in status_dir.iterdir()
-                if f.suffix.lower() in (".jpg", ".jpeg", ".png")
-            ]
-        )
+        status_files = [
+            f"/heroes-media/{actual_folder}/status/{f.name}"
+            for f in sorted(
+                [f for f in status_dir.iterdir() if f.suffix.lower() in (".jpg", ".jpeg", ".png")],
+                key=_natural_sort_key,
+            )
+        ]
 
     return {
         "hero": hero,
-        "folder": folder_name,
+        "folder": actual_folder,
         "skill_screenshots": skill_files,
         "status_screenshots": status_files,
     }

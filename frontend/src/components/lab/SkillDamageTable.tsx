@@ -223,17 +223,21 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
               const badge = getFormBadge(build.hero, s.slot);
               const skillProfile = parseSkillEffects(s, build.hero, build.level, s.skill_level);
               const drProg = skillProfile.progressions.find((p) => p.category === "damage_reduction");
-              const currentDrVal = drProg
-                ? drProg.values[Math.min(Math.max(0, s.skill_level - 1), drProg.values.length - 1)]
-                : null;
               const shieldProg = skillProfile.progressions.find((p) => p.category === "shield");
-              const currentShieldVal = shieldProg
-                ? shieldProg.values[Math.min(Math.max(0, s.skill_level - 1), shieldProg.values.length - 1)]
-                : null;
               const healProg = skillProfile.progressions.find((p) => p.category === "heal");
-              const currentHealVal = healProg
-                ? healProg.values[Math.min(Math.max(0, s.skill_level - 1), healProg.values.length - 1)]
-                : null;
+              const isUnlearned = !isPassive && s.skill_level === 0;
+              const currentDrVal =
+                drProg && !isUnlearned
+                  ? drProg.values[Math.min(Math.max(0, s.skill_level - 1), drProg.values.length - 1)]
+                  : null;
+              const currentShieldVal =
+                shieldProg && !isUnlearned
+                  ? shieldProg.values[Math.min(Math.max(0, s.skill_level - 1), shieldProg.values.length - 1)]
+                  : null;
+              const currentHealVal =
+                healProg && !isUnlearned
+                  ? healProg.values[Math.min(Math.max(0, s.skill_level - 1), healProg.values.length - 1)]
+                  : null;
               const parts = Object.entries(s.components)
                 .filter(([, v]) => v)
                 .map(([k, v]) => `${COMPONENT_LABELS[k] ?? k} ${v.toLocaleString()}`)
@@ -376,7 +380,9 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
 
                         {/* Raw Damage */}
                         <div className="w-14 text-right text-muted tabular-nums">
-                          {s.raw_damage > 0 ? (
+                          {isUnlearned ? (
+                            <span className="text-dim">—</span>
+                          ) : s.raw_damage > 0 ? (
                             s.raw_damage.toLocaleString()
                           ) : currentDrVal ? (
                             <span className="text-emerald-400 font-semibold" title="ทน/ลดความเสียหาย">
@@ -397,7 +403,9 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
 
                         {/* Final Damage */}
                         <div className="w-16 text-right font-bold text-ink tabular-nums">
-                          {s.final_damage > 0 ? (
+                          {isUnlearned ? (
+                            <span className="text-dim">—</span>
+                          ) : s.final_damage > 0 ? (
                             s.final_damage.toLocaleString()
                           ) : currentDrVal ? (
                             <span className="text-emerald-400 font-bold" title="ทน/ลดความเสียหาย">
@@ -418,7 +426,9 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
 
                         {/* % HP */}
                         <div className="w-12 text-right text-dim tabular-nums">
-                          {s.pct_target_hp > 0 ? (
+                          {isUnlearned ? (
+                            <span className="text-dim">—</span>
+                          ) : s.pct_target_hp > 0 ? (
                             `${s.pct_target_hp}%`
                           ) : currentDrVal ? (
                             <span className="text-emerald-400/80 font-mono text-[10px]">บัฟทน</span>

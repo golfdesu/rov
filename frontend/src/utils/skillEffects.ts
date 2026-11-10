@@ -657,7 +657,7 @@ export function getExactHeroPassiveScaling(
         },
         {
           code: "Heal",
-          label: "ดูดเลือด (Lifesteal)",
+          label: "ดูดเลือดพื้นฐาน (Base Lifesteal)",
           values: ms.map((lv) => `${(8.0 + (7.0 / 14) * (lv - 1)).toFixed(1)}%`),
           colorClass: "text-green-300 font-bold",
         },
@@ -671,12 +671,12 @@ export function getExactHeroPassiveScaling(
         },
         {
           icon: "heart",
-          title: "ดูดเลือด (8% - 15%)",
-          detail: "ดูดเลือด 8% - 15% (เพิ่มขึ้นตาม HP ที่เสียไป สูงสุด 80% - 150%) พร้อมลด CD สกิล 1/2 ลง 1 วิ, สกิล 3 ลง 2 วิ",
+          title: "ดูดเลือดพื้นฐาน (8% - 15%)",
+          detail: "ดูดเลือดพื้นฐาน 8% (+0.5%/Lv, สูงสุด 15% ที่ Lv.15) และเพิ่มขึ้นตาม HP ที่เสียไป สูงสุด 10 เท่า (80% - 150%)",
           badgeClass: "border-green-500/40 bg-green-500/10 text-green-400",
         },
       ],
-      summaryBadgeText: (lv) => `⚔️ ดาเมจ ${300 + 25 * (lv - 1)} [Lv ${lv}]`,
+      summaryBadgeText: (lv) => `⚔️ ดาเมจ ${300 + 25 * (Math.min(15, Math.max(1, lv)) - 1)} [Lv ${Math.min(15, Math.max(1, lv))}]`,
       badgeClass: CATEGORY_STYLES.damage.badgeClass,
     };
   }
@@ -828,7 +828,7 @@ export function getExactHeroPassiveScaling(
           label: "ตีไว 1สแต็ก (5สแต็ก)",
           values: ms.map((lv) => {
             const one = 8.0 + (6.0 / 14) * (lv - 1);
-            return `${one.toFixed(1)}% (${(one * 5).toFixed(0)}%)`;
+            return `${one.toFixed(1)}% (${(one * 5).toFixed(1)}%)`;
           }),
           colorClass: "text-amber-300 font-bold",
         },
@@ -841,7 +841,8 @@ export function getExactHeroPassiveScaling(
           badgeClass: "border-amber-500/40 bg-amber-500/10 text-amber-400",
         },
       ],
-      summaryBadgeText: (lv) => `⚡ ตีไว +${((8.0 + (6.0 / 14) * (lv - 1)) * 5).toFixed(0)}% (5สแต็ก) [Lv ${lv}]`,
+      summaryBadgeText: (lv) =>
+        `⚡ ตีไว +${((8.0 + (6.0 / 14) * (Math.min(15, Math.max(1, lv)) - 1)) * 5).toFixed(1)}% (5สแต็ก) [Lv ${Math.min(15, Math.max(1, lv))}]`,
       badgeClass: CATEGORY_STYLES.attack_speed.badgeClass,
     };
   }
@@ -968,7 +969,7 @@ export function getExactHeroPassiveScaling(
           label: "ตีไว 1สแต็ก (5สแต็ก)",
           values: ms.map((lv) => {
             const one = 7.0 + (7.0 / 14) * (lv - 1);
-            return `${one.toFixed(1)}% (${(one * 5).toFixed(0)}%)`;
+            return `${one.toFixed(1)}% (${(one * 5).toFixed(1)}%)`;
           }),
           colorClass: "text-amber-300 font-bold",
         },
@@ -981,7 +982,8 @@ export function getExactHeroPassiveScaling(
           badgeClass: "border-amber-500/40 bg-amber-500/10 text-amber-400",
         },
       ],
-      summaryBadgeText: (lv) => `⚡ ตีไว +${((7.0 + (7.0 / 14) * (lv - 1)) * 5).toFixed(0)}% (5สแต็ก) [Lv ${lv}]`,
+      summaryBadgeText: (lv) =>
+        `⚡ ตีไว +${((7.0 + (7.0 / 14) * (Math.min(15, Math.max(1, lv)) - 1)) * 5).toFixed(1)}% (5สแต็ก) [Lv ${Math.min(15, Math.max(1, lv))}]`,
       badgeClass: CATEGORY_STYLES.attack_speed.badgeClass,
     };
   }
@@ -1155,28 +1157,55 @@ export function getExactHeroPassiveScaling(
   }
 
   // 20. Omega
-  if (heroName === "Omega" && isPassive) {
-    return {
-      milestones: ms,
-      rows: [
-        {
-          code: "DMG",
-          label: "โบนัสดาเมจใส่ครีป (+6%โบนัส HP)",
-          values: ms.map((lv) => (150 + 10 * (lv - 1)).toString()),
-          colorClass: "text-ink font-bold",
-        },
-      ],
-      highlights: [
-        {
-          icon: "swords",
-          title: "โบนัสดาเมจครีป (+10 ต่อ Lv)",
-          detail: "โจมตีพิเศษสร้างโบนัส 150 (+10 ต่อ Lv.ฮีโร่) (+6% โบนัส HP) ใส่ครีป และสตั๊นป้อม 2 วิ",
-          badgeClass: "border-[#ff9f43]/40 bg-[#ff9f43]/10 text-[#ff9f43]",
-        },
-      ],
-      summaryBadgeText: (lv) => `💥 ดาเมจครีป ${150 + 10 * (lv - 1)} [Lv ${lv}]`,
-      badgeClass: CATEGORY_STYLES.damage.badgeClass,
-    };
+  if (heroName === "Omega") {
+    if (slot === "Skill 1" || skillName === "Vanguard Mode") {
+      return {
+        milestones: ms,
+        rows: [
+          {
+            code: "SPD Up",
+            label: "โบนัสความเร็วเคลื่อนที่ (+2.5%/Lv)",
+            values: ms.map((lv) => `${(5.0 + 2.5 * (lv - 1)).toFixed(1)}%`),
+            colorClass: "text-cyan-300 font-bold",
+          },
+        ],
+        highlights: [
+          {
+            icon: "zap",
+            title: "เร่งความเร็ว Vanguard (+2.5%/Lv)",
+            detail: "ขณะเปิดสกิล 1 ได้รับความเร็วเคลื่อนที่เพิ่ม 5.0% (+2.5% ต่อ Lv.ฮีโร่ สูงสุด 40.0%)",
+            badgeClass: CATEGORY_STYLES.move_speed.badgeClass,
+          },
+        ],
+        summaryBadgeText: (lv) =>
+          `⚡ วิ่งเร็ว +${(5.0 + 2.5 * (Math.min(15, Math.max(1, lv)) - 1)).toFixed(1)}% [Lv ${Math.min(15, Math.max(1, lv))}]`,
+        badgeClass: CATEGORY_STYLES.move_speed.badgeClass,
+      };
+    }
+    if (isPassive || skillName === "Surviving Memory") {
+      return {
+        milestones: ms,
+        rows: [
+          {
+            code: "DMG",
+            label: "โบนัสดาเมจใส่ครีป (+6%โบนัส HP)",
+            values: ms.map((lv) => (150 + 10 * (lv - 1)).toString()),
+            colorClass: "text-ink font-bold",
+          },
+        ],
+        highlights: [
+          {
+            icon: "swords",
+            title: "โบนัสดาเมจครีป (+10 ต่อ Lv)",
+            detail: "โจมตีพิเศษสร้างโบนัส 150 (+10 ต่อ Lv.ฮีโร่) (+6% โบนัส HP) ใส่ครีป และสตั๊นป้อม 2 วิ",
+            badgeClass: "border-[#ff9f43]/40 bg-[#ff9f43]/10 text-[#ff9f43]",
+          },
+        ],
+        summaryBadgeText: (lv) =>
+          `💥 ดาเมจครีป ${150 + 10 * (Math.min(15, Math.max(1, lv)) - 1)} [Lv ${Math.min(15, Math.max(1, lv))}]`,
+        badgeClass: CATEGORY_STYLES.damage.badgeClass,
+      };
+    }
   }
 
   return null;
@@ -1241,17 +1270,18 @@ export function getInGameSkillRows(
   const bd = skill.base_damage ?? [];
   const cdArr = Array.isArray(skill.cooldown) ? skill.cooldown : skill.cooldown ? [skill.cooldown] : [];
   const manaArr = Array.isArray(skill.mana_cost) ? skill.mana_cost : skill.mana_cost ? [skill.mana_cost] : [];
+  const isPassiveSlot = skill.slot.startsWith("Passive") || skill.slot === "Passive";
 
   // Exact hero passive level scaling profiles (e.g. Qi, Veres, Aleister, Max, Murad, Taara, etc.)
   if (heroName) {
     const exact = getExactHeroPassiveScaling(heroName, skill.slot, skill.name);
-    if (exact) {
-      return exact.rows;
+    if (exact && isPassiveSlot) {
+      return exact.rows.map((r) => ({ ...r, values: [...r.values] }));
     }
-  } else if (skill.name === "Protection Aura" || (skill.slot === "Passive" && skill.desc_th?.includes("Aura"))) {
+  } else if (skill.name === "Protection Aura" || (isPassiveSlot && skill.desc_th?.includes("Aura"))) {
     const exact = getExactHeroPassiveScaling("Qi", skill.slot, skill.name);
-    if (exact) {
-      return exact.rows;
+    if (exact && isPassiveSlot) {
+      return exact.rows.map((r) => ({ ...r, values: [...r.values] }));
     }
   }
 
@@ -1285,7 +1315,7 @@ export function getInGameSkillRows(
     rows.push({
       code: "DEF Up",
       label: "ลดความเสียหาย (DEF Up)",
-      values: drProg.values,
+      values: [...drProg.values],
       colorClass: "text-emerald-300 font-bold",
     });
   }
@@ -1298,21 +1328,30 @@ export function getInGameSkillRows(
     rows.push({
       code: "DEF Down",
       label: "ลดเกราะศัตรู (DEF Down)",
-      values: defDownProg.values,
+      values: [...defDownProg.values],
       colorClass: "text-amber-300 font-bold",
     });
   }
 
   // 4. SLOW row (duration like Omen S1: 1.5, 1.7, 1.9, 2.1, 2.3, 2.5)
+  const isSlowContext = Boolean(
+    skill.desc_th?.includes("สโลว์") ||
+      skill.desc_th?.includes("ลดความเร็ว") ||
+      skill.description?.toLowerCase().includes("slow")
+  );
   const slowDurProg = profile.progressions.find(
-    (p) => p.category === "duration" || p.values.some((v) => v.includes("1.5") || v.includes("2.5"))
+    (p) =>
+      p.category === "duration" ||
+      (isSlowContext &&
+        !p.values.some((v) => v.includes("%")) &&
+        p.values.some((v) => v === "1.5" || v === "2.5" || v.endsWith("วิ")))
   );
   if (slowDurProg) {
     rows.push({
-      code: "SLOW",
-      label: "ระยะเวลาสโลว์ (SLOW)",
-      values: slowDurProg.values,
-      colorClass: "text-indigo-300 font-bold",
+      code: isSlowContext ? "SLOW" : "Duration",
+      label: isSlowContext ? "ระยะเวลาสโลว์ (SLOW)" : "ระยะเวลา (Duration)",
+      values: [...slowDurProg.values],
+      colorClass: isSlowContext ? "text-indigo-300 font-bold" : "text-sky-300 font-mono",
     });
   }
 
@@ -1322,7 +1361,7 @@ export function getInGameSkillRows(
     rows.push({
       code: "SPD Down",
       label: "สโลว์ความเร็ว (SPD Down)",
-      values: spdDownProg.values,
+      values: [...spdDownProg.values],
       colorClass: "text-indigo-300 font-bold",
     });
   }
@@ -1333,7 +1372,7 @@ export function getInGameSkillRows(
     rows.push({
       code: "SPD Up",
       label: "เพิ่มความเร็ว (SPD Up)",
-      values: spdUpProg.values,
+      values: [...spdUpProg.values],
       colorClass: "text-cyan-300 font-bold",
     });
   }
@@ -1344,7 +1383,7 @@ export function getInGameSkillRows(
     rows.push({
       code: "ATK SPD",
       label: "เพิ่มความเร็วโจมตี (ATK SPD)",
-      values: atkSpdProg.values,
+      values: [...atkSpdProg.values],
       colorClass: "text-amber-300 font-bold",
     });
   }
@@ -1355,7 +1394,7 @@ export function getInGameSkillRows(
     rows.push({
       code: "Shield",
       label: "โล่ป้องกัน (Shield)",
-      values: shieldProg.values,
+      values: [...shieldProg.values],
       colorClass: "text-sky-300 font-bold",
     });
   }
@@ -1366,7 +1405,7 @@ export function getInGameSkillRows(
     rows.push({
       code: "Heal",
       label: "ฟื้นฟูเลือด (Heal)",
-      values: healProg.values,
+      values: [...healProg.values],
       colorClass: "text-green-300 font-bold",
     });
   }
@@ -1394,6 +1433,7 @@ export function getInGameSkillRows(
   // Pad rows if any row has fewer elements than maxLevels
   for (const row of rows) {
     if (row.values.length < maxLevels && row.values.length > 0) {
+      row.values = [...row.values];
       const lastVal = row.values[row.values.length - 1];
       while (row.values.length < maxLevels) {
         row.values.push(lastVal);

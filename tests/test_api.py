@@ -774,3 +774,27 @@ def test_hero_screenshots_endpoint(tmp_path, monkeypatch):
     assert d_mock_mortos["folder"] == "Arthur"
     assert len(d_mock_mortos["skill_screenshots"]) == 1
     assert d_mock_mortos["skill_screenshots"][0] == "/heroes-media/Arthur/skill/skill1.jpg"
+
+    # 5. Path traversal security checks (blocked by handler or route matcher)
+    r_traversal_win = client.get("/combat/hero-screenshots/..%5C..%5CWindows")
+    assert r_traversal_win.status_code == 400
+    r_traversal_slash = client.get("/combat/hero-screenshots/..%2F..%2Fetc")
+    assert r_traversal_slash.status_code in (400, 404)
+
+    # 6. Natural sort verification
+    mock_veres_skill = mock_heroes_dir / "Veres" / "skill"
+    mock_veres_skill.mkdir(parents=True)
+    (mock_veres_skill / "skill_100.jpg").write_text("fake")
+    (mock_veres_skill / "skill_97.jpg").write_text("fake")
+    (mock_veres_skill / "skill_98.jpg").write_text("fake")
+    (mock_veres_skill / "skill_99.jpg").write_text("fake")
+
+    r_mock_veres = client.get("/combat/hero-screenshots/Veres")
+    assert r_mock_veres.status_code == 200
+    d_mock_veres = r_mock_veres.json()
+    assert [p.split("/")[-1] for p in d_mock_veres["skill_screenshots"]] == [
+        "skill_97.jpg",
+        "skill_98.jpg",
+        "skill_99.jpg",
+        "skill_100.jpg",
+    ]

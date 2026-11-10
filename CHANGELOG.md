@@ -27,6 +27,49 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-10 12:10 (UTC+7) — Resolve 9 Logic, Security, and UI BUGS Across Combat Lab & Screenshots
+**Agent:** Antigravity (gemini-3.8-flash-high)
+
+### ✅ Completed Work
+- **Natural Numerical Sorting for Screenshots (`src/api.py`, `tests/test_api.py`)**:
+  - Implemented `_natural_sort_key(file_path)` utilizing regex numerical split (`(\d+)`) to sort files logically (`skill_97.jpg`, `skill_98.jpg`, `skill_99.jpg`, `skill_100.jpg`).
+  - Fixed screenshot slot mislabeling across heroes (e.g. Veres, Rourke, Bonnie, Fennik, Heino, Marja, Toro) where lexicographical sort placed `_100` before `_97`.
+- **Path Traversal Security & Fallback Folder URL Fix (`src/api.py`, `tests/test_api.py`)**:
+  - Added strict path validation rejecting directory traversal tokens (`..`, `/`, `\`) with 400 Bad Request, while verifying filesystem boundaries with `is_relative_to(HEROES_DIR)`.
+  - Fixed fallback folder URL construction so that `actual_folder` dynamically reflects whether alias folder or canonical folder was resolved.
+- **In-Place Array Mutation Bug Resolution (`frontend/src/utils/skillEffects.ts`)**:
+  - Fixed severe object mutation where `getInGameSkillRows` padded `profile.progressions` arrays in-place via `.push()`, permanently polluting memoized global profiles.
+  - Cloned progression values with spread operator `[...values]` across all progression rows and the padding loop.
+- **Context-Aware SLOW Duration Classification (`frontend/src/utils/skillEffects.ts`)**:
+  - Restricted SLOW duration identification to actual slow/debuff contexts without percentages, preventing False Positive SLOW labeling on Capheny Ult ("22.5%"), Heino Ult ("22.5%"), and Thorne S1.
+- **Precision Formatting & Level Clamping (`frontend/src/utils/skillEffects.ts`)**:
+  - Clamped hero levels in scaling formulas to 1–15 bounds (`Math.min(15, Math.max(1, lv))`).
+  - Used `toFixed(1)` for 5-stack attack speed totals on Kil'Groth (Lv 4 = 46.4%, Lv 15 = 70.0%) and Errol (Lv 4 = 42.5%, Lv 15 = 70.0%).
+  - Clarified Veres lifesteal description: base lifesteal scales from 8.0% to 15.0% (+0.5%/Lv), increasing up to 10x with missing HP.
+  - Implemented authentic dual profile for Omega: Skill 1 Vanguard movement speed `5.0% (+2.5%/Lv)` and Passive Surviving Memory creep bonus damage `150 (+10/Lv)`.
+- **Bright Ultimate Header and Cooldown Parity (`frontend/src/utils/skillEffects.ts`, `frontend/src/components/lab/HeroSkillsModal.tsx`)**:
+  - Allowed active skills like Bright's Ultimate to render standard Cooldown (60/55/50) and Mana (100/100/100) rows across LV 1–3 while keeping hero-level scaling cards in Highlights.
+  - Fixed CDR preview calculation in `HeroSkillsModal.tsx` to dynamically reference the skill's current level cooldown rather than hardcoded level 1 cooldown (`cooldown[0]`).
+- **Unlearned Skill (Level 0) Graceful Handling (`frontend/src/components/lab/SkillDamageTable.tsx`)**:
+  - Displayed `—` rather than defaulting to Level 1 values (e.g. "ลด 40%") when an active skill is unlearned (`skill_level === 0`).
+
+### 📁 Modified Files
+- `src/api.py`
+- `tests/test_api.py`
+- `frontend/src/utils/skillEffects.ts`
+- `frontend/src/components/lab/HeroSkillsModal.tsx`
+- `frontend/src/components/lab/SkillDamageTable.tsx`
+
+### 🧪 Verification
+- `pytest -v` -> 83/83 tests passed.
+- `ruff check --fix . ; ruff format .` -> clean code formatting.
+- `cd frontend && npm run lint && npx tsc -b --noEmit && npm run build` -> 0 errors, build successful.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
 ## 📅 2026-11-10 11:33 (UTC+7) — Full Schema Parity & Headless CI Fix for Hero Screenshots
 **Agent:** Antigravity (gemini-3.8-flash-high)
 

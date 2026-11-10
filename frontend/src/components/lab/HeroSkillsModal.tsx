@@ -621,11 +621,17 @@ export function HeroSkillsModal({
                     <span className="font-bold text-ink">
                       {activeSkill.cooldown.join(" / ")} วิ
                     </span>
-                    {heroCdr > 0 && (
-                      <span className="text-[10px] text-gold">
-                        (เหลือ {(activeSkill.cooldown[0] * (1 - heroCdr / 100)).toFixed(1)}วิ ด้วย CDR {heroCdr}%)
-                      </span>
-                    )}
+                    {heroCdr > 0 && (() => {
+                      const curSkillLv = activeRow?.skill_level ?? 1;
+                      const cdIdx = Math.min(Math.max(1, curSkillLv) - 1, activeSkill.cooldown.length - 1);
+                      const baseCd = activeSkill.cooldown[cdIdx];
+                      const reducedCd = (baseCd * (1 - heroCdr / 100)).toFixed(1);
+                      return (
+                        <span className="text-[10px] text-gold">
+                          (เหลือ {reducedCd}วิ ที่ Lv.{curSkillLv} ด้วย CDR {heroCdr}%)
+                        </span>
+                      );
+                    })()}
                   </div>
                 ) : (
                   <div className="flex items-center gap-1.5 text-muted">
