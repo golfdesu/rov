@@ -717,24 +717,49 @@ def test_apl_and_aic_league_presets_succeed():
         assert len(data["recommendations"]) == 5
 
 
-def test_hero_screenshots_endpoint():
-    # Test canonical hero Omen
+def test_hero_screenshots_endpoint(tmp_path, monkeypatch):
+    import src.api as api_mod
+
+    # 1. Test canonical hero Omen
     r_omen = client.get("/combat/hero-screenshots/Omen")
     assert r_omen.status_code == 200
     d_omen = r_omen.json()
     assert d_omen["hero"] == "Omen"
-    assert len(d_omen["skill_screenshots"]) >= 4
-    assert len(d_omen["status_screenshots"]) >= 1
-    assert all(s.startswith("/heroes-media/Omen/skill/") for s in d_omen["skill_screenshots"])
 
-    # Test alias Mortos -> Arthur
+    # If running in environment where gitignored heroes/ exists, verify real files
+    if api_mod.HEROES_DIR.is_dir():
+        assert len(d_omen["skill_screenshots"]) >= 4
+        assert len(d_omen["status_screenshots"]) >= 1
+        assert all(s.startswith("/heroes-media/Omen/skill/") for s in d_omen["skill_screenshots"])
+
+    # 2. Test alias Mortos -> Arthur
     r_mortos = client.get("/combat/hero-screenshots/Mortos")
     assert r_mortos.status_code == 200
     d_mortos = r_mortos.json()
     assert d_mortos["folder"] == "Arthur"
-    assert len(d_mortos["skill_screenshots"]) >= 4
+    if api_mod.HEROES_DIR.is_dir():
+        assert len(d_mortos["skill_screenshots"]) >= 4
 
-    # Test non-existent hero
+    # 3. Test non-existent hero
     r_none = client.get("/combat/hero-screenshots/NonExistentHero")
     assert r_none.status_code == 200
     assert r_none.json()["skill_screenshots"] == []
+
+    # 4. Mock directory with mock files to verify parsing in headless CI environments
+    mock_heroes_dir = tmp_path / "mock_heroes"
+    mock_omen_skill = mock_heroes_dir / "Omen" / "skill"
+    mock_omen_status = mock_heroes_dir / "Omen" / "status"
+    mock_omen_skill.mkdir(parents=True)
+    mock_omen_status.mkdir(parents=True)
+    (mock_omen_skill / "skill1.jpg").write_text("fake")
+    (mock_omen_status / "status_lv1.jpg").write_text("fake")
+
+    monkeypatch.setattr(api_mod, "HEROES_DIR", mock_heroes_dir)
+
+    r_mock = client.get("/combat/hero-screenshots/Omen")
+    assert r_mock.status_code == 200
+    d_mock = r_mock.json()
+    assert len(d_mock["skill_screenshots"]) == 1
+    assert len(d_mock["status_screenshots"]) == 1
+    assert d_mock["skill_screenshots"][0] == "/heroes-media/Omen/skill/skill1.jpg"
+    assert d_mock["status_screenshots"][0] == "/heroes-media/Omen/status/status_lv1.jpg"

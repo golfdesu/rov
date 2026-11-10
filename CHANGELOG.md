@@ -27,6 +27,30 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-10 11:25 (UTC+7) — Fix Headless CI Failure for Hero Screenshots Test
+**Agent:** Antigravity (gemini-3.8-flash-high)
+
+### ✅ Completed Work
+- **Headless CI-Safe Hero Screenshot Testing (`tests/test_api.py`)**:
+  - Resolved GitHub Actions CI runner test failure where `heroes/` directory is gitignored and absent in fresh CI checkouts.
+  - Added fixture-based testing in `test_hero_screenshots_endpoint(tmp_path, monkeypatch)`:
+    - Verifies real on-disk files when `HEROES_DIR.is_dir()` exists.
+    - Uses temporary mock directory (`tmp_path`) and monkeypatched `HEROES_DIR` to comprehensively test `/heroes-media/` URL formatting, skill/status image collection, and alias resolution in headless environments without gitignored assets.
+  - Formatted with `ruff` and verified all 83 automated tests pass.
+
+### 📁 Modified Files
+- `tests/test_api.py`
+
+### 🧪 Verification
+- `pytest -v tests/test_api.py` -> 27/27 tests passed.
+- `pytest -v` -> 83/83 tests passed.
+- `ruff check --fix . ; ruff format .` -> clean formatting.
+
+### ⚠️ Open Issues / Important Notes
+- None. Media directories (`heroes/`, `item/`, etc.) remain safely gitignored.
+
+---
+
 ## 📅 2026-11-10 11:15 (UTC+7) — Exact Per-Level Scaling & Elimination of Vague Ranges in Frontend UI
 **Agent:** Antigravity (gemini-3.8-flash-high)
 
