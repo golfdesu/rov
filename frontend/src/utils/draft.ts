@@ -30,9 +30,20 @@ export function heroesByStep(state: DraftState): (string | null)[] {
   });
 }
 
-/** Strips the Thai suffix from backend lane labels, e.g. "DS_Lane (ออฟเลน)" -> "DS_Lane". */
-export function laneKey(lane: string): string {
-  return lane.split(" ")[0];
+/** Strips commas and Thai suffixes from backend lane labels, e.g. "DS_Lane, Roam" -> "DS_Lane". */
+export function laneKey(lane?: string): string {
+  if (!lane) return "";
+  const first = lane.replace(/,/g, " ").trim().split(/\s+/)[0] || "";
+  return first === "Unpicked" ? "" : first;
+}
+
+/** Extracts all playable lanes for a hero, handling flex lanes, e.g. "DS_Lane, Roam" -> ["DS_Lane", "Roam"]. */
+export function heroLanes(lane?: string): string[] {
+  if (!lane) return [];
+  return lane
+    .split(/,\s*/)
+    .map(laneKey)
+    .filter((l): l is string => Boolean(l && l !== "Unpicked"));
 }
 
 export const LANE_SHORT: Record<string, { en: string; th: string }> = {

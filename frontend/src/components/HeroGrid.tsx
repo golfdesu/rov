@@ -1,7 +1,7 @@
 import { ArrowDownAZ, Search, Sparkles, X } from "lucide-react";
 import { forwardRef, useMemo, useState } from "react";
 import type { DraftStep, Hero, RoleType } from "../types/draft";
-import { LANE_SHORT, ROLES, TIER_STYLE, laneKey, missingLaneKeys } from "../utils/draft";
+import { LANE_SHORT, ROLES, TIER_STYLE, heroLanes, laneKey, missingLaneKeys } from "../utils/draft";
 import { displayName, matchesHeroQuery } from "../utils/heroNames";
 import { HeroPortrait } from "./HeroPortrait";
 
@@ -55,6 +55,9 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
     return keys.size >= 5 ? new Set<string>() : keys;
   }, [isBan, missingAllyLanes]);
 
+  const heroPrimaryLane = (h: Hero) =>
+    laneKey(h.main_pro_lane && h.main_pro_lane !== "Unpicked" ? h.main_pro_lane : h.lane);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     // AI sort: available first, then AI rank, then heroes filling a missing lane, then name
@@ -62,11 +65,12 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
       if (unavailableHeroes.has(h.name)) return 3000;
       const rank = recommendedRanks.get(h.name);
       if (rank) return rank;
-      return missing.has(laneKey(h.lane)) ? 1000 : 2000;
+      const fills = heroLanes(h.lane).some((l) => missing.has(l)) || missing.has(heroPrimaryLane(h));
+      return fills ? 1000 : 2000;
     };
     return heroes
       .filter((h) => (!q || matchesHeroQuery(h.name, q)) && (!role || h.role === role))
-      .filter((h) => !lane || laneKey(h.lane) === lane)
+      .filter((h) => !lane || heroLanes(h.lane).includes(lane) || heroPrimaryLane(h) === lane)
       .sort(
         (a, b) =>
           (sortMode === "ai" ? score(a) - score(b) : 0) || displayName(a.name).localeCompare(displayName(b.name)),
@@ -183,7 +187,8 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
             const usedByOpponentOnly = !isBan && !taken && opponentTeamUsed && !actingTeamUsed;
 
             const rank = recommendedRanks.get(hero.name);
-            const fillsLane = !taken && missing.has(laneKey(hero.lane));
+            const primaryLane = heroPrimaryLane(hero);
+            const fillsLane = !taken && (heroLanes(hero.lane).some((l) => missing.has(l)) || missing.has(primaryLane));
             const disabled = taken || !currentStep;
             return (
               <button
@@ -191,7 +196,7 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
                 type="button"
                 disabled={disabled}
                 onClick={() => onLockHero(hero.name)}
-                title={`${displayName(hero.name)} · ${hero.role} · ${laneKey(hero.lane)} · Tier ${hero.tier}${
+                title={`${displayName(hero.name)} · ${hero.role} · ${primaryLane} · Tier ${hero.tier}${
                   lockedByGlobalBan
                     ? ` · GLOBAL BAN (${inUnivBan ? "แบนร่วม" : isBan ? `${opponentTeamName} เคยใช้แล้ว · ไม่ต้องแบน` : `${actingTeamName} ใช้แล้ว`})`
                     : canBanToDeny
@@ -227,7 +232,7 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
                   <span
                     className={`hidden shrink-0 font-mono text-[9px] font-bold xl:inline ${fillsLane ? "text-good" : "text-muted"}`}
                   >
-                    {LANE_SHORT[laneKey(hero.lane)]?.en}
+                    {LANE_SHORT[primaryLane]?.en}
                   </span>
                 </div>
                 <span

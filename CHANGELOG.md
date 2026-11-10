@@ -27,6 +27,32 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-10 07:51 (UTC+7) — Fix Flex-Lane Comma Parsing and Restore Missing Lane Tags for 130 Heroes
+**Agent:** Antigravity (gemini-3.8-flash-high)
+
+### ✅ Completed Work
+- **Flex-Lane Parsing Bug Fix (`frontend/src/utils/draft.ts`)**:
+  - Fixed `laneKey(lane)` which previously used `lane.split(" ")[0]`, causing 21 flex-lane heroes (e.g. Mina `"DS_Lane, Roam"`, Maloch `"Roam, DS_Lane"`, Amily, Ata, Erin, Zanis) to produce trailing commas (`"DS_Lane,"`), resulting in `undefined` lookups in `LANE_SHORT` and invisible lane tags.
+  - Added comma stripping and `"Unpicked"` filtering in `laneKey`.
+  - Added `heroLanes(lane)` helper to extract all playable lanes for a hero.
+- **Hero Grid & Draft Board Lane Display (`frontend/src/components/HeroGrid.tsx`, `frontend/src/components/TeamColumn.tsx`)**:
+  - Bound hero card lane tags to `heroPrimaryLane(hero)` (`hero.main_pro_lane || hero.lane`), restoring lane tags (DSL, JGL, MID, ADL, SUP) across 100% of all 130 heroes.
+  - Enhanced lane filtering to support flex picks via `heroLanes(hero.lane).includes(lane)`, allowing heroes like Mina to appear under both DSL and SUP filters.
+
+### 📁 Modified Files
+- `frontend/src/utils/draft.ts`
+- `frontend/src/components/HeroGrid.tsx`
+- `frontend/src/components/TeamColumn.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `python -c "..."`: Verified 130/130 heroes have 100% valid lane tags.
+- `cd frontend && npm run lint && npm run build`: 0 warnings, 0 errors, built in 963ms.
+- `ruff check --fix . && ruff format .`: Passed.
+- `pytest -v`: 79/79 passed in 10.34s.
+
+---
+
 ## 📅 2026-11-08 12:46 (UTC+7) — Full-Stack Code Review Fixes (Token Step Alignment, Docker Catalog Fallback & Session Debounce)
 **Agent:** Antigravity
 

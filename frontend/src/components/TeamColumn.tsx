@@ -46,6 +46,8 @@ export function TeamColumn({
   const activePickSlot = isMyTurn && currentStep?.action === "pick" ? picks.length : -1;
   const activeBanSlot = isMyTurn && currentStep?.action === "ban" ? bans.length : -1;
   const accent = isBlue ? "text-blue" : "text-red";
+  const heroPrimaryLane = (h: Hero) =>
+    laneKey(h.main_pro_lane && h.main_pro_lane !== "Unpicked" ? h.main_pro_lane : h.lane);
 
   if (variant === "compact") {
     const renderCompactBanSlots = (extraClass = "") => (
@@ -162,7 +164,7 @@ export function TeamColumn({
                 onClick={canClickGhost && ghost ? () => onLockHero?.(ghost.hero_name) : undefined}
                 title={
                   name
-                    ? `${displayName(name)} (${hero ? (LANE_SHORT[laneKey(hero.lane)]?.en ?? "") : ""})`
+                    ? `${displayName(name)} (${hero ? (LANE_SHORT[heroPrimaryLane(hero)]?.en ?? "") : ""})`
                     : ghost
                       ? `คาดเดา: ${displayName(ghost.hero_name)} (${ghost.probability_pct.toFixed(0)}%)`
                       : `Pick ${i + 1}`
@@ -183,7 +185,7 @@ export function TeamColumn({
                       <span
                         className={`absolute top-0.5 left-0.5 max-w-[calc(100%-4px)] truncate bg-bg/85 px-0.5 font-mono text-[8px] font-bold sm:px-1 sm:text-[9px] ${accent}`}
                       >
-                        {LANE_SHORT[laneKey(hero.lane)]?.en}
+                        {LANE_SHORT[heroPrimaryLane(hero)]?.en}
                       </span>
                     )}
                     <div className="absolute inset-x-0 bottom-0 truncate px-0.5 pb-0.5 text-center font-display text-[9px] font-bold leading-tight text-ink sm:px-1 sm:text-xs">
@@ -300,7 +302,7 @@ export function TeamColumn({
                     {hero && (
                       <div className="mt-0.5 flex max-w-full items-center gap-1.5 truncate text-[10px] text-muted sm:text-[11px]">
                         <span className={`font-mono font-bold ${accent}`}>
-                          {LANE_SHORT[laneKey(hero.lane)]?.en ?? laneKey(hero.lane)}
+                          {LANE_SHORT[heroPrimaryLane(hero)]?.en ?? heroPrimaryLane(hero)}
                         </span>
                         <span className="hidden text-dim sm:inline">·</span>
                         <span className="hidden truncate sm:inline">{hero.role}</span>
