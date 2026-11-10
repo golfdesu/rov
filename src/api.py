@@ -429,7 +429,7 @@ def get_hero_screenshots(hero: str):
     folder_name = HERO_FOLDER_ALIASES.get(hero, hero)
     hero_dir = HEROES_DIR / folder_name
     actual_folder = folder_name
-    if not hero_dir.is_dir():
+    if not hero_dir.is_dir() and (HEROES_DIR / hero).is_dir():
         hero_dir = HEROES_DIR / hero
         actual_folder = hero
 
