@@ -27,6 +27,50 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-11 12:50 (UTC+7) — Implement 3 Production Skills: frontend-e2e-inspector, moba-meta-intel, and regression-guard
+**Agent:** Antigravity (Gemini 3.8 Flash)
+
+### ✅ Completed Work
+- **Skill 1: `frontend-e2e-inspector` (`.agents/skills/frontend-e2e-inspector/`, `.claude/skills/frontend-e2e-inspector/`)**:
+  - Authored `SKILL.md` and audit script `scripts/inspect_frontend_e2e.py`.
+  - Verifies production bundle build integrity (`frontend/dist/`), all 130 hero square avatar mappings in `hero_images.json`, rich hero skill screenshots, and item card media endpoints.
+- **Skill 2: `moba-meta-intel` (`.agents/skills/moba-meta-intel/`, `.claude/skills/moba-meta-intel/`)**:
+  - Authored `SKILL.md` and tournament analytics engine `scripts/query_meta_intel.py`.
+  - Provides deep meta intelligence across 4,329 pro matches: contested tier lists (picks, bans, presence %, win rates), multi-lane flex picks (heroes with >= 15% presence in 2+ lanes), top winning duo synergies, and hero match profiles.
+- **Skill 3: `regression-guard` (`.agents/skills/regression-guard/`, `.claude/skills/regression-guard/`)**:
+  - Authored `SKILL.md` and stability auditor `scripts/audit_regression_guard.py`.
+  - Replays all 72 real pro match draft states against golden fixtures (`tests/fixtures/predict_golden.json`) ensuring 100% Rank #1 recommendation consistency.
+  - Benchmarks 3 deterministic 1v1 duels in `src.combat_calculator` (Florentino vs Omen, Valhein vs Keera, Hayate vs Toro) to verify TTK and combat formulas with zero numerical drift.
+- **Mirroring & Agent Governance**:
+  - Mirrored all 3 skills 1-to-1 to `.claude/skills/`.
+  - Updated repository architecture tree in `AGENTS.md`.
+
+### 📁 Modified Files
+- `.agents/skills/frontend-e2e-inspector/SKILL.md` (new)
+- `.agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py` (new)
+- `.agents/skills/moba-meta-intel/SKILL.md` (new)
+- `.agents/skills/moba-meta-intel/scripts/query_meta_intel.py` (new)
+- `.agents/skills/regression-guard/SKILL.md` (new)
+- `.agents/skills/regression-guard/scripts/audit_regression_guard.py` (new)
+- `.claude/skills/frontend-e2e-inspector/*` (new mirrors)
+- `.claude/skills/moba-meta-intel/*` (new mirrors)
+- `.claude/skills/regression-guard/*` (new mirrors)
+- `AGENTS.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py`: 4/4 checks passed.
+- `python .agents/skills/moba-meta-intel/scripts/query_meta_intel.py --summary --tier-list --flex-picks --duo-synergy`: Verified all modes.
+- `python .agents/skills/regression-guard/scripts/audit_regression_guard.py`: 72/72 prediction states and 3/3 combat duels passed (100%).
+- `pytest -v tests/test_skills_sync.py`: 2/2 tests passed (mirrors identical).
+- `pytest -v`: Full 90 tests passed (100% green).
+- `ruff check --fix . && ruff format .`: 0 lint errors, clean formatting.
+
+### ⚠️ Open Issues / Important Notes
+- None. All 3 skills are operational, tested, and synchronized across `.agents/skills/` and `.claude/skills/`.
+
+---
+
 ## 📅 2026-11-11 12:30 (UTC+7) — Integrate Cloudflare Security Audit Framework & Automated Security Test Suite
 **Agent:** Antigravity (Gemini 3.8 Flash)
 

@@ -114,7 +114,10 @@ ROV/
 │       ├── erawan-hpc-ops/          # ERAWAN HPC H100 SLURM, MLflow & Git sync runbook
 │       ├── rov-draft-serving/       # CLI, FastAPI + web UI, golden test & pytest runbook
 │       ├── draft-screenshot-reader/ # Read true pick order from broadcast screenshots
-│       └── security-audit/          # Cloudflare-based 5-phase security auditing & threat verification
+│       ├── security-audit/          # Cloudflare-based 5-phase security auditing & threat verification
+│       ├── frontend-e2e-inspector/  # UI & asset verification: React 19 draft board, combat modals & hero media
+│       ├── moba-meta-intel/         # Esports tournament intelligence CLI (tier lists, flex picks, duo synergies)
+│       └── regression-guard/        # Regression testing: 72 golden draft states & combat duel simulation stability
 ├── .claude/
 │   └── skills/                      # Copy of .agents/skills/ for Claude Code (kept in sync by tests/test_skills_sync.py)
 ├── configs/
