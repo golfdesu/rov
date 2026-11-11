@@ -34,6 +34,21 @@ HERO_FOLDER_ALIASES = {
     "Celica": "Brunhilda",
     "Riktor": "Richter",
 }
+ITEM_FOLDER_ALIASES = {
+    "Troy's Medallion": "Medallion of Troy",
+    "Hyoga's Edge": "Frost Hammer",
+    "Hyoga": "Frost Hammer",
+    "Fafnir": "Fafnir's Talon",
+    "Gaia": "Gaia's Standard",
+    "Longinus": "Spear of Longinus",
+    "Claves": "Claves Sancti",
+    "Fenrir": "Fenrir's Tooth",
+    "Hecate": "Hecate's Diadem",
+    "Berith": "Berith's Agony",
+    "Amulet": "Amulet of Longevity",
+    "SoL": "Shield of the Lost",
+    "MoP": "Mail of Pain",
+}
 
 app = FastAPI(
     title="RoV SOTA Draft Intelligence API",
@@ -511,7 +526,8 @@ def get_item_screenshots(item_name: str):
     if ".." in item_name or "/" in item_name or "\\" in item_name:
         raise HTTPException(status_code=400, detail="Invalid item name")
 
-    item_dir = ITEMS_DIR / item_name
+    resolved_name = ITEM_FOLDER_ALIASES.get(item_name, item_name)
+    item_dir = ITEMS_DIR / resolved_name
     try:
         if ITEMS_DIR.is_dir() and item_dir.exists() and not item_dir.resolve().is_relative_to(ITEMS_DIR.resolve()):
             raise HTTPException(status_code=400, detail="Invalid item name")
@@ -521,24 +537,24 @@ def get_item_screenshots(item_name: str):
     if not item_dir.is_dir():
         return {
             "item": item_name,
-            "folder": item_name,
+            "folder": resolved_name,
             "screenshots": [],
             "details": None,
             "pages_info": [],
         }
 
     screenshots = [
-        f"/items-media/{item_name}/{f.name}"
+        f"/items-media/{resolved_name}/{f.name}"
         for f in sorted(
             [f for f in item_dir.iterdir() if f.suffix.lower() in (".jpg", ".jpeg", ".png")],
             key=_natural_sort_key,
         )
     ]
-    pages_info = _manifest_items_cache.get(item_name, [])
+    pages_info = _manifest_items_cache.get(resolved_name, _manifest_items_cache.get(item_name, []))
     details = pages_info[0] if pages_info else None
     return {
         "item": item_name,
-        "folder": item_name,
+        "folder": resolved_name,
         "screenshots": screenshots,
         "details": details,
         "pages_info": pages_info,

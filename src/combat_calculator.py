@@ -28,6 +28,22 @@ HERO_ALIASES: dict[str, str] = {
     "Richter": "Riktor",
 }
 
+DEFAULT_ITEM_ALIASES: dict[str, str] = {
+    "Troy's Medallion": "Medallion of Troy",
+    "Hyoga's Edge": "Frost Hammer",
+    "Hyoga": "Frost Hammer",
+    "Fafnir": "Fafnir's Talon",
+    "Gaia": "Gaia's Standard",
+    "Longinus": "Spear of Longinus",
+    "Claves": "Claves Sancti",
+    "Fenrir": "Fenrir's Tooth",
+    "Hecate": "Hecate's Diadem",
+    "Berith": "Berith's Agony",
+    "Amulet": "Amulet of Longevity",
+    "SoL": "Shield of the Lost",
+    "MoP": "Mail of Pain",
+}
+
 ACTIVE_SLOTS = (
     "Skill 1",
     "Skill 2",
@@ -366,7 +382,10 @@ class CombatEngine:
         self.skills = json.loads(paths.hero_skills_json_path.read_text(encoding="utf-8"))["heroes"]
         items = json.loads(paths.items_json_path.read_text(encoding="utf-8"))["items"]
         self.items = {i["name"]: i for i in items}
-        self.item_aliases = {old: i["name"] for i in items for old in i.get("alias") or []}
+        self.item_aliases = dict(DEFAULT_ITEM_ALIASES)
+        for i in items:
+            for old in i.get("alias") or []:
+                self.item_aliases[old] = i["name"]
         arcana = json.loads(paths.arcana_json_path.read_text(encoding="utf-8"))["arcana"]
         self.arcana = {a["name"]: a for a in arcana if a["tier"] == 3}
         ench = json.loads(paths.enchantments_json_path.read_text(encoding="utf-8"))
@@ -540,11 +559,17 @@ class CombatEngine:
         }
 
         item_stats: dict[str, float] = {}
+        seen_items: set[str] = set()
         seen_unique: set[str] = set()
         pierce_texts: list[str] = []
         for name in build.items:
             item = self.items[name]
+            is_dup = name in seen_items
+            seen_items.add(name)
             for k, v in item["stats"].items():
+                # Unique passives (e.g. Claves Sancti crit stats) do not stack across duplicate items
+                if is_dup and name == "Claves Sancti" and k in ("critical_chance", "critical_damage"):
+                    continue
                 item_stats[k] = item_stats.get(k, 0.0) + v
             for text in item.get("passives") or []:
                 # Unique passives (same text) do not stack across duplicate items.

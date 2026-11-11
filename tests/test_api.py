@@ -846,3 +846,14 @@ def test_item_screenshots_endpoint():
     assert res_trav.status_code == 400
     res_trav_slash = client.get("/combat/item-screenshots/..%2F..%2Fetc")
     assert res_trav_slash.status_code in (400, 404)
+
+    # 5. Item alias and shorthand resolution
+    res_troy = client.get("/combat/item-screenshots/Troy's%20Medallion")
+    assert res_troy.status_code == 200
+    assert res_troy.json()["folder"] == "Medallion of Troy"
+    assert len(res_troy.json()["screenshots"]) == 1
+
+    res_fafnir = client.get("/combat/item-screenshots/Fafnir")
+    assert res_fafnir.status_code == 200
+    assert res_fafnir.json()["folder"] == "Fafnir's Talon"
+    assert len(res_fafnir.json()["screenshots"]) == 1

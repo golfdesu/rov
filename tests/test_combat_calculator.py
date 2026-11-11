@@ -87,6 +87,12 @@ def test_item_alias_resolves(engine):
     assert res["stats"]["armor_pierce_flat"] == 180.0
     assert res["stats"]["magic_pierce_flat"] == 75.0
 
+    # Shorthand and colloquial aliases
+    b_short = Build(hero="Valhein", level=15, items=["Fafnir", "Troy's Medallion", "Hyoga", "Gaia"])
+    res_short = engine.build_stats(b_short)
+    assert b_short.items == ["Fafnir's Talon", "Medallion of Troy", "Frost Hammer", "Gaia's Standard"]
+    assert res_short["stats"]["magic_defense"] > 400.0
+
 
 def test_alternate_form_skills_use_ingame_slot_level(engine):
     build = Build(hero="Yena", level=15)
@@ -415,10 +421,17 @@ def test_arcana_aliases_resolution(engine):
 
 
 def test_claves_sancti_stats(engine):
-    build = Build(hero="Valhein", level=15, items=["Claves Sancti"])
-    res = engine.build_stats(build)
-    assert res["stats"]["critical_chance"] >= 25.0
-    assert res["stats"]["critical_damage"] >= 240.0  # Base 200 + 40
+    build1 = Build(hero="Valhein", level=15, items=["Claves Sancti"])
+    res1 = engine.build_stats(build1)
+    assert res1["stats"]["critical_chance"] >= 25.0
+    assert res1["stats"]["critical_damage"] >= 240.0  # Base 200 + 40
+
+    # Duplicate Claves Sancti should stack AD, but NOT unique crit chance/damage passives
+    build2 = Build(hero="Valhein", level=15, items=["Claves Sancti", "Claves Sancti"])
+    res2 = engine.build_stats(build2)
+    assert res2["stats"]["attack_damage"] == res1["stats"]["attack_damage"] + 100.0
+    assert res2["stats"]["critical_chance"] == res1["stats"]["critical_chance"]
+    assert res2["stats"]["critical_damage"] == res1["stats"]["critical_damage"]
 
 
 def test_recommend_matchup_runes_all_lanes(engine):

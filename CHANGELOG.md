@@ -27,6 +27,36 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-11 11:05 (UTC+7) — Universal Item Shorthand Aliases & Claves Sancti Unique Passive Integrity
+**Agent:** Antigravity (Gemini 3.8 Flash)
+
+### ✅ Completed Work
+- **Item Aliases & Shorthand Resolution (`src/api.py`, `src/combat_calculator.py`)**:
+  - Implemented `DEFAULT_ITEM_ALIASES` and `ITEM_FOLDER_ALIASES` mapping colloquial item queries and shorthand abbreviations:
+    - Canonical correction: `Troy's Medallion` -> `Medallion of Troy`
+    - Rework correction: `Hyoga's Edge` / `Hyoga` -> `Frost Hammer`
+    - Popular shorthands: `Fafnir` -> `Fafnir's Talon`, `Gaia` -> `Gaia's Standard`, `Longinus` -> `Spear of Longinus`, `Claves` -> `Claves Sancti`, `Fenrir` -> `Fenrir's Tooth`, `Hecate` -> `Hecate's Diadem`, `Berith` -> `Berith's Agony`, `Amulet` -> `Amulet of Longevity`, `SoL` -> `Shield of the Lost`, `MoP` -> `Mail of Pain`.
+  - Updated `GET /combat/item-screenshots/{item_name}` to transparently resolve aliases, allowing users and UI to inspect items via any standard shorthand.
+- **Unique Passive Deduplication for Claves Sancti (`src/combat_calculator.py`)**:
+  - Enhanced `build_stats()` to prevent duplicate stacking of Unique Passives (`+25% Critical Chance` and `+40% Critical Damage`) when duplicate Claves Sancti items are equipped in combat simulations, preserving official RoV item stacking rules while stacking base AD (+100 per copy).
+- **Automated Regression Test Suite (`tests/test_api.py`, `tests/test_combat_calculator.py`)**:
+  - Added unit test in `tests/test_api.py` validating alias resolution (`Troy's Medallion` -> `Medallion of Troy`, `Fafnir` -> `Fafnir's Talon`).
+  - Added unit tests in `tests/test_combat_calculator.py` verifying item alias resolution and duplicate Claves Sancti non-stacking unique crit passives.
+
+### 📁 Modified Files
+- `src/api.py`
+- `src/combat_calculator.py`
+- `tests/test_api.py`
+- `tests/test_combat_calculator.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `pytest -v` passed all 85 tests (100% green).
+- `ruff check --fix . && ruff format .` passed (0 errors, clean).
+- `cd frontend && npm run lint && npm run build` passed cleanly (0 errors, 0 warnings).
+
+---
+
 ## 📅 2026-11-11 10:40 (UTC+7) — Implement Authentic In-Game Item Card Screenshot Viewer & API Endpoint
 **Agent:** Antigravity (Gemini 3.8 Flash)
 
