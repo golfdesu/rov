@@ -8,7 +8,7 @@ description: >-
 
 # RoV MOBA Meta Intelligence Skill
 
-Use this skill to query, analyze, and synthesize competitive esports draft data across **4,329 professional games** from RPL, APL, AIC, AOG, and GCS tournaments.
+Use this skill to query, analyze, and synthesize competitive esports draft data across **4,329 professional games** from RPL, APL, AIC, AOG, and GCS tournaments. Incorporates patch recency weighting, hand-maintained tier overrides (`data/hero_tier_overrides.json`), patch history alignment (`data/hero_patch_history.json`), and Bayesian smoothed win rates.
 
 ---
 
@@ -18,37 +18,45 @@ Use this skill to query, analyze, and synthesize competitive esports draft data 
 # 1. Dataset Overview
 python .agents/skills/moba-meta-intel/scripts/query_meta_intel.py --summary
 
-# 2. Tournament Tier List (Top 15 Contested Heroes in RPL 2026)
-python .agents/skills/moba-meta-intel/scripts/query_meta_intel.py --tier-list --league RPL --top 15
+# 2. Patch-Aware Tier List with Overrides and Patch Badges (Top 25)
+python .agents/skills/moba-meta-intel/scripts/query_meta_intel.py --tier-list --top 25
 
-# 3. Flex-Lane Versatility (Heroes played in 2+ roles)
+# 3. Emerging Meta Surge (Top rising heroes in 2026 vs past baseline)
+python .agents/skills/moba-meta-intel/scripts/query_meta_intel.py --emerging --top 15
+
+# 4. Deep Hero Profile with Patch History & Override Reasoning
+python .agents/skills/moba-meta-intel/scripts/query_meta_intel.py --hero-stats Evita --verbose
+python .agents/skills/moba-meta-intel/scripts/query_meta_intel.py --hero-stats Zanis --verbose
+
+# 5. Flex-Lane Versatility (Heroes played in 2+ roles with >= 15% share)
 python .agents/skills/moba-meta-intel/scripts/query_meta_intel.py --flex-picks
 
-# 4. Top Winning Duo Synergies (e.g. Carry + Support duos with >= 15 games)
-python .agents/skills/moba-meta-intel/scripts/query_meta_intel.py --duo-synergy --min-games 15
+# 6. Top Winning Duo Synergies (Carry + Support / Jungle duos with >= 20 games)
+python .agents/skills/moba-meta-intel/scripts/query_meta_intel.py --duo-synergy --min-games 20
 
-# 5. Deep Hero Profile
-python .agents/skills/moba-meta-intel/scripts/query_meta_intel.py --hero-stats Capheny
+# 7. Raw Unweighted / No-Override Historical Analysis
+python .agents/skills/moba-meta-intel/scripts/query_meta_intel.py --tier-list --all-time --no-overrides
 ```
 
 ---
 
 ## 2. Analytical Capabilities & Use Cases
 
-1. **Meta Tier Classification**:
-   - Analyzes **Presence Rate** (`(Picks + Bans) / Total Games`):
-     - **Tier S+ (Perma-ban / Priority)**: Presence >= 80% (e.g. Dolia, Rouie, Eland'orr).
-     - **Tier S (Meta Staples)**: Presence 50%–79% (e.g. Florentino, Stuart, Toro).
-     - **Tier A (Reliable Core)**: Presence 25%–49% (e.g. Skud, Liliana, Keera).
-     - **Tier B (Situational / Pocket)**: Presence 10%–24%.
-2. **Flex Pick Detection**:
-   - Identifies heroes deployed across multiple competitive roles (e.g. Mina, Maloch, Amily, Erin, Ata, Zanis).
-   - Prevents draft predictability by understanding when a pick disguises team strategy.
-3. **Synergy Edge Mining**:
-   - Evaluates win rates of paired heroes vs their isolated baseline win rates.
-   - Discovers high-synergy wombo-combos (e.g. Rouie + Capheny/Eland'orr, Maloch + Iggy).
-4. **Blue vs Red Side Asymmetry**:
-   - Evaluates First Pick advantage (Blue Side) vs Counter Pick advantage (Red Side Last Pick).
+1. **Patch-Aware & Recency-Weighted Meta Tiers**:
+   - Uses recency weighting (2026 = 1.0, 2025 = 0.5, 2024 = 0.2) to prevent obsolete past seasons from diluting current priorities.
+   - Integrates `data/hero_tier_overrides.json` for heroes with low pro tournament sample size lag, newly released champions (e.g. `Evita [S*]`, `Tamyn [S*]`), and recent balance reworks (e.g. `Zanis [A*]`, `Ata [A*]`).
+   - Displays patch alignment badges directly from `data/hero_patch_history.json` (e.g. `[BUFF 10/26]`, `[NEW 2026]`, `[NERF 10/26]`).
+   - Uses Laplace Bayesian smoothed win rates `(wins + 3.0) / (picks + 6.0) * 100` to prevent low-sample win rate distortions.
+2. **Emerging Meta Surge (`--emerging`)**:
+   - Calculates pick/ban rate surge delta between current 2026 season and historical baseline (2024–2025).
+   - Instantly highlights rising champions, playoff pocket picks, and high-velocity meta shifters.
+3. **Flex Pick Detection (`--flex-picks`)**:
+   - Identifies multi-lane versatility (e.g. Eland'orr Dragon/Jungle, Marja Mid/DS, Taara DS/Jungle/Roam).
+   - Helps drafting coaches execute flex pick strategies that disguise composition intent.
+4. **Synergy Edge Mining (`--duo-synergy`)**:
+   - Evaluates win rates of paired heroes across competitive tournaments to discover high-synergy combinations.
+5. **Side Asymmetry & Deep Profiles (`--hero-stats`)**:
+   - Evaluates Blue Side vs Red Side win rates and top 5 most frequent tournament teammates.
 
 ---
 

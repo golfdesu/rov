@@ -27,6 +27,41 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-11 13:16 (UTC+7) — Upgrade moba-meta-intel with Patch-Aware Tier List, Hero Overrides, & Emerging Surge
+**Agent:** Antigravity (Gemini 3.8 Flash)
+
+### ✅ Completed Work
+- **Patch-Aware Meta & Override Integration (`.agents/skills/moba-meta-intel/`)**:
+  - Integrated `data/hero_tier_overrides.json` into `query_meta_intel.py` to correctly rank low-sample-size, newly released, or recent balance rework heroes (e.g., `Evita [S*]`, `Tamyn [S*]`, `Zanis [A*]`, `Ata [A*]`).
+  - Implemented recency weighting (2026 = 1.0, 2025 = 0.5, 2024 = 0.2) and Laplace Bayesian smoothed win rates `(wins + 3.0) / (picks + 6.0) * 100`.
+  - Linked `data/hero_patch_history.json` to attach patch alignment badges (`[NEW 2026]`, `[BUFF MM/YY]`, `[NERF MM/YY]`) and verbose patch notes.
+- **Emerging Meta Surge Mode (`--emerging`)**:
+  - Added `--emerging` CLI command to calculate pick/ban surge delta between current 2026 season and historical baseline (2024–2025), spotlighting high-velocity meta shifters (Sinestrea +53.2%, Zata +47.1%, Tamyn +43.4%, Y'bneth +38.2%).
+- **Synchronized Claude Skill & Documentation**:
+  - Updated `SKILL.md` with new options (`--emerging`, `--verbose`, `--all-time`, `--no-overrides`).
+  - Mirrored changes 1-to-1 to `.claude/skills/moba-meta-intel/`.
+
+### 📁 Modified Files
+- `.agents/skills/moba-meta-intel/scripts/query_meta_intel.py`
+- `.agents/skills/moba-meta-intel/SKILL.md`
+- `.claude/skills/moba-meta-intel/scripts/query_meta_intel.py`
+- `.claude/skills/moba-meta-intel/SKILL.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `python .agents/skills/moba-meta-intel/scripts/query_meta_intel.py --tier-list --top 25`: Verified Evita (S*), Tamyn (S*), Zanis (A*), Ata (A*) and patch badges.
+- `python .agents/skills/moba-meta-intel/scripts/query_meta_intel.py --emerging --top 15`: Verified surge calculation.
+- `python .agents/skills/moba-meta-intel/scripts/query_meta_intel.py --hero-stats Evita --verbose`: Verified override reason and patch history.
+- `python .agents/skills/regression-guard/scripts/audit_regression_guard.py`: 72/72 golden prediction states and 3/3 combat duels passed (100%).
+- `pytest -v tests/test_skills_sync.py`: 2/2 tests passed.
+- `pytest -v`: Full 90 tests passed (100% green).
+- `ruff check --fix . && ruff format .`: 0 lint errors, clean formatting.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
 ## 📅 2026-11-11 12:50 (UTC+7) — Implement 3 Production Skills: frontend-e2e-inspector, moba-meta-intel, and regression-guard
 **Agent:** Antigravity (Gemini 3.8 Flash)
 
