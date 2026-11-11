@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -135,6 +135,7 @@ class HealthResponse(BaseModel):
     architecture: str
     num_heroes: int
     val_loss: float
+    dataset_metadata: dict[str, Any] | None = None
 
 
 class CombatBuildRequest(BaseModel):

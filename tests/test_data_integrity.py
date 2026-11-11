@@ -419,3 +419,23 @@ def test_hero_tier_overrides_integrity():
         assert tier in valid_tiers, f"Hero '{hero}' has invalid tier '{tier}'"
         if isinstance(info, dict) and "reason" in info:
             assert len(info["reason"].strip()) > 0, f"Hero '{hero}' has empty override reason"
+
+
+def test_dataset_metadata_freshness():
+    from scripts.sync_metadata import DATA_DIR, sync_metadata
+
+    metadata_path = DATA_DIR / "dataset_metadata.json"
+    assert metadata_path.exists(), "data/dataset_metadata.json must exist"
+
+    with open(metadata_path, "r", encoding="utf-8") as f:
+        meta = json.load(f)
+
+    assert meta["total_heroes"] == 130
+    assert meta["total_matches"] >= 4300
+    assert meta["training_matches"] >= 3500
+    assert meta["true_order_pct"] > 50.0
+
+    # Ensure sync_metadata in check mode succeeds without throwing SystemExit(1)
+    fresh_metrics = sync_metadata(check=True, quiet=True)
+    assert fresh_metrics["total_matches"] == meta["total_matches"]
+    assert fresh_metrics["total_heroes"] == meta["total_heroes"]

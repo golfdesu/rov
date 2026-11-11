@@ -410,6 +410,12 @@ def process_screenshots(input_files, dry_run=False, league="aog", input_dir: Pat
             json.dump(true_order_data, f, ensure_ascii=False, indent=2)
 
         print(f"\nSuccessfully filed and recorded {len(new_entries)} games in data/true_pick_order.json.")
+        try:
+            from scripts.sync_metadata import sync_metadata
+
+            sync_metadata(quiet=False)
+        except Exception as e:
+            print(f"[WARN] Failed to auto-sync dataset metadata: {e}")
     elif dry_run:
         print(f"\n[Dry Run] Matched {len(new_entries)} games via global Hungarian assignment.")
 

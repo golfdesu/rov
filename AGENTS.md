@@ -130,6 +130,7 @@ ROV/
 ├── docs/
 │   └── COMPETITORS.md               # Competitive landscape vs other draft tools
 ├── data/
+│   ├── dataset_metadata.json        # Auto-generated SSOT metrics (matches, heroes, skills, true order %)
 │   ├── heroes_130_full.json         # Full 130 RoV heroes + skills + capability flags
 │   ├── heroes_130_summary.csv       # Tabular summary of all 130 heroes
 │   ├── matches_training.json        # Curated training set: 3,512 games (2025–2026 only, 2024 excluded, 51.5% true order)
@@ -199,6 +200,7 @@ ROV/
 │   ├── build_screenshots_manifest.py # Hero skill/status + item card screenshots -> data/screenshots_manifest.json
 │   ├── normalize_team_names.py      # Team abbreviation normalization across datasets
 │   ├── export_commercial_package.py # 2026 analytics bundle export (reads hero_tier_overrides.json)
+│   ├── sync_metadata.py             # SSOT dataset metadata generator & automatic documentation synchronizer
 │   └── simulate_draft_selfplay.py   # 18-step AI vs AI self-play draft simulation
 └── tests/
     ├── test_data_integrity.py       # Verifies 130 heroes, skills, 4,329 match mappings, and item catalog

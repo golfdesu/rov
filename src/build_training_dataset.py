@@ -230,6 +230,14 @@ def build_training_dataset(
         df.to_csv(flat_csv_path, index=False, encoding="utf-8-sig")
         print(f"Saved flattened CSV to: {flat_csv_path}")
 
+    if output_path == DEFAULT_OUTPUT_PATH:
+        try:
+            from scripts.sync_metadata import sync_metadata
+
+            sync_metadata(quiet=False)
+        except Exception as e:
+            print(f"[WARN] Failed to auto-sync dataset metadata: {e}")
+
     return curated_games
 
 

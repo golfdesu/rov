@@ -1,0 +1,22 @@
+{
+  "updated_at": "2026-11-11T06:43:31.926650+00:00",
+  "total_heroes": 130,
+  "total_skills": 534,
+  "total_matches": 4329,
+  "matches_by_year": {
+    "2024": 817,
+    "2025": 1702,
+    "2026": 1810
+  },
+  "training_matches": 3512,
+  "training_true_order": 1810,
+  "true_order_pct": 51.5,
+  "tpo_games": 1810,
+  "patch_changes": 349,
+  "patch_heroes": 97,
+  "synergy_pairs": 2513,
+  "counter_pairs": 6080,
+  "arcana_tier3": 30,
+  "enchantments": 33,
+  "flowborn_mage_matches": 9
+}

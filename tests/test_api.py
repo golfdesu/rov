@@ -12,6 +12,9 @@ def test_health_endpoint():
     assert payload["status"] == "healthy"
     assert payload["model_loaded"] is True
     assert payload["num_heroes"] == 130
+    assert payload.get("dataset_metadata") is not None
+    assert payload["dataset_metadata"]["total_matches"] >= 4000
+    assert payload["dataset_metadata"]["total_heroes"] == 130
 
 
 def test_predict_endpoint():

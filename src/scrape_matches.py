@@ -549,6 +549,13 @@ def main():
     print(f"Saved JSON to: {json_path}")
     print(f"Saved CSV to:  {csv_path}")
 
+    try:
+        from scripts.sync_metadata import sync_metadata
+
+        sync_metadata(quiet=False)
+    except Exception as e:
+        print(f"[WARN] Failed to auto-sync dataset metadata: {e}")
+
 
 if __name__ == "__main__":
     main()

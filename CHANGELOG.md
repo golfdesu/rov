@@ -27,6 +27,57 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-11 13:44 (UTC+7) — Automated Dataset Metadata Engine & Ingestion Pipeline Synchronization Hooks
+**Agent:** Antigravity (Gemini 3.8 Flash)
+
+### ✅ Completed Work
+- **Automated Metadata & Doc Synchronizer (`scripts/sync_metadata.py`)**:
+  - Implemented centralized metadata engine reading canonical datasets (`heroes_130_full.json`, `hero_skills_full.json`, `matches_draft_full.json`, `matches_training.json`, `true_pick_order.json`, `hero_patch_history.json`, `synergy_matrix.csv`, `counter_matrix.csv`).
+  - Emits real-time machine-readable Single Source of Truth (SSOT) to `data/dataset_metadata.json` and `frontend/public/dataset_metadata.json`.
+  - Automatically synchronizes match counts, hero counts, skill counts, and true pick order percentages across `AGENTS.md`, `README.md`, `docs/COMPETITORS.md`, and skill documents.
+  - Automatically mirrors `.agents/skills/` to `.claude/skills/`.
+  - Supports `--check` mode for CI/regression assertions.
+- **Ingestion Pipeline Auto-Sync Hooks**:
+  - Attached automatic `sync_metadata()` hooks to:
+    - `scripts/process_draft_screenshots.py`: triggers upon filing new true pick orders from broadcast screenshots.
+    - `src/build_training_dataset.py`: triggers upon regenerating `data/matches_training.json`.
+    - `src/scrape_matches.py`: triggers upon appending newly crawled pro games from Liquipedia.
+- **Backend API & Dynamic Frontend Integration**:
+  - Updated `src/schemas.py` (`HealthResponse`) and `src/api.py` (`GET /health`) to return live `dataset_metadata`.
+  - Refactored `frontend/src/components/meta_lab/MetaLab.tsx` to dynamically query and render total pro match counts instead of hardcoded strings.
+- **Automated Integrity Test (`tests/test_data_integrity.py`)**:
+  - Added `test_dataset_metadata_freshness()` asserting that metadata file exists, counts are sound, and `sync_metadata(check=True)` passes cleanly.
+
+### 📁 Modified Files
+- `scripts/sync_metadata.py` (new)
+- `data/dataset_metadata.json` (new)
+- `frontend/public/dataset_metadata.json` (new)
+- `scripts/process_draft_screenshots.py`
+- `src/build_training_dataset.py`
+- `src/scrape_matches.py`
+- `src/schemas.py`
+- `src/api.py`
+- `frontend/src/components/meta_lab/MetaLab.tsx`
+- `tests/test_api.py`
+- `tests/test_data_integrity.py`
+- `AGENTS.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `python scripts/sync_metadata.py --check`: PASSED (0 diffs, 100% synchronized).
+- `pytest -v`: 92/92 tests PASSED (100% green).
+- `cd frontend && npm run lint && npm run build`: 0 warnings, 0 errors, built in 918ms.
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: PASSED.
+- `python .agents/skills/regression-guard/scripts/audit_regression_guard.py`: PASSED (72/72 states, 3/3 duels).
+- `python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py`: PASSED.
+- `python .agents/skills/security-audit/scripts/audit_security.py`: PASSED.
+- `ruff check --fix . && ruff format .`: 0 lint errors, clean.
+
+### ⚠️ Open Issues / Important Notes
+- None. Future tournament screenshots, scraped matches, and rebuilt training sets now update metrics and documentation automatically.
+
+---
+
 ## 📅 2026-11-11 13:34 (UTC+7) — Full System Alignment & Bidirectional Skill/Doc Synchronization
 **Agent:** Antigravity (Gemini 3.8 Flash)
 

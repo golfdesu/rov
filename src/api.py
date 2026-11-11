@@ -278,6 +278,18 @@ except Exception:
     ]
 
 
+dataset_metadata_path = DATA_DIR / "dataset_metadata.json"
+
+
+def get_dataset_metadata() -> dict | None:
+    if dataset_metadata_path.exists():
+        try:
+            return json.loads(dataset_metadata_path.read_text(encoding="utf-8"))
+        except Exception:
+            logger.exception("Failed to load dataset_metadata.json")
+    return None
+
+
 @app.get("/health", response_model=HealthResponse)
 def health_check():
     return HealthResponse(
@@ -286,6 +298,7 @@ def health_check():
         architecture=predictor.architecture,
         num_heroes=len(predictor.hero_names),
         val_loss=round(predictor.val_loss, 5),
+        dataset_metadata=get_dataset_metadata(),
     )
 
 

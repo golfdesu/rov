@@ -1,5 +1,5 @@
 import { ArrowDownToLine, Calculator, RotateCcw, Sparkles } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDraft } from "../../hooks/useDraft";
 import type { GlobalBanState, Hero, RecordedDraftGame } from "../../types/draft";
 import {
@@ -43,6 +43,18 @@ export function MetaLab({
   const [mobileView, setMobileView] = useState<MobileDraftView>("draft");
   const [globalBanModalCat, setGlobalBanModalCat] = useState<GlobalBanCategoryKey | null>(null);
   const [importNotification, setImportNotification] = useState<string | null>(null);
+  const [totalMatches, setTotalMatches] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch("/dataset_metadata.json")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && typeof data.total_matches === "number") {
+          setTotalMatches(data.total_matches);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Initialize independent Draft state powered purely by empirical matrix rules
   const {
@@ -166,7 +178,7 @@ export function MetaLab({
                 </span>
               </div>
               <p className="truncate font-mono text-[10px] text-muted sm:text-xs">
-                คำนวณจาก Synergy Matrix + Counter Matrix + สถิติโปร 4,329 เกมโดยตรง (ไม่ใช้โมเดล Deep Learning)
+                คำนวณจาก Synergy Matrix + Counter Matrix + สถิติโปร {totalMatches ? `${totalMatches.toLocaleString()} ` : ""}เกมโดยตรง (ไม่ใช้โมเดล Deep Learning)
               </p>
             </div>
           </div>
