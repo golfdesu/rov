@@ -141,8 +141,8 @@ def run_selfplay_simulation(
         * 50.0
     )
 
-    print(f"Blue Synergy Edge Score: +{blue_syn:.2f}%")
-    print(f"Red Synergy Edge Score : +{red_syn:.2f}%")
+    print(f"Blue Synergy Edge Score: {blue_syn:+.2f}%")
+    print(f"Red Synergy Edge Score : {red_syn:+.2f}%")
     print("Simulation completed successfully.\n")
 
 
