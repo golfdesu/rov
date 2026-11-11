@@ -113,7 +113,8 @@ ROV/
 │       ├── hpo-parsimony-selector/  # Top-5 HPO parsimony selector + served-checkpoint vs config check
 │       ├── erawan-hpc-ops/          # ERAWAN HPC H100 SLURM, MLflow & Git sync runbook
 │       ├── rov-draft-serving/       # CLI, FastAPI + web UI, golden test & pytest runbook
-│       └── draft-screenshot-reader/ # Read true pick order from broadcast screenshots
+│       ├── draft-screenshot-reader/ # Read true pick order from broadcast screenshots
+│       └── security-audit/          # Cloudflare-based 5-phase security auditing & threat verification
 ├── .claude/
 │   └── skills/                      # Copy of .agents/skills/ for Claude Code (kept in sync by tests/test_skills_sync.py)
 ├── configs/

@@ -27,6 +27,40 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-11 12:30 (UTC+7) — Integrate Cloudflare Security Audit Framework & Automated Security Test Suite
+**Agent:** Antigravity (Gemini 3.8 Flash)
+
+### ✅ Completed Work
+- **Security Audit Skill Integration (`.agents/skills/security-audit/`, `.claude/skills/security-audit/`)**:
+  - Implemented custom workspace skill adapted from Cloudflare's `security-audit-skill` (`SKILL.md` + `scripts/audit_security.py`).
+  - Implemented 5-phase audit protocol (Reconnaissance, Coverage-Led Hunting, Candidate Validation, Independent Record Verification, Structured Output).
+  - Built programmatic scanner `scripts/audit_security.py` verifying path traversal defenses, PyTorch checkpoint integrity, combat input limits, static media containment, and secret leakage prevention.
+  - Mirrored skill to `.claude/skills/security-audit/` and updated `AGENTS.md`.
+- **Automated Security Pytest Suite (`tests/test_security.py`)**:
+  - Added 5 automated security tests:
+    - `test_path_traversal_fuzzing`: Fuzzes raw and encoded traversal vectors across hero and item endpoints.
+    - `test_static_media_containment`: Validates static file mount boundary containment.
+    - `test_model_checkpoint_pickle_safety`: Verifies checkpoint existence, non-trivial binary size, and structural validity.
+    - `test_combat_input_boundaries_and_dos_protection`: Tests invalid hero/item names, extreme levels (0, 999), and duel timeout invariants.
+    - `test_no_secrets_in_tracked_files`: Scans all git-tracked files to ensure no private keys, `.env`, or secrets are committed.
+
+### 📁 Modified Files
+- `.agents/skills/security-audit/SKILL.md` (new)
+- `.agents/skills/security-audit/scripts/audit_security.py` (new)
+- `.claude/skills/security-audit/SKILL.md` (new mirror)
+- `.claude/skills/security-audit/scripts/audit_security.py` (new mirror)
+- `tests/test_security.py` (new)
+- `AGENTS.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `python .agents/skills/security-audit/scripts/audit_security.py`: All 5 audit checkpoints passed.
+- `pytest -v tests/test_security.py tests/test_skills_sync.py`: 7/7 tests passed.
+- `pytest -v`: All 90 tests passed (100% green).
+- `ruff check --fix . && ruff format .`: Passed cleanly (0 errors).
+
+---
+
 ## 📅 2026-11-11 11:05 (UTC+7) — Universal Item Shorthand Aliases & Claves Sancti Unique Passive Integrity
 **Agent:** Antigravity (Gemini 3.8 Flash)
 
