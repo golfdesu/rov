@@ -1,4 +1,4 @@
-import { BookOpen, Plus, Swords, X } from "lucide-react";
+import { BookOpen, Info, Plus, Swords, X } from "lucide-react";
 import { type ReactNode, useMemo, useState } from "react";
 import type { BuildStats, CatalogItem, CombatBuild, CombatCatalog, Side, SkillDamageRow } from "../../types/combat";
 import type { Hero } from "../../types/draft";
@@ -8,6 +8,7 @@ import { ArcanaBoard } from "./ArcanaBoard";
 import { EnchantmentBoard } from "./EnchantmentBoard";
 import { HeroPickerModal } from "./HeroPickerModal";
 import { HeroSkillsModal } from "./HeroSkillsModal";
+import { ItemCardModal } from "./ItemCardModal";
 
 interface BuildPanelProps {
   side: Side;
@@ -72,10 +73,12 @@ function Section({ title, children, right }: { title: string; children: ReactNod
 function ItemPicker({
   items,
   onPick,
+  onInspect,
   onClose,
 }: {
   items: CatalogItem[];
   onPick: (name: string) => void;
+  onInspect: (name: string) => void;
   onClose: () => void;
 }) {
   const [query, setQuery] = useState("");
@@ -115,21 +118,37 @@ function ItemPicker({
       </div>
       <div className="grid max-h-64 grid-cols-1 gap-1 overflow-y-auto sm:grid-cols-2">
         {shown.map((i) => (
-          <button
-            type="button"
+          <div
             key={i.name}
-            onClick={() => onPick(i.name)}
-            className="flex items-center gap-2 bg-panel p-1.5 text-left hover:bg-line"
-            title={[formatStats(i.stats), ...i.passives].join("\n")}
+            className="group flex items-center justify-between gap-1 rounded bg-panel p-1.5 transition-colors hover:bg-line"
           >
-            <ItemIcon src={i.icon_url} name={i.name} className="h-7 w-7 shrink-0 object-cover" />
-            <span className="min-w-0">
-              <span className="block truncate text-xs">{i.name}</span>
-              <span className="block truncate font-mono text-[10px] text-dim">
-                {i.price ?? "?"}g · {formatStats(i.stats)}
+            <button
+              type="button"
+              onClick={() => onPick(i.name)}
+              className="flex min-w-0 flex-1 items-center gap-2 text-left"
+              title={[formatStats(i.stats), ...i.passives].join("\n")}
+            >
+              <ItemIcon src={i.icon_url} name={i.name} className="h-7 w-7 shrink-0 object-cover" />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-xs text-ink">{i.name}</span>
+                <span className="block truncate font-mono text-[10px] text-dim">
+                  {i.price ?? "?"}g · {formatStats(i.stats)}
+                </span>
               </span>
-            </span>
-          </button>
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onInspect(i.name);
+              }}
+              title="ดูภาพการ์ดไอเทมในเกม"
+              className="rounded p-1 text-muted hover:bg-panel-2 hover:text-gold"
+              aria-label={`ดูการ์ด ${i.name}`}
+            >
+              <Info size={14} />
+            </button>
+          </div>
         ))}
       </div>
     </div>
@@ -149,6 +168,7 @@ export function BuildPanel({
   const [picking, setPicking] = useState<number | null>(null);
   const [showHeroPicker, setShowHeroPicker] = useState(false);
   const [showSkillsModal, setShowSkillsModal] = useState(false);
+  const [inspectingItem, setInspectingItem] = useState<string | null>(null);
 
   const accent = side === "a" ? "text-blue" : "text-red";
   const itemMap = useMemo(() => new Map(catalog.items.map((i) => [i.name, i])), [catalog.items]);
@@ -283,7 +303,25 @@ export function BuildPanel({
       </label>
 
       {/* Items Section */}
-      <Section title="ไอเทม" right={<span className="font-mono text-[10px] text-dim">{cost.toLocaleString()}g</span>}>
+      <Section
+        title="ไอเทม"
+        right={
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-[10px] text-dim">{cost.toLocaleString()}g</span>
+            <button
+              type="button"
+              onClick={() =>
+                setInspectingItem(build.items[0] || catalog.items[0]?.name || "Fenrir's Tooth")
+              }
+              className="flex items-center gap-1 rounded border border-line bg-panel-2 px-1.5 py-0.5 text-[10px] font-semibold text-muted transition-colors hover:border-gold hover:text-gold"
+              title="ดูคลังภาพการ์ดไอเทมในเกมทั้งหมด (114 ไอเทม)"
+            >
+              <BookOpen size={10} className="text-gold" />
+              <span>การ์ดไอเทม</span>
+            </button>
+          </div>
+        }
+      >
         <div className="grid grid-cols-6 gap-1.5">
           {Array.from({ length: 6 }, (_, i) => {
             const item = itemMap.get(build.items[i]);
@@ -304,23 +342,61 @@ export function BuildPanel({
                   )}
                 </button>
                 {item && (
-                  <button
-                    type="button"
-                    aria-label={`ถอด ${item.name}`}
-                    onClick={() => setItem(i, null)}
-                    className="absolute -right-1 -top-1 grid h-4 w-4 place-items-center bg-red text-bg"
-                  >
-                    <X size={10} />
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      aria-label={`ถอด ${item.name}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setItem(i, null);
+                      }}
+                      className="absolute -right-1 -top-1 grid h-4 w-4 place-items-center bg-red text-bg"
+                    >
+                      <X size={10} />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`ดูการ์ด ${item.name}`}
+                      title={`ดูภาพการ์ดในเกม: ${item.name}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setInspectingItem(item.name);
+                      }}
+                      className="absolute -left-1 -bottom-1 grid h-4 w-4 place-items-center rounded-xs bg-gold/90 text-bg shadow hover:bg-gold"
+                    >
+                      <Info size={10} />
+                    </button>
+                  </>
                 )}
               </div>
             );
           })}
         </div>
         {picking !== null && (
-          <ItemPicker items={catalog.items} onPick={(n) => setItem(picking, n)} onClose={() => setPicking(null)} />
+          <ItemPicker
+            items={catalog.items}
+            onPick={(n) => setItem(picking, n)}
+            onInspect={(name) => setInspectingItem(name)}
+            onClose={() => setPicking(null)}
+          />
         )}
       </Section>
+
+      {/* Item Card Screenshot Modal */}
+      {inspectingItem && (
+        <ItemCardModal
+          itemName={inspectingItem}
+          catalogItems={catalog.items}
+          onClose={() => setInspectingItem(null)}
+          onPick={(picked) => {
+            if (picking !== null) {
+              setItem(picking, picked);
+            } else if (build.items.length < 6) {
+              setItem(build.items.length, picked);
+            }
+          }}
+        />
+      )}
 
       {/* Arcana Board */}
       <Section title="รูน (Tier 3 Arcana)">

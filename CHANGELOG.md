@@ -27,6 +27,71 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-11 10:40 (UTC+7) — Implement Authentic In-Game Item Card Screenshot Viewer & API Endpoint
+**Agent:** Antigravity (Gemini 3.8 Flash)
+
+### ✅ Completed Work
+- **Item Screenshots Backend Endpoint & Static Mount (`src/api.py`, `tests/test_api.py`)**:
+  - Mounted `/items-media` pointing to `item/` to serve authentic in-game item card screenshots directly.
+  - Cached `screenshots_manifest.json` items data into `_manifest_items_cache` on startup.
+  - Implemented `GET /combat/item-screenshots/{item_name}` with directory traversal security validation (`..`, `/`, `\`), returning naturally sorted screenshot paths and rich manifest metadata (`stats_raw`, `passives`, `desc_th`, `price`, `tier`).
+  - Added unit test `test_item_screenshots_endpoint` in `tests/test_api.py` covering single-page items, multi-page support/jungle items, directory traversal rejection, and non-existent item fallbacks.
+- **Frontend Item Card Modal (`frontend/src/components/lab/ItemCardModal.tsx`)**:
+  - Created high-fidelity accessible item card modal with in-game screenshot viewer, multi-page tabs (`หน้า 1`, `หน้า 2`, ...), keyboard navigation (Left/Right arrows), structured Thai stat chips, passive descriptions, and quick catalog browser across 114 items.
+  - Added "ใส่ไอเทมนี้" (Equip Item) action callback for seamless build crafting.
+- **Build Panel Integration (`frontend/src/components/lab/BuildPanel.tsx`)**:
+  - Added "การ์ดไอเทม" catalog browser button in the items section header.
+  - Added inspect button on each equipped item slot.
+  - Added info button in `ItemPicker` search results allowing users to preview card screenshots before picking.
+- **Vite & Types Alignment (`frontend/vite.config.ts`, `frontend/src/types/combat.ts`)**:
+  - Proxied `/items-media` in Vite dev server.
+  - Added `ItemCardPageInfo` and `ItemScreenshotsResponse` TypeScript interfaces.
+
+### 📁 Modified Files
+- `src/api.py`
+- `tests/test_api.py`
+- `frontend/vite.config.ts`
+- `frontend/src/types/combat.ts`
+- `frontend/src/components/lab/ItemCardModal.tsx`
+- `frontend/src/components/lab/BuildPanel.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `pytest -v` passed all 85 tests (100% green).
+- `cd frontend && npm run lint && npm run build` passed cleanly (0 errors, 0 warnings).
+- `ruff check --fix . && ruff format .` passed (0 errors, clean).
+
+---
+
+## 📅 2026-11-10 14:00 (UTC+7) — Delete Flowborn Passive Buff Capture & Purify Status Screenshots
+**Agent:** Antigravity (Gemini 3.8 Flash)
+
+### ✅ Completed Work
+- **Deleted Redundant Buff Capture (`heroes/Flowborn (Marksman)/status/`)**:
+  - Removed `status_lv15_buff.jpg` so that Flowborn (Marksman) now strictly has two pure unbuffed status screenshots (`status_lv1.jpg` and `status_lv15.jpg`), matching all other heroes in the 130-hero catalog.
+- **Cleaned Up UI Status Labels (`frontend/src/components/lab/HeroSkillsModal.tsx`)**:
+  - Removed all `_buff` and `_passive` label conditionals; retained only `_alt -> " (ในเกม)"` for the 7 Practice Mode in-game status screenshots.
+  - Rebuilt production frontend bundle cleanly (0 lint errors, 0 build warnings).
+- **Manifest & Test Suite Alignment (`scripts/build_screenshots_manifest.py`, `data/screenshots_manifest.json`, `tests/test_data_integrity.py`)**:
+  - Updated manifest generator to restrict status variants to strictly `"base"` and `"alt"`.
+  - Re-generated `data/screenshots_manifest.json` (total status screenshots updated from 268 to 267).
+  - Updated `test_screenshots_manifest_integrity` in `tests/test_data_integrity.py` to verify Flowborn (Marksman) has exactly `["status_lv1.jpg", "status_lv15.jpg"]` and that all status entries across all 130 heroes have variants strictly in `{"base", "alt"}`.
+
+### 📁 Modified Files
+- `heroes/Flowborn (Marksman)/status/status_lv15_buff.jpg` (deleted)
+- `frontend/src/components/lab/HeroSkillsModal.tsx`
+- `scripts/build_screenshots_manifest.py`
+- `data/screenshots_manifest.json`
+- `tests/test_data_integrity.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Ran `ruff check --fix .` and `ruff format .` (0 errors).
+- Ran full test suite: `pytest -v` (84 passed in 7.23s, 100% green).
+- Ran `npm run lint` and `npm run build` in `frontend/` (0 warnings, 0 errors).
+
+---
+
 ## 📅 2026-11-10 12:28 (UTC+7) — Universal Image Renaming & Deterministic Skill Slot Labeling
 **Agent:** Antigravity (gemini-3.8-flash-high)
 

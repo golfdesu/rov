@@ -24,6 +24,29 @@ export interface CatalogItem {
   pierce: Record<string, number>;
 }
 
+export interface ItemCardPageInfo {
+  page: number;
+  file: string;
+  relative_path?: string;
+  item_name: string;
+  slug?: string;
+  category?: string;
+  tier?: number;
+  price?: number | null;
+  stats?: Record<string, number>;
+  stats_raw?: string[];
+  passives?: string[];
+  desc_th?: string[];
+}
+
+export interface ItemScreenshotsResponse {
+  item: string;
+  folder: string;
+  screenshots: string[];
+  details?: ItemCardPageInfo | null;
+  pages_info?: ItemCardPageInfo[];
+}
+
 export interface CatalogArcana {
   name: string;
   name_th?: string;

@@ -781,20 +781,68 @@ def test_hero_screenshots_endpoint(tmp_path, monkeypatch):
     r_traversal_slash = client.get("/combat/hero-screenshots/..%2F..%2Fetc")
     assert r_traversal_slash.status_code in (400, 404)
 
-    # 6. Natural sort verification
+    # 6. Natural & canonical skill slot sort verification
     mock_veres_skill = mock_heroes_dir / "Veres" / "skill"
     mock_veres_skill.mkdir(parents=True)
-    (mock_veres_skill / "skill_100.jpg").write_text("fake")
-    (mock_veres_skill / "skill_97.jpg").write_text("fake")
-    (mock_veres_skill / "skill_98.jpg").write_text("fake")
-    (mock_veres_skill / "skill_99.jpg").write_text("fake")
+    for fname in (
+        "skill4.jpg",
+        "ultimate.jpg",
+        "skill2_v2.jpg",
+        "skill2.jpg",
+        "skill1_cannon.jpg",
+        "skill1_rapid.jpg",
+        "passive.jpg",
+        "passive_awakened.jpg",
+    ):
+        (mock_veres_skill / fname).write_text("fake")
 
     r_mock_veres = client.get("/combat/hero-screenshots/Veres")
     assert r_mock_veres.status_code == 200
     d_mock_veres = r_mock_veres.json()
     assert [p.split("/")[-1] for p in d_mock_veres["skill_screenshots"]] == [
-        "skill_97.jpg",
-        "skill_98.jpg",
-        "skill_99.jpg",
-        "skill_100.jpg",
+        "passive.jpg",
+        "skill1_rapid.jpg",
+        "skill1_cannon.jpg",
+        "skill2.jpg",
+        "skill2_v2.jpg",
+        "ultimate.jpg",
+        "skill4.jpg",
+        "passive_awakened.jpg",
     ]
+
+
+def test_item_screenshots_endpoint():
+    # 1. Single card item
+    res_amulet = client.get("/combat/item-screenshots/Amulet%20of%20Longevity")
+    assert res_amulet.status_code == 200
+    data_amulet = res_amulet.json()
+    assert data_amulet["item"] == "Amulet of Longevity"
+    assert len(data_amulet["screenshots"]) == 1
+    assert data_amulet["screenshots"][0].endswith("item_card.jpg")
+    assert data_amulet["details"] is not None
+    assert data_amulet["details"]["category"] == "defense"
+
+    # 2. Multi-card item (Jungle/Support)
+    res_aqua = client.get("/combat/item-screenshots/Aquaflame%20-%20Accelerate")
+    assert res_aqua.status_code == 200
+    data_aqua = res_aqua.json()
+    assert data_aqua["item"] == "Aquaflame - Accelerate"
+    assert len(data_aqua["screenshots"]) == 4
+    assert [p.split("/")[-1] for p in data_aqua["screenshots"]] == [
+        "item_card_1.jpg",
+        "item_card_2.jpg",
+        "item_card_3.jpg",
+        "item_card_4.jpg",
+    ]
+    assert len(data_aqua["pages_info"]) == 4
+
+    # 3. Non-existent item returns empty screenshots gracefully
+    res_fake = client.get("/combat/item-screenshots/NonExistentItem999")
+    assert res_fake.status_code == 200
+    assert res_fake.json()["screenshots"] == []
+
+    # 4. Traversal protection
+    res_trav = client.get("/combat/item-screenshots/..%5C..%5Cwindows")
+    assert res_trav.status_code == 400
+    res_trav_slash = client.get("/combat/item-screenshots/..%2F..%2Fetc")
+    assert res_trav_slash.status_code in (400, 404)

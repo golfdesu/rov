@@ -28,6 +28,7 @@ FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 FRONTEND_DIST = FRONTEND_DIR / "dist"
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 HEROES_DIR = Path(__file__).resolve().parent.parent / "heroes"
+ITEMS_DIR = Path(__file__).resolve().parent.parent / "item"
 HERO_FOLDER_ALIASES = {
     "Mortos": "Arthur",
     "Celica": "Brunhilda",
@@ -420,6 +421,27 @@ def _natural_sort_key(file_path: Path):
     return [int(c) if c.isdigit() else c.lower() for c in re.split(r"(\d+)", file_path.name)]
 
 
+def _skill_sort_key(file_path: Path):
+    stem = file_path.stem.lower()
+    form_group = 1 if any(tag in stem for tag in ("_form2", "_fox", "_awakened")) else 0
+    if stem.startswith("passive"):
+        slot_rank = 0
+    elif stem.startswith("skill1"):
+        slot_rank = 1
+    elif stem.startswith("skill2"):
+        slot_rank = 2
+    elif stem.startswith("ultimate") or stem.startswith("skill3"):
+        slot_rank = 3
+    elif stem.startswith("skill4"):
+        slot_rank = 4
+    elif stem.startswith("skill5"):
+        slot_rank = 5
+    else:
+        slot_rank = 9
+    variant_rank = 2 if "_v2" in stem else (1 if "_cannon" in stem else 0)
+    return (form_group, slot_rank, variant_rank, _natural_sort_key(file_path))
+
+
 @app.get("/combat/hero-screenshots/{hero}")
 def get_hero_screenshots(hero: str):
     # Security check: prevent directory traversal
@@ -451,7 +473,7 @@ def get_hero_screenshots(hero: str):
             f"/heroes-media/{actual_folder}/skill/{f.name}"
             for f in sorted(
                 [f for f in skill_dir.iterdir() if f.suffix.lower() in (".jpg", ".jpeg", ".png")],
-                key=_natural_sort_key,
+                key=_skill_sort_key,
             )
         ]
 
@@ -473,9 +495,61 @@ def get_hero_screenshots(hero: str):
     }
 
 
-# Serve hero in-game screenshot media directly
+_manifest_items_cache: dict[str, list[dict]] = {}
+_manifest_path = DATA_DIR / "screenshots_manifest.json"
+if _manifest_path.exists():
+    try:
+        _raw_manifest = json.loads(_manifest_path.read_text(encoding="utf-8"))
+        _manifest_items_cache = _raw_manifest.get("items", {})
+    except Exception as exc:
+        logger.warning("Failed to load screenshots_manifest.json for items: %s", exc)
+
+
+@app.get("/combat/item-screenshots/{item_name}")
+def get_item_screenshots(item_name: str):
+    # Security check: prevent directory traversal
+    if ".." in item_name or "/" in item_name or "\\" in item_name:
+        raise HTTPException(status_code=400, detail="Invalid item name")
+
+    item_dir = ITEMS_DIR / item_name
+    try:
+        if ITEMS_DIR.is_dir() and item_dir.exists() and not item_dir.resolve().is_relative_to(ITEMS_DIR.resolve()):
+            raise HTTPException(status_code=400, detail="Invalid item name")
+    except (ValueError, RuntimeError):
+        raise HTTPException(status_code=400, detail="Invalid item name")
+
+    if not item_dir.is_dir():
+        return {
+            "item": item_name,
+            "folder": item_name,
+            "screenshots": [],
+            "details": None,
+            "pages_info": [],
+        }
+
+    screenshots = [
+        f"/items-media/{item_name}/{f.name}"
+        for f in sorted(
+            [f for f in item_dir.iterdir() if f.suffix.lower() in (".jpg", ".jpeg", ".png")],
+            key=_natural_sort_key,
+        )
+    ]
+    pages_info = _manifest_items_cache.get(item_name, [])
+    details = pages_info[0] if pages_info else None
+    return {
+        "item": item_name,
+        "folder": item_name,
+        "screenshots": screenshots,
+        "details": details,
+        "pages_info": pages_info,
+    }
+
+
+# Serve hero & item in-game screenshot media directly
 if HEROES_DIR.is_dir():
     app.mount("/heroes-media", StaticFiles(directory=HEROES_DIR), name="heroes_media")
+if ITEMS_DIR.is_dir():
+    app.mount("/items-media", StaticFiles(directory=ITEMS_DIR), name="items_media")
 
 # Mounted last so the API routes above take precedence over static files.
 if FRONTEND_DIST.is_dir():
