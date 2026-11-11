@@ -48,6 +48,29 @@ def audit_true_pick_order(matches: list[dict]) -> list[str]:
     return errors
 
 
+def audit_hero_tier_overrides(hero_set: set) -> list[str]:
+    tier_file = DATA_DIR / "hero_tier_overrides.json"
+    if not tier_file.exists():
+        return ["[WARN] data/hero_tier_overrides.json not found"]
+
+    try:
+        with open(tier_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except Exception as e:
+        return [f"Failed to parse hero_tier_overrides.json: {e}"]
+
+    overrides = data.get("overrides", {})
+    valid_tiers = {"S+", "S", "A", "B", "C", "D"}
+    errors = []
+    for hero, val in overrides.items():
+        if hero not in hero_set:
+            errors.append(f"Override hero '{hero}' not found in canonical 130-hero catalog")
+        tier = val.get("tier") if isinstance(val, dict) else str(val)
+        if tier not in valid_tiers:
+            errors.append(f"Hero '{hero}' has invalid tier '{tier}' (must be one of {sorted(valid_tiers)})")
+    return errors
+
+
 def main():
     heroes_json = DATA_DIR / "heroes_130_full.json"
     heroes_csv = DATA_DIR / "heroes_130_summary.csv"
@@ -94,6 +117,13 @@ def main():
     if order_errors:
         print(f"[FAIL] true_pick_order.json has {len(order_errors)} problem(s):")
         for e in order_errors:
+            print(f"  - {e}")
+        sys.exit(1)
+
+    override_errors = audit_hero_tier_overrides(hero_set)
+    if override_errors:
+        print(f"[FAIL] hero_tier_overrides.json has {len(override_errors)} problem(s):")
+        for e in override_errors:
             print(f"  - {e}")
         sys.exit(1)
 

@@ -63,3 +63,12 @@ Regenerate only when deliberately updating the model checkpoint, training datase
 ```bash
 python -c "from tests.test_predictor_golden import regenerate; regenerate()"
 ```
+
+---
+
+## Related Skills
+
+- [`rov-draft-serving`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/rov-draft-serving/SKILL.md): Serves recommendations via CLI, API, and web UI.
+- [`hpo-parsimony-selector`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/hpo-parsimony-selector/SKILL.md): Selects safe production hyperparameters and audits served model metrics.
+- [`rov-data-guardian`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/rov-data-guardian/SKILL.md): Maintains canonical datasets, hero skills, and match archives.
+- [`frontend-e2e-inspector`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/frontend-e2e-inspector/SKILL.md): Audits production frontend bundle, media assets, and endpoints.

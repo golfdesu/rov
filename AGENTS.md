@@ -20,7 +20,7 @@ This repository follows Big Tech Machine Learning Engineering standards (modeled
 | **Draft Web UI** | React 19 + Vite + Tailwind 4 broadcast-style draft board (`frontend/`), served by FastAPI from `frontend/dist`. 130 / 130 square hero icons (`frontend/public/avatars/`), Thai display names (Arthur -> Mortos, Brunhilda -> Celica, Richter -> Riktor). |
 | **SOTA Architecture** | `RoVDraftGNNTransformer` (`src/train_sota_model.py`): Multi-Relational Hero GNN (`adj_copick`, `adj_synergy`, `adj_counter`, `adj_countered_by`) + Sequence Transformer + Bounded Neural Temperature Gate + Dual Policy & Win-Value Heads. |
 | **H100 Optuna HPO** | Completed 50 Trials on ERAWAN HPC H100 (`best_params/sota_rov_top5_trials.json`, `configs/selected_production_params.json`). |
-| **Champion Performance** | **Val Loss = `2.8165`** (checkpoint) / **`2.7909`** (Trial #34 Rank #1) / **`2.7933`** (Trial #14 Safest) \| **Top-1 = `21.04%`–`21.68%`** \| **Top-3 = `46.25%`–`46.38%`** \| **Top-5 = `60.21%`–`61.24%`** \| **Top-10 = `80.13%`–`80.93%`** \| **WinAcc = `52.35%`–`54.45%`** (Out of 130 Heroes, Outcome-Weighted & League-Conditioned SOTA trained through Oct 25, 2026). |
+| **Champion Performance** | (Selector output, 2026-11-11) **Served checkpoint Val Loss = `2.86752`**, WinAcc = `52.13%` \| **HPO Rank #1 (Trial #13, Compact) Val = `2.83144`**, Top-1 = `21.20%`, Top-5 = `60.78%`, WinAcc = `52.61%` \| **Safest (Trial #01) Val = `2.83993`**, Top-1 = `20.86%`, Top-5 = `59.94%`, WinAcc = `51.47%` (130 heroes, trained on all 3,512 games from 2025 through Nov 7, 2026). Always re-quote from the selector script (rule 12). |
 
 ---
 
@@ -83,15 +83,16 @@ Every AI agent (including fast models such as `3.8flash`) MUST strictly obey the
 
 12. **Skills Live in `.agents/skills/` (Mirrored to `.claude/skills/`)**:
     - Edit skills only in `.agents/skills/`, then copy them over with `cp -r .agents/skills/. .claude/skills/`. `tests/test_skills_sync.py` fails if the two differ.
-    - Quote model metrics from `python .agents/skills/hpo-parsimony-selector/scripts/select_parsimonious_params.py`, not from the status table above. As of 2026-10-21 the table and `configs/selected_production_params.json` describe an older run than the served checkpoint.
+    - Quote model metrics from `python .agents/skills/hpo-parsimony-selector/scripts/select_parsimonious_params.py`, not from the status table above. As of 2026-11-11 the table was re-synced to the selector output (served checkpoint val_loss 2.86752; `configs/selected_production_params.json` = Trial #01 safest / Trial #13 rank #1, updated 2026-11-10).
+    - Every skill ends with a **Related Skills** section. When adding or renaming a skill, update the Related Skills sections of its neighbors and the skill list in Section 2 below.
 
 13. **Curated Training Dataset & 2024 Exclusion Invariant (`data/matches_training.json`)**:
-    - `data/matches_draft_full.json` (4,208 games) is the historical archival repository (2024–2026).
-    - **STRICTLY FORBIDDEN to train the production model on 2024 data**. All 812 games from 2024 are excluded because legacy meta noise and obsolete hero priorities (e.g., pre-rework Wonder Woman, obsolete 2024 Erin dynamics) degrade model performance on the current meta.
-    - The active training dataset is `data/matches_training.json` containing **3,477 games strictly from 2025–2026** with **51.2% True Pick Order coverage** (1,781 / 3,477 games), including all 20 games from the 2026-10-25 Grand Finals (RPL & AOG) with 100% verified broadcast screenshots.
+    - `data/matches_draft_full.json` (4,329 games) is the historical archival repository (2024–2026).
+    - **STRICTLY FORBIDDEN to train the production model on 2024 data**. All 817 games from 2024 are excluded because legacy meta noise and obsolete hero priorities (e.g., pre-rework Wonder Woman, obsolete 2024 Erin dynamics) degrade model performance on the current meta.
+    - The active training dataset is `data/matches_training.json` containing **3,512 games strictly from 2025–2026** (1,702 from 2025 + 1,810 from 2026, through the AOG 2026 Winter Finals on Nov 7, 2026) with **51.5% True Pick Order coverage** (1,810 / 3,512 games = 100% of 2026 games, verified from broadcast screenshots).
     - `src/train_sota_model.py` automatically defaults to `data/matches_training.json` whenever it exists.
-    - Regenerate the training set only with:
-      `python src/build_training_dataset.py --min-year 2025 --max-date 2026-10-25`
+    - Regenerate the training set only with (reproduces the current file exactly; add `--max-date YYYY-MM-DD` only for a deliberate hold-out):
+      `python src/build_training_dataset.py --min-year 2025`
 
 ---
 
@@ -109,7 +110,7 @@ ROV/
 ├── run_sota_rov_h100.sbatch         # SLURM job: Direct SOTA training on ERAWAN H100
 ├── .agents/
 │   └── skills/                      # Progressive-disclosure workspace skills (SOURCE OF TRUTH)
-│       ├── rov-data-guardian/       # Data integrity: 130 heroes, 4,208 matches, true_pick_order.json audit
+│       ├── rov-data-guardian/       # Data integrity: 130 heroes, 4,329 matches, true_pick_order.json & tier overrides audit
 │       ├── hpo-parsimony-selector/  # Top-5 HPO parsimony selector + served-checkpoint vs config check
 │       ├── erawan-hpc-ops/          # ERAWAN HPC H100 SLURM, MLflow & Git sync runbook
 │       ├── rov-draft-serving/       # CLI, FastAPI + web UI, golden test & pytest runbook
@@ -124,44 +125,63 @@ ROV/
 │   └── selected_production_params.json  # Curated production hyperparameters (Safest & Compact)
 ├── best_params/
 │   ├── sota_rov_best_params.json    # Raw Optuna HPO best output from ERAWAN H100
-│   └── sota_rov_top5_trials.json    # Top 5 HPO candidates with Overfit Gap & safety metrics
+│   ├── sota_rov_top5_trials.json    # Top 5 HPO candidates with Overfit Gap & safety metrics
+│   └── heuristic_sota_*.json        # H100 HPO results for the 0% true pick order heuristic experiment model
+├── docs/
+│   └── COMPETITORS.md               # Competitive landscape vs other draft tools
 ├── data/
 │   ├── heroes_130_full.json         # Full 130 RoV heroes + skills + capability flags
 │   ├── heroes_130_summary.csv       # Tabular summary of all 130 heroes
-│   ├── matches_training.json        # Curated training set: 3,477 games (2025–2026 only, 2024 excluded, 51.2% true order)
-│   ├── matches_draft_full.json      # Full historical archive: 4,208 pro tournament draft games (2024–2026)
+│   ├── matches_training.json        # Curated training set: 3,512 games (2025–2026 only, 2024 excluded, 51.5% true order)
+│   ├── matches_training_heuristic.json # 0% true pick order experiment set (3,483 games, lane-heuristic order only)
+│   ├── matches_draft_full.json      # Full historical archive: 4,329 pro tournament draft games (2024–2026)
 │   ├── matches_draft_flat.csv       # Flattened match draft table
+│   ├── true_pick_order.json         # 1,810 screenshot-verified chronological pick orders (draft-screenshot-reader)
+│   ├── screenshots_manifest.json    # Hero skill/status & item card screenshot manifest (scripts/build_screenshots_manifest.py)
+│   ├── hero_tier_overrides.json     # Hand-maintained tiers for low-sample/new/reworked heroes (src/api.py, moba-meta-intel)
 │   ├── hero_draft_stats.csv         # 5-lane distributions, pick/ban/win/presence rates
-│   ├── synergy_matrix.csv           # Pairwise ally synergy matrix
-│   ├── counter_matrix.csv           # Pairwise enemy counter matrix
+│   ├── synergy_matrix.csv           # Pairwise ally synergy matrix (2,513 pairs)
+│   ├── counter_matrix.csv           # Pairwise enemy counter matrix (6,080 pairs)
 │   ├── items.json                   # 114 items: rovmeta.com + patch-note overrides (numeric stats, price, passives)
 │   ├── items_overrides.json         # Hand-maintained corrections from official Garena TH/TW patch notes
 │   ├── hero_names_zh_tw.json        # Traditional Chinese -> canonical English hero name dictionary
 │   ├── hero_patch_translations.json # Translation dictionary for patch note phrases & sentences
-│   ├── hero_patch_history.json      # 334 historical balance adjustments across 92 heroes from TW patch notes
+│   ├── hero_patch_history.json      # 349 historical balance adjustments across 97 heroes from TW patch notes
 │   ├── hero_level_stats.json        # Exact level 1-15 stats table for all 130 heroes (JSON catalog)
 │   ├── hero_level_stats.csv         # 1,950 row level 1-15 scaling table (130 heroes * 15 levels)
-│   ├── hero_skills_full.json        # 525 structured hero skills with numerical cooldowns, mana costs & scalings
-│   ├── arcana.json                  # 90 official Arcana runes (30 Red, 30 Purple, 30 Green across Tiers I-III)
+│   ├── hero_status_lv1.json         # In-game status panel values at level 1
+│   ├── hero_status_lv15.json        # In-game status panel values at level 15
+│   ├── hero_skills_full.json        # 534 structured hero skills with numerical cooldowns, mana costs & scalings
+│   ├── arcana.json                  # 30 Tier-III Arcana runes (10 Red, 10 Purple, 10 Green, Thai server names)
 │   └── enchantments.json            # 33 official Enchantments across 4 factions (Veda, Lokheim, Afata, Humans)
 ├── frontend/                        # React 19 + Vite + Tailwind 4 draft UI (see frontend/README.md)
-│   ├── src/                         # App, api/client.ts, hooks/useDraft.ts, components/ (Modal, Alert), utils/draft.ts (reducer)
+│   ├── src/                         # App, api/client.ts, hooks/ (useDraft, useCombatLab), utils/draft.ts (reducer), components/ (draft board, Modal, Alert), components/lab/ (Combat Lab), components/meta_lab/, components/tierlist/
 │   └── public/
 │       ├── avatars/                 # 130 square 160x160 hero icons
+│       ├── items/                   # 114 item icons (scripts/fetch_item_icons.py)
+│       ├── skills/                  # Hero skill icons
+│       ├── enchantments/            # 33 enchantment icons
 │       └── hero_images.json         # Hero name -> /avatars/<file> (also read by src/api.py)
+├── heroes/                          # Local, gitignored: in-game skill/status screenshots per hero (served at /heroes-media)
+├── item/                            # Local, gitignored: in-game item card screenshots (served at /items-media)
 ├── models/
 │   ├── sota_draft_gnn_transformer.pt # Production SOTA RoVDraftGNNTransformer checkpoint
-│   └── draft_predictor.pt           # Baseline Deep Sets + MLP checkpoint
+│   ├── sota_draft_gnn_transformer_heuristic.pt # 0% true pick order experiment checkpoint
+│   ├── archive/                     # Previous production checkpoints
+│   └── draft_predictor.pt           # Baseline Deep Sets + MLP checkpoint (not committed; created by src/train_draft_model.py)
 ├── src/
 │   ├── __init__.py
-│   ├── config.py                    # Centralized OOP configuration (PathConfig, DraftModelConfig)
+│   ├── config.py                    # Centralized OOP configuration (PathConfig incl. hero_tier_overrides_path, DraftModelConfig)
 │   ├── schemas.py                   # Pydantic V2 request/response validation schemas
 │   ├── predictor.py                 # Production OOP inference engine (RoVDraftPredictor)
-│   ├── api.py                       # FastAPI endpoints (/health, /heroes, /draft/steps, /predict, /combat/*) + serves frontend/dist
+│   ├── search/
+│   │   └── draft_mcts.py            # DRAFT_STEPS, ModelInput/encode_batch/run_model, DraftMinimaxSearch lookahead
+│   ├── api.py                       # FastAPI endpoints (/health, /heroes, /draft/*, /predict*, /combat/*) + serves frontend/dist
 │   ├── combat_calculator.py         # Stat builder (level+items+T3 arcana+enchantments), skill damage w/ mitigation, 1v1 duel sim
 │   ├── train_sota_model.py          # SOTA RoVDraftGNNTransformer model & training pipeline
 │   ├── hpo_sota_optuna.py           # Fast GPU-Resident Optuna HPO engine (saves Top 5 trials)
 │   ├── predict_draft_cli.py         # CLI draft simulator & tournament scenario runner
+│   ├── build_training_dataset.py    # Builds data/matches_training.json (2025+ filter, true pick order merge)
 │   ├── scrape_heroes.py             # Liquipedia 130-hero & skill scraper
 │   ├── scrape_matches.py            # Liquipedia pro tournament match scraper
 │   ├── build_draft_stats.py         # Lane distribution & synergy/counter matrix builder
@@ -169,18 +189,26 @@ ROV/
 ├── scripts/
 │   ├── fetch_hero_icons.py          # Square hero icons (rovmeta/Garena TH + Liquipedia overrides)
 │   ├── fetch_items.py               # Item catalog from rovmeta.com -> data/items.json
+│   ├── fetch_item_icons.py          # 114 item icons -> frontend/public/items/
 │   ├── parse_tw_hero_patches.py     # Crawls Garena TW balance notices -> data/hero_patch_history.json
 │   ├── build_hero_level_stats.py    # Builds 1-15 level stats scaling tables -> data/hero_level_stats.*
 │   ├── download_rov_apk.py          # Garena RoV TH official APK/XAPK inspector & downloader
-│   ├── build_hero_skills_catalog.py # Multi-source scraper/parser for 525 numerical hero skills, cooldowns & scalings
-│   ├── fetch_arcana_and_enchantments.py # Scrapes 90 Arcana & 33 Enchantments from Garena TW & MediaWiki
+│   ├── build_hero_skills_catalog.py # Multi-source scraper/parser for 534 numerical hero skills, cooldowns & scalings
+│   ├── fetch_arcana_and_enchantments.py # Scrapes Arcana & 33 Enchantments from Garena TW & MediaWiki
+│   ├── process_draft_screenshots.py # Hungarian-matching screenshot reader -> data/true_pick_order.json
+│   ├── build_screenshots_manifest.py # Hero skill/status + item card screenshots -> data/screenshots_manifest.json
+│   ├── normalize_team_names.py      # Team abbreviation normalization across datasets
+│   ├── export_commercial_package.py # 2026 analytics bundle export (reads hero_tier_overrides.json)
 │   └── simulate_draft_selfplay.py   # 18-step AI vs AI self-play draft simulation
 └── tests/
-    ├── test_data_integrity.py       # Verifies 130 heroes, skills, 4,208 match mappings, and item catalog
+    ├── test_data_integrity.py       # Verifies 130 heroes, skills, 4,329 match mappings, and item catalog
     ├── test_model_pipeline.py       # Verifies SOTA checkpoint, masking, and predictor output
     ├── test_api.py                  # Verifies FastAPI endpoints and the served frontend build
     ├── test_combat_calculator.py    # Verifies mitigation formula, stat stacking, CDR cap, arcana/enchantment rules, duel
     ├── test_predictor_golden.py     # Pins predict() output on 72 replayed pro-game states (fixtures/predict_golden.json)
+    ├── golden_scenarios.py          # The 4 pro games x 9 steps replayed by the golden test and regression-guard
+    ├── test_rl_search.py            # DraftSearchState transitions & DraftMinimaxSearch lookahead (src/search/draft_mcts.py)
+    ├── test_security.py             # Path traversal, media containment, pickle safety, input bounds, secret leaks (security-audit)
     └── test_skills_sync.py          # Fails if .claude/skills/ drifts from .agents/skills/
 ```
 
@@ -215,4 +243,17 @@ cd frontend && npm run dev
 # 7. Lint and format check (Autonomous verification)
 ruff check --fix .
 ruff format .
+
+# 8. Regression guard: 72 golden draft states + 3 combat duel benchmarks
+python .agents/skills/regression-guard/scripts/audit_regression_guard.py
+
+# 9. Frontend bundle, avatar, and media endpoint audit (after npm run build)
+python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py
+
+# 10. Security audit (path traversal, pickle safety, input bounds, secrets)
+python .agents/skills/security-audit/scripts/audit_security.py
+
+# 11. Patch-aware meta intelligence (tier list with hero_tier_overrides.json, emerging heroes)
+python .agents/skills/moba-meta-intel/scripts/query_meta_intel.py --tier-list --top 25
+python .agents/skills/moba-meta-intel/scripts/query_meta_intel.py --emerging --top 15
 ```

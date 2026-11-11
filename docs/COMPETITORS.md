@@ -15,7 +15,7 @@ This document records the reverse-engineering teardown, architectural audit, dra
 | **AOV MetaForge**<br>`aov-metaforge.vercel.app` | Vanilla JS, GSAP 3.12, Web Audio API | **Hardcoded Threat Alert Rules**<br>If enemy picks Butterfly/Tamyn S+, triggers fixed counter cards. | **Snake Draft Format**<br>1-2-2-2-1 pick progression. | **None**<br>Single-game draft generator. | **None**<br>Visual mobility and CC meters. | 129 hardcoded hero objects in `data.js` | Casual players, meta gacha team builder. |
 | **ROV Ban/Pick Simulator**<br>`rov-ban-pick.vercel.app` | React 18 UMD (Babel in browser), Tailwind CDN | **None (Pure Manual Overlay)**<br>Manual interactive board for streaming. | **Phase-Based Slots**<br>Standard 4 Bans + 5 Picks per side. | **Partial**<br>Manual hero locking and reset. | **None**<br>Display-only board. | Live Google Sheets via OpenSheet API | Thai community tournaments & streamers. |
 | **AoV Drafter (AoV Day)**<br>`imvixtor.github.io` | Vanilla JS, LocalStorage | **None / Basic Text Advice**<br>Shows short counter descriptions from mock records. | **Static Slots**<br>Blue/Red 5v5 hero slots. | **None**<br>Single draft view only. | **None**<br>Qualitative 1-5 stat bars. | 25 mock heroes in client JavaScript | Community mock-up / portfolio prototype. |
-| **Our System (RoV Pro Draft Intelligence)** | **React 19 + Tailwind 4 (Frontend), FastAPI + PyTorch (Backend)** | **SOTA Multi-Relational GNN-Transformer**<br>2-layer relational graph (copick, synergy, counter) + Sequence Transformer (Val Loss: 2.74, Top-5 Acc: 64.22%). | **True Pick Order (Verified)**<br>Chronological B1-B5 / R1-R5 recovered from broadcast screenshots via Computer Vision. | **Full Bo3 / Bo5 / Bo7 Support**<br>Complete Global Ban Pick tracking and series history state. | **Production Combat Engine**<br>Exact level 1-15 stats, 525 skills, mitigation `600/(600+def)`, flat/pct pierce, T3 arcana, 33 enchantments, 1v1 duel. | 4,208 pro matches (2024–2026), 130 verified heroes | Professional esports coaches, tier-1 analysts. |
+| **Our System (RoV Pro Draft Intelligence)** | **React 19 + Tailwind 4 (Frontend), FastAPI + PyTorch (Backend)** | **SOTA Multi-Relational GNN-Transformer**<br>Multi-relational graph (copick, synergy, counter) + Sequence Transformer (Val Loss: 2.831, Top-5 Acc: 60.78%). | **True Pick Order (Verified)**<br>Chronological B1-B5 / R1-R5 recovered from broadcast screenshots via Computer Vision. | **Full Bo3 / Bo5 / Bo7 Support**<br>Complete Global Ban Pick tracking and series history state. | **Production Combat Engine**<br>Exact level 1-15 stats, 534 skills, mitigation `600/(600+def)`, flat/pct pierce, T3 arcana, 33 enchantments, 1v1 duel. | 4,329 pro matches (2024–2026), 130 verified heroes | Professional esports coaches, tier-1 analysts. |
 
 ---
 
@@ -113,10 +113,10 @@ Market solutions for RoV / AoV drafting currently fall into five distinct techni
    * By extracting broadcast draft boards at the final lock phase, our dataset models genuine chronological pick turns (B1 -> R1-R2 -> B2-B3 -> R3 -> R4 -> B4-B5 -> R5), enabling true sequential decision-making.
 2. **Deep Relational Representation vs. Linear Weighting**:
    * Competitors either sum manual weights (`0.25 * meta + 0.20 * counter`) or look up sparse pairwise tables.
-   * Our SOTA architecture (`RoVDraftGNNTransformer`) computes continuous relational graph embeddings over 4 relational adjacency matrices (`adj_copick`, `adj_synergy`, `adj_counter`, `adj_countered_by`), trained on 64,000+ decision steps from 4,208 pro games with verified Pareto optimality on H100 GPUs.
+   * Our SOTA architecture (`RoVDraftGNNTransformer`) computes continuous relational graph embeddings over 4 relational adjacency matrices (`adj_copick`, `adj_synergy`, `adj_counter`, `adj_countered_by`), trained on 64,000+ decision steps from 4,329 pro games with verified Pareto optimality on H100 GPUs.
 3. **Mathematical Combat & Scaling Engine**:
    * No competitor possesses a combat calculation engine.
-   * Our system models official Garena formulas: non-linear armor mitigation `600 / (600 + net_defense)`, flat and percentage pierce, 525 skills with exact base/scaling damage, level 1-15 base curves, Tier 3 Arcana sets, and 33 Enchantments with real-time 1v1 duel simulation.
+   * Our system models official Garena formulas: non-linear armor mitigation `600 / (600 + net_defense)`, flat and percentage pierce, 534 skills with exact base/scaling damage, level 1-15 base curves, Tier 3 Arcana sets, and 33 Enchantments with real-time 1v1 duel simulation.
 
 ---
 
@@ -131,6 +131,6 @@ Analyzing the competitive landscape identifies high-impact features worth integr
      * Frontline / durable tank presence.
      * Estimated per-lane matchup differentials (`laneEdges`).
 2. **Interactive Historical Counter-Lookup Panel (Inspired by CoachOS & DraftMind)**:
-   * Allow coaches to select 1-3 enemy picks and instantly view empirical pro tournament responses (highest win rate counters, pick frequencies, and partner synergies) queried from our 4,208 pro match dataset.
+   * Allow coaches to select 1-3 enemy picks and instantly view empirical pro tournament responses (highest win rate counters, pick frequencies, and partner synergies) queried from our 4,329 pro match dataset.
 3. **Standardized Draft Match JSON Exporter (Inspired by AOV DraftMind)**:
    * Provide a utility for teams to export completed multi-game series drafts into clean JSON schemas for internal scrim archiving and review.

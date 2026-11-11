@@ -27,6 +27,60 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-11 13:34 (UTC+7) — Full System Alignment & Bidirectional Skill/Doc Synchronization
+**Agent:** Antigravity (Gemini 3.8 Flash)
+
+### ✅ Completed Work
+- **Documentation & Metrics Alignment (`AGENTS.md`, `README.md`, `docs/COMPETITORS.md`, `frontend/README.md`)**:
+  - Aligned archival pro match count to **4,329 games** (2024=817, 2025=1,702, 2026=1,810) and training dataset to **3,512 games** (51.5% true pick order coverage, 1,810 games).
+  - Aligned status table and HPO skill notes with the served model checkpoint (`val_loss = 2.86752`, `win_acc = 52.13%`) and current Top-5 H100 trials (Trial #13 Compact `val_loss = 2.83144`, Trial #01 Safest `val_loss = 2.83993`).
+  - Added full file tree mappings in `AGENTS.md` covering `hero_tier_overrides.json`, `screenshots_manifest.json`, `matches_training_heuristic.json`, `heuristic_sota_*.json`, `src/build_training_dataset.py`, `src/search/draft_mcts.py`, `tests/test_rl_search.py`, `tests/test_security.py`, `tests/golden_scenarios.py`, and local media directories `heroes/`, `item/`.
+  - Added new audit commands (8 through 11) to `AGENTS.md` Section 3 for regression guard, frontend E2E, security audit, and meta intel.
+  - Documented complete FastAPI routes (`/draft/session`, `/predict/matrix`, `/predict/heuristic`, `/combat/rune-recommendation`, `/combat/hero-screenshots/{hero}`, `/combat/item-screenshots/{item_name}`) in `README.md` and `rov-draft-serving`.
+  - Synchronized `frontend/README.md` with full component catalog (Combat Lab, Meta Lab, Tier List, modals, hooks, media).
+- **Hero Tier Overrides Schema Guard (`audit_rov_data.py`, `tests/test_data_integrity.py`)**:
+  - Added `audit_hero_tier_overrides()` to `audit_rov_data.py` validating that every entry in `data/hero_tier_overrides.json` corresponds to a canonical hero from the 130-hero catalog and assigns a valid tier (`S+`, `S`, `A`, `B`, `C`, `D`).
+  - Added regression test `test_hero_tier_overrides_integrity()` in `tests/test_data_integrity.py`.
+- **Bidirectional Skill Cross-Referencing & Synchronization (`.agents/skills/`, `.claude/skills/`)**:
+  - Appended **Related Skills** sections to all 9 skills (`rov-data-guardian`, `rov-draft-serving`, `draft-screenshot-reader`, `erawan-hpc-ops`, `hpo-parsimony-selector`, `regression-guard`, `frontend-e2e-inspector`, `moba-meta-intel`, `security-audit`), connecting data, modeling, serving, frontend, and security workflows.
+  - Updated `rov-draft-serving` pre-commit audit suite to run regression guard, frontend E2E inspector, and security audit.
+  - Corrected Flowborn Mage occurrence ratio in `draft-screenshot-reader` (9 of 4,329 games).
+  - Mirrored all 9 skills 1-to-1 to `.claude/skills/` (100% passing `test_skills_sync.py`).
+
+### 📁 Modified Files
+- `AGENTS.md`
+- `README.md`
+- `docs/COMPETITORS.md`
+- `frontend/README.md`
+- `.agents/skills/rov-data-guardian/scripts/audit_rov_data.py`
+- `.agents/skills/rov-data-guardian/SKILL.md`
+- `.agents/skills/rov-draft-serving/SKILL.md`
+- `.agents/skills/hpo-parsimony-selector/SKILL.md`
+- `.agents/skills/draft-screenshot-reader/SKILL.md`
+- `.agents/skills/erawan-hpc-ops/SKILL.md`
+- `.agents/skills/frontend-e2e-inspector/SKILL.md`
+- `.agents/skills/regression-guard/SKILL.md`
+- `.agents/skills/moba-meta-intel/SKILL.md`
+- `.agents/skills/security-audit/SKILL.md`
+- `.claude/skills/**` (all 9 skills mirrored)
+- `tests/test_data_integrity.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: PASSED (130 heroes, 4,329 total pro games, 0 unmapped names, hero tier overrides verified).
+- `python .agents/skills/regression-guard/scripts/audit_regression_guard.py`: PASSED (72/72 golden draft states and 3/3 combat duel benchmarks 100% matched).
+- `python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py`: PASSED (4/4 audit stages clean).
+- `python .agents/skills/security-audit/scripts/audit_security.py`: PASSED (5/5 security checkpoints clean).
+- `pytest -v tests/test_skills_sync.py`: 2/2 tests PASSED.
+- `pytest -v`: 91/91 tests PASSED in 10.08s (100% green).
+- `cd frontend && npm run lint && npm run build`: 0 warnings, 0 errors, build in 1.08s.
+- `ruff check --fix . && ruff format .`: 0 lint errors, clean formatting.
+
+### ⚠️ Open Issues / Important Notes
+- None. All datasets, skills, models, documentation, and tests are 100% synchronized.
+
+---
+
 ## 📅 2026-11-11 13:16 (UTC+7) — Upgrade moba-meta-intel with Patch-Aware Tier List, Hero Overrides, & Emerging Surge
 **Agent:** Antigravity (Gemini 3.8 Flash)
 

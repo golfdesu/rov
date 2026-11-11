@@ -18,10 +18,13 @@ Use this skill to run draft predictions, serve the FastAPI application and web U
 
 ```bash
 python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py
+python .agents/skills/regression-guard/scripts/audit_regression_guard.py
+python .agents/skills/security-audit/scripts/audit_security.py
 pytest -v
 ruff check --fix . && ruff format .
 # Frontend changes only:
 cd frontend && npm run build && npm run lint && cd ..
+python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py
 ```
 
 `npm run build` runs `tsc -b` with `strict: true`, so it doubles as the type check.
@@ -77,14 +80,20 @@ uvicorn src.api:app --reload --port 8000
 
 | Route | Purpose |
 | :--- | :--- |
-| `GET /` | Draft UI and Stat & Duel Lab (`#lab`), served from `frontend/dist` |
-| `GET /health` | Health check |
-| `GET /heroes` | 130 heroes + `hero_details` (role, lane, tier, `image_url`) |
-| `GET /draft/steps` | 18-step draft order |
-| `POST /predict` | Next pick/ban recommendations + both teams' forecasts |
+| `GET /` | Draft UI, Combat Lab (`#lab`), Meta Lab (`#meta`), Tier List (`#tierlist`), served from `frontend/dist` |
+| `GET /health` | Health check & model status |
+| `GET /heroes` | 130 heroes + `hero_details` (role, lane, tier, `image_url`, override reason) |
+| `GET /draft/steps` | Canonical 18-step draft order |
+| `GET, PUT, DELETE /draft/session` | Multi-game series draft persistence & state reset |
+| `POST /predict` | SOTA GNN-Transformer next pick/ban recommendations + forecasts |
+| `POST /predict/matrix` | Empirical co-occurrence / synergy baseline recommendation |
+| `POST /predict/heuristic` | 0% true pick order ablation model prediction |
 | `GET /combat/catalog` | Heroes, items, arcana, enchantments for the lab |
 | `POST /combat/stats` | Build stats for one hero build |
 | `POST /combat/duel` | 1v1 duel simulation for builds `a` and `b` |
+| `GET /combat/rune-recommendation` | Optimal Tier-3 Arcana & Enchantment recommendations |
+| `GET /combat/hero-screenshots/{hero}` | Skill and status screenshot manifest for hero |
+| `GET /combat/item-screenshots/{item_name}` | Equipment card screenshot pages for item |
 | `GET /docs` | Swagger UI |
 
 Frontend dev server with hot reload (proxies the routes above to `:8000`):
@@ -109,3 +118,14 @@ Playwright (Python) and Chromium are installed. Build the frontend, start uvicor
 ```bash
 python scripts/simulate_draft_selfplay.py --blue-strategy lookahead --red-strategy greedy --depth 2
 ```
+
+---
+
+## 6. Related Skills
+
+- [`regression-guard`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/regression-guard/SKILL.md): Audits 72 pro draft states and 3 combat duel benchmarks to prevent algorithmic or numerical regressions.
+- [`frontend-e2e-inspector`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/frontend-e2e-inspector/SKILL.md): Audits production bundle integrity, 130 hero avatars, skill screenshots, and item card endpoints.
+- [`security-audit`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/security-audit/SKILL.md): Multi-phase security audit (pickle safety, traversal, bounds, secrets).
+- [`moba-meta-intel`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/moba-meta-intel/SKILL.md): Query tournament meta intelligence, patch recency, and tier list overrides across all 4,329 games.
+- [`hpo-parsimony-selector`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/hpo-parsimony-selector/SKILL.md): Production hyperparameter audit and served checkpoint metrics.
+- [`rov-data-guardian`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/rov-data-guardian/SKILL.md): Hero & match data schema validator.

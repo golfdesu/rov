@@ -77,3 +77,11 @@ Deploy targeted inspection across the project's critical vulnerability categorie
 1. **Path Traversal Shield**: Never construct a `Path` from user input without asserting `.resolve().is_relative_to(BASE_DIR)`.
 2. **Pickle Boundary**: Never call `torch.load()` on unverified remote files. All production checkpoints in `models/` must be audited for safe globals.
 3. **Infinite Loop Floor**: Every simulation loop in `src/combat_calculator.py` or search algorithms in `src/search/` MUST possess an explicit step/time bound (`DUEL_MAX_SECONDS`, `max_steps`, `depth`).
+
+---
+
+## 4. Related Skills
+
+- [`rov-draft-serving`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/rov-draft-serving/SKILL.md): Implements FastAPI endpoints, static asset routing, and inference pipeline.
+- [`frontend-e2e-inspector`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/frontend-e2e-inspector/SKILL.md): Audits production frontend bundles, media assets, and endpoint health.
+- [`regression-guard`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/regression-guard/SKILL.md): Protects against algorithmic regression and bounds simulation runtime.

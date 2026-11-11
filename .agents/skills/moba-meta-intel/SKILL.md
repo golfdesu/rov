@@ -64,3 +64,11 @@ python .agents/skills/moba-meta-intel/scripts/query_meta_intel.py --tier-list --
 
 1. **Canonical Names Only**: Always query using official Thai server names (`Mortos`, `Celica`, `Riktor`). The script normalizes legacy Liquipedia aliases (`Arthur`, `Brunhilda`, `Richter`) automatically.
 2. **2024 Exclusion for Active Meta**: When answering questions about the *current* meta, filter by `--min-year 2025` or specific 2026 tournaments to eliminate obsolete 2024 hero dynamics.
+
+---
+
+## 4. Related Skills
+
+- [`rov-data-guardian`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/rov-data-guardian/SKILL.md): Manages canonical datasets, hero skills, and `data/hero_tier_overrides.json`.
+- [`draft-screenshot-reader`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/draft-screenshot-reader/SKILL.md): Ingests true chronological pick orders from broadcast screenshots into `data/true_pick_order.json`.
+- [`rov-draft-serving`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/rov-draft-serving/SKILL.md): Serves recommendations and draft prediction models in API and web UI.

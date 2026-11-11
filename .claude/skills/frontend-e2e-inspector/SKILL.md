@@ -64,3 +64,11 @@ When conducting live UI walkthroughs or checking layout regressions, use the **P
 1. **Deterministic Slot Identification**: Never rely on array index order when displaying hero skill screenshots. Canonical tokens (`passive`, `skill1`, `skill2`, `ultimate`) must bind directly to their matching slot.
 2. **Item Card Page Ordering**: Multi-page items (Jungle/Support) must always start at Page 1 (`item_card_1.jpg`) as the top card view.
 3. **Hero Name Localization**: Thai canonical server names (`Mortos`, `Celica`, `Riktor`) are the display default.
+
+---
+
+## 4. Related Skills
+
+- [`rov-draft-serving`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/rov-draft-serving/SKILL.md): Serve FastAPI backend and web UI, execute builds, and run CLI scenarios.
+- [`regression-guard`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/regression-guard/SKILL.md): Regression testing for 72 golden draft states and 3 combat duel simulations backing the UI.
+- [`security-audit`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/security-audit/SKILL.md): Verifies static media containment, path traversal immunity, and input bounds.

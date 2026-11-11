@@ -394,3 +394,28 @@ def test_screenshots_manifest_integrity():
             assert it["item_name"]
             assert it["slug"]
             assert it["page"] == idx
+
+
+def test_hero_tier_overrides_integrity():
+    tier_overrides_path = getattr(
+        config.paths, "hero_tier_overrides_path", config.paths.data_dir / "hero_tier_overrides.json"
+    )
+    assert tier_overrides_path.exists(), "hero_tier_overrides.json must exist"
+
+    with open(tier_overrides_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    assert "overrides" in data
+    overrides = data["overrides"]
+    assert len(overrides) >= 10, "Expected at least 10 hand-maintained hero tier overrides"
+
+    heroes_df = pd.read_csv(config.paths.heroes_csv_path)
+    canonical_names = set(heroes_df["name"].tolist())
+    valid_tiers = {"S+", "S", "A", "B", "C", "D"}
+
+    for hero, info in overrides.items():
+        assert hero in canonical_names, f"Override hero '{hero}' not in canonical 130-hero catalog"
+        tier = info["tier"] if isinstance(info, dict) and "tier" in info else str(info)
+        assert tier in valid_tiers, f"Hero '{hero}' has invalid tier '{tier}'"
+        if isinstance(info, dict) and "reason" in info:
+            assert len(info["reason"].strip()) > 0, f"Hero '{hero}' has empty override reason"

@@ -65,3 +65,11 @@ git push origin main
 1. `python .agents/skills/hpo-parsimony-selector/scripts/select_parsimonious_params.py`: confirm the served metrics and update the config / `AGENTS.md` table if they changed.
 2. `pytest -v`: `tests/test_predictor_golden.py` will fail because recommendations changed. Regenerate it on purpose (see `rov-draft-serving`).
 3. Add a `CHANGELOG.md` entry.
+
+---
+
+### Related Skills
+
+- [`hpo-parsimony-selector`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/hpo-parsimony-selector/SKILL.md): Audit Optuna HPO trials, select safe parsimonious parameters, and verify served checkpoint numbers.
+- [`regression-guard`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/regression-guard/SKILL.md): Verify that newly pulled checkpoints preserve 72 golden draft states and combat duel benchmarks.
+- [`rov-draft-serving`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/rov-draft-serving/SKILL.md): Deploy and serve newly trained checkpoints via CLI, API, and web UI.

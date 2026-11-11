@@ -101,7 +101,7 @@ For batch processing new screenshots rapidly with Global Hungarian Bipartite Mat
 ## 4. Guardrails
 
 - Use canonical Thai server hero names (`Mortos`, `Celica`, `Riktor`), not legacy Global/Liquipedia names (`Arthur`, `Brunhilda`, `Richter`).
-- `Flowborn (Marksman)` and `Flowborn (Mage)` share one portrait, so the image cannot tell them apart. Take the role from the Liquipedia record for that game (Mage is rare: 9 of 4,252 games).
+- `Flowborn (Marksman)` and `Flowborn (Mage)` share one portrait, so the image cannot tell them apart. Take the role from the Liquipedia record for that game (Mage is rare: 9 of 4,329 games).
 - **Reworked Azzen'Ka vs Default Taara Trap**:
   - Azzen'Ka has a remodeled female appearance (dark hair with purple fringe, tiara, purple eyes as shown in `frontend/public/avatars/Azzen_Ka.jpg`), NOT the old classic sand wraith.
   - Taara's default appearance is the full heavy steel/blue armor with horned helmet and glowing blue eyes (`frontend/public/avatars/Taara.jpg`).
@@ -110,3 +110,11 @@ For batch processing new screenshots rapidly with Global Hungarian Bipartite Mat
 - Broadcast overlay glitches (e.g., APL 2026 Wildcard `S281 G2` `ONE vs TIMELESS`, where the broadcast operator displayed banned/Game-1 heroes on Blue slots 2-5; or APL 2026 Swiss Stage `S258 G2` `BRU vs BMG`, where Blue B4 displayed Tel'Annas portrait but was Fennik in-game/Liquipedia, and Iggy wore a special cadet skin with cyan hair/cap), hero set mismatches, unreadable portraits, or ambiguous titles: stop and flag to the user instead of guessing. Never fill a slot by elimination unless the other 4 slots on that side are 100% certain and the set check passes.
 - Do not touch `data/vod_analytics/` (owner's paused WIP).
 - Retraining on true pick order is on hold until more games are collected; do not start it unless asked.
+
+---
+
+## 5. Related Skills
+
+- [`rov-data-guardian`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/rov-data-guardian/SKILL.md): Verify data integrity across `data/true_pick_order.json`, `heroes_130_full.json`, and match archives.
+- [`moba-meta-intel`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/moba-meta-intel/SKILL.md): Query tournament meta intelligence, flex picks, and tier lists built from true pick data.
+- [`rov-draft-serving`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/rov-draft-serving/SKILL.md): Serve draft recommendations powered by true pick order trained models.

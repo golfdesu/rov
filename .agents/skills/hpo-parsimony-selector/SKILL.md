@@ -27,7 +27,7 @@ It prints:
 
 **Never quote model metrics from memory, this file, or `AGENTS.md`.** Run the script and quote what it prints. If the config disagrees with the checkpoint, the config is stale: say so to the user instead of "fixing" either side silently.
 
-> Known as of 2026-10-21: the served checkpoint (commit `cb10223`, 2026-10-17) has `val_loss` around 2.936 with `dropout` 0.22 and `neural_scale` 0.68, while `configs/selected_production_params.json` and the `AGENTS.md` status table still describe older Trial #10 / #21 runs at `val_loss` around 2.747. The owner has not yet decided which one is canonical.
+> Status (as of 2026-11-11): Served checkpoint has `val_loss = 2.86752`, `win_acc = 52.13%` (`d_model=256, nhead=4, num_layers=1, dropout=0.2513, neural_scale=1.3326`). `configs/selected_production_params.json` records Trial #01 as safest (`val_loss=2.83993`, gap `+0.29107`) and Trial #13 as rank #1 compact (`val_loss=2.83144`), updated 2026-11-10.
 
 ---
 
@@ -56,3 +56,11 @@ After a new checkpoint is promoted:
 - rerun the selector script and update `configs/selected_production_params.json` and the `AGENTS.md` status table to match it
 - regenerate the predictor golden fixture (`rov-draft-serving` skill), since recommendations will change
 - add a `CHANGELOG.md` entry
+
+---
+
+## 4. Related Skills
+
+- [`erawan-hpc-ops`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/erawan-hpc-ops/SKILL.md): SLURM job execution and Optuna HPO training on ERAWAN HPC H100 GPU nodes.
+- [`regression-guard`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/regression-guard/SKILL.md): Verify that newly promoted checkpoints preserve 72 golden draft states without regression.
+- [`rov-draft-serving`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/rov-draft-serving/SKILL.md): Run predictions and serve the production checkpoint via CLI, FastAPI, and web UI.
