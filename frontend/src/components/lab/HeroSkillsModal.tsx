@@ -148,10 +148,17 @@ export function HeroSkillsModal({
   onClose,
 }: HeroSkillsModalProps) {
   const dName = displayName(hero);
+  const [prevHero, setPrevHero] = useState<string>(hero);
   const [selectedSlot, setSelectedSlot] = useState<string>(skills[0]?.slot ?? "Passive");
   const [viewMode, setViewMode] = useState<ViewMode>("ingame");
   const [screenshotsData, setScreenshotsData] = useState<HeroScreenshotsResponse | null>(null);
   const [selectedScreenshotIdx, setSelectedScreenshotIdx] = useState<number>(0);
+
+  if (prevHero !== hero) {
+    setPrevHero(hero);
+    setSelectedSlot(skills[0]?.slot ?? "Passive");
+    setSelectedScreenshotIdx(0);
+  }
 
   const titleId = useId();
 
@@ -171,6 +178,7 @@ export function HeroSkillsModal({
   }, [hero]);
 
   const sortedSkills = useMemo(() => {
+    if (skills.length > 4) return skills;
     return [...skills].sort((a, b) => {
       const ia = SLOT_ORDER.indexOf(a.slot);
       const ib = SLOT_ORDER.indexOf(b.slot);
@@ -193,23 +201,23 @@ export function HeroSkillsModal({
     const list: ScreenshotItem[] = [];
     const skillImgs = screenshotsData.skill_screenshots || [];
     skillImgs.forEach((url, i) => {
-      const lower = url.toLowerCase();
+      const fileName = (url.split("/").pop() || url).toLowerCase();
       let label = `สกิล ${i}`;
       let slotKey = `Skill ${i}`;
 
-      if (lower.includes("passive")) {
+      if (fileName.startsWith("passive") || fileName.includes("_passive")) {
         label = "สกิลติดตัว (P)";
         slotKey = "Passive";
-      } else if (lower.includes("skill1")) {
+      } else if (fileName.startsWith("skill1") || fileName.includes("_skill1")) {
         label = "สกิล 1";
         slotKey = "Skill 1";
-      } else if (lower.includes("skill2")) {
+      } else if (fileName.startsWith("skill2") || fileName.includes("_skill2")) {
         label = "สกิล 2";
         slotKey = "Skill 2";
-      } else if (lower.includes("ultimate") || lower.includes("skill3")) {
+      } else if (fileName.startsWith("ultimate") || fileName.includes("_ultimate") || fileName.startsWith("skill3")) {
         label = "อัลติเมท (Ult)";
         slotKey = "Ultimate";
-      } else if (lower.includes("skill4")) {
+      } else if (fileName.startsWith("skill4") || fileName.includes("_skill4")) {
         label = "สกิล 4";
         slotKey = "Skill 4";
       } else {
@@ -228,16 +236,34 @@ export function HeroSkillsModal({
         }
       }
 
-      if (lower.includes("_v2")) {
-        label += " (ชุด 2)";
-      } else if (lower.includes("form2")) {
-        label += " (ร่าง 2)";
-      } else if (lower.includes("fox")) {
-        label += " (ร่างจิ้งจอก)";
-      } else if (lower.includes("human")) {
-        label += " (ร่างมนุษย์)";
-      } else if (lower.includes("awakened")) {
+      if (fileName.includes("_awakened")) {
         label += " (ตื่นรู้)";
+        slotKey = `${slotKey} (Berserker Mode)`;
+      } else if (fileName.includes("_normal")) {
+        label += " (ปกติ)";
+      } else if (fileName.includes("_form2")) {
+        label += " (รวมดาบ)";
+        if (slotKey === "Passive") slotKey = "Passive 2";
+        else if (slotKey === "Skill 1") slotKey = "Skill 3";
+        else if (slotKey === "Skill 2") slotKey = "Skill 4";
+        else if (slotKey === "Ultimate") slotKey = "Skill 5";
+      } else if (fileName.includes("_form1")) {
+        label += " (ดาบคู่)";
+      } else if (fileName.includes("_fox")) {
+        label += " (ร่างจิ้งจอก)";
+        if (slotKey === "Skill 1") slotKey = "Skill 4";
+        else if (slotKey === "Skill 2") slotKey = "Skill 5";
+      } else if (fileName.includes("_human")) {
+        label += " (ร่างมนุษย์)";
+        if (slotKey === "Ultimate") slotKey = "Skill 3";
+      } else if (fileName.includes("_cannon")) {
+        label += " (ปืนใหญ่)";
+      } else if (fileName.includes("_rapid")) {
+        label += " (ปืนกล)";
+      }
+
+      if (fileName.includes("_v2")) {
+        label += " (หน้า 2)";
       }
 
       list.push({ url, label, type: "skill", slotKey });
@@ -245,10 +271,15 @@ export function HeroSkillsModal({
 
     const statusImgs = screenshotsData.status_screenshots || [];
     statusImgs.forEach((url) => {
-      const isLv15 = url.toLowerCase().includes("lv15");
+      const fileName = (url.split("/").pop() || url).toLowerCase();
+      const isLv15 = fileName.includes("lv15");
+      let statusLabel = isLv15 ? "สเตตัส Lv 15" : "สเตตัส Lv 1";
+      if (fileName.includes("_alt")) {
+        statusLabel += " (ในเกม)";
+      }
       list.push({
         url,
-        label: isLv15 ? "สเตตัส Lv 15" : "สเตตัส Lv 1",
+        label: statusLabel,
         type: "status",
       });
     });
@@ -256,11 +287,23 @@ export function HeroSkillsModal({
     return list;
   }, [screenshotsData]);
 
-  // Synchronize screenshot selection when switching slot or jumping to screenshot view
-  const jumpToSkillScreenshot = (slot: string) => {
-    const idx = allScreenshots.findIndex(
+  const findScreenshotIdxForSlot = (slot: string) =>
+    allScreenshots.findIndex(
       (s) => s.slotKey === slot || (slot.startsWith("Passive") && s.slotKey === "Passive")
     );
+
+  const selectScreenshotAt = (idx: number) => {
+    const clamped = Math.max(0, Math.min(allScreenshots.length - 1, idx));
+    setSelectedScreenshotIdx(clamped);
+    const targetSlot = allScreenshots[clamped]?.slotKey;
+    if (targetSlot && sortedSkills.some((sk) => sk.slot === targetSlot)) {
+      setSelectedSlot(targetSlot);
+    }
+  };
+
+  // Synchronize screenshot selection when switching slot or jumping to screenshot view
+  const jumpToSkillScreenshot = (slot: string) => {
+    const idx = findScreenshotIdxForSlot(slot);
     if (idx !== -1) {
       setSelectedScreenshotIdx(idx);
     }
@@ -388,7 +431,13 @@ export function HeroSkillsModal({
             </button>
             <button
               type="button"
-              onClick={() => setViewMode("screenshot")}
+              onClick={() => {
+                if (activeSkill?.slot) {
+                  jumpToSkillScreenshot(activeSkill.slot);
+                } else {
+                  setViewMode("screenshot");
+                }
+              }}
               className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 font-semibold transition-all ${
                 viewMode === "screenshot"
                   ? "bg-gold text-bg shadow-sm font-bold"
@@ -439,7 +488,7 @@ export function HeroSkillsModal({
               onClick={() => {
                 setSelectedSlot(s.slot);
                 if (viewMode === "screenshot") {
-                  const idx = allScreenshots.findIndex((sc) => sc.slotKey === s.slot);
+                  const idx = findScreenshotIdxForSlot(s.slot);
                   if (idx !== -1) setSelectedScreenshotIdx(idx);
                 }
               }}
@@ -497,7 +546,7 @@ export function HeroSkillsModal({
                       <button
                         key={idx}
                         type="button"
-                        onClick={() => setSelectedScreenshotIdx(idx)}
+                        onClick={() => selectScreenshotAt(idx)}
                         className={`rounded-md border px-2.5 py-1 text-xs font-semibold transition-all ${
                           isCur
                             ? "border-gold bg-gold text-bg font-bold shadow-sm"
@@ -514,7 +563,7 @@ export function HeroSkillsModal({
                   <button
                     type="button"
                     disabled={selectedScreenshotIdx <= 0}
-                    onClick={() => setSelectedScreenshotIdx((p) => Math.max(0, p - 1))}
+                    onClick={() => selectScreenshotAt(selectedScreenshotIdx - 1)}
                     className="rounded border border-line p-1 text-muted hover:bg-panel-2 hover:text-ink disabled:opacity-30"
                     title="ภาพก่อนหน้า"
                   >
@@ -526,7 +575,7 @@ export function HeroSkillsModal({
                   <button
                     type="button"
                     disabled={selectedScreenshotIdx >= allScreenshots.length - 1}
-                    onClick={() => setSelectedScreenshotIdx((p) => Math.min(allScreenshots.length - 1, p + 1))}
+                    onClick={() => selectScreenshotAt(selectedScreenshotIdx + 1)}
                     className="rounded border border-line p-1 text-muted hover:bg-panel-2 hover:text-ink disabled:opacity-30"
                     title="ภาพถัดไป"
                   >

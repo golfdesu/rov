@@ -338,3 +338,59 @@ def test_true_pick_order_matches_liquipedia():
             assert (config.paths.data_dir / "draft_screenshots" / t["screenshot"]).exists() or not (
                 config.paths.data_dir / "draft_screenshots"
             ).exists(), f"Missing screenshot for {key}"
+
+
+def test_screenshots_manifest_integrity():
+    manifest_path = config.paths.data_dir / "screenshots_manifest.json"
+    assert manifest_path.exists(), "Missing data/screenshots_manifest.json"
+
+    with open(manifest_path, "r", encoding="utf-8") as f:
+        manifest = json.load(f)
+
+    assert "summary" in manifest
+    assert "hero_skills" in manifest
+    assert "hero_statuses" in manifest
+    assert "items" in manifest
+
+    summary = manifest["summary"]
+    assert summary["total_heroes"] == 130
+    assert summary["total_hero_skill_screenshots"] >= 560
+    assert summary["total_hero_status_screenshots"] >= 260
+    assert summary["total_items"] == 114
+    assert summary["total_item_screenshots"] >= 150
+
+    # Verify hero skills entries have proper metadata and canonical ordering
+    for hero, skills in manifest["hero_skills"].items():
+        assert len(skills) >= 4, f"{hero} has fewer than 4 skill screenshots in manifest"
+        assert skills[0]["slot"] == "Passive", f"{hero} first skill screenshot must be Passive"
+        for s in skills:
+            assert s["file"]
+            assert s["relative_path"]
+            assert s["slot"]
+            assert s["skill_name"]
+
+    assert [s["slot"] for s in manifest["hero_skills"]["Dirak"]] == [
+        "Passive",
+        "Skill 1",
+        "Skill 2",
+        "Ultimate",
+        "Skill 4",
+    ]
+    assert manifest["hero_skills"]["Edras"][0]["form"] == "normal"
+
+    # Verify hero status entries have valid variants (base, alt - 100% item/buff free)
+    flowborn_statuses = [s["file"] for s in manifest["hero_statuses"]["Flowborn (Marksman)"]]
+    assert flowborn_statuses == ["status_lv1.jpg", "status_lv15.jpg"]
+    for hero, statuses in manifest["hero_statuses"].items():
+        for st in statuses:
+            assert st["variant"] in {"base", "alt"}, f"{hero} has invalid status variant: {st['variant']}"
+
+    # Verify item entries have proper metadata and page index
+    for item_name, items in manifest["items"].items():
+        assert len(items) >= 1, f"Item {item_name} has no screenshot in manifest"
+        for idx, it in enumerate(items, start=1):
+            assert it["file"]
+            assert it["relative_path"]
+            assert it["item_name"]
+            assert it["slug"]
+            assert it["page"] == idx

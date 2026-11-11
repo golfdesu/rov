@@ -25,52 +25,52 @@ OUT_DIR = REPO_ROOT / "frontend" / "public" / "items"
 CROPPED_ITEMS: dict[str, dict] = {
     "bloodthirsty-blade": {
         "folder": "Bloodthirsty Blade",
-        "file": "LINE_ALBUM_Item_261019_149.jpg",
+        "file": "item_card.jpg",
         "box": (996, 1056, 1130, 1190),
     },
     "ifrits-claw": {
         "folder": "Ifrit's Claw",
-        "file": "LINE_ALBUM_Item_261019_132.jpg",
+        "file": "item_card.jpg",
         "box": (1448, 1051, 1582, 1185),
     },
     "stealth-bracer": {
         "folder": "Stealth Bracer",
-        "file": "LINE_ALBUM_Item_261019_128.jpg",
+        "file": "item_card.jpg",
         "box": (1448, 1438, 1582, 1572),
     },
     "soul-scroll": {
         "folder": "Soul Scroll",
-        "file": "LINE_ALBUM_Item_261019_112.jpg",
+        "file": "item_card.jpg",
         "box": (997, 1056, 1131, 1190),
     },
     "light-shield": {
         "folder": "Light Shield",
-        "file": "LINE_ALBUM_Item_261019_75.jpg",
+        "file": "item_card.jpg",
         "box": (1448, 1438, 1582, 1572),
     },
     "hunters-knife": {
         "folder": "Hunter's Knife",
-        "file": "LINE_ALBUM_Item_261019_66.jpg",
+        "file": "item_card_1.jpg",
         "box": (546, 417, 680, 551),
     },
     "aquaflame-accelerate": {
         "folder": "Aquaflame - Accelerate",
-        "file": "LINE_ALBUM_Item_261019_8.jpg",
+        "file": "item_card_1.jpg",
         "box": (1448, 799, 1582, 933),
     },
     "aquaflame-rejuvenate": {
         "folder": "Aquaflame - Rejuvenate",
-        "file": "LINE_ALBUM_Item_261019_1.jpg",
+        "file": "item_card_1.jpg",
         "box": (1448, 1182, 1582, 1316),
     },
     "mother-earth-accelerate": {
         "folder": "Mother Earth - Accelerate",
-        "file": "LINE_ALBUM_Item_261019_26.jpg",
+        "file": "item_card_1.jpg",
         "box": (1448, 799, 1582, 933),
     },
     "mother-earth-rejuvenate": {
         "folder": "Mother Earth - Rejuvenate",
-        "file": "LINE_ALBUM_Item_261019_19.jpg",
+        "file": "item_card_1.jpg",
         "box": (1448, 1182, 1582, 1316),
     },
 }
