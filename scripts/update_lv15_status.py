@@ -110,7 +110,7 @@ new_entries = {
         "movement_speed": 350,
         "source": "heroes/Ilumia/status/status_lv15.jpg",
     },
-    "Brunhilda": {
+    "Celica": {
         "hp": 7002,
         "attack_damage": 417,
         "armor": 408,
@@ -190,7 +190,7 @@ new_entries = {
         "movement_speed": 360,
         "source": "heroes/Azzen'Ka/status/status_lv15.jpg",
     },
-    "Arthur": {
+    "Mortos": {
         "hp": 9260,
         "attack_damage": 346,
         "armor": 500,
@@ -212,7 +212,7 @@ def main():
         data = json.load(f)
 
     for name, stats in new_entries.items():
-        data["heroes"][name] = stats
+        data["heroes"][name] = {**data["heroes"].get(name, {}), **stats}
 
     data["hero_count"] = len(data["heroes"])
 

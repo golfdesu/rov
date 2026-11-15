@@ -558,7 +558,8 @@
         },
         "icon_url": "/skills/Amily/1_combo.png",
         "desc_th": "Amily พุ่งไปยังทิศทางที่กำหนดและสร้างความเสียหาย 2 ครั้ง แต่ละครั้งสร้างความเสียหายกายภาพ 75(+45%AD) หน่วย และครั้งที่ 2 จะทำให้ศัตรูลอยขึ้น\nพร้อมกับเสริมพลังให้การโจมตีปกติครั้งถัดไปเป็นการโจมตีพิเศษ ซึ่งจะติดเอฟเฟกต์การพุ่ง และสร้างโบนัสความเสียหายกายภาพ 72(+54%AD) หน่วย\nหลังจากออกจากการต่อสู้ Amily จะฟื้นฟู HP สูงสุด 1% และมานา 1% ต่อวิ พร้อมกับวิ่งเร็วขึ้น 10 หน่วย",
-        "description": "Dashes and strikes twice dealing 75-150 (+45% AD) physical damage, knocking up on 2nd hit, empowering next attack for 72-144 (+54% AD) bonus physical damage."
+        "description": "Dashes and strikes twice dealing 75-150 (+45% AD) physical damage, knocking up on 2nd hit, empowering next attack for 72-144 (+54% AD) bonus physical damage.",
+        "hits": 2
       },
       {
         "slot": "Ultimate",
@@ -1029,7 +1030,8 @@
         },
         "desc_th": "Mortos สร้างความเสียหายต่อเนื่องแก่ศัตรูใกล้เคียงเป็นเวลา 5 วิ ซึ่งทุก 0.5 วิจะสร้างความเสียหายกายภาพ 70(+45%AD) หน่วย\nขณะเดียวกันจะได้รับโล่ที่ดูดซับความเสียหาย 150(+4% HP สูงสุด) หน่วยเป็นเวลา 2 วิ",
         "description": "Mortos deals continuous damage to nearby enemies for 5 seconds, dealing 70 (+45% AD) physical damage every 0.5s. Simultaneously, he gains a shield that absorbs 150 (+4% max HP) damage for 2s.",
-        "icon_url": "/skills/Arthur/2_voidportal.png"
+        "icon_url": "/skills/Arthur/2_voidportal.png",
+        "hits": 10
       },
       {
         "slot": "Ultimate",
@@ -1777,7 +1779,8 @@
         },
         "icon_url": "/skills/Baldum/2_wildstomp.png",
         "desc_th": "Baldum สร้างความเสียหายเวท 50(+40%AD)(+15%โบนัสเกราะ) หน่วยแก่ศัตรูใกล้เคียง 6 ครั้ง พร้อมกับลดความเร็วเคลื่อนที่ลง 30% เป็นเวลา 2 วิ ทุกครั้งที่โจมตีโดนศัตรู Baldum จะได้รับเอฟเฟกต์ป้องกันความเสียหาย 4% เป็นเวลา 2 วิ (สูงสุด 5 ครั้ง) (เปิดใช้งานจะได้รับ 2 ครั้ง)",
-        "description": "Deals 50-100 (+40% AD + 15% bonus armor) magic damage 6 times and slows 30%. Grants 4% damage reduction per hit up to 5 stacks."
+        "description": "Deals 50-100 (+40% AD + 15% bonus armor) magic damage 6 times and slows 30%. Grants 4% damage reduction per hit up to 5 stacks.",
+        "hits": 6
       },
       {
         "slot": "Ultimate",
@@ -2386,7 +2389,8 @@
         },
         "description": "Launches red rabbit Gina to deal 100/120/140/160/180/200 (+20% AP) magic damage 3 times in an area and immobilize enemies for 1.5s.",
         "desc_th": "Bonnie ขว้างกระต่ายสีแดงออกไปโจมตีศัตรูที่กำหนด สร้าง ความเสียหายเวท 100 (+20%AP) เป็นวงกว้าง 3 ครั้งพร้อมกับทำให้ศัตรู เคลื่อนที่ไม่ได้ เป็นเวลา 1.5 วิ",
-        "icon_url": "/skills/Bonnie/2_ginathwack.png"
+        "icon_url": "/skills/Bonnie/2_ginathwack.png",
+        "hits": 3
       },
       {
         "name": "Allan Kaboom!",
@@ -2862,7 +2866,8 @@
         },
         "desc_th": "Capheny ยิงกระสุนกระจายออกไปเบื้องหน้าเป็นเวลา 3 วิ สร้างความเสียหายกายภาพ 80(+27%AD) หน่วยทุก 0.2 วิ พร้อมกับลดเกราะของศัตรูลง 1.5% เป็นเวลา 2 วิ (สะสมได้)\nCapheny สามารถเคลื่อนที่ระหว่างใช้สกิลนี้ได้ แต่จะวิ่งช้าลง 30% (ลดลงตาม LV: 30% / 22.5% / 15%)",
         "description": "Capheny channels for 3s, unleashing a barrage of bullets forward dealing 80/140/200 (+27% AD) physical damage every 0.2s and reducing enemy armor by 1.5% for 2s (stacking). Capheny can move while channeling with reduced movement speed penalty (30%/22.5%/15%).",
-        "icon_url": "/skills/Capheny/3_fusillade.png"
+        "icon_url": "/skills/Capheny/3_fusillade.png",
+        "hits": 15
       }
     ],
     "Charlotte": [
@@ -2886,7 +2891,8 @@
         },
         "desc_th": "หลังจากสกิลของ Charlotte โจมตีโดนศัตรู การใช้สกิลครั้งต่อไปของเธอจะเป็นการอัปเกรดสกิล และได้รับสัญลักษณ์ 1 ครั้งที่จะอยู่นาน 4 วิ\nหลังจากสะสมสัญลักษณ์ครบ 3 ครั้ง การโจมตีปกติของเธอจะถูกอัปเกรดเป็น \"Seven-Star Sword\" ซึ่งจะโจมตีเป้าหมาย 7 ครั้ง แต่ละครั้งจะสร้าง ความเสียหายกายภาพ50(+25%พลังโจมตีกายภาพ)และลดความเร็วเคลื่อนที่30% การโจมตีครั้งสุดท้ายจะสร้างความเสียหายกายภาพ 15% ของพลังชีวิตที่หายไป ขณะใช้งานจะลดความเสียหายที่ได้รับ26%~40%\nสกิลอัปเกรดจะมอบสถานะปลดอาวุธ ซึ่งแต่ละขั้นจะลดความเร็วโจมตี 10% นาน 4 วิ (สะสมได้สูงสุด 2 ขั้น) สถานะปลดอาวุธแต่ละขั้นจะหายไปก็ต่อเมื่อศัตรูทำการโจมตีปกติ",
         "description": "When Charlotte's skills hit an enemy, her next skill is enhanced and she gains 1 stack lasting 4s. At 3 stacks, her next normal attack becomes 'Seven-Star Sword', striking 7 times. Each strike deals 50 (+25% AD) physical damage and slows movement by 30%. The final strike deals physical damage equal to 15% lost HP. Reduces damage taken by 26%~40% during execution. Enhanced skills inflict disarm stacks, reducing enemy attack speed by 10% for 4s (stacks up to 2 times, removed when the enemy basic attacks).",
-        "icon_url": "/skills/Charlotte/0_splashgradation.png"
+        "icon_url": "/skills/Charlotte/0_splashgradation.png",
+        "hits": 7
       },
       {
         "name": "Triangle Sword",
@@ -2959,7 +2965,8 @@
         },
         "desc_th": "สกิลเริ่มต้น: พุ่งโจมตีไปยังทิศทางที่กำหนด 6 ครั้ง แต่ละครั้งสร้างความเสียหายกายภาพ 40(+15%AD) หน่วย และฟื้นฟูพลังชีวิต 70(+1% โบนัสพลังชีวิตสูงสุด) หน่วย",
         "description": "Dashes in the target direction, thrusting 6 times. Each strike deals 40 (+15% AD) physical damage and recovers 70 (+1% bonus Max HP) HP.",
-        "icon_url": "/skills/Charlotte/2_splashslash.png"
+        "icon_url": "/skills/Charlotte/2_splashslash.png",
+        "hits": 6
       },
       {
         "name": "Sky-Breaking Saber",
@@ -4267,7 +4274,8 @@
         },
         "desc_th": "Eland'orr สั่งให้ Soul Lamp บินรอบตัวพร้อมกับโจมตีศัตรูในระยะ 2 ครั้ง แต่ละครั้งจะสร้างความเสียหายเวท 250 (+65%AD) Soul Lamp จะสามารถป้องกันสกิลและการโจมตีปกติระยะไกลได้(ยกเว้นการโจมตีจากป้อม)",
         "description": "Eland'orr commands his Soul Lamp to revolve around him, attacking enemies in range twice, each dealing 250 (+65% AD) magic damage. The Soul Lamp can block incoming enemy ranged skills and basic attacks (excluding tower attacks). Recasting allows him to teleport to the lamp's location.",
-        "icon_url": "/skills/Eland_orr/2_metamorphosis.png"
+        "icon_url": "/skills/Eland_orr/2_metamorphosis.png",
+        "hits": 2
       },
       {
         "slot": "Ultimate",
@@ -5116,7 +5124,8 @@
         },
         "icon_url": "/skills/Florentino/2_triplethreat.png",
         "desc_th": "Florentino สร้างความเสียหายสูงสุด 3 ครั้งแก่เป้าหมาย แต่ละครั้งสร้างโบนัสความเสียหายจริงเท่ากับ (+0.9% โบนัส AD)% ของพลังชีวิตสูงสุดของเป้าหมาย (สูงสุด 400 หน่วยหากเป้าหมายไม่ใช่ฮีโร่) หลังการโจมตีแต่ละครั้ง สกิลติดตัวจะทำงานและการโจมตีแต่ละครั้งจะลดคูลดาวน์สกิล 1 ลง 1 วิ\nครั้งที่ 1: สร้างความเสียหายกายภาพ 150 หน่วย พร้อมกับลดความเร็ว 90% เป็นเวลา 1 วิ\nครั้งที่ 2: สร้างความเสียหายกายภาพ 150 หน่วย\nครั้งที่ 3: สร้างความเสียหาย 2 ครั้ง แต่ละครั้งสร้างความเสียหายกายภาพ 150 หน่วย",
-        "description": "Florentino executes up to 3 attacks against target, each strike dealing bonus true damage equal to (+0.9% bonus AD)% target max HP (capped at 400 vs non-heroes). Each strike primes passive lunge and reduces Skill 1 CD by 1s. Strikes deal 150-400 physical damage (Strike 1 also slows by 90% for 1s; Strike 3 strikes twice)."
+        "description": "Florentino executes up to 3 attacks against target, each strike dealing bonus true damage equal to (+0.9% bonus AD)% target max HP (capped at 400 vs non-heroes). Each strike primes passive lunge and reduces Skill 1 CD by 1s. Strikes deal 150-400 physical damage (Strike 1 also slows by 90% for 1s; Strike 3 strikes twice).",
+        "hits": 3
       },
       {
         "name": "Gentlemen's Duel",
@@ -5390,7 +5399,8 @@
         },
         "description": "Fires 7/10/13 arrows into target area dealing 64/96/128 (+26% AD) physical damage per arrow, gaining 10% movement speed, with airborne recast.",
         "icon_url": "/skills/Flowborn__Marksman_/3_barrageblast.png",
-        "desc_th": "Flowborn ยิงธนูไปยังพื้นที่กำหนด 7 ครั้ง (ความไวการใช้สกิลเพิ่มขึ้นตามความเร็วโจมตี) สร้างความเสียหายกายภาพ 64(+26%AD) หน่วยในพื้นที่กำหนด (ล็อคเป้าในพื้นที่) พร้อมกับได้รับโบนัสความเร็วเคลื่อนที่ 10% หากใช้งานอีกครั้งจะลอยขึ้นในอากาศ ใช้ Flow 5 ชั้นเพื่อใช้ Arrowstorm เพิ่ม"
+        "desc_th": "Flowborn ยิงธนูไปยังพื้นที่กำหนด 7 ครั้ง (ความไวการใช้สกิลเพิ่มขึ้นตามความเร็วโจมตี) สร้างความเสียหายกายภาพ 64(+26%AD) หน่วยในพื้นที่กำหนด (ล็อคเป้าในพื้นที่) พร้อมกับได้รับโบนัสความเร็วเคลื่อนที่ 10% หากใช้งานอีกครั้งจะลอยขึ้นในอากาศ ใช้ Flow 5 ชั้นเพื่อใช้ Arrowstorm เพิ่ม",
+        "hits": 7
       }
     ],
     "Gildur": [
@@ -5502,7 +5512,8 @@
         },
         "description": "Gildur summons a golden cage, dealing 100/130/160 (+45% AP) magic damage and stunning enemies for 0.56s every 0.5s for up to 3.3s. Moving or casting another ability after 1s cancels this skill.",
         "desc_th": "Gildur เรียกวงเวททองคำออกมา สร้าง ความเสียหายเวท 100/130/160 (+45%AP) ทุก 0.5 วิ รวมถึงสตั๊น 0.56 วิ (สกิลนี้จะถูกใช้งานต่อเนื่องเป็นเวลา 3.3 วิ และหากขยับตัว หรือใช้สกิลอื่นหลังจาก 1 วิ จะทำให้สกิลนี้หยุดทำงาน)",
-        "icon_url": "/skills/Gildur/3_indulgence.png"
+        "icon_url": "/skills/Gildur/3_indulgence.png",
+        "hits": 6
       }
     ],
     "Goverra": [
@@ -6249,7 +6260,8 @@
         },
         "description": "Calls down fire rain for 3s, dealing 180/216/252/288/324/360 (+40% AP) magic damage every 1s and slowing enemies by 30% for 2s. Targets already marked with flame are stunned for 0.75s.",
         "desc_th": "Ignis เรียกฝนเพลิงให้โจมตีใส่พื้นที่เป้าหมาย เป็นเวลา 3 วิ สร้างความเสียหายเวท 180/216/252/288/324/360 (+40%AP) ต่อเนื่องทุก 1 วิ พร้อมกับลดความเร็วศัตรู 30% เป็นเวลา 2 วิ หากศัตรูติดสัญลักษณ์ไฟ (ไม่นับสัญลักษณ์จากสกิล) จะติดสตั๊น 0.75 วิ",
-        "icon_url": "/skills/Ignis/2_rainoffire.png"
+        "icon_url": "/skills/Ignis/2_rainoffire.png",
+        "hits": 3
       },
       {
         "slot": "Ultimate",
@@ -7440,7 +7452,8 @@
         },
         "desc_th": "Krizzix ดึงดูดพลังงานรอบตัว สร้าง ความเสียหายเวท 100 (+15%AP) ทุก 0.5 วิ เป็นเวลา 2 วิ หลังจากนั้นจะดึงศัตรูทั้งหมดเข้าหาตัว สตั๊น 1 วิ และมอบโล่ให้เพื่อนร่วมทีม",
         "description": "Krizzix channels gravitational energy, dealing 100/120/140/160/180/200 (+15% AP) magic damage every 0.5s for 2s. At the end, pulls all surrounding enemies toward him, stunning them for 1s and granting shields to nearby allies.",
-        "icon_url": "/skills/Krizzix/1_gravitationalpul.png"
+        "icon_url": "/skills/Krizzix/1_gravitationalpul.png",
+        "hits": 4
       },
       {
         "slot": "Ultimate",
@@ -8229,7 +8242,8 @@
         },
         "desc_th": "Lu Bu พุ่งไปโจมตียังทิศทางที่กำหนด สร้าง ความเสียหายกายภาพ 150(+100%AD) สกิลนี้สามารถใช้งานต่อเนื่องได้ 3 ครั้ง และคูลดาวน์จะลดลง 30% ทุกครั้งที่ใช้สกิลนี้ไม่ถึง 3 ครั้ง เมื่อใช้ครั้งที่ 3 สกิลนี้จะทำให้ศัตรู ลอยขึ้น 0.5 วิ",
         "description": "Lu Bu dashes and attacks in the target direction, dealing 150 (+100% AD) physical damage. Can be cast consecutively up to 3 times. Cooldown is reduced by 30% for each unused cast. The 3rd cast knocks enemies airborne for 0.5s.",
-        "icon_url": "/skills/Lu_Bu/2_redstallion.png"
+        "icon_url": "/skills/Lu_Bu/2_redstallion.png",
+        "hits": 3
       },
       {
         "name": "Impale",
@@ -9367,7 +9381,8 @@
         },
         "icon_url": "/skills/Murad/3_temporalturbulen.png",
         "desc_th": "Murad พุ่งโจมตีต่อเนื่อง 5 ครั้ง ในบริเวณที่กำหนด โดยการโจมตีแต่ละครั้งจะสร้าง ความเสียหายกายภาพ 250 (+75%โบนัส AD) และเมื่อโจมตีโดนหลายเป้าหมาย ทุก 1 เป้าหมายจะทำให้สกิลนี้เบาลง 10% (สูงสุด 20%) ซึ่งระหว่างนี้ Murad จะไม่ตกเป็นเป้าหมาย\n(สกิล Dimension Slash จะสามารถใช้ได้ต่อเมื่อถูกปลดผนึกโดยสกิลติดตัว Rift และจะถูกผนึกไว้อีกครั้งหลักจากที่ใช้)",
-        "description": "Strikes 5 times dealing 250/325/400 (+75% bonus AD) physical damage per hit while untargetable. Requires Rift unlock."
+        "description": "Strikes 5 times dealing 250/325/400 (+75% bonus AD) physical damage per hit while untargetable. Requires Rift unlock.",
+        "hits": 5
       }
     ],
     "Nakroth": [
@@ -9611,7 +9626,8 @@
         "description": "Natalya commands lethal rays, dealing 100/150/200 (+15% AP) magic damage every 0.25s while channeling for up to 3.5s. Gains a shield absorbing 850/1275/1700 (+100% AP) damage and crowd control immunity. Can be canceled after 0.5s by reactivating the skill.",
         "slot": "Ultimate",
         "icon_url": "/skills/Natalya/3_lethalrays.png",
-        "desc_th": "Natalya สั่งให้สมุนของเธอยิงเลเซอร์ สร้างความเสียหายเวท 100/150/200 (+15% AP) ทุก 0.25 วิ ในขณะเดียวกันเธอจะไม่สามารถขยับตัวได้นอกจากบังคับทิศทาง และจะได้รับโล่ 850/1275/1700 (+100% AP) หน่วย พร้อมกับต้านทานสถานะเป็นเวลา 3.5 วิ (หยุดใช้สกิลโดยกดปุ่มใช้สกิลอีกครั้ง หลังจาก 0.5 วินาที)"
+        "desc_th": "Natalya สั่งให้สมุนของเธอยิงเลเซอร์ สร้างความเสียหายเวท 100/150/200 (+15% AP) ทุก 0.25 วิ ในขณะเดียวกันเธอจะไม่สามารถขยับตัวได้นอกจากบังคับทิศทาง และจะได้รับโล่ 850/1275/1700 (+100% AP) หน่วย พร้อมกับต้านทานสถานะเป็นเวลา 3.5 วิ (หยุดใช้สกิลโดยกดปุ่มใช้สกิลอีกครั้ง หลังจาก 0.5 วินาที)",
+        "hits": 14
       }
     ],
     "Omega": [
@@ -10369,7 +10385,8 @@
         },
         "desc_th": "Quillen ตวัดดาบคู่โจมตีศัตรู 2 ครั้งในทิศทางที่กำหนด สร้าง ความเสียหายกายภาพ 150 (+65%โบนัส AD) ต่อครั้ง",
         "description": "Quillen slashes twice in the target direction with his dual daggers, dealing 150/180/210/240/270/300 (+65% bonus AD) physical damage per strike.",
-        "icon_url": "/skills/Quillen/3_mutilate.png"
+        "icon_url": "/skills/Quillen/3_mutilate.png",
+        "hits": 2
       },
       {
         "slot": "Skill 2",
@@ -11113,7 +11130,8 @@
         },
         "icon_url": "/skills/Ryoma/3_wailingblade.png",
         "desc_th": "Ryoma กระหน่ำฟันไปด้านหน้า 4 ครั้ง โดยแต่ละครั้ง จะสร้าง ความเสียหายกายภาพ 110 (+70%AD) การโจมตีแต่ละครั้งจะฟื้นฟู พลังชีวิตให้ตัวเอง 80 (+70%AD) หน่วย (มีผล 50% หากเป้าหมายไม่ใช่ฮีโร่) รวมถึงลดคูลดาวน์สกิล 2 ลง 1 วิ",
-        "description": "Rapidly slashes forward 4 times, each strike dealing 110/165/220 (+70% AD) physical damage and restoring 80/120/160 (+70% AD) HP (50% effectiveness against non-heroes), while reducing Skill 2 cooldown by 1s per strike."
+        "description": "Rapidly slashes forward 4 times, each strike dealing 110/165/220 (+70% AD) physical damage and restoring 80/120/160 (+70% AD) HP (50% effectiveness against non-heroes), while reducing Skill 2 cooldown by 1s per strike.",
+        "hits": 4
       }
     ],
     "Sephera": [
@@ -11128,13 +11146,12 @@
         "mana_cost": [
           0
         ],
-        "base_damage": [
-          50
-        ],
+        "base_damage": [],
         "scaling": {
-          "heal_ap_pct": 10,
           "target_hp_pct": 2,
-          "ap_pct": 0.2,
+          "target_hp_ap_pct": 0.2,
+          "heal_base": 50,
+          "heal_ap_pct": 10,
           "self_heal_bonus_hp_pct": 4.0
         },
         "description": "When casting abilities, Sephera triggers water waves dealing magic damage equal to 2% (+0.2% AP) of max HP to the lowest HP enemy, heals the lowest HP ally for 50 (+10% AP) (increases with hero level), and heals herself for (+4% bonus HP).",
@@ -13904,7 +13921,8 @@
         },
         "description": "Wisp carpet bombs the target area 6 times, each dealing 120/180/240 (+25% AD) physical damage (triggers on-hit effects and deals 150% crit damage). If Wisp remains stationary while firing, ultimate damage increases by 20%. Moving or casting other abilities no longer interrupts this skill.",
         "desc_th": "Wisp ยิงระเบิดถล่มพื้นที่เป้าหมาย 6 ครั้ง โดยแต่ละครั้งจะสร้างความเสียหายกายภาพ 120/180/240 (+25% AD) (สกิลนี้สามารถได้รับผลจากเอฟเฟกต์การโจมตีปกติ และความเสียหายคริติคอล 150%) หาก Wisp ยืนยิงระเบิดอยู่กับที่ ความเสียหายจากสกิลอัลติจะเพิ่มขึ้น 20% การเคลื่อนที่หรือใช้สกิลอื่นของเธอจะไม่ขัดจังหวะการใช้สกิลนี้อีกต่อไป",
-        "icon_url": "/skills/Wisp/3_shockandawe.png"
+        "icon_url": "/skills/Wisp/3_shockandawe.png",
+        "hits": 6
       }
     ],
     "Wonder Woman": [

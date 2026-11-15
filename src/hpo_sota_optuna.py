@@ -4,9 +4,16 @@ import json
 import logging
 import random
 import sqlite3
+import sys
 import time
 import warnings
 from pathlib import Path
+
+_SRC_DIR = str(Path(__file__).resolve().parent)
+_REPO_ROOT = str(Path(__file__).resolve().parent.parent)
+for _p in (_REPO_ROOT, _SRC_DIR):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
 import numpy as np
 import optuna
@@ -33,16 +40,28 @@ try:
 except Exception:
     HAS_MLFLOW = False
 
-from train_sota_model import (
-    BEST_PARAMS_DIR,
-    MODEL_DIR,
-    SEED,
-    GPUTensorBatcher,
-    RoVDraftGNNTransformer,
-    build_tensor_dataset,
-    evaluate_sota_model,
-    load_sota_data_and_graphs,
-)
+try:
+    from src.train_sota_model import (
+        BEST_PARAMS_DIR,
+        MODEL_DIR,
+        SEED,
+        GPUTensorBatcher,
+        RoVDraftGNNTransformer,
+        build_tensor_dataset,
+        evaluate_sota_model,
+        load_sota_data_and_graphs,
+    )
+except ImportError:
+    from train_sota_model import (
+        BEST_PARAMS_DIR,
+        MODEL_DIR,
+        SEED,
+        GPUTensorBatcher,
+        RoVDraftGNNTransformer,
+        build_tensor_dataset,
+        evaluate_sota_model,
+        load_sota_data_and_graphs,
+    )
 
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 
@@ -220,7 +239,17 @@ def main():
             except Exception as e:
                 print(f"Warning: MLflow start_run error on trial {trial.number}: {e}", flush=True)
 
-        optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
+        param_groups = [
+            {
+                "params": [p for n, p in model.named_parameters() if "neural_temp" not in n and p.requires_grad],
+                "weight_decay": weight_decay,
+            },
+            {
+                "params": [p for n, p in model.named_parameters() if "neural_temp" in n and p.requires_grad],
+                "weight_decay": 0.0,
+            },
+        ]
+        optimizer = torch.optim.AdamW([g for g in param_groups if g["params"]], lr=lr)
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.trial_epochs)
 
         best_trial_loss = float("inf")
@@ -383,24 +412,8 @@ def main():
         pruner=MedianPruner(n_startup_trials=6, n_warmup_steps=3),
     )
 
-    # Enqueue locked-architecture benchmarks for MedianPruner:
-    # 1. Trial #14 (Safest Production: Rank #3 in 50-trial H100 run, val_loss=2.79330, overfit_gap=+0.21611)
-    study.enqueue_trial(
-        {
-            "d_model": args.d_model,
-            "nhead": args.nhead,
-            "num_layers": args.num_layers,
-            "dropout": 0.1941,
-            "neural_scale": 1.0746,
-            "lr": 0.001933,
-            "weight_decay": 0.000689,
-            "label_smoothing": 0.0397,
-            "win_loss_weight": 0.2186,
-            "batch_size": 1024,
-            "augment_factor": 1,
-        }
-    )
-    # 2. Trial #34 (Rank #1 Best Val Loss in 50-trial H100 run, val_loss=2.79091, overfit_gap=+0.23111)
+    # Enqueue locked-architecture benchmarks for MedianPruner (from configs/selected_production_params.json):
+    # 1. Trial #1 (Safest Production: Rank #3 in 50-trial H100 run, val_loss=2.83993, overfit_gap=+0.29107)
     study.enqueue_trial(
         {
             "d_model": args.d_model,
@@ -416,11 +429,27 @@ def main():
             "augment_factor": 1,
         }
     )
+    # 2. Trial #13 (Rank #1 Best Val Loss in 50-trial H100 run, val_loss=2.83144, overfit_gap=+0.34375)
+    study.enqueue_trial(
+        {
+            "d_model": args.d_model,
+            "nhead": args.nhead,
+            "num_layers": args.num_layers,
+            "dropout": 0.12738447976503794,
+            "neural_scale": 1.2156997966331409,
+            "lr": 0.000788156852185878,
+            "weight_decay": 0.0013275232132202762,
+            "label_smoothing": 0.020544467817313013,
+            "win_loss_weight": 0.10056205564003799,
+            "batch_size": 512,
+            "augment_factor": 1,
+        }
+    )
 
     parent_run = None
     if HAS_MLFLOW:
         try:
-            parent_run = mlflow.start_run(run_name=f"hpo_study_40trials_{int(time.time())}")
+            parent_run = mlflow.start_run(run_name=f"hpo_study_{args.n_trials}trials_{int(time.time())}")
             mlflow.log_params({"n_trials": args.n_trials, "trial_epochs": args.trial_epochs})
         except Exception as e:
             print(f"Warning: MLflow parent run start error: {e}", flush=True)
@@ -524,7 +553,7 @@ def main():
                 f"Top-5: {m['top5'] / tot * 100:5.2f}% | Top-10: {m['top10'] / tot * 100:5.2f}%",
                 flush=True,
             )
-        print(f"Saved Best SOTA checkpoint to: {MODEL_DIR / 'sota_draft_gnn_transformer.pt'}", flush=True)
+        print(f"Saved Best SOTA checkpoint to: {out_ckpt_path}", flush=True)
 
     if HAS_MLFLOW and parent_run is not None:
         try:
@@ -539,8 +568,8 @@ def main():
                 mlflow.log_artifact(str(top5_path))
             if best_params_path.exists():
                 mlflow.log_artifact(str(best_params_path))
-            if (MODEL_DIR / "sota_draft_gnn_transformer.pt").exists():
-                mlflow.log_artifact(str(MODEL_DIR / "sota_draft_gnn_transformer.pt"))
+            if global_best and out_ckpt_path.exists():
+                mlflow.log_artifact(str(out_ckpt_path))
             mlflow.end_run()
             print("MLflow: Logged HPO Study summary and artifacts to experiment 'RoV_Draft_Intelligence'", flush=True)
         except Exception as e:

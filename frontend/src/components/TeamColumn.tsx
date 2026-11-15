@@ -62,7 +62,20 @@ export function TeamColumn({
           return (
             <div
               key={i}
+              role={canClickGhostBan ? "button" : undefined}
+              tabIndex={canClickGhostBan ? 0 : undefined}
               onClick={canClickGhostBan && ghostBan ? () => onLockHero?.(ghostBan.hero_name) : undefined}
+              onKeyDown={
+                canClickGhostBan && ghostBan
+                  ? (e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onLockHero?.(ghostBan.hero_name);
+                      }
+                    }
+                  : undefined
+              }
               title={
                 bName
                   ? `Ban: ${displayName(bName)}`
@@ -161,7 +174,20 @@ export function TeamColumn({
             return (
               <div
                 key={i}
+                role={canClickGhost ? "button" : undefined}
+                tabIndex={canClickGhost ? 0 : undefined}
                 onClick={canClickGhost && ghost ? () => onLockHero?.(ghost.hero_name) : undefined}
+                onKeyDown={
+                  canClickGhost && ghost
+                    ? (e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onLockHero?.(ghost.hero_name);
+                        }
+                      }
+                    : undefined
+                }
                 title={
                   name
                     ? `${displayName(name)} (${hero ? (LANE_SHORT[heroPrimaryLane(hero)]?.en ?? "") : ""})`
@@ -256,14 +282,29 @@ export function TeamColumn({
                 ? `คู่ ${triggerList.join(", ")}`
                 : ghost?.trigger_reason === "protect"
                   ? `ป้องกัน ${triggerList.join(", ")}`
-                  : triggerFromBans
-                    ? `แบน ${triggerList.join(", ")}`
-                    : `คู่ ${triggerList.join(", ")}`;
+                  : ghost?.trigger_reason === "ban_unlock"
+                    ? `ปลดล็อก ${triggerList.join(", ")}`
+                    : triggerFromBans
+                      ? `แบน ${triggerList.join(", ")}`
+                      : `คู่ ${triggerList.join(", ")}`;
 
           return (
             <div
               key={i}
+              role={canClickGhost ? "button" : undefined}
+              tabIndex={canClickGhost ? 0 : undefined}
               onClick={canClickGhost && ghost ? () => onLockHero?.(ghost.hero_name) : undefined}
+              onKeyDown={
+                canClickGhost && ghost
+                  ? (e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onLockHero?.(ghost.hero_name);
+                      }
+                    }
+                  : undefined
+              }
               title={
                 ghost
                   ? `AI คาดเดาตัวถัดไป #${ghostOffset + 1}: ${displayName(ghost.hero_name)} (${ghost.probability_pct.toFixed(1)}%)${
@@ -409,7 +450,20 @@ export function TeamColumn({
           return (
             <div
               key={i}
+              role={canClickGhostBan ? "button" : undefined}
+              tabIndex={canClickGhostBan ? 0 : undefined}
               onClick={canClickGhostBan && ghostBan ? () => onLockHero?.(ghostBan.hero_name) : undefined}
+              onKeyDown={
+                canClickGhostBan && ghostBan
+                  ? (e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onLockHero?.(ghostBan.hero_name);
+                      }
+                    }
+                  : undefined
+              }
               title={
                 name
                   ? displayName(name)
@@ -471,7 +525,8 @@ export function TeamColumn({
           <div className="flex min-w-0 flex-1 items-center gap-1 sm:gap-1.5">
             <Layers className={`h-3.5 w-3.5 shrink-0 ${accent}`} />
             <span className="truncate font-display text-[10px] font-bold tracking-wide text-ink sm:text-[11px]">
-              GLOBAL BAN · {teamName}
+              <span className="xl:hidden">GLOBAL BAN</span>
+              <span className="hidden xl:inline">GLOBAL BAN · {teamName}</span>
             </span>
             <span
               className={`shrink-0 px-1 py-0.5 font-mono text-[9px] font-bold sm:px-1.5 sm:text-[10px] ${
@@ -496,14 +551,15 @@ export function TeamColumn({
             }`}
           >
             <Plus className="h-3 w-3 shrink-0" />
-            <span className="hidden sm:inline">เลือกตัวที่เคยใช้</span>
-            <span className="sm:hidden">เลือก</span>
+            <span className="hidden xl:inline">เลือกตัวที่เคยใช้</span>
+            <span className="xl:hidden">เลือก</span>
           </button>
         </div>
 
         {gameNumber === 7 ? (
-          <div className="truncate border border-gold/40 bg-gold/10 px-2 py-1 text-center font-display text-[10px] font-semibold text-gold sm:text-[11px]">
-            GAME 7 ULTIMATE BATTLE · ปลดล็อก ({rawUsedCount})
+          <div className="truncate border border-gold/40 bg-gold/10 px-1.5 py-1 text-center font-display text-[10px] font-semibold text-gold sm:text-[11px]">
+            <span className="xl:hidden">G7 ULTIMATE · ปลดล็อก ({rawUsedCount})</span>
+            <span className="hidden xl:inline">GAME 7 ULTIMATE BATTLE · ปลดล็อก ({rawUsedCount})</span>
           </div>
         ) : usedHeroes.length === 0 ? (
           <button

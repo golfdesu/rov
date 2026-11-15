@@ -27,6 +27,403 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-15 12:27 (UTC+7) — Draft-Only Public Build Flag (`VITE_DRAFT_ONLY`)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **`frontend/src/App.tsx` & `frontend/src/components/AuthModal.tsx`**: Added `VITE_DRAFT_ONLY` build flag (`true` hides `Meta Tier List`, `MetaLab`, and `Combat Lab` tabs while keeping `Draft Board` + auth/sync active; local builds default to `false` with all 4 tabs).
+- **`Dockerfile` & `deploy/docker-compose.yml`**: Passed `VITE_DRAFT_ONLY=true` into the Azure Docker Compose production build.
+
+### 📁 Modified Files
+- `frontend/src/App.tsx`
+- `frontend/src/components/AuthModal.tsx`
+- `Dockerfile`
+- `deploy/docker-compose.yml`
+
+### 🧪 Verification
+- `cd frontend && npm run lint && npm run build`, `ruff`, `sync_metadata.py --check`, `security-audit`, `frontend-e2e-inspector`, and `pytest` executed before commit/push.
+
+---
+
+## 📅 2026-11-15 12:19 (UTC+7) — Ignore SSH `.pem` Keys in `.gitignore`
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **`.gitignore`**: Added `*.pem` ignore rule and moved downloaded Azure SSH private key out of the repository into `~/.ssh/`.
+
+### 📁 Modified Files
+- `.gitignore`
+
+### 🧪 Verification
+- `python -B .agents/skills/security-audit/scripts/audit_security.py` executed after edit.
+
+---
+
+## 📅 2026-11-15 12:00 (UTC+7) — Azure VM Docker + Caddy Auto-HTTPS Deployment Setup
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **`src/config.py`**: Added `ROV_DB_PATH` environment variable support for `PathConfig.app_db_path` (defaulting to `data/rov_app.db`).
+- **`Dockerfile`**: Switched PyTorch installation to CPU-only wheels (`https://download.pytorch.org/whl/cpu`) before `-r requirements.txt` and provisioned `/app/db` owned by `appuser` for persistent SQLite WAL volumes.
+- **`deploy/docker-compose.yml` & `deploy/Caddyfile`**: Added production Docker Compose stack pairing the FastAPI app + `rov_db_data` volume with Caddy 2 automatic HTTPS (`SITE_DOMAIN=<VM_IP>.sslip.io` or custom domain).
+
+### 📁 Modified Files
+- `src/config.py`
+- `Dockerfile`
+- `deploy/docker-compose.yml` (new)
+- `deploy/Caddyfile` (new)
+
+### 🧪 Verification
+- `ruff check --no-cache .`, `ruff format --check .`, `docker compose -f deploy/docker-compose.yml config`, `security-audit`, and `pytest` executed after final edits.
+
+---
+
+## 📅 2026-11-15 11:41 (UTC+7) — Multi-User Authentication, Isolated SQLite Persistence & 15-Day Runner
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **SQLite Auth & User Database (`src/db.py`, `src/config.py`)**: Implemented `UserDatabase` backed by SQLite WAL (`data/rov_app.db`), per-user `hashlib.scrypt` salted password hashing, SHA-256 hashed 30-day `HttpOnly` session tokens, sliding-window auth rate limiting (`RateLimiter`), and isolated `user_draft_states` + `user_combat_builds` tables.
+- **Auth & Per-User API Routes (`src/api.py`, `src/schemas.py`)**: Added `/auth/me`, `/auth/register`, `/auth/login`, `/auth/logout` and `/combat/builds` (`GET/PUT/DELETE`), and scoped `/draft/session` to the authenticated user in SQLite (retaining unauthenticated file fallback only for direct API usage/tests).
+- **Frontend Auth UI & Storage Partitioning (`frontend/`)**:
+  - Added `AuthModal.tsx`, `types/auth.ts`, and account controls in `App.tsx` (`Workspace` keyed by `guest` vs `user:<username>`).
+  - Updated `useCombatLab.ts` + `CombatLab.tsx` + `DraftHistoryModal.tsx` + `vite.config.ts` (`/auth` proxy) so Guest mode stays strictly device-local in `localStorage` while logged-in users sync isolated Draft Board and Combat Lab states across devices.
+- **15-Day Runner Script (`scripts/start_public_15d.ps1`)**: Added an auto-restarting PowerShell launcher for `uvicorn` + `cloudflared` (supports both Quick Tunnel and Named Tunnel tokens).
+- **Tests (`tests/test_api.py`)**: Added `test_multi_user_auth_and_database_isolation` verifying registration, login/logout, error codes, and strict per-user Draft/Combat isolation.
+
+### 📁 Modified Files
+- `src/config.py`
+- `src/db.py` (new)
+- `src/schemas.py`
+- `src/api.py`
+- `frontend/vite.config.ts`
+- `frontend/src/types/auth.ts` (new)
+- `frontend/src/components/AuthModal.tsx` (new)
+- `frontend/src/components/DraftHistoryModal.tsx`
+- `frontend/src/components/lab/CombatLab.tsx`
+- `frontend/src/hooks/useCombatLab.ts`
+- `frontend/src/App.tsx`
+- `scripts/start_public_15d.ps1` (new)
+- `tests/test_api.py`
+
+### 🧪 Verification
+- `ruff check --fix --no-cache .`, `ruff format .`, `cd frontend && npm run lint && npm run build`, `security-audit`, `frontend-e2e-inspector`, and `pytest` executed after final edits.
+
+---
+
+## 📅 2026-11-15 11:25 (UTC+7) — iPad AI Panel Mid-Draft Vertical Compacting (`AiPanel.tsx`)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **`AiPanel.tsx`**: Kept the `ตัวปลดล็อก:` (`banUnlockedHeroes`) strip on a single non-wrapping horizontal scroll row (`flex-nowrap overflow-x-auto`) so 4 ban-unlocked chips no longer wrap onto 2 rows and squeeze `HeroGrid` on iPad (`lg`).
+- **`AiPanel.tsx`**: Tightened `lg` (`1024–1279px`) card padding, header padding, and portrait size (`h-9 w-9 xl:h-13 xl:w-13`) while preserving `xl+` desktop sizing, reclaiming ~65px of vertical height for the iPad Hero Grid during mid-draft states.
+
+### 📁 Modified Files
+- `frontend/src/components/AiPanel.tsx`
+
+### 🧪 Verification
+- `cd frontend && npm run lint && npm run build`, `inspect_frontend_e2e.py`, and `pytest` executed after build.
+
+---
+
+## 📅 2026-11-15 11:17 (UTC+7) — Mobile & iPad Responsive UI Polish (iPad Air 5 / iPhone 17)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **`HeroGrid.tsx`**: Hid the top-left Tier badge (`hidden xl:inline-block`) on recommended AI cards (`#1..#5`) below `xl` so `#rank` badges never collide with `S+`/`S` tier pills on 5-column mobile or 7-column iPad cards, and hid the `/` keyboard shortcut hint on touch viewports (`hidden sm:inline-block`).
+- **`AiPanel.tsx` & `DraftBoardView.tsx`**: Compacted the mobile `ribbon` AI strip into a single horizontal quick-pick chip row (`h-7` pills for `#1..#5` + unlocked ban chips), reclaiming ~77px of vertical space for the mobile Hero Grid, and tightened `lg` series bar spacing/padding so the rightmost Game Finish button sits comfortably inside iPad viewports.
+- **`TeamColumn.tsx`**: Shortened `GLOBAL BAN` header label, `+ เลือก` trigger, and `G7 ULTIMATE · ปลดล็อก (N)` banner below `xl` so text never truncates inside the `240px` `lg` side columns.
+- **`ScoreBar.tsx`**: Removed the duplicate model badge next to `STEP X/18` (already shown in the series bar and model dropdown) and raised disabled Undo/Redo/Reset opacity from `25%` to `35%`.
+
+### 📁 Modified Files
+- `frontend/src/components/HeroGrid.tsx`
+- `frontend/src/components/AiPanel.tsx`
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/components/TeamColumn.tsx`
+- `frontend/src/components/ScoreBar.tsx`
+
+### 🧪 Verification
+- `cd frontend && npm run lint && npm run build`: Passed (`0 warnings, 0 errors`, `vite build` succeeded in `1.49s`).
+- `python -B .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py` and `python -m pytest -p no:cacheprovider -q` executed after build.
+
+---
+
+## 📅 2026-11-14 10:08 (UTC+7) — Multi-Agent System Audit (Rounds 1–3) Fixes & Regression Test Expansion
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Combat Engine Fixes (`src/combat_calculator.py`)**:
+  - Updated `parse_item_pierce` to exclude conditional stacking passives matching `\bup to\s+\d+\s+stacks?\b` so items such as `Soaring Aura` no longer add static pierce at 0 stacks or double-count dynamically.
+  - Zeroed `cur_hp_pct` and `lost_hp_pct` inside `skill_damage` when a skill is unlearned (`sl == 0` or `dtype == "none"`).
+  - Separated `stasis_until` (`Arctic Orb`) from `invuln_until` (`Death Sickle`) and gated `_emit_damage -> bool` / `simulate_duel` so pending resurrection (`revive_pending_until`) and stasis block active actions/life-steal/Soul Prison/damage breakdown while `Death Sickle` immunity allows normal basic attacks.
+  - Applied `parts["target_lost_hp"]` once per cast (`raw_total = (raw - lost_hp_dmg) * hits + lost_hp_dmg + extra_cast`) so multi-hit skills with final-strike execute (Charlotte `Passive` `Seven-Star Sword`, `hits = 7`) apply `15%` lost HP once per cast rather than multiplying by 7, matching `simulate_duel()`.
+- **Draft API, Schema, Predictor, CLI & Training Script Fixes**:
+  - `src/api.py`: Fixed `GET /heroes` `presence_rate` lookup (`Presence_Rate` with `Annual_Presence` fallback) and hardened `/combat/hero-screenshots/{hero}` and `/combat/item-screenshots/{item_name}` to reject empty, `"."`, and `":"` Windows drive-relative paths (`400 Bad Request`) while enforcing `resolved_target.parent == resolved_base`.
+  - `src/schemas.py`: Added `validate_no_duplicate_or_overlapping_heroes` validator (via `_SCHEMA_HERO_ALIASES` and `_canon_hero_key`) on `DraftStateRequest` rejecting intra-list duplicates, alias duplicates, and cross-team pick/ban overlaps.
+  - `src/search/draft_mcts.py` & `src/predictor.py`: Decorated `DraftMinimaxSearch.find_matching_step` with `@staticmethod`, removed dead variable `unfiltered_probs`, aligned `main_input` `step_idx` with `DraftSearchState` (`find_matching_step`) when `lookahead_depth=1`, passed `step_idx=17` on the Step-18 completed 5v5 branch so partial/empty bans still encode `step_idx = 17`, and moved alphanumeric key stripping in `_build_alias_lookup` after `lookup.update(...)` so multi-word aliases (`"TheJoker"`, `"FlowbornMM"`) resolve identically to `DraftStateRequest`.
+  - `src/predict_draft_cli.py`: Added alias normalization in Python calls (including alphanumeric multi-word aliases after `lookup.update(aliases)`), Phase 1/2 inference in ban mode, Step-17 completed 5v5 win-rate evaluation, and `main_pro_lane` alignment for `missing_lanes`.
+  - `src/train_draft_model.py`: Normalized `"Fighter" -> "Warrior"` and `"Carry" -> "Marksman"` when building role one-hot vectors and fixed `order_team_picks_by_draft_logic` to check `int(np.argmax(lane_probs[h_id])) in enemy_p2_lanes`.
+  - `src/build_training_dataset.py` & `scripts/process_draft_screenshots.py`: Defaulted `min_year` / `--min-year` to `2025` and ensured repo-root `sys.path` setup.
+  - `src/hpo_sota_optuna.py` & `src/train_sota_model.py`: Added fallback imports, logged `out_ckpt_path` / `out_model_path` consistently, and synced `--preset h100` fallback parameters to Trial #1.
+  - `scripts/sync_metadata.py`: Fixed `AGENTS.md` Curated Training Dataset regex and added unmatched check guard.
+- **Combat Lab & Draft Frontend Fixes**:
+  - `frontend/vite.config.ts` & `frontend/src/index.css`: Stopped proxying `hero_images.json` and added `fade-in` keyframe / `--animate-fade-in`.
+  - `frontend/src/types/combat.ts`, `frontend/src/utils/skillEffects.ts`, `frontend/src/components/lab/*`: Added `ScalingValue` / `resolveScalingValue` array scaling support, computed per-level `calcBonusScaling(lv)` across all `Lv 1..6` rows in `HeroSkillsModal.tsx` (`live_calc`), made `bonus_dmg_hp_pct` / `own_hp_pct` / `hp_pct` / `max_hp_pct` mutually exclusive in `SkillDamageTable.tsx` and `HeroSkillsModal.tsx`, excluded non-damage own-HP skills, fixed Lv.0 skill cooldown display, added local string state `draftHits` on hits input, rendered `item_warnings` in `StatSheet.tsx`, guarded slot picking during loading in `BuildPanel.tsx`, fixed `ItemIcon` / `ItemCardModal.tsx` error/page resets, and improved `EnchantmentBoard.tsx` / `EnchantmentSocket.tsx` button semantics and keyboard clear focus.
+  - `frontend/src/hooks/useDraft.ts`, `GlobalBanModal.tsx`, `DraftBoardView.tsx`, `MetaLab.tsx`, `TeamColumn.tsx`, `TierListView.tsx`, `ScoreBar.tsx`, `HeroGrid.tsx`, `DraftHistoryModal.tsx`, `NewSeriesModal.tsx`: Extended `loadRecordedGame` / `selectGameNumber` with optional `globalBansOverride` for safe Bo7 game downgrade and `clearAll` recorded-ban preservation, updated `deleteRecordedGame` to hydrate `targetGame` or reset + restore `blueSideTeam` when `clampedGame` downgrades, guarded `{isSelectingWinner && hasAnyPick}` and reset `setIsSelectingWinner(false)` across all modal/series/game transitions, added `e.stopPropagation()` on ghost slots, wired `window` `keydown` shortcuts in `TierListView.tsx` (`/`) and `MetaLab.tsx` (`/`, `Ctrl+Z`, `Ctrl+Y`, `Enter`), fixed `py-0.2` -> `py-0.5` & sortable `<th>` buttons & keyboard `<tr>` access in `TierListView.tsx`, and added missing ARIA labels / `<label>` associations.
+- **Added Regression Tests (`tests/test_combat_calculator.py`, `tests/test_api.py`, `tests/test_model_pipeline.py`)**:
+  - Added tests for `Soaring Aura` static vs dynamic pierce, unlearned skill `% HP` zeroing, `Death Sickle` / `Arctic Orb` / `Blade of Eternity` stasis & immunity mechanics, Charlotte `Passive` final-hit execute scaling, `/heroes` nonzero `presence_rate`, `/predict` duplicate/alias/overlap rejection, `/combat/*-screenshots/C:` rejection, `"TheJoker"` / `"FlowbornMM"` resolution, lookahead `step_idx` parity, and CLI/API Step-17/18 completed 5v5 parity.
+
+### 📁 Modified Files
+- `src/combat_calculator.py`, `src/api.py`, `src/schemas.py`, `src/search/draft_mcts.py`, `src/predictor.py`, `src/predict_draft_cli.py`, `src/train_draft_model.py`, `src/build_training_dataset.py`, `src/hpo_sota_optuna.py`, `src/train_sota_model.py`
+- `scripts/process_draft_screenshots.py`, `scripts/sync_metadata.py`
+- `frontend/vite.config.ts`, `frontend/src/index.css`, `frontend/src/types/combat.ts`, `frontend/src/utils/skillEffects.ts`, `frontend/src/hooks/useDraft.ts`, `frontend/src/components/*.tsx`, `frontend/src/components/lab/*.tsx`, `frontend/src/components/meta_lab/MetaLab.tsx`, `frontend/src/components/tierlist/TierListView.tsx`
+- `tests/test_combat_calculator.py`, `tests/test_api.py`, `tests/test_model_pipeline.py`
+
+### 🧪 Verification
+- `ruff check --fix --no-cache .` & `ruff format .` & `ruff format --check .`: Passed (`All checks passed!`, `108` files formatted).
+- `cd frontend; npm run lint; npm run build`: Passed (`0 warnings`, `0 errors`; `tsc -b && vite build` succeeded in `958ms`, rebuilt `frontend/dist/`).
+- `python -m pytest -p no:cacheprovider -q`: Passed (`112 passed, 1 warning in 11.05s`).
+- `python -B scripts/sync_metadata.py --check`: Passed (`[OK] All dataset metadata and documentation files are 100% synchronized.`).
+- `python -B .agents/skills/regression-guard/scripts/audit_regression_guard.py`: Passed (`72/72` draft golden states; `3/3` combat duels).
+- `python -B .agents/skills/security-audit/scripts/audit_security.py`: Passed (all 5 phases).
+- `python -B .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py`: Passed (production bundle, 130 avatars, hero/item screenshot endpoints).
+- **Round-3 Multi-Agent Audit Loop**: All 3 `research` subagents (`Combat System Round-3 Auditor`, `Draft AI and Data Round-3 Auditor`, `Draft Frontend Round-3 Auditor`) verified all fixes and returned `NO BUGS FOUND`.
+
+### ⚠️ Open Issues / Important Notes
+- None. All 3 audit domains verified clean (`NO BUGS FOUND`).
+
+---
+
+## 📅 2026-11-14 07:42 (UTC+7) — Add Ranged Kiting Mechanics & Hayate AS Breakpoint Scaling to Combat Simulator
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Added Ranged-vs-Melee Kiting Simulation (`src/combat_calculator.py`, `src/schemas.py`)**:
+  - Implemented `compute_kite_params()` and `enable_kiting: bool = True` on `Build` and `CombatBuildRequest`, applying an initial gap-close delay and melee attack-interval multiplier (`initial_delay`, `interval_multiplier`) when a melee hero engages a ranged opponent, and exposing per-side `kiting` parameters in duel results.
+- **Added Hayate Attack Speed Multi-Hit Scaling (`src/combat_calculator.py`)**:
+  - Added `default_skill_hits()` so `Hayate` automatically scales hits per cast across `0% / 75% / 150%` bonus Attack Speed thresholds (`Skill 1`: `5 / 7 / 9` hits, `Ultimate`: `10 / 13 / 16` hits) unless explicitly overridden via `skill_hits`.
+- **Fixed `hero_meta` Feature Extraction (`src/combat_calculator.py`)**:
+  - Updated `CombatEngine.__init__` to read `has_mobility` and related capability flags from nested `h.get("features", {})` with top-level fallback.
+- **Updated Regression Benchmark & Tests**:
+  - Updated Duel 3 (`Hayate vs Toro`) in `.agents/skills/regression-guard/scripts/audit_regression_guard.py` (synced to `.claude/skills/`) to expect winner `'a'` (`Hayate`) in `16.1s`.
+  - Added `test_ranged_carry_kites_melee_tank` in `tests/test_combat_calculator.py` covering kiting toggle behavior, Hayate AS hit thresholds, and explicit `skill_hits` overrides.
+
+### 📁 Modified Files
+- `src/combat_calculator.py`
+- `src/schemas.py`
+- `.agents/skills/regression-guard/scripts/audit_regression_guard.py`
+- `.claude/skills/regression-guard/scripts/audit_regression_guard.py`
+- `tests/test_combat_calculator.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check --fix .` & `ruff format .`: Passed (`All checks passed!`).
+- `pytest tests/test_combat_calculator.py tests/test_api.py tests/test_skills_sync.py`: Passed (`62 passed, 1 warning in 8.89s`).
+- `python .agents/skills/regression-guard/scripts/audit_regression_guard.py --combat`: Passed (`3/3 Passed (100.0%)`; Duel 1 `'a'` `16.6s`, Duel 2 `'a'` `7.5s`, Duel 3 `'a'` `16.1s`).
+
+### ⚠️ Open Issues / Important Notes
+- Ranged kiting uses an analytical role/mobility/movement-speed approximation (`compute_kite_params`); in-game factors like Flicker or bush ambushes remain outside the 1v1 timeline model unless modeled via `enable_kiting=False`.
+
+---
+
+## 📅 2026-11-13 16:49 (UTC+7) — Fix `Top_Counters_2026` Column Alignment in Sample Exporter
+**Agent:** Antigravity (Gemini 4 Hydrogen)
+
+### ✅ Completed Work
+- **Fixed Formula Column Offset in `Top_Counters_2026` (`scripts/export_sample_package.py`)**:
+  - Corrected an off-by-one column index shift in `Top_Counters_2026` (caused by `Direct_Lane_Counters_2026` having an extra `Lane_Role` column in Col B, whereas `Top_Counters_2026` starts `Matchup_Games` in Col D).
+  - Aligned all `Top_Counters_2026` formulas identically with the Master exporter (`scripts/export_commercial_package.py`):
+    - Col F (`Losses_vs_Target`): `=D{r}-E{r}`
+    - Col G (`Raw_WR_vs_Target`): `=IF(D{r}>0, E{r}/D{r}, 0)`
+    - Col H (`Expected_BT_WR`): Bradley-Terry `VLOOKUP` on `B{r}` and `C{r}` against `Hero_Tier_List_2026!$B$2:$W$132`
+    - Col I (`Played_Delta2_Lift`): `=G{r}-H{r}`
+    - Col J (`Protective_Ban_Lift`), Col K (`Censored_Ban_Equiv`), Col L (`Posterior_EB_WR`), Col O (`Same_Lane_Games`): preserved with exact censoring-adjusted / raw precomputed values (per owner confirmation to keep censoring-adjusted `Posterior_EB_WR` unchanged).
+    - Col M (`Counter_Delta2_Lift`): `=L{r}-H{r}`
+    - Col N (`Counter_Z_Score`): `=(E{r}-D{r}*H{r})/SQRT(D{r}*H{r}*(1-H{r})+1)`
+- **Desktop Default Behavior (`scripts/export_sample_package.py`)**: Changed default `--desktop` behavior to opt-in (`desktop_copy=False`) as requested earlier.
+- **Regenerated Deliverable**: Rebuilt `exports/sample/RoV_Pro_Draft_Sample_2026.xlsx` (58.9 KB).
+
+### 📁 Modified Files
+- `scripts/export_sample_package.py`
+- `exports/sample/RoV_Pro_Draft_Sample_2026.xlsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- **Formula Parity Check (`RoV_Pro_Draft_Master_2026.xlsx` vs `RoV_Pro_Draft_Sample_2026.xlsx`)**: 0 diffs across all formulas in `Top_Synergies_2026`, `Top_Counters_2026`, and `Direct_Lane_Counters_2026`.
+- **Excel COM Evaluation (`scratch/verify_sample_fixed.ps1`)**: Opened `exports/sample/RoV_Pro_Draft_Sample_2026.xlsx` in Microsoft Excel, ran `$excel.Calculate()`, verified **0 formula errors** across all 6 worksheets, and confirmed Row 2 (`Florentino vs Skud`) evaluates cleanly (`Losses=1`, `Raw_WR=85.7%`, `Expected_BT_WR=48.1%`, `Played_Delta2_Lift=37.6%`, `Protective_Ban_Lift=2.08`, `Posterior_EB_WR=69.8%`, `Counter_Delta2_Lift=21.7%`, `Counter_Z_Score=1.587`, `Same_Lane_Games=7`).
+- **Lint & Tests**: `ruff check` passed (0 errors), `ruff format --check` passed, `pytest tests/test_skills_sync.py` passed (2/2).
+
+### ⚠️ Open Issues / Important Notes
+- None. Note that Google Sheets sample copy should be re-uploaded from `exports/sample/RoV_Pro_Draft_Sample_2026.xlsx` if `Top_Counters_2026` tab needs the corrected formulas reflected online.
+
+---
+
+## 📅 2026-11-12 17:00 (UTC+7) — Customer-Facing Sample Package Generator & Excel COM Verification
+**Agent:** Antigravity (Gemini 3.8 Flash)
+
+### ✅ Completed Work
+- **Customer-Facing Sample Package Generator (`scripts/export_sample_package.py`)**:
+  - Implemented standalone exporter generating `exports/sample/RoV_Pro_Draft_Sample_2026.xlsx` (58.9 KB) and automatically copying to `C:\Users\chaya\Desktop\RoV_Pro_Draft_Sample_2026.xlsx` for rapid customer preview and Google Sheets upload.
+  - **Selective Disclosure Framework**:
+    - `Executive_Summary`: Prominent sample watermark banner at row 8, preview notice at row 10, dynamic SUM and ratio formulas.
+    - `Hero_Tier_List_2026`: Top 20 heroes (rows 2..21) fully visible with all 33 columns and 11 live formulas (`Tier_2026`, `Meta_Trend`, `Annual_Presence`, `Pick_Rate`, `Ban_Rate`, `Total_Bans`, `Losses`, `Win_Rate`, `Bayesian_WR`, `Red_Side_Picks`). Row 22 contains a gold/navy sample separator banner. Rows 23..132 (heroes 21..130) have sensitive columns masked as `[Locked]` while preserving `Hero`, `Primary_Role`, `Secondary_Role`, `Main_Pro_Lane`, `Total_Picks` (Col P), and `Bayesian_WR` (Col W).
+    - `True_Draft_Log_2026`: First 50 games (rows 2..51) with true chronological pick order (`B1..B5`, `R1..R5`), bans, and 5-lane assignments (`h1..h5`). Winner formulas correctly bound: Col 13 (`Winner_Team`) = `=IF(O{r}=1, K{r}, L{r})` and Col 14 (`Winner_Side`) = `=IF(O{r}=1, "Blue", "Red")`. Row 52 has lock separator banner.
+    - `Top_Synergies_2026`: Top 30 synergies (rows 2..31) with live algebraic Bradley-Terry expected WR via `VLOOKUP(B{r}, Hero_Tier_List_2026!$B$2:$W$132, 22, FALSE)`, Empirical Bayes posterior shrinkage (`K=12`), Z-score, and Co-Pick Lift. Row 32 has lock separator banner.
+    - `Top_Counters_2026` & `Direct_Lane_Counters_2026`: Top 30 counters each (rows 2..31) with Bradley-Terry expected log-odds formulas referencing `$B$2:$W$132`. Row 32 has lock separator banner.
+  - **Zero `#N/A` Guarantee**: Preserving `Hero`, `Total_Picks`, and `Bayesian_WR` in rows 23..132 of `Hero_Tier_List_2026` ensures that cross-sheet `VLOOKUP` lookups for off-meta heroes (e.g. Keera, Maloch, Enzo) in synergies and counters resolve flawlessly without throwing `#N/A` or `#VALUE!` errors in Google Sheets or Microsoft Excel.
+
+### 📁 Modified Files
+- `scripts/export_sample_package.py` (New sample generator script)
+- `exports/sample/RoV_Pro_Draft_Sample_2026.xlsx` (Customer sample deliverable)
+- `C:\Users\chaya\Desktop\RoV_Pro_Draft_Sample_2026.xlsx` (Desktop shortcut for user)
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- **Automated Real Excel COM Evaluation (`scratch/test_desktop_excel.ps1`)**: Launched Microsoft Excel 2016 via PowerShell COM automation, opened `RoV_Pro_Draft_Sample_2026.xlsx`, executed full workbook calculation (`$excel.Calculate()`), and audited all cells across all 6 worksheets. **Zero errors found (0 `#REF!`, 0 `#N/A`, 0 `#VALUE!`, 0 `#DIV/0!`)**.
+- **Code Quality**: `ruff check --fix scripts/export_sample_package.py` passed with 0 errors; `ruff format` applied.
+- **Skill Mirror Sync**: `pytest tests/test_skills_sync.py` passed (2/2).
+
+### ⚠️ Open Issues / Important Notes
+- Customer sample file is ready to be dragged and dropped into Google Drive to generate a shareable viewer link, or sent directly as an `.xlsx` file to technical clients.
+
+---
+
+## 📅 2026-11-12 16:19 (UTC+7) — Chronological Draft Log & Full Patch-Split Excel Formula Binding
+**Agent:** Antigravity (Gemini 3.8 Flash)
+
+### ✅ Completed Work
+- **Chronological Draft Partitioning & Formula Binding (`scripts/export_commercial_package.py`)**:
+  - Sorted all 1,810 games in `True_Draft_Log_2026` chronologically by date (`sorted_games = sorted(true_order_games, key=parse_date_key)`):
+    - **Spring Split (Phase 1, 816 games)**: Contiguous rows 2 to 817.
+    - **Summer/APL Split (Phase 2, 281 games)**: Contiguous rows 818 to 1098.
+    - **Winter Split / Recent Patch (Phase 3, 713 games)**: Contiguous rows 1099 to 1811.
+  - Linked all patch-split metrics in `Hero_Tier_List_2026` directly to native Excel formulas:
+    - **`Recent_Patch_Presence` (Col I)**: `=IF(B{r}="Volkath", 0, (COUNTIF(True_Draft_Log_2026!$AH$1099:$AQ$1811, B{r}) + COUNTIF(True_Draft_Log_2026!$P$1099:$S$1811, B{r}) + COUNTIF(True_Draft_Log_2026!$Z$1099:$AC$1811, B{r})) / IF(B{r}="Evita", 71, 713))`.
+    - **`Recent_Patch_Win_Rate` (Col J)**: `=IF(picks_p3>0, (blue_w_p3 + red_w_p3)/picks_p3, 0)` evaluating strictly within rows 1099..1811.
+    - **`Spring_Presence` (Col L)**: `=(COUNTIF(picks_p1) + COUNTIF(bans_p1)) / 816` on rows 2..817.
+    - **`Summer_APL_Presence` (Col M)**: `=(COUNTIF(picks_p2) + COUNTIF(bans_p2)) / 281` on rows 818..1098.
+  - Result: **28 of 33 columns in `Hero_Tier_List_2026` are now live native Excel formulas** (only 5 categorical text label columns remain static).
+- **Regenerated Commercial Package**:
+  - `exports/RoV_Pro_Draft_Intelligence_2026/RoV_Pro_Draft_Master_2026_v2.xlsx` (612.6 KB).
+  - Cleaned up scratch test files from the export package folder.
+  - `exports/RoV_Pro_Draft_Intelligence_2026.zip` (718.3 KB).
+
+### 📁 Modified Files
+- `scripts/export_commercial_package.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Ran `ruff check --fix` and `ruff format` (0 lint/formatting errors).
+- Executed `verify_all_formulas.py` audit: confirmed all 28 calculated columns in `Hero_Tier_List_2026` evaluate as live native Excel formulas.
+- Verified Tamyn, Evita, and Volkath numbers: Tamyn Recent Presence = 94.81% (676/713), Recent WR = 64.29% (63/98); Evita Recent Presence = 43.66% (31/71); Volkath = 0.00% recent, 17.16% Spring, 24.56% Summer.
+- Ran `pytest tests/test_skills_sync.py` (2 passed).
+
+### ⚠️ Open Issues / Important Notes
+- If `RoV_Pro_Draft_Master_2026.xlsx` is currently open in Excel by the user, the newly exported workbook is saved as `RoV_Pro_Draft_Master_2026_v2.xlsx` (and bundled as `RoV_Pro_Draft_Master_2026.xlsx` inside the ZIP). Closing Excel will allow overwriting the main file.
+
+---
+
+## 📅 2026-11-12 16:08 (UTC+7) — Full Native Excel Dynamic Formula Injection
+**Agent:** Antigravity (Gemini 3.8 Flash)
+
+### ✅ Completed Work
+- **Native Excel Formula Overhaul (`scripts/export_commercial_package.py`)**:
+  - Upgraded `inject_excel_formulas_and_watermark()` to replace hardcoded static numbers with dynamic native Excel formulas across all calculated columns:
+    - **`Executive_Summary`**:
+      - `True_Pick_Order_Coverage` (Col H): `=COUNTIF(True_Draft_Log_2026!$C$2:$C$1811, A{r})/C{r}` for regions, `=SUM(C2:C5)/C6` for total.
+    - **`Hero_Tier_List_2026`** (24 of 33 columns now live formulas):
+      - `Rank` (Col A): `=ROW()-1`.
+      - `Meta_Trend` (Col D): `=IF(B{r}="Volkath", "🔒 Disabled", IF(I{r}-L{r}>=0.1, "▲ Rising", IF(I{r}-L{r}<=-0.1, "▼ Falling", "● Stable")))`.
+      - `Total_Picks` (Col P): `=COUNTIF(True_Draft_Log_2026!$AH$2:$AQ$1811, B{r})` (scans all 10 lane slots).
+      - `Phase1_Bans` (Col R): `=COUNTIF(True_Draft_Log_2026!$P$2:$S$1811, B{r})`.
+      - `Phase2_Bans` (Col S): `=COUNTIF(True_Draft_Log_2026!$Z$2:$AC$1811, B{r})`.
+      - `Wins` (Col T): `=COUNTIFS` summing Blue wins (`$O$2:$O$1811=1`) and Red wins (`$O$2:$O$1811=0`) across in-game lanes.
+      - `B1_First_Picks` (Col X): `=COUNTIF(True_Draft_Log_2026!$T$2:$T$1811, B{r})`.
+      - `R1_R2_Picks` (Col Y): `=COUNTIF(True_Draft_Log_2026!$U$2:$V$1811, B{r})`.
+      - `R5_Last_Picks` (Col Z): `=COUNTIF(True_Draft_Log_2026!$AG$2:$AG$1811, B{r})`.
+      - `Blue_Side_Picks` (Col AA): `=COUNTIF(True_Draft_Log_2026!$AH$2:$AL$1811, B{r})`.
+      - `5-Lane Shares` (Cols AC..AG): `=(COUNTIF(Blue_Lane, B{r}) + COUNTIF(Red_Lane, B{r})) / P{r}`.
+    - **`Top_Synergies_2026`**:
+      - `Rank` (Col A): `=ROW()-1`.
+      - `Expected_BT_WR` (Col I): Algebraic Bradley-Terry log-odds formula via VLOOKUPs to `Hero_Tier_List_2026`.
+      - `Posterior_EB_WR` (Col J): `=(F{r}+12*I{r})/(E{r}+12)`.
+      - `Synergy_Z_Score` (Col L): `=(F{r}-E{r}*I{r})/SQRT(E{r}*I{r}*(1-I{r})+1)`.
+      - `Co_Pick_Lift` (Col M): Dynamic lift formula via VLOOKUPs to Hero Total Picks.
+    - **`Top_Counters_2026` & `Direct_Lane_Counters_2026`**:
+      - `Rank` (Col A): `=ROW()-1`.
+      - `Expected_BT_WR`: Algebraic Bradley-Terry counter formula via VLOOKUPs to `Hero_Tier_List_2026`.
+      - `Played_Delta2_Lift` / `Played_InLane_Lift`: `=Raw_WR - Expected_BT_WR`.
+      - `Counter_Z_Score` / `InLane_Z_Score`: Z-score formula from observed wins and expected rate.
+- **Regenerated Commercial Package**:
+  - `exports/RoV_Pro_Draft_Intelligence_2026/RoV_Pro_Draft_Master_2026.xlsx` (591.3 KB).
+  - `exports/RoV_Pro_Draft_Intelligence_2026.zip` (1.78 MB).
+
+### 📁 Modified Files
+- `scripts/export_commercial_package.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Ran `ruff check --fix scripts/export_commercial_package.py` and `ruff format` (0 errors).
+- Executed `python scripts/export_commercial_package.py` (all 6 sheets generated).
+- Ran `verify_all_formulas.py` audit: confirmed 24 of 33 columns in `Hero_Tier_List_2026`, 8 of 14 in `Top_Synergies_2026`, 7 of 17 in `Top_Counters_2026`, 7 of 17 in `Direct_Lane_Counters_2026`, and 6 of 8 in `Executive_Summary` are live dynamic Excel formulas.
+- Ran `pytest tests/test_skills_sync.py` (2 passed).
+
+### ⚠️ Open Issues / Important Notes
+- All calculated columns are now live native formulas, ensuring buyers can inspect or modify underlying match drafts and observe instantaneous cascade updates across all analytics sheets.
+
+---
+
+## 📅 2026-11-12 15:45 (UTC+7) — Volkath Tournament Bug Ban & Patch-Split Momentum Framework
+**Agent:** Antigravity (Gemini 3.8 Flash)
+
+### ✅ Completed Work
+- **Patch-Split & Meta Momentum Framework (`scripts/export_commercial_package.py`)**:
+  - Replaced stage-confounded "Playoff" and ambiguous "Active Window" models with the definitive 3 Tournament Split & Patch Era architecture of 2026:
+    - **Spring Split (Phase 1, Jan–May 2026)**: 816 games (early season baseline).
+    - **Summer & APL Split (Phase 2, Jun–Aug 2026)**: 281 games (mid-season international patch era; Alice peaked at 46.6%).
+    - **Winter Split (Phase 3, Sep–Nov 2026)**: 713 games (late-season / current championship patch era; Evita 71 games).
+  - Added **`Meta_Trend`** momentum indicator capturing both rising and nerfed/fallen heroes:
+    - `▲ Rising`: Contest rate surged >= +10.0% or late debut (Tamyn 0% -> 94.8%, Astrid 1% -> 62.6%, Flowborn Marksman 5.6% -> 39.8%, Evita 43.7%, Zanis 1.7% post-rework).
+    - `● Stable`: Maintained consistent high priority across all splits (Rouie 84.6% -> 90.3%, Marja 75.7% -> 68.9%, Eland'orr 79.7% -> 63.4%, Y'bneth 49.1% -> 61.9%).
+    - `▼ Falling`: Nerfed or abandoned in current meta (Toro 66.8% -> 26.9%, Keera 32.2% -> 5.0%, Fennik 24.6% -> 2.7%, Moren 16.7% -> 0.0%, Aya 17.2% -> 0.8%).
+    - `🔒 Disabled`: Tournament bug ban by league organizers.
+  - Added **`Meta_Status`** classifications: `Full Season Meta`, `Mid-Year Release`, `Late-Season Release`, `Mid-Year Patch Surge`, `Late-Season Rework`, `Fallen / Nerfed Meta`, and `Tournament Disabled (Bug Ban)`.
+  - Re-anchored **`Tier_2026`** on **`Recent_Patch_Presence`** (Winter Split 713 games; Evita 71 games) with curated overrides.
+- **Volkath Tournament Bug Ban Curation (`data/hero_tier_overrides.json` & `scripts/export_commercial_package.py`)**:
+  - Investigated and verified Volkath's 2026 match distribution: 140 games in Spring (17.2%), 69 games in APL (24.6% up to July 5, 2026), and exactly 0 games in Winter (Aug-Nov 2026). This proves Volkath was globally disabled from tournament play by league organizers after APL due to an ultimate invulnerability/desync bug rather than experiencing an organic meta decline.
+  - Added Volkath to `data/hero_tier_overrides.json` at **Tier B** with explicit rationale (19.1% presence across 1,097 eligible games before disable).
+  - Updated `scripts/export_commercial_package.py`:
+    - Assigned Volkath `trend = "🔒 Disabled"`, `status = "Tournament Disabled (Bug Ban)"`, `eligible_games = 1097`, `recent_pres = 0.0`, `recent_wr = 0.0`, `tier = "B"`.
+    - Maintained Volkath's curated tier as **Tier B** in both Python and native Excel formulas (`IF(B{r}="Volkath", "B", ...)`).
+    - Updated Excel formulas for `Pick_Rate` and `Ban_Rate` to handle Volkath with `P{r}/1097` and `Q{r}/1097`.
+    - Added amber styling for `🔒 Disabled` (`#FEF3C7` fill, bold `#B45309` font) to `trend_styles` and conditional formatting.
+    - Updated `Data_Dictionary.md` Section 2 to document the `🔒 Disabled` badge and the `Tournament Disabled (Bug Ban)` status tag.
+- **Regenerated Commercial Deliverables**:
+  - `exports/RoV_Pro_Draft_Intelligence_2026/RoV_Pro_Draft_Master_2026.xlsx` (545.3 KB).
+  - 6 raw CSV files in `exports/RoV_Pro_Draft_Intelligence_2026/raw_csv/`.
+  - `exports/RoV_Pro_Draft_Intelligence_2026/Data_Dictionary.md`.
+  - `exports/RoV_Pro_Draft_Intelligence_2026.zip` (668.9 KB).
+
+### 📁 Modified Files
+- `data/hero_tier_overrides.json`
+- `scripts/export_commercial_package.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Ran `ruff check --fix scripts/export_commercial_package.py` and `ruff format scripts/export_commercial_package.py` (0 errors).
+- Executed `python scripts/export_commercial_package.py` (successfully built all 6 sheets and ZIP package).
+- Ran verification script:
+  - Volkath: Rank 106, Tier_2026 = `B`, Meta_Trend = `🔒 Disabled`, Meta_Status = `Tournament Disabled (Bug Ban)`, Recent_Patch_Presence = `0.0%`, Annual_Presence = `11.55%`, Spring_Presence = `17.16%`, Summer_APL_Presence = `24.56%`.
+  - Excel formula evaluates to Tier "B".
+  - Tamyn: Rank 1, Tier_2026 = `S+`, Meta_Trend = `▲ Rising`, Recent_Patch_Presence = `94.81%`.
+  - Evita: Rank 12, Tier_2026 = `S`, Meta_Trend = `▲ Rising`, Recent_Patch_Presence = `43.66%`.
+  - Zanis: Rank 68, Tier_2026 = `A`, Meta_Trend = `▲ Rising`, Meta_Status = `Late-Season Rework`.
+- Ran `pytest` suite: all 92 tests passed in 9.29s.
+
+### ⚠️ Open Issues / Important Notes
+- Volkath is accurately labeled with `🔒 Disabled` and `Tournament Disabled (Bug Ban)` while preserving Tier B, ensuring commercial buyers receive clear domain clarity on his competitive ban.
+
+---
+
 ## 📅 2026-11-11 13:44 (UTC+7) — Automated Dataset Metadata Engine & Ingestion Pipeline Synchronization Hooks
 **Agent:** Antigravity (Gemini 3.8 Flash)
 

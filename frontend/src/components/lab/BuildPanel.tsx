@@ -199,7 +199,15 @@ export function BuildPanel({
       >
         {/* Left: Portrait & Names */}
         <div
+          role="button"
+          tabIndex={0}
           onClick={() => setShowHeroPicker(true)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setShowHeroPicker(true);
+            }
+          }}
           className="flex min-w-0 flex-1 cursor-pointer items-center gap-3"
           title="แตะเพื่อเปลี่ยนฮีโร่"
         >
@@ -329,10 +337,13 @@ export function BuildPanel({
               <div key={i} className="relative">
                 <button
                   type="button"
-                  onClick={() => setPicking(picking === i ? null : Math.min(i, build.items.length))}
+                  onClick={() => {
+                    const targetSlot = item ? i : build.items.length;
+                    setPicking(picking === targetSlot ? null : targetSlot);
+                  }}
                   title={item ? `${item.name}\n${formatStats(item.stats)}` : "เพิ่มไอเทม"}
                   className={`grid aspect-square w-full place-items-center border ${
-                    picking === i ? "border-gold" : "border-line"
+                    picking === (item ? i : build.items.length) ? "border-gold" : "border-line"
                   } bg-panel-2 hover:border-line-strong`}
                 >
                   {item ? (
@@ -388,13 +399,17 @@ export function BuildPanel({
           itemName={inspectingItem}
           catalogItems={catalog.items}
           onClose={() => setInspectingItem(null)}
-          onPick={(picked) => {
-            if (picking !== null) {
-              setItem(picking, picked);
-            } else if (build.items.length < 6) {
-              setItem(build.items.length, picked);
-            }
-          }}
+          onPick={
+            picking !== null || build.items.length < 6
+              ? (picked) => {
+                  if (picking !== null) {
+                    setItem(picking, picked);
+                  } else if (build.items.length < 6) {
+                    setItem(build.items.length, picked);
+                  }
+                }
+              : undefined
+          }
         />
       )}
 

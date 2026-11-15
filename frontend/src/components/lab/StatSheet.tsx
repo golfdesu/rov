@@ -43,7 +43,7 @@ export function StatSheet({ stats, effectiveHp }: StatSheetProps) {
             const bonus = baseVal !== undefined ? s[l.key] - baseVal : null;
             const breakdown = SOURCE_LABELS.map(([src, label]) => {
               const v = stats.sources[src][l.key];
-              return v ? `${label} +${fmt(v)}` : null;
+              return v ? `${label} +${fmt(v, l.pct)}` : null;
             }).filter(Boolean);
             return (
               <tr key={l.key} className="border-b border-line/50">
@@ -52,7 +52,7 @@ export function StatSheet({ stats, effectiveHp }: StatSheetProps) {
                 <td className="w-28 py-1 text-right font-mono tabular-nums">
                   {fmt(s[l.key], l.pct)}
                   {bonus !== null && Math.abs(bonus) >= 0.05 && (
-                    <span className="ml-1 text-[10px] text-good">+{fmt(bonus)}</span>
+                    <span className="ml-1 text-[10px] text-good">+{fmt(bonus, l.pct)}</span>
                   )}
                 </td>
               </tr>
@@ -72,6 +72,13 @@ export function StatSheet({ stats, effectiveHp }: StatSheetProps) {
       )}
       {stats.items_missing_price.length > 0 && (
         <p className="mt-1 text-[10px] text-dim">ไอเทมไม่มีข้อมูลราคา: {stats.items_missing_price.join(", ")}</p>
+      )}
+      {stats.item_warnings && stats.item_warnings.length > 0 && (
+        <div className="mt-2 rounded border border-gold/35 bg-gold/10 px-2.5 py-1.5 text-[10px] text-gold">
+          {stats.item_warnings.map((w, i) => (
+            <p key={i}>• {w}</p>
+          ))}
+        </div>
       )}
     </div>
   );

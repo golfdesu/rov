@@ -13,7 +13,13 @@
       "armor": 137,
       "magic_defense": 80,
       "attack_damage": 170,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 61,
+      "max_resource": 150,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S",
@@ -166,7 +172,13 @@
       "armor": 133,
       "magic_defense": 80,
       "attack_damage": 170,
-      "movement_speed": 350
+      "movement_speed": 350,
+      "attack_speed": 0,
+      "hp_regen_5s": 53,
+      "max_resource": 490,
+      "resource_regen_5s": 18,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -312,7 +324,13 @@
       "armor": 144,
       "magic_defense": 80,
       "attack_damage": 176,
-      "movement_speed": 350
+      "movement_speed": 350,
+      "attack_speed": 0,
+      "hp_regen_5s": 55,
+      "max_resource": 470,
+      "resource_regen_5s": 17,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "A",
@@ -471,7 +489,13 @@
       "armor": 140,
       "magic_defense": 80,
       "attack_damage": 160,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 70,
+      "max_resource": 96,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -634,7 +658,13 @@
       "armor": 153,
       "magic_defense": 80,
       "attack_damage": 176,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 54,
+      "max_resource": 440,
+      "resource_regen_5s": 16,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -800,7 +830,13 @@
       "armor": 140,
       "magic_defense": 80,
       "attack_damage": 160,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 60,
+      "max_resource": 430,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "A",
@@ -950,7 +986,13 @@
       "armor": 133,
       "magic_defense": 80,
       "attack_damage": 172,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 55,
+      "max_resource": 0,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "B",
@@ -1114,7 +1156,13 @@
       "armor": 147,
       "magic_defense": 80,
       "attack_damage": 159,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 61,
+      "max_resource": 430,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -1272,7 +1320,13 @@
       "armor": 149,
       "magic_defense": 80,
       "attack_damage": 164,
-      "movement_speed": 390
+      "movement_speed": 390,
+      "attack_speed": 0,
+      "hp_regen_5s": 65,
+      "max_resource": 0,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -1431,7 +1485,13 @@
       "armor": 145,
       "magic_defense": 80,
       "attack_damage": 163,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 80,
+      "max_resource": 470,
+      "resource_regen_5s": 17,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -1575,7 +1635,13 @@
       "armor": 138,
       "magic_defense": 80,
       "attack_damage": 166,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 60,
+      "max_resource": 450,
+      "resource_regen_5s": 16,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S",
@@ -1752,7 +1818,13 @@
       "armor": 145,
       "magic_defense": 80,
       "attack_damage": 156,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 54,
+      "max_resource": 0,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -1915,7 +1987,13 @@
       "armor": 130,
       "magic_defense": 80,
       "attack_damage": 160,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 55,
+      "max_resource": 470,
+      "resource_regen_5s": 17,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "B",
@@ -2080,7 +2158,13 @@
       "armor": 133,
       "magic_defense": 80,
       "attack_damage": 165,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 53,
+      "max_resource": 490,
+      "resource_regen_5s": 18,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -2257,7 +2341,13 @@
       "armor": 159,
       "magic_defense": 80,
       "attack_damage": 168,
-      "movement_speed": 370
+      "movement_speed": 370,
+      "attack_speed": 0,
+      "hp_regen_5s": 69,
+      "max_resource": 420,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "B",
@@ -2419,7 +2509,13 @@
       "armor": 141,
       "magic_defense": 80,
       "attack_damage": 170,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 62,
+      "max_resource": 430,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -2582,7 +2678,13 @@
       "armor": 150,
       "magic_defense": 80,
       "attack_damage": 175,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 50,
+      "max_resource": 440,
+      "resource_regen_5s": 16,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S+",
@@ -2744,7 +2846,13 @@
       "armor": 140,
       "magic_defense": 80,
       "attack_damage": 175,
-      "movement_speed": 390
+      "movement_speed": 390,
+      "attack_speed": 0,
+      "hp_regen_5s": 50,
+      "max_resource": 90,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "A",
@@ -2904,7 +3012,13 @@
       "armor": 150,
       "magic_defense": 80,
       "attack_damage": 172,
-      "movement_speed": 370
+      "movement_speed": 370,
+      "attack_speed": 0,
+      "hp_regen_5s": 50,
+      "max_resource": 6,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -3067,7 +3181,13 @@
       "armor": 133,
       "magic_defense": 80,
       "attack_damage": 165,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 47,
+      "max_resource": 490,
+      "resource_regen_5s": 18,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -3231,7 +3351,13 @@
       "armor": 134,
       "magic_defense": 80,
       "attack_damage": 178,
-      "movement_speed": 370
+      "movement_speed": 370,
+      "attack_speed": 0,
+      "hp_regen_5s": 50,
+      "max_resource": 440,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -3389,7 +3515,13 @@
       "armor": 131,
       "magic_defense": 80,
       "attack_damage": 178,
-      "movement_speed": 350
+      "movement_speed": 350,
+      "attack_speed": 0,
+      "hp_regen_5s": 39,
+      "max_resource": 440,
+      "resource_regen_5s": 16,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -3526,7 +3658,13 @@
       "armor": 135,
       "magic_defense": 80,
       "attack_damage": 177,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 57,
+      "max_resource": 0,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "B",
@@ -3686,7 +3824,13 @@
       "armor": 134,
       "magic_defense": 80,
       "attack_damage": 169,
-      "movement_speed": 350
+      "movement_speed": 350,
+      "attack_speed": 0,
+      "hp_regen_5s": 47,
+      "max_resource": 100,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S",
@@ -3836,7 +3980,13 @@
       "armor": 135,
       "magic_defense": 80,
       "attack_damage": 170,
-      "movement_speed": 390
+      "movement_speed": 390,
+      "attack_speed": 0,
+      "hp_regen_5s": 60,
+      "max_resource": 0,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -4000,7 +4150,13 @@
       "armor": 171,
       "magic_defense": 80,
       "attack_damage": 170,
-      "movement_speed": 390
+      "movement_speed": 390,
+      "attack_speed": 0,
+      "hp_regen_5s": 65,
+      "max_resource": 420,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "B",
@@ -4135,7 +4291,13 @@
       "armor": 171,
       "magic_defense": 80,
       "attack_damage": 153,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 67,
+      "max_resource": 0,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "A",
@@ -4272,7 +4434,13 @@
       "armor": 137,
       "magic_defense": 80,
       "attack_damage": 165,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 54,
+      "max_resource": 490,
+      "resource_regen_5s": 17,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -4413,7 +4581,13 @@
       "armor": 147,
       "magic_defense": 80,
       "attack_damage": 159,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 61,
+      "max_resource": 0,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -4578,7 +4752,13 @@
       "armor": 137,
       "magic_defense": 80,
       "attack_damage": 165,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 54,
+      "max_resource": 490,
+      "resource_regen_5s": 17,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -4728,7 +4908,13 @@
       "armor": 131,
       "magic_defense": 80,
       "attack_damage": 160,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 57,
+      "max_resource": 600,
+      "resource_regen_5s": 19,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -4891,7 +5077,13 @@
       "armor": 140,
       "magic_defense": 80,
       "attack_damage": 176,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 55,
+      "max_resource": 460,
+      "resource_regen_5s": 16,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S",
@@ -5031,7 +5223,13 @@
       "armor": 140,
       "magic_defense": 80,
       "attack_damage": 169,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 50,
+      "max_resource": 620,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "B",
@@ -5187,7 +5385,13 @@
       "armor": 150,
       "magic_defense": 80,
       "attack_damage": 180,
-      "movement_speed": 375
+      "movement_speed": 375,
+      "attack_speed": 0,
+      "hp_regen_5s": 52,
+      "max_resource": 0,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "A",
@@ -5528,7 +5732,13 @@
       "armor": 141,
       "magic_defense": 80,
       "attack_damage": 173,
-      "movement_speed": 350
+      "movement_speed": 350,
+      "attack_speed": 0,
+      "hp_regen_5s": 48,
+      "max_resource": 440,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S+",
@@ -5682,7 +5892,13 @@
       "armor": 140,
       "magic_defense": 80,
       "attack_damage": 188,
-      "movement_speed": 350
+      "movement_speed": 350,
+      "attack_speed": 0,
+      "hp_regen_5s": 49,
+      "max_resource": 440,
+      "resource_regen_5s": 16,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "B",
@@ -5836,7 +6052,13 @@
       "armor": 134,
       "magic_defense": 80,
       "attack_damage": 178,
-      "movement_speed": 370
+      "movement_speed": 370,
+      "attack_speed": 0,
+      "hp_regen_5s": 61,
+      "max_resource": 450,
+      "resource_regen_5s": 16,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S",
@@ -5998,7 +6220,13 @@
       "armor": 135,
       "magic_defense": 80,
       "attack_damage": 170,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 50,
+      "max_resource": 100,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -6152,7 +6380,13 @@
       "armor": 136,
       "magic_defense": 80,
       "attack_damage": 173,
-      "movement_speed": 370
+      "movement_speed": 370,
+      "attack_speed": 0,
+      "hp_regen_5s": 64,
+      "max_resource": 100,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -6319,7 +6553,13 @@
       "armor": 133,
       "magic_defense": 80,
       "attack_damage": 167,
-      "movement_speed": 350
+      "movement_speed": 350,
+      "attack_speed": 0,
+      "hp_regen_5s": 53,
+      "max_resource": 490,
+      "resource_regen_5s": 17,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -6491,7 +6731,13 @@
       "armor": 133,
       "magic_defense": 80,
       "attack_damage": 161,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 51,
+      "max_resource": 440,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "A",
@@ -6649,7 +6895,13 @@
       "armor": 135,
       "magic_defense": 80,
       "attack_damage": 170,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 60,
+      "max_resource": 0,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S",
@@ -6805,7 +7057,13 @@
       "armor": 150,
       "magic_defense": 80,
       "attack_damage": 160,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 50,
+      "max_resource": 640,
+      "resource_regen_5s": 16,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -6979,7 +7237,13 @@
       "armor": 150,
       "magic_defense": 80,
       "attack_damage": 170,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 50,
+      "max_resource": 600,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S",
@@ -7138,7 +7402,13 @@
       "armor": 148,
       "magic_defense": 80,
       "attack_damage": 176,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 66,
+      "max_resource": 420,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "B",
@@ -7290,7 +7560,13 @@
       "armor": 150,
       "magic_defense": 80,
       "attack_damage": 165,
-      "movement_speed": 370
+      "movement_speed": 370,
+      "attack_speed": 0,
+      "hp_regen_5s": 50,
+      "max_resource": 490,
+      "resource_regen_5s": 18,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -7435,7 +7711,13 @@
       "armor": 150,
       "magic_defense": 80,
       "attack_damage": 158,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 70,
+      "max_resource": 490,
+      "resource_regen_5s": 17,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -7581,7 +7863,13 @@
       "armor": 132,
       "magic_defense": 80,
       "attack_damage": 175,
-      "movement_speed": 350
+      "movement_speed": 350,
+      "attack_speed": 0,
+      "hp_regen_5s": 56,
+      "max_resource": 200,
+      "resource_regen_5s": 50,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S",
@@ -7735,7 +8023,13 @@
       "armor": 150,
       "magic_defense": 80,
       "attack_damage": 165,
-      "movement_speed": 370
+      "movement_speed": 370,
+      "attack_speed": 0,
+      "hp_regen_5s": 50,
+      "max_resource": 440,
+      "resource_regen_5s": 16,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -7889,7 +8183,13 @@
       "armor": 142,
       "magic_defense": 80,
       "attack_damage": 159,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 48,
+      "max_resource": 470,
+      "resource_regen_5s": 17,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -8039,7 +8339,13 @@
       "armor": 137,
       "magic_defense": 80,
       "attack_damage": 167,
-      "movement_speed": 350
+      "movement_speed": 350,
+      "attack_speed": 0,
+      "hp_regen_5s": 46,
+      "max_resource": 5,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "A",
@@ -8197,7 +8503,13 @@
       "armor": 139,
       "magic_defense": 80,
       "attack_damage": 160,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 54,
+      "max_resource": 490,
+      "resource_regen_5s": 17,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "A",
@@ -8342,7 +8654,13 @@
       "armor": 141,
       "magic_defense": 80,
       "attack_damage": 173,
-      "movement_speed": 350
+      "movement_speed": 350,
+      "attack_speed": 0,
+      "hp_regen_5s": 50,
+      "max_resource": 490,
+      "resource_regen_5s": 18,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -8483,7 +8801,13 @@
       "armor": 118,
       "magic_defense": 80,
       "attack_damage": 120,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 44,
+      "max_resource": 490,
+      "resource_regen_5s": 18,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -8643,7 +8967,13 @@
       "armor": 144,
       "magic_defense": 80,
       "attack_damage": 163,
-      "movement_speed": 370
+      "movement_speed": 370,
+      "attack_speed": 0,
+      "hp_regen_5s": 54,
+      "max_resource": 490,
+      "resource_regen_5s": 17,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -8805,7 +9135,13 @@
       "armor": 137,
       "magic_defense": 80,
       "attack_damage": 162,
-      "movement_speed": 350
+      "movement_speed": 350,
+      "attack_speed": 0,
+      "hp_regen_5s": 54,
+      "max_resource": 490,
+      "resource_regen_5s": 17,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -8968,7 +9304,13 @@
       "armor": 131,
       "magic_defense": 80,
       "attack_damage": 171,
-      "movement_speed": 400
+      "movement_speed": 400,
+      "attack_speed": 0,
+      "hp_regen_5s": 62,
+      "max_resource": 450,
+      "resource_regen_5s": 19,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -9127,7 +9469,13 @@
       "armor": 134,
       "magic_defense": 80,
       "attack_damage": 165,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 55,
+      "max_resource": 450,
+      "resource_regen_5s": 18,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "A",
@@ -9300,7 +9648,13 @@
       "armor": 146,
       "magic_defense": 80,
       "attack_damage": 168,
-      "movement_speed": 390
+      "movement_speed": 390,
+      "attack_speed": 0,
+      "hp_regen_5s": 61,
+      "max_resource": 430,
+      "resource_regen_5s": 16,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -9452,7 +9806,13 @@
       "armor": 132,
       "magic_defense": 80,
       "attack_damage": 173,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 57,
+      "max_resource": 450,
+      "resource_regen_5s": 16,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -9615,7 +9975,13 @@
       "armor": 141,
       "magic_defense": 80,
       "attack_damage": 153,
-      "movement_speed": 350
+      "movement_speed": 350,
+      "attack_speed": 0,
+      "hp_regen_5s": 54,
+      "max_resource": 490,
+      "resource_regen_5s": 18,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -9773,7 +10139,13 @@
       "armor": 138,
       "magic_defense": 80,
       "attack_damage": 162,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 57,
+      "max_resource": 450,
+      "resource_regen_5s": 16,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "B",
@@ -9929,7 +10301,13 @@
       "armor": 133,
       "magic_defense": 80,
       "attack_damage": 167,
-      "movement_speed": 350
+      "movement_speed": 350,
+      "attack_speed": 0,
+      "hp_regen_5s": 53,
+      "max_resource": 490,
+      "resource_regen_5s": 17,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -10091,7 +10469,13 @@
       "armor": 135,
       "magic_defense": 80,
       "attack_damage": 173,
-      "movement_speed": 350
+      "movement_speed": 350,
+      "attack_speed": 0,
+      "hp_regen_5s": 44,
+      "max_resource": 490,
+      "resource_regen_5s": 18,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -10249,7 +10633,13 @@
       "armor": 133,
       "magic_defense": 80,
       "attack_damage": 165,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 67,
+      "max_resource": 490,
+      "resource_regen_5s": 18,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S",
@@ -10511,7 +10901,13 @@
       "armor": 140,
       "magic_defense": 80,
       "attack_damage": 184,
-      "movement_speed": 370
+      "movement_speed": 370,
+      "attack_speed": 0,
+      "hp_regen_5s": 49,
+      "max_resource": 440,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -10673,7 +11069,13 @@
       "armor": 137,
       "magic_defense": 80,
       "attack_damage": 165,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 54,
+      "max_resource": 490,
+      "resource_regen_5s": 17,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S+",
@@ -10837,7 +11239,13 @@
       "armor": 150,
       "magic_defense": 80,
       "attack_damage": 174,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 64,
+      "max_resource": 0,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -10997,7 +11405,13 @@
       "armor": 155,
       "magic_defense": 80,
       "attack_damage": 156,
-      "movement_speed": 370
+      "movement_speed": 370,
+      "attack_speed": 0,
+      "hp_regen_5s": 68,
+      "max_resource": 470,
+      "resource_regen_5s": 17,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -11156,7 +11570,13 @@
       "armor": 145,
       "magic_defense": 80,
       "attack_damage": 175,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 65,
+      "max_resource": 0,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "A",
@@ -11316,7 +11736,13 @@
       "armor": 130,
       "magic_defense": 80,
       "attack_damage": 152,
-      "movement_speed": 370
+      "movement_speed": 370,
+      "attack_speed": 0,
+      "hp_regen_5s": 52,
+      "max_resource": 100,
+      "resource_regen_5s": -5,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S+",
@@ -11481,7 +11907,13 @@
       "armor": 145,
       "magic_defense": 80,
       "attack_damage": 159,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 63,
+      "max_resource": 450,
+      "resource_regen_5s": 16,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -11636,7 +12068,13 @@
       "armor": 133,
       "magic_defense": 80,
       "attack_damage": 168,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 55,
+      "max_resource": 490,
+      "resource_regen_5s": 18,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S",
@@ -11798,7 +12236,13 @@
       "armor": 145,
       "magic_defense": 80,
       "attack_damage": 160,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 60,
+      "max_resource": 420,
+      "resource_regen_5s": 14,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S",
@@ -11959,7 +12403,13 @@
       "armor": 138,
       "magic_defense": 80,
       "attack_damage": 162,
-      "movement_speed": 370
+      "movement_speed": 370,
+      "attack_speed": 0,
+      "hp_regen_5s": 57,
+      "max_resource": 440,
+      "resource_regen_5s": 16,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -12122,7 +12572,13 @@
       "armor": 135,
       "magic_defense": 80,
       "attack_damage": 175,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 46,
+      "max_resource": 440,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "B",
@@ -12274,7 +12730,13 @@
       "armor": 139,
       "magic_defense": 80,
       "attack_damage": 180,
-      "movement_speed": 390
+      "movement_speed": 390,
+      "attack_speed": 0,
+      "hp_regen_5s": 59,
+      "max_resource": 450,
+      "resource_regen_5s": 16,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S",
@@ -12432,7 +12894,13 @@
       "armor": 133,
       "magic_defense": 80,
       "attack_damage": 172,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 55,
+      "max_resource": 430,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "A",
@@ -12594,7 +13062,13 @@
       "armor": 137,
       "magic_defense": 80,
       "attack_damage": 170,
-      "movement_speed": 370
+      "movement_speed": 370,
+      "attack_speed": 0,
+      "hp_regen_5s": 57,
+      "max_resource": 490,
+      "resource_regen_5s": 17,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -12756,7 +13230,13 @@
       "armor": 140,
       "magic_defense": 80,
       "attack_damage": 170,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 66,
+      "max_resource": 420,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -12910,7 +13390,13 @@
       "armor": 146,
       "magic_defense": 80,
       "attack_damage": 168,
-      "movement_speed": 390
+      "movement_speed": 390,
+      "attack_speed": 0,
+      "hp_regen_5s": 61,
+      "max_resource": 5,
+      "resource_regen_5s": -5,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S",
@@ -13068,7 +13554,13 @@
       "armor": 163,
       "magic_defense": 80,
       "attack_damage": 171,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 66,
+      "max_resource": 430,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -13218,7 +13710,13 @@
       "armor": 133,
       "magic_defense": 80,
       "attack_damage": 179,
-      "movement_speed": 370
+      "movement_speed": 370,
+      "attack_speed": 0,
+      "hp_regen_5s": 55,
+      "max_resource": 100,
+      "resource_regen_5s": 25,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -13380,7 +13878,13 @@
       "armor": 152,
       "magic_defense": 80,
       "attack_damage": 168,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 52,
+      "max_resource": 490,
+      "resource_regen_5s": 18,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -13536,7 +14040,13 @@
       "armor": 141,
       "magic_defense": 80,
       "attack_damage": 171,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 61,
+      "max_resource": 420,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S",
@@ -13699,7 +14209,13 @@
       "armor": 135,
       "magic_defense": 80,
       "attack_damage": 177,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 60,
+      "max_resource": 0,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 125
     },
     "meta_2026": {
       "tier": "C",
@@ -13851,7 +14367,13 @@
       "armor": 141,
       "magic_defense": 80,
       "attack_damage": 170,
-      "movement_speed": 390
+      "movement_speed": 390,
+      "attack_speed": 0,
+      "hp_regen_5s": 56,
+      "max_resource": 200,
+      "resource_regen_5s": 50,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -14013,7 +14535,13 @@
       "armor": 142,
       "magic_defense": 80,
       "attack_damage": 170,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 60,
+      "max_resource": 200,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "A",
@@ -14173,7 +14701,13 @@
       "armor": 130,
       "magic_defense": 80,
       "attack_damage": 160,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 60,
+      "max_resource": 430,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S+",
@@ -14305,7 +14839,13 @@
       "armor": 159,
       "magic_defense": 80,
       "attack_damage": 163,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 50,
+      "max_resource": 440,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -14461,7 +15001,13 @@
       "armor": 145,
       "magic_defense": 80,
       "attack_damage": 170,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 69,
+      "max_resource": 460,
+      "resource_regen_5s": 20,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -14616,7 +15162,13 @@
       "armor": 142,
       "magic_defense": 80,
       "attack_damage": 170,
-      "movement_speed": 390
+      "movement_speed": 390,
+      "attack_speed": 0,
+      "hp_regen_5s": 58,
+      "max_resource": 100,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S",
@@ -14778,7 +15330,13 @@
       "armor": 118,
       "magic_defense": 80,
       "attack_damage": 162,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 52,
+      "max_resource": 470,
+      "resource_regen_5s": 17,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -14920,7 +15478,13 @@
       "armor": 135,
       "magic_defense": 80,
       "attack_damage": 170,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 61,
+      "max_resource": 0,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S+",
@@ -15083,7 +15647,13 @@
       "armor": 141,
       "magic_defense": 80,
       "attack_damage": 160,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 61,
+      "max_resource": 420,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S",
@@ -15247,7 +15817,13 @@
       "armor": 135,
       "magic_defense": 80,
       "attack_damage": 162,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 52,
+      "max_resource": 440,
+      "resource_regen_5s": 16,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -15411,7 +15987,13 @@
       "armor": 130,
       "magic_defense": 80,
       "attack_damage": 165,
-      "movement_speed": 350
+      "movement_speed": 350,
+      "attack_speed": 0,
+      "hp_regen_5s": 46,
+      "max_resource": 4,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S",
@@ -15561,7 +16143,13 @@
       "armor": 138,
       "magic_defense": 80,
       "attack_damage": 170,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 61,
+      "max_resource": 10,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -15724,7 +16312,13 @@
       "armor": 146,
       "magic_defense": 80,
       "attack_damage": 173,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 67,
+      "max_resource": 0,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S",
@@ -15876,7 +16470,13 @@
       "armor": 135,
       "magic_defense": 80,
       "attack_damage": 170,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 60,
+      "max_resource": 105,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S",
@@ -16040,7 +16640,13 @@
       "armor": 150,
       "magic_defense": 80,
       "attack_damage": 172,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 56,
+      "max_resource": 4,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S",
@@ -16205,7 +16811,13 @@
       "armor": 140,
       "magic_defense": 80,
       "attack_damage": 154,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 59,
+      "max_resource": 420,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S",
@@ -16365,7 +16977,13 @@
       "armor": 135,
       "magic_defense": 80,
       "attack_damage": 173,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 44,
+      "max_resource": 440,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -16509,7 +17127,13 @@
       "armor": 141,
       "magic_defense": 80,
       "attack_damage": 173,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 50,
+      "max_resource": 440,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -16657,7 +17281,13 @@
       "armor": 166,
       "magic_defense": 80,
       "attack_damage": 157,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 68,
+      "max_resource": 420,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "A",
@@ -16819,7 +17449,13 @@
       "armor": 137,
       "magic_defense": 80,
       "attack_damage": 171,
-      "movement_speed": 400
+      "movement_speed": 400,
+      "attack_speed": 0,
+      "hp_regen_5s": 61,
+      "max_resource": 490,
+      "resource_regen_5s": 17,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -16964,7 +17600,13 @@
       "armor": 135,
       "magic_defense": 80,
       "attack_damage": 165,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 50,
+      "max_resource": 200,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -17093,7 +17735,13 @@
       "armor": 160,
       "magic_defense": 80,
       "attack_damage": 175,
-      "movement_speed": 370
+      "movement_speed": 370,
+      "attack_speed": 0,
+      "hp_regen_5s": 65,
+      "max_resource": 200,
+      "resource_regen_5s": -27,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S+",
@@ -17252,7 +17900,13 @@
       "armor": 133,
       "magic_defense": 80,
       "attack_damage": 156,
-      "movement_speed": 350
+      "movement_speed": 350,
+      "attack_speed": 0,
+      "hp_regen_5s": 54,
+      "max_resource": 490,
+      "resource_regen_5s": 18,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -17416,7 +18070,13 @@
       "armor": 141,
       "magic_defense": 80,
       "attack_damage": 173,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 50,
+      "max_resource": 440,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S",
@@ -17574,7 +18234,13 @@
       "armor": 132,
       "magic_defense": 80,
       "attack_damage": 170,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 56,
+      "max_resource": 490,
+      "resource_regen_5s": 18,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -17717,7 +18383,13 @@
       "armor": 145,
       "magic_defense": 80,
       "attack_damage": 167,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 62,
+      "max_resource": 0,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -17881,7 +18553,13 @@
       "armor": 135,
       "magic_defense": 80,
       "attack_damage": 172,
-      "movement_speed": 350
+      "movement_speed": 350,
+      "attack_speed": 0,
+      "hp_regen_5s": 50,
+      "max_resource": 440,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S",
@@ -18040,7 +18718,13 @@
       "armor": 130,
       "magic_defense": 80,
       "attack_damage": 165,
-      "movement_speed": 370
+      "movement_speed": 370,
+      "attack_speed": 0,
+      "hp_regen_5s": 60,
+      "max_resource": 450,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "B",
@@ -18204,7 +18888,13 @@
       "armor": 128,
       "magic_defense": 80,
       "attack_damage": 171,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 90,
+      "max_resource": 470,
+      "resource_regen_5s": 17,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "A",
@@ -18368,7 +19058,13 @@
       "armor": 133,
       "magic_defense": 80,
       "attack_damage": 171,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 50,
+      "max_resource": 450,
+      "resource_regen_5s": 16,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S",
@@ -18518,7 +19214,13 @@
       "armor": 141,
       "magic_defense": 80,
       "attack_damage": 173,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 72,
+      "max_resource": 100,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -18682,7 +19384,13 @@
       "armor": 139,
       "magic_defense": 80,
       "attack_damage": 167,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 60,
+      "max_resource": 430,
+      "resource_regen_5s": 15,
+      "critical_chance": 22,
+      "critical_damage": 175
     },
     "meta_2026": {
       "tier": "C",
@@ -18814,7 +19522,13 @@
       "armor": 159,
       "magic_defense": 80,
       "attack_damage": 158,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 68,
+      "max_resource": 470,
+      "resource_regen_5s": 17,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -18983,7 +19697,13 @@
       "armor": 135,
       "magic_defense": 80,
       "attack_damage": 168,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 66,
+      "max_resource": 430,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S+",
@@ -19112,7 +19832,13 @@
       "armor": 145,
       "magic_defense": 80,
       "attack_damage": 165,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 61,
+      "max_resource": 440,
+      "resource_regen_5s": 17,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -19273,7 +19999,13 @@
       "armor": 144,
       "magic_defense": 80,
       "attack_damage": 170,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 61,
+      "max_resource": 100,
+      "resource_regen_5s": -100,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "A",
@@ -19566,7 +20298,13 @@
       "armor": 140,
       "magic_defense": 80,
       "attack_damage": 174,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 52,
+      "max_resource": 440,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -19717,7 +20455,13 @@
       "armor": 140,
       "magic_defense": 50,
       "attack_damage": 159,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 45,
+      "max_resource": 490,
+      "resource_regen_5s": 18,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "A",
@@ -19863,7 +20607,13 @@
       "armor": 135,
       "magic_defense": 80,
       "attack_damage": 168,
-      "movement_speed": 370
+      "movement_speed": 370,
+      "attack_speed": 0,
+      "hp_regen_5s": 62,
+      "max_resource": 430,
+      "resource_regen_5s": 16,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -20022,7 +20772,13 @@
       "armor": 141,
       "magic_defense": 80,
       "attack_damage": 153,
-      "movement_speed": 360
+      "movement_speed": 360,
+      "attack_speed": 0,
+      "hp_regen_5s": 54,
+      "max_resource": 490,
+      "resource_regen_5s": 18,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S+",
@@ -20186,7 +20942,13 @@
       "armor": 136,
       "magic_defense": 80,
       "attack_damage": 173,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 60,
+      "max_resource": 430,
+      "resource_regen_5s": 15,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "S",
@@ -20347,7 +21109,13 @@
       "armor": 148,
       "magic_defense": 80,
       "attack_damage": 173,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 62,
+      "max_resource": 450,
+      "resource_regen_5s": 16,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -20509,7 +21277,13 @@
       "armor": 166,
       "magic_defense": 80,
       "attack_damage": 151,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 67,
+      "max_resource": 470,
+      "resource_regen_5s": 16,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "C",
@@ -20669,7 +21443,13 @@
       "armor": 132,
       "magic_defense": 80,
       "attack_damage": 170,
-      "movement_speed": 380
+      "movement_speed": 380,
+      "attack_speed": 0,
+      "hp_regen_5s": 54,
+      "max_resource": 100,
+      "resource_regen_5s": 0,
+      "critical_chance": 0,
+      "critical_damage": 200
     },
     "meta_2026": {
       "tier": "B",

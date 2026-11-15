@@ -1,6 +1,6 @@
 import { ChevronDown, ChevronUp, Clock, Droplet, Heart, Shield, Sparkles, Swords, Target, Wind, Zap } from "lucide-react";
 import { useState } from "react";
-import type { CombatBuild, DuelSide, SkillDamageRow } from "../../types/combat";
+import { resolveScalingValue, type CombatBuild, type DuelSide, type ScalingValue, type SkillDamageRow } from "../../types/combat";
 import { getFormBadge } from "../../utils/heroForms";
 import { parseSkillEffects } from "../../utils/skillEffects";
 
@@ -22,39 +22,55 @@ const COMPONENT_LABELS: Record<string, string> = {
   base: "พื้นฐาน",
   ad: "AD",
   bonus_ad: "Bonus AD",
+  as_to_ad: "AS→AD",
   ap: "AP",
   own_hp: "HP ตัวเอง",
   armor: "เกราะ",
   target_hp: "HP เป้า",
+  target_current_hp: "HP ปัจจุบันเป้า",
+  target_lost_hp: "HP ที่หายเป้า",
+  extra: "เพิ่มเติม",
 };
 
-function formatScalingFormula(scaling?: Record<string, number>): string {
+function formatScalingFormula(scaling?: Record<string, ScalingValue>, skillLevel = 1): string {
   if (!scaling) return "";
+  const v = (key: string) => resolveScalingValue(scaling[key], skillLevel);
   const parts: string[] = [];
-  if (scaling.ad_pct) parts.push(`+${scaling.ad_pct}% AD`);
-  if (scaling.bonus_ad_pct) parts.push(`+${scaling.bonus_ad_pct}% Bonus AD`);
-  if (scaling.ap_pct) parts.push(`+${scaling.ap_pct}% AP`);
-  if (scaling.bonus_ap_pct) parts.push(`+${scaling.bonus_ap_pct}% Bonus AP`);
-  if (scaling.own_hp_pct) parts.push(`+${scaling.own_hp_pct}% HP ตัวเอง`);
-  if (scaling.hp_pct) parts.push(`+${scaling.hp_pct}% HP`);
-  if (scaling.max_hp_pct) parts.push(`+${scaling.max_hp_pct}% Max HP`);
-  if (scaling.bonus_hp_pct || scaling.bonus_max_hp_pct) {
-    parts.push(`+${(scaling.bonus_hp_pct ?? 0) + (scaling.bonus_max_hp_pct ?? 0)}% Bonus HP`);
+  if (v("ad_pct")) parts.push(`+${v("ad_pct")}% AD`);
+  if (v("bonus_ad_pct")) parts.push(`+${v("bonus_ad_pct")}% Bonus AD`);
+  if (v("as_to_ad")) parts.push(`+${v("as_to_ad")} AD/1% Bonus AS`);
+  if (v("ap_pct")) parts.push(`+${v("ap_pct")}% AP`);
+  if (v("bonus_ap_pct")) parts.push(`+${v("bonus_ap_pct")}% Bonus AP`);
+  if (v("bonus_dmg_hp_pct")) parts.push(`+${v("bonus_dmg_hp_pct")}% Max HP ตัวเอง`);
+  else if (v("own_hp_pct")) parts.push(`+${v("own_hp_pct")}% HP ตัวเอง`);
+  else if (v("hp_pct")) parts.push(`+${v("hp_pct")}% HP`);
+  else if (v("max_hp_pct")) parts.push(`+${v("max_hp_pct")}% Max HP`);
+  if (v("bonus_hp_pct") || v("bonus_max_hp_pct")) {
+    parts.push(`+${v("bonus_hp_pct") + v("bonus_max_hp_pct")}% Bonus HP`);
   }
-  if (scaling.bonus_armor_pct) parts.push(`+${scaling.bonus_armor_pct}% Bonus Armor`);
-  const tgtHp =
-    (scaling.target_hp_pct ?? 0) + (scaling.target_max_hp_pct ?? 0) + (scaling.target_current_hp_pct ?? 0);
+  if (v("burn_max_hp_pct")) parts.push(`เผา +${v("burn_max_hp_pct")}% Max HP/วิ`);
+  if (v("bonus_armor_pct")) parts.push(`+${v("bonus_armor_pct")}% Bonus Armor`);
+  if (v("armor_pct")) parts.push(`+${v("armor_pct")}% เกราะ`);
+  if (v("magic_defense_pct")) parts.push(`+${v("magic_defense_pct")}% ต้านเวท`);
+  const tgtHp = v("target_hp_pct") + v("target_max_hp_pct") + v("target_current_hp_pct");
   if (tgtHp) parts.push(`+${tgtHp}% HP ศัตรู`);
-  if (scaling.target_hp_per_100_ad_pct) parts.push(`+${scaling.target_hp_per_100_ad_pct}% HP ศัตรู/100 AD`);
-  if (scaling.target_hp_per_100_bonus_ad_pct) {
-    parts.push(`+${scaling.target_hp_per_100_bonus_ad_pct}% HP ศัตรู/100 Bonus AD`);
+  if (v("target_hp_ap_pct")) parts.push(`+${v("target_hp_ap_pct")}% HP ศัตรู/100 AP`);
+  const lostHp = v("target_lost_hp_pct") + v("lost_hp_pct");
+  if (lostHp) parts.push(`+${lostHp}% HP ที่หายไปศัตรู`);
+  if (v("lost_hp_ap_pct")) parts.push(`+${v("lost_hp_ap_pct")}% HP ที่หายไปศัตรู/100 AP`);
+  if (v("lost_hp_bonus_ad_pct")) parts.push(`+${v("lost_hp_bonus_ad_pct")}% HP ที่หายไปศัตรู/100 Bonus AD`);
+  if (v("target_hp_per_100_ad_pct")) parts.push(`+${v("target_hp_per_100_ad_pct")}% HP ศัตรู/100 AD`);
+  if (v("target_hp_per_100_bonus_ad_pct")) {
+    parts.push(`+${v("target_hp_per_100_bonus_ad_pct")}% HP ศัตรู/100 Bonus AD`);
   }
-  if (scaling.target_hp_per_100_ap_pct) parts.push(`+${scaling.target_hp_per_100_ap_pct}% HP ศัตรู/100 AP`);
+  if (v("target_hp_per_100_ap_pct")) parts.push(`+${v("target_hp_per_100_ap_pct")}% HP ศัตรู/100 AP`);
+  if (v("level_scaling")) parts.push(`+${v("level_scaling")}/Lv`);
   return parts.join(" ");
 }
 
 export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDamageTableProps) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [draftHits, setDraftHits] = useState<Record<string, string>>({});
 
   const setNum = (key: "skill_levels" | "skill_hits", slot: string, v: number) =>
     onChange({ [key]: { ...build[key], [slot]: v } });
@@ -78,19 +94,21 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
   const isDamagingSlot = (s: SkillDamageRow) =>
     s.damage_type !== "none" && (!s.slot.startsWith("Passive") || s.final_damage > 0 || s.raw_damage > 0);
   const allActiveSlots = side.skills.filter(isDamagingSlot).map((s) => s.slot);
+  const defaultComboSlots = side.skills
+    .filter((s) => s.damage_type !== "none" && !s.slot.startsWith("Passive"))
+    .map((s) => s.slot);
 
   const isSlotInCombo = (slot: string) => {
     if (build.active_combo_slots != null) {
       return build.active_combo_slots.includes(slot);
     }
-    const sk = side.skills.find((s) => s.slot === slot);
-    return sk != null && isDamagingSlot(sk);
+    return defaultComboSlots.includes(slot);
   };
 
   const toggleSlotInCombo = (slot: string) => {
     const currentSlots = build.active_combo_slots != null
       ? [...build.active_combo_slots]
-      : allActiveSlots;
+      : defaultComboSlots;
     const next = currentSlots.includes(slot)
       ? currentSlots.filter((s) => s !== slot)
       : [...currentSlots, slot];
@@ -242,7 +260,7 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                 .filter(([, v]) => v)
                 .map(([k, v]) => `${COMPONENT_LABELS[k] ?? k} ${v.toLocaleString()}`)
                 .join(" + ");
-              const scalingText = formatScalingFormula(s.scaling);
+              const scalingText = formatScalingFormula(s.scaling, Math.max(1, s.skill_level));
 
               return (
                 <tr
@@ -353,15 +371,21 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                           {isPassive ? (
                             <span className="text-dim">—</span>
                           ) : (
-                            <input
-                              type="number"
-                              min={0}
-                              max={s.slot === "Ultimate" || s.base_damage?.length === 3 ? 3 : 6}
-                              value={s.skill_level}
-                              onChange={(e) => setNum("skill_levels", s.slot, Number(e.target.value))}
-                              className="w-10 rounded border border-line bg-bg px-1 py-0.5 text-center font-mono focus:border-gold outline-none"
-                              aria-label={`เลเวล ${s.name}`}
-                            />
+                            (() => {
+                              const levelKey = s.level_slot || s.slot;
+                              const isUlt = levelKey === "Ultimate" || s.base_damage?.length === 3;
+                              return (
+                                <input
+                                  type="number"
+                                  min={0}
+                                  max={isUlt ? 3 : 6}
+                                  value={s.skill_level}
+                                  onChange={(e) => setNum("skill_levels", levelKey, Number(e.target.value))}
+                                  className="w-10 rounded border border-line bg-bg px-1 py-0.5 text-center font-mono focus:border-gold outline-none"
+                                  aria-label={`เลเวล ${s.name}`}
+                                />
+                              );
+                            })()
                           )}
                         </div>
 
@@ -370,9 +394,31 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                           <input
                             type="number"
                             min={1}
-                            max={30}
-                            value={s.hits}
-                            onChange={(e) => setNum("skill_hits", s.slot, Number(e.target.value))}
+                            max={50}
+                            value={draftHits[s.slot] ?? String(s.hits)}
+                            onChange={(e) => {
+                              const raw = e.target.value;
+                              setDraftHits((prev) => ({ ...prev, [s.slot]: raw }));
+                              if (raw === "") return;
+                              const parsed = Number(raw);
+                              if (Number.isInteger(parsed) && parsed >= 1 && parsed <= 50) {
+                                setNum("skill_hits", s.slot, parsed);
+                              }
+                            }}
+                            onBlur={() => {
+                              const raw = draftHits[s.slot];
+                              setDraftHits((prev) => {
+                                const next = { ...prev };
+                                delete next[s.slot];
+                                return next;
+                              });
+                              if (raw === undefined) return;
+                              const parsed = Math.round(Number(raw));
+                              if (Number.isFinite(parsed) && raw.trim() !== "") {
+                                const clamped = Math.max(1, Math.min(50, parsed));
+                                if (clamped !== s.hits) setNum("skill_hits", s.slot, clamped);
+                              }
+                            }}
                             className="w-10 rounded border border-line bg-bg px-1 py-0.5 text-center font-mono focus:border-gold outline-none"
                             aria-label={`จำนวนครั้งที่โดน ${s.name}`}
                           />
@@ -535,22 +581,29 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                               <Sparkles size={11} />
                               <span>ระบบชาร์จสกิล / สเกลตามระยะทาง (Linear Interpolation):</span>
                             </div>
-                            <div className="text-[10px] text-ink">
-                              ดาเมจต่ำสุด (0%):{" "}
-                              <span className="font-bold">
-                                {s.base_damage ? s.base_damage[s.skill_level - 1] ?? s.base_damage[0] : 0}
-                              </span>{" "}
-                              {scalingText}
-                            </div>
-                            {s.max_damage && (
-                              <div className="text-[10px] text-ink">
-                                ดาเมจสูงสุด (100%):{" "}
-                                <span className="font-bold">
-                                  {s.max_damage[s.skill_level - 1] ?? s.max_damage[0]}
-                                </span>{" "}
-                                {formatScalingFormula(s.max_scaling)}
-                              </div>
-                            )}
+                            {(() => {
+                              const lvIdx = Math.max(0, s.skill_level - 1);
+                              return (
+                                <>
+                                  <div className="text-[10px] text-ink">
+                                    ดาเมจต่ำสุด (0%):{" "}
+                                    <span className="font-bold">
+                                      {s.base_damage ? s.base_damage[lvIdx] ?? s.base_damage[0] : 0}
+                                    </span>{" "}
+                                    {scalingText}
+                                  </div>
+                                  {s.max_damage && (
+                                    <div className="text-[10px] text-ink">
+                                      ดาเมจสูงสุด (100%):{" "}
+                                      <span className="font-bold">
+                                        {s.max_damage[lvIdx] ?? s.max_damage[0]}
+                                      </span>{" "}
+                                      {formatScalingFormula(s.max_scaling, Math.max(1, s.skill_level))}
+                                    </div>
+                                  )}
+                                </>
+                              );
+                            })()}
                           </div>
                         )}
 

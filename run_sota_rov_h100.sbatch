@@ -3,7 +3,7 @@
 # SLURM Job Script: SOTA RoVDraftGNNTransformer Training on ERAWAN HPC
 # Architecture   : Multi-Relational Hero GNN + Sequence Transformer + Dual Policy-Value
 # Target Hardware: compute4 node (NVIDIA H100 80GB HBM3) on 'gpu-h100'
-# Dataset        : 130 RoV Heroes (up to Evita) + 4,208 Pro Tournament Drafts (2024-2026)
+# Dataset        : 130 RoV Heroes (up to Evita) + 3,512 Curated 2025-2026 Drafts (from 4,329 Pro Archive)
 # Output Target  : models/sota_draft_gnn_transformer.pt & logs/
 # ==============================================================================
 #SBATCH --job-name=rov_sota_h100

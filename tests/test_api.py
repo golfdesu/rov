@@ -290,17 +290,52 @@ def test_combat_rune_recommendation_endpoint():
     assert "trade_verdict" in data
     assert len(data["detailed_runes"]) >= 3
 
-    # Invalid hero returns 422
+    # Invalid hero or lane returns 422
     bad_res = client.get(
         "/combat/rune-recommendation",
         params={"my_hero": "NonExistentHero", "enemy_hero": "Biron"},
     )
     assert bad_res.status_code == 422
+    bad_lane = client.get(
+        "/combat/rune-recommendation",
+        params={"my_hero": "Omen", "enemy_hero": "Biron", "lane": "InvalidLane"},
+    )
+    assert bad_lane.status_code == 422
 
 
 def test_combat_stats_rejects_bad_build():
     response = client.post("/combat/stats", json={"build": {"hero": "Valhein", "items": ["Not An Item"]}})
     assert response.status_code == 422
+    bool_arcana = client.post("/combat/stats", json={"build": {"hero": "Valhein", "arcana": {"Onslaught": True}}})
+    assert bool_arcana.status_code == 422
+
+    # Valid target includes burst & procs; duel accepts enable_actives=False; Rankbreaker alias resolves screenshots
+    stats_res = client.post(
+        "/combat/stats",
+        json={
+            "build": {"hero": "Tulen", "level": 15, "items": ["Hecate's Diadem"]},
+            "target": {"hero": "Toro", "level": 15},
+        },
+    )
+    assert stats_res.status_code == 200
+    stats_data = stats_res.json()
+    assert "burst" in stats_data and stats_data["burst"] > 0
+    assert "procs" in stats_data
+
+    duel_res = client.post(
+        "/combat/duel",
+        json={
+            "a": {"hero": "Toro", "level": 15, "items": ["Rock Shield", "Mail of Pain"], "enable_actives": False},
+            "b": {"hero": "Hayate", "level": 15, "items": ["Fafnir's Talon"], "enable_kiting": True},
+        },
+    )
+    assert duel_res.status_code == 200
+    assert duel_res.json()["simulation"]["a"]["kiting"]["interval_multiplier"] > 1.0
+
+    item_alias = client.get("/combat/item-screenshots/Rankbreaker")
+    assert item_alias.status_code == 200
+    assert item_alias.json()["folder"] == "Broken Spears"
+    assert len(item_alias.json()["screenshots"]) >= 1
 
 
 def test_draft_session_persistence_endpoints(tmp_path, monkeypatch):
@@ -860,3 +895,150 @@ def test_item_screenshots_endpoint():
     assert res_fafnir.status_code == 200
     assert res_fafnir.json()["folder"] == "Fafnir's Talon"
     assert len(res_fafnir.json()["screenshots"]) == 1
+
+
+def test_heroes_endpoint_returns_nonzero_presence_rate():
+    res = client.get("/heroes")
+    assert res.status_code == 200
+    heroes = res.json()["hero_details"]
+    assert len(heroes) == 130
+    nonzero = [h for h in heroes if h["presence_rate"] > 0]
+    assert len(nonzero) >= 50
+
+
+def test_predict_rejects_duplicate_alias_and_cross_team_heroes():
+    r_dup = client.post(
+        "/predict",
+        json={"mode": "pick", "side": "blue", "phase": 1, "ally_picks": ["Nakroth", "Nakroth"]},
+    )
+    assert r_dup.status_code == 422
+
+    r_alias = client.post(
+        "/predict",
+        json={"mode": "pick", "side": "blue", "phase": 1, "ally_picks": ["Arthur", "Mortos"]},
+    )
+    assert r_alias.status_code == 422
+
+    r_cross = client.post(
+        "/predict",
+        json={"mode": "pick", "side": "blue", "phase": 1, "ally_picks": ["Arthur"], "enemy_picks": ["Mortos"]},
+    )
+    assert r_cross.status_code == 422
+
+    r_ban_pick = client.post(
+        "/predict",
+        json={"mode": "pick", "side": "blue", "phase": 1, "ally_picks": ["Arthur"], "enemy_bans": ["Mortos"]},
+    )
+    assert r_ban_pick.status_code == 422
+
+
+def test_predict_lookahead_step_alignment_parity():
+    base = {
+        "mode": "pick",
+        "side": "blue",
+        "phase": 1,
+        "ally_picks": ["Toro"],
+        "enemy_picks": ["Marja"],
+        "ally_bans": ["Rouie"],
+        "enemy_bans": ["Hayate"],
+        "top_k": 30,
+    }
+    r_raw = client.post("/predict", json={**base, "use_lookahead": False})
+    r_look = client.post("/predict", json={**base, "use_lookahead": True})
+    assert r_raw.status_code == 200
+    assert r_look.status_code == 200
+    raw_by_hero = {r["hero_name"]: r["predicted_win_rate_pct"] for r in r_raw.json()["recommendations"]}
+    look_top = r_look.json()["recommendations"][0]
+    assert look_top["hero_name"] in raw_by_hero
+    assert abs(raw_by_hero[look_top["hero_name"]] - look_top["predicted_win_rate_pct"]) < 0.05
+
+
+def test_drive_relative_and_alphanumeric_alias_handling():
+    assert client.get("/combat/hero-screenshots/C:").status_code == 400
+    assert client.get("/combat/item-screenshots/C:").status_code == 400
+    assert client.get("/combat/hero-screenshots/.").status_code in (400, 404)
+    assert client.get("/combat/item-screenshots/.").status_code in (400, 404)
+
+    r_alias = client.post(
+        "/predict",
+        json={"mode": "pick", "side": "blue", "phase": 1, "ally_picks": ["TheJoker", "FlowbornMM"], "top_k": 3},
+    )
+    assert r_alias.status_code == 200
+    rec_names = {r["hero_name"] for r in r_alias.json()["recommendations"]}
+    assert "Stuart" not in rec_names
+    assert "Flowborn (Marksman)" not in rec_names
+
+
+def test_multi_user_auth_and_database_isolation(tmp_path, monkeypatch):
+    from src.config import config
+
+    monkeypatch.setattr(config.paths, "app_db_path", tmp_path / "rov_test.db")
+
+    client_a = TestClient(app)
+    client_b = TestClient(app)
+
+    # Unauthenticated combat builds sync requires login
+    assert client_a.get("/auth/me").json()["authenticated"] is False
+    assert client_a.get("/combat/builds").status_code == 401
+
+    # Register User A
+    reg_a = client_a.post(
+        "/auth/register",
+        json={"username": "User_Alpha", "password": "secret-pass-a", "display_name": "Alpha"},
+    )
+    assert reg_a.status_code == 201
+    assert reg_a.json()["authenticated"] is True
+    assert reg_a.json()["user"]["username"] == "user_alpha"
+
+    # Duplicate registration blocked (case-insensitive)
+    assert (
+        client_b.post("/auth/register", json={"username": "user_alpha", "password": "other-password"}).status_code
+        == 409
+    )
+
+    # Register User B
+    reg_b = client_b.post("/auth/register", json={"username": "user_beta", "password": "secret-pass-b"})
+    assert reg_b.status_code == 201
+
+    # Save isolated draft + combat builds for User A
+    r_put_draft_a = client_a.put(
+        "/draft/session",
+        json={"stepIndex": 2, "bluePicks": ["Hayate"], "updatedAt": 1761650001000},
+    )
+    assert r_put_draft_a.status_code == 200
+    r_put_combat_a = client_a.put(
+        "/combat/builds",
+        json={"a": {"hero": "Valhein", "level": 12, "items": ["Claves Sancti"]}, "updatedAt": 1761650002000},
+    )
+    assert r_put_combat_a.status_code == 200
+
+    # User B must see empty clean state (zero leakage from User A)
+    assert client_b.get("/draft/session").json()["stepIndex"] == 0
+    assert client_b.get("/draft/session").json()["bluePicks"] == []
+    assert client_b.get("/combat/builds").json()["a"] is None
+
+    # Save distinct state for User B
+    assert (
+        client_b.put(
+            "/draft/session",
+            json={"stepIndex": 4, "redPicks": ["Toro"], "updatedAt": 1761650003000},
+        ).status_code
+        == 200
+    )
+
+    # Verify both remain strictly isolated
+    assert client_a.get("/draft/session").json()["bluePicks"] == ["Hayate"]
+    assert client_a.get("/combat/builds").json()["a"]["hero"] == "Valhein"
+    assert client_b.get("/draft/session").json()["redPicks"] == ["Toro"]
+    assert client_b.get("/draft/session").json()["bluePicks"] == []
+
+    # Logout and login verification
+    assert client_a.post("/auth/logout").json()["authenticated"] is False
+    assert client_a.get("/combat/builds").status_code == 401
+    assert client_a.post("/auth/login", json={"username": "user_alpha", "password": "wrong"}).status_code == 401
+
+    login_a = client_a.post("/auth/login", json={"username": "USER_ALPHA", "password": "secret-pass-a"})
+    assert login_a.status_code == 200
+    assert login_a.json()["authenticated"] is True
+    assert client_a.get("/draft/session").json()["bluePicks"] == ["Hayate"]
+    assert client_a.get("/combat/builds").json()["a"]["level"] == 12

@@ -80,6 +80,8 @@ export function DraftBoardView({
     setEngine,
     league,
     setLeague,
+    useLookahead,
+    setUseLookahead,
     recommendations,
     blueNextPicks,
     redNextPicks,
@@ -138,10 +140,8 @@ export function DraftBoardView({
         `การลบ ${displayName(heroName)} จะทำให้จำนวน Global Ban ไม่ครบตามเงื่อนไขของ Game ${globalBans.gameNumber} (ต้องมีอย่างน้อยฝั่งละ ${statusAfter.requiredCount} ตัว)\n\nระบบจะย้อนกลับไปยัง Game ${maxUnlocked} อัตโนมัติ ยืนยันหรือไม่?`,
       );
       if (!ok) return;
-      setGlobalBans({
-        ...candidateState,
-        gameNumber: maxUnlocked,
-      });
+      setIsSelectingWinner(false);
+      selectGameNumber(maxUnlocked, candidateState);
       return;
     }
     setGlobalBans(candidateState);
@@ -176,7 +176,14 @@ export function DraftBoardView({
       } else if (e.key === "/") {
         e.preventDefault();
         searchRef.current?.focus();
-      } else if (e.key === "Enter" && !(e.target instanceof HTMLButtonElement)) {
+      } else if (
+        e.key === "Enter" &&
+        !isSelectingWinner &&
+        !(e.target instanceof HTMLButtonElement) &&
+        !(e.target instanceof HTMLSelectElement) &&
+        !(e.target instanceof HTMLAnchorElement) &&
+        !(e.target instanceof HTMLElement && e.target.getAttribute("role") === "button")
+      ) {
         const top = recommendations[0];
         if (top && currentStep && !isLoading && !unavailableHeroes.has(top.hero_name)) lockHero(top.hero_name);
       }
@@ -188,6 +195,7 @@ export function DraftBoardView({
     globalBanModalCat,
     isHistoryModalOpen,
     isNewSeriesModalOpen,
+    isSelectingWinner,
     undo,
     redo,
     lockHero,
@@ -200,8 +208,8 @@ export function DraftBoardView({
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       {/* Sub-header series bar with compact global ban controls */}
-      <div className="shrink-0 border-b border-line bg-panel/60 px-3 py-1.5 sm:px-4">
-        <div className="mx-auto flex max-w-[1920px] items-center justify-between gap-2 overflow-x-auto">
+      <div className="shrink-0 border-b border-line bg-panel/60 px-2.5 py-1.5 sm:px-3 xl:px-4">
+        <div className="mx-auto flex max-w-[1920px] items-center justify-between gap-1.5 overflow-x-auto xl:gap-2">
           {/* Left: Model Indicator and Series Name */}
           <div className="flex shrink-0 items-center gap-2">
             <span
@@ -230,7 +238,7 @@ export function DraftBoardView({
           </div>
 
           {/* Right: Series & Global Ban Controls */}
-          <div aria-label="Series and Global Ban Controls" className="flex shrink-0 items-center gap-1.5 whitespace-nowrap">
+          <div aria-label="Series and Global Ban Controls" className="flex shrink-0 items-center gap-1 whitespace-nowrap xl:gap-1.5">
             <button
               type="button"
               onClick={() => setIsNewSeriesModalOpen(true)}
@@ -261,6 +269,7 @@ export function DraftBoardView({
                     }
                     return;
                   }
+                  setIsSelectingWinner(false);
                   selectGameNumber(g);
                 }}
                 className="h-7 border border-line bg-panel px-2 font-mono text-xs font-bold text-gold cursor-pointer focus:border-gold/60 focus:outline-none"
@@ -312,7 +321,8 @@ export function DraftBoardView({
                         }
                         return;
                       }
-                      selectGameNumber(g);
+                      setIsSelectingWinner(false);
+                  selectGameNumber(g);
                     }}
                     title={buttonTitle}
                     className={`h-5.5 px-1.5 font-mono text-[11px] font-bold transition-colors ${
@@ -397,7 +407,7 @@ export function DraftBoardView({
               </button>
             </div>
 
-            {isSelectingWinner ? (
+            {isSelectingWinner && hasAnyPick ? (
               <div className="inline-flex h-7 shrink-0 items-center gap-1 border border-gold bg-panel px-1.5">
                 <Trophy className="h-3.5 w-3.5 shrink-0 text-gold" />
                 <span className="font-display text-[11px] font-bold text-gold">ใครชนะ G{globalBans.gameNumber}?</span>
@@ -486,9 +496,14 @@ export function DraftBoardView({
         totalSteps={totalSteps}
         league={league}
         setLeague={setLeague}
+        useLookahead={useLookahead}
+        onToggleLookahead={() => setUseLookahead((prev) => !prev)}
         onUndo={undo}
         onRedo={redo}
-        onReset={reset}
+        onReset={() => {
+          setIsSelectingWinner(false);
+          reset();
+        }}
         canUndo={canUndo}
         canRedo={canRedo}
         engine={engine}
@@ -506,7 +521,10 @@ export function DraftBoardView({
           seriesGames={seriesGames}
           initialCategory={globalBanModalCat}
           onChange={setGlobalBans}
-          onSelectGameNumber={selectGameNumber}
+          onSelectGameNumber={(...args) => {
+            setIsSelectingWinner(false);
+            selectGameNumber(...args);
+          }}
           onClose={() => setGlobalBanModalCat(null)}
         />
       )}
@@ -518,12 +536,27 @@ export function DraftBoardView({
           hasCurrentDraftActions={hasAnyAction}
           onSaveCurrentSnapshot={saveCurrentDraftSnapshot}
           onOpenNewSeries={() => setIsNewSeriesModalOpen(true)}
-          onSwitchSeries={switchSeries}
-          onLoadGame={loadRecordedGame}
+          onSwitchSeries={(...args) => {
+            setIsSelectingWinner(false);
+            switchSeries(...args);
+          }}
+          onLoadGame={(...args) => {
+            setIsSelectingWinner(false);
+            loadRecordedGame(...args);
+          }}
           onSetGameWinner={setRecordedGameWinner}
-          onDeleteGame={deleteRecordedGame}
-          onDeleteGroup={deleteSeriesGroup}
-          onClearAllSeries={clearAllHistory}
+          onDeleteGame={(...args) => {
+            setIsSelectingWinner(false);
+            deleteRecordedGame(...args);
+          }}
+          onDeleteGroup={(...args) => {
+            setIsSelectingWinner(false);
+            deleteSeriesGroup(...args);
+          }}
+          onClearAllSeries={() => {
+            setIsSelectingWinner(false);
+            clearAllHistory();
+          }}
           onClose={() => setIsHistoryModalOpen(false)}
         />
       )}
@@ -534,7 +567,10 @@ export function DraftBoardView({
           defaultTeamA={globalBans.teamAName}
           defaultTeamB={globalBans.teamBName}
           hasCurrentActions={hasAnyAction}
-          onConfirm={startNewSeries}
+          onConfirm={(...args) => {
+            setIsSelectingWinner(false);
+            startNewSeries(...args);
+          }}
           onClose={() => setIsNewSeriesModalOpen(false)}
         />
       )}

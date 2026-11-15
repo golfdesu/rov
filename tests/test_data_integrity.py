@@ -39,11 +39,12 @@ def test_matches_draft_integrity():
     heroes_df = pd.read_csv(config.paths.heroes_csv_path)
     valid_names = set(heroes_df["name"].tolist())
 
-    for g in matches[:200]:
+    for g in matches:
         assert len(g["blue_picks"]) == 5
         assert len(g["red_picks"]) == 5
         assert 1 <= len(g["blue_bans"]) <= 4
         assert 1 <= len(g["red_bans"]) <= 4
+        assert g.get("blue_win") in (0, 1)
         for h in g["blue_picks"] + g["red_picks"] + g["blue_bans"] + g["red_bans"]:
             if h:
                 assert h in valid_names, f"Unmapped hero in match data: {h}"
@@ -119,7 +120,7 @@ def test_hero_level_stats():
     assert len(df) == 130 * 15 == 1950
 
     measured_count = sum(1 for d in heroes_dict.values() if d.get("growth_source") == "measured_lv15")
-    assert measured_count >= 105, f"Expected at least 105 measured Lv15 heroes, got {measured_count}"
+    assert measured_count == 130, f"Expected 130 measured Lv15 heroes, got {measured_count}"
     assert heroes_dict["Skud"]["levels"]["15"]["hp"] == 8856
 
     for name, data in heroes_dict.items():
@@ -321,7 +322,7 @@ def test_true_pick_order_matches_liquipedia():
     with open(config.paths.matches_json_path, "r", encoding="utf-8") as f:
         matches = {(g["series_id"], g["game_number"]): g for g in json.load(f)}
 
-    assert len(true_games) >= 62
+    assert len(true_games) >= 1810
     seen = set()
     for t in true_games:
         key = (t["series_id"], t["game_number"])
@@ -439,3 +440,33 @@ def test_dataset_metadata_freshness():
     fresh_metrics = sync_metadata(check=True, quiet=True)
     assert fresh_metrics["total_matches"] == meta["total_matches"]
     assert fresh_metrics["total_heroes"] == meta["total_heroes"]
+
+
+def test_training_datasets_and_draft_stats_parity():
+    with open(config.paths.matches_json_path, "r", encoding="utf-8") as f:
+        archive = json.load(f)
+    with open(config.paths.matches_training_path, "r", encoding="utf-8") as f:
+        train = json.load(f)
+    with open(config.paths.true_pick_order_path, "r", encoding="utf-8") as f:
+        tpo_keys = {(g["series_id"], g["game_number"]) for g in json.load(f)["games"]}
+
+    assert len(train) >= 3500
+    for g in train:
+        assert int(g["year"]) >= 2025, f"Legacy year in training set: {g.get('series_id')}"
+        assert g.get("blue_win") in (0, 1)
+        if int(g["year"]) >= 2026:
+            assert g.get("is_true_order") is True, f"2026 game missing true order: {g.get('series_id')}"
+            assert (g["series_id"], g["game_number"]) in tpo_keys
+
+    heur_path = config.paths.data_dir / "matches_training_heuristic.json"
+    if heur_path.exists():
+        with open(heur_path, "r", encoding="utf-8") as f:
+            heur = json.load(f)
+        assert len(heur) >= 3400
+        for g in heur:
+            assert g.get("blue_win") in (0, 1)
+            assert not g.get("is_true_order")
+
+    stats_df = pd.read_csv(config.paths.hero_stats_csv_path)
+    assert len(stats_df) == 130
+    assert int(stats_df["picks"].sum()) == len(archive) * 10

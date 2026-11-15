@@ -48,7 +48,12 @@ def collect_dataset_metrics() -> dict:
     skills_file = DATA_DIR / "hero_skills_full.json"
     with open(skills_file, "r", encoding="utf-8") as f:
         skills_data = json.load(f)
-    total_skills = skills_data.get("total_skills", 0)
+    skills_heroes = skills_data.get("heroes")
+    total_skills = (
+        sum(len(v) for v in skills_heroes.values())
+        if isinstance(skills_heroes, dict)
+        else skills_data.get("total_skills", 0)
+    )
 
     # 2. Historical Match Archive
     matches_file = DATA_DIR / "matches_draft_full.json"
@@ -81,8 +86,13 @@ def collect_dataset_metrics() -> dict:
     patch_file = DATA_DIR / "hero_patch_history.json"
     with open(patch_file, "r", encoding="utf-8") as f:
         patch_data = json.load(f)
-    patch_changes = patch_data.get("count", len(patch_data.get("changes", [])))
-    patch_heroes = patch_data.get("heroes", len(set(c.get("hero") for c in patch_data.get("changes", []))))
+    changes_list = patch_data.get("changes", [])
+    patch_changes = len(changes_list) if isinstance(changes_list, list) else patch_data.get("count", 0)
+    patch_heroes = (
+        len({c.get("hero") for c in changes_list if isinstance(c, dict) and c.get("hero")})
+        if isinstance(changes_list, list)
+        else patch_data.get("heroes", 0)
+    )
 
     # 6. Matrices
     synergy_file = DATA_DIR / "synergy_matrix.csv"
@@ -144,6 +154,7 @@ def update_agents_md(content: str, m: dict) -> str:
     tot_h = str(m["total_heroes"])
     tot_s = str(m["total_skills"])
     m_2024 = str(m["matches_by_year"]["2024"])
+    m_2025 = f"{m['matches_by_year']['2025']:,}"
     m_2026 = f"{m['matches_by_year']['2026']:,}"
     syn_p = f"{m['synergy_pairs']:,}"
     cnt_p = f"{m['counter_pairs']:,}"
@@ -162,9 +173,16 @@ def update_agents_md(content: str, m: dict) -> str:
         f"| **Pro Match Archive** | **{tot_m} Complete Pro Games**",
         content,
     )
+    curated_pat = (
+        r"\|\s*\*\*Curated Training Dataset\*\*\s*\|\s*\*\*([0-9,]+)\s*Games \(2025–2026\)\*\*"
+        r"(\s*\(`data/matches_training\.json`\))?\. All \d+ games from 2024.*?"
+        r"\*\*True Pick Order coverage = [0-9.]+%\*\* \([0-9,]+ / [0-9,]+ games\)\."
+    )
+    if "| **Curated Training Dataset** |" in content and not re.search(curated_pat, content):
+        raise ValueError("Failed to match 'Curated Training Dataset' row in AGENTS.md")
     content = re.sub(
-        r"\|\s*\*\*Curated Training Dataset\*\*\s*\|\s*\*\*([0-9,]+)\s*Games \(2025–2026\)\*\*\. All \d+ games from 2024.*?\*\*True Pick Order coverage = [0-9.]+%\*\* \([0-9,]+ / [0-9,]+ games\)\.",
-        f"| **Curated Training Dataset** | **{train_m} Games (2025–2026)**. All {m_2024} games from 2024 are strictly excluded to remove legacy meta noise; includes all {m_2026} games from 2026 with 100% verified true pick order. **True Pick Order coverage = {pct}** ({true_m} / {train_m} games).",
+        curated_pat,
+        f"| **Curated Training Dataset** | **{train_m} Games (2025–2026)** (`data/matches_training.json`). All {m_2024} games from 2024 are strictly excluded to remove legacy meta noise; includes all {m_2026} games from 2026 with 100% verified true pick order. **True Pick Order coverage = {pct}** ({true_m} / {train_m} games).",
         content,
     )
 
@@ -180,8 +198,12 @@ def update_agents_md(content: str, m: dict) -> str:
         content,
     )
     content = re.sub(
-        r"containing \*\*([0-9,]+) games strictly from 2025–2026\*\*.*?with \*\*([0-9.]+)% True Pick Order coverage\*\* \([0-9,]+ / [0-9,]+ games\)",
-        f"containing **{train_m} games strictly from 2025–2026** (1,702 from 2025 + {m_2026} from 2026, through the AOG 2026 Winter Finals on Nov 7, 2026) with **{pct} True Pick Order coverage** ({true_m} / {train_m} games = 100% of 2026 games, verified from broadcast screenshots)",
+        r"containing \*\*([0-9,]+) games strictly from 2025–2026\*\* \([0-9,]+ from 2025 \+ [0-9,]+ from 2026([^)]*)\) with \*\*([0-9.]+)% True Pick Order coverage\*\* \([0-9,]+ / [0-9,]+ games[^)]*\)",
+        lambda _m: (
+            f"containing **{train_m} games strictly from 2025–2026** "
+            f"({m_2025} from 2025 + {m_2026} from 2026{_m.group(2)}) "
+            f"with **{pct} True Pick Order coverage** ({true_m} / {train_m} games = 100% of 2026 games, verified from broadcast screenshots)"
+        ),
         content,
     )
 
@@ -255,8 +277,10 @@ def update_readme_md(content: str, m: dict) -> str:
     arc_c = str(m["arcana_tier3"])
 
     content = re.sub(
-        r"covering all \*\*\d+ heroes \(up to [A-Za-z]+\)\*\*, pro match dataset with \*\*([0-9,]+) complete games",
-        f"covering all **{tot_h} heroes (up to Evita)**, pro match dataset with **{tot_m} complete games",
+        r"covering all \*\*\d+ heroes \(up to ([^)]+)\)\*\*, pro match dataset with \*\*([0-9,]+) complete games",
+        lambda _m: (
+            f"covering all **{tot_h} heroes (up to {_m.group(1)})**, pro match dataset with **{tot_m} complete games"
+        ),
         content,
     )
     content = re.sub(
@@ -379,17 +403,58 @@ def update_draft_screenshot_reader_md(content: str, m: dict) -> str:
     return content
 
 
+def _collect_skill_files(root_dir: Path) -> dict[Path, Path]:
+    if not root_dir.exists():
+        return {}
+    return {p.relative_to(root_dir): p for p in root_dir.rglob("*") if p.is_file() and "__pycache__" not in p.parts}
+
+
+def _skills_in_sync() -> bool:
+    if not AGENTS_SKILLS_DIR.exists():
+        return True
+    if not CLAUDE_SKILLS_DIR.exists():
+        return False
+    src_files = _collect_skill_files(AGENTS_SKILLS_DIR)
+    dst_files = _collect_skill_files(CLAUDE_SKILLS_DIR)
+    if set(src_files) != set(dst_files):
+        return False
+    return all(src_files[rel].read_bytes() == dst_files[rel].read_bytes() for rel in src_files)
+
+
 def mirror_skills_to_claude():
-    """Mirror .agents/skills/ 1-to-1 to .claude/skills/."""
+    """Mirror .agents/skills/ 1-to-1 to .claude/skills/, removing stale files."""
     if not AGENTS_SKILLS_DIR.exists():
         return
     CLAUDE_SKILLS_DIR.mkdir(parents=True, exist_ok=True)
-    for src_path in AGENTS_SKILLS_DIR.rglob("*"):
-        if src_path.is_file() and "__pycache__" not in src_path.parts:
-            rel = src_path.relative_to(AGENTS_SKILLS_DIR)
-            dest = CLAUDE_SKILLS_DIR / rel
-            dest.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(src_path, dest)
+    src_files = _collect_skill_files(AGENTS_SKILLS_DIR)
+    dst_files = _collect_skill_files(CLAUDE_SKILLS_DIR)
+
+    for rel, dest_path in dst_files.items():
+        if rel not in src_files:
+            dest_path.unlink()
+
+    for dir_path in sorted(CLAUDE_SKILLS_DIR.rglob("*"), reverse=True):
+        if dir_path.is_dir() and dir_path.name != "__pycache__" and not any(dir_path.iterdir()):
+            dir_path.rmdir()
+
+    for rel, src_path in src_files.items():
+        dest = CLAUDE_SKILLS_DIR / rel
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src_path, dest)
+
+
+def _json_metrics_match(path: Path, new_obj: dict) -> bool:
+    if not path.exists():
+        return False
+    try:
+        old_obj = json.loads(path.read_text(encoding="utf-8"))
+        old_cmp = dict(old_obj)
+        new_cmp = dict(new_obj)
+        old_cmp.pop("updated_at", None)
+        new_cmp.pop("updated_at", None)
+        return old_cmp == new_cmp
+    except Exception:
+        return False
 
 
 def sync_metadata(check: bool = False, quiet: bool = False) -> dict:
@@ -416,22 +481,24 @@ def sync_metadata(check: bool = False, quiet: bool = False) -> dict:
 
     has_diff = False
     new_json_str = json.dumps(metrics, indent=2, ensure_ascii=False) + "\n"
+    new_obj = json.loads(new_json_str)
 
-    # Check json metadata
-    if metadata_json_path.exists():
-        existing_json = metadata_json_path.read_text(encoding="utf-8")
-        # Compare without updated_at timestamp to avoid false alarms
-        try:
-            old_obj = json.loads(existing_json)
-            new_obj = json.loads(new_json_str)
-            old_obj.pop("updated_at", None)
-            new_obj.pop("updated_at", None)
-            if old_obj != new_obj:
-                has_diff = True
-        except Exception:
-            has_diff = True
-    else:
+    # Check json metadata (backend + frontend copy)
+    backend_meta_ok = _json_metrics_match(metadata_json_path, new_obj)
+    frontend_meta_ok = (not FRONTEND_PUBLIC_DIR.exists()) or (
+        frontend_meta_path.exists()
+        and _json_metrics_match(frontend_meta_path, new_obj)
+        and metadata_json_path.exists()
+        and frontend_meta_path.read_text(encoding="utf-8") == metadata_json_path.read_text(encoding="utf-8")
+    )
+    if not backend_meta_ok:
         has_diff = True
+        if not quiet:
+            print(f"[DIFF] {metadata_json_path.relative_to(REPO_ROOT)} is out of sync")
+    if not frontend_meta_ok:
+        has_diff = True
+        if not quiet:
+            print(f"[DIFF] {frontend_meta_path.relative_to(REPO_ROOT)} is out of sync")
 
     # Check markdown targets
     for target_path, update_func in file_targets:
@@ -444,6 +511,13 @@ def sync_metadata(check: bool = False, quiet: bool = False) -> dict:
             if not quiet:
                 print(f"[DIFF] {target_path.relative_to(REPO_ROOT)} is out of sync")
 
+    # Check .claude/skills mirror parity
+    skills_synced = _skills_in_sync()
+    if not skills_synced:
+        has_diff = True
+        if not quiet:
+            print("[DIFF] .claude/skills/ is out of sync with .agents/skills/")
+
     if check:
         if has_diff:
             if not quiet:
@@ -454,10 +528,13 @@ def sync_metadata(check: bool = False, quiet: bool = False) -> dict:
                 print("[OK] All dataset metadata and documentation files are 100% synchronized.")
             return metrics
 
-    # Perform writes
-    metadata_json_path.write_text(new_json_str, encoding="utf-8")
-    if FRONTEND_PUBLIC_DIR.exists():
-        frontend_meta_path.write_text(new_json_str, encoding="utf-8")
+    # Perform writes only when content changed to avoid updated_at churn
+    if not backend_meta_ok:
+        metadata_json_path.write_text(new_json_str, encoding="utf-8")
+        if FRONTEND_PUBLIC_DIR.exists():
+            frontend_meta_path.write_text(new_json_str, encoding="utf-8")
+    elif not frontend_meta_ok and FRONTEND_PUBLIC_DIR.exists():
+        frontend_meta_path.write_text(metadata_json_path.read_text(encoding="utf-8"), encoding="utf-8")
 
     for target_path, update_func in file_targets:
         if not target_path.exists():

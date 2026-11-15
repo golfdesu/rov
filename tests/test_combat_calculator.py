@@ -160,7 +160,7 @@ def test_enchantment_rules(engine):
     res = engine.build_stats(ok)
     assert res["stats"]["armor_pierce_flat"] == pytest.approx(60)
     assert res["sources"]["enchantments"]["attack_damage"] == pytest.approx(38)
-    assert "Sacred Protection" in res["enchantments_unmodeled"]
+    assert "Sacred Protection" in res["enchantments_modeled"]
     assert "Devourer" in res["enchantments_unmodeled"]
     assert "Holy Verdict" in res["enchantments_modeled"]
     assert "Deadly Claw" in res["enchantments_modeled"]
@@ -476,3 +476,301 @@ def test_thai_canonical_arcana_names(engine):
     assert build.arcana["Purity"] == 10
     assert res["sources"]["arcana"]["magic_pierce_flat"] == pytest.approx(24.0)
     assert res["sources"]["arcana"]["cooldown_reduction"] == pytest.approx(10.0)
+
+
+def test_ranged_carry_kites_melee_tank(engine):
+    # Ranged Carry (Hayate) kites Melee Tank (Toro) when kiting is enabled
+    for level in (4, 15):
+        res = engine.duel(Build(hero="Toro", level=level), Build(hero="Hayate", level=level))
+        sim = res["simulation"]
+        assert sim["winner"] == "b"
+        assert sim["a"]["kiting"]["initial_delay"] > 0.0
+        assert sim["a"]["kiting"]["interval_multiplier"] > 1.0
+        assert sim["b"]["kiting"] == {"initial_delay": 0.0, "interval_multiplier": 1.0}
+
+    # Disabling kiting turns off kiting penalties for both sides
+    no_kite = engine.duel(
+        Build(hero="Toro", level=15, enable_kiting=False),
+        Build(hero="Hayate", level=15, enable_kiting=False),
+    )["simulation"]
+    assert no_kite["a"]["kiting"] == {"initial_delay": 0.0, "interval_multiplier": 1.0}
+    assert no_kite["b"]["kiting"] == {"initial_delay": 0.0, "interval_multiplier": 1.0}
+
+    # Hayate multi-hit skill defaults scale automatically across 0% / 75% / 150% AS thresholds
+    toro_lv15 = engine.build_stats(Build(hero="Toro", level=15))
+    b_low = Build(hero="Hayate", level=15)
+    b_mid = Build(hero="Hayate", level=15, items=["War Boots", "Blitz Blade", "Slikk's Sting"])
+    b_high = Build(
+        hero="Hayate",
+        level=15,
+        items=["War Boots", "Fafnir's Talon", "Blitz Blade", "Claves Sancti", "Slikk's Sting", "Hyoga's Edge"],
+        arcana={"Awake": 10, "Spirit": 10, "Dragon's Claw": 10},
+    )
+
+    for build, expected_s1, expected_ult in ((b_low, 5, 10), (b_mid, 7, 13), (b_high, 9, 16)):
+        att = engine.build_stats(build)
+        slots = {s["slot"]: s["hits"] for s in engine.skill_damage(att, toro_lv15, build)}
+        assert slots["Skill 1"] == expected_s1
+        assert slots["Ultimate"] == expected_ult
+
+    # Explicit skill_hits overrides remain respected
+    b_override = Build(hero="Hayate", level=15, skill_hits={"Skill 1": 3})
+    override_slots = {
+        s["slot"]: s["hits"] for s in engine.skill_damage(engine.build_stats(b_override), toro_lv15, b_override)
+    }
+    assert override_slots["Skill 1"] == 3
+
+
+def test_phase1_verified_hero_stats(engine):
+    wukong = engine.build_stats(Build(hero="Wukong", level=15))["stats"]
+    assert wukong["critical_chance"] == pytest.approx(22.0)
+    assert wukong["critical_damage"] == pytest.approx(175.0)
+
+    quillen = engine.build_stats(Build(hero="Quillen", level=15))["stats"]
+    assert quillen["critical_damage"] == pytest.approx(125.0)
+
+    for non_mana_hero in ("Florentino", "Allain", "Charlotte"):
+        st = engine.build_stats(Build(hero=non_mana_hero, level=15))["stats"]
+        assert st["max_mana"] == 0.0
+        assert st["mana_regen_5s"] == 0.0
+    assert engine.build_stats(Build(hero="Keera", level=15))["stats"]["max_mana"] == pytest.approx(2060.0)
+
+    hayate = engine.build_stats(Build(hero="Hayate", level=15))["stats"]
+    assert hayate["attack_speed"] == pytest.approx(49.0)
+    toro = engine.build_stats(Build(hero="Toro", level=15))["stats"]
+    assert toro["hp_regen_5s"] > 0.0
+
+
+def test_phase2_item_passives_dedup_and_omni_warning(engine):
+    # Duplicate boots warn and MS only counts once; Magic Ring CDR deduplicates
+    dup_boots = engine.build_stats(
+        Build(hero="Toro", level=15, items=["Hermes' Select", "Hermes' Select", "Magic Ring", "Magic Ring"])
+    )
+    assert any("รองเท้า" in w for w in dup_boots["item_warnings"])
+    assert dup_boots["sources"]["items"]["cooldown_reduction"] == pytest.approx(5.0)
+
+    # Sonic Boots physical damage reduction (-10%)
+    sonic = engine.build_stats(Build(hero="Toro", level=15, items=["Sonic Boots"]))["stats"]
+    assert sonic["physical_damage_taken_pct"] == pytest.approx(-10.0)
+
+    # AP scaling items: Holy of Holies, Hecate's Diadem, Frostguard, Mage Robe, Rhea's Blessing
+    ap_combo = engine.build_stats(
+        Build(
+            hero="Tulen",
+            level=15,
+            items=[
+                "Orb of the Magi",
+                "Hecate's Diadem",
+                "Holy of Holies",
+                "Frostguard",
+                "Mage Robe",
+                "Rhea's Blessing",
+            ],
+        )
+    )
+    assert ap_combo["stats"]["ability_power"] > 1200.0
+    assert ap_combo["stats"]["magic_life_steal"] == pytest.approx(25.0)
+    assert ap_combo["sources"]["items"]["cooldown_reduction"] >= 12.5
+    assert ap_combo["stats"]["damage_dealt_pct"] > 5.0
+    assert ap_combo["sources"]["items"]["armor"] >= 200.0
+
+    # Omni Arms reports unverified Five Forces AD bonus honestly
+    omni = engine.build_stats(Build(hero="Violet", level=15, items=["Omni Arms"]))
+    assert any("Omni Arms" in w for w in omni["item_warnings"])
+
+
+def test_phase2_duel_passives_actives_and_enchantments(engine):
+    # Medallion of Troy + Blade of Eternity + Rock Shield vs high AD attacker; enable_actives=False toggles Rock Shield/Mail of Pain active
+    defender_on = Build(
+        hero="Toro",
+        level=15,
+        items=["Medallion of Troy", "Mail of Pain", "Rock Shield", "Blade of Eternity", "Shield of the Lost"],
+        primary_faction="Veda",
+        primary_enchantments=["Sacred Bead", "Holy Verdict", "Sacred Protection"],
+        secondary_faction="Afata",
+        secondary_enchantments=["River Treader", "Vital Aid"],
+        enable_actives=True,
+    )
+    defender_off = Build(
+        hero="Toro",
+        level=15,
+        items=list(defender_on.items),
+        primary_faction="Veda",
+        primary_enchantments=list(defender_on.primary_enchantments),
+        secondary_faction="Afata",
+        secondary_enchantments=list(defender_on.secondary_enchantments),
+        enable_actives=False,
+    )
+    attacker = Build(
+        hero="Allain",
+        level=15,
+        items=["Fafnir's Talon", "Blitz Blade", "Death Sickle", "Fenrir's Tooth"],
+        primary_faction="Lokheim",
+        primary_enchantments=["Shadow Blade", "Deadly Claw", "Desperate Duel"],
+        secondary_faction="Afata",
+        secondary_enchantments=["River Treader", "Vital Aid"],
+    )
+
+    st_def = engine.build_stats(defender_on)
+    for ename in ("Sacred Protection", "Vital Aid"):
+        assert ename in st_def["enchantments_modeled"]
+
+    res_on = engine.duel(defender_on, attacker)
+    res_off = engine.duel(defender_off, attacker)
+    assert "Mail of Pain (Reflect)" in res_on["simulation"]["a"]["damage_breakdown"]
+    assert res_on["simulation"]["a"]["damage_dealt"] > res_off["simulation"]["a"]["damage_dealt"]
+    assert "Fafnir's Talon" in res_on["simulation"]["b"]["damage_breakdown"]
+
+    # Afata Regrowth + Nature's Rage + Lokheim Bone Cutter
+    mage = Build(
+        hero="Krixi",
+        level=15,
+        items=["Apocalypse"],
+        primary_faction="Afata",
+        primary_enchantments=["River Treader", "Regrowth", "Nature's Rage"],
+        secondary_faction="Lokheim",
+        secondary_enchantments=["Bone Cutter"],
+    )
+    st_mage = engine.build_stats(mage)
+    assert st_mage["sources"]["enchantments"]["resistance"] == pytest.approx(12.5)
+    assert "Regrowth" in st_mage["enchantments_modeled"]
+    assert "Nature's Rage" in st_mage["enchantments_modeled"]
+    d_mage = engine.duel(mage, defender_off)
+    assert (
+        "Nature's Rage Burn" in d_mage["simulation"]["a"]["damage_breakdown"]
+        or "Apocalypse (Spellblade)" in d_mage["simulation"]["a"]["damage_breakdown"]
+    )
+
+
+def test_phase3_skills_charges_cdr_cap_and_lane_validation(engine):
+    # Bonnie S1 has recharge_cooldown and multi-charge support
+    bonnie = Build(hero="Bonnie", level=15, items=["Orb of the Magi"])
+    bonnie_skills = {
+        s["slot"]: s
+        for s in engine.skill_damage(
+            engine.build_stats(bonnie), engine.build_stats(Build(hero="Toro", level=15)), bonnie
+        )
+    }
+    assert bonnie_skills["Skill 1"]["recharge_cooldown"] is not None
+    assert bonnie_skills["Skill 1"]["recharge_cooldown"] > 0
+
+    # Ultimate CDR stays strictly capped at 40% even with Sacred Bead + 40% CDR items
+    sacred_max = Build(
+        hero="Tulen",
+        level=15,
+        items=["Flashy Boots", "Boomstick", "Berith's Agony", "Hecate's Diadem"],
+        primary_faction="Veda",
+        primary_enchantments=["Sacred Bead"],
+        arcana={"Purity": 10},
+    )
+    st = engine.build_stats(sacred_max)
+    ult = [
+        s
+        for s in engine.skill_damage(st, engine.build_stats(Build(hero="Toro", level=15)), sacred_max)
+        if s["slot"] == "Ultimate"
+    ][0]
+    assert ult["cooldown"] == pytest.approx(round(ult["base_cooldown"] * 0.60, 2), abs=0.05)
+
+    # Lane validation on recommend_matchup_runes
+    with pytest.raises(ValueError, match="Unknown lane"):
+        engine.recommend_matchup_runes("Omen", "Biron", lane="InvalidLane", level=2)
+
+
+def test_soaring_aura_no_static_pierce_and_dynamic_cap(engine):
+    # Soaring Aura grants 10-24 flat pierce per stack dynamically (never statically at 0 stacks)
+    res_aura = engine.build_stats(Build(hero="Krixi", level=15, items=["Soaring Aura"]))
+    assert res_aura["stats"]["magic_pierce_flat"] == 0.0
+
+    res_evil = engine.build_stats(Build(hero="Krixi", level=15, items=["Spooky Mask"]))
+    assert res_evil["stats"]["magic_pierce_flat"] == 75.0
+
+    # Static pierce comes only from Spooky Mask (no double-counting Soaring Aura stacks)
+    res_both = engine.build_stats(Build(hero="Krixi", level=15, items=["Spooky Mask", "Soaring Aura"]))
+    assert res_both["stats"]["magic_pierce_flat"] == 75.0
+
+
+def test_unlearned_skill_zeroes_hp_pct_scaling(engine):
+    target = engine.build_stats(Build(hero="Toro", level=15))
+
+    allain_lv1 = Build(hero="Allain", level=1, skill_levels={"Skill 1": 1, "Skill 2": 0, "Ultimate": 0})
+    allain_skills = {s["slot"]: s for s in engine.skill_damage(engine.build_stats(allain_lv1), target, allain_lv1)}
+    assert allain_skills["Ultimate"]["skill_level"] == 0
+    assert allain_skills["Ultimate"]["target_current_hp_pct"] == 0.0
+    assert allain_skills["Ultimate"]["target_lost_hp_pct"] == 0.0
+
+    bf_lv1 = Build(hero="Butterfly", level=1, skill_levels={"Skill 1": 1, "Skill 2": 0, "Ultimate": 0})
+    bf_skills = {s["slot"]: s for s in engine.skill_damage(engine.build_stats(bf_lv1), target, bf_lv1)}
+    assert bf_skills["Ultimate"]["skill_level"] == 0
+    assert bf_skills["Ultimate"]["target_lost_hp_pct"] == 0.0
+
+
+def test_stasis_invuln_revive_pending_and_death_sickle_duel(engine):
+    from src.combat_calculator import _emit_damage, _init_sim_side
+
+    def _side(build: Build, opp_build: Build) -> dict:
+        st = engine.build_stats(build)
+        opp_st = engine.build_stats(opp_build)
+        return _init_sim_side(
+            st,
+            [],
+            engine.basic_attack(st, opp_st),
+            [],
+            (0.0, 1.0),
+            {"items": list(build.items), "level": build.level, "enable_actives": True},
+        )
+
+    t = 1.0
+    target_b = Build(hero="Toro", level=15, items=[])
+
+    # 1. Death Sickle sets invuln_until without stasis_until -> holder can still normal-attack
+    ds_b = Build(hero="Hayate", level=15, items=["Death Sickle"])
+    ds_holder = _side(ds_b, target_b)
+    target = _side(target_b, ds_b)
+    ds_holder["opp_items"] = target["items"]
+    target["opp_items"] = ds_holder["items"]
+    target["hp"] = 5000.0
+    ds_holder["hp"] = 100.0
+    assert _emit_damage(target, ds_holder, "Skill 1", 5000.0, "physical", t, is_skill=True) is True
+    assert ds_holder["hp"] == pytest.approx(1.0)
+    assert ds_holder["invuln_until"] > t
+    assert ds_holder["stasis_until"] <= t
+    assert _emit_damage(ds_holder, target, "Basic Attack", 300.0, "physical", t + 0.2, is_attack=True) is True
+
+    # 2. Arctic Orb triggers stasis_until + invuln_until -> blocks both incoming & outgoing active hits
+    ao_b = Build(hero="Tulen", level=15, items=["Arctic Orb"])
+    ao_holder = _side(ao_b, target_b)
+    ao_target = _side(target_b, ao_b)
+    ao_holder["opp_items"] = ao_target["items"]
+    ao_target["opp_items"] = ao_holder["items"]
+    ao_holder["hp"] = ao_holder["max_hp"] * 0.20
+    assert _emit_damage(ao_target, ao_holder, "Basic Attack", 50.0, "physical", t, is_attack=True) is True
+    assert ao_holder["stasis_until"] > t
+    assert _emit_damage(ao_holder, ao_target, "Skill 1", 500.0, "magic", t + 0.5, is_skill=True) is False
+    dealt_before = ao_target["dealt"]
+    assert _emit_damage(ao_target, ao_holder, "Basic Attack", 500.0, "physical", t + 0.5, is_attack=True) is False
+    assert ao_target["dealt"] == dealt_before
+
+    # 3. Blade of Eternity pending corpse blocks dealing/recording damage in both directions
+    boe_b = Build(hero="Valhein", level=15, items=["Blade of Eternity"])
+    boe_holder = _side(boe_b, target_b)
+    boe_target = _side(target_b, boe_b)
+    boe_holder["opp_items"] = boe_target["items"]
+    boe_target["opp_items"] = boe_holder["items"]
+    boe_holder["hp"] = 50.0
+    assert _emit_damage(boe_target, boe_holder, "Basic Attack", 5000.0, "physical", t, is_attack=True) is True
+    assert boe_holder["revive_pending_until"] is not None
+    assert _emit_damage(boe_holder, boe_target, "Basic Attack", 500.0, "physical", t + 0.5, is_attack=True) is False
+    assert _emit_damage(boe_target, boe_holder, "Skill 1", 500.0, "magic", t + 0.5, is_skill=True) is False
+
+
+def test_charlotte_passive_final_hit_lost_hp_not_multiplied_by_7(engine):
+    b_att = Build(hero="Charlotte", level=15)
+    b_def = Build(hero="Thane", level=15)
+    st_att = engine.build_stats(b_att)
+    st_def = engine.build_stats(b_def)
+    row_full = engine.skill_damage(st_att, st_def, b_att, target_hp_ratio=1.0)[0]
+    row_half = engine.skill_damage(st_att, st_def, b_att, target_hp_ratio=0.5)[0]
+    assert row_half["hits"] == 7
+    expected_execute = 0.15 * st_def["stats"]["max_hp"] * 0.5
+    assert row_half["components"]["target_lost_hp"] == pytest.approx(expected_execute, abs=0.2)
+    assert (row_half["raw_damage"] - row_full["raw_damage"]) == pytest.approx(expected_execute, abs=0.5)

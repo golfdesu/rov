@@ -470,7 +470,11 @@ export function useDraft(options: UseDraftOptions = {}) {
   }, []);
 
   const loadRecordedGame = useCallback(
-    (game: RecordedDraftGame, gamesListOverride?: RecordedDraftGame[]) => {
+    (
+      game: RecordedDraftGame,
+      gamesListOverride?: RecordedDraftGame[],
+      globalBansOverride?: GlobalBanState,
+    ) => {
       const activeSeriesGames = gamesListOverride ?? seriesGames;
       const reconstructed = reconstructDraftHistory({
         bluePicks: game.bluePicks,
@@ -495,14 +499,15 @@ export function useDraft(options: UseDraftOptions = {}) {
       const teamAName = game.blueSideTeam === "A" ? game.blueTeamName : game.redTeamName;
       const teamBName = game.blueSideTeam === "A" ? game.redTeamName : game.blueTeamName;
       setGlobalBans((prev) => {
-        const sameSeries = resolveSeriesName(prev) === targetGroup;
+        const effectivePrev = globalBansOverride ?? prev;
+        const sameSeries = resolveSeriesName(effectivePrev) === targetGroup;
         const baseState: GlobalBanState = sameSeries
-          ? prev
+          ? effectivePrev
           : {
-              ...prev,
+              ...effectivePrev,
               seriesName: game.seriesName || targetGroup,
-              teamAName: teamAName || prev.teamAName,
-              teamBName: teamBName || prev.teamBName,
+              teamAName: teamAName || effectivePrev.teamAName,
+              teamBName: teamBName || effectivePrev.teamBName,
               teamAUsed: [],
               teamBUsed: [],
               universalBans: [],
@@ -672,10 +677,16 @@ export function useDraft(options: UseDraftOptions = {}) {
   }, [bluePicks, redPicks, blueBans, redBans, globalBans, state.blueWinRate]);
 
   const selectGameNumber = useCallback(
-    (nextGameNumber: number) => {
-      if (nextGameNumber === globalBans.gameNumber) return;
+    (nextGameNumber: number, globalBansOverride?: GlobalBanState) => {
+      if (nextGameNumber === globalBans.gameNumber) {
+        if (globalBansOverride) {
+          setGlobalBans(globalBansOverride);
+        }
+        return;
+      }
 
-      const currentGroup = resolveSeriesName(globalBans);
+      const effectiveGlobalBans = globalBansOverride ?? globalBans;
+      const currentGroup = resolveSeriesName(effectiveGlobalBans);
       const hasCurrentActions =
         bluePicks.length + redPicks.length + blueBans.length + redBans.length > 0;
 
@@ -696,9 +707,9 @@ export function useDraft(options: UseDraftOptions = {}) {
             second: "2-digit",
           }),
           seriesName: currentGroup,
-          blueTeamName: blueTeamName(globalBans),
-          redTeamName: redTeamName(globalBans),
-          blueSideTeam: globalBans.blueSideTeam,
+          blueTeamName: blueTeamName(effectiveGlobalBans),
+          redTeamName: redTeamName(effectiveGlobalBans),
+          blueSideTeam: effectiveGlobalBans.blueSideTeam,
           blueBans: [...blueBans],
           redBans: [...redBans],
           bluePicks: [...bluePicks],
@@ -714,7 +725,7 @@ export function useDraft(options: UseDraftOptions = {}) {
         ];
       }
 
-      const unlockStatus = getGameUnlockStatus(nextGameNumber, globalBans, nextSeriesGames);
+      const unlockStatus = getGameUnlockStatus(nextGameNumber, effectiveGlobalBans, nextSeriesGames);
       if (!unlockStatus.isUnlocked) {
         return;
       }
@@ -728,7 +739,7 @@ export function useDraft(options: UseDraftOptions = {}) {
       );
 
       if (targetGame) {
-        loadRecordedGame(targetGame, nextSeriesGames);
+        loadRecordedGame(targetGame, nextSeriesGames, effectiveGlobalBans);
       } else {
         const prevGame = nextSeriesGames.find(
           (g) => getGameSeriesGroup(g) === currentGroup && g.gameNumber === nextGameNumber - 1,
@@ -736,14 +747,15 @@ export function useDraft(options: UseDraftOptions = {}) {
         dispatch({ type: "reset" });
         setPredictError(null);
         setGlobalBans((prev) => {
-          const synced = syncSeriesGlobalBans(prev, nextSeriesGames, nextGameNumber, overwrittenGames);
+          const base = globalBansOverride ?? prev;
+          const synced = syncSeriesGlobalBans(base, nextSeriesGames, nextGameNumber, overwrittenGames);
           const nextBlueSide: TeamId = prevGame?.winner
             ? prevGame.winner === "A"
               ? "B"
               : "A"
-            : prev.blueSideTeam;
+            : base.blueSideTeam;
           return {
-            ...prev,
+            ...base,
             ...synced,
             blueSideTeam: nextBlueSide,
             gameNumber: nextGameNumber,
@@ -770,36 +782,68 @@ export function useDraft(options: UseDraftOptions = {}) {
       setSeriesGames(nextSeriesGames);
       if (deleted) {
         const currentGroup = resolveSeriesName(globalBans);
-        const isDeletedActiveGame =
-          getGameSeriesGroup(deleted) === currentGroup && deleted.gameNumber === globalBans.gameNumber;
+        if (getGameSeriesGroup(deleted) !== currentGroup) return;
+
+        const isDeletedActiveGame = deleted.gameNumber === globalBans.gameNumber;
+        const synced = syncSeriesGlobalBans(globalBans, nextSeriesGames, globalBans.gameNumber, [deleted]);
+        const candidate: GlobalBanState = {
+          ...globalBans,
+          ...synced,
+        };
+        const maxUnlocked = getMaxUnlockedGame(candidate, nextSeriesGames);
+        const clampedGame = Math.min(globalBans.gameNumber, maxUnlocked);
+        const finalSynced =
+          clampedGame !== globalBans.gameNumber
+            ? syncSeriesGlobalBans(candidate, nextSeriesGames, clampedGame)
+            : synced;
+        const finalState: GlobalBanState = {
+          ...globalBans,
+          ...finalSynced,
+          gameNumber: clampedGame,
+        };
+
+        if (clampedGame !== globalBans.gameNumber) {
+          const targetGame = nextSeriesGames.find(
+            (g) => getGameSeriesGroup(g) === currentGroup && g.gameNumber === clampedGame,
+          );
+          if (targetGame) {
+            loadRecordedGame(targetGame, nextSeriesGames, finalState);
+          } else {
+            const prevGame = nextSeriesGames.find(
+              (g) => getGameSeriesGroup(g) === currentGroup && g.gameNumber === clampedGame - 1,
+            );
+            const nextBlueSide: TeamId =
+              deleted.gameNumber === clampedGame
+                ? deleted.blueSideTeam
+                : prevGame?.winner
+                  ? prevGame.winner === "A"
+                    ? "B"
+                    : "A"
+                  : globalBans.blueSideTeam;
+            dispatch({ type: "reset" });
+            setPredictError(null);
+            setGlobalBans({
+              ...finalState,
+              blueSideTeam: nextBlueSide,
+            });
+          }
+          return;
+        }
 
         if (isDeletedActiveGame) {
           dispatch({ type: "reset" });
           setPredictError(null);
+          setGlobalBans({
+            ...finalState,
+            blueSideTeam: deleted.blueSideTeam,
+          });
+          return;
         }
 
-        setGlobalBans((prev) => {
-          if (getGameSeriesGroup(deleted) !== resolveSeriesName(prev)) return prev;
-          const synced = syncSeriesGlobalBans(prev, nextSeriesGames, prev.gameNumber, [deleted]);
-          const candidate: GlobalBanState = {
-            ...prev,
-            ...synced,
-          };
-          const maxUnlocked = getMaxUnlockedGame(candidate, nextSeriesGames);
-          const clampedGame = Math.min(prev.gameNumber, maxUnlocked);
-          const finalSynced =
-            clampedGame !== prev.gameNumber
-              ? syncSeriesGlobalBans(candidate, nextSeriesGames, clampedGame)
-              : synced;
-          return {
-            ...prev,
-            ...finalSynced,
-            gameNumber: clampedGame,
-          };
-        });
+        setGlobalBans(finalState);
       }
     },
-    [seriesGames, globalBans],
+    [seriesGames, globalBans, loadRecordedGame],
   );
 
   const deleteSeriesGroup = useCallback((groupName: string) => {

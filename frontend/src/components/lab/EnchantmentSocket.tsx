@@ -52,8 +52,9 @@ export function SocketItem({
             e.stopPropagation();
             onClear();
           }}
-          className="absolute -right-1 -top-1 hidden h-4 w-4 place-items-center rounded-full bg-red text-bg shadow group-hover:grid"
+          className="absolute -right-1 -top-1 grid h-4 w-4 place-items-center rounded-full bg-red text-bg shadow opacity-100 transition-opacity focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
           title={`ลบ ${name}`}
+          aria-label={`ลบ ${name}`}
         >
           <X size={10} />
         </button>

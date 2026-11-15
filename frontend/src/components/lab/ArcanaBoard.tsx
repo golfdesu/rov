@@ -260,7 +260,7 @@ export function ArcanaBoard({ arcana, chosen, maxPerColor, onChange }: ArcanaBoa
                 <button
                   type="button"
                   onClick={() => handleFillTen(a.name, activeColor)}
-                  disabled={countByColor[activeColor] >= maxPerColor && count === 10}
+                  disabled={countByColor[activeColor] >= maxPerColor}
                   className="ml-0.5 rounded border border-line/60 bg-bg px-1.5 py-1 text-[10px] font-mono font-bold text-muted hover:border-gold hover:text-gold disabled:opacity-20"
                   title="ใส่เต็ม 10 เม็ด"
                 >

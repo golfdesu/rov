@@ -7,10 +7,13 @@ custom filtering by year, league, date, and true-pick-order verification status.
 
 import argparse
 import json
+import sys
 from datetime import datetime
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
 DATA_DIR = BASE_DIR / "data"
 MATCHES_FULL_PATH = DATA_DIR / "matches_draft_full.json"
 TRUE_ORDER_PATH = DATA_DIR / "true_pick_order.json"
@@ -19,7 +22,7 @@ DEFAULT_OUTPUT_PATH = DATA_DIR / "matches_training.json"
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Build curated training dataset for RoV SOTA Model")
-    parser.add_argument("--min-year", type=int, default=2024, help="Earliest match year to include (default: 2024)")
+    parser.add_argument("--min-year", type=int, default=2025, help="Earliest match year to include (default: 2025)")
     parser.add_argument("--max-year", type=int, default=2026, help="Latest match year to include (default: 2026)")
     parser.add_argument(
         "--max-date",
@@ -101,7 +104,7 @@ def normalize_league_token(league_str: str) -> str:
 
 
 def build_training_dataset(
-    min_year: int = 2024,
+    min_year: int = 2025,
     max_year: int = 2026,
     max_date: str | None = None,
     leagues: list[str] | None = None,
@@ -223,7 +226,10 @@ def build_training_dataset(
     if flat_csv_path:
         import pandas as pd
 
-        from scrape_matches import format_flat_row
+        try:
+            from src.scrape_matches import format_flat_row
+        except ImportError:
+            from scrape_matches import format_flat_row
 
         flat_rows = [format_flat_row(cg) for cg in curated_games]
         df = pd.DataFrame(flat_rows)

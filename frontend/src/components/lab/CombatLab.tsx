@@ -9,11 +9,47 @@ import { LevelSweep } from "./LevelSweep";
 import { SkillDamageTable } from "./SkillDamageTable";
 import { StatSheet } from "./StatSheet";
 
-export function CombatLab({ heroMap }: { heroMap: Map<string, Hero> }) {
-  const { catalog, builds, result, error, isLoading, updateBuild, swap, mirror } = useCombatLab();
+export function CombatLab({
+  heroMap,
+  storageKey,
+  persistRemote = false,
+}: {
+  heroMap: Map<string, Hero>;
+  storageKey?: string;
+  persistRemote?: boolean;
+}) {
+  const {
+    catalog,
+    builds,
+    result,
+    error,
+    isLoading,
+    updateBuild,
+    swap,
+    mirror,
+    enableKiting,
+    setEnableKiting,
+    enableActives,
+    setEnableActives,
+    retryCatalog,
+    resetBuilds,
+  } = useCombatLab({ storageKey, persistRemote });
 
   if (!catalog) {
-    return <div className="p-6 text-sm text-muted">{error ?? "กำลังโหลดข้อมูลฮีโร่ ไอเทม รูน และพลังแฝง…"}</div>;
+    return (
+      <div className="flex flex-wrap items-center gap-3 p-6 text-sm text-muted">
+        <span>{error ?? "กำลังโหลดข้อมูลฮีโร่ ไอเทม รูน และพลังแฝง…"}</span>
+        {error && (
+          <button
+            type="button"
+            onClick={retryCatalog}
+            className="border border-gold bg-gold/10 px-2.5 py-1 text-xs font-bold text-gold hover:bg-gold hover:text-bg"
+          >
+            โหลดใหม่
+          </button>
+        )}
+      </div>
+    );
   }
 
   const column = (side: Side) => {
@@ -59,7 +95,20 @@ export function CombatLab({ heroMap }: { heroMap: Map<string, Hero> }) {
 
   return (
     <div className="flex flex-col gap-4">
-      {error && <Alert>{error}</Alert>}
+      {error && (
+        <Alert>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span>{error}</span>
+            <button
+              type="button"
+              onClick={resetBuilds}
+              className="border border-line-strong bg-panel px-2 py-0.5 text-xs font-semibold text-ink hover:border-gold hover:text-gold"
+            >
+              รีเซ็ตบิลด์
+            </button>
+          </div>
+        </Alert>
+      )}
       {result && (
         <DuelSummary
           result={result}
@@ -68,6 +117,11 @@ export function CombatLab({ heroMap }: { heroMap: Map<string, Hero> }) {
           isLoading={isLoading}
           onSwap={swap}
           onMirror={mirror}
+          enableKiting={enableKiting}
+          onToggleKiting={() => setEnableKiting((v) => !v)}
+          enableActives={enableActives}
+          onToggleActives={() => setEnableActives((v) => !v)}
+          onReset={resetBuilds}
         />
       )}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">

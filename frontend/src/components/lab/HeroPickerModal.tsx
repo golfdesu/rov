@@ -77,6 +77,8 @@ export function HeroPickerModal({
             <button
               type="button"
               onClick={() => setQuery("")}
+              title="ล้างคำค้นหา"
+              aria-label="ล้างคำค้นหา"
               className="absolute right-2.5 text-dim hover:text-ink"
             >
               <X size={14} />

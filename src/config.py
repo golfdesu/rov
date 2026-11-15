@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 
@@ -12,21 +13,28 @@ class PathConfig:
         self.heroes_json_path: Path = self.data_dir / "heroes_130_full.json"
         self.heroes_csv_path: Path = self.data_dir / "heroes_130_summary.csv"
         self.hero_skills_json_path: Path = self.data_dir / "hero_skills_full.json"
+        self.hero_level_stats_json_path: Path = self.data_dir / "hero_level_stats.json"
+        self.hero_level_stats_csv_path: Path = self.data_dir / "hero_level_stats.csv"
+        self.hero_status_lv1_path: Path = self.data_dir / "hero_status_lv1.json"
+        self.hero_status_lv15_path: Path = self.data_dir / "hero_status_lv15.json"
         self.matches_json_path: Path = self.data_dir / "matches_draft_full.json"
+        self.matches_training_path: Path = self.data_dir / "matches_training.json"
+        self.true_pick_order_path: Path = self.data_dir / "true_pick_order.json"
+        self.screenshots_manifest_path: Path = self.data_dir / "screenshots_manifest.json"
         self.matches_csv_path: Path = self.data_dir / "matches_draft_flat.csv"
         self.hero_stats_csv_path: Path = self.data_dir / "hero_draft_stats.csv"
         self.items_json_path: Path = self.data_dir / "items.json"
         self.hero_patch_history_path: Path = self.data_dir / "hero_patch_history.json"
-        self.hero_level_stats_json_path: Path = self.data_dir / "hero_level_stats.json"
-        self.hero_level_stats_csv_path: Path = self.data_dir / "hero_level_stats.csv"
         self.arcana_json_path: Path = self.data_dir / "arcana.json"
         self.enchantments_json_path: Path = self.data_dir / "enchantments.json"
         self.synergy_csv_path: Path = self.data_dir / "synergy_matrix.csv"
         self.counter_csv_path: Path = self.data_dir / "counter_matrix.csv"
         self.draft_session_path: Path = self.data_dir / "draft_session_state.json"
+        self.app_db_path: Path = Path(os.environ.get("ROV_DB_PATH", str(self.data_dir / "rov_app.db")))
         self.hero_tier_overrides_path: Path = self.data_dir / "hero_tier_overrides.json"
 
         self.sota_model_path: Path = self.models_dir / "sota_draft_gnn_transformer.pt"
+        self.heuristic_model_path: Path = self.models_dir / "sota_draft_gnn_transformer_heuristic.pt"
         self.baseline_model_path: Path = self.models_dir / "draft_predictor.pt"
         self.production_params_path: Path = self.configs_dir / "selected_production_params.json"
         self.top5_trials_path: Path = self.best_params_dir / "sota_rov_top5_trials.json"
@@ -39,13 +47,13 @@ class DraftModelConfig:
         d_model: int = 256,
         nhead: int = 4,
         num_layers: int = 1,
-        dropout: float = 0.1941,
-        neural_scale: float = 1.0746,
-        lr: float = 0.001933,
-        weight_decay: float = 0.000689,
-        label_smoothing: float = 0.0397,
-        win_loss_weight: float = 0.2186,
-        batch_size: int = 1024,
+        dropout: float = 0.2513,
+        neural_scale: float = 1.3326,
+        lr: float = 0.001211,
+        weight_decay: float = 0.001459,
+        label_smoothing: float = 0.0395,
+        win_loss_weight: float = 0.1266,
+        batch_size: int = 512,
         augment_factor: int = 1,
         random_state: int = 42,
     ):

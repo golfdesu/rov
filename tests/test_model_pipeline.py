@@ -173,3 +173,276 @@ def test_heuristic_checkpoint_exists_and_loads():
     assert len(predictor.hero_names) == 130
     assert predictor.val_loss < 3.0
     assert predictor.architecture == "RoVDraftGNNTransformer"
+
+
+def test_partial_ban_find_matching_step():
+    from src.search.draft_mcts import DRAFT_STEPS, DraftMinimaxSearch
+
+    predictor = RoVDraftPredictor()
+    searcher = DraftMinimaxSearch(predictor)
+    # 1/2 phase-1 Blue bans recorded (partial ban) + 2 Blue picks + 1 Red pick; next is Red Pick 2
+    step_idx = searcher.find_matching_step(
+        side_val=1,
+        act_type=1,
+        phase=1,
+        b_picks_len=2,
+        r_picks_len=1,
+        b_bans_len=1,
+        r_bans_len=2,
+    )
+    assert DRAFT_STEPS[step_idx] == (6, 1, 1, 1)
+
+
+def test_lookahead_depth_3_and_4():
+    from src.search.draft_mcts import DraftMinimaxSearch, DraftSearchState
+
+    predictor = RoVDraftPredictor()
+    ids = predictor.hero_to_id
+    searcher = DraftMinimaxSearch(predictor)
+    state = DraftSearchState(
+        blue_picks=(ids["Marja"],),
+        red_picks=(ids["Hayate"], ids["Toro"]),
+        blue_bans=(ids["Rouie"], ids["Billow"]),
+        red_bans=(ids["Eland'orr"], ids["Valhein"]),
+        blue_global_bans=(),
+        red_global_bans=(),
+        step_idx=7,
+        league="RPL",
+    )
+    cands = [ids["Florentino"], ids["Dolia"]]
+    for depth in (3, 4):
+        res = searcher.search_lookahead_win_rates(state, cands, depth=depth, branch_factor=2)
+        assert set(res) == set(cands)
+        assert all(0.0 <= v <= 100.0 for v in res.values())
+
+
+def test_predict_matrix_ban_mode_and_forecast_sides():
+    predictor = RoVDraftPredictor()
+    req = DraftStateRequest(
+        mode="ban",
+        side="blue",
+        phase=1,
+        ally_picks=["Toro"],
+        enemy_picks=["Marja"],
+        ally_bans=["Rouie"],
+        enemy_bans=["Eland'orr"],
+        blue_global_bans=["Florentino"],
+        red_global_bans=["Hayate"],
+        top_k=5,
+    )
+    matrix = predictor.predict_matrix(req)
+    assert matrix.architecture == "EmpiricalMatrixRules"
+    rec_names = {r.hero_name for r in matrix.recommendations}
+    assert "Hayate" not in rec_names  # Opponent already used in Global Ban
+    for r in matrix.recommendations:
+        assert 0.0 < r.predicted_win_rate_pct < 100.0
+    for r in matrix.red_next_bans:
+        assert r.hero_name not in {"Florentino"}
+
+
+def test_predictor_top_k_25_and_aliases():
+    predictor = RoVDraftPredictor()
+    assert predictor.resolve_heroes(["Batman", "The Joker", "Payna", "Kilgrooth"]) == [
+        "Kaine",
+        "Stuart",
+        "Helen",
+        "Kil'Groth",
+    ]
+    req = DraftStateRequest(mode="pick", side="blue", phase=1, ally_picks=["Toro"], enemy_picks=["Marja"], top_k=30)
+    resp = predictor.predict(req)
+    assert len(resp.recommendations) == 30
+    assert abs(sum(r.probability_pct for r in resp.recommendations)) <= 100.1
+
+
+def test_predict_draft_cli_invocation():
+    import subprocess
+    import sys
+
+    from src.predict_draft_cli import build_sequence_tokens, load_predictor, predict_next_action, resolve_hero_list
+
+    model, ckpt, hero_names, hero_to_id, heroes_df, stats_df = load_predictor()
+    assert model is not None
+    assert resolve_hero_list("Batman,Joker,Payna,Kil'grooth", hero_to_id) == ["Kaine", "Stuart", "Helen", "Kil'Groth"]
+
+    th, tt, ts, tpad = build_sequence_tokens(["Toro"], ["Marja"], ["Rouie"], ["Hayate"], hero_to_id, side="red")
+    assert th.shape == (1, 17)
+    assert not bool(tpad[0, 0]) and bool(tpad[0, 5])
+    assert ts[0, 0] < ts[0, 1]
+
+    missing, recs, phase = predict_next_action(
+        model,
+        ckpt,
+        hero_names,
+        hero_to_id,
+        heroes_df,
+        stats_df,
+        action_mode="pick",
+        side="blue",
+        phase=1,
+        ally_picks=["Toro"],
+        enemy_picks=["Marja"],
+        top_k=5,
+    )
+    assert phase == 1
+    assert len(recs) == 5
+    assert "Toro" not in {r["hero"] for r in recs}
+
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "src/predict_draft_cli.py",
+            "--mode",
+            "pick",
+            "--side",
+            "blue",
+            "--phase",
+            "1",
+            "--ally-picks",
+            "Toro",
+            "--enemy-picks",
+            "Marja",
+            "--top-k",
+            "3",
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert "#1" in proc.stdout and "#3" in proc.stdout
+
+
+def test_predict_cli_aliases_ban_phase_and_completed_win_rate():
+    from src.predict_draft_cli import load_predictor, predict_next_action
+    from src.predictor import RoVDraftPredictor
+    from src.schemas import DraftStateRequest
+
+    model, ckpt, hero_names, hero_to_id, heroes_df, stats_df = load_predictor()
+
+    _, recs_alias, phase_alias = predict_next_action(
+        model,
+        ckpt,
+        hero_names,
+        hero_to_id,
+        heroes_df,
+        stats_df,
+        action_mode="pick",
+        side="blue",
+        phase=1,
+        ally_picks=["Arthur"],
+        top_k=5,
+    )
+    assert phase_alias == 1
+    assert "Mortos" not in {r["hero"] for r in recs_alias}
+
+    _, _, ban_phase_p1 = predict_next_action(
+        model,
+        ckpt,
+        hero_names,
+        hero_to_id,
+        heroes_df,
+        stats_df,
+        action_mode="ban",
+        side="blue",
+        phase=None,
+        ally_picks=["Toro", "Marja"],
+        enemy_picks=["Rouie", "Hayate"],
+        ally_bans=["Heino", "Dolia"],
+        enemy_bans=["Goverra", "Dyadia"],
+        top_k=3,
+    )
+    assert ban_phase_p1 == 1
+
+    _, _, ban_phase_p2 = predict_next_action(
+        model,
+        ckpt,
+        hero_names,
+        hero_to_id,
+        heroes_df,
+        stats_df,
+        action_mode="ban",
+        side="blue",
+        phase=None,
+        ally_picks=["Toro", "Marja", "Krixi"],
+        enemy_picks=["Rouie", "Hayate", "Murad"],
+        ally_bans=["Heino", "Dolia"],
+        enemy_bans=["Goverra", "Dyadia"],
+        top_k=3,
+    )
+    assert ban_phase_p2 == 2
+
+    blue_5 = ["Toro", "Florentino", "Nakroth", "Krixi", "Hayate"]
+    red_5 = ["Thane", "Omen", "Paine", "Liliana", "Violet"]
+    blue_bans = ["Rouie", "Heino", "Dolia", "Goverra"]
+    red_bans = ["Dyadia", "Stuart", "Billow", "Enzo"]
+
+    _, recs_done, _ = predict_next_action(
+        model,
+        ckpt,
+        hero_names,
+        hero_to_id,
+        heroes_df,
+        stats_df,
+        action_mode="pick",
+        side="blue",
+        phase=2,
+        ally_picks=blue_5,
+        enemy_picks=red_5,
+        ally_bans=blue_bans,
+        enemy_bans=red_bans,
+        top_k=1,
+    )
+    predictor = RoVDraftPredictor()
+    api_resp = predictor.predict(
+        DraftStateRequest(
+            mode="pick",
+            side="blue",
+            phase=2,
+            ally_picks=blue_5,
+            enemy_picks=red_5,
+            ally_bans=blue_bans,
+            enemy_bans=red_bans,
+            top_k=1,
+        )
+    )
+    assert abs(recs_done[0]["pred_win_pct"] - api_resp.recommendations[0].predicted_win_rate_pct) < 0.05
+
+    # Alphanumeric multi-word aliases & partial-ban completed 5v5 Step-17/18 parity
+    from src.predict_draft_cli import resolve_hero_list
+
+    assert predictor.resolve_heroes(["TheJoker", "FlowbornMM"]) == ["Stuart", "Flowborn (Marksman)"]
+    assert resolve_hero_list("TheJoker,FlowbornMM", hero_to_id) == ["Stuart", "Flowborn (Marksman)"]
+
+    r17 = predictor.predict(
+        DraftStateRequest(
+            mode="pick",
+            side="red",
+            phase=2,
+            ally_picks=red_5[:4],
+            enemy_picks=blue_5,
+            ally_bans=[],
+            enemy_bans=[],
+            top_k=20,
+            use_lookahead=False,
+        )
+    )
+    chosen_red5 = r17.recommendations[0].hero_name
+    r18 = predictor.predict(
+        DraftStateRequest(
+            mode="pick",
+            side="blue",
+            phase=2,
+            ally_picks=blue_5,
+            enemy_picks=[*red_5[:4], chosen_red5],
+            ally_bans=[],
+            enemy_bans=[],
+            top_k=1,
+            use_lookahead=False,
+        )
+    )
+    assert (
+        abs(
+            r18.recommendations[0].predicted_win_rate_pct
+            - round(100.0 - r17.recommendations[0].predicted_win_rate_pct, 2)
+        )
+        <= 0.02
+    )

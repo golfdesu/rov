@@ -7,7 +7,7 @@ import {
   Table as TableIcon,
   X,
 } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Hero, RoleType } from "../../types/draft";
 import { displayName, matchesHeroQuery } from "../../utils/heroNames";
 import { HeroPortrait } from "../HeroPortrait";
@@ -114,12 +114,23 @@ export function TierListView({ heroes }: TierListViewProps) {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Global keydown: shortcut '/' to focus search
-  const handleContainerKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "/" && document.activeElement !== searchInputRef.current) {
-      e.preventDefault();
-      searchInputRef.current?.focus();
+  useEffect(() => {
+    if (inspectHero) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const typing =
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        e.target instanceof HTMLSelectElement;
+      if (typing) return;
+      if (e.key === "/") {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
     }
-  };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [inspectHero]);
 
   // Filtered heroes list
   const filteredHeroes = useMemo(() => {
@@ -216,11 +227,7 @@ export function TierListView({ heroes }: TierListViewProps) {
   };
 
   return (
-    <div
-      className="flex h-full flex-col overflow-hidden bg-bg"
-      onKeyDown={handleContainerKeyDown}
-      tabIndex={-1}
-    >
+    <div className="flex h-full flex-col overflow-hidden bg-bg">
       {/* Top Controls Header */}
       <div className="shrink-0 border-b border-line bg-panel/70 px-4 py-3 backdrop-blur-md">
         <div className="mx-auto flex max-w-[1920px] flex-col gap-3">
@@ -249,13 +256,17 @@ export function TierListView({ heroes }: TierListViewProps) {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  aria-label="ค้นหาฮีโร่ใน Tier List"
                   placeholder="ค้นหาฮีโร่... (กด /)"
                   className="h-8 w-full rounded border border-line bg-bg pl-8 pr-7 text-xs text-ink placeholder-dim focus:border-gold focus:outline-none"
                 />
                 {searchQuery && (
                   <button
                     type="button"
-                    onClick={() => setSearchQuery("")}
+                    onClick={() => {
+                      setSearchQuery("");
+                      searchInputRef.current?.focus();
+                    }}
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-dim hover:text-ink"
                     aria-label="ล้างการค้นหา"
                   >
@@ -370,6 +381,7 @@ export function TierListView({ heroes }: TierListViewProps) {
               <div className="flex items-center gap-1.5 text-xs text-muted">
                 <span className="text-[11px] font-semibold text-dim uppercase">ROLE:</span>
                 <select
+                  aria-label="กรองตามสายอาชีพ"
                   value={selectedRole}
                   onChange={(e) => setSelectedRole(e.target.value as RoleFilter)}
                   className="h-7 rounded border border-line bg-bg px-2 text-xs font-medium text-ink focus:border-gold focus:outline-none"
@@ -448,7 +460,7 @@ export function TierListView({ heroes }: TierListViewProps) {
 
                                 {/* Top-Left Rank Badge */}
                                 {typeof h.rank === "number" && h.rank <= 130 && (
-                                  <div className="absolute left-0 top-0 rounded-br bg-black/80 px-1 py-0.2 font-mono text-[9px] font-bold text-gold">
+                                  <div className="absolute left-0 top-0 rounded-br bg-black/80 px-1 py-0.5 font-mono text-[9px] font-bold text-gold">
                                     #{h.rank}
                                   </div>
                                 )}
@@ -456,7 +468,7 @@ export function TierListView({ heroes }: TierListViewProps) {
                                 {/* Bottom-Right Presence / WR Badge */}
                                 {typeof h.presence_rate === "number" && (
                                   <div
-                                    className={`absolute bottom-0 right-0 rounded-tl px-1 py-0.2 font-mono text-[9px] font-bold ${
+                                    className={`absolute bottom-0 right-0 rounded-tl px-1 py-0.5 font-mono text-[9px] font-bold ${
                                       h.presence_rate >= 45
                                         ? "bg-red-950/90 text-red-300"
                                         : h.presence_rate >= 25
@@ -504,70 +516,78 @@ export function TierListView({ heroes }: TierListViewProps) {
                 <table className="w-full text-left text-xs">
                   <thead className="border-b border-line bg-panel-2/90 font-display text-[11px] font-bold tracking-wider text-muted uppercase">
                     <tr>
-                      <th
-                        className="cursor-pointer py-3 pl-4 pr-2 hover:text-ink"
-                        onClick={() => toggleSort("rank")}
-                      >
-                        <div className="flex items-center gap-1">
+                      <th className="py-3 pl-4 pr-2">
+                        <button
+                          type="button"
+                          onClick={() => toggleSort("rank")}
+                          className="flex cursor-pointer items-center gap-1 uppercase hover:text-ink"
+                        >
                           RANK <ArrowUpDown className="h-3 w-3" />
-                        </div>
+                        </button>
                       </th>
-                      <th
-                        className="cursor-pointer px-3 py-3 hover:text-ink"
-                        onClick={() => toggleSort("tier")}
-                      >
-                        <div className="flex items-center gap-1">
+                      <th className="px-3 py-3">
+                        <button
+                          type="button"
+                          onClick={() => toggleSort("tier")}
+                          className="flex cursor-pointer items-center gap-1 uppercase hover:text-ink"
+                        >
                           TIER <ArrowUpDown className="h-3 w-3" />
-                        </div>
+                        </button>
                       </th>
-                      <th
-                        className="cursor-pointer px-3 py-3 hover:text-ink"
-                        onClick={() => toggleSort("name")}
-                      >
-                        <div className="flex items-center gap-1">
+                      <th className="px-3 py-3">
+                        <button
+                          type="button"
+                          onClick={() => toggleSort("name")}
+                          className="flex cursor-pointer items-center gap-1 uppercase hover:text-ink"
+                        >
                           HERO <ArrowUpDown className="h-3 w-3" />
-                        </div>
+                        </button>
                       </th>
-                      <th
-                        className="cursor-pointer px-3 py-3 hover:text-ink"
-                        onClick={() => toggleSort("role")}
-                      >
-                        <div className="flex items-center gap-1">
+                      <th className="px-3 py-3">
+                        <button
+                          type="button"
+                          onClick={() => toggleSort("role")}
+                          className="flex cursor-pointer items-center gap-1 uppercase hover:text-ink"
+                        >
                           ROLE <ArrowUpDown className="h-3 w-3" />
-                        </div>
+                        </button>
                       </th>
                       <th className="px-3 py-3">PRO LANE</th>
-                      <th
-                        className="cursor-pointer px-3 py-3 text-right hover:text-ink"
-                        onClick={() => toggleSort("presence_rate")}
-                      >
-                        <div className="flex items-center justify-end gap-1">
+                      <th className="px-3 py-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => toggleSort("presence_rate")}
+                          className="ml-auto flex cursor-pointer items-center justify-end gap-1 uppercase hover:text-ink"
+                        >
                           PRESENCE <ArrowUpDown className="h-3 w-3" />
-                        </div>
+                        </button>
                       </th>
-                      <th
-                        className="cursor-pointer px-3 py-3 text-right hover:text-ink"
-                        onClick={() => toggleSort("pick_rate")}
-                      >
-                        <div className="flex items-center justify-end gap-1">
+                      <th className="px-3 py-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => toggleSort("pick_rate")}
+                          className="ml-auto flex cursor-pointer items-center justify-end gap-1 uppercase hover:text-ink"
+                        >
                           PICK RATE <ArrowUpDown className="h-3 w-3" />
-                        </div>
+                        </button>
                       </th>
-                      <th
-                        className="cursor-pointer px-3 py-3 text-right hover:text-ink"
-                        onClick={() => toggleSort("ban_rate")}
-                      >
-                        <div className="flex items-center justify-end gap-1">
+                      <th className="px-3 py-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => toggleSort("ban_rate")}
+                          className="ml-auto flex cursor-pointer items-center justify-end gap-1 uppercase hover:text-ink"
+                        >
                           BAN RATE <ArrowUpDown className="h-3 w-3" />
-                        </div>
+                        </button>
                       </th>
-                      <th
-                        className="cursor-pointer px-3 py-3 text-right hover:text-ink"
-                        onClick={() => toggleSort("win_rate")}
-                      >
-                        <div className="flex items-center justify-end gap-1">
+                      <th className="px-3 py-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => toggleSort("win_rate")}
+                          className="ml-auto flex cursor-pointer items-center justify-end gap-1 uppercase hover:text-ink"
+                        >
                           WIN RATE <ArrowUpDown className="h-3 w-3" />
-                        </div>
+                        </button>
                       </th>
                       <th className="px-3 py-3 text-right">PRO GAMES (P/B)</th>
                       <th className="py-3 pl-3 pr-4">META NOTE / RATIONALE</th>
@@ -579,8 +599,15 @@ export function TierListView({ heroes }: TierListViewProps) {
                       return (
                         <tr
                           key={h.id}
+                          tabIndex={0}
                           onClick={() => setInspectHero(h)}
-                          className="cursor-pointer transition-colors hover:bg-panel-2/60"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setInspectHero(h);
+                            }
+                          }}
+                          className="cursor-pointer transition-colors hover:bg-panel-2/60 focus-visible:bg-panel-2/60 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-gold/60"
                         >
                           <td className="py-2.5 pl-4 pr-2 font-bold text-gold">
                             #{h.rank ?? "-"}

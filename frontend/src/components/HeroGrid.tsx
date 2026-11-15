@@ -108,7 +108,7 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
               }}
               placeholder="ค้นหาฮีโร่…"
               aria-label="Search heroes"
-              className="h-8 w-full border border-line bg-bg pr-12 pl-8 text-xs text-ink placeholder:text-dim focus:border-gold/60 focus:outline-none sm:text-sm"
+              className="h-8 w-full border border-line bg-bg pr-7 pl-8 text-xs text-ink placeholder:text-dim focus:border-gold/60 focus:outline-none sm:pr-12 sm:text-sm"
             />
             {query ? (
               <button
@@ -120,7 +120,7 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
                 <X className="h-3.5 w-3.5" />
               </button>
             ) : (
-              <kbd className="absolute top-1/2 right-2 -translate-y-1/2 border border-line px-1 font-mono text-[9px] text-dim">
+              <kbd className="hidden sm:inline-block absolute top-1/2 right-2 -translate-y-1/2 border border-line px-1 font-mono text-[9px] text-dim">
                 /
               </kbd>
             )}
@@ -178,6 +178,7 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
                 type="button"
                 onClick={() => setRole(null)}
                 title="ล้างตัวกรองสายอาชีพ"
+                aria-label="ล้างตัวกรองสายอาชีพ"
                 className="text-gold/70 hover:text-gold"
               >
                 <X className="h-3 w-3" />
@@ -260,7 +261,9 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
                   </span>
                 </div>
                 <span
-                  className={`absolute top-1 left-1 border px-1 font-mono text-[9px] font-bold ${TIER_STYLE[hero.tier] ?? TIER_STYLE.B}`}
+                  className={`absolute top-1 left-1 border px-1 font-mono text-[9px] font-bold ${
+                    rank && !taken ? "hidden xl:inline-block" : ""
+                  } ${TIER_STYLE[hero.tier] ?? TIER_STYLE.B}`}
                 >
                   {hero.tier}
                 </span>

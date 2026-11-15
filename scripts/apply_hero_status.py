@@ -10,7 +10,10 @@ import csv
 import json
 from pathlib import Path
 
-from build_hero_level_stats import CLASS_GROWTH_RATES, get_hero_primary_class
+try:
+    from scripts.build_hero_level_stats import CLASS_GROWTH_RATES, get_hero_primary_class
+except ImportError:
+    from build_hero_level_stats import CLASS_GROWTH_RATES, get_hero_primary_class
 
 ROOT = Path(__file__).resolve().parent.parent
 STATUS_FILE = ROOT / "data" / "hero_status_lv1.json"
@@ -24,11 +27,17 @@ GROWTH_FIELDS = {
     "armor_growth": ("armor", "armor"),
     "ad_growth": ("attack_damage", "attack_damage"),
     "mdef_growth": ("magic_defense", "magic_defense"),
+    "as_growth": ("attack_speed", "attack_speed"),
+    "hp_regen_growth": ("hp_regen_5s", "hp_regen_5s"),
+    "resource_growth": ("max_resource", "max_resource"),
+    "resource_regen_growth": ("resource_regen_5s", "resource_regen_5s"),
 }
 
 
 def measured_growth(base, lv15):
-    return {g: (lv15[key15] - base[key1]) / (MAX_LEVEL - 1) for g, (key1, key15) in GROWTH_FIELDS.items()}
+    return {
+        g: (lv15[key15] - base[key1]) / (MAX_LEVEL - 1) for g, (key1, key15) in GROWTH_FIELDS.items() if key15 in lv15
+    }
 
 
 def main():
@@ -50,6 +59,12 @@ def main():
             "magic_defense": s["magic_defense"],
             "attack_damage": s["attack_damage"],
             "movement_speed": int(s["movement_speed"]),
+            "attack_speed": 0,
+            "hp_regen_5s": s.get("hp_regen_5s", 0),
+            "max_resource": s["max_resource"] if s.get("max_resource") is not None else 0,
+            "resource_regen_5s": s.get("resource_regen_5s", 0),
+            "critical_chance": int(s.get("critical_chance") or 0),
+            "critical_damage": int(s.get("critical_damage") or 200),
         }
         hero["attack_range"] = s["attack_range"]
 
@@ -69,6 +84,7 @@ def main():
         levels = {}
         for lvl in range(1, MAX_LEVEL + 1):
             step = lvl - 1
+            as_val = round(base["attack_speed"] + step * growth.get("as_growth", 0.0), 1)
             row = {
                 "level": lvl,
                 "hp": int(round(base["max_hp"] + step * growth["hp_growth"])),
@@ -76,6 +92,14 @@ def main():
                 "magic_defense": int(round(base["magic_defense"] + step * growth["mdef_growth"])),
                 "attack_damage": int(round(base["attack_damage"] + step * growth["ad_growth"])),
                 "movement_speed": base["movement_speed"],
+                "attack_speed": int(as_val) if float(as_val).is_integer() else as_val,
+                "hp_regen_5s": int(round(base["hp_regen_5s"] + step * growth.get("hp_regen_growth", 0.0))),
+                "max_resource": int(round(base["max_resource"] + step * growth.get("resource_growth", 0.0))),
+                "resource_regen_5s": int(
+                    round(base["resource_regen_5s"] + step * growth.get("resource_regen_growth", 0.0))
+                ),
+                "critical_chance": base["critical_chance"],
+                "critical_damage": base["critical_damage"],
             }
             levels[str(lvl)] = row
             csv_rows.append({"hero": name, "class": entry["primary_class"], **row})
@@ -84,7 +108,22 @@ def main():
 
     HEROES_FILE.write_text(json.dumps(heroes, ensure_ascii=False, indent=2), encoding="utf-8")
     LEVEL_JSON.write_text(json.dumps(level_doc, ensure_ascii=False, indent=2), encoding="utf-8")
-    fieldnames = ["hero", "level", "class", "hp", "armor", "magic_defense", "attack_damage", "movement_speed"]
+    fieldnames = [
+        "hero",
+        "level",
+        "class",
+        "hp",
+        "armor",
+        "magic_defense",
+        "attack_damage",
+        "movement_speed",
+        "attack_speed",
+        "hp_regen_5s",
+        "max_resource",
+        "resource_regen_5s",
+        "critical_chance",
+        "critical_damage",
+    ]
     with open(LEVEL_CSV, "w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()

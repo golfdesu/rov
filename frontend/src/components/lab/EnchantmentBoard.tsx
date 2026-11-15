@@ -231,12 +231,19 @@ export function EnchantmentBoard({
                 : "border-line/60 bg-bg/40 hover:border-line hover:bg-bg/70"
             }`}
           >
-            <div className="mb-1.5 flex items-center justify-between">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveTab("primary");
+              }}
+              className="mb-1.5 flex w-full items-center justify-between text-left"
+            >
               <span className="font-display text-[11px] font-bold text-gold">สายหลัก (Primary)</span>
               <span className="text-[10px] font-medium text-muted">
                 {primaryFaction ? FACTION_INFO[primaryFaction]?.nameTh ?? primaryFaction : "⚠️ ยังไม่เลือกฝ่าย"}
               </span>
-            </div>
+            </button>
 
             <div className="flex items-center justify-around gap-1 pt-1">
               <SocketItem
@@ -244,7 +251,7 @@ export function EnchantmentBoard({
                 name={primaryT1}
                 ench={primaryT1 ? enchMap.get(primaryT1) : undefined}
                 isMajor={false}
-                factionColor={primaryFaction ? FACTION_INFO[primaryFaction]?.border : undefined}
+                factionColor={primaryFaction ? FACTION_INFO[primaryFaction]?.ring : undefined}
                 onClear={() => handlePickPrimary(1, primaryT1!)}
               />
               <div className="h-0.5 w-4 bg-line" />
@@ -253,7 +260,7 @@ export function EnchantmentBoard({
                 name={primaryT2}
                 ench={primaryT2 ? enchMap.get(primaryT2) : undefined}
                 isMajor={false}
-                factionColor={primaryFaction ? FACTION_INFO[primaryFaction]?.border : undefined}
+                factionColor={primaryFaction ? FACTION_INFO[primaryFaction]?.ring : undefined}
                 onClear={() => handlePickPrimary(2, primaryT2!)}
               />
               <div className="h-0.5 w-4 bg-line" />
@@ -262,7 +269,7 @@ export function EnchantmentBoard({
                 name={primaryT3}
                 ench={primaryT3 ? enchMap.get(primaryT3) : undefined}
                 isMajor={true}
-                factionColor={primaryFaction ? FACTION_INFO[primaryFaction]?.border : undefined}
+                factionColor={primaryFaction ? FACTION_INFO[primaryFaction]?.ring : undefined}
                 onClear={() => handlePickPrimary(3, primaryT3!)}
               />
             </div>
@@ -283,7 +290,17 @@ export function EnchantmentBoard({
                   : "cursor-pointer border-line/60 bg-bg/40 hover:border-line hover:bg-bg/70"
             }`}
           >
-            <div className="mb-1.5 flex items-center justify-between">
+            <button
+              type="button"
+              disabled={!primaryFaction}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (primaryFaction) {
+                  setActiveTab("secondary");
+                }
+              }}
+              className="mb-1.5 flex w-full items-center justify-between text-left disabled:cursor-not-allowed"
+            >
               <div className="flex items-center gap-1.5">
                 <span className="font-display text-[11px] font-bold text-blue">สายรอง (Secondary)</span>
                 {!primaryFaction && <Lock size={11} className="text-muted" />}
@@ -295,7 +312,7 @@ export function EnchantmentBoard({
                     ? `${secondaryEnchantments.length} / 2 ชิ้น`
                     : "ว่าง (แตะเพื่อเลือก)"}
               </span>
-            </div>
+            </button>
 
             <div className="flex items-center justify-around gap-1 pt-1">
               <SocketItem
@@ -303,7 +320,7 @@ export function EnchantmentBoard({
                 name={secEnch1?.name}
                 ench={secEnch1}
                 isMajor={false}
-                factionColor={secEnch1 ? FACTION_INFO[secEnch1.faction]?.border : undefined}
+                factionColor={secEnch1 ? FACTION_INFO[secEnch1.faction]?.ring : undefined}
                 onClear={() => secEnch1 && handleClearSecondarySlot(secEnch1.name)}
               />
               <div className="h-0.5 w-8 bg-line" />
@@ -312,7 +329,7 @@ export function EnchantmentBoard({
                 name={secEnch2?.name}
                 ench={secEnch2}
                 isMajor={false}
-                factionColor={secEnch2 ? FACTION_INFO[secEnch2.faction]?.border : undefined}
+                factionColor={secEnch2 ? FACTION_INFO[secEnch2.faction]?.ring : undefined}
                 onClear={() => secEnch2 && handleClearSecondarySlot(secEnch2.name)}
               />
             </div>
@@ -424,6 +441,8 @@ export function EnchantmentBoard({
                             <button
                               type="button"
                               onClick={() => handlePickPrimary(tier, o.name)}
+                              onFocus={() => setHoveredEnch(o)}
+                              onBlur={() => setHoveredEnch(null)}
                               className={`group relative flex flex-col items-center rounded-full p-0.5 transition-all ${
                                 isPicked
                                   ? "ring-2 ring-gold shadow-lg shadow-gold/30 scale-105"
@@ -514,7 +533,7 @@ export function EnchantmentBoard({
                     onClick={() => setSelectedSecFaction(f)}
                     className={`flex items-center justify-between rounded-md border p-2 text-left transition-all ${
                       isSelected
-                        ? `${info?.border} ${info?.activeBg} ring-1 ${info?.border} font-bold`
+                        ? `${info?.border} ${info?.activeBg} ring-1 ${info?.ring} font-bold`
                         : "border-line/60 bg-bg/50 hover:border-line hover:bg-panel-2"
                     }`}
                   >
@@ -586,6 +605,8 @@ export function EnchantmentBoard({
                               <button
                                 type="button"
                                 onClick={() => handlePickSecondary(tier, o.name, effectiveSecFaction)}
+                                onFocus={() => setHoveredEnch(o)}
+                                onBlur={() => setHoveredEnch(null)}
                                 className={`group relative flex flex-col items-center rounded-full p-0.5 transition-all ${
                                   isPicked
                                     ? "ring-2 ring-blue shadow-lg shadow-blue/30 scale-105"

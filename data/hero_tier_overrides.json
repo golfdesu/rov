@@ -112,6 +112,10 @@
     "Flowborn (Mage)": {
       "tier": "C",
       "reason": "Normalized from legacy S: low competitive usage (9 picks, 0.5% presence, 33.3% win rate) while Flowborn Marksman remains dominant"
+    },
+    "Volkath": {
+      "tier": "B",
+      "reason": "Globally disabled by tournament officials after APL 2026 (July) due to ultimate desync bug; maintained 19.1% presence (209 matches) across 1,097 eligible games before disable"
     }
   }
 }

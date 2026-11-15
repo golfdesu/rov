@@ -67,7 +67,10 @@ class RoVDraftPredictor:
         self.architecture: str = self.ckpt.get("architecture", "RoVDraftGNNTransformer")
         self.val_loss: float = float(self.ckpt.get("val_loss", 0.0))
 
-        model_cfg = self.ckpt.get("model_config", {"d_model": 128, "nhead": 4, "num_layers": 2})
+        model_cfg = self.ckpt.get(
+            "model_config",
+            {"d_model": config.model.d_model, "nhead": config.model.nhead, "num_layers": config.model.num_layers},
+        )
         self.model = RoVDraftGNNTransformer(
             num_heroes=len(self.hero_names),
             hero_features=self.ckpt["hero_features"],
@@ -129,7 +132,8 @@ class RoVDraftPredictor:
         ban_to_pick = np.zeros((num_heroes, num_heroes), dtype=np.float32)
         pick_to_ban = np.zeros((num_heroes, num_heroes), dtype=np.float32)
 
-        matches_path = config.paths.matches_json_path
+        training_path = getattr(config.paths, "matches_training_path", None)
+        matches_path = training_path if (training_path and training_path.exists()) else config.paths.matches_json_path
         if not matches_path.exists():
             return ban_to_pick, pick_to_ban
 
@@ -137,8 +141,10 @@ class RoVDraftPredictor:
         matches = [
             m
             for m in raw_matches
-            if not (
-                "2024" in m.get("tournament", "") or "2024" in m.get("series_id", "") or "2024" in m.get("date", "")
+            if (
+                int(m["year"]) >= 2025
+                if "year" in m
+                else not ("2024" in m.get("series_id", "") or "2024" in m.get("date", ""))
             )
         ]
         if not matches:
@@ -156,9 +162,7 @@ class RoVDraftPredictor:
         ids = self.hero_to_id
 
         for g, m in enumerate(matches):
-            is_2026 = (
-                "2026" in m.get("tournament", "") or "2026" in m.get("series_id", "") or "2026" in m.get("date", "")
-            )
+            is_2026 = int(m.get("year", 0)) == 2026 or "2026" in m.get("series_id", "") or "2026" in m.get("date", "")
             for row, side, opp in ((2 * g, "blue", "red"), (2 * g + 1, "red", "blue")):
                 won[row] = bool(m.get("blue_win")) == (side == "blue")
                 side_bans = m.get(f"{side}_bans", [])
@@ -272,8 +276,6 @@ class RoVDraftPredictor:
 
     def _build_alias_lookup(self) -> dict[str, str]:
         lookup = {k.lower(): k for k in self.hero_to_id}
-        for k in list(self.hero_to_id.keys()):
-            lookup[re.sub(r"[^a-z0-9]", "", k.lower())] = k
         lookup.update(
             {
                 "riktor": "Riktor",
@@ -283,11 +285,31 @@ class RoVDraftPredictor:
                 "celica": "Celica",
                 "brunhilda": "Celica",
                 "diaochan": "Diao Chan",
+                "diao chan": "Diao Chan",
+                "kaine": "Kaine",
+                "batman": "Kaine",
+                "stuart": "Stuart",
+                "joker": "Stuart",
+                "the joker": "Stuart",
+                "helen": "Helen",
+                "payna": "Helen",
+                "peura": "Helen",
+                "kilgroth": "Kil'Groth",
+                "kil'groth": "Kil'Groth",
+                "kilgrooth": "Kil'Groth",
+                "kil'grooth": "Kil'Groth",
+                "lubu": "Lu Bu",
+                "telannas": "Tel'Annas",
                 "flowborn": "Flowborn (Marksman)",
                 "flowborn mm": "Flowborn (Marksman)",
+                "flowborn marksman": "Flowborn (Marksman)",
+                "flowborn (marksman)": "Flowborn (Marksman)",
                 "flowborn mage": "Flowborn (Mage)",
+                "flowborn (mage)": "Flowborn (Mage)",
             }
         )
+        for k, v in list(lookup.items()):
+            lookup[re.sub(r"[^a-z0-9]", "", k.lower())] = v
         return lookup
 
     def resolve_heroes(self, names: list[str]) -> list[str]:
@@ -317,9 +339,12 @@ class RoVDraftPredictor:
         is_red: bool,
         phase: int,
         league: str = "GLOBAL",
+        step_idx: int | None = None,
     ) -> ModelInput:
         """Encodes one draft position from the acting team's point of view."""
-        step_idx = min(len(ally_picks) + len(enemy_picks) + len(ally_bans) + len(enemy_bans), 17)
+        if step_idx is None:
+            step_idx = len(ally_picks) + len(enemy_picks) + len(ally_bans) + len(enemy_bans)
+        step_idx = min(step_idx, 17)
         meta = (
             step_idx / 17.0,
             float(phase == 2),
@@ -580,9 +605,14 @@ class RoVDraftPredictor:
         blended_probs = self._apply_lane_filter(blended_probs, needed_lanes)
 
         sorted_indices = np.argsort(blended_probs)[::-1]
-        chosen_idx = int(sorted_indices[0])
+        avail_indices = np.flatnonzero(~unavail_row)
+        chosen_idx = (
+            int(sorted_indices[0])
+            if not unavail_row[sorted_indices[0]]
+            else (int(avail_indices[0]) if len(avail_indices) else 0)
+        )
         for cand_idx in sorted_indices:
-            if blended_probs[cand_idx] <= 0:
+            if unavail_row[cand_idx] or blended_probs[cand_idx] <= 0:
                 break
             if not needed_lanes or self._lane_key[cand_idx] in needed_lanes:
                 chosen_idx = int(cand_idx)
@@ -804,6 +834,9 @@ class RoVDraftPredictor:
             TeamDraft("red", red_picks, blue_picks, red_bans, blue_bans),
         ]
 
+        step_idx = self.search_engine.find_matching_step(
+            side_val, act_type, req.phase, len(blue_picks), len(red_picks), len(blue_bans), len(red_bans)
+        )
         main_input = self._model_input(
             ally_picks,
             enemy_picks,
@@ -814,6 +847,7 @@ class RoVDraftPredictor:
             is_red=side_val == 1,
             phase=req.phase,
             league=req.league,
+            step_idx=step_idx,
         )
         arrays, probs, win_probs, forecasts = self._evaluate_with_forecasts(
             main_input,
@@ -837,6 +871,7 @@ class RoVDraftPredictor:
                 is_red=True,
                 phase=2,
                 league=req.league,
+                step_idx=17,
             )
             step17_arrays = encode_batch([step17_input], len(self.hero_names))
             _, step17_win_t = run_model(self.model, step17_arrays, self.device)
@@ -865,7 +900,6 @@ class RoVDraftPredictor:
         if total_p > 0:
             probs = probs / total_p
 
-        unfiltered_probs = probs.copy()
         probs = self._apply_lane_filter(probs, target_needed_lanes)
 
         def is_needed_lane(h_idx: int) -> int:
@@ -914,7 +948,7 @@ class RoVDraftPredictor:
                 step_idx=step_idx,
                 league=req.league,
             )
-            search_pool = avail_sorted[: min(max(req.top_k * 2, 8), 40)]
+            search_pool = avail_sorted[: min(max(req.top_k * 2, 8), 60)]
             lookahead_win_rates = self.search_engine.search_lookahead_win_rates(
                 root_state,
                 search_pool,
@@ -948,12 +982,11 @@ class RoVDraftPredictor:
                 triggers, reason = self._find_pick_triggers_and_reason(
                     int(h_idx), ally_picks, enemy_picks, unlocked_triggers
                 )
-            prob_source = probs if is_needed_lane(int(h_idx)) else unfiltered_probs
             recs.append(
                 self._build_hero_recommendation(
                     rank_idx=rank_idx,
                     h_idx=int(h_idx),
-                    probs=prob_source,
+                    probs=probs,
                     win_probs=win_probs,
                     ap_row=ap_row,
                     ep_row=ep_row,
@@ -1037,7 +1070,7 @@ class RoVDraftPredictor:
             unfiltered_scores = scores.copy()
             for i in range(num_heroes):
                 if target_needed_lanes and self._lane_key[i] not in target_needed_lanes:
-                    scores[i] -= 20.0
+                    scores[i] -= 3.0
         else:
             # Threat to our picks + Synergy to enemy's picks + Meta Priority
             threat_to_us = cnt_mat @ ap_row
@@ -1046,7 +1079,7 @@ class RoVDraftPredictor:
             unfiltered_scores = scores.copy()
             for i in range(num_heroes):
                 if enemy_needed_lanes and self._lane_key[i] not in enemy_needed_lanes:
-                    scores[i] -= 10.0
+                    scores[i] -= 3.0
 
         scores[unavail] = -1e9
         unfiltered_scores[unavail] = -1e9
@@ -1089,20 +1122,23 @@ class RoVDraftPredictor:
         b_cnt = sum(float(cnt_mat[ids[b], ids[r]]) for b in b_picks for r in r_picks)
         base_matchup_win = float(np.clip(0.50 + (b_syn - r_syn + b_cnt) * 0.20, 0.30, 0.70))
 
-        # Hero win prob when chosen
+        # Expected win prob when taking action (Pick adds hero for ally; Ban removes threat from enemy)
+        acting_matchup_win = base_matchup_win if req.side == "blue" else (1.0 - base_matchup_win)
         win_probs = np.zeros(num_heroes, dtype=np.float32)
-        for i in range(num_heroes):
-            delta = float(base_win[i] + syn_scores[i] + cnt_scores[i] - cnt_risks[i])
-            if req.side == "blue":
-                win_probs[i] = float(np.clip(base_matchup_win + delta * 0.5, 0.30, 0.70))
-            else:
-                acting_win = 1.0 - base_matchup_win
-                win_probs[i] = float(np.clip(acting_win + delta * 0.5, 0.30, 0.70))
+        if req.mode == "pick":
+            for i in range(num_heroes):
+                delta = float(base_win[i] + syn_scores[i] + cnt_scores[i] - cnt_risks[i])
+                win_probs[i] = float(np.clip(acting_matchup_win + delta * 0.5, 0.30, 0.70))
+        else:
+            threat_to_us_vec = cnt_mat @ ap_row
+            enemy_syn_vec = ep_row @ syn_mat
+            for i in range(num_heroes):
+                ban_relief = float(base_win[i] * 0.5 + threat_to_us_vec[i] + enemy_syn_vec[i])
+                win_probs[i] = float(np.clip(acting_matchup_win + ban_relief * 0.35, 0.30, 0.70))
 
         if len(b_picks) == 5 and len(r_picks) == 5:
             # Completed draft: evaluate exact 5v5 board win rate
-            acting_win = base_matchup_win if req.side == "blue" else (1.0 - base_matchup_win)
-            win_probs = np.full(num_heroes, acting_win, dtype=np.float32)
+            win_probs = np.full(num_heroes, acting_matchup_win, dtype=np.float32)
 
         ban_unlocked_heroes, unlocked_triggers = self._compute_ban_unlocked_heroes(
             all_bans=ally_bans + enemy_bans,
@@ -1135,12 +1171,11 @@ class RoVDraftPredictor:
                 triggers, reason = self._find_pick_triggers_and_reason(
                     int(h_idx), ally_picks, enemy_picks, unlocked_triggers
                 )
-            prob_source = probs if is_needed_lane(int(h_idx)) else unfiltered_probs
             recs.append(
                 self._build_hero_recommendation(
                     rank_idx=rank_idx,
                     h_idx=int(h_idx),
-                    probs=prob_source,
+                    probs=probs,
                     win_probs=win_probs,
                     ap_row=ap_row,
                     ep_row=ep_row,
@@ -1209,14 +1244,21 @@ class RoVDraftPredictor:
                             e_b[h_id] *= 1.12
                     s_b = e_b.sum()
                     b_probs = (e_b / s_b) if s_b > 0 else np.zeros(num_heroes, dtype=np.float32)
+                    t_matchup_win = base_matchup_win if t.side == "blue" else (1.0 - base_matchup_win)
+                    t_threat = cnt_mat @ t_ap_ban
+                    t_esyn = t_ep @ syn_mat
+                    t_ban_win = np.clip(t_matchup_win + (base_win * 0.5 + t_threat + t_esyn) * 0.35, 0.30, 0.70).astype(
+                        np.float32
+                    )
                     forecasts[f"{t.side}_next_bans"] = self._forecast_bans(
-                        t, ban_slots, b_probs, win_probs, t_ap_ban, t_ep, b_unavail
+                        t, ban_slots, b_probs, t_ban_win, t_ap_ban, t_ep, b_unavail
                     )
 
             # 2. Next picks forecast (sequentially updated so rank 1 and rank 2 fill distinct lanes)
             pick_slots = self._next_pick_slots(t, 2)
             sim_picks = list(t.picks)
             own_gb = blue_effective_gb if t.side == "blue" else red_effective_gb
+            t_matchup_win = base_matchup_win if t.side == "blue" else (1.0 - base_matchup_win)
             for rank in range(1, pick_slots + 1):
                 t_ap = np.zeros(num_heroes, dtype=np.float32)
                 for h in sim_picks:
@@ -1227,7 +1269,10 @@ class RoVDraftPredictor:
                     if h in ids:
                         t_unavail[ids[h]] = True
 
-                t_scores = presence * 1.5 + (t_ap @ syn_mat) * 2.5 + (cnt_mat @ t_ep) * 2.0 - (t_ep @ cnt_mat) * 1.2
+                t_syn_vec = t_ap @ syn_mat
+                t_cnt_vec = cnt_mat @ t_ep
+                t_risk_vec = t_ep @ cnt_mat
+                t_scores = presence * 1.5 + t_syn_vec * 2.5 + t_cnt_vec * 2.0 - t_risk_vec * 1.2
                 t_scores[t_unavail] = -1e9
                 valid = ~t_unavail
                 if not valid.any():
@@ -1241,7 +1286,10 @@ class RoVDraftPredictor:
                         e_val[h_id] *= 1.12
                 s_sum = e_val.sum()
                 t_probs = (e_val / s_sum) if s_sum > 0 else np.zeros(num_heroes, dtype=np.float32)
-                rec = self._choose_next_pick(t, sim_picks, rank, t_probs, win_probs, t_ap, t_ep, t_unavail)
+                t_pick_win = np.clip(
+                    t_matchup_win + (base_win + t_syn_vec + t_cnt_vec - t_risk_vec) * 0.5, 0.30, 0.70
+                ).astype(np.float32)
+                rec = self._choose_next_pick(t, sim_picks, rank, t_probs, t_pick_win, t_ap, t_ep, t_unavail)
                 forecasts[f"{t.side}_next_picks"].append(rec)
                 sim_picks.append(rec.hero_name)
 

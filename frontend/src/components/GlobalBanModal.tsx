@@ -8,6 +8,7 @@ import {
   heroOriginGameMap,
   resolveSeriesName,
   ROLES,
+  syncSeriesGlobalBans,
 } from "../utils/draft";
 import { displayName, matchesHeroQuery } from "../utils/heroNames";
 import { HeroPortrait } from "./HeroPortrait";
@@ -22,7 +23,7 @@ interface GlobalBanModalProps {
   seriesGames?: RecordedDraftGame[];
   initialCategory?: GlobalBanCategoryKey;
   onChange: (next: GlobalBanState) => void;
-  onSelectGameNumber?: (g: number) => void;
+  onSelectGameNumber?: (g: number, globalBansOverride?: GlobalBanState) => void;
   onClose: () => void;
 }
 
@@ -143,25 +144,36 @@ export function GlobalBanModal({
   };
 
   const clearAll = () => {
-    const clearedState: GlobalBanState = {
+    const targetGame = globalBans.gameNumber;
+    const clearedBase: GlobalBanState = {
       ...EMPTY_GLOBAL_BANS,
       seriesName: globalBans.seriesName,
       teamAName: globalBans.teamAName,
       teamBName: globalBans.teamBName,
       blueSideTeam: globalBans.blueSideTeam,
-      gameNumber: 1,
+      gameNumber: targetGame,
     };
-    const maxUnlocked = getMaxUnlockedGame(clearedState, seriesGames);
-    const nextGame = Math.min(globalBans.gameNumber, maxUnlocked);
-    if (nextGame !== globalBans.gameNumber && onSelectGameNumber) {
-      onChange(clearedState);
-      onSelectGameNumber(nextGame);
-    } else {
-      onChange({
-        ...clearedState,
-        gameNumber: nextGame,
-      });
+    const syncedForCurrent = syncSeriesGlobalBans(clearedBase, seriesGames, targetGame, []);
+    const candidateState: GlobalBanState = {
+      ...clearedBase,
+      ...syncedForCurrent,
+    };
+    const maxUnlocked = getMaxUnlockedGame(candidateState, seriesGames);
+    const nextGame = Math.min(targetGame, maxUnlocked);
+    const syncedForNext =
+      nextGame === targetGame
+        ? syncedForCurrent
+        : syncSeriesGlobalBans(candidateState, seriesGames, nextGame, []);
+    const nextState: GlobalBanState = {
+      ...candidateState,
+      ...syncedForNext,
+      gameNumber: nextGame,
+    };
+    if (nextGame !== targetGame && onSelectGameNumber) {
+      onSelectGameNumber(nextGame, nextState);
+      return;
     }
+    onChange(nextState);
   };
 
   const handleClose = () => {
@@ -425,6 +437,7 @@ export function GlobalBanModal({
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            aria-label="ค้นหาฮีโร่ในหน้าต่าง Global Ban"
             placeholder="ค้นหาฮีโร่ (เช่น Florentino, มอร์ตอส, ริคเตอร์...)"
             className="h-8 w-full border border-line bg-bg pr-8 pl-9 text-xs text-ink placeholder:text-dim focus:border-gold/60 focus:outline-none"
           />

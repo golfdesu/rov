@@ -1,6 +1,30 @@
+import re
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, model_validator
+
+_SCHEMA_HERO_ALIASES: dict[str, str] = {
+    "riktor": "riktor",
+    "richter": "riktor",
+    "mortos": "mortos",
+    "arthur": "mortos",
+    "celica": "celica",
+    "brunhilda": "celica",
+    "diaochan": "diaochan",
+    "batman": "kaine",
+    "joker": "stuart",
+    "thejoker": "stuart",
+    "payna": "helen",
+    "peura": "helen",
+    "kilgrooth": "kilgroth",
+    "flowborn": "flowbornmarksman",
+    "flowbornmm": "flowbornmarksman",
+}
+
+
+def _canon_hero_key(name: str) -> str:
+    cleaned = re.sub(r"[^a-z0-9]", "", name.strip().lower())
+    return _SCHEMA_HERO_ALIASES.get(cleaned, cleaned)
 
 
 class DraftStateRequest(BaseModel):
@@ -75,6 +99,38 @@ class DraftStateRequest(BaseModel):
         description="Heroes that won previous games in the current series and remain available for steal-pick or target-ban adaptation",
     )
 
+    @model_validator(mode="after")
+    def validate_no_duplicate_or_overlapping_heroes(self) -> "DraftStateRequest":
+        buckets: dict[str, list[str]] = {
+            "ally_picks": self.ally_picks,
+            "enemy_picks": self.enemy_picks,
+            "ally_bans": self.ally_bans,
+            "enemy_bans": self.enemy_bans,
+        }
+        seen_by_field: dict[str, set[str]] = {}
+        for field_name, items in buckets.items():
+            seen: set[str] = set()
+            for raw in items:
+                key = _canon_hero_key(raw)
+                if not key:
+                    raise ValueError(f"Empty hero name in {field_name}")
+                if key in seen:
+                    raise ValueError(f"Duplicate hero '{raw}' in {field_name}")
+                seen.add(key)
+            seen_by_field[field_name] = seen
+
+        ap, ep = seen_by_field["ally_picks"], seen_by_field["enemy_picks"]
+        ab, eb = seen_by_field["ally_bans"], seen_by_field["enemy_bans"]
+        if ap & ep:
+            raise ValueError(f"Overlapping heroes between ally_picks and enemy_picks: {sorted(ap & ep)}")
+        if ab & eb:
+            raise ValueError(f"Overlapping heroes between ally_bans and enemy_bans: {sorted(ab & eb)}")
+        picked = ap | ep
+        banned = ab | eb
+        if picked & banned:
+            raise ValueError(f"Heroes cannot be both picked and banned: {sorted(picked & banned)}")
+        return self
+
 
 class HeroRecommendation(BaseModel):
     rank: int
@@ -140,19 +196,24 @@ class HealthResponse(BaseModel):
 
 class CombatBuildRequest(BaseModel):
     hero: str
-    level: int = Field(default=1, ge=1, le=15)
+    level: StrictInt = Field(default=1, ge=1, le=15)
     items: list[str] = Field(default_factory=list, max_length=6)
-    arcana: dict[str, int] = Field(default_factory=dict, description="Tier 3 arcana name -> slot count")
+    arcana: dict[str, StrictInt] = Field(default_factory=dict, description="Tier 3 arcana name -> slot count")
     primary_faction: str | None = None
     primary_enchantments: list[str] = Field(default_factory=list, max_length=3)
     secondary_faction: str | None = None
     secondary_enchantments: list[str] = Field(default_factory=list, max_length=2)
-    skill_levels: dict[str, int] = Field(default_factory=dict, description="Override auto skill point allocation")
-    skill_hits: dict[str, int] = Field(default_factory=dict, description="Hits per cast for multi-hit skills")
+    skill_levels: dict[str, StrictInt] = Field(default_factory=dict, description="Override auto skill point allocation")
+    skill_hits: dict[str, StrictInt] = Field(default_factory=dict, description="Hits per cast for multi-hit skills")
     skill_charges: dict[str, float] = Field(
         default_factory=dict, description="Charge ratio (0.0 to 1.0) for charging skills"
     )
     active_combo_slots: list[str] | None = Field(default=None, description="Active skill slots included in combo/duel")
+    enable_kiting: bool = Field(default=True, description="Whether ranged heroes kite melee opponents in 1v1 duels")
+    enable_actives: bool = Field(
+        default=True,
+        description="Whether active item effects (Rock Shield, Bow of Slaughter, etc.) trigger automatically in 1v1 duels",
+    )
 
 
 class CombatStatsRequest(BaseModel):
@@ -163,6 +224,57 @@ class CombatStatsRequest(BaseModel):
 class CombatDuelRequest(BaseModel):
     a: CombatBuildRequest
     b: CombatBuildRequest
+
+
+class CombatCatalogResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    heroes: list[dict[str, Any]]
+    max_level: int
+    skills: dict[str, list[dict[str, Any]]]
+    items: list[dict[str, Any]]
+    arcana: list[dict[str, Any]]
+    arcana_slots_per_color: int
+    factions: list[str]
+    enchantments: list[dict[str, Any]]
+
+
+class CombatStatsResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    hero: str
+    level: int
+    is_ranged: bool
+    stats: dict[str, float]
+    sources: dict[str, dict[str, float]]
+    build_cost: int
+    items_missing_price: list[str] = Field(default_factory=list)
+    item_warnings: list[str] = Field(default_factory=list)
+    enchantments_modeled: list[str] = Field(default_factory=list)
+    enchantments_unmodeled: list[str] = Field(default_factory=list)
+    skills: list[dict[str, Any]] | None = None
+    basic_attack: dict[str, float] | None = None
+    burst: float | None = None
+    procs: list[dict[str, Any]] | None = None
+
+
+class CombatDuelResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    a: dict[str, Any]
+    b: dict[str, Any]
+    simulation: dict[str, Any]
+    assumptions: list[str]
+
+
+class CombatRuneRecommendationResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    my_hero: str
+    enemy_hero: str
+    lane: str
+    level: int
+    standard_preset: dict[str, Any]
+    recommended_preset: dict[str, Any]
+    hp_advantage: float
+    trade_verdict: str
+    detailed_runes: list[dict[str, Any]]
 
 
 class DraftHistoryItemSchema(BaseModel):
@@ -215,3 +327,33 @@ class DraftSessionStateSchema(BaseModel):
     globalBans: GlobalBanStateSchema = Field(default_factory=GlobalBanStateSchema)
     seriesGames: list[RecordedDraftGameSchema] = Field(default_factory=list)
     updatedAt: int = Field(default=0, description="Epoch milliseconds of last state update")
+
+
+class AuthRegisterRequest(BaseModel):
+    username: str = Field(min_length=3, max_length=32, pattern=r"^[a-zA-Z0-9_.-]+$")
+    password: str = Field(min_length=6, max_length=128)
+    display_name: str | None = Field(default=None, max_length=40)
+
+
+class AuthLoginRequest(BaseModel):
+    username: str = Field(min_length=3, max_length=32)
+    password: str = Field(min_length=1, max_length=128)
+
+
+class AuthUserSchema(BaseModel):
+    id: int
+    username: str
+    display_name: str
+
+
+class AuthStatusResponse(BaseModel):
+    authenticated: bool
+    user: AuthUserSchema | None = None
+
+
+class CombatBuildsSyncSchema(BaseModel):
+    a: CombatBuildRequest | None = None
+    b: CombatBuildRequest | None = None
+    enable_kiting: bool = True
+    enable_actives: bool = True
+    updatedAt: int = Field(default=0, ge=0)

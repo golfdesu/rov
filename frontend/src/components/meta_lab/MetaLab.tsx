@@ -1,5 +1,5 @@
 import { ArrowDownToLine, Calculator, RotateCcw, Sparkles } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useDraft } from "../../hooks/useDraft";
 import type { GlobalBanState, Hero, RecordedDraftGame } from "../../types/draft";
 import {
@@ -12,6 +12,7 @@ import {
   redUsedHeroes,
   resolveSeriesName,
 } from "../../utils/draft";
+import { displayName } from "../../utils/heroNames";
 import { Alert } from "../Alert";
 import { AiPanel } from "../AiPanel";
 import { GlobalBanModal, type GlobalBanCategoryKey } from "../GlobalBanModal";
@@ -44,6 +45,7 @@ export function MetaLab({
   const [globalBanModalCat, setGlobalBanModalCat] = useState<GlobalBanCategoryKey | null>(null);
   const [importNotification, setImportNotification] = useState<string | null>(null);
   const [totalMatches, setTotalMatches] = useState<number | null>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetch("/dataset_metadata.json")
@@ -142,22 +144,61 @@ export function MetaLab({
   };
 
   const removeUsedHero = (catKey: "teamAUsed" | "teamBUsed", heroName: string) => {
-    setGlobalBans((prev) => {
-      const candidate = {
-        ...prev,
-        [catKey]: prev[catKey].filter((n) => n !== heroName),
-      };
-      const statusAfter = getGameUnlockStatus(prev.gameNumber, candidate, seriesGames);
-      if (prev.gameNumber > 1 && !statusAfter.isUnlocked) {
-        const maxUnlocked = getMaxUnlockedGame(candidate, seriesGames);
-        return {
-          ...candidate,
-          gameNumber: maxUnlocked,
-        };
-      }
-      return candidate;
-    });
+    const candidate = {
+      ...globalBans,
+      [catKey]: globalBans[catKey].filter((n) => n !== heroName),
+    };
+    const statusAfter = getGameUnlockStatus(globalBans.gameNumber, candidate, seriesGames);
+    if (globalBans.gameNumber > 1 && !statusAfter.isUnlocked) {
+      const maxUnlocked = getMaxUnlockedGame(candidate, seriesGames);
+      const ok = window.confirm(
+        `การลบ ${displayName(heroName)} จะทำให้จำนวน Global Ban ไม่ครบตามเงื่อนไขของ Game ${globalBans.gameNumber} (ต้องมีอย่างน้อยฝั่งละ ${statusAfter.requiredCount} ตัว)\n\nระบบจะย้อนกลับไปยัง Game ${maxUnlocked} อัตโนมัติ ยืนยันหรือไม่?`,
+      );
+      if (!ok) return;
+      selectGameNumber(maxUnlocked, candidate);
+      return;
+    }
+    setGlobalBans(candidate);
   };
+
+  useEffect(() => {
+    if (globalBanModalCat !== null) return;
+    function onKey(e: KeyboardEvent) {
+      const typing =
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        e.target instanceof HTMLSelectElement;
+      if (typing) return;
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        if (e.shiftKey) {
+          redo();
+        } else {
+          undo();
+        }
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {
+        e.preventDefault();
+        redo();
+      } else if (e.key === "/") {
+        e.preventDefault();
+        searchRef.current?.focus();
+      } else if (
+        e.key === "Enter" &&
+        !(e.target instanceof HTMLButtonElement) &&
+        !(e.target instanceof HTMLSelectElement) &&
+        !(e.target instanceof HTMLAnchorElement) &&
+        !(e.target instanceof HTMLElement && e.target.getAttribute("role") === "button")
+      ) {
+        const top = recommendations[0];
+        if (top && currentStep && !isLoading && !unavailableHeroes.has(top.hero_name)) {
+          lockHero(top.hero_name);
+        }
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [globalBanModalCat, recommendations, currentStep, isLoading, unavailableHeroes, lockHero, undo, redo]);
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-bg">
@@ -165,7 +206,7 @@ export function MetaLab({
       <header className="shrink-0 border-b border-line bg-panel/80 px-2 py-1.5 backdrop-blur-md sm:px-4 sm:py-2">
         <div className="mx-auto flex max-w-[1920px] flex-wrap items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center border border-accent/60 bg-accent/15 text-accent">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center border border-blue/60 bg-blue/15 text-blue">
               <Calculator className="h-4 w-4" />
             </span>
             <div className="min-w-0">
@@ -454,6 +495,7 @@ export function MetaLab({
               }`}
             >
               <HeroGrid
+                ref={searchRef}
                 heroes={heroes}
                 unavailableHeroes={unavailableHeroes}
                 blueUsedHeroes={bUsed}

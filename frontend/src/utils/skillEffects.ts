@@ -1,3 +1,5 @@
+import { resolveScalingValue, type ScalingValue } from "../types/combat";
+
 export type SkillEffectCategory =
   | "damage_reduction"
   | "shield"
@@ -54,7 +56,7 @@ interface SkillLike {
   cooldown?: number[] | number;
   base_cooldown?: number;
   mana_cost?: number[] | number | null;
-  scaling?: Record<string, number>;
+  scaling?: Record<string, ScalingValue>;
   description?: string;
   desc_th?: string;
 }
@@ -308,18 +310,20 @@ export function parseSkillEffects(
   const sc = skill.scaling ?? {};
 
   const hasPositiveBaseDmg = bd.some((v) => v > 0);
-  const hasOffensiveScaling = Boolean(
-    sc.ad_pct ||
-      sc.bonus_ad_pct ||
-      sc.ap_pct ||
-      sc.bonus_ap_pct ||
-      sc.target_hp_pct ||
-      sc.target_max_hp_pct ||
-      sc.target_current_hp_pct ||
-      sc.target_hp_per_100_ad_pct ||
-      sc.target_hp_per_100_bonus_ad_pct ||
-      sc.target_hp_per_100_ap_pct
-  );
+  const lv = Math.max(1, skillLevel ?? 1);
+  const offensiveKeys = [
+    "ad_pct",
+    "bonus_ad_pct",
+    "ap_pct",
+    "bonus_ap_pct",
+    "target_hp_pct",
+    "target_max_hp_pct",
+    "target_current_hp_pct",
+    "target_hp_per_100_ad_pct",
+    "target_hp_per_100_bonus_ad_pct",
+    "target_hp_per_100_ap_pct",
+  ];
+  const hasOffensiveScaling = offensiveKeys.some((k) => resolveScalingValue(sc[k], lv) > 0);
 
   const isDmgType = dtype === "physical" || dtype === "magic" || dtype === "true";
   const hasDamage = hasPositiveBaseDmg || (isDmgType && hasOffensiveScaling);

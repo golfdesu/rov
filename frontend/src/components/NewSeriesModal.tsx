@@ -98,11 +98,12 @@ export function NewSeriesModal({
         <div className="grid grid-cols-2 gap-3">
           {/* Team A */}
           <div className="flex flex-col gap-1.5">
-            <label className="flex items-center gap-1 font-display text-xs font-bold text-blue">
+            <label htmlFor="new-series-team-a" className="flex items-center gap-1 font-display text-xs font-bold text-blue">
               <span className="h-2 w-2 rounded-full bg-blue" />
               <span>ทีม A (เริ่มต้นฝั่ง BLUE)</span>
             </label>
             <input
+              id="new-series-team-a"
               type="text"
               value={teamA}
               onChange={(e) => setTeamA(e.target.value.toUpperCase())}
@@ -132,11 +133,12 @@ export function NewSeriesModal({
 
           {/* Team B */}
           <div className="flex flex-col gap-1.5">
-            <label className="flex items-center gap-1 font-display text-xs font-bold text-red">
+            <label htmlFor="new-series-team-b" className="flex items-center gap-1 font-display text-xs font-bold text-red">
               <span className="h-2 w-2 rounded-full bg-red" />
               <span>ทีม B (เริ่มต้นฝั่ง RED)</span>
             </label>
             <input
+              id="new-series-team-b"
               type="text"
               value={teamB}
               onChange={(e) => setTeamB(e.target.value.toUpperCase())}
@@ -167,7 +169,7 @@ export function NewSeriesModal({
 
         {/* Custom Series Name */}
         <div className="flex flex-col gap-1.5">
-          <label className="flex items-center justify-between font-display text-xs font-medium text-muted">
+          <label htmlFor="new-series-name" className="flex items-center justify-between font-display text-xs font-medium text-muted">
             <span className="flex items-center gap-1">
               <Users className="h-3.5 w-3.5 text-gold" />
               <span>ชื่อกลุ่ม / ชื่อซีรีส์ (ไม่บังคับ)</span>
@@ -177,6 +179,7 @@ export function NewSeriesModal({
             </span>
           </label>
           <input
+            id="new-series-name"
             type="text"
             value={customSeries}
             onChange={(e) => setCustomSeries(e.target.value)}

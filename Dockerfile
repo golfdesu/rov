@@ -7,6 +7,8 @@ COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
 
 COPY frontend/ ./
+ARG VITE_DRAFT_ONLY=false
+ENV VITE_DRAFT_ONLY=$VITE_DRAFT_ONLY
 RUN npm run build
 
 # Stage 2: FastAPI serving image
@@ -15,7 +17,8 @@ FROM python:3.12-slim
 WORKDIR /app
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir "torch>=2.2.0" --index-url https://download.pytorch.org/whl/cpu \
+    && pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
 
 COPY src/ ./src/
 COPY data/ ./data/
@@ -24,7 +27,7 @@ COPY configs/ ./configs/
 COPY frontend/public/hero_images.json ./frontend/public/hero_images.json
 COPY --from=frontend /frontend/dist/ ./frontend/dist/
 
-RUN useradd -m appuser && chown -R appuser:appuser /app
+RUN mkdir -p /app/db && useradd -m appuser && chown -R appuser:appuser /app
 USER appuser
 
 EXPOSE 8000

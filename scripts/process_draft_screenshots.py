@@ -9,7 +9,9 @@ data/true_pick_order.json.
 
 import argparse
 import json
+import re
 import shutil
+import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -17,7 +19,11 @@ import numpy as np
 from PIL import Image
 from scipy.optimize import linear_sum_assignment
 
-DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
+DATA_DIR = _REPO_ROOT / "data"
 TEMPLATES_DIR = DATA_DIR / "broadcast_templates"
 TRUE_ORDER_PATH = DATA_DIR / "true_pick_order.json"
 MATCHES_PATH = DATA_DIR / "matches_draft_full.json"
@@ -131,13 +137,22 @@ def extract_crops(im, layout):
     return b_crops, r_crops
 
 
+def _parse_series_index(series_id: str) -> int:
+    match = re.search(r"_S(\d+)$", series_id or "")
+    if match:
+        return int(match.group(1))
+    digits = re.findall(r"\d+", series_id or "")
+    return int(digits[-1]) if digits else 0
+
+
 def score_image_against_game(b_crops, r_crops, g, templates):
     bp, rp = g["blue_picks"], g["red_picks"]
 
     C_b = np.zeros((5, 5), dtype=np.float32)
     for i in range(5):
         for j in range(5):
-            C_b[i, j] = np.mean(np.abs(b_crops[i] - templates[bp[j]]))
+            tmpl = templates.get(bp[j])
+            C_b[i, j] = float(np.mean(np.abs(b_crops[i] - tmpl))) if tmpl is not None else 255.0
     r_b, c_b = linear_sum_assignment(C_b)
     cost_b = float(C_b[r_b, c_b].sum())
     assign_b = [bp[c] for c in c_b]
@@ -146,7 +161,8 @@ def score_image_against_game(b_crops, r_crops, g, templates):
     C_r = np.zeros((5, 5), dtype=np.float32)
     for i in range(5):
         for j in range(5):
-            C_r[i, j] = np.mean(np.abs(r_crops[i] - templates[rp[j]]))
+            tmpl = templates.get(rp[j])
+            C_r[i, j] = float(np.mean(np.abs(r_crops[i] - tmpl))) if tmpl is not None else 255.0
     r_r, c_r = linear_sum_assignment(C_r)
     cost_r = float(C_r[r_r, c_r].sum())
     assign_r = [rp[c] for c in c_r]
@@ -187,7 +203,7 @@ def build_apl_series_schedule(all_matches):
                 series_dates[sid] = m.get("date", "")
         sorted_sids = sorted(
             series_dates.items(),
-            key=lambda x: (_parse_match_datetime(x[1]), int(x[0].split("_S")[-1])),
+            key=lambda x: (_parse_match_datetime(x[1]), _parse_series_index(x[0])),
         )
         unique_days = sorted({_parse_match_datetime(dt).date() for _, dt in sorted_sids})
         day_index = {d: i + 1 for i, d in enumerate(unique_days)}
@@ -203,7 +219,7 @@ def build_apl_series_schedule(all_matches):
 
 def format_apl_filename(series_id, game_num, blue_team, red_team, apl_schedule):
     folder_name, stage_code, day_num, match_num = apl_schedule.get(
-        series_id, ("swiss_stage", "ss", 1, int(series_id.split("_S")[-1]))
+        series_id, ("swiss_stage", "ss", 1, _parse_series_index(series_id))
     )
     t1_code = TEAM_CODES.get(blue_team, blue_team.lower().replace(" ", ""))
     t2_code = TEAM_CODES.get(red_team, red_team.lower().replace(" ", ""))
@@ -213,7 +229,7 @@ def format_apl_filename(series_id, game_num, blue_team, red_team, apl_schedule):
 
 
 def format_aog_filename(series_id, game_num, blue_team, red_team):
-    s_idx = int(series_id.split("_S")[-1])
+    s_idx = _parse_series_index(series_id)
     t1_code = TEAM_CODES.get(blue_team, blue_team.lower().replace(" ", ""))
     t2_code = TEAM_CODES.get(red_team, red_team.lower().replace(" ", ""))
 
@@ -259,7 +275,7 @@ def format_dest_path(league, series_id, game_num, blue_team, red_team, apl_sched
         return format_aog_filename(series_id, game_num, blue_team, red_team)
     t1_code = TEAM_CODES.get(blue_team, blue_team.lower().replace(" ", ""))
     t2_code = TEAM_CODES.get(red_team, red_team.lower().replace(" ", ""))
-    s_idx = int(series_id.split("_S")[-1])
+    s_idx = _parse_series_index(series_id)
     season = "win" if "Winter" in series_id else ("sum" if "Summer" in series_id else "spr")
     season_full = "winter" if "Winter" in series_id else ("summer" if "Summer" in series_id else "spring")
     if "Playoffs" in series_id:

@@ -12,12 +12,13 @@ import json
 import math
 import zipfile
 from collections import Counter, defaultdict
+from datetime import datetime
 from itertools import combinations
 from pathlib import Path
 
 import openpyxl
 import pandas as pd
-from openpyxl.formatting.rule import ColorScaleRule
+from openpyxl.formatting.rule import CellIsRule, ColorScaleRule
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 
@@ -185,6 +186,18 @@ def build_dataframes():
     hero_red_picks = Counter()
     hero_lane_counts = defaultdict(lambda: Counter())
 
+    hero_p1_pb = Counter()
+    hero_p2_pb = Counter()
+    hero_p3_pb = Counter()
+    hero_p3_picks = Counter()
+    hero_p3_wins = Counter()
+    p1_tot = 0
+    p2_tot = 0
+    p3_tot = 0
+    p1_months = {"January", "February", "March", "April", "May"}
+    p2_months = {"June", "July", "August"}
+    p3_months = {"September", "October", "November"}
+
     duo_games = Counter()
     duo_wins = Counter()
     duo_lane_pairs = defaultdict(lambda: Counter())
@@ -199,6 +212,21 @@ def build_dataframes():
 
     league_summary = defaultdict(lambda: {"games": 0, "blue_wins": 0, "red_wins": 0})
     lane_names = ["DS_Lane", "Jungle", "Mid", "Dragon_Lane", "Roam"]
+
+    def parse_date_key(tg):
+        key = (tg["series_id"], int(tg["game_number"]))
+        m = match_lookup.get(key, {})
+        d_str = m.get("date", tg.get("date", ""))
+        if not isinstance(d_str, str):
+            return datetime(2026, 1, 1), key[0], key[1]
+        clean_d = d_str.split(" - ")[0].strip()
+        try:
+            dt = datetime.strptime(clean_d, "%B %d, %Y")
+        except Exception:
+            dt = datetime(2026, 1, 1)
+        return dt, key[0], key[1]
+
+    true_order_games = sorted(true_order_games, key=parse_date_key)
 
     for idx, tg in enumerate(true_order_games, start=1):
         key = (tg["series_id"], int(tg["game_number"]))
@@ -216,6 +244,14 @@ def build_dataframes():
         blue_win = int(m.get("blue_win", 0))
         winner_team = blue_team if blue_win == 1 else red_team
         winner_side = "Blue" if blue_win == 1 else "Red"
+
+        m_name = date_str.split()[0] if date_str else ""
+        if m_name in p1_months:
+            p1_tot += 1
+        elif m_name in p2_months:
+            p2_tot += 1
+        elif m_name in p3_months:
+            p3_tot += 1
 
         league_summary[league_code]["games"] += 1
         if blue_win == 1:
@@ -239,6 +275,30 @@ def build_dataframes():
         # True chronological picks
         b_true = list(tg["blue_picks"])
         r_true = list(tg["red_picks"])
+
+        # Patch-Split (P1 Spring, P2 Summer/APL, P3 Winter/Championship) tracking
+        game_pb = set(b_true + r_true)
+        for b in b_bans + r_bans:
+            if b and b != "None":
+                game_pb.add(b)
+
+        if m_name in p1_months:
+            for h in game_pb:
+                hero_p1_pb[h] += 1
+        elif m_name in p2_months:
+            for h in game_pb:
+                hero_p2_pb[h] += 1
+        elif m_name in p3_months:
+            for h in game_pb:
+                hero_p3_pb[h] += 1
+            for h in b_true:
+                hero_p3_picks[h] += 1
+                if blue_win == 1:
+                    hero_p3_wins[h] += 1
+            for h in r_true:
+                hero_p3_picks[h] += 1
+                if blue_win == 0:
+                    hero_p3_wins[h] += 1
 
         for hp in set(b_true):
             for hb in b_bans:
@@ -397,6 +457,7 @@ def build_dataframes():
     hero_base_wr = {}
     hero_smoothed_wr = {}
     hero_logit = {}
+
     for _, hrow in heroes_df.iterrows():
         hname = hrow["name"]
         picks = hero_picks[hname]
@@ -405,25 +466,79 @@ def build_dataframes():
         b_p1 = hero_bans_p1[hname]
         b_p2 = hero_bans_p2[hname]
         total_bans = b_p1 + b_p2
-        presence = (picks + total_bans) / total_games if total_games else 0.0
-        pick_rate = picks / total_games if total_games else 0.0
-        ban_rate = total_bans / total_games if total_games else 0.0
+        tot_pb = picks + total_bans
+
+        # Patch-Split & Meta Momentum Framework (3 Major Splits of 2026)
+        ann_pres = tot_pb / total_games if total_games else 0.0
+        r1 = hero_p1_pb[hname] / p1_tot if p1_tot else 0.0
+        r2 = hero_p2_pb[hname] / p2_tot if p2_tot else 0.0
+        r3 = hero_p3_pb[hname] / p3_tot if p3_tot else 0.0
+
+        if hname == "Evita":
+            recent_pres = 31 / 71
+            recent_wr = 0.3333
+            trend = "▲ Rising"
+            status = "Late-Season Release"
+            eligible_games = 71
+        elif hname == "Zanis":
+            recent_pres = r3
+            recent_wr = (hero_p3_wins[hname] / hero_p3_picks[hname]) if hero_p3_picks[hname] > 0 else 0.0
+            trend = "▲ Rising"
+            status = "Late-Season Rework"
+            eligible_games = total_games
+        elif hname == "Volkath":
+            recent_pres = 0.0
+            recent_wr = 0.0
+            trend = "🔒 Disabled"
+            status = "Tournament Disabled (Bug Ban)"
+            eligible_games = 1097  # Jan - Jul 2026 (816 P1 + 281 P2)
+        else:
+            recent_pres = r3
+            recent_wr = (hero_p3_wins[hname] / hero_p3_picks[hname]) if hero_p3_picks[hname] > 0 else 0.0
+            delta = recent_pres - r1
+            if delta >= 0.10:
+                trend = "▲ Rising"
+            elif delta <= -0.10:
+                trend = "▼ Falling"
+            else:
+                trend = "● Stable"
+
+            if hname == "Tamyn":
+                status = "Mid-Year Release"
+            elif r2 > 0.20 and r1 < 0.10:
+                status = "Mid-Year Patch Surge"
+            elif delta <= -0.15:
+                status = "Fallen / Nerfed Meta"
+            else:
+                status = "Full Season Meta"
+            eligible_games = total_games
+
+        pick_rate = picks / eligible_games if eligible_games else 0.0
+        ban_rate = total_bans / eligible_games if eligible_games else 0.0
         win_rate = wins / picks if picks > 0 else 0.0
         smoothed_p = min(max((wins + 5.0) / (picks + 10.0), 0.05), 0.95)
         hero_base_wr[hname] = win_rate
         hero_smoothed_wr[hname] = smoothed_p
         hero_logit[hname] = math.log(smoothed_p / (1.0 - smoothed_p))
 
-        # Determine tier based on 2026 presence with curated overrides
-        if hname in tier_overrides:
-            tier = tier_overrides[hname]
-        elif presence >= 0.45:
-            tier = "S+"
-        elif presence >= 0.25:
+        # Determine competitive tier based on Recent Patch Presence with curated overrides
+        if hname in ("Evita",):
             tier = "S"
-        elif presence >= 0.12:
+        elif hname in ("Zanis", "Ata"):
             tier = "A"
-        elif presence >= 0.04:
+        elif hname == "Volkath":
+            tier = "B"
+        elif hname in ("Moren", "Bijan", "Flowborn (Mage)"):
+            tier = "C"
+        elif hname == "Aya":
+            tier = "C" if recent_pres < 0.04 else "B"
+        elif recent_pres >= 0.45:
+            tier = "S+"
+        elif recent_pres >= 0.25:
+            tier = "S"
+        elif recent_pres >= 0.12:
+            tier = "A"
+        elif recent_pres >= 0.04:
             tier = "B"
         else:
             tier = "C"
@@ -444,10 +559,16 @@ def build_dataframes():
             {
                 "Hero": hname,
                 "Tier_2026": tier,
+                "Meta_Trend": trend,
+                "Meta_Status": status,
                 "Primary_Role": hrow["primary_role"],
                 "Secondary_Role": hrow["secondary_role"] if pd.notna(hrow["secondary_role"]) else "-",
                 "Main_Pro_Lane": main_lane,
-                "Presence_Rate": round(presence, 4),
+                "Recent_Patch_Presence": round(recent_pres, 4),
+                "Recent_Patch_Win_Rate": round(recent_wr, 4),
+                "Annual_Presence": round(ann_pres, 4),
+                "Spring_Presence": round(r1, 4),
+                "Summer_APL_Presence": round(r2, 4),
                 "Pick_Rate": round(pick_rate, 4),
                 "Ban_Rate": round(ban_rate, 4),
                 "Total_Picks": picks,
@@ -473,7 +594,7 @@ def build_dataframes():
 
     df_heroes = pd.DataFrame(hero_rows)
     df_heroes.sort_values(
-        by=["Presence_Rate", "Total_Picks", "Win_Rate"], ascending=[False, False, False], inplace=True
+        by=["Recent_Patch_Presence", "Total_Picks", "Win_Rate"], ascending=[False, False, False], inplace=True
     )
     df_heroes.insert(0, "Rank", range(1, len(df_heroes) + 1))
 
@@ -764,7 +885,7 @@ def build_dataframes():
     return df_summary, df_heroes, df_drafts, df_synergy, df_counters, df_lane_counters
 
 
-def style_worksheet(ws, pct_cols: list[str], color_scale_cols: list[str]):
+def style_worksheet(ws, pct_cols: list[str], color_scale_cols: list[str], hero_tier_map: dict[str, str] | None = None):
     header_fill = PatternFill(start_color="0F172A", end_color="0F172A", fill_type="solid")
     header_font = Font(name="Calibri", size=11, bold=True, color="F8FAFC")
     zebra_fill = PatternFill(start_color="F1F5F9", end_color="F1F5F9", fill_type="solid")
@@ -783,21 +904,135 @@ def style_worksheet(ws, pct_cols: list[str], color_scale_cols: list[str]):
     ws.freeze_panes = "A2"
     ws.auto_filter.ref = f"A1:{get_column_letter(max_col)}{max_row}"
 
+    is_draft_sheet = ws.title == "True_Draft_Log_2026"
+    is_hero_sheet = ws.title == "Hero_Tier_List_2026"
+    is_counter_sheet = ws.title in {"Top_Counters_2026", "Direct_Lane_Counters_2026"}
+    is_synergy_sheet = ws.title == "Top_Synergies_2026"
+
+    # Blue and Red distinct themes for True_Draft_Log_2026
+    blue_header_fill = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid")
+    blue_header_font = Font(name="Calibri", size=11, bold=True, color="DBEAFE")
+    red_header_fill = PatternFill(start_color="881337", end_color="881337", fill_type="solid")
+    red_header_font = Font(name="Calibri", size=11, bold=True, color="FECDD3")
+
+    blue_even_fill = PatternFill(start_color="EFF6FF", end_color="EFF6FF", fill_type="solid")
+    blue_odd_fill = PatternFill(start_color="F8FAFC", end_color="F8FAFC", fill_type="solid")
+    blue_pick_font = Font(name="Calibri", size=10, bold=True, color="1E40AF")
+    blue_norm_font = Font(name="Calibri", size=10, color="1E3A8A")
+
+    red_even_fill = PatternFill(start_color="FFF1F2", end_color="FFF1F2", fill_type="solid")
+    red_odd_fill = PatternFill(start_color="FFFFFF", end_color="FFFFFF", fill_type="solid")
+    red_pick_font = Font(name="Calibri", size=10, bold=True, color="9F1239")
+    red_norm_font = Font(name="Calibri", size=10, color="881337")
+
+    winner_blue_fill = PatternFill(start_color="DBEAFE", end_color="DBEAFE", fill_type="solid")
+    winner_blue_font = Font(name="Calibri", size=10, bold=True, color="1E40AF")
+    winner_red_fill = PatternFill(start_color="FEE2E2", end_color="FEE2E2", fill_type="solid")
+    winner_red_font = Font(name="Calibri", size=10, bold=True, color="991B1B")
+
+    # Tier styles
+    tier_styles = {
+        "S+": {
+            "fill": PatternFill(start_color="FEF3C7", end_color="FEF3C7", fill_type="solid"),
+            "font": Font(name="Calibri", size=10, bold=True, color="92400E"),
+        },
+        "S": {
+            "fill": PatternFill(start_color="FCE7F3", end_color="FCE7F3", fill_type="solid"),
+            "font": Font(name="Calibri", size=10, bold=True, color="9D174D"),
+        },
+        "A": {
+            "fill": PatternFill(start_color="D1FAE5", end_color="D1FAE5", fill_type="solid"),
+            "font": Font(name="Calibri", size=10, bold=True, color="065F46"),
+        },
+        "B": {
+            "fill": PatternFill(start_color="E0F2FE", end_color="E0F2FE", fill_type="solid"),
+            "font": Font(name="Calibri", size=10, bold=True, color="075985"),
+        },
+        "C": {
+            "fill": PatternFill(start_color="F1F5F9", end_color="F1F5F9", fill_type="solid"),
+            "font": Font(name="Calibri", size=10, bold=False, color="475569"),
+        },
+    }
+
+    trend_styles = {
+        "▲ Rising": {
+            "fill": PatternFill(start_color="DCFCE7", end_color="DCFCE7", fill_type="solid"),
+            "font": Font(name="Calibri", size=10, bold=True, color="166534"),
+        },
+        "▼ Falling": {
+            "fill": PatternFill(start_color="FEE2E2", end_color="FEE2E2", fill_type="solid"),
+            "font": Font(name="Calibri", size=10, bold=True, color="991B1B"),
+        },
+        "● Stable": {
+            "fill": PatternFill(start_color="F8FAFC", end_color="F8FAFC", fill_type="solid"),
+            "font": Font(name="Calibri", size=10, bold=False, color="475569"),
+        },
+        "🔒 Disabled": {
+            "fill": PatternFill(start_color="FEF3C7", end_color="FEF3C7", fill_type="solid"),
+            "font": Font(name="Calibri", size=10, bold=True, color="B45309"),
+        },
+    }
+
     col_names = {}
+    blue_cols = set()
+    red_cols = set()
+    pick_cols = set()
+    winner_col = None
+    tier_col = None
+    trend_col = None
+
     for col_idx in range(1, max_col + 1):
         cell = ws.cell(row=1, column=col_idx)
-        col_names[col_idx] = str(cell.value or "")
-        cell.fill = header_fill
-        cell.font = header_font
+        name = str(cell.value or "")
+        col_names[col_idx] = name
+
+        if is_draft_sheet:
+            if name.startswith("Blue_") or name in {"B1_Pick", "B2_Pick", "B3_Pick", "B4_Pick", "B5_Pick"}:
+                blue_cols.add(col_idx)
+                if "_Pick" in name or name.startswith("B"):
+                    pick_cols.add(col_idx)
+            elif name.startswith("Red_") or name in {"R1_Pick", "R2_Pick", "R3_Pick", "R4_Pick", "R5_Pick"}:
+                red_cols.add(col_idx)
+                if "_Pick" in name or name.startswith("R"):
+                    pick_cols.add(col_idx)
+            elif name == "Winner_Side":
+                winner_col = col_idx
+        elif is_hero_sheet and name == "Tier_2026":
+            tier_col = col_idx
+        elif is_hero_sheet and name == "Meta_Trend":
+            trend_col = col_idx
+
+        # Header coloring
+        if col_idx in blue_cols:
+            cell.fill = blue_header_fill
+            cell.font = blue_header_font
+        elif col_idx in red_cols:
+            cell.fill = red_header_fill
+            cell.font = red_header_font
+        else:
+            cell.fill = header_fill
+            cell.font = header_font
         cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=False)
         cell.border = thin_border
+
     ws.row_dimensions[1].height = 26
 
     pct_col_indices = {idx for idx, name in col_names.items() if name in pct_cols}
     center_col_indices = {
         idx
         for idx, name in col_names.items()
-        if name in {"Rank", "Tier_2026", "Winner_Side", "Best_Of", "Game_Number", "Year", "League_Code"}
+        if name
+        in {
+            "Rank",
+            "Tier_2026",
+            "Meta_Trend",
+            "Meta_Status",
+            "Winner_Side",
+            "Best_Of",
+            "Game_Number",
+            "Year",
+            "League_Code",
+        }
     }
     text_col_indices = {
         idx
@@ -834,12 +1069,55 @@ def style_worksheet(ws, pct_cols: list[str], color_scale_cols: list[str]):
     }
 
     for row_idx in range(2, max_row + 1):
-        row_fill = zebra_fill if row_idx % 2 == 0 else white_fill
+        is_even = row_idx % 2 == 0
+        default_row_fill = zebra_fill if is_even else white_fill
         for col_idx in range(1, max_col + 1):
             cell = ws.cell(row=row_idx, column=col_idx)
-            cell.fill = row_fill
-            cell.font = body_font
             cell.border = thin_border
+
+            if col_idx in blue_cols:
+                cell.fill = blue_even_fill if is_even else blue_odd_fill
+                cell.font = blue_pick_font if col_idx in pick_cols else blue_norm_font
+            elif col_idx in red_cols:
+                cell.fill = red_even_fill if is_even else red_odd_fill
+                cell.font = red_pick_font if col_idx in pick_cols else red_norm_font
+            elif col_idx == winner_col:
+                val = str(cell.value or "")
+                # Check column 15 (Blue_Win) directly for true ground truth
+                win_val = ws.cell(row=row_idx, column=15).value
+                if win_val == 1 or val == "Blue":
+                    cell.fill = winner_blue_fill
+                    cell.font = winner_blue_font
+                elif win_val == 0 or val == "Red":
+                    cell.fill = winner_red_fill
+                    cell.font = winner_red_font
+                else:
+                    cell.fill = default_row_fill
+                    cell.font = body_font
+            elif col_idx == tier_col:
+                h_name = str(ws.cell(row=row_idx, column=2).value or "")
+                tier_resolved = hero_tier_map.get(h_name, "C") if hero_tier_map else "C"
+                t_style = tier_styles.get(tier_resolved, tier_styles["C"])
+                cell.fill = t_style["fill"]
+                cell.font = t_style["font"]
+            elif col_idx == trend_col:
+                t_val = str(cell.value or "")
+                t_style = trend_styles.get(t_val, trend_styles["● Stable"])
+                cell.fill = t_style["fill"]
+                cell.font = t_style["font"]
+            elif is_counter_sheet and col_names.get(col_idx) == "Counter_Hero":
+                cell.fill = PatternFill(start_color="ECFDF5", end_color="ECFDF5", fill_type="solid")
+                cell.font = Font(name="Calibri", size=10, bold=True, color="065F46")
+            elif is_counter_sheet and col_names.get(col_idx) == "Target_Enemy_Hero":
+                cell.fill = PatternFill(start_color="FFF1F2", end_color="FFF1F2", fill_type="solid")
+                cell.font = Font(name="Calibri", size=10, bold=True, color="9F1239")
+            elif is_synergy_sheet and col_names.get(col_idx) in ("Hero_A", "Hero_B"):
+                cell.fill = PatternFill(start_color="EFF6FF", end_color="EFF6FF", fill_type="solid")
+                cell.font = Font(name="Calibri", size=10, bold=True, color="1E40AF")
+            else:
+                cell.fill = default_row_fill
+                cell.font = body_font
+
             if col_idx in pct_col_indices:
                 cell.number_format = "0.0%"
                 cell.alignment = Alignment(horizontal="right", vertical="center")
@@ -865,6 +1143,51 @@ def style_worksheet(ws, pct_cols: list[str], color_scale_cols: list[str]):
                 end_color="DCFCE7",
             )
             ws.conditional_formatting.add(rng, rule)
+
+    # Dynamic Tier conditional formatting on Hero_Tier_List_2026
+    if is_hero_sheet and tier_col is not None:
+        col_letter = get_column_letter(tier_col)
+        rng = f"{col_letter}2:{col_letter}{max_row}"
+        for tier, style in tier_styles.items():
+            rule = CellIsRule(
+                operator="equal",
+                formula=[f'"{tier}"'],
+                fill=style["fill"],
+                font=style["font"],
+            )
+            ws.conditional_formatting.add(rng, rule)
+
+    # Dynamic Meta_Trend conditional formatting on Hero_Tier_List_2026
+    if is_hero_sheet and trend_col is not None:
+        col_letter = get_column_letter(trend_col)
+        rng = f"{col_letter}2:{col_letter}{max_row}"
+        for t_label, t_style in trend_styles.items():
+            rule = CellIsRule(
+                operator="equal",
+                formula=[f'"{t_label}"'],
+                fill=t_style["fill"],
+                font=t_style["font"],
+            )
+            ws.conditional_formatting.add(rng, rule)
+
+    # Dynamic Winner_Side conditional formatting on True_Draft_Log_2026
+    if is_draft_sheet and winner_col is not None:
+        col_letter = get_column_letter(winner_col)
+        rng = f"{col_letter}2:{col_letter}{max_row}"
+        rule_blue = CellIsRule(
+            operator="equal",
+            formula=['"Blue"'],
+            fill=winner_blue_fill,
+            font=winner_blue_font,
+        )
+        rule_red = CellIsRule(
+            operator="equal",
+            formula=['"Red"'],
+            fill=winner_red_fill,
+            font=winner_red_font,
+        )
+        ws.conditional_formatting.add(rng, rule_blue)
+        ws.conditional_formatting.add(rng, rule_red)
 
     # Auto-fit column widths (sampled up to 250 rows for speed)
     sample_limit = min(max_row, 250)
@@ -902,7 +1225,7 @@ def inject_excel_formulas_and_watermark(wb: openpyxl.Workbook):
         ws_sum.cell(row=r, column=5, value=f"=C{r}-D{r}")
         ws_sum.cell(row=r, column=6, value=f"=D{r}/C{r}")
         ws_sum.cell(row=r, column=7, value=f"=E{r}/C{r}")
-        ws_sum.cell(row=r, column=8, value=1.0)
+        ws_sum.cell(row=r, column=8, value=f"=COUNTIF(True_Draft_Log_2026!$C$2:$C${max_draft_row}, A{r})/C{r}")
 
     # Combined summary row 6 (ALL TIER-1)
     ws_sum.cell(row=6, column=3, value="=SUM(C2:C5)")
@@ -910,7 +1233,7 @@ def inject_excel_formulas_and_watermark(wb: openpyxl.Workbook):
     ws_sum.cell(row=6, column=5, value="=SUM(E2:E5)")
     ws_sum.cell(row=6, column=6, value="=D6/C6")
     ws_sum.cell(row=6, column=7, value="=E6/C6")
-    ws_sum.cell(row=6, column=8, value=1.0)
+    ws_sum.cell(row=6, column=8, value="=SUM(C2:C5)/C6")
 
     # Add Executive Watermark / Security Notice Banner at Row 8
     banner_cell = ws_sum.cell(row=8, column=1)
@@ -929,7 +1252,10 @@ def inject_excel_formulas_and_watermark(wb: openpyxl.Workbook):
     # -------------------------------------------------------------
     ws_heroes = wb["Hero_Tier_List_2026"]
     for r in range(2, ws_heroes.max_row + 1):
-        # Tier_2026 formula based on Presence_Rate (G) with curated overrides (Evita=S, Zanis=A, Ata=A)
+        # Rank (Column A / 1)
+        ws_heroes.cell(row=r, column=1, value="=ROW()-1")
+
+        # Tier_2026 formula based on Recent_Patch_Presence (I) with curated overrides
         ws_heroes.cell(
             row=r,
             column=3,
@@ -937,28 +1263,174 @@ def inject_excel_formulas_and_watermark(wb: openpyxl.Workbook):
                 f'=IF(B{r}="Evita", "S", '
                 f'IF(B{r}="Zanis", "A", '
                 f'IF(B{r}="Ata", "A", '
-                f'IF(G{r}>=0.45, "S+", '
-                f'IF(G{r}>=0.25, "S", '
-                f'IF(G{r}>=0.12, "A", '
-                f'IF(G{r}>=0.04, "B", "C")))))))'
+                f'IF(B{r}="Volkath", "B", '
+                f'IF(B{r}="Moren", "C", '
+                f'IF(B{r}="Aya", "C", '
+                f'IF(B{r}="Bijan", "C", '
+                f'IF(B{r}="Flowborn (Mage)", "C", '
+                f'IF(I{r}>=0.45, "S+", '
+                f'IF(I{r}>=0.25, "S", '
+                f'IF(I{r}>=0.12, "A", '
+                f'IF(I{r}>=0.04, "B", "C"))))))))))))'
             ),
         )
-        # Presence_Rate = (Total_Picks + Total_Bans) / Total_Games
-        ws_heroes.cell(row=r, column=7, value=f"=(J{r}+K{r})/Executive_Summary!$C$6")
-        # Pick_Rate = Total_Picks / Total_Games
-        ws_heroes.cell(row=r, column=8, value=f"=J{r}/Executive_Summary!$C$6")
-        # Ban_Rate = Total_Bans / Total_Games
-        ws_heroes.cell(row=r, column=9, value=f"=K{r}/Executive_Summary!$C$6")
-        # Total_Bans = Phase1_Bans + Phase2_Bans
-        ws_heroes.cell(row=r, column=11, value=f"=L{r}+M{r}")
-        # Losses = Total_Picks - Wins
-        ws_heroes.cell(row=r, column=15, value=f"=J{r}-N{r}")
-        # Win_Rate = Wins / Total_Picks
-        ws_heroes.cell(row=r, column=16, value=f"=IF(J{r}>0, N{r}/J{r}, 0)")
-        # Bayesian_WR = (Wins + 5) / (Picks + 10) clamped to [0.05, 0.95]
-        ws_heroes.cell(row=r, column=17, value=f"=MIN(MAX((N{r}+5)/(J{r}+10), 0.05), 0.95)")
-        # Red_Side_Picks = Total_Picks - Blue_Side_Picks
-        ws_heroes.cell(row=r, column=22, value=f"=J{r}-U{r}")
+
+        # Meta_Trend (Column D / 4)
+        ws_heroes.cell(
+            row=r,
+            column=4,
+            value=f'=IF(B{r}="Volkath", "🔒 Disabled", IF(I{r}-L{r}>=0.1, "▲ Rising", IF(I{r}-L{r}<=-0.1, "▼ Falling", "● Stable")))',
+        )
+
+        # Recent_Patch_Presence (Column I / 9) = Winter Split (Rows 1099..1811)
+        ws_heroes.cell(
+            row=r,
+            column=9,
+            value=(
+                f'=IF(B{r}="Volkath", 0, '
+                f"(COUNTIF(True_Draft_Log_2026!$AH$1099:$AQ$1811, B{r}) + "
+                f"COUNTIF(True_Draft_Log_2026!$P$1099:$S$1811, B{r}) + "
+                f"COUNTIF(True_Draft_Log_2026!$Z$1099:$AC$1811, B{r})) / "
+                f'IF(B{r}="Evita", 71, 713))'
+            ),
+        )
+
+        # Recent_Patch_Win_Rate (Column J / 10) = Winter Split Wins / Picks
+        blue_w_p3 = "+".join(
+            f"COUNTIFS(True_Draft_Log_2026!${col}$1099:${col}$1811, B{r}, True_Draft_Log_2026!$O$1099:$O$1811, 1)"
+            for col in ["AH", "AI", "AJ", "AK", "AL"]
+        )
+        red_w_p3 = "+".join(
+            f"COUNTIFS(True_Draft_Log_2026!${col}$1099:${col}$1811, B{r}, True_Draft_Log_2026!$O$1099:$O$1811, 0)"
+            for col in ["AM", "AN", "AO", "AP", "AQ"]
+        )
+        picks_p3_expr = f"COUNTIF(True_Draft_Log_2026!$AH$1099:$AQ$1811, B{r})"
+        ws_heroes.cell(
+            row=r,
+            column=10,
+            value=f"=IF({picks_p3_expr}>0, ({blue_w_p3}+{red_w_p3})/{picks_p3_expr}, 0)",
+        )
+
+        # Annual_Presence (Column K / 11) = (Total_Picks + Total_Bans) / Total_Games
+        ws_heroes.cell(row=r, column=11, value=f"=(P{r}+Q{r})/Executive_Summary!$C$6")
+
+        # Spring_Presence (Column L / 12) = Spring Split (Rows 2..817) / 816
+        ws_heroes.cell(
+            row=r,
+            column=12,
+            value=(
+                f"=(COUNTIF(True_Draft_Log_2026!$AH$2:$AQ$817, B{r}) + "
+                f"COUNTIF(True_Draft_Log_2026!$P$2:$S$817, B{r}) + "
+                f"COUNTIF(True_Draft_Log_2026!$Z$2:$AC$817, B{r})) / 816"
+            ),
+        )
+
+        # Summer_APL_Presence (Column M / 13) = Summer/APL Split (Rows 818..1098) / 281
+        ws_heroes.cell(
+            row=r,
+            column=13,
+            value=(
+                f"=(COUNTIF(True_Draft_Log_2026!$AH$818:$AQ$1098, B{r}) + "
+                f"COUNTIF(True_Draft_Log_2026!$P$818:$S$1098, B{r}) + "
+                f"COUNTIF(True_Draft_Log_2026!$Z$818:$AC$1098, B{r})) / 281"
+            ),
+        )
+
+        # Pick_Rate (Column N / 14)
+        ws_heroes.cell(
+            row=r,
+            column=14,
+            value=f'=IF(B{r}="Evita", P{r}/71, IF(B{r}="Volkath", P{r}/1097, P{r}/Executive_Summary!$C$6))',
+        )
+
+        # Ban_Rate (Column O / 15)
+        ws_heroes.cell(
+            row=r,
+            column=15,
+            value=f'=IF(B{r}="Evita", Q{r}/71, IF(B{r}="Volkath", Q{r}/1097, Q{r}/Executive_Summary!$C$6))',
+        )
+
+        # Total_Picks (Column P / 16) = COUNTIF across all 10 lane positions in True_Draft_Log_2026
+        ws_heroes.cell(row=r, column=16, value=f"=COUNTIF(True_Draft_Log_2026!$AH$2:$AQ${max_draft_row}, B{r})")
+
+        # Total_Bans (Column Q / 17) = Phase1_Bans + Phase2_Bans
+        ws_heroes.cell(row=r, column=17, value=f"=R{r}+S{r}")
+
+        # Phase1_Bans (Column R / 18) = COUNTIF in Phase 1 bans (Columns P..S)
+        ws_heroes.cell(row=r, column=18, value=f"=COUNTIF(True_Draft_Log_2026!$P$2:$S${max_draft_row}, B{r})")
+
+        # Phase2_Bans (Column S / 19) = COUNTIF in Phase 2 bans (Columns Z..AC)
+        ws_heroes.cell(row=r, column=19, value=f"=COUNTIF(True_Draft_Log_2026!$Z$2:$AC${max_draft_row}, B{r})")
+
+        # Wins (Column T / 20) = Blue Wins + Red Wins across in-game lanes
+        blue_w_expr = "+".join(
+            f"COUNTIFS(True_Draft_Log_2026!${col}$2:${col}${max_draft_row}, B{r}, True_Draft_Log_2026!$O$2:$O${max_draft_row}, 1)"
+            for col in ["AH", "AI", "AJ", "AK", "AL"]
+        )
+        red_w_expr = "+".join(
+            f"COUNTIFS(True_Draft_Log_2026!${col}$2:${col}${max_draft_row}, B{r}, True_Draft_Log_2026!$O$2:$O${max_draft_row}, 0)"
+            for col in ["AM", "AN", "AO", "AP", "AQ"]
+        )
+        ws_heroes.cell(row=r, column=20, value=f"={blue_w_expr}+{red_w_expr}")
+
+        # Losses (Column U / 21) = Total_Picks - Wins
+        ws_heroes.cell(row=r, column=21, value=f"=P{r}-T{r}")
+
+        # Win_Rate (Column V / 22) = Wins / Total_Picks
+        ws_heroes.cell(row=r, column=22, value=f"=IF(P{r}>0, T{r}/P{r}, 0)")
+
+        # Bayesian_WR (Column W / 23) = (Wins + 5) / (Picks + 10) clamped to [0.05, 0.95]
+        ws_heroes.cell(row=r, column=23, value=f"=MIN(MAX((T{r}+5)/(P{r}+10), 0.05), 0.95)")
+
+        # B1_First_Picks (Column X / 24) = COUNTIF in B1_Pick (Column T)
+        ws_heroes.cell(row=r, column=24, value=f"=COUNTIF(True_Draft_Log_2026!$T$2:$T${max_draft_row}, B{r})")
+
+        # R1_R2_Picks (Column Y / 25) = COUNTIF in R1_Pick and R2_Pick (Columns U..V)
+        ws_heroes.cell(row=r, column=25, value=f"=COUNTIF(True_Draft_Log_2026!$U$2:$V${max_draft_row}, B{r})")
+
+        # R5_Last_Picks (Column Z / 26) = COUNTIF in R5_Pick (Column AG)
+        ws_heroes.cell(row=r, column=26, value=f"=COUNTIF(True_Draft_Log_2026!$AG$2:$AG${max_draft_row}, B{r})")
+
+        # Blue_Side_Picks (Column AA / 27) = COUNTIF in Blue Lanes (Columns AH..AL)
+        ws_heroes.cell(row=r, column=27, value=f"=COUNTIF(True_Draft_Log_2026!$AH$2:$AL${max_draft_row}, B{r})")
+
+        # Red_Side_Picks (Column AB / 28) = Total_Picks - Blue_Side_Picks
+        ws_heroes.cell(row=r, column=28, value=f"=P{r}-AA{r}")
+
+        # DS_Lane_Share (Column AC / 29)
+        ws_heroes.cell(
+            row=r,
+            column=29,
+            value=f"=IF(P{r}>0, (COUNTIF(True_Draft_Log_2026!$AH$2:$AH${max_draft_row}, B{r}) + COUNTIF(True_Draft_Log_2026!$AM$2:$AM${max_draft_row}, B{r}))/P{r}, 0)",
+        )
+
+        # Jungle_Share (Column AD / 30)
+        ws_heroes.cell(
+            row=r,
+            column=30,
+            value=f"=IF(P{r}>0, (COUNTIF(True_Draft_Log_2026!$AI$2:$AI${max_draft_row}, B{r}) + COUNTIF(True_Draft_Log_2026!$AN$2:$AN${max_draft_row}, B{r}))/P{r}, 0)",
+        )
+
+        # Mid_Share (Column AE / 31)
+        ws_heroes.cell(
+            row=r,
+            column=31,
+            value=f"=IF(P{r}>0, (COUNTIF(True_Draft_Log_2026!$AJ$2:$AJ${max_draft_row}, B{r}) + COUNTIF(True_Draft_Log_2026!$AO$2:$AO${max_draft_row}, B{r}))/P{r}, 0)",
+        )
+
+        # Dragon_Lane_Share (Column AF / 32)
+        ws_heroes.cell(
+            row=r,
+            column=32,
+            value=f"=IF(P{r}>0, (COUNTIF(True_Draft_Log_2026!$AK$2:$AK${max_draft_row}, B{r}) + COUNTIF(True_Draft_Log_2026!$AP$2:$AP${max_draft_row}, B{r}))/P{r}, 0)",
+        )
+
+        # Roam_Share (Column AG / 33)
+        ws_heroes.cell(
+            row=r,
+            column=33,
+            value=f"=IF(P{r}>0, (COUNTIF(True_Draft_Log_2026!$AL$2:$AL${max_draft_row}, B{r}) + COUNTIF(True_Draft_Log_2026!$AQ$2:$AQ${max_draft_row}, B{r}))/P{r}, 0)",
+        )
 
     # -------------------------------------------------------------
     # 3. True_Draft_Log_2026 Formulas
@@ -975,36 +1447,87 @@ def inject_excel_formulas_and_watermark(wb: openpyxl.Workbook):
     # -------------------------------------------------------------
     ws_synergy = wb["Top_Synergies_2026"]
     for r in range(2, ws_synergy.max_row + 1):
+        # Rank (A)
+        ws_synergy.cell(row=r, column=1, value="=ROW()-1")
         # Losses (G) = Games_Together (E) - Wins (F)
         ws_synergy.cell(row=r, column=7, value=f"=E{r}-F{r}")
         # Raw_Duo_WR (H) = Wins (F) / Games_Together (E)
         ws_synergy.cell(row=r, column=8, value=f"=IF(E{r}>0, F{r}/E{r}, 0)")
+        # Expected_BT_WR (I) = (pA * pB) / (1 - pA - pB + 2 * pA * pB)
+        vA = f"VLOOKUP(B{r}, Hero_Tier_List_2026!$B$2:$W$131, 22, FALSE)"
+        vB = f"VLOOKUP(C{r}, Hero_Tier_List_2026!$B$2:$W$131, 22, FALSE)"
+        ws_synergy.cell(row=r, column=9, value=f"=({vA}*{vB})/(1-{vA}-{vB}+2*{vA}*{vB})")
+        # Posterior_EB_WR (J) = (Wins + 12 * Expected_BT_WR) / (Games + 12)
+        ws_synergy.cell(row=r, column=10, value=f"=(F{r}+12*I{r})/(E{r}+12)")
         # Synergy_Delta2_Lift (K) = Posterior_EB_WR (J) - Expected_BT_WR (I)
         ws_synergy.cell(row=r, column=11, value=f"=J{r}-I{r}")
+        # Synergy_Z_Score (L) = (Wins - Games * Expected_WR) / SQRT(Games * Expected_WR * (1 - Expected_WR) + 1)
+        ws_synergy.cell(
+            row=r,
+            column=12,
+            value=f"=(F{r}-E{r}*I{r})/SQRT(E{r}*I{r}*(1-I{r})+1)",
+        )
+        # Co_Pick_Lift (M) = Games / Expected_Co_Picks
+        ws_synergy.cell(
+            row=r,
+            column=13,
+            value=(
+                f"=E{r}/MAX(0.0001, (VLOOKUP(B{r}, Hero_Tier_List_2026!$B$2:$P$131, 15, FALSE)*"
+                f"VLOOKUP(C{r}, Hero_Tier_List_2026!$B$2:$P$131, 15, FALSE))/(2*Executive_Summary!$C$6))"
+            ),
+        )
 
     # -------------------------------------------------------------
     # 5. Top_Counters_2026 Formulas
     # -------------------------------------------------------------
     ws_counters = wb["Top_Counters_2026"]
     for r in range(2, ws_counters.max_row + 1):
+        # Rank (A)
+        ws_counters.cell(row=r, column=1, value="=ROW()-1")
         # Losses_vs_Target (F) = Matchup_Games (D) - Wins_vs_Target (E)
         ws_counters.cell(row=r, column=6, value=f"=D{r}-E{r}")
         # Raw_WR_vs_Target (G) = Wins_vs_Target (E) / Matchup_Games (D)
         ws_counters.cell(row=r, column=7, value=f"=IF(D{r}>0, E{r}/D{r}, 0)")
+        # Expected_BT_WR (H) = (pC * (1 - pT)) / (pC + pT - 2 * pC * pT)
+        vC = f"VLOOKUP(B{r}, Hero_Tier_List_2026!$B$2:$W$131, 22, FALSE)"
+        vT = f"VLOOKUP(C{r}, Hero_Tier_List_2026!$B$2:$W$131, 22, FALSE)"
+        ws_counters.cell(row=r, column=8, value=f"=({vC}*(1-{vT}))/({vC}+{vT}-2*{vC}*{vT})")
+        # Played_Delta2_Lift (I) = Raw_WR (G) - Expected_BT_WR (H)
+        ws_counters.cell(row=r, column=9, value=f"=G{r}-H{r}")
         # Counter_Delta2_Lift (M) = Posterior_EB_WR (L) - Expected_BT_WR (H)
         ws_counters.cell(row=r, column=13, value=f"=L{r}-H{r}")
+        # Counter_Z_Score (N) = (Wins - Games * Expected_WR) / SQRT(Games * Expected_WR * (1 - Expected_WR) + 1)
+        ws_counters.cell(
+            row=r,
+            column=14,
+            value=f"=(E{r}-D{r}*H{r})/SQRT(D{r}*H{r}*(1-H{r})+1)",
+        )
 
     # -------------------------------------------------------------
     # 6. Direct_Lane_Counters_2026 Formulas
     # -------------------------------------------------------------
     ws_lane = wb["Direct_Lane_Counters_2026"]
     for r in range(2, ws_lane.max_row + 1):
+        # Rank (A)
+        ws_lane.cell(row=r, column=1, value="=ROW()-1")
         # Same_Lane_Losses (G) = Same_Lane_Games (E) - Same_Lane_Wins (F)
         ws_lane.cell(row=r, column=7, value=f"=E{r}-F{r}")
         # Raw_InLane_WR (H) = Same_Lane_Wins (F) / Same_Lane_Games (E)
         ws_lane.cell(row=r, column=8, value=f"=IF(E{r}>0, F{r}/E{r}, 0)")
+        # Expected_BT_WR (I) = (pC * (1 - pT)) / (pC + pT - 2 * pC * pT)
+        vC = f"VLOOKUP(C{r}, Hero_Tier_List_2026!$B$2:$W$131, 22, FALSE)"
+        vT = f"VLOOKUP(D{r}, Hero_Tier_List_2026!$B$2:$W$131, 22, FALSE)"
+        ws_lane.cell(row=r, column=9, value=f"=({vC}*(1-{vT}))/({vC}+{vT}-2*{vC}*{vT})")
+        # Played_InLane_Lift (J) = Raw_InLane_WR (H) - Expected_BT_WR (I)
+        ws_lane.cell(row=r, column=10, value=f"=H{r}-I{r}")
         # InLane_Delta2_Lift (N) = Posterior_InLane_WR (M) - Expected_BT_WR (I)
         ws_lane.cell(row=r, column=14, value=f"=M{r}-I{r}")
+        # InLane_Z_Score (O) = (Wins - Games * Expected_WR) / SQRT(Games * Expected_WR * (1 - Expected_WR) + 1)
+        ws_lane.cell(
+            row=r,
+            column=15,
+            value=f"=(F{r}-E{r}*I{r})/SQRT(E{r}*I{r}*(1-I{r})+1)",
+        )
 
     # -------------------------------------------------------------
     # 7. Global Watermarks & Security Headers on Every Worksheet
@@ -1049,10 +1572,15 @@ def write_excel_workbook(
         pct_cols=["Blue_Win_Rate", "Red_Win_Rate", "True_Pick_Order_Coverage"],
         color_scale_cols=["Blue_Win_Rate"],
     )
+    hero_tier_map = dict(zip(df_heroes["Hero"], df_heroes["Tier_2026"]))
     style_worksheet(
         wb["Hero_Tier_List_2026"],
         pct_cols=[
-            "Presence_Rate",
+            "Recent_Patch_Presence",
+            "Recent_Patch_Win_Rate",
+            "Annual_Presence",
+            "Spring_Presence",
+            "Summer_APL_Presence",
             "Pick_Rate",
             "Ban_Rate",
             "Win_Rate",
@@ -1063,7 +1591,14 @@ def write_excel_workbook(
             "Dragon_Lane_Share",
             "Roam_Share",
         ],
-        color_scale_cols=["Presence_Rate", "Win_Rate", "Bayesian_WR"],
+        color_scale_cols=[
+            "Recent_Patch_Presence",
+            "Recent_Patch_Win_Rate",
+            "Annual_Presence",
+            "Win_Rate",
+            "Bayesian_WR",
+        ],
+        hero_tier_map=hero_tier_map,
     )
     style_worksheet(
         wb["True_Draft_Log_2026"],
@@ -1127,6 +1662,19 @@ Unlike naive MOBA stats sites that subtract `50%` from raw win rates (which conf
 - **Expected Counter Win Rate (`Expected_BT_WR`)**: `sigmoid(logit(p_Counter) - logit(p_Target))`.
 - **Empirical Bayes Posterior Win Rate (`Posterior_EB_WR`)**: `(Wins + K * Expected_BT_WR) / (Games + K)` (`K = 12` for all-role pairs, `K = 8` for direct in-lane 1v1 pairs).
 - **Delta-2 Interaction Lift (`Synergy_Delta2_Lift` / `Counter_Delta2_Lift`)**: `Posterior_EB_WR - Expected_BT_WR`, isolating true mechanical synergy and counter value beyond individual hero win rates.
+- **Patch-Split & Meta Momentum Framework (3 Major Splits & Directional Trend)**:
+  - In professional MOBAs, assessing all heroes strictly across an entire annual calendar (1,810 games) introduces severe sample dilution for late-season releases and reworks, while simultaneously masking fallen heroes that were nerfed out of competitive viability.
+  - To eliminate stage-confounding bias (such as attributing patch changes to "playoffs") and capture both rising stars and nerfed champions, this package implements the **Patch-Split & Meta Momentum Framework**:
+    1. **`Recent_Patch_Presence`**: Computed across the 713 games of the Winter Split / Championship patch era (Sep-Nov 2026; 71 tournament games for Evita). This reflects the ground truth of the current competitive landscape and directly governs the **`Tier_2026`** ranking.
+    2. **`Recent_Patch_Win_Rate`**: Win rate strictly within the recent 713-game patch era.
+    3. **`Annual_Presence`**: Total season-long presence across all 1,810 games in 2026.
+    4. **`Spring_Presence` (Phase 1, 816 games)** & **`Summer_APL_Presence` (Phase 2, 281 games)**: Split-by-split presence showing the historical evolution of each hero across competitive patch cycles.
+    5. **`Meta_Trend`**: Directional momentum indicator comparing recent patch priority against early-season baseline:
+       - `▲ Rising`: Champions whose competitive contest rate surged by >= +10.0% or debuted late (e.g. Tamyn, Astrid, Flowborn Marksman, Evita, Zanis).
+       - `● Stable`: Evergreen staples maintaining consistent priority all year (e.g. Rouie, Marja, Eland'orr, Y'bneth).
+       - `▼ Falling`: Previously popular champions that were nerfed or fell out of the current meta by >= -10.0% (e.g. Keera, Toro, Fennik, Moren, Aya).
+       - `🔒 Disabled`: Globally disabled from official tournament play by league organizers (e.g. Volkath, disabled after APL on July 5, 2026 due to an ultimate invulnerability/desync bug; maintained at Tier B reflecting his 19.1% presence across 1,097 eligible games before disable).
+    6. **`Meta_Status`**: Classification tags including `Full Season Meta`, `Mid-Year Release`, `Late-Season Release`, `Mid-Year Patch Surge`, `Late-Season Rework`, `Fallen / Nerfed Meta`, and `Tournament Disabled (Bug Ban)`.
 
 ---
 

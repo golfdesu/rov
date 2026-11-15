@@ -67,11 +67,15 @@ def load_hero_features_and_matrices():
         s_row = stats_df.iloc[i]
 
         # Role one-hot (primary + 0.5 secondary)
+        role_map = {"Fighter": "Warrior", "Carry": "Marksman"}
         r_vec = [0.0] * len(roles)
-        if h_row["primary_role"] in roles:
-            r_vec[roles.index(h_row["primary_role"])] = 1.0
-        if pd.notna(h_row["secondary_role"]) and h_row["secondary_role"] in roles:
-            r_vec[roles.index(h_row["secondary_role"])] = 0.5
+        p_role = role_map.get(str(h_row["primary_role"]), str(h_row["primary_role"]))
+        if p_role in roles:
+            r_vec[roles.index(p_role)] = 1.0
+        if pd.notna(h_row["secondary_role"]):
+            s_role = role_map.get(str(h_row["secondary_role"]), str(h_row["secondary_role"]))
+            if s_role in roles:
+                r_vec[roles.index(s_role)] = 0.5
 
         # 5-lane probability distribution [DS, JG, Mid, Dragon, Roam]
         lane_counts = np.array(
@@ -229,9 +233,10 @@ def order_team_picks_by_draft_logic(team_picks_ids, enemy_phase2_ban_ids, lane_p
         enemy_p2_lanes.add(int(np.argmax(lane_probs[b_id])))
 
     scored = []
-    for slot_idx, h_id in enumerate(team_picks_ids):
+    for h_id in team_picks_ids:
         # Penalize priority if hero's lane matches an enemy Phase 2 targeted ban
-        targeted_in_p2 = 1 if slot_idx in enemy_p2_lanes else 0
+        hero_lane = int(np.argmax(lane_probs[h_id]))
+        targeted_in_p2 = 1 if hero_lane in enemy_p2_lanes else 0
         score = priority_scores[h_id] - (50.0 if targeted_in_p2 else 0.0)
         scored.append((score, h_id))
 

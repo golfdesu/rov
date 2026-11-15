@@ -9,6 +9,11 @@ interface DuelSummaryProps {
   isLoading: boolean;
   onSwap: () => void;
   onMirror: (from: Side) => void;
+  enableKiting?: boolean;
+  onToggleKiting?: () => void;
+  enableActives?: boolean;
+  onToggleActives?: () => void;
+  onReset?: () => void;
 }
 
 function HpChart({
@@ -85,6 +90,14 @@ function SideColumn({
             <dd className="text-right font-mono">{data.burst_per_1000_gold.toLocaleString()}</dd>
           </>
         )}
+        {sim.kiting && (sim.kiting.initial_delay > 0 || sim.kiting.interval_multiplier > 1.01) && (
+          <>
+            <dt className="text-dim">ถูกคุมระยะ Kite</dt>
+            <dd className="text-right font-mono text-gold">
+              +{sim.kiting.initial_delay.toFixed(2)}วิ / ×{sim.kiting.interval_multiplier.toFixed(2)}
+            </dd>
+          </>
+        )}
       </dl>
       <ul className="mt-1 text-[10px] text-muted">
         {top.map(([k, v]) => (
@@ -98,7 +111,19 @@ function SideColumn({
   );
 }
 
-export function DuelSummary({ result, heroA, heroB, isLoading, onSwap, onMirror }: DuelSummaryProps) {
+export function DuelSummary({
+  result,
+  heroA,
+  heroB,
+  isLoading,
+  onSwap,
+  onMirror,
+  enableKiting = true,
+  onToggleKiting,
+  enableActives = true,
+  onToggleActives,
+  onReset,
+}: DuelSummaryProps) {
   const sim = result.simulation;
   const nameA = displayName(heroA);
   const nameB = displayName(heroB);
@@ -122,7 +147,37 @@ export function DuelSummary({ result, heroA, heroB, isLoading, onSwap, onMirror 
             <div className="font-mono text-xs text-muted">ใช้เวลา {sim.time_to_kill} วินาที</div>
           )}
         </div>
-        <div className="flex gap-1">
+        <div className="flex flex-wrap gap-1">
+          {onToggleKiting && (
+            <button
+              type="button"
+              onClick={onToggleKiting}
+              aria-pressed={enableKiting}
+              title="เปิด/ปิด การคำนวณระยะยิงตอดและจังหวะ Kiting ของฮีโร่ตีไกลเทียบตัวประชิด"
+              className={`border px-2 py-1 text-[11px] font-medium transition-colors ${
+                enableKiting
+                  ? "border-gold/60 bg-gold/15 text-gold"
+                  : "border-line text-muted hover:text-ink"
+              }`}
+            >
+              Kiting: {enableKiting ? "เปิด" : "ปิด"}
+            </button>
+          )}
+          {onToggleActives && (
+            <button
+              type="button"
+              onClick={onToggleActives}
+              aria-pressed={enableActives}
+              title="เปิด/ปิด เอฟเฟกต์สกิลกดใช้ของไอเทม (Rock Shield / Bow of Slaughter ฯลฯ)"
+              className={`border px-2 py-1 text-[11px] font-medium transition-colors ${
+                enableActives
+                  ? "border-gold/60 bg-gold/15 text-gold"
+                  : "border-line text-muted hover:text-ink"
+              }`}
+            >
+              Active ไอเทม: {enableActives ? "เปิด" : "ปิด"}
+            </button>
+          )}
           <button
             type="button"
             onClick={onSwap}
@@ -137,6 +192,15 @@ export function DuelSummary({ result, heroA, heroB, isLoading, onSwap, onMirror 
           >
             <Copy size={12} /> ให้ B ใส่ของเหมือน A
           </button>
+          {onReset && (
+            <button
+              type="button"
+              onClick={onReset}
+              className="border border-line px-2 py-1 text-[11px] text-muted hover:border-red/60 hover:text-red"
+            >
+              รีเซ็ต
+            </button>
+          )}
         </div>
       </div>
 

@@ -48,9 +48,11 @@ HERO_BASE_OVERRIDES = {
 CLASS_GROWTH_RATES = {
     "Tank": {"hp_growth": 350.0, "armor_growth": 28.0, "ad_growth": 10.0, "mdef_growth": 13.5},
     "Warrior": {"hp_growth": 356.5, "armor_growth": 22.571, "ad_growth": 13.357, "mdef_growth": 13.5},
+    "Fighter": {"hp_growth": 356.5, "armor_growth": 22.571, "ad_growth": 13.357, "mdef_growth": 13.5},
     "Assassin": {"hp_growth": 260.0, "armor_growth": 20.0, "ad_growth": 15.286, "mdef_growth": 13.5},
     "Mage": {"hp_growth": 245.0, "armor_growth": 20.857, "ad_growth": 9.357, "mdef_growth": 13.5},
     "Marksman": {"hp_growth": 241.286, "armor_growth": 20.857, "ad_growth": 14.786, "mdef_growth": 13.5},
+    "Carry": {"hp_growth": 241.286, "armor_growth": 20.857, "ad_growth": 14.786, "mdef_growth": 13.5},
     "Support": {"hp_growth": 275.0, "armor_growth": 21.0, "ad_growth": 10.857, "mdef_growth": 13.5},
 }
 
@@ -80,10 +82,12 @@ def get_hero_primary_class(hero):
     primary = classes[0]
     norm_map = {
         "tank": "Tank",
-        "warrior": "Warrior",
+        "fighter": "Fighter",
+        "warrior": "Fighter",
         "assassin": "Assassin",
         "mage": "Mage",
-        "marksman": "Marksman",
+        "carry": "Carry",
+        "marksman": "Carry",
         "support": "Support",
     }
     for k, v in norm_map.items():
@@ -94,6 +98,15 @@ def get_hero_primary_class(hero):
 
 def main():
     root = Path(__file__).resolve().parent.parent
+    if (root / "data" / "hero_status_lv1.json").exists():
+        try:
+            from scripts.apply_hero_status import main as apply_status_main
+        except ImportError:
+            from apply_hero_status import main as apply_status_main
+
+        apply_status_main()
+        return
+
     heroes_path = root / "data" / "heroes_130_full.json"
     out_json = root / "data" / "hero_level_stats.json"
     out_csv = root / "data" / "hero_level_stats.csv"

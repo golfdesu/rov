@@ -11,7 +11,7 @@ Comprehensive hero database covering all **130 heroes (up to Evita)**, pro match
 * `data/matches_training.json` — Curated training set: 3,512 games from 2025–2026 (2024 excluded), 51.5% with screenshot-verified true pick order. Rebuilt via `python src/build_training_dataset.py --min-year 2025`.
 * `data/true_pick_order.json` — 1,810 games with true chronological pick order read from broadcast draft screenshots.
 * `data/hero_tier_overrides.json` — Hand-maintained tiers for new, reworked, or low-sample heroes (e.g. Evita, Zanis, Ata). Used by the `/heroes` API tier field and the `moba-meta-intel` tier list.
-* `data/hero_draft_stats.csv`, `data/synergy_matrix.csv`, `data/counter_matrix.csv` — Lane distribution stats across 5 main lanes, ally synergy matrix (2,513 pairs), and enemy counter matrix (6,080 pairs).
+* `data/hero_draft_stats.csv`, `data/synergy_matrix.csv`, `data/counter_matrix.csv` — Lane distribution stats across 5 main lanes, ally synergy matrix (2,517 pairs), and enemy counter matrix (6,090 pairs).
 * `src/train_sota_model.py` — SOTA **`RoVDraftGNNTransformer`** model (Multi-Relational Hero GNN + Multi-Head Draft Transformer + Bounded Neural Temperature Gate + Dual Policy & Win-Value Heads).
 * `src/predict_draft_cli.py` — CLI draft simulator and tournament scenario runner.
 * `src/api.py` — FastAPI service endpoints (`/health`, `/heroes`, `/draft/steps`, `/draft/session`, `/predict`, `/predict/matrix`, `/predict/heuristic`, `/combat/catalog`, `/combat/stats`, `/combat/duel`, `/combat/rune-recommendation`, `/combat/hero-screenshots/{hero}`, `/combat/item-screenshots/{item_name}`) and static file serving from `frontend/dist`.

@@ -47,18 +47,24 @@ DRAFT_STEPS = [
 MAX_HISTORY_LEN = 17
 
 
-def _build_step_lookup() -> dict[tuple[int, int, int, int, int, int, int], int]:
-    """Maps (phase, action, side, blue_picks, red_picks, blue_bans, red_bans) -> step index."""
+def _build_step_lookup() -> tuple[
+    dict[tuple[int, int, int, int, int, int, int], int],
+    list[tuple[int, int, int, int, int, int, int, int]],
+]:
+    """Maps exact and pick/ban-count descriptors -> DRAFT_STEPS index."""
     lookup: dict[tuple[int, int, int, int, int, int, int], int] = {}
+    step_counts: list[tuple[int, int, int, int, int, int, int, int]] = []
     done = {(side, act): 0 for side in (0, 1) for act in (0, 1)}
     for step_idx, phase, act, side in DRAFT_STEPS:
-        key = (phase, act, side, done[(0, 1)], done[(1, 1)], done[(0, 0)], done[(1, 0)])
+        bp, rp, bb, rb = done[(0, 1)], done[(1, 1)], done[(0, 0)], done[(1, 0)]
+        key = (phase, act, side, bp, rp, bb, rb)
         lookup.setdefault(key, step_idx)
+        step_counts.append((step_idx, phase, act, side, bp, rp, bb, rb))
         done[(side, act)] += 1
-    return lookup
+    return lookup, step_counts
 
 
-_STEP_LOOKUP = _build_step_lookup()
+_STEP_LOOKUP, _STEP_COUNTS = _build_step_lookup()
 
 
 class ModelInput(NamedTuple):
@@ -301,8 +307,8 @@ class DraftMinimaxSearch:
         arrays = encode_batch([self._to_model_input(s) for s in states], self.num_heroes)
         return run_model(self.model, arrays, self.device)
 
+    @staticmethod
     def find_matching_step(
-        self,
         side_val: int,
         act_type: int,
         phase: int,
@@ -311,12 +317,150 @@ class DraftMinimaxSearch:
         b_bans_len: int,
         r_bans_len: int,
     ) -> int:
-        """Find the exact step index (0..17) matching current draft configuration."""
+        """Find the exact step index (0..17) matching current draft configuration.
+
+        When bans are omitted or entered out-of-order (partial-ban query), match by
+        phase, action_type, side_val, and pick counts first so pick queries never
+        collapse onto Ban steps 0/1.
+        """
         key = (phase, act_type, side_val, b_picks_len, r_picks_len, b_bans_len, r_bans_len)
         if key in _STEP_LOOKUP:
             return _STEP_LOOKUP[key]
-        # Fallback to total completed actions
-        return min(b_picks_len + r_picks_len + b_bans_len + r_bans_len, 17)
+
+        candidates = [row for row in _STEP_COUNTS if row[1] == phase and row[2] == act_type and row[3] == side_val]
+        if not candidates:
+            candidates = [row for row in _STEP_COUNTS if row[2] == act_type and row[3] == side_val]
+        if not candidates:
+            return min(b_picks_len + r_picks_len + b_bans_len + r_bans_len, 17)
+
+        def _distance(row: tuple[int, int, int, int, int, int, int, int]) -> tuple[int, int, int]:
+            step_idx, _p, _a, _s, bp, rp, bb, rb = row
+            pick_diff = abs(bp - b_picks_len) + abs(rp - r_picks_len)
+            ban_diff = abs(bb - b_bans_len) + abs(rb - r_bans_len)
+            primary = pick_diff if act_type == 1 else ban_diff
+            secondary = ban_diff if act_type == 1 else pick_diff
+            return (primary, secondary, step_idx)
+
+        return min(candidates, key=_distance)[0]
+
+    def _filtered_action_dist(
+        self,
+        state: DraftSearchState,
+        raw_probs: np.ndarray,
+        branch_factor: int,
+    ) -> tuple[np.ndarray, list[int]]:
+        """Apply series winning boost + needed lane filter and extract top branch_factor actions."""
+        p_next = raw_probs.copy()
+        if state.series_winning_heroes:
+            unavail = state.get_unavailable_set()
+            for w_hid in state.series_winning_heroes:
+                if w_hid not in unavail:
+                    p_next[w_hid] *= 1.12
+            p_sum = float(p_next.sum())
+            if p_sum > 0:
+                p_next /= p_sum
+
+        if state.action_type == 1:
+            target_pick_ids = state.blue_picks if state.acting_side == 0 else state.red_picks
+            target_pick_names = [self.predictor.hero_names[i] for i in target_pick_ids]
+            target_row = np.zeros(self.num_heroes, dtype=np.float32)
+            if target_pick_ids:
+                target_row[list(target_pick_ids)] = 1.0
+            needed_next = self.predictor._needed_lanes_for_picks(target_pick_names, target_row)
+            p_next = self.predictor._apply_lane_filter(p_next, needed_next)
+
+        top_ids = np.argsort(p_next)[::-1][:branch_factor]
+        filtered = [int(c) for c in top_ids if p_next[c] > 0]
+        return p_next, filtered
+
+    def _evaluate_frontier(
+        self,
+        nodes: list[DraftSearchState],
+        root_side: int,
+        remaining_depth: int,
+        branch_factor: int,
+    ) -> list[float]:
+        """Batched recursive adversarial minimax/expectiminimax evaluation for depth >= 2."""
+        probs_batch, win_batch = self.evaluate_batch(nodes)
+        probs_np = probs_batch.cpu().numpy()
+        win_np = win_batch.cpu().numpy()
+
+        node_actions: list[tuple[np.ndarray, list[int]]] = [
+            self._filtered_action_dist(st, probs_np[idx], branch_factor) for idx, st in enumerate(nodes)
+        ]
+
+        if remaining_depth <= 1:
+            out: list[float] = []
+            for idx, (st, (p_next, actions)) in enumerate(zip(nodes, node_actions)):
+                if not actions:
+                    # Fallback mean top win estimate
+                    v = float(win_np[idx].max())
+                    out.append(v if st.acting_side == root_side else 1.0 - v)
+                    continue
+                vals = [
+                    float(win_np[idx, a]) if st.acting_side == root_side else 1.0 - float(win_np[idx, a])
+                    for a in actions
+                ]
+                priors = np.array([float(p_next[a]) for a in actions], dtype=np.float32)
+                p_sum = priors.sum()
+                priors = priors / p_sum if p_sum > 1e-6 else np.ones_like(priors) / len(priors)
+                mm = max(vals) if st.acting_side == root_side else min(vals)
+                ev = float(np.dot(priors, vals))
+                out.append(0.5 * mm + 0.5 * ev)
+            return out
+
+        # Expand non-terminal children across the entire depth frontier in one neural batch
+        child_nodes: list[DraftSearchState] = []
+        child_slices: list[tuple[int, int, int]] = []  # (node_idx, start, count) or (-1, action, node_idx)
+        leaf_fallback: dict[tuple[int, int], float] = {}
+
+        sub_branch = max(2, branch_factor - 1)
+        for idx, (st, (p_next, actions)) in enumerate(zip(nodes, node_actions)):
+            if not actions or st.is_terminal:
+                v = float(win_np[idx].max())
+                leaf_fallback[(idx, -1)] = v if st.acting_side == root_side else 1.0 - v
+                child_slices.append((idx, -1, 0))
+                continue
+            start = len(child_nodes)
+            unavail = st.get_unavailable_set()
+            expanded_actions: list[int] = []
+            for a in actions:
+                if st.step_idx >= len(DRAFT_STEPS) - 1 or a in unavail:
+                    q_val = float(win_np[idx, a])
+                    leaf_fallback[(idx, a)] = q_val if st.acting_side == root_side else 1.0 - q_val
+                else:
+                    child_nodes.append(st.transition(a))
+                    expanded_actions.append(a)
+            child_slices.append((idx, start, len(expanded_actions)))
+
+        child_vals = (
+            self._evaluate_frontier(child_nodes, root_side, remaining_depth - 1, sub_branch) if child_nodes else []
+        )
+
+        out_vals: list[float] = []
+        for idx, start, count in child_slices:
+            st = nodes[idx]
+            p_next, actions = node_actions[idx]
+            if start < 0:
+                out_vals.append(leaf_fallback[(idx, -1)])
+                continue
+            vals: list[float] = []
+            priors_list: list[float] = []
+            c_offset = 0
+            for a in actions:
+                if (idx, a) in leaf_fallback:
+                    vals.append(leaf_fallback[(idx, a)])
+                else:
+                    vals.append(child_vals[start + c_offset])
+                    c_offset += 1
+                priors_list.append(float(p_next[a]))
+            priors = np.array(priors_list, dtype=np.float32)
+            p_sum = priors.sum()
+            priors = priors / p_sum if p_sum > 1e-6 else np.ones_like(priors) / len(priors)
+            mm = max(vals) if st.acting_side == root_side else min(vals)
+            ev = float(np.dot(priors, vals))
+            out_vals.append(0.5 * mm + 0.5 * ev)
+        return out_vals
 
     def search_lookahead_win_rates(
         self,
@@ -330,8 +474,8 @@ class DraftMinimaxSearch:
         Args:
             root_state: The current draft state
             candidate_hero_indices: List of candidate actions to evaluate from root
-            depth: Number of lookahead steps (depth 1 = immediate value, depth 2 = 1 counter turn)
-            branch_factor: Number of opponent counter-actions to explore per branch
+            depth: Number of lookahead steps (1 = immediate value, 2..4 = multi-ply lookahead)
+            branch_factor: Number of counter-actions to explore per branch
 
         Returns:
             dict mapping hero_idx -> lookahead expected win rate percentage (0.0 to 100.0)
@@ -343,7 +487,7 @@ class DraftMinimaxSearch:
             return results
 
         # 1. Base evaluation of root state
-        root_probs, root_win = self.evaluate_batch([root_state])
+        _root_probs, root_win = self.evaluate_batch([root_state])
         root_w_np = root_win[0].cpu().numpy()
 
         if depth <= 1 or root_state.step_idx >= len(DRAFT_STEPS) - 1:
@@ -351,7 +495,7 @@ class DraftMinimaxSearch:
                 results[hid] = round(float(root_w_np[hid] * 100.0), 2)
             return results
 
-        # 2. Depth 2 Lookahead: Evaluate children states (Opponent counter-turn)
+        # 2. Multi-ply Lookahead (depth 2..4): batched child / frontier expansion
         child_states: list[DraftSearchState] = []
         valid_candidates: list[int] = []
 
@@ -365,36 +509,25 @@ class DraftMinimaxSearch:
         if not child_states:
             return results
 
+        if depth >= 3:
+            frontier_vals = self._evaluate_frontier(
+                child_states,
+                root_side=root_side,
+                remaining_depth=min(depth - 1, 3),
+                branch_factor=max(2, min(branch_factor, 4)),
+            )
+            for hid, val in zip(valid_candidates, frontier_vals):
+                results[hid] = round(float(val * 100.0), 2)
+            return results
+
         c_probs_batch, c_win_batch = self.evaluate_batch(child_states)
         c_probs_np = c_probs_batch.cpu().numpy()
         c_win_np = c_win_batch.cpu().numpy()
 
         for idx, (hid, next_state) in enumerate(zip(valid_candidates, child_states)):
             next_acting_side = next_state.acting_side
-            p_next = c_probs_np[idx].copy()
+            p_next, counter_candidates = self._filtered_action_dist(next_state, c_probs_np[idx], branch_factor)
             w_next = c_win_np[idx]
-
-            if next_state.series_winning_heroes:
-                next_unavail = next_state.get_unavailable_set()
-                for w_hid in next_state.series_winning_heroes:
-                    if w_hid not in next_unavail:
-                        p_next[w_hid] *= 1.12
-                p_sum = float(p_next.sum())
-                if p_sum > 0:
-                    p_next /= p_sum
-
-            # Filter counter-candidates by the needed lanes of the target team at next_state (picks only)
-            if next_state.action_type == 1:
-                target_pick_ids = next_state.blue_picks if next_acting_side == 0 else next_state.red_picks
-                target_pick_names = [self.predictor.hero_names[i] for i in target_pick_ids]
-                target_row = np.zeros(self.num_heroes, dtype=np.float32)
-                target_row[list(target_pick_ids)] = 1.0
-                needed_next = self.predictor._needed_lanes_for_picks(target_pick_names, target_row)
-                p_next = self.predictor._apply_lane_filter(p_next, needed_next)
-
-            # Top counter-actions for the next acting team
-            counter_candidates = np.argsort(p_next)[::-1][:branch_factor]
-            counter_candidates = [c for c in counter_candidates if p_next[c] > 0]
 
             if not counter_candidates:
                 # If no counters available, fallback to immediate win probability
@@ -427,11 +560,9 @@ class DraftMinimaxSearch:
             # Adversarial Minimax: Opponent picks their optimal counter (worst case for Root)
             # Expectiminimax: Opponent picks according to their pro-meta policy prior
             if next_acting_side == root_side:
-                # Teammate turn: max value
                 minimax_val = max(counter_root_values)
                 expected_val = float(np.dot(counter_priors_arr, counter_root_values))
             else:
-                # Opponent turn: min value (adversarial defense)
                 minimax_val = min(counter_root_values)
                 expected_val = float(np.dot(counter_priors_arr, counter_root_values))
 

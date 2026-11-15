@@ -340,6 +340,7 @@ export function DraftHistoryModal({
                               type="button"
                               onClick={() => onDeleteGame(g.id)}
                               title="ลบเกมนี้"
+                              aria-label={`ลบเกมที่ ${g.gameNumber}`}
                               className="flex h-7 w-7 items-center justify-center border border-line bg-bg text-dim transition-colors hover:border-red/50 hover:text-red"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
@@ -454,7 +455,7 @@ export function DraftHistoryModal({
       {/* Footer */}
       <div className="flex items-center justify-between border-t border-line bg-bg px-4 py-2.5">
         <span className="font-mono text-xs text-muted">
-          บันทึกอัตโนมัติ (LocalStorage + Server JSON) · จัดกลุ่มตามคู่แข่งขันอัตโนมัติ
+          บันทึกอัตโนมัติ (LocalStorage / User DB · แยกตามบัญชี) · จัดกลุ่มตามคู่แข่งขันอัตโนมัติ
         </span>
         <button
           type="button"

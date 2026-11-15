@@ -123,63 +123,29 @@ export function AiPanel({
 
   if (variant === "ribbon") {
     return (
-      <section className="flex shrink-0 flex-col border border-line bg-panel">
-        <div className="flex flex-wrap items-center justify-between gap-1.5 border-b border-line px-2.5 py-1.5">
-          <div className="flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-gold" />
-            <span className="font-display text-xs font-bold tracking-wider">
-              AI {isBan ? "BAN" : "PICK"}
-              <span className={`ml-1 ${sideText}`}>· {currentStep.side.toUpperCase()}</span>
-            </span>
-            {isLoading && <Loader2 className="h-3 w-3 animate-spin text-muted" />}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-1">
-            {LANE_FILTER_TABS.map((tab) => {
-              const active = selectedLane === tab.key;
-              const isMissing = !isBan && tab.key !== "ALL" && missing.size < 5 && missing.has(tab.key);
-              return (
-                <button
-                  type="button"
-                  key={tab.key}
-                  onClick={() => toggleLane(tab.key)}
-                  className={`border px-1.5 py-0.5 font-mono text-[9.5px] font-bold transition-colors ${
-                    active
-                      ? "border-gold bg-gold text-bg"
-                      : isMissing
-                        ? "border-good/60 bg-good/10 text-good hover:bg-good/20"
-                        : "border-line bg-bg text-muted hover:border-line-strong hover:text-ink"
-                  }`}
-                >
-                  {isMissing && !active ? `+${tab.short}` : tab.short}
-                </button>
-              );
-            })}
-            {banUnlockedHeroes.slice(0, 2).map((u) => (
-              <button
-                type="button"
-                key={u.hero_name}
-                onClick={() => onLockHero(u.hero_name)}
-                className="flex items-center gap-1 border border-gold/50 bg-gold/10 px-1.5 py-0.5 font-display text-[10px] font-bold text-gold"
-              >
-                <Flame className="h-3 w-3" />
-                <span>{displayName(u.hero_name)}</span>
-              </button>
-            ))}
-          </div>
+      <section className="flex shrink-0 items-center gap-1.5 border border-line bg-panel px-2 py-1">
+        <div className="flex shrink-0 items-center gap-1 pr-1 border-r border-line">
+          <Sparkles className="h-3 w-3 text-gold" />
+          <span className="font-display text-[10.5px] font-bold tracking-wider">
+            AI <span className={sideText}>{isBan ? "BAN" : "PICK"}</span>
+          </span>
+          {isLoading && <Loader2 className="h-3 w-3 animate-spin text-muted" />}
         </div>
 
-        <div className={`grid grid-cols-5 gap-1 p-1.5 sm:gap-1.5 transition-opacity ${isLoading ? "opacity-50" : ""}`}>
+        <div
+          className={`flex min-w-0 flex-1 items-center gap-1 overflow-x-auto transition-opacity ${
+            isLoading ? "opacity-50" : ""
+          }`}
+        >
           {isLoading && shown.length === 0 ? (
-            Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-16 animate-pulse bg-panel-2" />
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-7 w-20 shrink-0 animate-pulse bg-panel-2" />
             ))
           ) : shown.length === 0 ? (
-            <div className="col-span-5 py-4 text-center font-mono text-xs text-muted">
-              ไม่มีคำแนะนำสำหรับตำแหน่งนี้
-            </div>
+            <span className="py-1 font-mono text-[10px] text-muted">ไม่มีคำแนะนำ</span>
           ) : (
-            shown.map((rec, idx) => {
+            <>
+              {shown.map((rec, idx) => {
                 const hero = heroMap.get(rec.hero_name);
                 const win = rec.lookahead_win_rate_pct ?? rec.predicted_win_rate_pct;
                 const lane = laneKey(rec.primary_lane);
@@ -189,34 +155,46 @@ export function AiPanel({
                     type="button"
                     key={rec.hero_name}
                     onClick={() => onLockHero(rec.hero_name)}
-                    className={`flex min-w-0 flex-col items-center overflow-hidden border p-1 text-center transition-colors ${
+                    title={`#${rec.rank} ${displayName(rec.hero_name)} (${LANE_SHORT[lane]?.en ?? lane} · ${win.toFixed(1)}%)`}
+                    className={`flex h-7 shrink-0 items-center gap-1 border px-1.5 transition-colors ${
                       idx === 0
                         ? "border-gold/70 bg-gold/10 hover:bg-gold/20"
                         : "border-line bg-bg hover:border-line-strong hover:bg-panel-2"
                     }`}
                   >
-                    <div className="relative h-9 w-9 shrink-0 overflow-hidden border border-line min-[380px]:h-10 min-[380px]:w-10 sm:h-11 sm:w-11">
+                    <span
+                      className={`font-mono text-[9px] font-bold ${idx === 0 ? "text-gold" : "text-muted"}`}
+                    >
+                      #{rec.rank}
+                    </span>
+                    <div className="h-4.5 w-4.5 shrink-0 overflow-hidden border border-line">
                       <HeroPortrait name={rec.hero_name} hero={hero} />
-                      <span
-                        className={`absolute top-0 left-0 px-1 font-mono text-[8px] font-bold sm:text-[9px] ${
-                          idx === 0 ? "bg-gold text-bg" : "bg-bg/85 text-ink"
-                        }`}
-                      >
-                        #{rec.rank}
-                      </span>
                     </div>
-                    <span className="mt-0.5 w-full truncate font-display text-[10px] font-bold leading-tight text-ink sm:text-[11px]">
+                    <span className="max-w-[68px] truncate font-display text-[10.5px] font-bold text-ink">
                       {displayName(rec.hero_name)}
                     </span>
-                    <div className="flex max-w-full items-center justify-center gap-0.5 truncate font-mono text-[8.5px] leading-none sm:gap-1 sm:text-[9px]">
-                      <span className={`truncate ${fillsLane ? "font-bold text-good" : "text-muted"}`}>
-                        {LANE_SHORT[lane]?.en ?? lane}
-                      </span>
-                      <span className={`shrink-0 ${win >= 50 ? "text-good" : "text-muted"}`}>{win.toFixed(0)}%</span>
-                    </div>
+                    <span
+                      className={`font-mono text-[9px] font-semibold ${
+                        fillsLane || win >= 50 ? "text-good" : "text-muted"
+                      }`}
+                    >
+                      {win.toFixed(0)}%
+                    </span>
                   </button>
                 );
-              })
+              })}
+              {banUnlockedHeroes.slice(0, 2).map((u) => (
+                <button
+                  type="button"
+                  key={`unlock-${u.hero_name}`}
+                  onClick={() => onLockHero(u.hero_name)}
+                  className="flex h-7 shrink-0 items-center gap-1 border border-gold/50 bg-gold/10 px-1.5 font-display text-[10px] font-bold text-gold"
+                >
+                  <Flame className="h-3 w-3 shrink-0" />
+                  <span>{displayName(u.hero_name)}</span>
+                </button>
+              ))}
+            </>
           )}
         </div>
       </section>
@@ -226,7 +204,7 @@ export function AiPanel({
   return (
     <section className="flex min-h-0 flex-col overflow-hidden border border-line bg-panel clip-chamfer">
       {/* Compact Header with Inline Lane Filter Tabs, Missing Lanes & Unlocked Heroes */}
-      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-line px-3 py-1.5 sm:px-3.5">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-line px-2.5 py-1 xl:px-3.5 xl:py-1.5">
         <div className="flex min-w-0 items-center gap-2">
           <Sparkles className="h-4 w-4 shrink-0 text-gold" />
           <h2 className="truncate font-display text-xs font-bold tracking-wider sm:text-base">
@@ -274,9 +252,9 @@ export function AiPanel({
 
       {/* Ban-Unlocked Heroes strip */}
       {banUnlockedHeroes.length > 0 && (
-        <div className="flex shrink-0 flex-wrap items-center gap-1.5 border-b border-line bg-gold/5 px-3 py-1.5 sm:gap-2 sm:px-3.5">
+        <div className="flex shrink-0 flex-nowrap items-center gap-1.5 overflow-x-auto border-b border-line bg-gold/5 px-2.5 py-1 sm:gap-2 xl:px-3.5">
           <span className="flex shrink-0 items-center gap-1 text-[10px] font-semibold text-gold sm:text-[11px]">
-            <Flame className="h-3.5 w-3.5" />
+            <Flame className="h-3.5 w-3.5 shrink-0" />
             ตัวปลดล็อก:
           </span>
           {banUnlockedHeroes.slice(0, 4).map((u) => {
@@ -287,13 +265,15 @@ export function AiPanel({
                 key={u.hero_name}
                 onClick={() => onLockHero(u.hero_name)}
                 title={triggers ? `เก่งขึ้นเพราะแบน ${triggers}` : undefined}
-                className="flex max-w-full min-w-0 items-center gap-1.5 border border-gold/40 bg-panel px-2 py-0.5 text-left transition-colors hover:border-gold hover:bg-panel-2"
+                className="flex shrink-0 items-center gap-1.5 border border-gold/40 bg-panel px-1.5 py-0.5 text-left transition-colors hover:border-gold hover:bg-panel-2 xl:px-2"
               >
-                <div className="h-4.5 w-4.5 shrink-0 overflow-hidden">
+                <div className="h-4 w-4 shrink-0 overflow-hidden xl:h-4.5 xl:w-4.5">
                   <HeroPortrait name={u.hero_name} hero={heroMap.get(u.hero_name)} />
                 </div>
-                <span className="truncate font-display text-[11px] font-bold text-ink">{displayName(u.hero_name)}</span>
-                {triggers && <span className="truncate font-mono text-[9px] text-gold">← แบน {triggers}</span>}
+                <span className="font-display text-[11px] font-bold whitespace-nowrap text-ink">
+                  {displayName(u.hero_name)}
+                </span>
+                {triggers && <span className="font-mono text-[9px] whitespace-nowrap text-gold">← แบน {triggers}</span>}
               </button>
             );
           })}
@@ -354,15 +334,15 @@ export function AiPanel({
               <button
                 type="button"
                 onClick={() => onLockHero(rec.hero_name)}
-                className={`group flex h-full w-full min-w-0 items-center gap-2.5 overflow-hidden px-3 py-2 text-left transition-colors hover:bg-panel-2 sm:px-3.5 sm:py-2.5 lg:flex-col lg:items-stretch lg:justify-between lg:gap-1.5 lg:p-2 xl:p-2.5 ${
+                className={`group flex h-full w-full min-w-0 items-center gap-2.5 overflow-hidden px-3 py-2 text-left transition-colors hover:bg-panel-2 sm:px-3.5 sm:py-2.5 lg:flex-col lg:items-stretch lg:justify-between lg:gap-1 lg:p-1.5 xl:gap-1.5 xl:p-2.5 ${
                   idx === 0 ? "bg-gold/[0.04]" : ""
                 }`}
               >
                 {/* 1. Desktop Layout (lg+): Vertical Stack, Full-Width Trigger Badge & 2-Tier Metrics */}
-                <div className="hidden w-full min-w-0 flex-col items-center gap-1.5 lg:flex">
+                <div className="hidden w-full min-w-0 flex-col items-center gap-1 lg:flex xl:gap-1.5">
                   {/* Portrait + Rank */}
                   <div
-                    className={`relative h-11 w-11 shrink-0 overflow-hidden border xl:h-13 xl:w-13 ${
+                    className={`relative h-9 w-9 shrink-0 overflow-hidden border xl:h-13 xl:w-13 ${
                       idx === 0 ? "border-gold/70 ring-1 ring-gold/40" : "border-line"
                     }`}
                   >
@@ -419,7 +399,7 @@ export function AiPanel({
                   </div>
 
                   {/* 2-Tier Metrics: Tier 1 = WIN, Tier 2 = SYN & CTR (prevents overflow at 1024px) */}
-                  <div className="flex w-full min-w-0 flex-col gap-0.5 border-t border-line/60 pt-1">
+                  <div className="flex w-full min-w-0 flex-col gap-0.5 border-t border-line/60 pt-0.5 xl:pt-1">
                     <div className="flex w-full items-baseline justify-between gap-1">
                       <span className="font-display text-[8.5px] tracking-wider text-dim">WIN</span>
                       <span

@@ -40,7 +40,8 @@ function ItemIcon({
   name: string;
   className?: string;
 }) {
-  const [failed, setFailed] = useState(false);
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const failed = failedSrc === (src ?? null);
   if (!src || failed) {
     return (
       <div
@@ -56,7 +57,7 @@ function ItemIcon({
       alt={name}
       className={className}
       loading="lazy"
-      onError={() => setFailed(true)}
+      onError={() => setFailedSrc(src ?? null)}
     />
   );
 }
@@ -77,11 +78,18 @@ export function ItemCardModal({
   const [search, setSearch] = useState("");
   const [imageError, setImageError] = useState(false);
 
-  // Sync prop changes during render without cascading effects
+  // Sync prop and active item changes cleanly without stale error state
+  const [prevCurrent, setPrevCurrent] = useState(currentItem);
   if (prevItem !== itemName) {
     setPrevItem(itemName);
     setCurrentItem(itemName);
+    setPrevCurrent(itemName);
     setPageIdx(0);
+    setImageError(false);
+  } else if (prevCurrent !== currentItem) {
+    setPrevCurrent(currentItem);
+    setPageIdx(0);
+    setImageError(false);
   }
 
   // Fetch item screenshot and manifest data
@@ -151,6 +159,13 @@ export function ItemCardModal({
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (pagesCount <= 1) return;
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        e.target instanceof HTMLSelectElement
+      ) {
+        return;
+      }
       if (e.key === "ArrowLeft") {
         setPageIdx((prev) => Math.max(0, prev - 1));
         setImageError(false);
@@ -212,7 +227,7 @@ export function ItemCardModal({
                   onPick(currentItem);
                   onClose();
                 }}
-                className="flex items-center gap-1.5 rounded bg-gold px-3 py-1.5 font-display text-xs font-bold text-bg shadow hover:bg-gold-light active:scale-95"
+                className="flex items-center gap-1.5 rounded bg-gold px-3 py-1.5 font-display text-xs font-bold text-bg shadow hover:bg-gold/90 active:scale-95"
               >
                 <Swords size={13} />
                 <span>ใส่ไอเทมนี้</span>
@@ -394,7 +409,6 @@ export function ItemCardModal({
                     key={c}
                     onClick={() => {
                       setSelectedCategory(c);
-                      setPageIdx(0);
                     }}
                     className={`rounded px-1.5 py-0.5 text-[10px] font-semibold transition-colors ${
                       selectedCategory === c

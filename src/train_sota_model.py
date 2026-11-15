@@ -250,7 +250,9 @@ def load_sota_data_and_graphs(dataset_path: Path | str | None = None):
     lg_ban_p2_counts = np.zeros((num_leagues, num_heroes), dtype=np.float32)
 
     for g in train_games:
-        bw = g["blue_win"]
+        bw = g.get("blue_win")
+        if bw not in (0, 1):
+            continue
         yr = int(g.get("year", 2025)) if str(g.get("year", "2025")).isdigit() else 2025
         lg_id = encode_league_id(g.get("league", ""))
         lg_mult = LEAGUE_SAMPLE_WEIGHTS[lg_id]
@@ -504,6 +506,7 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
             and len(bb) == 4
             and len(rb) == 4
             and (sum(1 for x in bb if x == -1) + sum(1 for x in rb if x == -1) <= 1)
+            and g.get("blue_win") in (0, 1)
         ):
             valid_games.append((g, bp, rp, bb, rb))
 
@@ -536,7 +539,7 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
         lg_id = encode_league_id(g.get("league", ""))
         lg_vec = [1.0 if i == lg_id else 0.0 for i in range(4)]
         recency_w = (1.0 if year_val >= 2026 else (0.5 if year_val == 2025 else 0.2)) * LEAGUE_SAMPLE_WEIGHTS[lg_id]
-        blue_win = 1 if int(g.get("blue_win", 1)) == 1 else 0
+        blue_win = int(g["blue_win"])
         is_true_order = bool(g.get("is_true_order", False))
 
         if is_true_order:
@@ -1260,22 +1263,22 @@ def main():
             print(f"Warning: could not read {best_params_file}: {e}", flush=True)
 
     if args.preset == "h100":
-        # Production locked architecture: d_model=256, nhead=4, num_layers=1 (Trial #14 Safest)
+        # Production locked architecture: d_model=256, nhead=4, num_layers=1 (Trial #1 Safest)
         d_model = args.d_model or tuned.get("d_model", 256)
         nhead = args.nhead or tuned.get("nhead", 4)
         num_layers = args.num_layers or tuned.get("num_layers", 1)
-        dropout = args.dropout if args.dropout is not None else tuned.get("dropout", 0.1941)
-        neural_scale = args.neural_scale if args.neural_scale is not None else tuned.get("neural_scale", 1.0746)
+        dropout = args.dropout if args.dropout is not None else tuned.get("dropout", 0.2513)
+        neural_scale = args.neural_scale if args.neural_scale is not None else tuned.get("neural_scale", 1.3326)
         epochs = args.epochs or 30
-        batch_size = args.batch_size or tuned.get("batch_size", 1024)
+        batch_size = args.batch_size or tuned.get("batch_size", 512)
         augment_factor = args.augment_factor or tuned.get("augment_factor", 1)
-        lr = args.lr or tuned.get("lr", 1.93e-3)
-        weight_decay = args.weight_decay if args.weight_decay is not None else tuned.get("weight_decay", 6.89e-4)
+        lr = args.lr or tuned.get("lr", 0.001211)
+        weight_decay = args.weight_decay if args.weight_decay is not None else tuned.get("weight_decay", 0.001459)
         label_smoothing = (
-            args.label_smoothing if args.label_smoothing is not None else tuned.get("label_smoothing", 0.0397)
+            args.label_smoothing if args.label_smoothing is not None else tuned.get("label_smoothing", 0.0395)
         )
         win_loss_weight = (
-            args.win_loss_weight if args.win_loss_weight is not None else tuned.get("win_loss_weight", 0.2186)
+            args.win_loss_weight if args.win_loss_weight is not None else tuned.get("win_loss_weight", 0.1266)
         )
     else:
         d_model = args.d_model or tuned.get("d_model", 128)
@@ -1532,9 +1535,8 @@ def main():
                     "final_top10_pct": ov["top10"] / tot * 100,
                 }
             )
-            ckpt_path = MODEL_DIR / "sota_draft_gnn_transformer.pt"
-            if ckpt_path.exists():
-                mlflow.log_artifact(str(ckpt_path))
+            if out_model_path.exists():
+                mlflow.log_artifact(str(out_model_path))
             mlflow.end_run()
             print("MLflow: Logged final SOTA training run and checkpoint artifact", flush=True)
         except Exception as e:

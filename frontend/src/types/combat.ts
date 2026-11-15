@@ -79,10 +79,22 @@ export interface CatalogHeroSkill {
   base_damage?: number[];
   cooldown?: number[];
   mana_cost?: number[];
-  scaling?: Record<string, number>;
+  scaling?: Record<string, ScalingValue>;
   has_charge?: boolean;
   max_damage?: number[];
-  max_scaling?: Record<string, number>;
+  max_scaling?: Record<string, ScalingValue>;
+}
+
+export type ScalingValue = number | number[];
+
+export function resolveScalingValue(val: ScalingValue | undefined, skillLevel = 1): number {
+  if (val == null) return 0;
+  if (Array.isArray(val)) {
+    if (val.length === 0) return 0;
+    const idx = Math.max(0, Math.min(val.length - 1, skillLevel - 1));
+    return Number(val[idx] ?? 0);
+  }
+  return Number(val);
 }
 
 export interface CombatCatalog {
@@ -111,6 +123,7 @@ export interface BuildStats {
   };
   build_cost: number;
   items_missing_price: string[];
+  item_warnings?: string[];
   enchantments_modeled: string[];
   enchantments_unmodeled: string[];
 }
@@ -126,7 +139,7 @@ export interface SkillDamageRow {
   has_charge?: boolean;
   charge_ratio?: number | null;
   max_damage?: number[];
-  max_scaling?: Record<string, number>;
+  max_scaling?: Record<string, ScalingValue>;
   components: Record<string, number>;
   raw_damage: number;
   mitigation_multiplier: number;
@@ -139,7 +152,7 @@ export interface SkillDamageRow {
   desc_th?: string;
   icon_url?: string;
   base_damage?: number[];
-  scaling?: Record<string, number>;
+  scaling?: Record<string, ScalingValue>;
   warnings: string[];
 }
 
@@ -162,11 +175,17 @@ export interface DuelSide {
   level_sweep: { level: number; burst: number; pct_enemy_hp: number }[];
 }
 
+export interface SimKitingInfo {
+  initial_delay: number;
+  interval_multiplier: number;
+}
+
 export interface SimSide {
   remaining_hp: number;
   remaining_hp_pct: number;
   damage_dealt: number;
   damage_breakdown: Record<string, number>;
+  kiting?: SimKitingInfo;
 }
 
 export interface DuelResult {

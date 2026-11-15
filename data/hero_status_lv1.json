@@ -297,7 +297,7 @@
       "attack_damage": 170,
       "armor": 135,
       "magic_defense": 80,
-      "max_resource": null,
+      "max_resource": 0,
       "movement_speed": 390,
       "attack_range": "Melee",
       "hp_regen_5s": 60,

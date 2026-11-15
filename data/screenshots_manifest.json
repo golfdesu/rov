@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-10T06:59:07.383008+00:00",
+  "generated_at": "2026-11-14T01:38:41.272783+00:00",
   "version": "1.0",
   "summary": {
     "total_heroes": 130,
@@ -13957,13 +13957,12 @@
         "mana_cost": [
           0
         ],
-        "base_damage": [
-          50
-        ],
+        "base_damage": [],
         "scaling": {
-          "heal_ap_pct": 10,
           "target_hp_pct": 2,
-          "ap_pct": 0.2,
+          "target_hp_ap_pct": 0.2,
+          "heal_base": 50,
+          "heal_ap_pct": 10,
           "self_heal_bonus_hp_pct": 4.0
         },
         "desc_th": "เมื่อ Sephera ใช้สกิล จะสร้างความเสียหายเวทตาม 2%(+0.2%AP) HP สูงสุดแก่ฮีโร่ฝ่ายศัตรูที่มีพลังชีวิตน้อยที่สุด และฟื้นฟูพลังชีวิตฮีโร่ฝ่ายเราที่มีพลังชีวิตน้อยที่สุด ซึ่งจะฟื้นฟู 50(+10%AP) หน่วย (พลังชีวิตที่ฟื้นฟูจะเพิ่มขึ้นตาม LV) ส่วนเธอเองจะฟื้นฟูพลังชีวิต (+4% โบนัส HP) เพิ่มเติม",
@@ -13986,13 +13985,12 @@
         "mana_cost": [
           0
         ],
-        "base_damage": [
-          50
-        ],
+        "base_damage": [],
         "scaling": {
-          "heal_ap_pct": 10,
           "target_hp_pct": 2,
-          "ap_pct": 0.2,
+          "target_hp_ap_pct": 0.2,
+          "heal_base": 50,
+          "heal_ap_pct": 10,
           "self_heal_bonus_hp_pct": 4.0
         },
         "desc_th": "เมื่อ Sephera ใช้สกิล จะสร้างความเสียหายเวทตาม 2%(+0.2%AP) HP สูงสุดแก่ฮีโร่ฝ่ายศัตรูที่มีพลังชีวิตน้อยที่สุด และฟื้นฟูพลังชีวิตฮีโร่ฝ่ายเราที่มีพลังชีวิตน้อยที่สุด ซึ่งจะฟื้นฟู 50(+10%AP) หน่วย (พลังชีวิตที่ฟื้นฟูจะเพิ่มขึ้นตาม LV) ส่วนเธอเองจะฟื้นฟูพลังชีวิต (+4% โบนัส HP) เพิ่มเติม",
@@ -19490,7 +19488,13 @@
           "armor": 137,
           "magic_defense": 80,
           "attack_damage": 170,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 61,
+          "max_resource": 150,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -19506,7 +19510,13 @@
           "armor": 445,
           "magic_defense": 269,
           "attack_damage": 361,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 42,
+          "hp_regen_5s": 86,
+          "max_resource": 150,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -19524,7 +19534,13 @@
           "armor": 133,
           "magic_defense": 80,
           "attack_damage": 170,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 0,
+          "hp_regen_5s": 53,
+          "max_resource": 490,
+          "resource_regen_5s": 18,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -19540,7 +19556,13 @@
           "armor": 415,
           "magic_defense": 269,
           "attack_damage": 293,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 14,
+          "hp_regen_5s": 83,
+          "max_resource": 1988,
+          "resource_regen_5s": 43,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -19558,7 +19580,13 @@
           "armor": 144,
           "magic_defense": 80,
           "attack_damage": 176,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 0,
+          "hp_regen_5s": 55,
+          "max_resource": 470,
+          "resource_regen_5s": 17,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -19574,7 +19602,13 @@
           "armor": 144,
           "magic_defense": 80,
           "attack_damage": 176,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 0,
+          "hp_regen_5s": 55,
+          "max_resource": 470,
+          "resource_regen_5s": 17,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -19590,7 +19624,13 @@
           "armor": 438,
           "magic_defense": 269,
           "attack_damage": 328,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 14,
+          "hp_regen_5s": 95,
+          "max_resource": 1926,
+          "resource_regen_5s": 42,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -19608,7 +19648,13 @@
           "armor": 140,
           "magic_defense": 80,
           "attack_damage": 160,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 70,
+          "max_resource": 96,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -19624,7 +19670,13 @@
           "armor": 420,
           "magic_defense": 269,
           "attack_damage": 370,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 119,
+          "max_resource": 96,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -19642,7 +19694,13 @@
           "armor": 153,
           "magic_defense": 80,
           "attack_damage": 176,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 54,
+          "max_resource": 440,
+          "resource_regen_5s": 16,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -19658,7 +19716,13 @@
           "armor": 483,
           "magic_defense": 269,
           "attack_damage": 328,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 28,
+          "hp_regen_5s": 91,
+          "max_resource": 1784,
+          "resource_regen_5s": 38,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -19676,7 +19740,13 @@
           "armor": 140,
           "magic_defense": 80,
           "attack_damage": 160,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 60,
+          "max_resource": 430,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -19692,7 +19762,13 @@
           "armor": 421,
           "magic_defense": 269,
           "attack_damage": 283,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 14,
+          "hp_regen_5s": 99,
+          "max_resource": 1760,
+          "resource_regen_5s": 37,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -19710,7 +19786,13 @@
           "armor": 133,
           "magic_defense": 80,
           "attack_damage": 172,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 55,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -19726,7 +19808,13 @@
           "armor": 413,
           "magic_defense": 269,
           "attack_damage": 386,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 28,
+          "hp_regen_5s": 85,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -19744,7 +19832,13 @@
           "armor": 147,
           "magic_defense": 80,
           "attack_damage": 159,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 61,
+          "max_resource": 430,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -19760,7 +19854,13 @@
           "armor": 492,
           "magic_defense": 269,
           "attack_damage": 321,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 42,
+          "hp_regen_5s": 108,
+          "max_resource": 1746,
+          "resource_regen_5s": 37,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -19778,7 +19878,13 @@
           "armor": 149,
           "magic_defense": 80,
           "attack_damage": 164,
-          "movement_speed": 390
+          "movement_speed": 390,
+          "attack_speed": 0,
+          "hp_regen_5s": 65,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -19794,7 +19900,13 @@
           "armor": 500,
           "magic_defense": 269,
           "attack_damage": 346,
-          "movement_speed": 390
+          "movement_speed": 390,
+          "attack_speed": 14,
+          "hp_regen_5s": 116,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -19812,7 +19924,13 @@
           "armor": 145,
           "magic_defense": 80,
           "attack_damage": 163,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 80,
+          "max_resource": 470,
+          "resource_regen_5s": 17,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -19828,7 +19946,13 @@
           "armor": 455,
           "magic_defense": 269,
           "attack_damage": 286,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 14,
+          "hp_regen_5s": 191,
+          "max_resource": 1926,
+          "resource_regen_5s": 42,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -19846,7 +19970,13 @@
           "armor": 138,
           "magic_defense": 80,
           "attack_damage": 166,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 60,
+          "max_resource": 450,
+          "resource_regen_5s": 16,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -19862,7 +19992,13 @@
           "armor": 460,
           "magic_defense": 269,
           "attack_damage": 362,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 42,
+          "hp_regen_5s": 99,
+          "max_resource": 1808,
+          "resource_regen_5s": 38,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -19880,7 +20016,13 @@
           "armor": 145,
           "magic_defense": 80,
           "attack_damage": 156,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 54,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -19896,7 +20038,13 @@
           "armor": 474,
           "magic_defense": 269,
           "attack_damage": 293,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 14,
+          "hp_regen_5s": 82,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -19914,7 +20062,13 @@
           "armor": 130,
           "magic_defense": 80,
           "attack_damage": 160,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 55,
+          "max_resource": 470,
+          "resource_regen_5s": 17,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -19930,7 +20084,13 @@
           "armor": 411,
           "magic_defense": 269,
           "attack_damage": 283,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 14,
+          "hp_regen_5s": 95,
+          "max_resource": 1926,
+          "resource_regen_5s": 42,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -19948,7 +20108,13 @@
           "armor": 133,
           "magic_defense": 80,
           "attack_damage": 165,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 53,
+          "max_resource": 490,
+          "resource_regen_5s": 18,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -19964,7 +20130,13 @@
           "armor": 425,
           "magic_defense": 269,
           "attack_damage": 296,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 14,
+          "hp_regen_5s": 81,
+          "max_resource": 2002,
+          "resource_regen_5s": 44,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -19982,7 +20154,13 @@
           "armor": 159,
           "magic_defense": 80,
           "attack_damage": 168,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 0,
+          "hp_regen_5s": 69,
+          "max_resource": 420,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -19998,7 +20176,13 @@
           "armor": 517,
           "magic_defense": 269,
           "attack_damage": 301,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 14,
+          "hp_regen_5s": 138,
+          "max_resource": 1708,
+          "resource_regen_5s": 36,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20016,7 +20200,13 @@
           "armor": 141,
           "magic_defense": 80,
           "attack_damage": 170,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 62,
+          "max_resource": 430,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20032,7 +20222,13 @@
           "armor": 512,
           "magic_defense": 269,
           "attack_damage": 353,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 28,
+          "hp_regen_5s": 109,
+          "max_resource": 1760,
+          "resource_regen_5s": 38,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20050,7 +20246,13 @@
           "armor": 150,
           "magic_defense": 80,
           "attack_damage": 175,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 50,
+          "max_resource": 440,
+          "resource_regen_5s": 16,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20066,7 +20268,13 @@
           "armor": 458,
           "magic_defense": 269,
           "attack_damage": 399,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 42,
+          "hp_regen_5s": 85,
+          "max_resource": 1770,
+          "resource_regen_5s": 38,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20084,7 +20292,13 @@
           "armor": 140,
           "magic_defense": 80,
           "attack_damage": 175,
-          "movement_speed": 390
+          "movement_speed": 390,
+          "attack_speed": 0,
+          "hp_regen_5s": 50,
+          "max_resource": 90,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20100,7 +20314,13 @@
           "armor": 490,
           "magic_defense": 269,
           "attack_damage": 385,
-          "movement_speed": 390
+          "movement_speed": 390,
+          "attack_speed": 28,
+          "hp_regen_5s": 92,
+          "max_resource": 90,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20118,7 +20338,13 @@
           "armor": 150,
           "magic_defense": 80,
           "attack_damage": 172,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 0,
+          "hp_regen_5s": 50,
+          "max_resource": 6,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20134,7 +20360,13 @@
           "armor": 402,
           "magic_defense": 269,
           "attack_damage": 345,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 28,
+          "hp_regen_5s": 90,
+          "max_resource": 6,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20152,7 +20384,13 @@
           "armor": 133,
           "magic_defense": 80,
           "attack_damage": 165,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 47,
+          "max_resource": 490,
+          "resource_regen_5s": 18,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20168,7 +20406,13 @@
           "armor": 425,
           "magic_defense": 269,
           "attack_damage": 296,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 28,
+          "hp_regen_5s": 76,
+          "max_resource": 1988,
+          "resource_regen_5s": 43,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20186,7 +20430,13 @@
           "armor": 134,
           "magic_defense": 80,
           "attack_damage": 178,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 0,
+          "hp_regen_5s": 50,
+          "max_resource": 440,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20202,7 +20452,13 @@
           "armor": 464,
           "magic_defense": 269,
           "attack_damage": 396,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 42,
+          "hp_regen_5s": 76,
+          "max_resource": 1770,
+          "resource_regen_5s": 37,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20220,7 +20476,13 @@
           "armor": 131,
           "magic_defense": 80,
           "attack_damage": 178,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 0,
+          "hp_regen_5s": 39,
+          "max_resource": 440,
+          "resource_regen_5s": 16,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20236,7 +20498,13 @@
           "armor": 408,
           "magic_defense": 269,
           "attack_damage": 417,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 42,
+          "hp_regen_5s": 68,
+          "max_resource": 1784,
+          "resource_regen_5s": 38,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20254,7 +20522,13 @@
           "armor": 135,
           "magic_defense": 80,
           "attack_damage": 177,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 57,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20270,7 +20544,13 @@
           "armor": 431,
           "magic_defense": 269,
           "attack_damage": 427,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 28,
+          "hp_regen_5s": 86,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20288,7 +20568,13 @@
           "armor": 134,
           "magic_defense": 80,
           "attack_damage": 169,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 0,
+          "hp_regen_5s": 47,
+          "max_resource": 100,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20304,7 +20590,13 @@
           "armor": 394,
           "magic_defense": 269,
           "attack_damage": 415,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 0,
+          "hp_regen_5s": 75,
+          "max_resource": 100,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20322,7 +20614,13 @@
           "armor": 135,
           "magic_defense": 80,
           "attack_damage": 170,
-          "movement_speed": 390
+          "movement_speed": 390,
+          "attack_speed": 0,
+          "hp_regen_5s": 60,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20338,7 +20636,13 @@
           "armor": 443,
           "magic_defense": 269,
           "attack_damage": 380,
-          "movement_speed": 390
+          "movement_speed": 390,
+          "attack_speed": 28,
+          "hp_regen_5s": 102,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20356,7 +20660,13 @@
           "armor": 171,
           "magic_defense": 80,
           "attack_damage": 170,
-          "movement_speed": 390
+          "movement_speed": 390,
+          "attack_speed": 0,
+          "hp_regen_5s": 65,
+          "max_resource": 420,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20372,7 +20682,13 @@
           "armor": 577,
           "magic_defense": 269,
           "attack_damage": 297,
-          "movement_speed": 390
+          "movement_speed": 390,
+          "attack_speed": 14,
+          "hp_regen_5s": 123,
+          "max_resource": 1694,
+          "resource_regen_5s": 36,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20390,7 +20706,13 @@
           "armor": 171,
           "magic_defense": 80,
           "attack_damage": 153,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 67,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20406,7 +20728,13 @@
           "armor": 585,
           "magic_defense": 269,
           "attack_damage": 301,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 14,
+          "hp_regen_5s": 125,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20424,7 +20752,13 @@
           "armor": 137,
           "magic_defense": 80,
           "attack_damage": 165,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 54,
+          "max_resource": 490,
+          "resource_regen_5s": 17,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20440,7 +20774,13 @@
           "armor": 400,
           "magic_defense": 269,
           "attack_damage": 296,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 14,
+          "hp_regen_5s": 80,
+          "max_resource": 1960,
+          "resource_regen_5s": 41,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20458,7 +20798,13 @@
           "armor": 147,
           "magic_defense": 80,
           "attack_damage": 159,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 61,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20474,7 +20820,13 @@
           "armor": 492,
           "magic_defense": 269,
           "attack_damage": 321,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 28,
+          "hp_regen_5s": 108,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20492,7 +20844,13 @@
           "armor": 137,
           "magic_defense": 80,
           "attack_damage": 165,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 54,
+          "max_resource": 490,
+          "resource_regen_5s": 17,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20508,7 +20866,13 @@
           "armor": 400,
           "magic_defense": 269,
           "attack_damage": 296,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 14,
+          "hp_regen_5s": 80,
+          "max_resource": 1960,
+          "resource_regen_5s": 41,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20526,7 +20890,13 @@
           "armor": 131,
           "magic_defense": 80,
           "attack_damage": 160,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 57,
+          "max_resource": 600,
+          "resource_regen_5s": 19,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20542,7 +20912,13 @@
           "armor": 394,
           "magic_defense": 269,
           "attack_damage": 294,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 14,
+          "hp_regen_5s": 86,
+          "max_resource": 2280,
+          "resource_regen_5s": 44,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20560,7 +20936,13 @@
           "armor": 140,
           "magic_defense": 80,
           "attack_damage": 176,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 55,
+          "max_resource": 460,
+          "resource_regen_5s": 16,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20576,7 +20958,13 @@
           "armor": 420,
           "magic_defense": 269,
           "attack_damage": 330,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 14,
+          "hp_regen_5s": 104,
+          "max_resource": 1874,
+          "resource_regen_5s": 39,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20594,7 +20982,13 @@
           "armor": 140,
           "magic_defense": 80,
           "attack_damage": 169,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 50,
+          "max_resource": 620,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20610,7 +21004,13 @@
           "armor": 421,
           "magic_defense": 269,
           "attack_damage": 330,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 14,
+          "hp_regen_5s": 99,
+          "max_resource": 1236,
+          "resource_regen_5s": 30,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20628,7 +21028,13 @@
           "armor": 150,
           "magic_defense": 80,
           "attack_damage": 180,
-          "movement_speed": 375
+          "movement_speed": 375,
+          "attack_speed": 0,
+          "hp_regen_5s": 52,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20644,7 +21050,13 @@
           "armor": 409,
           "magic_defense": 269,
           "attack_damage": 370,
-          "movement_speed": 375
+          "movement_speed": 375,
+          "attack_speed": 28,
+          "hp_regen_5s": 95,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20662,7 +21074,13 @@
           "armor": 141,
           "magic_defense": 80,
           "attack_damage": 173,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 0,
+          "hp_regen_5s": 48,
+          "max_resource": 440,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20678,7 +21096,13 @@
           "armor": 428,
           "magic_defense": 269,
           "attack_damage": 362,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 42,
+          "hp_regen_5s": 76,
+          "max_resource": 1742,
+          "resource_regen_5s": 36,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20696,7 +21120,13 @@
           "armor": 140,
           "magic_defense": 80,
           "attack_damage": 188,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 0,
+          "hp_regen_5s": 49,
+          "max_resource": 440,
+          "resource_regen_5s": 16,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20712,7 +21142,13 @@
           "armor": 424,
           "magic_defense": 269,
           "attack_damage": 410,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 42,
+          "hp_regen_5s": 78,
+          "max_resource": 1784,
+          "resource_regen_5s": 38,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20730,7 +21166,13 @@
           "armor": 134,
           "magic_defense": 80,
           "attack_damage": 178,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 0,
+          "hp_regen_5s": 61,
+          "max_resource": 450,
+          "resource_regen_5s": 16,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20746,7 +21188,13 @@
           "armor": 464,
           "magic_defense": 269,
           "attack_damage": 396,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 28,
+          "hp_regen_5s": 98,
+          "max_resource": 1808,
+          "resource_regen_5s": 38,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20764,7 +21212,13 @@
           "armor": 135,
           "magic_defense": 80,
           "attack_damage": 170,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 50,
+          "max_resource": 100,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20780,7 +21234,13 @@
           "armor": 436,
           "magic_defense": 269,
           "attack_damage": 338,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 42,
+          "hp_regen_5s": 78,
+          "max_resource": 100,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20798,7 +21258,13 @@
           "armor": 136,
           "magic_defense": 80,
           "attack_damage": 173,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 0,
+          "hp_regen_5s": 64,
+          "max_resource": 100,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20814,7 +21280,13 @@
           "armor": 448,
           "magic_defense": 269,
           "attack_damage": 380,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 28,
+          "hp_regen_5s": 107,
+          "max_resource": 100,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20832,7 +21304,13 @@
           "armor": 133,
           "magic_defense": 80,
           "attack_damage": 167,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 0,
+          "hp_regen_5s": 53,
+          "max_resource": 490,
+          "resource_regen_5s": 17,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20848,7 +21326,13 @@
           "armor": 425,
           "magic_defense": 269,
           "attack_damage": 287,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 14,
+          "hp_regen_5s": 81,
+          "max_resource": 1960,
+          "resource_regen_5s": 41,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20866,7 +21350,13 @@
           "armor": 133,
           "magic_defense": 80,
           "attack_damage": 161,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 51,
+          "max_resource": 440,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20882,7 +21372,13 @@
           "armor": 435,
           "magic_defense": 269,
           "attack_damage": 396,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 42,
+          "hp_regen_5s": 80,
+          "max_resource": 1770,
+          "resource_regen_5s": 37,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20900,7 +21396,13 @@
           "armor": 135,
           "magic_defense": 80,
           "attack_damage": 170,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 60,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20916,7 +21418,13 @@
           "armor": 431,
           "magic_defense": 269,
           "attack_damage": 377,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 28,
+          "hp_regen_5s": 99,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20934,7 +21442,13 @@
           "armor": 150,
           "magic_defense": 80,
           "attack_damage": 160,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 50,
+          "max_resource": 640,
+          "resource_regen_5s": 16,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20950,7 +21464,13 @@
           "armor": 444,
           "magic_defense": 269,
           "attack_damage": 300,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 14,
+          "hp_regen_5s": 77,
+          "max_resource": 2138,
+          "resource_regen_5s": 41,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -20968,7 +21488,13 @@
           "armor": 150,
           "magic_defense": 80,
           "attack_damage": 170,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 50,
+          "max_resource": 600,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -20984,7 +21510,13 @@
           "armor": 444,
           "magic_defense": 269,
           "attack_damage": 415,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 28,
+          "hp_regen_5s": 78,
+          "max_resource": 1916,
+          "resource_regen_5s": 36,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21002,7 +21534,13 @@
           "armor": 148,
           "magic_defense": 80,
           "attack_damage": 176,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 66,
+          "max_resource": 420,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21018,7 +21556,13 @@
           "armor": 498,
           "magic_defense": 269,
           "attack_damage": 309,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 28,
+          "hp_regen_5s": 125,
+          "max_resource": 1722,
+          "resource_regen_5s": 37,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21036,7 +21580,13 @@
           "armor": 150,
           "magic_defense": 80,
           "attack_damage": 165,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 0,
+          "hp_regen_5s": 50,
+          "max_resource": 490,
+          "resource_regen_5s": 18,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21052,7 +21602,13 @@
           "armor": 416,
           "magic_defense": 269,
           "attack_damage": 319,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 28,
+          "hp_regen_5s": 78,
+          "max_resource": 1988,
+          "resource_regen_5s": 43,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21070,7 +21626,13 @@
           "armor": 150,
           "magic_defense": 80,
           "attack_damage": 158,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 70,
+          "max_resource": 490,
+          "resource_regen_5s": 17,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21086,7 +21648,13 @@
           "armor": 502,
           "magic_defense": 269,
           "attack_damage": 274,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 14,
+          "hp_regen_5s": 115,
+          "max_resource": 1988,
+          "resource_regen_5s": 42,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21104,7 +21672,13 @@
           "armor": 132,
           "magic_defense": 80,
           "attack_damage": 175,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 0,
+          "hp_regen_5s": 56,
+          "max_resource": 200,
+          "resource_regen_5s": 50,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21120,7 +21694,13 @@
           "armor": 434,
           "magic_defense": 269,
           "attack_damage": 362,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 49,
+          "hp_regen_5s": 85,
+          "max_resource": 200,
+          "resource_regen_5s": 50,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21138,7 +21718,13 @@
           "armor": 150,
           "magic_defense": 80,
           "attack_damage": 165,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 0,
+          "hp_regen_5s": 50,
+          "max_resource": 440,
+          "resource_regen_5s": 16,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21154,7 +21740,13 @@
           "armor": 444,
           "magic_defense": 269,
           "attack_damage": 375,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 28,
+          "hp_regen_5s": 99,
+          "max_resource": 1812,
+          "resource_regen_5s": 38,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21172,7 +21764,13 @@
           "armor": 142,
           "magic_defense": 80,
           "attack_damage": 159,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 48,
+          "max_resource": 470,
+          "resource_regen_5s": 17,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21188,7 +21786,13 @@
           "armor": 445,
           "magic_defense": 269,
           "attack_damage": 292,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 14,
+          "hp_regen_5s": 76,
+          "max_resource": 1898,
+          "resource_regen_5s": 41,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21206,7 +21810,13 @@
           "armor": 137,
           "magic_defense": 80,
           "attack_damage": 167,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 0,
+          "hp_regen_5s": 46,
+          "max_resource": 5,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21222,7 +21832,13 @@
           "armor": 390,
           "magic_defense": 269,
           "attack_damage": 319,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 14,
+          "hp_regen_5s": 75,
+          "max_resource": 5,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21240,7 +21856,13 @@
           "armor": 139,
           "magic_defense": 80,
           "attack_damage": 160,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 54,
+          "max_resource": 490,
+          "resource_regen_5s": 17,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21256,7 +21878,13 @@
           "armor": 475,
           "magic_defense": 269,
           "attack_damage": 298,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 14,
+          "hp_regen_5s": 80,
+          "max_resource": 1974,
+          "resource_regen_5s": 42,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21274,7 +21902,13 @@
           "armor": 141,
           "magic_defense": 80,
           "attack_damage": 173,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 0,
+          "hp_regen_5s": 50,
+          "max_resource": 490,
+          "resource_regen_5s": 18,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21290,7 +21924,13 @@
           "armor": 443,
           "magic_defense": 269,
           "attack_damage": 297,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 14,
+          "hp_regen_5s": 74,
+          "max_resource": 1988,
+          "resource_regen_5s": 43,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21308,7 +21948,13 @@
           "armor": 118,
           "magic_defense": 80,
           "attack_damage": 120,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 44,
+          "max_resource": 490,
+          "resource_regen_5s": 18,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21324,7 +21970,13 @@
           "armor": 381,
           "magic_defense": 269,
           "attack_damage": 225,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 14,
+          "hp_regen_5s": 67,
+          "max_resource": 1988,
+          "resource_regen_5s": 43,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21342,7 +21994,13 @@
           "armor": 144,
           "magic_defense": 80,
           "attack_damage": 163,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 0,
+          "hp_regen_5s": 54,
+          "max_resource": 490,
+          "resource_regen_5s": 17,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21358,7 +22016,13 @@
           "armor": 438,
           "magic_defense": 269,
           "attack_damage": 290,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 14,
+          "hp_regen_5s": 87,
+          "max_resource": 1988,
+          "resource_regen_5s": 42,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21376,7 +22040,13 @@
           "armor": 137,
           "magic_defense": 80,
           "attack_damage": 162,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 0,
+          "hp_regen_5s": 54,
+          "max_resource": 490,
+          "resource_regen_5s": 17,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21392,7 +22062,13 @@
           "armor": 390,
           "magic_defense": 269,
           "attack_damage": 314,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 0,
+          "hp_regen_5s": 80,
+          "max_resource": 1946,
+          "resource_regen_5s": 41,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21410,7 +22086,13 @@
           "armor": 131,
           "magic_defense": 80,
           "attack_damage": 171,
-          "movement_speed": 400
+          "movement_speed": 400,
+          "attack_speed": 0,
+          "hp_regen_5s": 62,
+          "max_resource": 450,
+          "resource_regen_5s": 19,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21426,7 +22108,13 @@
           "armor": 437,
           "magic_defense": 269,
           "attack_damage": 388,
-          "movement_speed": 400
+          "movement_speed": 400,
+          "attack_speed": 14,
+          "hp_regen_5s": 109,
+          "max_resource": 1822,
+          "resource_regen_5s": 46,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21444,7 +22132,13 @@
           "armor": 134,
           "magic_defense": 80,
           "attack_damage": 165,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 55,
+          "max_resource": 450,
+          "resource_regen_5s": 18,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21460,7 +22154,13 @@
           "armor": 414,
           "magic_defense": 269,
           "attack_damage": 375,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 42,
+          "hp_regen_5s": 97,
+          "max_resource": 2060,
+          "resource_regen_5s": 43,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21478,7 +22178,13 @@
           "armor": 146,
           "magic_defense": 80,
           "attack_damage": 168,
-          "movement_speed": 390
+          "movement_speed": 390,
+          "attack_speed": 0,
+          "hp_regen_5s": 61,
+          "max_resource": 430,
+          "resource_regen_5s": 16,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21494,7 +22200,13 @@
           "armor": 504,
           "magic_defense": 269,
           "attack_damage": 329,
-          "movement_speed": 390
+          "movement_speed": 390,
+          "attack_speed": 42,
+          "hp_regen_5s": 104,
+          "max_resource": 1774,
+          "resource_regen_5s": 39,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21512,7 +22224,13 @@
           "armor": 132,
           "magic_defense": 80,
           "attack_damage": 173,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 57,
+          "max_resource": 450,
+          "resource_regen_5s": 16,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21528,7 +22246,13 @@
           "armor": 454,
           "magic_defense": 269,
           "attack_damage": 385,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 14,
+          "hp_regen_5s": 89,
+          "max_resource": 1808,
+          "resource_regen_5s": 38,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21546,7 +22270,13 @@
           "armor": 141,
           "magic_defense": 80,
           "attack_damage": 153,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 0,
+          "hp_regen_5s": 54,
+          "max_resource": 490,
+          "resource_regen_5s": 18,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21562,7 +22292,13 @@
           "armor": 404,
           "magic_defense": 269,
           "attack_damage": 263,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 14,
+          "hp_regen_5s": 85,
+          "max_resource": 1988,
+          "resource_regen_5s": 43,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21580,7 +22316,13 @@
           "armor": 138,
           "magic_defense": 80,
           "attack_damage": 162,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 57,
+          "max_resource": 450,
+          "resource_regen_5s": 16,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21596,7 +22338,13 @@
           "armor": 489,
           "magic_defense": 269,
           "attack_damage": 297,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 14,
+          "hp_regen_5s": 99,
+          "max_resource": 1808,
+          "resource_regen_5s": 38,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21614,7 +22362,13 @@
           "armor": 133,
           "magic_defense": 80,
           "attack_damage": 167,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 0,
+          "hp_regen_5s": 53,
+          "max_resource": 490,
+          "resource_regen_5s": 17,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21630,7 +22384,13 @@
           "armor": 425,
           "magic_defense": 269,
           "attack_damage": 287,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 14,
+          "hp_regen_5s": 81,
+          "max_resource": 1960,
+          "resource_regen_5s": 41,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21648,7 +22408,13 @@
           "armor": 135,
           "magic_defense": 80,
           "attack_damage": 173,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 0,
+          "hp_regen_5s": 44,
+          "max_resource": 490,
+          "resource_regen_5s": 18,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21664,7 +22430,13 @@
           "armor": 419,
           "magic_defense": 269,
           "attack_damage": 380,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 28,
+          "hp_regen_5s": 75,
+          "max_resource": 1988,
+          "resource_regen_5s": 43,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21682,7 +22454,13 @@
           "armor": 133,
           "magic_defense": 80,
           "attack_damage": 165,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 67,
+          "max_resource": 490,
+          "resource_regen_5s": 18,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21698,7 +22476,13 @@
           "armor": 425,
           "magic_defense": 269,
           "attack_damage": 305,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 14,
+          "hp_regen_5s": 125,
+          "max_resource": 1988,
+          "resource_regen_5s": 43,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21716,7 +22500,13 @@
           "armor": 140,
           "magic_defense": 80,
           "attack_damage": 184,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 0,
+          "hp_regen_5s": 49,
+          "max_resource": 440,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21732,7 +22522,13 @@
           "armor": 424,
           "magic_defense": 269,
           "attack_damage": 394,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 42,
+          "hp_regen_5s": 78,
+          "max_resource": 1742,
+          "resource_regen_5s": 36,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21750,7 +22546,13 @@
           "armor": 137,
           "magic_defense": 80,
           "attack_damage": 165,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 54,
+          "max_resource": 490,
+          "resource_regen_5s": 17,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21766,7 +22568,13 @@
           "armor": 473,
           "magic_defense": 269,
           "attack_damage": 296,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 14,
+          "hp_regen_5s": 80,
+          "max_resource": 1960,
+          "resource_regen_5s": 41,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21784,7 +22592,13 @@
           "armor": 150,
           "magic_defense": 80,
           "attack_damage": 174,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 64,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21800,7 +22614,13 @@
           "armor": 150,
           "magic_defense": 80,
           "attack_damage": 174,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 64,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21816,7 +22636,13 @@
           "armor": 466,
           "magic_defense": 269,
           "attack_damage": 361,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 14,
+          "hp_regen_5s": 111,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21834,7 +22660,13 @@
           "armor": 155,
           "magic_defense": 80,
           "attack_damage": 156,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 0,
+          "hp_regen_5s": 68,
+          "max_resource": 470,
+          "resource_regen_5s": 17,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21850,7 +22682,13 @@
           "armor": 489,
           "magic_defense": 269,
           "attack_damage": 273,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 14,
+          "hp_regen_5s": 127,
+          "max_resource": 1926,
+          "resource_regen_5s": 42,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21868,7 +22706,13 @@
           "armor": 145,
           "magic_defense": 80,
           "attack_damage": 175,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 65,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21884,7 +22728,13 @@
           "armor": 481,
           "magic_defense": 269,
           "attack_damage": 350,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 28,
+          "hp_regen_5s": 114,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21902,7 +22752,13 @@
           "armor": 130,
           "magic_defense": 80,
           "attack_damage": 152,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 0,
+          "hp_regen_5s": 52,
+          "max_resource": 100,
+          "resource_regen_5s": -5,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21918,7 +22774,13 @@
           "armor": 452,
           "magic_defense": 269,
           "attack_damage": 289,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 28,
+          "hp_regen_5s": 91,
+          "max_resource": 100,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21936,7 +22798,13 @@
           "armor": 145,
           "magic_defense": 80,
           "attack_damage": 159,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 63,
+          "max_resource": 450,
+          "resource_regen_5s": 16,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21952,7 +22820,13 @@
           "armor": 503,
           "magic_defense": 269,
           "attack_damage": 320,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 28,
+          "hp_regen_5s": 108,
+          "max_resource": 1808,
+          "resource_regen_5s": 38,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -21970,7 +22844,13 @@
           "armor": 133,
           "magic_defense": 80,
           "attack_damage": 168,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 55,
+          "max_resource": 490,
+          "resource_regen_5s": 18,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -21986,7 +22866,13 @@
           "armor": 469,
           "magic_defense": 269,
           "attack_damage": 309,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 28,
+          "hp_regen_5s": 93,
+          "max_resource": 2016,
+          "resource_regen_5s": 44,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22004,7 +22890,13 @@
           "armor": 145,
           "magic_defense": 80,
           "attack_damage": 160,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 60,
+          "max_resource": 420,
+          "resource_regen_5s": 14,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22020,7 +22912,13 @@
           "armor": 495,
           "magic_defense": 269,
           "attack_damage": 328,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 28,
+          "hp_regen_5s": 102,
+          "max_resource": 1666,
+          "resource_regen_5s": 34,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22038,7 +22936,13 @@
           "armor": 138,
           "magic_defense": 80,
           "attack_damage": 162,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 0,
+          "hp_regen_5s": 57,
+          "max_resource": 440,
+          "resource_regen_5s": 16,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22054,7 +22958,13 @@
           "armor": 450,
           "magic_defense": 269,
           "attack_damage": 297,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 14,
+          "hp_regen_5s": 99,
+          "max_resource": 1784,
+          "resource_regen_5s": 38,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22072,7 +22982,13 @@
           "armor": 135,
           "magic_defense": 80,
           "attack_damage": 175,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 46,
+          "max_resource": 440,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22088,7 +23004,13 @@
           "armor": 441,
           "magic_defense": 269,
           "attack_damage": 396,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 42,
+          "hp_regen_5s": 75,
+          "max_resource": 1742,
+          "resource_regen_5s": 36,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22106,7 +23028,13 @@
           "armor": 139,
           "magic_defense": 80,
           "attack_damage": 180,
-          "movement_speed": 390
+          "movement_speed": 390,
+          "attack_speed": 0,
+          "hp_regen_5s": 59,
+          "max_resource": 450,
+          "resource_regen_5s": 16,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22122,7 +23050,13 @@
           "armor": 448,
           "magic_defense": 269,
           "attack_damage": 362,
-          "movement_speed": 390
+          "movement_speed": 390,
+          "attack_speed": 42,
+          "hp_regen_5s": 90,
+          "max_resource": 1808,
+          "resource_regen_5s": 38,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22140,7 +23074,13 @@
           "armor": 133,
           "magic_defense": 80,
           "attack_damage": 172,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 55,
+          "max_resource": 430,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22156,7 +23096,13 @@
           "armor": 133,
           "magic_defense": 80,
           "attack_damage": 172,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 55,
+          "max_resource": 430,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22172,7 +23118,13 @@
           "armor": 413,
           "magic_defense": 269,
           "attack_damage": 386,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 28,
+          "hp_regen_5s": 85,
+          "max_resource": 1704,
+          "resource_regen_5s": 36,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22190,7 +23142,13 @@
           "armor": 137,
           "magic_defense": 80,
           "attack_damage": 170,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 0,
+          "hp_regen_5s": 57,
+          "max_resource": 490,
+          "resource_regen_5s": 17,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22206,7 +23164,13 @@
           "armor": 418,
           "magic_defense": 269,
           "attack_damage": 293,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 14,
+          "hp_regen_5s": 86,
+          "max_resource": 1960,
+          "resource_regen_5s": 41,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22224,7 +23188,13 @@
           "armor": 140,
           "magic_defense": 80,
           "attack_damage": 170,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 66,
+          "max_resource": 420,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22240,7 +23210,13 @@
           "armor": 490,
           "magic_defense": 269,
           "attack_damage": 310,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 14,
+          "hp_regen_5s": 128,
+          "max_resource": 1694,
+          "resource_regen_5s": 36,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22258,7 +23234,13 @@
           "armor": 146,
           "magic_defense": 80,
           "attack_damage": 168,
-          "movement_speed": 390
+          "movement_speed": 390,
+          "attack_speed": 0,
+          "hp_regen_5s": 61,
+          "max_resource": 5,
+          "resource_regen_5s": -5,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22274,7 +23256,13 @@
           "armor": 504,
           "magic_defense": 269,
           "attack_damage": 329,
-          "movement_speed": 390
+          "movement_speed": 390,
+          "attack_speed": 42,
+          "hp_regen_5s": 104,
+          "max_resource": 5,
+          "resource_regen_5s": -5,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22292,7 +23280,13 @@
           "armor": 163,
           "magic_defense": 80,
           "attack_damage": 171,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 66,
+          "max_resource": 430,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22308,7 +23302,13 @@
           "armor": 494,
           "magic_defense": 269,
           "attack_damage": 332,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 14,
+          "hp_regen_5s": 129,
+          "max_resource": 1760,
+          "resource_regen_5s": 37,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22326,7 +23326,13 @@
           "armor": 133,
           "magic_defense": 80,
           "attack_damage": 179,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 0,
+          "hp_regen_5s": 55,
+          "max_resource": 100,
+          "resource_regen_5s": 25,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22342,7 +23348,13 @@
           "armor": 425,
           "magic_defense": 269,
           "attack_damage": 321,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 14,
+          "hp_regen_5s": 84,
+          "max_resource": 142,
+          "resource_regen_5s": 25,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22360,7 +23372,13 @@
           "armor": 152,
           "magic_defense": 80,
           "attack_damage": 168,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 52,
+          "max_resource": 490,
+          "resource_regen_5s": 18,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22376,7 +23394,13 @@
           "armor": 437,
           "magic_defense": 269,
           "attack_damage": 317,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 14,
+          "hp_regen_5s": 79,
+          "max_resource": 2002,
+          "resource_regen_5s": 44,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22394,7 +23418,13 @@
           "armor": 141,
           "magic_defense": 80,
           "attack_damage": 171,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 61,
+          "max_resource": 420,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22410,7 +23440,13 @@
           "armor": 510,
           "magic_defense": 269,
           "attack_damage": 355,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 28,
+          "hp_regen_5s": 108,
+          "max_resource": 1694,
+          "resource_regen_5s": 36,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22428,7 +23464,13 @@
           "armor": 135,
           "magic_defense": 80,
           "attack_damage": 177,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 60,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 125
         }
       },
       {
@@ -22444,7 +23486,13 @@
           "armor": 444,
           "magic_defense": 269,
           "attack_damage": 427,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 28,
+          "hp_regen_5s": 91,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 125
         }
       }
     ],
@@ -22462,7 +23510,13 @@
           "armor": 141,
           "magic_defense": 80,
           "attack_damage": 170,
-          "movement_speed": 390
+          "movement_speed": 390,
+          "attack_speed": 0,
+          "hp_regen_5s": 56,
+          "max_resource": 200,
+          "resource_regen_5s": 50,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22478,7 +23532,13 @@
           "armor": 463,
           "magic_defense": 269,
           "attack_damage": 293,
-          "movement_speed": 390
+          "movement_speed": 390,
+          "attack_speed": 14,
+          "hp_regen_5s": 86,
+          "max_resource": 200,
+          "resource_regen_5s": 50,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22496,7 +23556,13 @@
           "armor": 142,
           "magic_defense": 80,
           "attack_damage": 170,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 60,
+          "max_resource": 200,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22512,7 +23578,13 @@
           "armor": 482,
           "magic_defense": 269,
           "attack_damage": 377,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 28,
+          "hp_regen_5s": 99,
+          "max_resource": 200,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22530,7 +23602,13 @@
           "armor": 130,
           "magic_defense": 80,
           "attack_damage": 160,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 60,
+          "max_resource": 430,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22546,7 +23624,13 @@
           "armor": 411,
           "magic_defense": 269,
           "attack_damage": 283,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 14,
+          "hp_regen_5s": 99,
+          "max_resource": 1760,
+          "resource_regen_5s": 37,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22564,7 +23648,13 @@
           "armor": 159,
           "magic_defense": 80,
           "attack_damage": 163,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 50,
+          "max_resource": 440,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22580,7 +23670,13 @@
           "armor": 476,
           "magic_defense": 269,
           "attack_damage": 363,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 42,
+          "hp_regen_5s": 89,
+          "max_resource": 1742,
+          "resource_regen_5s": 36,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22598,7 +23694,13 @@
           "armor": 145,
           "magic_defense": 80,
           "attack_damage": 170,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 69,
+          "max_resource": 460,
+          "resource_regen_5s": 20,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22614,7 +23716,13 @@
           "armor": 496,
           "magic_defense": 269,
           "attack_damage": 377,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 28,
+          "hp_regen_5s": 138,
+          "max_resource": 2000,
+          "resource_regen_5s": 48,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22632,7 +23740,13 @@
           "armor": 142,
           "magic_defense": 80,
           "attack_damage": 170,
-          "movement_speed": 390
+          "movement_speed": 390,
+          "attack_speed": 0,
+          "hp_regen_5s": 58,
+          "max_resource": 100,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22648,7 +23762,13 @@
           "armor": 487,
           "magic_defense": 269,
           "attack_damage": 352,
-          "movement_speed": 390
+          "movement_speed": 390,
+          "attack_speed": 14,
+          "hp_regen_5s": 102,
+          "max_resource": 100,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22666,7 +23786,13 @@
           "armor": 118,
           "magic_defense": 80,
           "attack_damage": 162,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 52,
+          "max_resource": 470,
+          "resource_regen_5s": 17,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22682,7 +23808,13 @@
           "armor": 381,
           "magic_defense": 269,
           "attack_damage": 297,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 14,
+          "hp_regen_5s": 82,
+          "max_resource": 1912,
+          "resource_regen_5s": 41,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22700,7 +23832,13 @@
           "armor": 135,
           "magic_defense": 80,
           "attack_damage": 170,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 61,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22716,7 +23854,13 @@
           "armor": 431,
           "magic_defense": 269,
           "attack_damage": 377,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 28,
+          "hp_regen_5s": 86,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22734,7 +23878,13 @@
           "armor": 141,
           "magic_defense": 80,
           "attack_damage": 160,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 61,
+          "max_resource": 420,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22750,7 +23900,13 @@
           "armor": 141,
           "magic_defense": 80,
           "attack_damage": 160,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 61,
+          "max_resource": 420,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22766,7 +23922,13 @@
           "armor": 456,
           "magic_defense": 269,
           "attack_damage": 328,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 42,
+          "hp_regen_5s": 108,
+          "max_resource": 1694,
+          "resource_regen_5s": 36,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22784,7 +23946,13 @@
           "armor": 135,
           "magic_defense": 80,
           "attack_damage": 162,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 52,
+          "max_resource": 440,
+          "resource_regen_5s": 16,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22800,7 +23968,13 @@
           "armor": 441,
           "magic_defense": 269,
           "attack_damage": 387,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 42,
+          "hp_regen_5s": 83,
+          "max_resource": 1784,
+          "resource_regen_5s": 38,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22818,7 +23992,13 @@
           "armor": 130,
           "magic_defense": 80,
           "attack_damage": 165,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 0,
+          "hp_regen_5s": 46,
+          "max_resource": 4,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22834,7 +24014,13 @@
           "armor": 424,
           "magic_defense": 269,
           "attack_damage": 407,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 28,
+          "hp_regen_5s": 73,
+          "max_resource": 4,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22852,7 +24038,13 @@
           "armor": 138,
           "magic_defense": 80,
           "attack_damage": 170,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 61,
+          "max_resource": 10,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22868,7 +24060,13 @@
           "armor": 472,
           "magic_defense": 269,
           "attack_damage": 343,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 7,
+          "hp_regen_5s": 104,
+          "max_resource": 10,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22886,7 +24084,13 @@
           "armor": 146,
           "magic_defense": 80,
           "attack_damage": 173,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 67,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22902,7 +24106,13 @@
           "armor": 504,
           "magic_defense": 269,
           "attack_damage": 321,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 28,
+          "hp_regen_5s": 129,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22920,7 +24130,13 @@
           "armor": 135,
           "magic_defense": 80,
           "attack_damage": 170,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 60,
+          "max_resource": 105,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22936,7 +24152,13 @@
           "armor": 431,
           "magic_defense": 269,
           "attack_damage": 377,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 42,
+          "hp_regen_5s": 99,
+          "max_resource": 105,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22954,7 +24176,13 @@
           "armor": 150,
           "magic_defense": 80,
           "attack_damage": 172,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 56,
+          "max_resource": 4,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -22970,7 +24198,13 @@
           "armor": 458,
           "magic_defense": 269,
           "attack_damage": 400,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 28,
+          "hp_regen_5s": 102,
+          "max_resource": 4,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -22988,7 +24222,13 @@
           "armor": 140,
           "magic_defense": 80,
           "attack_damage": 154,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 59,
+          "max_resource": 420,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23004,7 +24244,13 @@
           "armor": 491,
           "magic_defense": 269,
           "attack_damage": 284,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 14,
+          "hp_regen_5s": 96,
+          "max_resource": 1680,
+          "resource_regen_5s": 35,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -23022,7 +24268,13 @@
           "armor": 135,
           "magic_defense": 80,
           "attack_damage": 173,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 44,
+          "max_resource": 440,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23038,7 +24290,13 @@
           "armor": 419,
           "magic_defense": 269,
           "attack_damage": 380,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 42,
+          "hp_regen_5s": 75,
+          "max_resource": 1756,
+          "resource_regen_5s": 36,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -23056,7 +24314,13 @@
           "armor": 141,
           "magic_defense": 80,
           "attack_damage": 173,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 50,
+          "max_resource": 440,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23072,7 +24336,13 @@
           "armor": 433,
           "magic_defense": 269,
           "attack_damage": 380,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 42,
+          "hp_regen_5s": 76,
+          "max_resource": 1770,
+          "resource_regen_5s": 37,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -23090,7 +24360,13 @@
           "armor": 166,
           "magic_defense": 80,
           "attack_damage": 157,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 68,
+          "max_resource": 420,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23106,7 +24382,13 @@
           "armor": 572,
           "magic_defense": 269,
           "attack_damage": 334,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 14,
+          "hp_regen_5s": 131,
+          "max_resource": 1694,
+          "resource_regen_5s": 36,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -23124,7 +24406,13 @@
           "armor": 137,
           "magic_defense": 80,
           "attack_damage": 171,
-          "movement_speed": 400
+          "movement_speed": 400,
+          "attack_speed": 0,
+          "hp_regen_5s": 61,
+          "max_resource": 490,
+          "resource_regen_5s": 17,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23140,7 +24428,13 @@
           "armor": 443,
           "magic_defense": 269,
           "attack_damage": 388,
-          "movement_speed": 400
+          "movement_speed": 400,
+          "attack_speed": 28,
+          "hp_regen_5s": 104,
+          "max_resource": 1960,
+          "resource_regen_5s": 41,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -23158,7 +24452,13 @@
           "armor": 135,
           "magic_defense": 80,
           "attack_damage": 165,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 50,
+          "max_resource": 200,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23174,7 +24474,13 @@
           "armor": 415,
           "magic_defense": 269,
           "attack_damage": 375,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 42,
+          "hp_regen_5s": 78,
+          "max_resource": 200,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -23192,7 +24498,13 @@
           "armor": 160,
           "magic_defense": 80,
           "attack_damage": 175,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 0,
+          "hp_regen_5s": 65,
+          "max_resource": 200,
+          "resource_regen_5s": -27,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23208,7 +24520,13 @@
           "armor": 160,
           "magic_defense": 80,
           "attack_damage": 175,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 0,
+          "hp_regen_5s": 65,
+          "max_resource": 200,
+          "resource_regen_5s": -27,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23224,7 +24542,13 @@
           "armor": 552,
           "magic_defense": 269,
           "attack_damage": 315,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 14,
+          "hp_regen_5s": 135,
+          "max_resource": 200,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -23242,7 +24566,13 @@
           "armor": 133,
           "magic_defense": 80,
           "attack_damage": 156,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 0,
+          "hp_regen_5s": 54,
+          "max_resource": 490,
+          "resource_regen_5s": 18,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23258,7 +24588,13 @@
           "armor": 133,
           "magic_defense": 80,
           "attack_damage": 156,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 0,
+          "hp_regen_5s": 54,
+          "max_resource": 490,
+          "resource_regen_5s": 18,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23274,7 +24610,13 @@
           "armor": 425,
           "magic_defense": 269,
           "attack_damage": 287,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 14,
+          "hp_regen_5s": 82,
+          "max_resource": 1988,
+          "resource_regen_5s": 43,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -23292,7 +24634,13 @@
           "armor": 141,
           "magic_defense": 80,
           "attack_damage": 173,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 50,
+          "max_resource": 440,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23308,7 +24656,13 @@
           "armor": 141,
           "magic_defense": 80,
           "attack_damage": 173,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 50,
+          "max_resource": 440,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23324,7 +24678,13 @@
           "armor": 433,
           "magic_defense": 269,
           "attack_damage": 380,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 42,
+          "hp_regen_5s": 76,
+          "max_resource": 1770,
+          "resource_regen_5s": 37,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -23342,7 +24702,13 @@
           "armor": 132,
           "magic_defense": 80,
           "attack_damage": 170,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 56,
+          "max_resource": 490,
+          "resource_regen_5s": 18,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23358,7 +24724,13 @@
           "armor": 421,
           "magic_defense": 269,
           "attack_damage": 293,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 14,
+          "hp_regen_5s": 84,
+          "max_resource": 2016,
+          "resource_regen_5s": 44,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -23376,7 +24748,13 @@
           "armor": 145,
           "magic_defense": 80,
           "attack_damage": 167,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 62,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23392,7 +24770,13 @@
           "armor": 551,
           "magic_defense": 269,
           "attack_damage": 311,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 42,
+          "hp_regen_5s": 109,
+          "max_resource": 0,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -23410,7 +24794,13 @@
           "armor": 135,
           "magic_defense": 80,
           "attack_damage": 172,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 0,
+          "hp_regen_5s": 50,
+          "max_resource": 440,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23426,7 +24816,13 @@
           "armor": 441,
           "magic_defense": 269,
           "attack_damage": 411,
-          "movement_speed": 350
+          "movement_speed": 350,
+          "attack_speed": 42,
+          "hp_regen_5s": 79,
+          "max_resource": 1756,
+          "resource_regen_5s": 36,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -23444,7 +24840,13 @@
           "armor": 130,
           "magic_defense": 80,
           "attack_damage": 165,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 0,
+          "hp_regen_5s": 60,
+          "max_resource": 450,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23460,7 +24862,13 @@
           "armor": 489,
           "magic_defense": 269,
           "attack_damage": 347,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 28,
+          "hp_regen_5s": 99,
+          "max_resource": 1780,
+          "resource_regen_5s": 36,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -23478,7 +24886,13 @@
           "armor": 128,
           "magic_defense": 80,
           "attack_damage": 171,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 90,
+          "max_resource": 470,
+          "resource_regen_5s": 17,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23494,7 +24908,13 @@
           "armor": 382,
           "magic_defense": 269,
           "attack_damage": 299,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 14,
+          "hp_regen_5s": 210,
+          "max_resource": 1926,
+          "resource_regen_5s": 42,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -23512,7 +24932,13 @@
           "armor": 133,
           "magic_defense": 80,
           "attack_damage": 171,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 50,
+          "max_resource": 450,
+          "resource_regen_5s": 16,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23528,7 +24954,13 @@
           "armor": 435,
           "magic_defense": 269,
           "attack_damage": 406,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 56,
+          "hp_regen_5s": 81,
+          "max_resource": 1808,
+          "resource_regen_5s": 38,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -23546,7 +24978,13 @@
           "armor": 141,
           "magic_defense": 80,
           "attack_damage": 173,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 72,
+          "max_resource": 100,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23562,7 +25000,13 @@
           "armor": 503,
           "magic_defense": 269,
           "attack_damage": 350,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 28,
+          "hp_regen_5s": 117,
+          "max_resource": 100,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -23580,7 +25024,13 @@
           "armor": 139,
           "magic_defense": 80,
           "attack_damage": 167,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 60,
+          "max_resource": 430,
+          "resource_regen_5s": 15,
+          "critical_chance": 22,
+          "critical_damage": 175
         }
       },
       {
@@ -23596,7 +25046,13 @@
           "armor": 445,
           "magic_defense": 269,
           "attack_damage": 349,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 28,
+          "hp_regen_5s": 102,
+          "max_resource": 1760,
+          "resource_regen_5s": 37,
+          "critical_chance": 22,
+          "critical_damage": 175
         }
       }
     ],
@@ -23614,7 +25070,13 @@
           "armor": 159,
           "magic_defense": 80,
           "attack_damage": 158,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 68,
+          "max_resource": 470,
+          "resource_regen_5s": 17,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23630,7 +25092,13 @@
           "armor": 587,
           "magic_defense": 269,
           "attack_damage": 302,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 42,
+          "hp_regen_5s": 127,
+          "max_resource": 1940,
+          "resource_regen_5s": 42,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -23648,7 +25116,13 @@
           "armor": 135,
           "magic_defense": 80,
           "attack_damage": 168,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 66,
+          "max_resource": 430,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23664,7 +25138,13 @@
           "armor": 497,
           "magic_defense": 269,
           "attack_damage": 345,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 14,
+          "hp_regen_5s": 125,
+          "max_resource": 1760,
+          "resource_regen_5s": 37,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -23682,7 +25162,13 @@
           "armor": 145,
           "magic_defense": 80,
           "attack_damage": 165,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 61,
+          "max_resource": 440,
+          "resource_regen_5s": 17,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23698,7 +25184,13 @@
           "armor": 457,
           "magic_defense": 269,
           "attack_damage": 361,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 28,
+          "hp_regen_5s": 108,
+          "max_resource": 1770,
+          "resource_regen_5s": 42,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -23716,7 +25208,13 @@
           "armor": 144,
           "magic_defense": 80,
           "attack_damage": 170,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 61,
+          "max_resource": 100,
+          "resource_regen_5s": -100,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23732,7 +25230,13 @@
           "armor": 456,
           "magic_defense": 269,
           "attack_damage": 382,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 28,
+          "hp_regen_5s": 89,
+          "max_resource": 100,
+          "resource_regen_5s": -100,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -23750,7 +25254,13 @@
           "armor": 140,
           "magic_defense": 80,
           "attack_damage": 174,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 52,
+          "max_resource": 440,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23766,7 +25276,13 @@
           "armor": 424,
           "magic_defense": 269,
           "attack_damage": 381,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 42,
+          "hp_regen_5s": 79,
+          "max_resource": 1756,
+          "resource_regen_5s": 36,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -23784,7 +25300,13 @@
           "armor": 140,
           "magic_defense": 50,
           "attack_damage": 159,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 45,
+          "max_resource": 490,
+          "resource_regen_5s": 18,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23800,7 +25322,13 @@
           "armor": 403,
           "magic_defense": 239,
           "attack_damage": 269,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 14,
+          "hp_regen_5s": 71,
+          "max_resource": 1988,
+          "resource_regen_5s": 43,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -23818,7 +25346,13 @@
           "armor": 135,
           "magic_defense": 80,
           "attack_damage": 168,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 0,
+          "hp_regen_5s": 62,
+          "max_resource": 430,
+          "resource_regen_5s": 16,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23834,7 +25368,13 @@
           "armor": 497,
           "magic_defense": 269,
           "attack_damage": 375,
-          "movement_speed": 370
+          "movement_speed": 370,
+          "attack_speed": 42,
+          "hp_regen_5s": 109,
+          "max_resource": 1774,
+          "resource_regen_5s": 39,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -23852,7 +25392,13 @@
           "armor": 141,
           "magic_defense": 80,
           "attack_damage": 153,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 0,
+          "hp_regen_5s": 54,
+          "max_resource": 490,
+          "resource_regen_5s": 18,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23868,7 +25414,13 @@
           "armor": 404,
           "magic_defense": 269,
           "attack_damage": 263,
-          "movement_speed": 360
+          "movement_speed": 360,
+          "attack_speed": 14,
+          "hp_regen_5s": 85,
+          "max_resource": 1988,
+          "resource_regen_5s": 43,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -23886,7 +25438,13 @@
           "armor": 136,
           "magic_defense": 80,
           "attack_damage": 173,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 60,
+          "max_resource": 430,
+          "resource_regen_5s": 15,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23902,7 +25460,13 @@
           "armor": 495,
           "magic_defense": 269,
           "attack_damage": 380,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 28,
+          "hp_regen_5s": 99,
+          "max_resource": 1760,
+          "resource_regen_5s": 37,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -23920,7 +25484,13 @@
           "armor": 148,
           "magic_defense": 80,
           "attack_damage": 173,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 62,
+          "max_resource": 450,
+          "resource_regen_5s": 16,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23936,7 +25506,13 @@
           "armor": 470,
           "magic_defense": 269,
           "attack_damage": 329,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 42,
+          "hp_regen_5s": 109,
+          "max_resource": 1836,
+          "resource_regen_5s": 39,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -23954,7 +25530,13 @@
           "armor": 166,
           "magic_defense": 80,
           "attack_damage": 151,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 67,
+          "max_resource": 470,
+          "resource_regen_5s": 16,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -23970,7 +25552,13 @@
           "armor": 541,
           "magic_defense": 269,
           "attack_damage": 265,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 14,
+          "hp_regen_5s": 125,
+          "max_resource": 1870,
+          "resource_regen_5s": 38,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ],
@@ -23988,7 +25576,13 @@
           "armor": 132,
           "magic_defense": 80,
           "attack_damage": 170,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 0,
+          "hp_regen_5s": 54,
+          "max_resource": 100,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       },
       {
@@ -24004,7 +25598,13 @@
           "armor": 444,
           "magic_defense": 269,
           "attack_damage": 382,
-          "movement_speed": 380
+          "movement_speed": 380,
+          "attack_speed": 28,
+          "hp_regen_5s": 82,
+          "max_resource": 100,
+          "resource_regen_5s": 0,
+          "critical_chance": 0,
+          "critical_damage": 200
         }
       }
     ]

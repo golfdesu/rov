@@ -5,18 +5,35 @@ import threading
 import time
 import uuid
 from pathlib import Path
+from typing import Literal
 
 import pandas as pd
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import Cookie, Depends, FastAPI, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from src.combat_calculator import Build, get_engine
+from src.combat_calculator import DEFAULT_ITEM_ALIASES, Build, get_engine
 from src.config import config
+from src.db import (
+    SESSION_COOKIE_NAME,
+    SESSION_TTL_SECONDS,
+    AuthUser,
+    RateLimiter,
+    UserDatabase,
+)
 from src.predictor import RoVDraftPredictor
 from src.schemas import (
+    AuthLoginRequest,
+    AuthRegisterRequest,
+    AuthStatusResponse,
+    AuthUserSchema,
+    CombatBuildsSyncSchema,
+    CombatCatalogResponse,
     CombatDuelRequest,
+    CombatDuelResponse,
+    CombatRuneRecommendationResponse,
     CombatStatsRequest,
+    CombatStatsResponse,
     DraftPredictionResponse,
     DraftSessionStateSchema,
     DraftStateRequest,
@@ -35,20 +52,10 @@ HERO_FOLDER_ALIASES = {
     "Riktor": "Richter",
 }
 ITEM_FOLDER_ALIASES = {
-    "Troy's Medallion": "Medallion of Troy",
-    "Hyoga's Edge": "Frost Hammer",
-    "Hyoga": "Frost Hammer",
-    "Fafnir": "Fafnir's Talon",
-    "Gaia": "Gaia's Standard",
-    "Longinus": "Spear of Longinus",
-    "Claves": "Claves Sancti",
-    "Fenrir": "Fenrir's Tooth",
-    "Hecate": "Hecate's Diadem",
-    "Berith": "Berith's Agony",
-    "Amulet": "Amulet of Longevity",
-    "SoL": "Shield of the Lost",
-    "MoP": "Mail of Pain",
+    **DEFAULT_ITEM_ALIASES,
+    **get_engine().item_aliases,
 }
+ITEM_FOLDER_ALIASES_LOWER = {k.lower(): v for k, v in ITEM_FOLDER_ALIASES.items()}
 
 app = FastAPI(
     title="RoV SOTA Draft Intelligence API",
@@ -173,8 +180,13 @@ try:
             tier = str(t_row["Tier_2026"]) if pd.notna(t_row.get("Tier_2026")) else "C"
             role = normalize_role(str(t_row["Primary_Role"])) if pd.notna(t_row.get("Primary_Role")) else "Fighter"
             main_pro_lane = str(t_row["Main_Pro_Lane"]) if pd.notna(t_row.get("Main_Pro_Lane")) else "Unpicked"
-            if pd.notna(t_row.get("Presence_Rate")):
-                presence_rate = round(float(t_row["Presence_Rate"]) * 100, 1)
+            presence_col = (
+                "Presence_Rate"
+                if pd.notna(t_row.get("Presence_Rate"))
+                else ("Annual_Presence" if pd.notna(t_row.get("Annual_Presence")) else None)
+            )
+            if presence_col is not None:
+                presence_rate = round(float(t_row[presence_col]) * 100, 1)
             if pd.notna(t_row.get("Pick_Rate")):
                 pick_rate = round(float(t_row["Pick_Rate"]) * 100, 1)
             if pd.notna(t_row.get("Ban_Rate")):
@@ -327,10 +339,134 @@ def get_draft_steps():
 
 
 _session_lock = threading.Lock()
+_db_lock = threading.Lock()
+_user_db: UserDatabase | None = None
+_auth_rate_limiter = RateLimiter(max_attempts=20, window_seconds=60)
+
+
+def get_user_db() -> UserDatabase:
+    global _user_db
+    target_path = config.paths.app_db_path
+    with _db_lock:
+        if _user_db is None or _user_db.db_path != target_path:
+            _user_db = UserDatabase(target_path)
+            _user_db.ensure_schema()
+        return _user_db
+
+
+def _client_ip(request: Request) -> str:
+    forwarded = request.headers.get("cf-connecting-ip") or request.headers.get("x-forwarded-for")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
+def _is_https_request(request: Request) -> bool:
+    proto = request.headers.get("x-forwarded-proto", "").split(",")[0].strip().lower()
+    return proto == "https" or request.url.scheme == "https"
+
+
+def _set_session_cookie(response: Response, request: Request, token: str) -> None:
+    response.set_cookie(
+        key=SESSION_COOKIE_NAME,
+        value=token,
+        max_age=SESSION_TTL_SECONDS,
+        httponly=True,
+        samesite="lax",
+        secure=_is_https_request(request),
+        path="/",
+    )
+
+
+def _clear_session_cookie(response: Response, request: Request) -> None:
+    response.delete_cookie(
+        key=SESSION_COOKIE_NAME,
+        httponly=True,
+        samesite="lax",
+        secure=_is_https_request(request),
+        path="/",
+    )
+
+
+def _to_user_schema(user: AuthUser) -> AuthUserSchema:
+    return AuthUserSchema(id=user.id, username=user.username, display_name=user.display_name)
+
+
+def get_optional_user(
+    session_token: str | None = Cookie(default=None, alias=SESSION_COOKIE_NAME),
+) -> AuthUser | None:
+    if not session_token:
+        return None
+    return get_user_db().get_user_by_token(session_token)
+
+
+def get_required_user(user: AuthUser | None = Depends(get_optional_user)) -> AuthUser:
+    if user is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    return user
+
+
+@app.get("/auth/me", response_model=AuthStatusResponse)
+def auth_me(user: AuthUser | None = Depends(get_optional_user)):
+    return AuthStatusResponse(
+        authenticated=user is not None,
+        user=_to_user_schema(user) if user is not None else None,
+    )
+
+
+@app.post("/auth/register", response_model=AuthStatusResponse, status_code=201)
+def auth_register(payload: AuthRegisterRequest, request: Request, response: Response):
+    if not _auth_rate_limiter.check_and_record(f"reg:{_client_ip(request)}"):
+        raise HTTPException(status_code=429, detail="Too many attempts, please try again in a minute")
+    db = get_user_db()
+    try:
+        user = db.register_user(payload.username, payload.password, payload.display_name)
+    except ValueError as exc:
+        status = 409 if "already taken" in str(exc).lower() else 400
+        raise HTTPException(status_code=status, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    token = db.create_session(user.id)
+    _set_session_cookie(response, request, token)
+    return AuthStatusResponse(authenticated=True, user=_to_user_schema(user))
+
+
+@app.post("/auth/login", response_model=AuthStatusResponse)
+def auth_login(payload: AuthLoginRequest, request: Request, response: Response):
+    if not _auth_rate_limiter.check_and_record(f"login:{_client_ip(request)}"):
+        raise HTTPException(status_code=429, detail="Too many login attempts, please try again in a minute")
+    db = get_user_db()
+    user = db.authenticate_user(payload.username, payload.password)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+    token = db.create_session(user.id)
+    _set_session_cookie(response, request, token)
+    return AuthStatusResponse(authenticated=True, user=_to_user_schema(user))
+
+
+@app.post("/auth/logout", response_model=AuthStatusResponse)
+def auth_logout(
+    request: Request,
+    response: Response,
+    session_token: str | None = Cookie(default=None, alias=SESSION_COOKIE_NAME),
+):
+    if session_token:
+        get_user_db().delete_session(session_token)
+    _clear_session_cookie(response, request)
+    return AuthStatusResponse(authenticated=False, user=None)
 
 
 @app.get("/draft/session", response_model=DraftSessionStateSchema)
-def get_draft_session():
+def get_draft_session(user: AuthUser | None = Depends(get_optional_user)):
+    if user is not None:
+        raw_user_state = get_user_db().get_user_draft_state(user.id)
+        if not raw_user_state:
+            return DraftSessionStateSchema()
+        try:
+            return DraftSessionStateSchema.model_validate(raw_user_state)
+        except Exception:
+            return DraftSessionStateSchema()
+
     session_path = config.paths.draft_session_path
     with _session_lock:
         if not session_path.exists():
@@ -343,7 +479,15 @@ def get_draft_session():
 
 
 @app.put("/draft/session", response_model=DraftSessionStateSchema)
-def save_draft_session(session: DraftSessionStateSchema):
+def save_draft_session(
+    session: DraftSessionStateSchema,
+    user: AuthUser | None = Depends(get_optional_user),
+):
+    if user is not None:
+        dumped = session.model_dump()
+        get_user_db().save_user_draft_state(user.id, dumped, int(session.updatedAt or 0))
+        return session
+
     session_path = config.paths.draft_session_path
     session_path.parent.mkdir(parents=True, exist_ok=True)
     with _session_lock:
@@ -366,12 +510,43 @@ def save_draft_session(session: DraftSessionStateSchema):
 
 
 @app.delete("/draft/session", response_model=DraftSessionStateSchema)
-def clear_draft_session():
+def clear_draft_session(user: AuthUser | None = Depends(get_optional_user)):
+    if user is not None:
+        get_user_db().clear_user_draft_state(user.id)
+        return DraftSessionStateSchema()
+
     session_path = config.paths.draft_session_path
     with _session_lock:
         if session_path.exists():
             session_path.unlink(missing_ok=True)
     return DraftSessionStateSchema()
+
+
+@app.get("/combat/builds", response_model=CombatBuildsSyncSchema)
+def get_combat_builds(user: AuthUser = Depends(get_required_user)):
+    raw = get_user_db().get_user_combat_builds(user.id)
+    if not raw:
+        return CombatBuildsSyncSchema()
+    try:
+        return CombatBuildsSyncSchema.model_validate(raw)
+    except Exception:
+        return CombatBuildsSyncSchema()
+
+
+@app.put("/combat/builds", response_model=CombatBuildsSyncSchema)
+def save_combat_builds(
+    builds: CombatBuildsSyncSchema,
+    user: AuthUser = Depends(get_required_user),
+):
+    dumped = builds.model_dump()
+    get_user_db().save_user_combat_builds(user.id, dumped, int(builds.updatedAt or 0))
+    return builds
+
+
+@app.delete("/combat/builds", response_model=CombatBuildsSyncSchema)
+def clear_combat_builds(user: AuthUser = Depends(get_required_user)):
+    get_user_db().clear_user_combat_builds(user.id)
+    return CombatBuildsSyncSchema()
 
 
 @app.post("/predict", response_model=DraftPredictionResponse)
@@ -401,7 +576,7 @@ def predict_heuristic_draft(request: DraftStateRequest):
 _combat_catalog_cache = None
 
 
-@app.get("/combat/catalog")
+@app.get("/combat/catalog", response_model=CombatCatalogResponse)
 def combat_catalog():
     global _combat_catalog_cache
     if _combat_catalog_cache is None:
@@ -409,7 +584,7 @@ def combat_catalog():
     return _combat_catalog_cache
 
 
-@app.post("/combat/stats")
+@app.post("/combat/stats", response_model=CombatStatsResponse)
 def combat_stats(request: CombatStatsRequest):
     engine = get_engine()
     try:
@@ -417,31 +592,36 @@ def combat_stats(request: CombatStatsRequest):
         result = engine.build_stats(build)
         if request.target is not None:
             target = engine.build_stats(Build(**request.target.model_dump()))
-            result["skills"] = engine.skill_damage(result, target, build)
+            skills = engine.skill_damage(result, target, build)
+            result["skills"] = skills
             result["basic_attack"] = engine.basic_attack(result, target)
+            result["burst"] = round(engine.burst(build, target), 1)
+            result["procs"] = engine._procs(result, build, target, skills=skills)
         return result
-    except ValueError as exc:
+    except (ValueError, KeyError, IndexError, ZeroDivisionError) as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
-@app.post("/combat/duel", response_model=dict)
+@app.post("/combat/duel", response_model=CombatDuelResponse)
 def combat_duel(request: CombatDuelRequest):
     try:
         return get_engine().duel(Build(**request.a.model_dump()), Build(**request.b.model_dump()))
-    except ValueError as exc:
+    except (ValueError, KeyError, IndexError, ZeroDivisionError) as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
-@app.get("/combat/rune-recommendation", response_model=dict)
+@app.get("/combat/rune-recommendation", response_model=CombatRuneRecommendationResponse)
 def get_rune_recommendation(
     my_hero: str = Query(..., description="My hero name"),
     enemy_hero: str = Query(..., description="Enemy hero name"),
-    lane: str = Query("DS_Lane", description="Lane: DS_Lane, Jungle, Mid, Dragon_Lane, Roam"),
+    lane: Literal["DS_Lane", "Jungle", "Mid", "Dragon_Lane", "Roam", "Support"] = Query(
+        "DS_Lane", description="Lane: DS_Lane, Jungle, Mid, Dragon_Lane, Roam"
+    ),
     level: int = Query(2, ge=1, le=15, description="Hero level (1-15)"),
 ):
     try:
         return get_engine().recommend_matchup_runes(my_hero=my_hero, enemy_hero=enemy_hero, lane=lane, level=level)
-    except ValueError as exc:
+    except (ValueError, KeyError, IndexError, ZeroDivisionError) as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
@@ -472,8 +652,8 @@ def _skill_sort_key(file_path: Path):
 
 @app.get("/combat/hero-screenshots/{hero}")
 def get_hero_screenshots(hero: str):
-    # Security check: prevent directory traversal
-    if ".." in hero or "/" in hero or "\\" in hero:
+    # Security check: prevent directory traversal and drive-relative paths
+    if not hero.strip() or hero.strip() == "." or ".." in hero or "/" in hero or "\\" in hero or ":" in hero:
         raise HTTPException(status_code=400, detail="Invalid hero name")
 
     folder_name = HERO_FOLDER_ALIASES.get(hero, hero)
@@ -484,7 +664,9 @@ def get_hero_screenshots(hero: str):
         actual_folder = hero
 
     try:
-        if HEROES_DIR.is_dir() and hero_dir.exists() and not hero_dir.resolve().is_relative_to(HEROES_DIR.resolve()):
+        resolved_base = HEROES_DIR.resolve()
+        resolved_target = hero_dir.resolve()
+        if resolved_target.parent != resolved_base or not resolved_target.is_relative_to(resolved_base):
             raise HTTPException(status_code=400, detail="Invalid hero name")
     except (ValueError, RuntimeError):
         raise HTTPException(status_code=400, detail="Invalid hero name")
@@ -535,36 +717,42 @@ if _manifest_path.exists():
 
 @app.get("/combat/item-screenshots/{item_name}")
 def get_item_screenshots(item_name: str):
-    # Security check: prevent directory traversal
-    if ".." in item_name or "/" in item_name or "\\" in item_name:
+    # Security check: prevent directory traversal and drive-relative paths
+    if (
+        not item_name.strip()
+        or item_name.strip() == "."
+        or ".." in item_name
+        or "/" in item_name
+        or "\\" in item_name
+        or ":" in item_name
+    ):
         raise HTTPException(status_code=400, detail="Invalid item name")
 
-    resolved_name = ITEM_FOLDER_ALIASES.get(item_name, item_name)
+    resolved_name = ITEM_FOLDER_ALIASES.get(
+        item_name,
+        ITEM_FOLDER_ALIASES_LOWER.get(item_name.lower(), item_name),
+    )
     item_dir = ITEMS_DIR / resolved_name
     try:
-        if ITEMS_DIR.is_dir() and item_dir.exists() and not item_dir.resolve().is_relative_to(ITEMS_DIR.resolve()):
+        resolved_base = ITEMS_DIR.resolve()
+        resolved_target = item_dir.resolve()
+        if resolved_target.parent != resolved_base or not resolved_target.is_relative_to(resolved_base):
             raise HTTPException(status_code=400, detail="Invalid item name")
     except (ValueError, RuntimeError):
         raise HTTPException(status_code=400, detail="Invalid item name")
 
-    if not item_dir.is_dir():
-        return {
-            "item": item_name,
-            "folder": resolved_name,
-            "screenshots": [],
-            "details": None,
-            "pages_info": [],
-        }
-
-    screenshots = [
-        f"/items-media/{resolved_name}/{f.name}"
-        for f in sorted(
-            [f for f in item_dir.iterdir() if f.suffix.lower() in (".jpg", ".jpeg", ".png")],
-            key=_natural_sort_key,
-        )
-    ]
     pages_info = _manifest_items_cache.get(resolved_name, _manifest_items_cache.get(item_name, []))
     details = pages_info[0] if pages_info else None
+    screenshots: list[str] = []
+    if item_dir.is_dir():
+        screenshots = [
+            f"/items-media/{resolved_name}/{f.name}"
+            for f in sorted(
+                [f for f in item_dir.iterdir() if f.suffix.lower() in (".jpg", ".jpeg", ".png")],
+                key=_natural_sort_key,
+            )
+        ]
+
     return {
         "item": item_name,
         "folder": resolved_name,

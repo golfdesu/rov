@@ -15,9 +15,9 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import { useEffect, useId, useMemo, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import { getJson } from "../../api/client";
-import type { BuildStats, CatalogHeroSkill, SkillDamageRow } from "../../types/combat";
+import { resolveScalingValue, type BuildStats, type CatalogHeroSkill, type ScalingValue, type SkillDamageRow } from "../../types/combat";
 import type { Hero } from "../../types/draft";
 import { displayName } from "../../utils/heroNames";
 import { getFormBadge } from "../../utils/heroForms";
@@ -111,29 +111,50 @@ function slotLabelTh(slot: string): string {
   return slot.replace(" (Berserker Mode)", "").replace("Skill ", "สกิล ");
 }
 
-function formatScaling(scaling?: Record<string, number>): string[] {
+const NON_DAMAGE_OWN_HP_SKILLS = new Set([
+  "Charlotte|Skill 2",
+  "Edras|Skill 2",
+  "Edras|Skill 2 (Berserker Mode)",
+  "Ming|Passive",
+  "Omega|Skill 1",
+  "Roxie|Skill 2",
+  "Tachi|Passive",
+  "Volkath|Passive",
+]);
+
+function formatScaling(scaling?: Record<string, ScalingValue>, skillLevel = 1): string[] {
   if (!scaling) return [];
+  const v = (key: string) => resolveScalingValue(scaling[key], skillLevel);
   const list: string[] = [];
-  if (scaling.ad_pct) list.push(`+${scaling.ad_pct}% AD`);
-  if (scaling.bonus_ad_pct) list.push(`+${scaling.bonus_ad_pct}% Bonus AD`);
-  if (scaling.ap_pct) list.push(`+${scaling.ap_pct}% AP`);
-  if (scaling.bonus_ap_pct) list.push(`+${scaling.bonus_ap_pct}% Bonus AP`);
-  if (scaling.own_hp_pct) list.push(`+${scaling.own_hp_pct}% HP ตัวเอง`);
-  if (scaling.hp_pct) list.push(`+${scaling.hp_pct}% HP`);
-  if (scaling.max_hp_pct) list.push(`+${scaling.max_hp_pct}% Max HP`);
-  if (scaling.bonus_hp_pct || scaling.bonus_max_hp_pct) {
-    list.push(`+${(scaling.bonus_hp_pct ?? 0) + (scaling.bonus_max_hp_pct ?? 0)}% Bonus HP`);
+  if (v("ad_pct")) list.push(`+${v("ad_pct")}% AD`);
+  if (v("bonus_ad_pct")) list.push(`+${v("bonus_ad_pct")}% Bonus AD`);
+  if (v("as_to_ad")) list.push(`+${v("as_to_ad")} AD/1% Bonus AS`);
+  if (v("ap_pct")) list.push(`+${v("ap_pct")}% AP`);
+  if (v("bonus_ap_pct")) list.push(`+${v("bonus_ap_pct")}% Bonus AP`);
+  if (v("bonus_dmg_hp_pct")) list.push(`+${v("bonus_dmg_hp_pct")}% Max HP ตัวเอง`);
+  else if (v("own_hp_pct")) list.push(`+${v("own_hp_pct")}% HP ตัวเอง`);
+  else if (v("hp_pct")) list.push(`+${v("hp_pct")}% HP`);
+  else if (v("max_hp_pct")) list.push(`+${v("max_hp_pct")}% Max HP`);
+  if (v("bonus_hp_pct") || v("bonus_max_hp_pct")) {
+    list.push(`+${v("bonus_hp_pct") + v("bonus_max_hp_pct")}% Bonus HP`);
   }
-  if (scaling.bonus_armor_pct) list.push(`+${scaling.bonus_armor_pct}% Bonus Armor`);
-  const tgtHp =
-    (scaling.target_hp_pct ?? 0) + (scaling.target_max_hp_pct ?? 0) + (scaling.target_current_hp_pct ?? 0);
+  if (v("burn_max_hp_pct")) list.push(`เผา +${v("burn_max_hp_pct")}% Max HP/วิ`);
+  if (v("bonus_armor_pct")) list.push(`+${v("bonus_armor_pct")}% Bonus Armor`);
+  if (v("armor_pct")) list.push(`+${v("armor_pct")}% เกราะ`);
+  if (v("magic_defense_pct")) list.push(`+${v("magic_defense_pct")}% ต้านเวท`);
+  const tgtHp = v("target_hp_pct") + v("target_max_hp_pct") + v("target_current_hp_pct");
   if (tgtHp) list.push(`+${tgtHp}% HP ศัตรู`);
-  if (scaling.target_hp_per_100_ad_pct) list.push(`+${scaling.target_hp_per_100_ad_pct}% HP ศัตรู/100 AD`);
-  if (scaling.target_hp_per_100_bonus_ad_pct) {
-    list.push(`+${scaling.target_hp_per_100_bonus_ad_pct}% HP ศัตรู/100 Bonus AD`);
+  if (v("target_hp_ap_pct")) list.push(`+${v("target_hp_ap_pct")}% HP ศัตรู/100 AP`);
+  const lostHp = v("target_lost_hp_pct") + v("lost_hp_pct");
+  if (lostHp) list.push(`+${lostHp}% HP ที่หายไปศัตรู`);
+  if (v("lost_hp_ap_pct")) list.push(`+${v("lost_hp_ap_pct")}% HP ที่หายไปศัตรู/100 AP`);
+  if (v("lost_hp_bonus_ad_pct")) list.push(`+${v("lost_hp_bonus_ad_pct")}% HP ที่หายไปศัตรู/100 Bonus AD`);
+  if (v("target_hp_per_100_ad_pct")) list.push(`+${v("target_hp_per_100_ad_pct")}% HP ศัตรู/100 AD`);
+  if (v("target_hp_per_100_bonus_ad_pct")) {
+    list.push(`+${v("target_hp_per_100_bonus_ad_pct")}% HP ศัตรู/100 Bonus AD`);
   }
-  if (scaling.target_hp_per_100_ap_pct) list.push(`+${scaling.target_hp_per_100_ap_pct}% HP ศัตรู/100 AP`);
-  if (scaling.level_scaling) list.push(`+${scaling.level_scaling}/Lv`);
+  if (v("target_hp_per_100_ap_pct")) list.push(`+${v("target_hp_per_100_ap_pct")}% HP ศัตรู/100 AP`);
+  if (v("level_scaling")) list.push(`+${v("level_scaling")}/Lv`);
   return list;
 }
 
@@ -310,34 +331,51 @@ export function HeroSkillsModal({
     setViewMode("screenshot");
   };
 
-  // Compute live bonus scaling from active hero buildStats
-  const bonusScalingVal = useMemo(() => {
-    if (!buildStats || !activeSkill?.scaling) return 0;
-    const st = buildStats.stats;
-    const baseLv = buildStats.sources.level;
-    const sc = activeSkill.scaling;
-    let b = 0;
-    if (sc.ad_pct) b += (st.attack_damage * sc.ad_pct) / 100;
-    if (sc.bonus_ad_pct) {
-      const bonusAd = Math.max(0, st.attack_damage - (st.base_attack_damage ?? 0));
-      b += (bonusAd * sc.bonus_ad_pct) / 100;
-    }
-    if (sc.ap_pct) b += (st.ability_power * sc.ap_pct) / 100;
-    if (sc.bonus_ap_pct) b += (st.ability_power * sc.bonus_ap_pct) / 100;
-    if (sc.own_hp_pct) b += (st.max_hp * sc.own_hp_pct) / 100;
-    if (sc.hp_pct) b += (st.max_hp * sc.hp_pct) / 100;
-    if (sc.max_hp_pct) b += (st.max_hp * sc.max_hp_pct) / 100;
-    if (sc.bonus_hp_pct || sc.bonus_max_hp_pct) {
-      const bonusHp = Math.max(0, st.max_hp - (baseLv.max_hp ?? 0));
-      b += (bonusHp * ((sc.bonus_hp_pct ?? 0) + (sc.bonus_max_hp_pct ?? 0))) / 100;
-    }
-    if (sc.bonus_armor_pct) {
-      const bonusArmor = Math.max(0, st.armor - (baseLv.armor ?? 0));
-      b += (bonusArmor * sc.bonus_armor_pct) / 100;
-    }
-    if (sc.level_scaling) b += sc.level_scaling * buildStats.level;
-    return Math.round(b);
-  }, [buildStats, activeSkill]);
+  // Compute live bonus scaling from active hero buildStats for a given skill level
+  const calcBonusScaling = useCallback(
+    (skillLv: number) => {
+      if (!buildStats || !activeSkill?.scaling) return 0;
+      const st = buildStats.stats;
+      const baseLv = buildStats.sources.level;
+      const sc = activeSkill.scaling;
+      const skLv = Math.max(1, skillLv);
+      const v = (key: string) => resolveScalingValue(sc[key], skLv);
+      let b = 0;
+      if (v("ad_pct")) b += (st.attack_damage * v("ad_pct")) / 100;
+      if (v("bonus_ad_pct")) {
+        const bonusAd = Math.max(0, st.attack_damage - (st.base_attack_damage ?? 0));
+        b += (bonusAd * v("bonus_ad_pct")) / 100;
+      }
+      if (v("as_to_ad")) {
+        const bonusAs = Math.max(0, st.attack_speed - (baseLv.attack_speed ?? 0));
+        b += v("as_to_ad") * bonusAs;
+      }
+      if (v("ap_pct")) b += (st.ability_power * v("ap_pct")) / 100;
+      if (v("bonus_ap_pct")) b += (st.ability_power * v("bonus_ap_pct")) / 100;
+      if (!NON_DAMAGE_OWN_HP_SKILLS.has(`${hero}|${activeSkill.slot}`)) {
+        const ownHpPct = v("bonus_dmg_hp_pct") || v("own_hp_pct") || v("hp_pct") || v("max_hp_pct");
+        if (ownHpPct) b += (st.max_hp * ownHpPct) / 100;
+        const bonusHpPct = v("bonus_hp_pct") + v("bonus_max_hp_pct");
+        if (bonusHpPct) {
+          const bonusHp = Math.max(0, st.max_hp - (baseLv.max_hp ?? 0));
+          b += (bonusHp * bonusHpPct) / 100;
+        }
+      }
+      if (v("bonus_armor_pct")) {
+        const bonusArmor = Math.max(0, st.armor - (baseLv.armor ?? 0));
+        b += (bonusArmor * v("bonus_armor_pct")) / 100;
+      }
+      if (v("armor_pct")) b += (st.armor * v("armor_pct")) / 100;
+      if (v("magic_defense_pct")) b += (st.magic_defense * v("magic_defense_pct")) / 100;
+      if (v("level_scaling")) b += v("level_scaling") * Math.max(0, buildStats.level - 1);
+      return Math.round(b);
+    },
+    [buildStats, activeSkill, hero],
+  );
+  const bonusScalingVal = useMemo(
+    () => calcBonusScaling(Math.max(1, activeRow?.skill_level ?? 1)),
+    [calcBonusScaling, activeRow?.skill_level],
+  );
 
   const isUltimateSlot =
     activeSkill?.slot === "Ultimate" ||
@@ -709,7 +747,9 @@ export function HeroSkillsModal({
                       const reducedCd = (baseCd * (1 - heroCdr / 100)).toFixed(1);
                       return (
                         <span className="text-[10px] text-gold">
-                          (เหลือ {reducedCd}วิ ที่ Lv.{curSkillLv} ด้วย CDR {heroCdr}%)
+                          {curSkillLv > 0
+                            ? `(เหลือ ${reducedCd}วิ ที่ Lv.${curSkillLv} ด้วย CDR ${heroCdr}%)`
+                            : `(Lv.1: ${reducedCd}วิ ด้วย CDR ${heroCdr}% — ยังไม่อัพสกิล)`}
                         </span>
                       );
                     })()}
@@ -859,7 +899,7 @@ export function HeroSkillsModal({
                     <span>สูตรการคูณพลังโจมตี (Scaling Ratios)</span>
                   </div>
                   <div className="mt-2 flex flex-wrap gap-1.5">
-                    {formatScaling(activeSkill.scaling).map((s, idx) => (
+                    {formatScaling(activeSkill.scaling, Math.max(1, activeRow?.skill_level ?? 1)).map((s, idx) => (
                       <span
                         key={idx}
                         className="rounded border border-gold/40 bg-gold/10 px-2 py-1 font-mono text-xs font-semibold text-gold"
@@ -1035,7 +1075,8 @@ export function HeroSkillsModal({
                         const pickAt = (arr?: number[]) =>
                           arr && arr.length > 0 ? arr[Math.min(idx, arr.length - 1)] : 0;
                         const baseDmg = pickAt(activeSkill.base_damage);
-                        const rawDmg = baseDmg + bonusScalingVal;
+                        const rowBonusVal = calcBonusScaling(lv);
+                        const rawDmg = baseDmg + rowBonusVal;
                         const baseCd = pickAt(activeSkill.cooldown);
                         const finalCd = baseCd > 0 ? Number((baseCd * (1 - heroCdr / 100)).toFixed(1)) : 0;
                         const mana = pickAt(activeSkill.mana_cost);
@@ -1090,7 +1131,7 @@ export function HeroSkillsModal({
                                 </td>
                                 {bonusScalingVal > 0 && (
                                   <td className="py-1.5 text-right tabular-nums text-gold">
-                                    +{bonusScalingVal.toLocaleString()}
+                                    +{rowBonusVal.toLocaleString()}
                                   </td>
                                 )}
                                 <td className="py-1.5 text-right tabular-nums font-bold text-ink">

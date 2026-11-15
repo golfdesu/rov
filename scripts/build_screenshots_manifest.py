@@ -164,6 +164,9 @@ def build_manifest() -> dict[str, Any]:
     with open(ITEMS_JSON, "r", encoding="utf-8") as f:
         items_catalog = json.load(f)["items"]
     items_by_name = {it["name"].lower(): it for it in items_catalog}
+    for it in items_catalog:
+        for alias in it.get("alias") or []:
+            items_by_name.setdefault(alias.lower(), it)
 
     hero_skills_manifest: dict[str, list[dict[str, Any]]] = {}
     hero_status_manifest: dict[str, list[dict[str, Any]]] = {}
@@ -251,6 +254,7 @@ def build_manifest() -> dict[str, Any]:
             folder_name = item_dir.name
             it_obj = items_by_name.get(folder_name.lower())
             if not it_obj:
+                print(f"[WARNING] Unmatched item screenshot folder skipped: {folder_name}")
                 continue
 
             item_entries: list[dict[str, Any]] = []
@@ -284,7 +288,7 @@ def build_manifest() -> dict[str, Any]:
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "version": "1.0",
         "summary": {
-            "total_heroes": len(hero_skills_manifest),
+            "total_heroes": len(set(hero_skills_manifest) | set(hero_status_manifest)),
             "total_hero_skill_screenshots": total_skill_files,
             "total_hero_status_screenshots": total_status_files,
             "total_items": len(items_manifest),

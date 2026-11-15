@@ -11,10 +11,12 @@ import torch.nn.functional as F
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-try:
-    from src.train_sota_model import MAX_HISTORY_LEN, RoVDraftGNNTransformer, get_league_vector
-except ImportError:
-    from train_sota_model import MAX_HISTORY_LEN, RoVDraftGNNTransformer, get_league_vector
+_REPO_ROOT = str(Path(__file__).resolve().parent.parent)
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
+
+from src.search.draft_mcts import DraftMinimaxSearch, ModelInput, sequence_events
+from src.train_sota_model import MAX_HISTORY_LEN, RoVDraftGNNTransformer, get_league_vector
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
@@ -36,7 +38,7 @@ def load_predictor():
     hero_names = ckpt["hero_names"]
     hero_to_id = ckpt["hero_to_id"]
 
-    model_cfg = ckpt.get("model_config", {"d_model": 64, "nhead": 4, "num_layers": 2})
+    model_cfg = ckpt.get("model_config", {"d_model": 256, "nhead": 4, "num_layers": 1})
     model = RoVDraftGNNTransformer(
         num_heroes=len(hero_names),
         hero_features=ckpt["hero_features"],
@@ -63,12 +65,8 @@ def load_predictor():
     return model, ckpt, hero_names, hero_to_id, heroes_df, stats_df
 
 
-def resolve_hero_list(raw_str: str, hero_to_id: dict):
-    if not raw_str:
-        return []
+def _build_cli_lookup(hero_to_id: dict) -> dict[str, str]:
     lookup = {k.lower(): k for k in hero_to_id}
-    for k in list(hero_to_id.keys()):
-        lookup[re.sub(r"[^a-z0-9]", "", k.lower())] = k
     aliases = {
         "riktor": "Riktor",
         "richter": "Riktor",
@@ -76,16 +74,42 @@ def resolve_hero_list(raw_str: str, hero_to_id: dict):
         "arthur": "Mortos",
         "celica": "Celica",
         "brunhilda": "Celica",
+        "kaine": "Kaine",
+        "batman": "Kaine",
+        "stuart": "Stuart",
+        "joker": "Stuart",
+        "the joker": "Stuart",
+        "helen": "Helen",
+        "payna": "Helen",
+        "peura": "Helen",
+        "kilgroth": "Kil'Groth",
+        "kil'groth": "Kil'Groth",
+        "kilgrooth": "Kil'Groth",
+        "kil'grooth": "Kil'Groth",
         "diaochan": "Diao Chan",
+        "diao chan": "Diao Chan",
+        "lubu": "Lu Bu",
+        "telannas": "Tel'Annas",
         "flowborn": "Flowborn (Marksman)",
         "flowborn mm": "Flowborn (Marksman)",
+        "flowborn (marksman)": "Flowborn (Marksman)",
+        "flowborn marksman": "Flowborn (Marksman)",
         "flowborn mage": "Flowborn (Mage)",
+        "flowborn (mage)": "Flowborn (Mage)",
     }
     lookup.update(aliases)
+    for k, v in list(lookup.items()):
+        lookup[re.sub(r"[^a-z0-9]", "", k.lower())] = v
+    return lookup
 
+
+def _resolve_hero_seq(names: list[str] | tuple[str, ...], hero_to_id: dict) -> list[str]:
+    if not names:
+        return []
+    lookup = _build_cli_lookup(hero_to_id)
     resolved = []
-    for item in raw_str.split(","):
-        s = item.strip().lower()
+    for item in names:
+        s = str(item).strip().lower()
         if not s:
             continue
         alnum = re.sub(r"[^a-z0-9]", "", s)
@@ -94,43 +118,40 @@ def resolve_hero_list(raw_str: str, hero_to_id: dict):
         elif alnum in lookup:
             resolved.append(lookup[alnum])
         else:
-            raise ValueError(f"ไม่พบชื่อฮีโร่: '{item.strip()}'")
+            raise ValueError(f"ไม่พบชื่อฮีโร่: '{str(item).strip()}'")
     return resolved
 
 
-def build_sequence_tokens(ally_picks, enemy_picks, ally_bans, enemy_bans, hero_to_id):
-    """Build relative sequence tokens (1=ALLY_PICK, 2=ENEMY_PICK, 3=ALLY_BAN, 4=ENEMY_BAN) for Transformer."""
-    events = []
-    # Phase 1 Bans
-    for h in ally_bans[:2]:
-        events.append((hero_to_id[h], 3))
-    for h in enemy_bans[:2]:
-        events.append((hero_to_id[h], 4))
-    # Phase 1 Picks
-    for h in ally_picks[:3]:
-        events.append((hero_to_id[h], 1))
-    for h in enemy_picks[:3]:
-        events.append((hero_to_id[h], 2))
-    # Phase 2 Bans
-    for h in ally_bans[2:]:
-        events.append((hero_to_id[h], 3))
-    for h in enemy_bans[2:]:
-        events.append((hero_to_id[h], 4))
-    # Phase 2 Picks
-    for h in ally_picks[3:]:
-        events.append((hero_to_id[h], 1))
-    for h in enemy_picks[3:]:
-        events.append((hero_to_id[h], 2))
+def resolve_hero_list(raw_str: str, hero_to_id: dict):
+    if not raw_str:
+        return []
+    return _resolve_hero_seq(raw_str.split(","), hero_to_id)
+
+
+def build_sequence_tokens(ally_picks, enemy_picks, ally_bans, enemy_bans, hero_to_id, side="blue"):
+    """Build relative sequence tokens (1=ALLY_PICK, 2=ENEMY_PICK, 3=ALLY_BAN, 4=ENEMY_BAN) in DRAFT_STEPS order."""
+    is_red = 1.0 if str(side).lower() == "red" else 0.0
+    inp = ModelInput(
+        ally_picks=[hero_to_id[h] for h in ally_picks],
+        enemy_picks=[hero_to_id[h] for h in enemy_picks],
+        ally_bans=[hero_to_id[h] for h in ally_bans],
+        enemy_bans=[hero_to_id[h] for h in enemy_bans],
+        global_bans=[],
+        meta=(0.0, 0.0, 1.0, is_red, 1.0, len(ally_picks) / 5.0, len(enemy_picks) / 5.0),
+        act_type=1,
+        phase=1,
+    )
+    events = sequence_events(inp)
 
     tok_heroes = np.zeros((1, MAX_HISTORY_LEN), dtype=np.int64)
     tok_types = np.zeros((1, MAX_HISTORY_LEN), dtype=np.int64)
     tok_steps = np.zeros((1, MAX_HISTORY_LEN), dtype=np.int64)
     tok_pad_mask = np.ones((1, MAX_HISTORY_LEN), dtype=np.bool_)
 
-    for idx, (hid, ttype) in enumerate(events[:MAX_HISTORY_LEN]):
+    for idx, (hid, ttype, step_idx) in enumerate(events[:MAX_HISTORY_LEN]):
         tok_heroes[0, idx] = hid
         tok_types[0, idx] = ttype
-        tok_steps[0, idx] = idx
+        tok_steps[0, idx] = step_idx
         tok_pad_mask[0, idx] = False
 
     return tok_heroes, tok_types, tok_steps, tok_pad_mask
@@ -154,11 +175,11 @@ def predict_next_action(
     top_k=5,
     league="GLOBAL",
 ):
-    ally_picks = ally_picks or []
-    enemy_picks = enemy_picks or []
-    ally_bans = ally_bans or []
-    enemy_bans = enemy_bans or []
-    global_bans = global_bans or []
+    ally_picks = _resolve_hero_seq(ally_picks or [], hero_to_id)
+    enemy_picks = _resolve_hero_seq(enemy_picks or [], hero_to_id)
+    ally_bans = _resolve_hero_seq(ally_bans or [], hero_to_id)
+    enemy_bans = _resolve_hero_seq(enemy_bans or [], hero_to_id)
+    global_bans = _resolve_hero_seq(global_bans or [], hero_to_id)
 
     n = len(hero_names)
     ap_vec = np.zeros((1, n), dtype=np.float32)
@@ -189,21 +210,19 @@ def predict_next_action(
 
     act_int = 1 if action_mode.lower() == "pick" else 0
     side_int = 1 if side.lower() == "red" else 0
-    total_actions_done = len(ally_picks) + len(enemy_picks) + len(ally_bans) + len(enemy_bans)
     if phase is None:
-        if action_mode.lower() == "pick":
-            phase = 2 if (len(ally_picks) >= 3 and len(enemy_picks) >= 3) else 1
-        else:
-            phase = (
-                2
-                if (len(ally_bans) >= 2 and len(enemy_bans) >= 2 and len(ally_picks) >= 3 and len(enemy_picks) >= 3)
-                else 1
-            )
+        phase = 2 if (len(ally_picks) >= 3 and len(enemy_picks) >= 3) else 1
+
+    b_p, r_p = (enemy_picks, ally_picks) if side_int == 1 else (ally_picks, enemy_picks)
+    b_b, r_b = (enemy_bans, ally_bans) if side_int == 1 else (ally_bans, enemy_bans)
+    step_idx = min(
+        DraftMinimaxSearch.find_matching_step(side_int, act_int, phase, len(b_p), len(r_p), len(b_b), len(r_b)), 17
+    )
 
     mctx = np.array(
         [
             [
-                min(17, total_actions_done) / 17.0,
+                step_idx / 17.0,
                 float(phase == 2),
                 float(act_int == 1),
                 float(side_int == 1),
@@ -216,7 +235,7 @@ def predict_next_action(
         dtype=np.float32,
     )
 
-    th, tt, ts, tpad = build_sequence_tokens(ally_picks, enemy_picks, ally_bans, enemy_bans, hero_to_id)
+    th, tt, ts, tpad = build_sequence_tokens(ally_picks, enemy_picks, ally_bans, enemy_bans, hero_to_id, side=side)
 
     with torch.no_grad():
         policy_logits, q_win_logits = model(
@@ -233,17 +252,110 @@ def predict_next_action(
             torch.tensor([act_int], dtype=torch.long),
             torch.tensor([phase], dtype=torch.long),
         )
+        policy_logits[0, mask[0]] = -1e9
         probs = F.softmax(policy_logits[0], dim=-1).numpy()
+        probs[mask[0]] = 0.0
         win_probs = torch.sigmoid(q_win_logits[0]).numpy()
+
+        # When both teams already completed 5 picks, evaluate the exact Step 17 matchup
+        if len(b_p) == 5 and len(r_p) == 5:
+            r4_picks = r_p[:4]
+            ap17 = np.zeros((1, n), dtype=np.float32)
+            ep17 = np.zeros((1, n), dtype=np.float32)
+            ab17 = np.zeros((1, n), dtype=np.float32)
+            eb17 = np.zeros((1, n), dtype=np.float32)
+            mask17 = np.zeros((1, n), dtype=np.bool_)
+            for h in r4_picks:
+                ap17[0, hero_to_id[h]] = 1.0
+                mask17[0, hero_to_id[h]] = True
+            for h in b_p:
+                ep17[0, hero_to_id[h]] = 1.0
+                mask17[0, hero_to_id[h]] = True
+            for h in r_b:
+                ab17[0, hero_to_id[h]] = 1.0
+                mask17[0, hero_to_id[h]] = True
+            for h in b_b:
+                eb17[0, hero_to_id[h]] = 1.0
+                mask17[0, hero_to_id[h]] = True
+            for h in global_bans:
+                mask17[0, hero_to_id[h]] = True
+            mctx17 = np.array(
+                [[1.0, 1.0, 1.0, 1.0, 1.0, 4.0 / 5.0, 1.0, *get_league_vector(league)]],
+                dtype=np.float32,
+            )
+            th17, tt17, ts17, tpad17 = build_sequence_tokens(r4_picks, b_p, r_b, b_b, hero_to_id, side="red")
+            _, q_win17 = model(
+                torch.from_numpy(ap17),
+                torch.from_numpy(ep17),
+                torch.from_numpy(ab17),
+                torch.from_numpy(eb17),
+                torch.from_numpy(mask17),
+                torch.from_numpy(th17),
+                torch.from_numpy(tt17),
+                torch.from_numpy(ts17),
+                torch.from_numpy(tpad17),
+                torch.from_numpy(mctx17),
+                torch.tensor([1], dtype=torch.long),
+                torch.tensor([2], dtype=torch.long),
+            )
+            red_final_win = float(torch.sigmoid(q_win17[0, hero_to_id[r_p[4]]]).item())
+            acting_final_win = (1.0 - red_final_win) if side_int == 0 else red_final_win
+            win_probs = np.full(n, acting_final_win, dtype=np.float32)
 
     lane_probs = ckpt["lane_probs"]
     synergy_mat = ckpt["graphs"]["synergy_mat"]
     counter_mat = ckpt["graphs"]["counter_mat"]
 
-    ally_lane_cov = ap_vec[0] @ lane_probs
-    missing_lanes = [LANE_NAMES[i] for i in range(5) if ally_lane_cov[i] < 0.45]
+    lane_keys = [lane.split(" ")[0] for lane in LANE_NAMES]
+    if "main_pro_lane" in stats_df.columns:
+        hero_main_lane_keys = [str(stats_df.loc[h, "main_pro_lane"]).split(" ")[0] for h in hero_names]
+        hero_main_lane = np.array(
+            [
+                lane_keys.index(k) if k in lane_keys else int(np.argmax(lane_probs[i]))
+                for i, k in enumerate(hero_main_lane_keys)
+            ]
+        )
+    else:
+        hero_main_lane = np.argmax(lane_probs, axis=1)
 
-    top_indices = np.argsort(probs)[::-1][:top_k]
+    def _needed_lanes_idx(picks_list, pick_vec):
+        if not picks_list:
+            return set(range(5))
+        taken = {int(hero_main_lane[hero_to_id[h]]) for h in picks_list}
+        cov = pick_vec @ lane_probs
+        needed = {i for i in range(5) if cov[i] < 0.65} - taken
+        unfilled = set(range(5)) - taken
+        rem = max(0, 5 - len(picks_list))
+        if len(needed) < min(rem, len(unfilled)):
+            needed = unfilled
+        return needed
+
+    ally_needed_idx = _needed_lanes_idx(ally_picks, ap_vec[0])
+    enemy_needed_idx = _needed_lanes_idx(enemy_picks, ep_vec[0])
+    missing_lanes = [LANE_NAMES[i] for i in range(5) if i in ally_needed_idx]
+
+    if act_int == 1 and (len(ally_picks) < 5 or len(enemy_picks) < 5):
+        win_adv = np.clip(win_probs - 0.5, -0.20, 0.20)
+        probs = probs * np.exp(0.60 * win_adv)
+        total_p = float(probs.sum())
+        if total_p > 0:
+            probs = probs / total_p
+
+    needed_lanes = ally_needed_idx if act_int == 1 else enemy_needed_idx
+
+    if needed_lanes and len(needed_lanes) < 5:
+        for hid_i in range(n):
+            if int(hero_main_lane[hid_i]) not in needed_lanes:
+                probs[hid_i] *= 0.05
+        total_p = float(probs.sum())
+        if total_p > 0:
+            probs = probs / total_p
+
+    top_indices = sorted(
+        (int(i) for i in np.flatnonzero((probs > 0) & (~mask[0]))),
+        key=lambda hid_i: (not needed_lanes or int(hero_main_lane[hid_i]) in needed_lanes, float(probs[hid_i])),
+        reverse=True,
+    )[:top_k]
     recommendations = []
 
     for rank, hid in enumerate(top_indices, start=1):
@@ -254,10 +366,10 @@ def predict_next_action(
 
         syn_val = 0.0
         if ally_picks:
-            syn_val = float(np.mean([synergy_mat[hid, hero_to_id[a]] * 100.0 for a in ally_picks]))
+            syn_val = float(sum(synergy_mat[hid, hero_to_id[a]] * 100.0 for a in ally_picks))
         cnt_val = 0.0
         if enemy_picks:
-            cnt_val = float(np.mean([counter_mat[hid, hero_to_id[e]] * 100.0 for e in enemy_picks]))
+            cnt_val = float(sum(counter_mat[hid, hero_to_id[e]] * 100.0 for e in enemy_picks))
 
         tags = []
         if h_info["has_hard_cc"]:

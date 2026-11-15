@@ -1,11 +1,11 @@
-import { Cpu, Globe, Redo2, RotateCcw, Undo2 } from "lucide-react";
+import { Cpu, Globe, Redo2, RotateCcw, Sparkles, Undo2 } from "lucide-react";
 import { type DraftStep, ENGINE_OPTIONS, type LeagueCode } from "../types/draft";
 
 const LEAGUE_OPTIONS: { code: LeagueCode; label: string; title: string }[] = [
   {
     code: "GLOBAL",
     label: "GLOBAL",
-    title: "Global Meta Blend (RPL 37.9% + GCS 37.0% + AOG 19.6% + INTL 5.5%)",
+    title: "Global Meta Blend (RPL 32.0% + GCS 30.0% + AOG 20.0% + INTL 18.0%)",
   },
   {
     code: "RPL",
@@ -37,6 +37,8 @@ interface ScoreBarProps {
   totalSteps: number;
   league?: LeagueCode;
   setLeague?: (v: LeagueCode) => void;
+  useLookahead?: boolean;
+  onToggleLookahead?: () => void;
   onUndo: () => void;
   onRedo?: () => void;
   onReset: () => void;
@@ -57,6 +59,8 @@ export function ScoreBar({
   totalSteps,
   league,
   setLeague,
+  useLookahead = false,
+  onToggleLookahead,
   onUndo,
   onRedo,
   onReset,
@@ -64,9 +68,6 @@ export function ScoreBar({
   canRedo = false,
   engine,
   setEngine,
-  modelBadge,
-  modelVariant = "sota",
-  modelTooltip,
 }: ScoreBarProps) {
   const safeBlue = Number.isFinite(blueWinRate) ? blueWinRate : 50.0;
   const blue = Math.min(Math.max(safeBlue, 0), 100);
@@ -131,31 +132,6 @@ export function ScoreBar({
               <span className="font-mono text-[9.5px] font-semibold text-dim sm:text-xs">
                 STEP {Math.min(currentStepIndex + 1, totalSteps)}/{totalSteps}
               </span>
-              {engine ? (
-                <span
-                  title={ENGINE_OPTIONS.find((o) => o.id === engine)?.description}
-                  className={`px-1.5 py-0.5 font-mono text-[9px] font-bold tracking-wider uppercase ${
-                    engine === "sota"
-                      ? "border border-gold/60 bg-gold/15 text-gold"
-                      : engine === "heuristic"
-                        ? "border border-amber-500/60 bg-amber-500/15 text-amber-400"
-                        : "border border-cyan-500/60 bg-cyan-500/15 text-cyan-400"
-                  }`}
-                >
-                  {ENGINE_OPTIONS.find((o) => o.id === engine)?.badge}
-                </span>
-              ) : modelBadge ? (
-                <span
-                  title={modelTooltip}
-                  className={`px-1.5 py-0.5 font-mono text-[9px] font-bold tracking-wider uppercase ${
-                    modelVariant === "heuristic"
-                      ? "border border-amber-500/60 bg-amber-500/15 text-amber-400"
-                      : "border border-gold/60 bg-gold/15 text-gold"
-                  }`}
-                >
-                  {modelBadge}
-                </span>
-              ) : null}
             </div>
             {currentStep ? (
               <span
@@ -232,13 +208,33 @@ export function ScoreBar({
               </select>
             </label>
           )}
+          {onToggleLookahead && engine !== "matrix" && (
+            <button
+              type="button"
+              onClick={onToggleLookahead}
+              aria-pressed={useLookahead}
+              title={
+                useLookahead
+                  ? "Lookahead Minimax Search เปิดอยู่ (ค้นหาล่วงหน้าหลายเทิร์น — ช้าลงเล็กน้อยแต่แม่นยำขึ้น)"
+                  : "เปิดโหมด Lookahead Minimax Search เพื่อคำนวณตอบโต้ล่วงหน้า 3-4 เทิร์น"
+              }
+              className={`inline-flex h-7.5 items-center gap-1 border px-1.5 font-mono text-[10px] font-bold transition-colors sm:h-8.5 sm:px-2 sm:text-[11px] ${
+                useLookahead
+                  ? "border-gold bg-gold/15 text-gold shadow-sm"
+                  : "border-line-strong bg-panel text-muted hover:border-gold/50 hover:text-ink"
+              }`}
+            >
+              <Sparkles className="h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5" />
+              <span className="hidden xl:inline">DEEP</span>
+            </button>
+          )}
           <button
             type="button"
             onClick={onUndo}
             disabled={!canUndo}
             title="Undo ย้อนกลับ (Ctrl+Z)"
             aria-label="Undo"
-            className="flex h-7.5 w-7.5 items-center justify-center border border-ink/30 bg-panel-2 font-display text-xs font-bold text-ink transition-colors hover:border-ink hover:bg-line-strong disabled:pointer-events-none disabled:opacity-25 sm:h-8.5 sm:w-8.5"
+            className="flex h-7.5 w-7.5 items-center justify-center border border-ink/30 bg-panel-2 font-display text-xs font-bold text-ink transition-colors hover:border-ink hover:bg-line-strong disabled:pointer-events-none disabled:opacity-35 sm:h-8.5 sm:w-8.5"
           >
             <Undo2 className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
           </button>
@@ -248,7 +244,7 @@ export function ScoreBar({
             disabled={!canRedo}
             title="Forward เดินหน้า (Ctrl+Y / Ctrl+Shift+Z)"
             aria-label="Forward"
-            className="flex h-7.5 w-7.5 items-center justify-center border border-ink/30 bg-panel-2 font-display text-xs font-bold text-ink transition-colors hover:border-ink hover:bg-line-strong disabled:pointer-events-none disabled:opacity-25 sm:h-8.5 sm:w-8.5"
+            className="flex h-7.5 w-7.5 items-center justify-center border border-ink/30 bg-panel-2 font-display text-xs font-bold text-ink transition-colors hover:border-ink hover:bg-line-strong disabled:pointer-events-none disabled:opacity-35 sm:h-8.5 sm:w-8.5"
           >
             <Redo2 className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
           </button>
@@ -260,7 +256,7 @@ export function ScoreBar({
             disabled={!canUndo && !canRedo}
             title="Reset draft"
             aria-label="Reset draft"
-            className="flex h-7.5 w-7.5 items-center justify-center gap-1.5 border border-red/50 bg-red/10 font-display text-xs font-bold tracking-wide text-red transition-colors hover:bg-red hover:text-ink disabled:pointer-events-none disabled:opacity-25 sm:h-8.5 sm:w-auto sm:px-3"
+            className="flex h-7.5 w-7.5 items-center justify-center gap-1.5 border border-red/50 bg-red/10 font-display text-xs font-bold tracking-wide text-red transition-colors hover:bg-red hover:text-ink disabled:pointer-events-none disabled:opacity-35 sm:h-8.5 sm:w-auto sm:px-3"
           >
             <RotateCcw className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
             <span className="hidden xl:inline">RESET</span>
