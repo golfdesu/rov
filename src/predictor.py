@@ -1,4 +1,5 @@
 import json
+import math
 import re
 from pathlib import Path
 from typing import Literal, NamedTuple
@@ -23,7 +24,10 @@ LANE_LABELS = [
     "Dragon_Lane (แครี่)",
     "Roam (โรมมิ่ง)",
 ]
-ALL_LANE_KEYS = frozenset(label.split(" ")[0] for label in LANE_LABELS)
+LANE_KEYS = [label.split(" ")[0] for label in LANE_LABELS]
+_LANE_INDEX = {key: idx for idx, key in enumerate(LANE_KEYS)}
+ALL_LANE_KEYS = frozenset(LANE_KEYS)
+FLEX_MIN_LANE_PROB = 0.04
 
 
 class TeamDraft(NamedTuple):
@@ -480,26 +484,98 @@ class RoVDraftPredictor:
             league=league,
         )
 
+    def _resolve_pick_lanes(self, raw_lanes: dict[str, str], valid_picks: set[str]) -> dict[str, str]:
+        """Resolve hero keys in a manual pick-lane map, enforcing <=1 hero per lane on the team."""
+        resolved: dict[str, str] = {}
+        used_lanes: set[str] = set()
+        for raw_hero, lane in (raw_lanes or {}).items():
+            if lane not in ALL_LANE_KEYS or lane in used_lanes:
+                continue
+            matches = self.resolve_heroes([raw_hero])
+            if matches and matches[0] in valid_picks and matches[0] not in resolved:
+                resolved[matches[0]] = lane
+                used_lanes.add(lane)
+        return resolved
+
+    def _solve_flex_lane_assignment(self, picks: list[str], explicit_lanes: dict[str, str] | None = None) -> set[str]:
+        """Assign picked heroes to distinct lanes maximizing coverage then log-probability."""
+        explicit = explicit_lanes or {}
+        covered: set[str] = {explicit[h] for h in picks if h in explicit and explicit[h] in ALL_LANE_KEYS}
+        auto_picks = [h for h in picks if h not in explicit]
+        if not auto_picks or len(covered) >= len(LANE_KEYS):
+            return covered
+
+        lane_probs = self.ckpt["lane_probs"]
+        options_per_hero: list[list[tuple[str, float]]] = []
+        for h in auto_picks:
+            hid = self.hero_to_id[h]
+            primary = self._lane_key[hid]
+            cands: list[tuple[str, float]] = []
+            for lane_idx, lane_key in enumerate(LANE_KEYS):
+                if lane_key in covered:
+                    continue
+                prob = float(lane_probs[hid, lane_idx])
+                if lane_key == primary or prob >= FLEX_MIN_LANE_PROB:
+                    score = math.log(max(prob, 1e-4)) + (1e-3 if lane_key == primary else 0.0)
+                    cands.append((lane_key, score))
+            cands.sort(key=lambda item: item[1], reverse=True)
+            options_per_hero.append(cands)
+
+        best_key: tuple[int, float] = (-1, float("-inf"))
+        best_lanes: set[str] = set()
+        used: set[str] = set()
+
+        def dfs(idx: int, cur_count: int, cur_score: float) -> None:
+            nonlocal best_key, best_lanes
+            if idx == len(options_per_hero):
+                key = (cur_count, cur_score)
+                if key > best_key:
+                    best_key = key
+                    best_lanes = set(used)
+                return
+            if cur_count + (len(options_per_hero) - idx) < best_key[0]:
+                return
+            took_any = False
+            for lane_key, score in options_per_hero[idx]:
+                if lane_key in used:
+                    continue
+                took_any = True
+                used.add(lane_key)
+                dfs(idx + 1, cur_count + 1, cur_score + score)
+                used.remove(lane_key)
+            if not took_any or len(options_per_hero) > len(LANE_KEYS) - len(covered):
+                dfs(idx + 1, cur_count, cur_score)
+
+        dfs(0, 0, 0.0)
+        return covered | best_lanes
+
     def _needed_lanes_for_picks(
         self,
         picks: list[str],
         pick_vec_row: np.ndarray | None = None,
+        explicit_lanes: dict[str, str] | None = None,
     ) -> set[str]:
-        """Return the set of lane keys still needed by a team given its current picks."""
+        """Return the set of lane keys still needed by a team given flex + manual lane coverage."""
         if not picks:
             return set(ALL_LANE_KEYS)
-        taken_primary_lanes = {self._lane_key[self.hero_to_id[h]] for h in picks}
-        if pick_vec_row is None:
-            pick_vec_row = np.zeros(len(self.hero_names), dtype=np.float32)
+        explicit = explicit_lanes or {}
+        covered_lanes = self._solve_flex_lane_assignment(picks, explicit)
+        if explicit or pick_vec_row is None:
+            lane_cov = np.zeros(len(LANE_KEYS), dtype=np.float32)
+            lane_probs = self.ckpt["lane_probs"]
             for h in picks:
-                pick_vec_row[self.hero_to_id[h]] = 1.0
-        lane_cov = pick_vec_row @ self.ckpt["lane_probs"]
-        open_lanes = {LANE_LABELS[i].split(" ")[0] for i in range(5) if lane_cov[i] < 0.65}
-        needed = open_lanes - taken_primary_lanes
+                if h in explicit and explicit[h] in _LANE_INDEX:
+                    lane_cov[_LANE_INDEX[explicit[h]]] += 1.0
+                else:
+                    lane_cov += lane_probs[self.hero_to_id[h]]
+        else:
+            lane_cov = pick_vec_row @ self.ckpt["lane_probs"]
+        open_lanes = {LANE_KEYS[i] for i in range(5) if lane_cov[i] < 0.65}
+        needed = open_lanes - covered_lanes
         remaining_slots = max(0, len(ALL_LANE_KEYS) - len(picks))
-        unfilled_primary = set(ALL_LANE_KEYS - taken_primary_lanes)
-        if len(needed) < min(remaining_slots, len(unfilled_primary)):
-            needed = unfilled_primary
+        unfilled = set(ALL_LANE_KEYS - covered_lanes)
+        if len(needed) < min(remaining_slots, len(unfilled)):
+            needed = unfilled
         return needed
 
     def _apply_lane_filter(
@@ -583,6 +659,7 @@ class RoVDraftPredictor:
         ap_row: np.ndarray,
         ep_row: np.ndarray,
         unavail_row: np.ndarray,
+        explicit_lanes: dict[str, str] | None = None,
     ) -> HeroRecommendation:
         """Picks the likeliest hero that fills a still-open lane, anchored on the SOTA GNN-Transformer policy."""
         ban_scores, ban_triggers = self._compute_ban_unlocked_scores(team.bans, unavail_row)
@@ -601,7 +678,7 @@ class RoVDraftPredictor:
         else:
             blended_probs = probs
 
-        needed_lanes = self._needed_lanes_for_picks(sim_picks, ap_row)
+        needed_lanes = self._needed_lanes_for_picks(sim_picks, ap_row, explicit_lanes=explicit_lanes)
         blended_probs = self._apply_lane_filter(blended_probs, needed_lanes)
 
         sorted_indices = np.argsort(blended_probs)[::-1]
@@ -640,6 +717,7 @@ class RoVDraftPredictor:
         ap_row: np.ndarray,
         ep_row: np.ndarray,
         unavail_row: np.ndarray,
+        opp_explicit_lanes: dict[str, str] | None = None,
     ) -> list[HeroRecommendation]:
         """Top `slots` ban targets, blending the policy with pick -> phase-2 ban statistics."""
         p2b_scores, p2b_triggers = self._compute_pick_to_ban_scores(team.picks, unavail_row)
@@ -650,7 +728,7 @@ class RoVDraftPredictor:
         else:
             blended_probs = probs
 
-        opp_needed_lanes = self._needed_lanes_for_picks(team.opp_picks, ep_row)
+        opp_needed_lanes = self._needed_lanes_for_picks(team.opp_picks, ep_row, explicit_lanes=opp_explicit_lanes)
         blended_probs = self._apply_lane_filter(blended_probs, opp_needed_lanes)
 
         forecast: list[HeroRecommendation] = []
@@ -684,6 +762,7 @@ class RoVDraftPredictor:
         max_slots: int = 2,
         league: str = "GLOBAL",
         series_winning_heroes: list[str] | None = None,
+        pick_lanes_by_side: dict[str, dict[str, str]] | None = None,
     ) -> tuple[tuple[np.ndarray, ...], np.ndarray, np.ndarray, dict[str, list[HeroRecommendation]]]:
         """Runs the main position and every team's pick/ban forecasts in as few batched passes as possible.
 
@@ -742,13 +821,31 @@ class RoVDraftPredictor:
                     row_sum = float(row_probs.sum())
                     if row_sum > 0:
                         row_probs = row_probs / row_sum
+                opp_side = "red" if t.side == "blue" else "blue"
+                side_pick_lanes = (pick_lanes_by_side or {}).get(t.side)
+                opp_pick_lanes = (pick_lanes_by_side or {}).get(opp_side)
                 if kind == "ban":
                     forecasts[f"{t.side}_next_bans"] = self._forecast_bans(
-                        t, self._next_ban_slots(t, max_slots), row_probs, win[row], ap[row], ep[row], unavail[row]
+                        t,
+                        self._next_ban_slots(t, max_slots),
+                        row_probs,
+                        win[row],
+                        ap[row],
+                        ep[row],
+                        unavail[row],
+                        opp_explicit_lanes=opp_pick_lanes,
                     )
                 else:
                     rec = self._choose_next_pick(
-                        t, sim_picks[t.side], rank, row_probs, win[row], ap[row], ep[row], unavail[row]
+                        t,
+                        sim_picks[t.side],
+                        rank,
+                        row_probs,
+                        win[row],
+                        ap[row],
+                        ep[row],
+                        unavail[row],
+                        explicit_lanes=side_pick_lanes,
                     )
                     forecasts[f"{t.side}_next_picks"].append(rec)
                     sim_picks[t.side].append(rec.hero_name)
@@ -814,6 +911,8 @@ class RoVDraftPredictor:
 
         blue_effective_gb = list(dict.fromkeys([*global_bans, *blue_gb]))
         red_effective_gb = list(dict.fromkeys([*global_bans, *red_gb]))
+        ally_pick_lanes = self._resolve_pick_lanes(req.ally_pick_lanes, set(ally_picks))
+        enemy_pick_lanes = self._resolve_pick_lanes(req.enemy_pick_lanes, set(enemy_picks))
 
         act_type = 1 if req.mode == "pick" else 0
         side_val = 0 if req.side == "blue" else 1
@@ -826,9 +925,11 @@ class RoVDraftPredictor:
         if req.side == "blue":
             blue_picks, red_picks = ally_picks, enemy_picks
             blue_bans, red_bans = ally_bans, enemy_bans
+            pick_lanes_by_side = {"blue": ally_pick_lanes, "red": enemy_pick_lanes}
         else:
             blue_picks, red_picks = enemy_picks, ally_picks
             blue_bans, red_bans = enemy_bans, ally_bans
+            pick_lanes_by_side = {"blue": enemy_pick_lanes, "red": ally_pick_lanes}
         teams = [
             TeamDraft("blue", blue_picks, red_picks, blue_bans, red_bans),
             TeamDraft("red", red_picks, blue_picks, red_bans, blue_bans),
@@ -855,6 +956,7 @@ class RoVDraftPredictor:
             {"blue": blue_effective_gb, "red": red_effective_gb},
             league=req.league,
             series_winning_heroes=req.series_winning_heroes,
+            pick_lanes_by_side=pick_lanes_by_side,
         )
         ap_row, ep_row, unavail_row = arrays[0][0], arrays[1][0], arrays[4][0]
 
@@ -879,8 +981,8 @@ class RoVDraftPredictor:
             acting_final_win = (1.0 - red_final_win) if req.side == "blue" else red_final_win
             win_probs = np.full(len(self.hero_names), acting_final_win, dtype=np.float32)
 
-        ally_needed_lanes = self._needed_lanes_for_picks(ally_picks, ap_row)
-        enemy_needed_lanes = self._needed_lanes_for_picks(enemy_picks, ep_row)
+        ally_needed_lanes = self._needed_lanes_for_picks(ally_picks, ap_row, explicit_lanes=ally_pick_lanes)
+        enemy_needed_lanes = self._needed_lanes_for_picks(enemy_picks, ep_row, explicit_lanes=enemy_pick_lanes)
         target_needed_lanes = ally_needed_lanes if req.mode == "pick" else enemy_needed_lanes
 
         # Outcome-weighted policy modulation:
@@ -945,6 +1047,8 @@ class RoVDraftPredictor:
                 blue_global_bans=tuple(ids[h] for h in blue_gb),
                 red_global_bans=tuple(ids[h] for h in red_gb),
                 series_winning_heroes=tuple(ids[h] for h in set(self.resolve_heroes(req.series_winning_heroes))),
+                blue_pick_lanes=tuple(sorted(pick_lanes_by_side["blue"].items())),
+                red_pick_lanes=tuple(sorted(pick_lanes_by_side["red"].items())),
                 step_idx=step_idx,
                 league=req.league,
             )
@@ -1050,8 +1154,10 @@ class RoVDraftPredictor:
             if h in ids:
                 unavail[ids[h]] = True
 
-        ally_needed_lanes = self._needed_lanes_for_picks(ally_picks, ap_row)
-        enemy_needed_lanes = self._needed_lanes_for_picks(enemy_picks, ep_row)
+        ally_pick_lanes = self._resolve_pick_lanes(req.ally_pick_lanes, set(ally_picks))
+        enemy_pick_lanes = self._resolve_pick_lanes(req.enemy_pick_lanes, set(enemy_picks))
+        ally_needed_lanes = self._needed_lanes_for_picks(ally_picks, ap_row, explicit_lanes=ally_pick_lanes)
+        enemy_needed_lanes = self._needed_lanes_for_picks(enemy_picks, ep_row, explicit_lanes=enemy_pick_lanes)
         target_needed_lanes = ally_needed_lanes if req.mode == "pick" else enemy_needed_lanes
         missing_lanes = [label for label in LANE_LABELS if label.split(" ")[0] in ally_needed_lanes]
 
@@ -1213,7 +1319,15 @@ class RoVDraftPredictor:
         series_win_resolved = (
             list(set(self.resolve_heroes(req.series_winning_heroes))) if req.series_winning_heroes else []
         )
+        matrix_pick_lanes_by_side = (
+            {"blue": ally_pick_lanes, "red": enemy_pick_lanes}
+            if req.side == "blue"
+            else {"blue": enemy_pick_lanes, "red": ally_pick_lanes}
+        )
         for t in teams:
+            opp_side = "red" if t.side == "blue" else "blue"
+            t_pick_lanes = matrix_pick_lanes_by_side[t.side]
+            opp_pick_lanes = matrix_pick_lanes_by_side[opp_side]
             t_ep = np.zeros(num_heroes, dtype=np.float32)
             for h in t.opp_picks:
                 if h in ids:
@@ -1251,7 +1365,14 @@ class RoVDraftPredictor:
                         np.float32
                     )
                     forecasts[f"{t.side}_next_bans"] = self._forecast_bans(
-                        t, ban_slots, b_probs, t_ban_win, t_ap_ban, t_ep, b_unavail
+                        t,
+                        ban_slots,
+                        b_probs,
+                        t_ban_win,
+                        t_ap_ban,
+                        t_ep,
+                        b_unavail,
+                        opp_explicit_lanes=opp_pick_lanes,
                     )
 
             # 2. Next picks forecast (sequentially updated so rank 1 and rank 2 fill distinct lanes)
@@ -1289,7 +1410,17 @@ class RoVDraftPredictor:
                 t_pick_win = np.clip(
                     t_matchup_win + (base_win + t_syn_vec + t_cnt_vec - t_risk_vec) * 0.5, 0.30, 0.70
                 ).astype(np.float32)
-                rec = self._choose_next_pick(t, sim_picks, rank, t_probs, t_pick_win, t_ap, t_ep, t_unavail)
+                rec = self._choose_next_pick(
+                    t,
+                    sim_picks,
+                    rank,
+                    t_probs,
+                    t_pick_win,
+                    t_ap,
+                    t_ep,
+                    t_unavail,
+                    explicit_lanes=t_pick_lanes,
+                )
                 forecasts[f"{t.side}_next_picks"].append(rec)
                 sim_picks.append(rec.hero_name)
 

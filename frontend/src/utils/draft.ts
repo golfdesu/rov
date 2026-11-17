@@ -3,6 +3,7 @@ import {
   type DraftHistoryItem,
   type GlobalBanState,
   type HeroRecommendation,
+  type LaneKey,
   type LeagueCode,
   type RecordedDraftGame,
   type RoleType,
@@ -53,6 +54,17 @@ export const LANE_SHORT: Record<string, { en: string; th: string }> = {
   Dragon_Lane: { en: "ADL", th: "แครี่" },
   Roam: { en: "SUP", th: "โรมมิ่ง" },
 };
+
+export const LANE_CYCLE: readonly LaneKey[] = ["DS_Lane", "Jungle", "Mid", "Dragon_Lane", "Roam"];
+
+function pickLaneOverridesFor(heroes: readonly string[], pickLanes: Record<string, LaneKey>): Record<string, LaneKey> {
+  const out: Record<string, LaneKey> = {};
+  for (const h of heroes) {
+    const lane = pickLanes[h];
+    if (lane) out[h] = lane;
+  }
+  return out;
+}
 
 export const ROLES: RoleType[] = ["Fighter", "Assassin", "Mage", "Carry", "Tank", "Support"];
 
@@ -560,6 +572,7 @@ export function buildPredictPayload(
   candidatePool: number,
   league: LeagueCode = "GLOBAL",
   seriesWinningHeroes: readonly string[] = [],
+  pickLanes: Record<string, LaneKey> = {},
 ) {
   const gbState: GlobalBanState = Array.isArray(globalBans)
     ? { ...EMPTY_GLOBAL_BANS, universalBans: [...globalBans] }
@@ -585,15 +598,19 @@ export function buildPredictPayload(
       use_lookahead: false,
       league,
       series_winning_heroes: [...seriesWinningHeroes],
+      ally_pick_lanes: pickLaneOverridesFor(state.bluePicks, pickLanes),
+      enemy_pick_lanes: pickLaneOverridesFor(state.redPicks, pickLanes),
     };
   }
   const isBlue = step.side === "blue";
+  const allyPicks = isBlue ? state.bluePicks : state.redPicks;
+  const enemyPicks = isBlue ? state.redPicks : state.bluePicks;
   return {
     mode: step.action,
     side: step.side,
     phase: step.phase,
-    ally_picks: isBlue ? state.bluePicks : state.redPicks,
-    enemy_picks: isBlue ? state.redPicks : state.bluePicks,
+    ally_picks: allyPicks,
+    enemy_picks: enemyPicks,
     ally_bans: isBlue ? state.blueBans : state.redBans,
     enemy_bans: isBlue ? state.redBans : state.blueBans,
     global_bans: gbState.universalBans,
@@ -604,5 +621,7 @@ export function buildPredictPayload(
     lookahead_depth: 2,
     league,
     series_winning_heroes: [...seriesWinningHeroes],
+    ally_pick_lanes: pickLaneOverridesFor(allyPicks, pickLanes),
+    enemy_pick_lanes: pickLaneOverridesFor(enemyPicks, pickLanes),
   };
 }

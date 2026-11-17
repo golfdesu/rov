@@ -4,6 +4,7 @@ import type { DraftStep, Hero, HeroRecommendation } from "../types/draft";
 import { LANE_SHORT, laneKey, missingLaneKeys } from "../utils/draft";
 import { displayName } from "../utils/heroNames";
 import { HeroPortrait } from "./HeroPortrait";
+import { LaneIcon } from "./LaneIcon";
 
 const LANE_FILTER_TABS = [
   { key: "ALL", short: "ALL", label: "ALL" },
@@ -230,7 +231,7 @@ export function AiPanel({
                       ? "แสดงคำแนะนำทุกตำแหน่ง"
                       : `กรองเฉพาะตำแหน่ง ${tab.label}${isMissing ? " (เลนที่ทีมยังขาด)" : ""}`
                   }
-                  className={`border h-8 sm:h-7 px-3 sm:px-2 font-mono text-xs sm:text-[10px] font-bold transition-colors touch-manipulation inline-flex items-center justify-center shrink-0 ${
+                  className={`border h-8 sm:h-7 px-3 sm:px-2 font-mono text-xs sm:text-[10px] font-bold transition-colors touch-manipulation inline-flex items-center justify-center gap-1 shrink-0 ${
                     active
                       ? "border-gold bg-gold text-bg shadow-sm"
                       : isMissing
@@ -238,7 +239,8 @@ export function AiPanel({
                         : "border-line bg-bg text-muted hover:border-line-strong hover:text-ink"
                   }`}
                 >
-                  {isMissing && !active ? `+${tab.label}` : tab.label}
+                  {tab.key !== "ALL" && <LaneIcon lane={tab.key} className="h-3 w-3" />}
+                  <span>{isMissing && !active ? `+${tab.label}` : tab.label}</span>
                 </button>
               );
             })}

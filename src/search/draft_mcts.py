@@ -189,6 +189,8 @@ class DraftSearchState:
     blue_global_bans: tuple[int, ...] = ()
     red_global_bans: tuple[int, ...] = ()
     series_winning_heroes: tuple[int, ...] = ()
+    blue_pick_lanes: tuple[tuple[str, str], ...] = ()
+    red_pick_lanes: tuple[tuple[str, str], ...] = ()
     step_idx: int = 0
     league: str = "GLOBAL"
 
@@ -260,6 +262,8 @@ class DraftSearchState:
             blue_global_bans=self.blue_global_bans,
             red_global_bans=self.red_global_bans,
             series_winning_heroes=self.series_winning_heroes,
+            blue_pick_lanes=self.blue_pick_lanes,
+            red_pick_lanes=self.red_pick_lanes,
             step_idx=self.step_idx + 1,
             league=self.league,
         )
@@ -362,11 +366,14 @@ class DraftMinimaxSearch:
 
         if state.action_type == 1:
             target_pick_ids = state.blue_picks if state.acting_side == 0 else state.red_picks
+            target_pick_lanes = dict(state.blue_pick_lanes if state.acting_side == 0 else state.red_pick_lanes)
             target_pick_names = [self.predictor.hero_names[i] for i in target_pick_ids]
             target_row = np.zeros(self.num_heroes, dtype=np.float32)
             if target_pick_ids:
                 target_row[list(target_pick_ids)] = 1.0
-            needed_next = self.predictor._needed_lanes_for_picks(target_pick_names, target_row)
+            needed_next = self.predictor._needed_lanes_for_picks(
+                target_pick_names, target_row, explicit_lanes=target_pick_lanes
+            )
             p_next = self.predictor._apply_lane_filter(p_next, needed_next)
 
         top_ids = np.argsort(p_next)[::-1][:branch_factor]

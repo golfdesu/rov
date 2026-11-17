@@ -6,6 +6,7 @@ import {
   type DraftSessionPayload,
   type GlobalBanState,
   type Hero,
+  type LaneKey,
   type LeagueCode,
   type RecordedDraftGame,
   type TeamId,
@@ -24,6 +25,7 @@ import {
   getMaxUnlockedGame,
   getSeriesWinningHeroes,
   INITIAL_DRAFT_STATE,
+  LANE_CYCLE,
   type PredictionState,
   prioritizeMissingLanes,
   reconstructDraftHistory,
@@ -82,6 +84,18 @@ function normalizeHeroList(arr: unknown): string[] {
   return out;
 }
 
+function normalizePickLanes(raw: unknown): Record<string, LaneKey> {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
+  const out: Record<string, LaneKey> = {};
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (typeof k !== "string" || typeof v !== "string") continue;
+    if (!LANE_CYCLE.includes(v as LaneKey)) continue;
+    const canonical = displayName(k);
+    if (canonical) out[canonical] = v as LaneKey;
+  }
+  return out;
+}
+
 function normalizeSessionPayload(parsed: Partial<DraftSessionPayload>): DraftSessionPayload {
   const rawGb = parsed.globalBans ? { ...EMPTY_GLOBAL_BANS, ...parsed.globalBans } : EMPTY_GLOBAL_BANS;
   const globalBans: GlobalBanState = {
@@ -106,6 +120,7 @@ function normalizeSessionPayload(parsed: Partial<DraftSessionPayload>): DraftSes
     redPicks: normalizeHeroList(parsed.redPicks),
     blueBans: normalizeHeroList(parsed.blueBans),
     redBans: normalizeHeroList(parsed.redBans),
+    pickLanes: normalizePickLanes(parsed.pickLanes),
     history: Array.isArray(parsed.history)
       ? parsed.history.map((entry) => ({
           ...entry,
@@ -239,6 +254,7 @@ export function useDraft(options: UseDraftOptions = {}) {
   );
   const [useLookahead, setUseLookahead] = useState<boolean>(() => initialSession?.useLookahead ?? false);
   const [league, setLeague] = useState<LeagueCode>(() => sanitizeLeague(initialSession?.league));
+  const [pickLanes, setPickLanes] = useState<Record<string, LaneKey>>(() => initialSession?.pickLanes ?? {});
   const [seriesGames, setSeriesGames] = useState<RecordedDraftGame[]>(
     () => initialSession?.seriesGames ?? [],
   );
@@ -288,6 +304,7 @@ export function useDraft(options: UseDraftOptions = {}) {
           setGlobalBans(remote.globalBans);
           setUseLookahead(Boolean(remote.useLookahead));
           setLeague(sanitizeLeague(remote.league));
+          setPickLanes(remote.pickLanes ?? {});
           setSeriesGames(remote.seriesGames);
           saveLocalSession(remote, storageKey);
         }
@@ -306,6 +323,15 @@ export function useDraft(options: UseDraftOptions = {}) {
     return () => ctrl.abort();
   }, [persistSession, storageKey]);
 
+  const activePickLanes = useMemo(() => {
+    const picked = new Set([...bluePicks, ...redPicks]);
+    const out: Record<string, LaneKey> = {};
+    for (const [hero, lane] of Object.entries(pickLanes)) {
+      if (picked.has(hero)) out[hero] = lane;
+    }
+    return out;
+  }, [pickLanes, bluePicks, redPicks]);
+
   // Persist every draft/series change to both localStorage (instant F5 reload) and backend disk (/draft/session)
   useEffect(() => {
     if (isHydratingRemoteRef.current) {
@@ -321,6 +347,7 @@ export function useDraft(options: UseDraftOptions = {}) {
       redPicks,
       blueBans,
       redBans,
+      pickLanes: activePickLanes,
       history: state.history,
       winHistory: state.winHistory.map((v) => (typeof v === "number" && Number.isFinite(v) ? v : null)),
       blueWinRate: state.blueWinRate,
@@ -376,6 +403,7 @@ export function useDraft(options: UseDraftOptions = {}) {
     useLookahead,
     engine,
     league,
+    activePickLanes,
     globalBans,
     seriesGames,
   ]);
@@ -435,6 +463,7 @@ export function useDraft(options: UseDraftOptions = {}) {
             CANDIDATE_POOL,
             league,
             seriesWinningHeroes,
+            activePickLanes,
           ),
           ctrl.signal,
         );
@@ -492,6 +521,7 @@ export function useDraft(options: UseDraftOptions = {}) {
     useLookahead,
     league,
     seriesWinningHeroes,
+    activePickLanes,
     predictRetryKey,
   ]);
 
@@ -507,7 +537,25 @@ export function useDraft(options: UseDraftOptions = {}) {
     },
     [unavailableHeroes],
   );
-  const undo = useCallback(() => dispatch({ type: "undo" }), []);
+  const undo = useCallback(() => {
+    const prevEntry = state.history.at(-1);
+    if (prevEntry) {
+      const stillPicked = new Set([...prevEntry.bluePicks, ...prevEntry.redPicks]);
+      setPickLanes((prev) => {
+        let changed = false;
+        const next: Record<string, LaneKey> = {};
+        for (const [hero, lane] of Object.entries(prev)) {
+          if (stillPicked.has(hero)) {
+            next[hero] = lane;
+          } else {
+            changed = true;
+          }
+        }
+        return changed ? next : prev;
+      });
+    }
+    dispatch({ type: "undo" });
+  }, [state.history]);
   const redo = useCallback(() => {
     const next = state.future?.at(-1);
     if (!next) return;
@@ -527,8 +575,33 @@ export function useDraft(options: UseDraftOptions = {}) {
     setPredictError(null);
     dispatch({ type: "redo" });
   }, [state.future, stepIndex, globalBans, bluePicks, redPicks, blueBans, redBans]);
+  const setPickLane = useCallback(
+    (heroName: string, lane?: LaneKey) => {
+      const teamPicks = bluePicks.includes(heroName)
+        ? bluePicks
+        : redPicks.includes(heroName)
+          ? redPicks
+          : [];
+      setPickLanes((prev) => {
+        if (lane) {
+          const conflict = teamPicks.some((teammate) => teammate !== heroName && prev[teammate] === lane);
+          if (conflict) return prev;
+        }
+        const updated = { ...prev };
+        if (lane) {
+          updated[heroName] = lane;
+        } else {
+          delete updated[heroName];
+        }
+        return updated;
+      });
+    },
+    [bluePicks, redPicks],
+  );
+
   const reset = useCallback(() => {
     dispatch({ type: "reset" });
+    setPickLanes({});
     setPredictError(null);
   }, []);
 
@@ -622,6 +695,7 @@ export function useDraft(options: UseDraftOptions = {}) {
           blueSideTeam: game.blueSideTeam,
         };
       });
+      setPickLanes({});
       setPredictError(null);
     },
     [seriesGames, bluePicks, redPicks, blueBans, redBans, globalBans, state.blueWinRate],
@@ -704,6 +778,7 @@ export function useDraft(options: UseDraftOptions = {}) {
         };
       });
       dispatch({ type: "reset" });
+      setPickLanes({});
       setPredictError(null);
     },
     [
@@ -833,6 +908,7 @@ export function useDraft(options: UseDraftOptions = {}) {
           (g) => getGameSeriesGroup(g) === currentGroup && g.gameNumber === nextGameNumber - 1,
         );
         dispatch({ type: "reset" });
+        setPickLanes({});
         setPredictError(null);
         setGlobalBans((prev) => {
           const base = globalBansOverride ?? prev;
@@ -963,6 +1039,7 @@ export function useDraft(options: UseDraftOptions = {}) {
       const sName = customSeriesName?.trim() || `${tA} vs ${tB}`;
 
       dispatch({ type: "reset" });
+      setPickLanes({});
       setPredictError(null);
 
       setGlobalBans({
@@ -1053,6 +1130,7 @@ export function useDraft(options: UseDraftOptions = {}) {
           : synced;
 
       dispatch({ type: "reset" });
+      setPickLanes({});
       setPredictError(null);
       setGlobalBans({
         ...baseBans,
@@ -1074,6 +1152,7 @@ export function useDraft(options: UseDraftOptions = {}) {
 
   const clearAllHistory = useCallback(() => {
     dispatch({ type: "reset" });
+    setPickLanes({});
     setGlobalBans(EMPTY_GLOBAL_BANS);
     setSeriesGames([]);
     setPredictError(null);
@@ -1124,6 +1203,7 @@ export function useDraft(options: UseDraftOptions = {}) {
       if (draft.globalBans) {
         setGlobalBans(draft.globalBans);
       }
+      setPickLanes({});
       setPredictError(null);
     },
     [],
@@ -1139,6 +1219,8 @@ export function useDraft(options: UseDraftOptions = {}) {
     redPicks,
     blueBans,
     redBans,
+    pickLanes: activePickLanes,
+    setPickLane,
     globalBans,
     setGlobalBans,
     selectGameNumber,

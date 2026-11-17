@@ -355,11 +355,11 @@ export function GlobalBanModal({
             const isCurrent = globalBans.gameNumber === g;
 
             let buttonTitle = `Game ${g}`;
-            if (g === 7) {
-              buttonTitle = "Game 7 Ultimate Battle (ปลดล็อก Global Ban ของทั้งสองทีม)";
-            } else if (!isUnlocked) {
+            if (!isUnlocked) {
               const missingStr = unlockStatus.missingGames.map((mg) => `G${mg}`).join(", ");
               buttonTitle = `Game ${g} ล็อก: ต้องจบ ${missingStr} หรือใส่ Global Ban ฝั่งละอย่างน้อย ${unlockStatus.requiredCount} ตัว (Team A: ${unlockStatus.aCount}/${unlockStatus.requiredCount}, Team B: ${unlockStatus.bCount}/${unlockStatus.requiredCount})`;
+            } else if (g === 7) {
+              buttonTitle = "Game 7 Ultimate Battle (ปลดล็อก Global Ban ของทั้งสองทีม)";
             }
 
             return (

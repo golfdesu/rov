@@ -27,6 +27,215 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-17 15:26 (UTC+7) — Build Production `dist-prod` Bundle & Sync Flex-Lane / QA Updates to `main`
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Built the isolated Draft-only production bundle (`frontend/dist-prod/` via `VITE_DRAFT_ONLY=true VITE_OUT_DIR=dist-prod npm run build:prod`) so production (`ROV_ENV=production`) matches all dev Flex-Lane Matching, Manual Pick-Lane Override (`PickLaneModal`, `LaneIcon`), and QA bug-fix changes (`index-GfZ3vxOV.js`, `index-BSsvX9yH.css`).
+- Verified production static serving (`inspect_frontend_e2e.py` under `ROV_ENV=production`) and committed/pushed all verified backend, frontend, and test changes to `origin/main` without starting the public tunnel per user request.
+
+### 📁 Modified Files
+- `CHANGELOG.md` (alongside the committed Flex-Lane & QA update batch across `src/`, `frontend/src/`, `tests/test_model_pipeline.py`)
+
+### 🧪 Verification
+- `VITE_DRAFT_ONLY=true VITE_OUT_DIR=dist-prod npm run build:prod`: built cleanly in `845ms` (`dist-prod/assets/index-GfZ3vxOV.js`, `dist-prod/assets/index-BSsvX9yH.css`).
+- `npm run lint` (`oxlint`): `0 warnings and 0 errors` (48 files).
+- `ROV_ENV=production` `python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py`: `[PASS]` (`130` hero avatars & production bundle verified).
+- `ruff check --fix .` & `ruff format --check .`: `All checks passed!`, `110 files already formatted`.
+- `pytest -q --tb=short`: `127 passed, 1 warning in 23.35s`.
+
+---
+
+## 📅 2026-11-17 15:13 (UTC+7) — Fix QA-Discovered Undo Leak, Lookahead Override, Matrix Forecast, Schema Key, and G7 Tooltip Bugs
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Undo Lane Override Leak (`frontend/src/hooks/useDraft.ts`):**
+  - Updated `undo()` to prune heroes removed from `bluePicks`/`redPicks` out of `pickLanes` immediately so stale overrides never reappear on Redo or when the opposing team picks that hero.
+- **Minimax Lookahead Pick-Lane Propagation (`src/search/draft_mcts.py`, `src/predictor.py`):**
+  - Added `blue_pick_lanes` and `red_pick_lanes` (`tuple[tuple[str, str], ...]`) to `DraftSearchState`, preserved them across `transition()`, passed them into `_filtered_action_dist()` -> `_needed_lanes_for_picks()`, and populated them from `RoVDraftPredictor.predict()`.
+- **Empirical Matrix Forecast Parity (`src/predictor.py`):**
+  - Threaded `explicit_lanes` and `opp_explicit_lanes` into `_forecast_bans()` and `_choose_next_pick()` inside `predict_matrix()`.
+- **Session Schema Key Validation (`src/schemas.py`):**
+  - Tightened `DraftSessionStateSchema.pickLanes` keys from `ShortStr` to `HeroStr` (`min_length=1`) plus a validator rejecting whitespace-only hero keys.
+- **G7 Locked Tooltip (`frontend/src/components/GlobalBanModal.tsx`, `frontend/src/components/DraftBoardView.tsx`):**
+  - Checked `!isUnlocked` before `g === 7` so locked `G7` buttons display unlock progress/requirements instead of the unlocked Ultimate Battle message.
+- **Tests (`tests/test_model_pipeline.py`):**
+  - Added `test_lookahead_matrix_and_session_pick_lane_validation()` covering minimax `red_pick_lanes`, `predict_matrix()` forecast filtering, and empty/whitespace `pickLanes` key rejection.
+
+### 📁 Modified Files
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/GlobalBanModal.tsx`
+- `frontend/src/components/DraftBoardView.tsx`
+- `src/search/draft_mcts.py`
+- `src/predictor.py`
+- `src/schemas.py`
+- `tests/test_model_pipeline.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check --fix .` & `ruff format .`: `All checks passed!`
+- `pytest -q --tb=short`: `127 passed, 1 warning in 24.16s`.
+- `python .agents/skills/regression-guard/scripts/audit_regression_guard.py`: `72/72` Golden states + `3/3` Combat duel benchmarks passed.
+- `python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py`: `[PASS]`.
+- `npm run lint` (`oxlint`): `0 warnings and 0 errors` (48 files); `npm run build` (`tsc -b && vite build`): succeeded (`built in 931ms`).
+
+---
+
+## 📅 2026-11-17 14:47 (UTC+7) — Simplify Auto/Reset Button Copy in PickLaneModal
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Simplified the `AUTO` reset button in `frontend/src/components/PickLaneModal.tsx` to a single `<RotateCcw />` icon box with concise copy (`AUTO` + `ค่าเริ่มต้น (<LANE>)`).
+
+### 📁 Modified Files
+- `frontend/src/components/PickLaneModal.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm run lint` (`oxlint`): `0 warnings and 0 errors` (48 files).
+- `npm run build` (`tsc -b && vite build`): succeeded (`built in 910ms`).
+
+---
+
+## 📅 2026-11-17 14:44 (UTC+7) — Prevent Duplicate Manual Lane Locks on the Same Team
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **UI & State Duplicate Guard (`PickLaneModal.tsx`, `DraftBoardView.tsx`, `useDraft.ts`):**
+  - Passed `lockedByLane` for the active hero's team into `PickLaneModal` and disabled any lane already manually locked by a teammate (`ล็อก: <hero>`), while preserving overrides when teammates remain on `AUTO`.
+  - Added a teammate-conflict guard in `setPickLane()` inside `frontend/src/hooks/useDraft.ts`.
+- **Backend Deduplication & Unit Test (`src/predictor.py`, `tests/test_model_pipeline.py`):**
+  - Enforced `<= 1` hero per manual lane per team in `_resolve_pick_lanes()` (`used_lanes` guard) and added a regression assertion in `test_auto_flex_lane_matching_and_manual_lane_override()`.
+
+### 📁 Modified Files
+- `src/predictor.py`
+- `tests/test_model_pipeline.py`
+- `frontend/src/components/PickLaneModal.tsx`
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/hooks/useDraft.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check --fix .` & `ruff format .`: `All checks passed!`
+- `npm run lint` (`oxlint`): `0 warnings and 0 errors` (48 files).
+- `npm run build` (`tsc -b && vite build`): succeeded (`built in 937ms`).
+- `pytest -q --tb=short`: `126 passed, 1 warning in 23.52s`.
+- Live check (`http://127.0.0.1:8000/health`): `healthy`, `model_loaded=true`, `val_loss=2.81054`.
+
+---
+
+## 📅 2026-11-17 14:16 (UTC+7) — Replace Raster Lane PNGs with Custom Minimal Adaptive-Color SVG Lane Emblems
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Custom Minimal Vector Lane Icons (`frontend/src/components/LaneIcon.tsx`):**
+  - Replaced external teal PNG assets with custom `currentColor` minimal SVG emblems (`DS_Lane`, `Jungle`, `Mid`, `Dragon_Lane`, `Roam`) faithfully modeled after the 5 in-game RoV map shapes (including exact circular-intersection eclipse crescent geometry on `DS_Lane`).
+  - Icons dynamically inherit UI contrast colors (`text-blue`, `text-red`, `text-gold`, `text-good`, `text-ink`, `text-bg`) across `TeamColumn`, `PickLaneModal`, `HeroGrid`, and `AiPanel`.
+- **Cleanup:**
+  - Removed unused `frontend/public/lanes/*.png`, `scripts/fetch_lane_icons.py`, and `LANE_ICON_PATHS` from `frontend/src/utils/draft.ts`.
+
+### 📁 Modified & Removed Files
+- `frontend/src/components/LaneIcon.tsx`
+- `frontend/src/components/PickLaneModal.tsx`
+- `frontend/src/components/HeroGrid.tsx`
+- `frontend/src/components/AiPanel.tsx`
+- `frontend/src/utils/draft.ts`
+- `frontend/public/lanes/*.png` (deleted)
+- `scripts/fetch_lane_icons.py` (deleted)
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm run lint` (`oxlint`): `0 warnings and 0 errors` (48 files).
+- `npm run build` (`tsc -b && vite build`): succeeded (`built in 934ms`).
+
+---
+
+## 📅 2026-11-17 14:07 (UTC+7) — Add Official In-Game Lane Logos Across PickLaneModal & Draft Board
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Official Lane Assets (`scripts/fetch_lane_icons.py`, `frontend/public/lanes/`):**
+  - Downloaded all 5 official `136x136` PNG position icons (`DS_Lane.png`, `Jungle.png`, `Mid.png`, `Dragon_Lane.png`, `Roam.png`) from Liquipedia Commons (`Category:Arena of Valor Position Icons`).
+- **UI Integration (`LaneIcon.tsx`, `PickLaneModal.tsx`, `TeamColumn.tsx`, `HeroGrid.tsx`, `AiPanel.tsx`, `utils/draft.ts`):**
+  - Created `LaneIcon` component (`onLightBg` contrast tuning for dark/gold surfaces).
+  - Rendered lane logos inside `PickLaneModal` lane buttons, `TeamColumn` picked-slot lane badges (`compact` and `full`), `HeroGrid` lane chips, and `AiPanel` lane filter tabs.
+
+### 📁 Modified & Created Files
+- `scripts/fetch_lane_icons.py` (new)
+- `frontend/public/lanes/*.png` (5 new icons)
+- `frontend/src/components/LaneIcon.tsx` (new)
+- `frontend/src/components/PickLaneModal.tsx`
+- `frontend/src/components/TeamColumn.tsx`
+- `frontend/src/components/HeroGrid.tsx`
+- `frontend/src/components/AiPanel.tsx`
+- `frontend/src/utils/draft.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check --fix .` & `ruff format .`: `All checks passed!`
+- `npm run lint` (`oxlint`): `0 warnings and 0 errors` (48 files).
+- `npm run build` (`tsc -b && vite build`): succeeded (`built in 924ms`); verified all 5 PNGs copied to `frontend/dist/lanes/`.
+
+---
+
+## 📅 2026-11-17 14:00 (UTC+7) — Replace Small Badge Lane Cycling with Touch-Friendly PickLaneModal Popup
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Added `PickLaneModal` (`frontend/src/components/PickLaneModal.tsx`):**
+  - Built an accessible dialog (reusing `Modal.tsx`) with large `44px–46px` touch targets allowing 1-tap selection between `AUTO` (pro stats + auto flex assignment) and the 5 canonical lanes (`DSL`, `JGL`, `MID`, `ADL`, `SUP`).
+- **Made Full Picked Hero Cards Interactive (`TeamColumn.tsx`, `DraftBoardView.tsx`, `useDraft.ts`, `utils/draft.ts`):**
+  - Replaced `cyclePickLane` / `nextPickLaneOverride` with `setPickLane(heroName, lane?)`.
+  - Made the entire picked hero card clickable in both `compact` (mobile/iPad) and `full` (desktop) `TeamColumn` views to open `PickLaneModal` without tiny corner-badge touch issues.
+
+### 📁 Modified & Created Files
+- `frontend/src/components/PickLaneModal.tsx` (new)
+- `frontend/src/components/TeamColumn.tsx`
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/utils/draft.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm run lint` (`oxlint`): `0 warnings and 0 errors` (47 files).
+- `npm run build` (`tsc -b && vite build`): succeeded (`built in 1.34s`).
+
+---
+
+## 📅 2026-11-17 13:39 (UTC+7) — Add Auto Flex-Lane Assignment & Manual Pick-Lane Override UI
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Automatic Flex-Lane Assignment (`src/predictor.py`):**
+  - Added `_solve_flex_lane_assignment()` and updated `_needed_lanes_for_picks()` so teams with flex picks sharing a primary lane (e.g., `Tamyn` + `Edras` both categorized as primary `Jungle`, where `Edras` has `9%` `Dragon_Lane` pro usage `>= FLEX_MIN_LANE_PROB = 0.04`) automatically resolve distinct lane coverage (`Tamyn -> Jungle`, `Edras -> Dragon_Lane`, `Ignis -> Mid`, `Biron -> DS_Lane`), exposing only the true remaining lane (`Roam`) and preventing forced Marksman/Carry recommendations at Pick 5.
+- **Manual Pick-Lane Override (`src/schemas.py`, `src/predictor.py`, `frontend/`):**
+  - Added optional `ally_pick_lanes` and `enemy_pick_lanes` maps to `DraftStateRequest` and `pickLanes` persistence in `DraftSessionStateSchema`, plus `_resolve_pick_lanes()` support across both SOTA and empirical matrix predictors and forecast previews.
+  - Added `pickLanes` state & `cyclePickLane()` in `frontend/src/hooks/useDraft.ts` and `nextPickLaneOverride()` in `frontend/src/utils/draft.ts` (pruned automatically across undo/reset/new-game/series transitions).
+  - Turned the lane badge on picked hero slots in `frontend/src/components/TeamColumn.tsx` (both `full` and `compact` views) into an interactive button to cycle `Auto -> next lane -> ... -> Auto` with gold highlight when manually overridden.
+- **Regression & Unit Tests (`tests/test_model_pipeline.py`):**
+  - Added `test_auto_flex_lane_matching_and_manual_lane_override()` verifying both automatic flex resolution on `["Tamyn", "Edras", "Ignis", "Biron"]` (`Roam`-only recommendations) and manual `ally_pick_lanes={"Edras": "Dragon_Lane"}` at Pick 4 (`DS_Lane`/`Roam` recommendations).
+
+### 📁 Modified Files
+- `src/schemas.py`
+- `src/predictor.py`
+- `frontend/src/types/draft.ts`
+- `frontend/src/utils/draft.ts`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/TeamColumn.tsx`
+- `frontend/src/components/DraftBoardView.tsx`
+- `tests/test_model_pipeline.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check --fix .` & `ruff format .`: `All checks passed!`
+- `npm run lint` (`oxlint`): `0 warnings and 0 errors` (46 files).
+- `npm run build` (`tsc -b && vite build`): succeeded (`built in 1.75s`).
+- `pytest -q --tb=short`: `126 passed, 1 warning in 34.76s` (including all 72 golden states untouched).
+- Live `POST /predict` check (`http://127.0.0.1:8000`, `uvicorn` daemon restarted): confirmed Pick 5 Auto returns `missing_ally_lanes=['Roam (โรมมิ่ง)']` with Roam Top 5 (`Thane 21.18%`, `Enzo 17.41%`, `TeeMee 14.72%`, `Toro 11.64%`, `Cresht 7.52%`) and Pick 4 Manual `Edras: Dragon_Lane` returns `missing_ally_lanes=['DS_Lane (ออฟเลน)', 'Roam (โรมมิ่ง)']` with `Airi/Thane/Enzo/TeeMee/Biron`.
+
+---
+
 ## 📅 2026-11-17 13:01 (UTC+7) — Sync Production Config, Golden Snapshots & Docs to Newly Trained SOTA Checkpoint (compute2 HPO)
 **Agent:** Antigravity
 

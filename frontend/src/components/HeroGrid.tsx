@@ -4,6 +4,7 @@ import type { DraftStep, Hero, RoleType } from "../types/draft";
 import { LANE_SHORT, ROLES, TIER_STYLE, heroLanes, laneKey, missingLaneKeys } from "../utils/draft";
 import { displayName, matchesHeroQuery } from "../utils/heroNames";
 import { HeroPortrait } from "./HeroPortrait";
+import { LaneIcon } from "./LaneIcon";
 
 interface HeroGridProps {
   heroes: Hero[];
@@ -155,10 +156,11 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
               key={k}
               type="button"
               title={LANE_SHORT[k].th}
-              className={chip(lane === k)}
+              className={`${chip(lane === k)} inline-flex items-center gap-1`}
               onClick={() => setLane(lane === k ? null : k)}
             >
-              {LANE_SHORT[k].en}
+              <LaneIcon lane={k} className="h-3 w-3" />
+              <span>{LANE_SHORT[k].en}</span>
             </button>
           ))}
           {role && (

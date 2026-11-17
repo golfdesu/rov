@@ -597,3 +597,98 @@ def test_global_ban_context_forward_and_predictor_load(tmp_path):
     )
     assert len(resp.recommendations) == 5
     assert all(0.0 < r.predicted_win_rate_pct < 100.0 for r in resp.recommendations)
+
+
+def test_auto_flex_lane_matching_and_manual_lane_override():
+    """Verify automatic flex-lane assignment at Pick 5 and manual ally_pick_lanes overrides."""
+    predictor = RoVDraftPredictor()
+
+    # Auto flex: Tamyn (Jungle) + Edras (Jungle/Dragon_Lane flex) + Ignis (Mid) + Biron (DS_Lane) -> only Roam missing
+    auto_resp = predictor.predict(
+        DraftStateRequest(
+            mode="pick",
+            side="blue",
+            phase=2,
+            ally_picks=["Tamyn", "Edras", "Ignis", "Biron"],
+            enemy_picks=["Rouie", "Y'bneth", "Billow", "Ryoma"],
+            ally_bans=["Sinestrea", "Eland'orr", "Taara", "Florentino"],
+            enemy_bans=["Marja", "Dolia", "Chaugnar", "Wiro"],
+            top_k=5,
+        )
+    )
+    assert auto_resp.missing_ally_lanes == ["Roam (โรมมิ่ง)"]
+    assert all(r.primary_lane == "Roam" for r in auto_resp.recommendations)
+
+    # Manual override at Pick 4: explicitly assign Edras -> Dragon_Lane so carries drop out of Top 5
+    manual_resp = predictor.predict(
+        DraftStateRequest(
+            mode="pick",
+            side="blue",
+            phase=2,
+            ally_picks=["Tamyn", "Edras", "Ignis"],
+            enemy_picks=["Rouie", "Y'bneth", "Billow", "Ryoma"],
+            ally_bans=["Sinestrea", "Eland'orr", "Taara", "Florentino"],
+            enemy_bans=["Marja", "Dolia", "Chaugnar", "Wiro"],
+            ally_pick_lanes={"Edras": "Dragon_Lane"},
+            top_k=5,
+        )
+    )
+    assert manual_resp.missing_ally_lanes == ["DS_Lane (ออฟเลน)", "Roam (โรมมิ่ง)"]
+    assert all(r.primary_lane in {"DS_Lane", "Roam"} for r in manual_resp.recommendations)
+
+    # Duplicate manual lane lock guard: second hero on same lane must not double-lock the lane
+    deduped = predictor._resolve_pick_lanes({"Tamyn": "Jungle", "Edras": "Jungle"}, {"Tamyn", "Edras"})
+    assert deduped == {"Tamyn": "Jungle"}
+
+
+def test_lookahead_matrix_and_session_pick_lane_validation():
+    """Verify pick-lane overrides propagate through minimax search, predict_matrix forecasts, and schema."""
+    import pytest
+    from pydantic import ValidationError
+
+    from src.schemas import DraftSessionStateSchema
+    from src.search.draft_mcts import DraftSearchState
+
+    predictor = RoVDraftPredictor()
+    ids = predictor.hero_to_id
+
+    # 1. Minimax tree rollout respects red_pick_lanes / blue_pick_lanes
+    import numpy as np
+
+    state = DraftSearchState(
+        blue_picks=(ids["Tamyn"], ids["Yena"], ids["Keera"]),
+        red_picks=(ids["Omen"], ids["Nakroth"]),
+        blue_bans=(ids["Sinestrea"], ids["Eland'orr"]),
+        red_bans=(ids["Marja"], ids["Dolia"]),
+        red_pick_lanes=(("Omen", "Roam"), ("Nakroth", "Mid")),
+        step_idx=9,
+    )
+    raw_probs = np.full(len(predictor.hero_names), 1.0 / len(predictor.hero_names), dtype=np.float32)
+    for hid in state.get_unavailable_set():
+        raw_probs[hid] = 0.0
+    _, branch_ids = predictor.search_engine._filtered_action_dist(state, raw_probs, branch_factor=5)
+    branch_lanes = {predictor._lane_key[hid] for hid in branch_ids}
+    assert branch_lanes <= {"DS_Lane", "Jungle", "Dragon_Lane"}
+
+    # 2. predict_matrix forecasts respect ally_pick_lanes and enemy_pick_lanes
+    matrix_resp = predictor.predict_matrix(
+        DraftStateRequest(
+            mode="pick",
+            side="blue",
+            phase=1,
+            ally_picks=["Yena", "Keera"],
+            enemy_picks=["Omen", "Nakroth"],
+            ally_bans=["Sinestrea", "Eland'orr"],
+            enemy_bans=["Marja", "Dolia"],
+            ally_pick_lanes={"Yena": "Roam", "Keera": "Mid"},
+            enemy_pick_lanes={"Omen": "Roam", "Nakroth": "Mid"},
+            top_k=5,
+        )
+    )
+    assert all(r.primary_lane not in {"Roam", "Mid"} for r in matrix_resp.blue_next_picks)
+    assert all(r.primary_lane not in {"Roam", "Mid"} for r in matrix_resp.red_next_picks)
+
+    # 3. DraftSessionStateSchema rejects empty or whitespace-only pickLanes hero keys
+    for bad_key in ("", "   "):
+        with pytest.raises(ValidationError):
+            DraftSessionStateSchema(pickLanes={bad_key: "Mid"})

@@ -2,6 +2,8 @@ export type RoleType = "Fighter" | "Assassin" | "Mage" | "Carry" | "Support" | "
 
 export type LeagueCode = "GLOBAL" | "RPL" | "GCS" | "AOG" | "INTL";
 
+export type LaneKey = "DS_Lane" | "Jungle" | "Mid" | "Dragon_Lane" | "Roam";
+
 export interface Hero {
   id: number;
   name: string;
@@ -100,6 +102,7 @@ export interface DraftSessionPayload {
   redPicks: string[];
   blueBans: string[];
   redBans: string[];
+  pickLanes?: Record<string, LaneKey>;
   history: DraftHistoryItem[];
   winHistory: (number | null)[];
   blueWinRate: number;

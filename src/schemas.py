@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field, StrictInt, field_validator, m
 HeroStr = Annotated[str, Field(min_length=1, max_length=64)]
 ShortStr = Annotated[str, Field(max_length=64)]
 FinitePct = Annotated[float, Field(allow_inf_nan=False, ge=0.0, le=100.0)]
+LaneKey = Literal["DS_Lane", "Jungle", "Mid", "Dragon_Lane", "Roam"]
 
 _SCHEMA_HERO_ALIASES: dict[str, str] = {
     "riktor": "riktor",
@@ -105,6 +106,16 @@ class DraftStateRequest(BaseModel):
         default_factory=list,
         max_length=35,
         description="Heroes that won previous games in the current series and remain available for steal-pick or target-ban adaptation",
+    )
+    ally_pick_lanes: dict[HeroStr, LaneKey] = Field(
+        default_factory=dict,
+        max_length=5,
+        description="Optional manual lane overrides for acting team's picked heroes",
+    )
+    enemy_pick_lanes: dict[HeroStr, LaneKey] = Field(
+        default_factory=dict,
+        max_length=5,
+        description="Optional manual lane overrides for opposing team's picked heroes",
     )
 
     @model_validator(mode="after")
@@ -361,6 +372,7 @@ class DraftSessionStateSchema(BaseModel):
     redPicks: list[ShortStr] = Field(default_factory=list, max_length=5)
     blueBans: list[ShortStr] = Field(default_factory=list, max_length=4)
     redBans: list[ShortStr] = Field(default_factory=list, max_length=4)
+    pickLanes: dict[HeroStr, LaneKey] = Field(default_factory=dict, max_length=10)
     history: list[DraftHistoryItemSchema] = Field(default_factory=list, max_length=25)
     winHistory: list[FinitePct | None] = Field(default_factory=list, max_length=25)
     blueWinRate: FinitePct = 50.0
@@ -370,6 +382,14 @@ class DraftSessionStateSchema(BaseModel):
     globalBans: GlobalBanStateSchema = Field(default_factory=GlobalBanStateSchema)
     seriesGames: list[RecordedDraftGameSchema] = Field(default_factory=list, max_length=100)
     updatedAt: int = Field(default=0, description="Epoch milliseconds of last state update")
+
+    @field_validator("pickLanes")
+    @classmethod
+    def validate_non_empty_pick_lane_keys(cls, value: dict[str, LaneKey]) -> dict[str, LaneKey]:
+        for hero_name in value:
+            if not hero_name.strip():
+                raise ValueError("Empty hero name in pickLanes")
+        return value
 
     @field_validator("engine", mode="before")
     @classmethod

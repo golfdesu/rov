@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MAX_SERIES_GAMES, type useDraft } from "../hooks/useDraft";
+import type { LaneKey } from "../types/draft";
 import {
   blueTeamName,
   blueUsedHeroes,
@@ -29,6 +30,7 @@ import { FinishGameModal } from "./FinishGameModal";
 import { type GlobalBanCategoryKey, GlobalBanModal } from "./GlobalBanModal";
 import { HeroGrid } from "./HeroGrid";
 import { NewSeriesModal } from "./NewSeriesModal";
+import { PickLaneModal } from "./PickLaneModal";
 import { ScoreBar } from "./ScoreBar";
 import { TeamColumn } from "./TeamColumn";
 
@@ -55,6 +57,8 @@ export function DraftBoardView({
     redPicks,
     blueBans,
     redBans,
+    pickLanes,
+    setPickLane,
     globalBans,
     setGlobalBans,
     selectGameNumber,
@@ -103,6 +107,7 @@ export function DraftBoardView({
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isNewSeriesModalOpen, setIsNewSeriesModalOpen] = useState(false);
   const [isFinishGameModalOpen, setIsFinishGameModalOpen] = useState(false);
+  const [editingPickLane, setEditingPickLane] = useState<{ heroName: string; side: "blue" | "red" } | null>(null);
   const [swapCount, setSwapCount] = useState(0);
 
   const handleSwapSides = () => {
@@ -173,7 +178,8 @@ export function DraftBoardView({
       globalBanModalCat !== null ||
       isHistoryModalOpen ||
       isNewSeriesModalOpen ||
-      isFinishGameModalOpen
+      isFinishGameModalOpen ||
+      editingPickLane !== null
     ) {
       return;
     }
@@ -216,6 +222,7 @@ export function DraftBoardView({
     isHistoryModalOpen,
     isNewSeriesModalOpen,
     isFinishGameModalOpen,
+    editingPickLane,
     undo,
     redo,
     lockHero,
@@ -304,11 +311,11 @@ export function DraftBoardView({
                 const isCurrent = globalBans.gameNumber === g;
 
                 let buttonTitle = `Game ${g}`;
-                if (g === 7) {
-                  buttonTitle = "Game 7 Ultimate Battle — รีเซ็ต Global Ban ของทั้งสองทีม";
-                } else if (!isUnlocked) {
+                if (!isUnlocked) {
                   const missingStr = unlockStatus.missingGames.map((mg) => `G${mg}`).join(", ");
                   buttonTitle = `Game ${g} ถูกล็อก: ต้องจบ ${missingStr} หรือใส่ Global Ban ฝั่งละอย่างน้อย ${unlockStatus.requiredCount} ตัว (Team A: ${unlockStatus.aCount}/${unlockStatus.requiredCount}, Team B: ${unlockStatus.bCount}/${unlockStatus.requiredCount})`;
+                } else if (g === 7) {
+                  buttonTitle = "Game 7 Ultimate Battle — รีเซ็ต Global Ban ของทั้งสองทีม";
                 } else {
                   buttonTitle = `Game ${g} (ซิงค์ Global Ban จากเกมก่อนหน้าอัตโนมัติ)`;
                 }
@@ -515,6 +522,23 @@ export function DraftBoardView({
         />
       )}
 
+      {editingPickLane && (
+        <PickLaneModal
+          heroName={editingPickLane.heroName}
+          side={editingPickLane.side}
+          teamName={editingPickLane.side === "blue" ? bName : rName}
+          hero={heroMap.get(editingPickLane.heroName)}
+          currentLane={pickLanes[editingPickLane.heroName]}
+          lockedByLane={Object.fromEntries(
+            (editingPickLane.side === "blue" ? bluePicks : redPicks)
+              .filter((h) => h !== editingPickLane.heroName && pickLanes[h])
+              .map((h) => [pickLanes[h] as LaneKey, h]),
+          )}
+          onSelectLane={(lane) => setPickLane(editingPickLane.heroName, lane)}
+          onClose={() => setEditingPickLane(null)}
+        />
+      )}
+
       {isFinishGameModalOpen && isDraftComplete && (
         <FinishGameModal
           gameNumber={globalBans.gameNumber}
@@ -578,6 +602,8 @@ export function DraftBoardView({
               teamName={bName}
               picks={bluePicks}
               bans={blueBans}
+              pickLanes={pickLanes}
+              onEditPickLane={(heroName, side) => setEditingPickLane({ heroName, side })}
               usedHeroes={bUsed}
               usedHeroOriginGames={blueOriginGames}
               rawUsedCount={
@@ -600,6 +626,8 @@ export function DraftBoardView({
               teamName={rName}
               picks={redPicks}
               bans={redBans}
+              pickLanes={pickLanes}
+              onEditPickLane={(heroName, side) => setEditingPickLane({ heroName, side })}
               usedHeroes={rUsed}
               usedHeroOriginGames={redOriginGames}
               rawUsedCount={
@@ -630,6 +658,8 @@ export function DraftBoardView({
                 teamName={bName}
                 picks={bluePicks}
                 bans={blueBans}
+                pickLanes={pickLanes}
+                onEditPickLane={(heroName, side) => setEditingPickLane({ heroName, side })}
                 usedHeroes={bUsed}
                 usedHeroOriginGames={blueOriginGames}
                 rawUsedCount={
@@ -655,6 +685,8 @@ export function DraftBoardView({
                 teamName={rName}
                 picks={redPicks}
                 bans={redBans}
+                pickLanes={pickLanes}
+                onEditPickLane={(heroName, side) => setEditingPickLane({ heroName, side })}
                 usedHeroes={rUsed}
                 usedHeroOriginGames={redOriginGames}
                 rawUsedCount={
@@ -690,6 +722,8 @@ export function DraftBoardView({
               teamName={bName}
               picks={bluePicks}
               bans={blueBans}
+              pickLanes={pickLanes}
+              onEditPickLane={(heroName, side) => setEditingPickLane({ heroName, side })}
               usedHeroes={bUsed}
               usedHeroOriginGames={blueOriginGames}
               rawUsedCount={
@@ -717,6 +751,8 @@ export function DraftBoardView({
               teamName={rName}
               picks={redPicks}
               bans={redBans}
+              pickLanes={pickLanes}
+              onEditPickLane={(heroName, side) => setEditingPickLane({ heroName, side })}
               usedHeroes={rUsed}
               usedHeroOriginGames={redOriginGames}
               rawUsedCount={

@@ -1,14 +1,17 @@
 import { Ban, Layers, Plus, X } from "lucide-react";
-import type { DraftStep, Hero, HeroRecommendation } from "../types/draft";
+import type { DraftStep, Hero, HeroRecommendation, LaneKey } from "../types/draft";
 import { LANE_SHORT, laneKey } from "../utils/draft";
 import { displayName } from "../utils/heroNames";
 import { HeroPortrait } from "./HeroPortrait";
+import { LaneIcon } from "./LaneIcon";
 
 interface TeamColumnProps {
   side: "blue" | "red";
   teamName: string;
   picks: string[];
   bans: string[];
+  pickLanes?: Record<string, LaneKey>;
+  onEditPickLane?: (heroName: string, side: "blue" | "red") => void;
   usedHeroes: string[];
   usedHeroOriginGames?: Record<string, number>;
   rawUsedCount: number;
@@ -28,6 +31,8 @@ export function TeamColumn({
   teamName,
   picks,
   bans,
+  pickLanes = {},
+  onEditPickLane,
   usedHeroes,
   usedHeroOriginGames = {},
   rawUsedCount,
@@ -165,32 +170,47 @@ export function TeamColumn({
           {Array.from({ length: 5 }).map((_, i) => {
             const name = picks[i];
             const hero = name ? heroMap.get(name) : undefined;
+            const defaultLane = hero ? heroPrimaryLane(hero) : "";
+            const manualLane = name ? pickLanes[name] : undefined;
+            const effectiveLane = manualLane ?? defaultLane;
             const isActive = i === activePickSlot;
             const ghostOffset = i - picks.length;
             const ghost = !name && ghostOffset >= 0 && ghostOffset < 2 ? predictedNextPicks[ghostOffset] : undefined;
             const ghostHero = ghost ? heroMap.get(ghost.hero_name) : undefined;
             const canClickGhost = Boolean(ghost && isActive && onLockHero);
+            const canClickPicked = Boolean(name && onEditPickLane);
+            const isInteractive = canClickGhost || canClickPicked;
 
             return (
               <div
                 key={i}
-                role={canClickGhost ? "button" : undefined}
-                tabIndex={canClickGhost ? 0 : undefined}
-                onClick={canClickGhost && ghost ? () => onLockHero?.(ghost.hero_name) : undefined}
+                role={isInteractive ? "button" : undefined}
+                tabIndex={isInteractive ? 0 : undefined}
+                onClick={
+                  canClickPicked && name
+                    ? () => onEditPickLane?.(name, side)
+                    : canClickGhost && ghost
+                      ? () => onLockHero?.(ghost.hero_name)
+                      : undefined
+                }
                 onKeyDown={
-                  canClickGhost && ghost
+                  isInteractive
                     ? (e) => {
                         if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
                           e.stopPropagation();
-                          onLockHero?.(ghost.hero_name);
+                          if (canClickPicked && name) {
+                            onEditPickLane?.(name, side);
+                          } else if (canClickGhost && ghost) {
+                            onLockHero?.(ghost.hero_name);
+                          }
                         }
                       }
                     : undefined
                 }
                 title={
                   name
-                    ? `${displayName(name)} (${hero ? (LANE_SHORT[heroPrimaryLane(hero)]?.en ?? "") : ""})`
+                    ? `${displayName(name)} (${LANE_SHORT[effectiveLane]?.en ?? effectiveLane}${manualLane ? " · กำหนดเอง" : ""}) · แตะเพื่อเปลี่ยนตำแหน่ง`
                     : ghost
                       ? `คาดเดา: ${displayName(ghost.hero_name)} (${ghost.probability_pct.toFixed(0)}%)`
                       : `Pick ${i + 1}`
@@ -200,8 +220,10 @@ export function TeamColumn({
                     ? "border-gold animate-slot-pulse"
                     : ghost
                       ? "border-dashed border-line-strong"
-                      : "border-line"
-                } ${canClickGhost ? "cursor-pointer" : ""}`}
+                      : canClickPicked
+                        ? "border-line transition-colors hover:border-gold/60"
+                        : "border-line"
+                } ${isInteractive ? "cursor-pointer" : ""}`}
               >
                 {name ? (
                   <>
@@ -209,9 +231,17 @@ export function TeamColumn({
                     <div className="absolute inset-0 bg-gradient-to-t from-bg via-transparent to-transparent" />
                     {hero && (
                       <span
-                        className={`absolute top-0.5 left-0.5 max-w-[calc(100%-4px)] truncate bg-bg/85 px-0.5 font-mono text-[8px] font-bold sm:px-1 sm:text-[9px] ${accent}`}
+                        className={`absolute top-0.5 left-0.5 z-10 inline-flex max-w-[calc(100%-4px)] items-center gap-0.5 truncate px-0.5 font-mono text-[8px] font-bold sm:px-1 sm:text-[9px] ${
+                          manualLane
+                            ? "border border-gold/60 bg-bg/95 text-gold"
+                            : `bg-bg/85 ${accent}`
+                        }`}
                       >
-                        {LANE_SHORT[heroPrimaryLane(hero)]?.en}
+                        <LaneIcon lane={effectiveLane} className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                        <span>
+                          {LANE_SHORT[effectiveLane]?.en ?? effectiveLane}
+                          {manualLane ? "*" : ""}
+                        </span>
                       </span>
                     )}
                     <div className="absolute inset-x-0 bottom-0 truncate px-0.5 pb-0.5 text-center font-display text-[9px] font-bold leading-tight text-ink sm:px-1 sm:text-xs">
@@ -268,11 +298,16 @@ export function TeamColumn({
         {Array.from({ length: 5 }).map((_, i) => {
           const name = picks[i];
           const hero = name ? heroMap.get(name) : undefined;
+          const defaultLane = hero ? heroPrimaryLane(hero) : "";
+          const manualLane = name ? pickLanes[name] : undefined;
+          const effectiveLane = manualLane ?? defaultLane;
           const isActive = i === activePickSlot;
           const ghostOffset = i - picks.length;
           const ghost = !name && ghostOffset >= 0 && ghostOffset < 2 ? predictedNextPicks[ghostOffset] : undefined;
           const ghostHero = ghost ? heroMap.get(ghost.hero_name) : undefined;
           const canClickGhost = Boolean(ghost && isActive && onLockHero);
+          const canClickPicked = Boolean(name && onEditPickLane);
+          const isInteractive = canClickGhost || canClickPicked;
           const triggerList = ghost?.triggered_by?.map(displayName) ?? [];
           const triggerFromBans = ghost?.triggered_by?.some((t) => bans.includes(t));
           const triggerLabel =
@@ -291,34 +326,48 @@ export function TeamColumn({
           return (
             <div
               key={i}
-              role={canClickGhost ? "button" : undefined}
-              tabIndex={canClickGhost ? 0 : undefined}
-              onClick={canClickGhost && ghost ? () => onLockHero?.(ghost.hero_name) : undefined}
+              role={isInteractive ? "button" : undefined}
+              tabIndex={isInteractive ? 0 : undefined}
+              onClick={
+                canClickPicked && name
+                  ? () => onEditPickLane?.(name, side)
+                  : canClickGhost && ghost
+                    ? () => onLockHero?.(ghost.hero_name)
+                    : undefined
+              }
               onKeyDown={
-                canClickGhost && ghost
+                isInteractive
                   ? (e) => {
                       if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();
                         e.stopPropagation();
-                        onLockHero?.(ghost.hero_name);
+                        if (canClickPicked && name) {
+                          onEditPickLane?.(name, side);
+                        } else if (canClickGhost && ghost) {
+                          onLockHero?.(ghost.hero_name);
+                        }
                       }
                     }
                   : undefined
               }
               title={
-                ghost
-                  ? `AI คาดเดาตัวถัดไป #${ghostOffset + 1}: ${displayName(ghost.hero_name)} (${ghost.probability_pct.toFixed(1)}%)${
-                      triggerList.length > 0 ? ` · ${triggerLabel}` : ""
-                    }`
-                  : undefined
+                name
+                  ? `${displayName(name)} (${LANE_SHORT[effectiveLane]?.en ?? effectiveLane}${manualLane ? " · กำหนดเอง" : ""}) · คลิกเพื่อเลือกตำแหน่งจริง`
+                  : ghost
+                    ? `AI คาดเดาตัวถัดไป #${ghostOffset + 1}: ${displayName(ghost.hero_name)} (${ghost.probability_pct.toFixed(1)}%)${
+                        triggerList.length > 0 ? ` · ${triggerLabel}` : ""
+                      }`
+                    : undefined
               }
               className={`relative min-h-[52px] flex-1 max-h-[96px] overflow-hidden border bg-panel clip-chamfer ${
                 isActive
                   ? "border-gold animate-slot-pulse"
                   : ghost
                     ? "border-dashed border-line-strong/80"
-                    : "border-line"
-              } ${canClickGhost ? "cursor-pointer" : ""}`}
+                    : canClickPicked
+                      ? "border-line transition-colors hover:border-gold/60"
+                      : "border-line"
+              } ${isInteractive ? "cursor-pointer" : ""}`}
             >
               {name ? (
                 <div
@@ -342,8 +391,18 @@ export function TeamColumn({
                     </div>
                     {hero && (
                       <div className="mt-0.5 flex max-w-full items-center gap-1.5 truncate text-[10px] text-muted sm:text-[11px]">
-                        <span className={`font-mono font-bold ${accent}`}>
-                          {LANE_SHORT[heroPrimaryLane(hero)]?.en ?? heroPrimaryLane(hero)}
+                        <span
+                          className={`inline-flex items-center gap-1 font-mono font-bold ${
+                            manualLane
+                              ? "border border-gold/50 bg-gold/15 px-1 text-gold"
+                              : accent
+                          }`}
+                        >
+                          <LaneIcon lane={effectiveLane} className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                          <span>
+                            {LANE_SHORT[effectiveLane]?.en ?? effectiveLane}
+                            {manualLane ? "*" : ""}
+                          </span>
                         </span>
                         <span className="hidden text-dim sm:inline">·</span>
                         <span className="hidden truncate sm:inline">{hero.role}</span>
