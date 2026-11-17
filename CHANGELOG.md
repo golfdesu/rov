@@ -27,6 +27,96 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-17 17:51 (UTC+7) — 100% Hero Skill Mechanics Extraction (130 Heroes / 534 Skills) + Ranged Poke Spacing + Matchup Sweep
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Full 534-Skill Mechanics Extraction ([src/skill_mechanics.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/skill_mechanics.py)):**
+  - Created `src/skill_mechanics.py` with `EXTENDED_STATEFUL_PASSIVES`, `EXTENDED_STACK_PASSIVES` (`38` additional stack/proc passives including `Grakk`, `Helen`, `Aoi`, `Arum`, `Tachi`, `Biron`, `Heino`, `Erin`, `Evita`, `Zata`, etc.), `LONG_RANGE_POKE_HEROES`, `SHORT_IMMOBILE_RANGED_HEROES`, `CURATED_SKILL_EFFECTS`, and `extract_all_hero_skill_mechanics()` automatically parsing shield, heal, AS/DR/lifesteal/pierce, secondary `extra_sim` damage scalings, and invulnerability windows across all `130` heroes (`534` skills) into `HERO_SKILL_EFFECTS` (`133` entries).
+- **Combat Engine Runtime Integration & Poke Spacing ([src/combat_calculator.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/combat_calculator.py)):**
+  - Merged extended passives and extracted skill effects in `CombatEngine.__init__` without altering `build_stats()` or `skill_damage()` baseline formulas (`raw_damage` unit-test contracts preserved).
+  - Wired `Dirak` (`Arcane Body`: `1` Mana absorbs `1.5` lethal overflow damage), `Thane` (`Royal Power` `<30%` HP `40%` DR + `24% Max HP` HoT, `75s` CD), `Zephys` (missing-HP DR up to `33.3%`), `Amily` (`Duel` `+50%` 1v1 normal attack), `Maloch` (`Plunder` true-dmg `Cleave` + heal), `Yue` (`Borrowed Might` `2x` sweet-spot + `1.35x` empowered cast + CD reset), `Ilumia` (`Goddess` stack + `1.25x` S1), `Airi`/`Lauriel` CD resets, `Baldum` vulnerability, `Rourke`/`Ignis`/`Tachi`/`Laville`/`Celica`/`Flowborn` combat passives, and `Diao Chan` opening shield.
+  - Upgraded `compute_kite_params()` so long-range poke mages/ADCs gain a spacing advantage (`delay=1.2s, mult=1.18`) over short/immobile ranged mages (`Yue > Ilumia`: `+55.3%` Lv.4, `+100.0%` Lv.10, `+30.9%` HP bare Lv.15).
+- **Regression Baselines, Tests & Matchup Discovery Refresh:**
+  - Updated expected duel TTKs in [.agents/skills/regression-guard/scripts/audit_regression_guard.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/regression-guard/scripts/audit_regression_guard.py) (`9.9s`, `8.25s`, `15.0s` — same winners `'a'`) reflecting Florentino/Keera/Toro newly extracted heals/invulns/shields, and synced to `.claude/skills/`.
+  - Added `test_full_130_hero_skill_mechanics_coverage` in [tests/test_combat_calculator.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/tests/test_combat_calculator.py).
+  - Re-ran [scripts/discover_mechanical_matchups.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/scripts/discover_mechanical_matchups.py) (`16,770` directional matchups, `206` Lv.15 single-item counter reversals) and updated [docs/MECHANICAL_MATCHUP_DISCOVERY.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/docs/MECHANICAL_MATCHUP_DISCOVERY.md).
+
+### 📁 Modified Files
+- [src/skill_mechanics.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/skill_mechanics.py) (new)
+- [src/combat_calculator.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/combat_calculator.py)
+- [tests/test_combat_calculator.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/tests/test_combat_calculator.py)
+- [.agents/skills/regression-guard/scripts/audit_regression_guard.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/regression-guard/scripts/audit_regression_guard.py)
+- [.claude/skills/regression-guard/scripts/audit_regression_guard.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/.claude/skills/regression-guard/scripts/audit_regression_guard.py)
+- [data/mechanical_matchups_130x130.csv](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/mechanical_matchups_130x130.csv)
+- [data/counter_item_flips.csv](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/counter_item_flips.csv)
+- [data/mechanical_matchup_summary.json](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/mechanical_matchup_summary.json)
+- [docs/MECHANICAL_MATCHUP_DISCOVERY.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/docs/MECHANICAL_MATCHUP_DISCOVERY.md)
+- [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md)
+
+### 🧪 Verification
+- `ruff check --fix .` & `ruff format .`: verified clean.
+- `python .agents/skills/regression-guard/scripts/audit_regression_guard.py --combat --verbose`: `3/3` passed (`100.0%`).
+- `pytest -q --tb=short`: full suite passed.
+
+### ⚠️ Open Issues / Important Notes
+- Ranged poke spacing gives long-range poke mages early/mid advantage (`Yue > Ilumia` `+55%/+100%`), while full 6-item burst builds with stasis/shield can still swing single-combo trades at Lv.15.
+
+---
+
+## 📅 2026-11-17 17:17 (UTC+7) — Upgrade CombatCalculator Hero Passives & Defensive/Buff Skill Simulation + Re-Run 130x130 Matchups
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Combat Engine Passive & Active Buff/DR Upgrade ([src/combat_calculator.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/combat_calculator.py)):**
+  - Expanded `HERO_STACK_PASSIVES` (from `6` to `21` proc passives including `Bijan`, `Volkath`, `Eland'orr`, `Nakroth`, `Slimz`, `Zill`, `Veres`, `Charlotte`, `Kriknak`, `Wukong`, `Paine`, `Tamyn`) with shared heal/shield proc support (`_apply_effect_heal_and_shield`).
+  - Added `STATEFUL_PASSIVE_HEROES` + combat-state mechanics inside `simulate_duel()`: `Omen` (`Thirst` AS/True Dmg/double-strike/-1s S1 & S2 CD), `Kil'Groth` (`The Fanatic` + `Enraged Spear`), `Stuart` (`Drain Charge`), `Errol` (`Blood Drinker`), `Dextra` (`Blood Curse`), `Max` (`Static Shock` DoT + 40% anti-heal), `Taara` (`Fighting Spirit` missing-HP AD + skill HoT), `Mina` (`Sweet Revenge`), `Elsu` (`Stalk` 180% AD + crit->AD), `Thorne` (CDR->AD + Purple %Max HP), `Keera` (+20% MLS + 35% AP basics), `Wukong` (+22% crit), `Arduin` (`Bloodlust` <50% HP), `Qi` (`Protection Aura`), and `Lu Bu` (`Tyrant`).
+  - Added `HERO_SKILL_EFFECTS` + `_apply_hero_skill_effect()` and allowed learned (`skill_level > 0`) zero-damage tactical skills (`Omen` S2 `40–60%` DR + reflect & Ult `-20%` enemy dmg, `Stuart` S2 `2s` physical immunity, `Taara` Ult HoT, `Quillen` Ult, `Kil'Groth` S2/Ult, `Florentino` Ult, `Riktor`/`Dextra`/`Allain`/`Errol`/`Marja`/`Murad` invuln windows, `Arum` Ult Snare, `Wukong` S2 Def) to execute in `simulate_duel()`, plus extracted shared `_sim_skills_for()` used by both `CombatEngine.duel()` and `scripts/discover_mechanical_matchups.py`.
+- **Rebuilt 130x130 Matchup Datasets ([scripts/discover_mechanical_matchups.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/scripts/discover_mechanical_matchups.py), `data/`, [docs/MECHANICAL_MATCHUP_DISCOVERY.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/docs/MECHANICAL_MATCHUP_DISCOVERY.md)):**
+  - Added `Bruiser_OnHit` archetype (`Omen`, `Kil'Groth`, `Allain`, `Dextra`, `Errol`) and re-ran all `25,155` duels + item flips (`192` reversals; verified `Omen > Bijan` at Lv.4 `+24.1%`, Lv.10 `+77.1%`, Lv.15 `+59.6%`).
+- **Tests & Regression Guard ([tests/test_combat_calculator.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/tests/test_combat_calculator.py), [audit_regression_guard.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/regression-guard/scripts/audit_regression_guard.py)):**
+  - Added `test_hero_passives_and_zero_dmg_skill_mechanics()` and updated Duel 1 (`Florentino vs Omen` `11.1s`) & Duel 2 (`Valhein vs Keera` `6.75s`) baselines in `audit_regression_guard.py` (synced `.claude/skills/`).
+
+### 📁 Modified Files
+- `src/combat_calculator.py`
+- `scripts/discover_mechanical_matchups.py`
+- `tests/test_combat_calculator.py`
+- `.agents/skills/regression-guard/scripts/audit_regression_guard.py` & `.claude/skills/regression-guard/scripts/audit_regression_guard.py`
+- `data/mechanical_matchups_130x130.csv`, `data/counter_item_flips.csv`, `data/mechanical_matchup_summary.json`
+- `docs/MECHANICAL_MATCHUP_DISCOVERY.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check --fix .` & `ruff format .`: `All checks passed!`
+- `pytest -q --tb=short`: verified full suite post-edit.
+- `python .agents/skills/regression-guard/scripts/audit_regression_guard.py --combat --verbose`: `3/3 Passed (100.0%)`.
+
+---
+
+## 📅 2026-11-17 16:32 (UTC+7) — Add 130x130 Mechanical + Skill/Passive/Item Matchup Discovery Engine & Datasets
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Mechanical Matchup Discovery Engine (`scripts/discover_mechanical_matchups.py`):**
+  - Built a reproducible 130x130 matchup discovery pipeline (`8,385` unique pairs = `16,770` directional matchups, `25,155` combat simulations across Lv.4, Lv.10 3-item spike, and Lv.15 full 6-item build) combining `CombatEngine` / `simulate_duel()` with exact passive/skill mechanics parsed from `data/hero_skills_full.json` (Physical Immunity, Damage Block / I-Frames, CC Cleanse / Iron Body, True Suppress, `%Max HP` & True Damage), Double-Centered Relative Counter Scores, and Lv.15 single-item adaptation tests (`193` matchup reversals).
+- **Project Datasets & Documentation (`data/`, `docs/`):**
+  - Added `data/mechanical_matchups_130x130.csv` (`16,770` directional rows), `data/counter_item_flips.csv` (`193` item-flip rows), `data/mechanical_matchup_summary.json` (same-lane, cross-lane, meta-boss counters, 2026 hero matchups), and `docs/MECHANICAL_MATCHUP_DISCOVERY.md`.
+
+### 📁 Modified Files
+- `scripts/discover_mechanical_matchups.py` (new)
+- `data/mechanical_matchups_130x130.csv` (new)
+- `data/counter_item_flips.csv` (new)
+- `data/mechanical_matchup_summary.json` (new)
+- `docs/MECHANICAL_MATCHUP_DISCOVERY.md` (new)
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `python scripts/discover_mechanical_matchups.py`: swept `16,770` directional matchups (`25,155` duels) + `1,262` item-flip evaluations in `39.65s`.
+- `ruff check --fix .` & `ruff format .`: `All checks passed!` (`1 file reformatted, 111 files left unchanged`).
+- `pytest -q --tb=short`: `127 passed, 1 warning in 26.35s`.
+
+---
+
 ## 📅 2026-11-17 15:26 (UTC+7) — Build Production `dist-prod` Bundle & Sync Flex-Lane / QA Updates to `main`
 **Agent:** Antigravity
 

@@ -191,21 +191,21 @@ def audit_combat_engine(verbose: bool = False) -> tuple[int, int, list[str]]:
             "build_a": Build(hero="Florentino", level=15, items=["Broken Spears", "Omni Arms"]),
             "build_b": Build(hero="Omen", level=15, items=["Shield of the Lost", "Mail of Pain"]),
             "expected_winner": "a",
-            "expected_ttk": 7.5,
+            "expected_ttk": 9.9,
         },
         {
             "name": "Duel 2 (Burst Trade): Valhein vs Keera",
             "build_a": Build(hero="Valhein", level=15, items=["Claves Sancti", "Muramasa"]),
             "build_b": Build(hero="Keera", level=15, items=["Boomstick", "Staff of Nuul"]),
             "expected_winner": "a",
-            "expected_ttk": 6.0,
+            "expected_ttk": 8.25,
         },
         {
             "name": "Duel 3 (True Dmg vs Tank): Hayate vs Toro",
             "build_a": Build(hero="Hayate", level=15, items=["The Morning Star", "War Boots"]),
             "build_b": Build(hero="Toro", level=15, items=["Shield of the Lost", "Mail of Pain"]),
             "expected_winner": "a",
-            "expected_ttk": 10.2,
+            "expected_ttk": 15.0,
         },
     ]
 

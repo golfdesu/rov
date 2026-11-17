@@ -774,3 +774,106 @@ def test_charlotte_passive_final_hit_lost_hp_not_multiplied_by_7(engine):
     expected_execute = 0.15 * st_def["stats"]["max_hp"] * 0.5
     assert row_half["components"]["target_lost_hp"] == pytest.approx(expected_execute, abs=0.2)
     assert (row_half["raw_damage"] - row_full["raw_damage"]) == pytest.approx(expected_execute, abs=0.5)
+
+
+def test_hero_passives_and_zero_dmg_skill_mechanics(engine):
+    # 1. Omen with On-Hit build + Thirst + Untouchable (60% DR) + Ult (-20% opp dmg) beats Bijan across stages
+    omen_b = Build(
+        hero="Omen",
+        level=15,
+        items=["War Boots", "Fafnir's Talon", "Blitz Blade", "Shield of the Lost", "Medallion of Troy", "Mail of Pain"],
+        arcana={"Awake": 10, "Spirit": 10, "Dragon's Claw": 10},
+    )
+    bijan_b = Build(
+        hero="Bijan",
+        level=15,
+        items=[
+            "Sonic Boots",
+            "Spear of Longinus",
+            "Frost Cape",
+            "Medallion of Troy",
+            "Mail of Pain",
+            "Blade of Eternity",
+        ],
+        arcana={"Onslaught": 10, "Assassinate": 10, "Dragon's Claw": 10},
+    )
+    res_ob = engine.duel(omen_b, bijan_b)
+    assert res_ob["simulation"]["winner"] == "a"
+    assert "Thirst (Passive True)" in res_ob["simulation"]["a"]["damage_breakdown"]
+    assert "Untouchable (Reflect)" in res_ob["simulation"]["a"]["damage_breakdown"]
+
+    # 2. Stuart S2 Physical Immunity blocks physical damage while allowing magic damage
+    stuart_b = Build(hero="Stuart", level=15, items=["War Boots", "Claves Sancti"])
+    phys_attacker = Build(hero="Eland'orr", level=15, items=["War Boots"])
+    magic_attacker = Build(hero="Tulen", level=15, items=["Boomstick", "Hecate's Diadem"])
+    res_stuart_vs_phys = engine.duel(stuart_b, phys_attacker)
+    res_stuart_vs_mag = engine.duel(stuart_b, magic_attacker)
+    assert res_stuart_vs_phys["simulation"]["winner"] == "a"
+    assert res_stuart_vs_mag["simulation"]["b"]["damage_dealt"] > 0
+
+    # 3. Taara Ultimate HoT heals significantly and Max Static Shock applies anti-heal + True Damage DoT
+    taara_b = Build(hero="Taara", level=15, items=["Mantle of Ra", "Shield of the Lost"])
+    max_b = Build(hero="Max", level=15, items=["Sonic Boots", "Frost Cape"])
+    res_tm = engine.duel(taara_b, max_b)
+    assert "Static Shock (Passive)" in res_tm["simulation"]["b"]["damage_breakdown"]
+
+
+def test_full_130_hero_skill_mechanics_coverage(engine):
+    from src.combat_calculator import ACTIVE_SLOTS, HERO_SKILL_EFFECTS, _calc_live_damage, _init_sim_side, _take_damage
+
+    def _make_side(build, opp_build):
+        st = engine.build_stats(build)
+        opp_st = engine.build_stats(opp_build)
+        sks = engine._sim_skills_for(engine.skill_damage(st, opp_st, build), set(ACTIVE_SLOTS), build.hero)
+        return _init_sim_side(
+            st,
+            sks,
+            engine.basic_attack(st, opp_st),
+            [],
+            (0.0, 1.0),
+            {"items": list(build.items), "level": build.level, "enable_actives": True},
+        )
+
+    # 1. Auto-extracted + curated effects cover all shields/heals/buffs/resets across 130 heroes
+    assert len(HERO_SKILL_EFFECTS) >= 120
+    assert len(engine.skills) == 130
+
+    # 2. Yue > Ilumia: Borrowed Might + 2x sweet spot + poke-mage spacing beats immobile Ilumia
+    res_yi = engine.duel(Build(hero="Yue", level=15), Build(hero="Ilumia", level=15))
+    sim_yi = res_yi["simulation"]
+    assert sim_yi["winner"] == "a"
+    assert sim_yi["b"]["kiting"]["initial_delay"] > sim_yi["a"]["kiting"]["initial_delay"]
+
+    # 3. Thane Royal Power triggers < 30% HP (40% DR + 24% Max HP HoT, 75s CD)
+    thane_b = Build(hero="Thane", level=15)
+    mal_b = Build(hero="Maloch", level=15)
+    t_side = _make_side(thane_b, mal_b)
+    m_side = _make_side(mal_b, thane_b)
+    t_side["hp"] = 0.25 * t_side["max_hp"]
+    _take_damage(t_side, m_side, 100.0, "physical", 1.0)
+    assert t_side["hero_dr_pct"] >= 0.40
+    assert t_side["hero_dr_until"] == pytest.approx(5.0)
+    assert len(t_side["hots"]) >= 1
+
+    # 4. Zephys missing-HP Damage Reduction scales down incoming damage when wounded
+    zeph_b = Build(hero="Zephys", level=15)
+    z_side = _make_side(zeph_b, mal_b)
+    dmg_full = _calc_live_damage(m_side, z_side, 1000.0, "physical", 1.0)
+    z_side["hp"] = 0.10 * z_side["max_hp"]
+    dmg_low = _calc_live_damage(m_side, z_side, 1000.0, "physical", 1.0)
+    assert dmg_low < dmg_full * 0.72
+
+    # 5. Dirak Arcane Body spends Mana (1.5 dmg per 1 Mana) to survive lethal overflow
+    dirak_b = Build(hero="Dirak", level=15)
+    d_side = _make_side(dirak_b, mal_b)
+    start_mana = d_side["dirak_mana"]
+    assert start_mana > 500.0
+    d_side["hp"] = 100.0
+    _take_damage(d_side, m_side, 400.0, "true", 1.0)  # 300 overflow consumes 200 mana
+    assert d_side["hp"] == pytest.approx(1.0)
+    assert d_side["dirak_mana"] == pytest.approx(start_mana - 200.0)
+
+    # 6. Maloch Plunder true-damage Cleave deals true damage in simulation
+    res_tm = engine.duel(Build(hero="Maloch", level=15), Build(hero="Thane", level=15))
+    assert res_tm["simulation"]["winner"] == "a"
+    assert res_tm["simulation"]["a"]["damage_breakdown"].get("Cleave", 0.0) > 2000.0
