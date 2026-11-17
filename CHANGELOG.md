@@ -27,6 +27,31 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-17 13:01 (UTC+7) — Sync Production Config, Golden Snapshots & Docs to Newly Trained SOTA Checkpoint (compute2 HPO)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Pulled Trained Artifacts from ERAWAN HPC (`e9e8762`):**
+  - Synced `models/sota_draft_gnn_transformer.pt` (`val_loss=2.81054`, `win_acc=52.84%`, `Terminal 5v5=55.95%`, `use_global_ban_context=True`, `hero_feat_dim=37`) and `best_params/sota_rov_*.json` (50-trial Optuna HPO Rank #1 & Safest `Trial #31`: `val_loss=2.78136`, `Top-1=23.88%`, `Top-5=61.69%`, `WinAcc=52.08%`, `Params=2,606,112`).
+- **Config, Golden Fixtures & Documentation Sync:**
+  - Regenerated 72-state predictor golden snapshot fixture (`tests/fixtures/predict_golden.json`) to match the newly served checkpoint.
+  - Updated `configs/selected_production_params.json` (`dataset_summary`: `3,523` games, `2,994` train / `529` val; `study_config`: `use_global_ban_context=true`, `recency_half_life=150.0`, `hero_feat_dim=37`; `Trial #31` for both `selected_for_production_safest` and `selected_for_production_rank1`).
+  - Synced `AGENTS.md` status table and Rule 12 summary to `select_parsimonious_params.py` output.
+
+### 📁 Modified Files
+- `tests/fixtures/predict_golden.json`
+- `configs/selected_production_params.json`
+- `AGENTS.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `python .agents/skills/hpo-parsimony-selector/scripts/select_parsimonious_params.py`: checkpoint (`2.81054`) and config (`Trial #31`, `2.78136`) synced cleanly.
+- `python .agents/skills/regression-guard/scripts/audit_regression_guard.py`: `72/72 Passed (100.0%)` prediction golden snapshots + `3/3 Passed (100.0%)` combat duel benchmarks.
+- `ruff check --fix .` & `ruff format .`: `All checks passed!`, `110 files left unchanged`.
+- `pytest -q --tb=short`: `125 passed, 1 warning in 23.07s`.
+
+---
+
 ## 📅 2026-11-17 12:12 (UTC+7) — Upgrade SOTA Architecture & Optuna HPO for Policy Accuracy (37-dim Hero Features, Continuous Time-Decay, Global Ban Context)
 **Agent:** Antigravity
 

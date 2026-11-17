@@ -19,8 +19,8 @@ This repository follows Big Tech Machine Learning Engineering standards (modeled
 | **Curated Training Dataset** | **3,523 Games (2025–2026)** (`data/matches_training.json`). All 817 games from 2024 are strictly excluded to remove legacy meta noise; includes all 1,821 games from 2026 with 100% verified true pick order. **True Pick Order coverage = 51.7%** (1,821 / 3,523 games). |
 | **Draft Web UI** | React 19 + Vite + Tailwind 4 broadcast-style draft board (`frontend/`), served by FastAPI from `frontend/dist` (dev) or `frontend/dist-prod` (`VITE_DRAFT_ONLY=true` in production). 130 / 130 square hero icons (`frontend/public/avatars/`), Thai display names (Arthur -> Mortos, Brunhilda -> Celica, Richter -> Riktor), plus Guest/Account portal (Username/Password + Google & Discord OAuth 2.0 PKCE, `/privacy`, `logo.png`). |
 | **SOTA Architecture** | `RoVDraftGNNTransformer` (`src/train_sota_model.py`): Multi-Relational Hero GNN (`adj_copick`, `adj_synergy`, `adj_counter`, `adj_countered_by`) + Sequence Transformer + Bounded Neural Temperature Gate + Dual Policy & Win-Value Heads. |
-| **H100 Optuna HPO** | Completed 50 Trials on ERAWAN HPC H100 (`best_params/sota_rov_top5_trials.json`, `configs/selected_production_params.json`). |
-| **Champion Performance** | (Selector output, 2026-11-11) **Served checkpoint Val Loss = `2.86752`**, WinAcc = `52.13%` \| **HPO Rank #1 (Trial #13, Compact) Val = `2.83144`**, Top-1 = `21.20%`, Top-5 = `60.78%`, WinAcc = `52.61%` \| **Safest (Trial #01) Val = `2.83993`**, Top-1 = `20.86%`, Top-5 = `59.94%`, WinAcc = `51.47%` (130 heroes, trained on all 3,512 games from 2025 through Nov 7, 2026). Always re-quote from the selector script (rule 12). |
+| **H100 Optuna HPO** | Completed 50 Policy-Focused Trials on ERAWAN HPC (`best_params/sota_rov_top5_trials.json`, `configs/selected_production_params.json`, 37-dim hero features, 150d recency decay, Global Ban context). |
+| **Champion Performance** | (Selector output, 2026-11-17) **Served checkpoint Val Loss = `2.81054`**, WinAcc = `52.84%` (Terminal 5v5 = `55.95%`) \| **HPO Rank #1 & Safest (Trial #31) Val = `2.78136`**, Top-1 = `23.88%`, Top-5 = `61.69%`, WinAcc = `52.08%`, Params = `2,606,112` (130 heroes, 3,523 games from 2025 through Nov 16, 2026 AIC Wildcard). Always re-quote from the selector script (rule 12). |
 
 ---
 
@@ -83,7 +83,7 @@ Every AI agent (including fast models such as `3.8flash`) MUST strictly obey the
 
 12. **Skills Live in `.agents/skills/` (Mirrored to `.claude/skills/`)**:
     - Edit skills only in `.agents/skills/`, then copy them over with `cp -r .agents/skills/. .claude/skills/`. `tests/test_skills_sync.py` fails if the two differ.
-    - Quote model metrics from `python .agents/skills/hpo-parsimony-selector/scripts/select_parsimonious_params.py`, not from the status table above. As of 2026-11-11 the table was re-synced to the selector output (served checkpoint val_loss 2.86752; `configs/selected_production_params.json` = Trial #01 safest / Trial #13 rank #1, updated 2026-11-10).
+    - Quote model metrics from `python .agents/skills/hpo-parsimony-selector/scripts/select_parsimonious_params.py`, not from the status table above. As of 2026-11-17 the table was re-synced to the selector output (served checkpoint val_loss 2.81054; `configs/selected_production_params.json` = Trial #31 rank #1 & safest, updated 2026-11-17).
     - Every skill ends with a **Related Skills** section. When adding or renaming a skill, update the Related Skills sections of its neighbors and the skill list in Section 2 below.
 
 13. **Curated Training Dataset & 2024 Exclusion Invariant (`data/matches_training.json`)**:
