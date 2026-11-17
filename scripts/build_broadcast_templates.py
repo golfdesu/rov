@@ -22,7 +22,7 @@ HERO_IMAGES_PATH = Path(__file__).resolve().parent.parent / "frontend" / "public
 
 def detect_league_from_path(shot_rel: str) -> str | None:
     s = shot_rel.lower()
-    for lg in ("aog", "apl", "rpl", "gcs"):
+    for lg in ("aic", "aog", "apl", "rpl", "gcs"):
         if lg in s:
             return lg
     return None
@@ -132,6 +132,12 @@ def build_templates():
                 blank.save(out_path)
                 manifest[h_name] = {"source": "blank_fallback", "sample_count": 0}
             fallback_count += 1
+
+    # Remove stale legacy templates not in the canonical hero catalog
+    hero_set = set(all_heroes)
+    for stale_path in TEMPLATES_DIR.glob("*.png"):
+        if stale_path.stem not in hero_set:
+            stale_path.unlink()
 
     manifest_path = TEMPLATES_DIR / "manifest.json"
     with open(manifest_path, "w", encoding="utf-8") as f:

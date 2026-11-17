@@ -58,6 +58,13 @@ LEAGUE_LAYOUTS = {
         "y_bottom": 0.88,
         "card_w": 0.092,
     },
+    "aic": {
+        "blue_xs": [0.002, 0.075, 0.148, 0.221, 0.294],
+        "red_xs": [0.919, 0.846, 0.773, 0.700, 0.627],  # Mirrored: right-to-left
+        "y_top": 0.25,
+        "y_bottom": 0.90,
+        "card_w": 0.071,
+    },
 }
 
 LEAGUE_SERIES_PREFIXES = {
@@ -65,6 +72,7 @@ LEAGUE_SERIES_PREFIXES = {
     "rpl": "RoV_Pro_League_2026",
     "gcs": "Garena_Challenger_Series_2026",
     "apl": "Arena_of_Valor_Premier_League_2026",
+    "aic": "Arena_of_Valor_International_Championship_2026",
 }
 
 TARGET_SIZE = (64, 80)
@@ -187,19 +195,30 @@ def _parse_match_datetime(dt_str: str) -> datetime:
         return datetime(2026, 1, 1)
 
 
-def build_apl_series_schedule(all_matches):
-    """Computes (stage_folder, stage_code, day_num, match_in_day) for every APL 2026 series."""
-    stage_configs = [
+INTERNATIONAL_STAGE_CONFIGS = {
+    "apl": [
         ("Wildcard", "wildcard", "wc"),
         ("Swiss_Stage", "swiss_stage", "ss"),
         ("Playoffs", "playoffs", "po"),
-    ]
+    ],
+    "aic": [
+        ("Wildcard", "wildcard", "wc"),
+        ("Swiss_Stage", "swiss_stage", "ss"),
+        ("Knockout_Stage", "knockout_stage", "ko"),
+    ],
+}
+
+
+def build_international_series_schedule(all_matches, league: str):
+    """Compute (stage_folder, stage_code, day_num, match_in_day) for APL/AIC 2026 series."""
+    prefix = LEAGUE_SERIES_PREFIXES[league]
+    stage_configs = INTERNATIONAL_STAGE_CONFIGS[league]
     schedule = {}
     for stage_token, folder_name, stage_code in stage_configs:
         series_dates = {}
         for m in all_matches:
             sid = m.get("series_id", "")
-            if f"Premier_League_2026_{stage_token}" in sid:
+            if f"{prefix}_{stage_token}" in sid:
                 series_dates[sid] = m.get("date", "")
         sorted_sids = sorted(
             series_dates.items(),
@@ -217,15 +236,14 @@ def build_apl_series_schedule(all_matches):
     return schedule
 
 
-def format_apl_filename(series_id, game_num, blue_team, red_team, apl_schedule):
-    folder_name, stage_code, day_num, match_num = apl_schedule.get(
+def format_international_filename(league, series_id, game_num, blue_team, red_team, schedule):
+    folder_name, stage_code, day_num, match_num = schedule.get(
         series_id, ("swiss_stage", "ss", 1, _parse_series_index(series_id))
     )
     t1_code = TEAM_CODES.get(blue_team, blue_team.lower().replace(" ", ""))
     t2_code = TEAM_CODES.get(red_team, red_team.lower().replace(" ", ""))
-    fname = f"2026_{stage_code}_d{day_num}_m{match_num}_g{game_num}_apl_{t1_code}_vs_{t2_code}.png"
-    rel_path = f"2026_apl/{folder_name}/{fname}"
-    return rel_path
+    fname = f"2026_{stage_code}_d{day_num}_m{match_num}_g{game_num}_{league}_{t1_code}_vs_{t2_code}.png"
+    return f"2026_{league}/{folder_name}/{fname}"
 
 
 def format_aog_filename(series_id, game_num, blue_team, red_team):
@@ -268,9 +286,9 @@ def format_aog_filename(series_id, game_num, blue_team, red_team):
     return rel_path
 
 
-def format_dest_path(league, series_id, game_num, blue_team, red_team, apl_schedule):
-    if league == "apl":
-        return format_apl_filename(series_id, game_num, blue_team, red_team, apl_schedule)
+def format_dest_path(league, series_id, game_num, blue_team, red_team, intl_schedule):
+    if league in ("apl", "aic"):
+        return format_international_filename(league, series_id, game_num, blue_team, red_team, intl_schedule)
     if league == "aog":
         return format_aog_filename(series_id, game_num, blue_team, red_team)
     t1_code = TEAM_CODES.get(blue_team, blue_team.lower().replace(" ", ""))
@@ -296,6 +314,8 @@ def filter_candidates_for_target(all_matches, existing_keys, league, input_dir: 
             stage_filter = "Swiss_Stage"
         elif "playoffs" in dir_str:
             stage_filter = "Playoffs"
+        elif "knockout" in dir_str:
+            stage_filter = "Knockout_Stage"
 
     candidates = []
     for m in all_matches:
@@ -321,7 +341,7 @@ def process_screenshots(input_files, dry_run=False, league="aog", input_dir: Pat
 
     existing_keys = {(g["series_id"], g["game_number"]) for g in true_order_data["games"]}
     candidate_games = filter_candidates_for_target(all_matches, existing_keys, league, input_dir)
-    apl_schedule = build_apl_series_schedule(all_matches) if league == "apl" else {}
+    intl_schedule = build_international_series_schedule(all_matches, league) if league in ("apl", "aic") else {}
     series_canonical_teams = {}
     for m in all_matches:
         sid_m = m.get("series_id")
@@ -372,7 +392,7 @@ def process_screenshots(input_files, dry_run=False, league="aog", input_dir: Pat
         gap = second_cost - best_cost
 
         canon_blue, canon_red = series_canonical_teams.get(sid, (best_game["blue_team"], best_game["red_team"]))
-        rel_dest = format_dest_path(league, sid, gnum, canon_blue, canon_red, apl_schedule)
+        rel_dest = format_dest_path(league, sid, gnum, canon_blue, canon_red, intl_schedule)
         dest_abs = DATA_DIR / "draft_screenshots" / rel_dest
 
         row_min = float(cost_matrix[i].min())
@@ -438,7 +458,7 @@ def process_screenshots(input_files, dry_run=False, league="aog", input_dir: Pat
 
 def infer_league_from_dir(target_dir: Path, fallback: str = "aog") -> str:
     s = target_dir.as_posix().lower()
-    for lg in ("apl", "aog", "rpl", "gcs"):
+    for lg in ("aic", "apl", "aog", "rpl", "gcs"):
         if lg in s:
             return lg
     return fallback
@@ -449,7 +469,7 @@ def main():
     parser.add_argument("path", nargs="?", default=None, help="Optional folder path containing screenshots")
     parser.add_argument("--dir", dest="dir_opt", default=None, help="Directory containing screenshots to process")
     parser.add_argument("--dry-run", action="store_true", help="Run without moving files or updating JSON")
-    parser.add_argument("--league", default=None, choices=["aog", "rpl", "gcs", "apl"], help="League preset")
+    parser.add_argument("--league", default=None, choices=["aog", "rpl", "gcs", "apl", "aic"], help="League preset")
     args = parser.parse_args()
 
     target_dir = Path(args.dir_opt or args.path) if (args.dir_opt or args.path) else (DATA_DIR / "draft_screenshots")

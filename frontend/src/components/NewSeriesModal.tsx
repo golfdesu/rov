@@ -4,6 +4,7 @@ import { Modal } from "./Modal";
 
 interface NewSeriesModalProps {
   currentSeriesName?: string;
+  existingSeriesNames?: string[];
   defaultTeamA?: string;
   defaultTeamB?: string;
   hasCurrentActions: boolean;
@@ -35,8 +36,19 @@ const POPULAR_TEAMS = [
   "FW",
 ];
 
+function resolveUniqueSeriesName(base: string, existing: readonly string[]): string {
+  const taken = new Set(existing.map((s) => s.trim().toLowerCase()).filter(Boolean));
+  if (!taken.has(base.trim().toLowerCase())) return base;
+  for (let i = 2; i <= 99; i++) {
+    const candidate = `${base} (${i})`;
+    if (!taken.has(candidate.toLowerCase())) return candidate;
+  }
+  return `${base} (${Date.now() % 1000})`;
+}
+
 export function NewSeriesModal({
   currentSeriesName,
+  existingSeriesNames = [],
   defaultTeamA = "BAC",
   defaultTeamB = "TLN",
   hasCurrentActions,
@@ -48,16 +60,19 @@ export function NewSeriesModal({
   const [teamB, setTeamB] = useState(defaultTeamB || "TLN");
   const [customSeries, setCustomSeries] = useState("");
 
+  const allExisting = currentSeriesName ? [...existingSeriesNames, currentSeriesName] : existingSeriesNames;
+  const baseName = `${teamA.trim() || "TEAM A"} vs ${teamB.trim() || "TEAM B"}`;
+  const currentPreview = customSeries.trim() || resolveUniqueSeriesName(baseName, allExisting);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const finalA = teamA.trim() || "TEAM A";
     const finalB = teamB.trim() || "TEAM B";
-    const finalSeries = customSeries.trim() || `${finalA} vs ${finalB}`;
+    const resolvedBase = `${finalA} vs ${finalB}`;
+    const finalSeries = customSeries.trim() || resolveUniqueSeriesName(resolvedBase, allExisting);
     onConfirm(finalA, finalB, finalSeries);
     onClose();
   };
-
-  const currentPreview = customSeries.trim() || `${teamA.trim() || "TEAM A"} vs ${teamB.trim() || "TEAM B"}`;
 
   return (
     <Modal labelledBy={titleId} className="max-w-lg" onClose={onClose}>

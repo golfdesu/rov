@@ -837,9 +837,13 @@
           0
         ],
         "base_damage": [],
-        "scaling": {},
-        "desc_th": "เมื่อ HP ของ Arduin ต่ำกว่า 50% และได้รับความเสียหาย สกิลหรือการโจมตีปกติโดนเป้าหมายจะฟื้นฟู 4%HP เป็นเวลา 8 วิ (ทุก 25 วิทำงาน 1 ครั้ง)",
-        "description": "When Arduin's HP drops below 50% and takes damage, his abilities or normal attacks hitting a target restore 4% max HP for 8s (triggers once every 25s).",
+        "scaling": {
+          "heal_base": 180.0,
+          "heal_per_level": 13.0,
+          "heal_bonus_hp_pct": 5.0
+        },
+        "desc_th": "เมื่อพลังชีวิตของ Arduin ต่ำกว่า 50% และได้รับความเสียหาย ทุกการโจมตีหรือสกิลที่โจมตีโดนเป้าหมายจะฟื้นฟูพลังชีวิต 180(+13/LV) (+5% โบนัสพลังชีวิต) หน่วยเป็นเวลา 8 วิ (ทุก 25 วิทำงาน 1 ครั้ง)",
+        "description": "When Arduin's HP drops below 50% and he takes damage, his basic attacks or abilities hitting a target restore 180 (+13 per level) (+5% bonus HP) HP for 8s (triggers once every 25s).",
         "icon_url": "/skills/Arduin/0_bloodlust.png"
       },
       {
@@ -908,10 +912,11 @@
           400
         ],
         "scaling": {
-          "ad_pct": 100.0
+          "ad_pct": 100.0,
+          "true_bonus_ad_pct": 50.0
         },
-        "desc_th": "Arduin ระเบิดพลัง สร้าง ความเสียหายเวท 250 (+100%AD) แก่ศัตรูรอบๆ พร้อมกับได้รับ โล่ 15% ของ HP เป็นเวลา 5 วิ\nหลังจาก โล่ ทำงาน 8 วิ การโจมตีปกติ 3 ครั้ง หลังจากนี้ของ Arduin จะได้ สร้าง ความเสียหายจริง เพิ่ม 125 (2 เท่าหากเป็นมอนสเตอร์ป่า)\nทุกครั้งที่โจมตีปกติโดนเป้าหมาย จะลดคูลดาวน์สกิล Cull ลง 1 วิ",
-        "description": "Arduin unleashes energy, dealing 250 (+100% AD) magic damage to surrounding enemies and gaining a shield equal to 15% max HP for 5s. Within 8s after the shield activates, his next 3 normal attacks deal bonus 125 true damage (doubled against jungle monsters), and each normal attack hit reduces Cull's cooldown by 1s.",
+        "desc_th": "Arduin สร้างโล่เท่ากับ 15% ของพลังชีวิตสูงสุด เป็นเวลา 5 วิ เมื่อได้รับโล่ จะสร้างความเสียหายเวท 250(+100%AD) หน่วยแก่ศัตรูรอบๆ หลังจากโล่ทำงาน 8 วิ การโจมตีปกติ 3 ครั้งถัดไปของ Arduin จะสร้างโบนัสความเสียหายจริง 150(+50%โบนัส AD) หน่วย (แรงขึ้นเป็น 2 เท่าหากเป้าหมายเป็นมอนสเตอร์ป่า) ทุกครั้งที่โจมตีปกติโดนเป้าหมาย จะลดคูลดาวน์สกิล 3 ลง 1 วิ",
+        "description": "Arduin gains a shield equal to 15% Max HP for 5s and deals 250/280/310/340/370/400 (+100% AD) magic damage to nearby enemies. Within 8s after activating the shield, his next 3 normal attacks deal 150/180/210/240/270/300 (+50% bonus AD) bonus true damage (doubled against jungle monsters), and each normal attack hit reduces Cull's cooldown by 1s.",
         "icon_url": "/skills/Arduin/1_undyingprotector.png"
       },
       {
@@ -921,8 +926,8 @@
         "damage_type": "physical",
         "cooldown": [
           16.0,
-          16.0,
-          16.0
+          15.0,
+          14.0
         ],
         "mana_cost": [
           100,
@@ -931,14 +936,14 @@
         ],
         "base_damage": [
           300,
-          425,
-          550
+          450,
+          600
         ],
         "scaling": {
-          "ad_pct": 120.0
+          "ad_pct": 150.0
         },
-        "desc_th": "Arduin ปาขวานไปยังทิศที่กำหนด สร้าง ความเสียหายกายภาพ 300 (+120%AD) พร้อมกับสตั้นศัตรูบริเวณนั้นเป็นเวลา 1 วิ จากนั้นเขาจะดึงตัวเองเข้าไปยังจุดที่ขวานถูกปาออกไป สร้างความเสียหายกายภาพ 300 (+120%AD) แก่ศัตรูทั้งหมดในระยะ (Arduin จะไม่โดนสถานะใดๆ ขณะที่กำลังใช้สกิลนี้)",
-        "description": "Arduin hurls his axe in the target direction, dealing 300 (+120% AD) physical damage and stunning enemies in the area for 1s. He then pulls himself to the axe, dealing 300 (+120% AD) physical damage to all nearby enemies (Arduin is immune to crowd control while casting this ability).",
+        "desc_th": "Arduin ปาขวานไปยังทิศที่กำหนด สร้าง ความเสียหายกายภาพ 300 (+150%AD) พร้อมกับสตั๊นศัตรูบริเวณนั้นเป็นเวลา 1 วิ จากนั้นเขาจะดึงตัวเองเข้าไปยังจุดที่ขวานถูกปาออกไป สร้าง ความเสียหายกายภาพ 300 (+150%AD) แก่ศัตรูทั้งหมดในระยะ (Arduin จะไม่โดนสถานะใดๆ ขณะที่กำลังใช้สกิลนี้)",
+        "description": "Arduin hurls his axe in the target direction, dealing 300/450/600 (+150% AD) physical damage and stunning enemies in the area for 1s. He then pulls himself to the axe, dealing 300/450/600 (+150% AD) physical damage to all nearby enemies (immune to crowd control while casting).",
         "icon_url": "/skills/Arduin/2_cull.png"
       }
     ],
@@ -2688,10 +2693,11 @@
         ],
         "scaling": {
           "ad_pct": 60.0,
+          "shadow_ad_pct": 25.0,
           "shield_ad_pct": 120.0
         },
-        "desc_th": "Butterfly ทำการฟันกวาดรอบตัว สร้าง ความเสียหายกายภาพ 200 (+60%AD) (ทุก 1 ศัตรูที่โจมตีโดน จะทำให้สกิลแรงขึ้น 25%) ระหว่างนั้นเธอจะได้รับ โล่ 400 (+120%AD) หน่วย และ วิ่งเร็วขึ้น 60% (ค่อยๆ ลดลง) เป็นเวลา 2 วินาที",
-        "description": "Butterfly sweeps her blade around herself, dealing 200 (+60% AD) physical damage (each enemy hit increases damage by 25%). During this time, she gains a shield of 400 (+120% AD) and 60% decaying movement speed for 2s.",
+        "desc_th": "Butterfly สร้างความเสียหายกายภาพ 200(+60%AD) หน่วยแก่ศัตรูใกล้เคียง ทุกครั้งที่โจมตีโดนศัตรูจะสร้างดาบเงา ซึ่งจะสร้างความเสียหายกายภาพ 80(+25%AD) หน่วย และเธอเองจะได้รับโล่ที่ดูดซับความเสียหาย 400(+120%AD) หน่วย เป็นเวลา 2 วิ ระหว่างนี้จะเร่งความเร็วตัวเอง 60% (ลดเหลือ 0 ภายใน 2 วิ)",
+        "description": "Butterfly sweeps her blade around herself, dealing 200/240/280/320/360/400 (+60% AD) physical damage. Every enemy hit summons a shadow blade dealing 80/96/112/128/144/160 (+25% AD) physical damage. She also gains a shield absorbing 400/480/560/640/720/800 (+120% AD) damage and 60% decaying movement speed for 2s.",
         "icon_url": "/skills/Butterfly/1_whirlwind.png"
       },
       {
@@ -2724,10 +2730,11 @@
           400
         ],
         "scaling": {
-          "ad_pct": 60.0
+          "ad_pct": 60.0,
+          "enhanced_magic_ad_pct": 30.0
         },
-        "desc_th": "Butterfly ฟาดคลื่นดาบไปข้างหน้าด้วยความเร็วสูง สร้าง ความเสียหายกายภาพ 200 (+60%AD) โดยศัตรูแรกที่โดนจะได้รับความเสียหาย 1.5 เท่า พร้อมวิ่งช้าลง 50% เป็นเวลา 1.5 วิ\nหากโจมตีศัตรูจะทำให้ Butterfly โจมตีเร็วขึ้น 30% และเพิ่มโอกาสคริ 10% เป็นเวลา 5 วิ (สะสมสูงสุด 2 ครั้ง)",
-        "description": "Butterfly fires a high-speed sword wave forward, dealing 200 (+60% AD) physical damage (the first enemy hit takes 1.5x damage) and slowing them by 50% for 1.5s. Hitting an enemy grants 30% attack speed and 10% critical strike chance for 5s (stacks up to 2 times).",
+        "desc_th": "Butterfly ฟาดคลื่นดาบไปยังทิศทางที่กำหนด สร้างความเสียหายกายภาพ 200(+60%AD) หน่วยแก่ศัตรู (ศัตรูแรกจะได้รับโบนัสความเสียหายคริติคอลจากพลังเวท 50% และถูกลดความเร็วลง 50% เป็นเวลา 1.5 วิ) หลังจากใช้สกิล จะได้รับความเร็วโจมตีเพิ่มขึ้น 30% (สะสมสูงสุด 2 ครั้ง นาน 4 วินาที) พร้อมกับทำการโจมตีต่อเนื่อง 3 ครั้ง ซึ่งจะสร้างความเสียหายกายภาพ 100%AD หน่วยและความเสียหายเวท 20(+30%AD) หน่วย (การโจมตีทั้งหมดจะเป็นการโจมตีคริติคอล)",
+        "description": "Butterfly launches a sword wave dealing 200/240/280/320/360/400 (+60% AD) physical damage; the first enemy hit takes bonus guaranteed-crit magic damage and is slowed by 50% for 1.5s. Grants +30% attack speed for 4s (up to 2 stacks) and empowers her next 3 attacks to deal 100% AD physical + 20/24/28/32/36/40 (+30% AD) magic damage (all guaranteed critical strikes).",
         "icon_url": "/skills/Butterfly/2_swordpropel.png"
       },
       {
@@ -2754,8 +2761,8 @@
           "ad_pct": 115.0,
           "target_lost_hp_pct": 12.0
         },
-        "desc_th": "Butterfly หายตัวไปฟันศัตรู สร้าง ความเสียหายกายภาพ 350 (+115%AD) (หากศัตรูติดสัญลักษณ์จะสร้างโบนัสความเสียหายจริงเท่ากับ 12% HP ที่เสียไป) พร้อมติด สัญลักษณ์ ให้ศัตรูเป็นเวลา 3 วิ หลังจากสัญลักษณ์หมดลง 35% ของความเสียหายที่สร้างได้จะถูกนำมาฟื้นฟู HP ให้ตนเอง และหากเป้าหมายตายจะรีเซ็ตคูลดาวน์สกิลนี้ทันที\nหลังจากใช้สกิล เธอจะถูกโจมตีปกติเบาลง 50% เป็นเวลา 3 วิ\nหากโจมตีปกติใส่ศัตรูที่ติดสัญลักษณ์จะลดคูลดาวน์สกิล 1 และ 2 ลง 1 วิ\nการล็อคเป้าอัตโนมัติจะเลือกฮีโร่ศัตรูที่ HP น้อยสุดเสมอ",
-        "description": "Butterfly teleports behind an enemy dealing 350 (+115% AD) physical damage (dealing bonus true damage equal to 12% of lost HP if the target is marked) and marking them for 3s. When mark expires, 35% of damage dealt is healed. Target death resets cooldown immediately. Reduces normal attack damage taken by 50% for 3s. Basic attacking marked targets reduces Skill 1 and Skill 2 cooldowns by 1s.",
+        "desc_th": "Butterfly พุ่งโจมตีเป้าหมายที่กำหนด สร้างความเสียหายกายภาพ 350 (+115%AD) (หากเป้าหมายถูกติดสัญลักษณ์ จะสร้างโบนัสความเสียหายจริงเท่ากับ 12% ของพลังชีวิตที่เสียไป) หลังจากโจมตีโดนเป้าหมาย 3 วิ ถัดมาจะลดความเสียหายที่ได้รับจากการโจมตีปกติลง 50% และติดสัญลักษณ์เป็นเวลา 3 วิ เมื่อโจมตีเป้าหมายที่ติดสัญลักษณ์ 20% ของความเสียหายจะกลายเป็นการฟื้นฟู (ยูนิตที่ไม่ใช่ฮีโร่ลดครึ่งหนึ่ง) หากเป้าหมายตายจะรีเซ็ตคูลดาวน์ของอัลติทันที การโจมตีปกติใส่เป้าหมายที่ติดสัญลักษณ์จะลดคูลดาวน์สกิล 1 และ 2 ลง 1 วิ",
+        "description": "Butterfly lunges at a target dealing 350/525/700 (+115% AD) physical damage (plus 12% target lost HP as true damage if already marked), reducing normal attack damage taken by 50% and marking the target for 3s. Attacking a marked target heals her for 20% of damage dealt (10% against non-heroes). Killing the target resets Ultimate cooldown immediately; normal attacks against marked targets reduce Skill 1 and 2 cooldowns by 1s.",
         "icon_url": "/skills/Butterfly/3_backstab.png"
       }
     ],
@@ -3574,12 +3581,12 @@
         "type": "Magic / Knockback",
         "damage_type": "magic",
         "cooldown": [
-          12.5,
-          12.0,
-          11.5,
-          11.0,
-          10.5,
-          10.0
+          10.0,
+          9.6,
+          9.2,
+          8.8,
+          8.4,
+          8.0
         ],
         "mana_cost": [
           120
@@ -3761,15 +3768,15 @@
           0
         ],
         "base_damage": [
-          150
+          140
         ],
         "scaling": {
           "ad_pct": 100.0,
-          "ap_pct": 30.0
+          "ap_pct": 25.0
         },
-        "description": "Empowers next normal attack every 6s, swinging forward to deal 150 (+100% AD) (+30% AP) magic damage, knocking enemies back, backflipping, and granting 20 gold bounty.",
+        "description": "Empowers next normal attack every 6s, swinging forward to deal 140 (+100% AD) (+25% AP) magic damage, knocking enemies back, backflipping, and granting 20 gold bounty.",
         "icon_url": "/skills/Dyadia/0_yuanbond.png",
-        "desc_th": "Dyadia เสริมพลังการโจมตีปกติครั้งต่อไปทุก 6 วิ: เธอจะเหวี่ยงชิงช้าไปยังหน้าศัตรูและสร้างความเสียหายเวท 150(+100%AD)(+30%AP) หน่วย พร้อมกับผลักศัตรูถอยหลัง จากนั้นเธอจะกระโดดถอยหลัง หากฮีโร่พันธมิตรถูกผูกชะตา (หากพลังชีวิตเต็ม จะไม่มีรางวัลเหรียญทอง และหากใช้งานกับพันธมิตรที่มีพลังชีวิตสูงกว่า 50% รางวัลเหรียญทองจะลดลงครึ่งหนึ่ง) หรือฮีโร่ศัตรูได้ถูกตัดชะตา เธอจะได้รับโบนัส 20 เหรียญทอง"
+        "desc_th": "Dyadia เสริมพลังการโจมตีปกติครั้งต่อไปทุก 6 วิ: เธอจะเหวี่ยงชิงช้าไปยังหน้าศัตรูและสร้างความเสียหายเวท 140(+100%AD)(+25%AP) หน่วย พร้อมกับผลักศัตรูถอยหลัง จากนั้นเธอจะกระโดดถอยหลัง หากฮีโร่พันธมิตรถูกผูกชะตา (หากพลังชีวิตเต็ม จะไม่มีรางวัลเหรียญทอง และหากใช้งานกับพันธมิตรที่มีพลังชีวิตสูงกว่า 50% รางวัลเหรียญทองจะลดลงครึ่งหนึ่ง) หรือฮีโร่ศัตรูได้ถูกตัดชะตา เธอจะได้รับโบนัส 20 เหรียญทอง"
       },
       {
         "slot": "Skill 1",
@@ -3829,11 +3836,11 @@
         "scaling": {
           "ap_pct": 8.0,
           "burst_ap_pct": 35.0,
-          "dash_bonus_ap_pct": 95.0
+          "dash_bonus_ap_pct": 100.0
         },
-        "description": "Tethers enemy for 5s, dealing 50-100 (+8% AP) magic damage/s, stealing 2 gold, and ending with 200-400 (+35% AP) damage. Recasting dives in to lock for 0.75s and deal 640-1280 (+95% bonus AP).",
+        "description": "Tethers enemy for 5s, dealing 50-100 (+8% AP) magic damage/s, stealing 2 gold, and ending with 200-400 (+35% AP) damage. Recasting dives in to lock for 0.75s and deal 540/648/756/864/972/1080 (+100% bonus AP) magic damage, with 25%-50% slow.",
         "icon_url": "/skills/Dyadia/2_fateentanglement.png",
-        "desc_th": "Dyadia ตัดชะตาศัตรู พร้อมเปิดการมองเห็น 5 วิ สร้างความเสียหายเวท 50(+8%AP) หน่วยทุกวินาที และหัก 2 เหรียญทองของเป้าหมาย (เก็บไว้โดย Dyadia หากเป้าหมายสังหาร/ช่วยสังหารเธอได้ เป้าหมายจะได้รับเหรียญทองคืน 100%/50%) เมื่อครบระยะเวลาจะสร้างความเสียหายเวท 200(+35%AP) หน่วยอีกครั้ง หากศัตรูที่ถูกตัดชะตาเดินเข้าใกล้กัน จะเกิดผลคลายชะตา ยกเลิกความเสียหายทั้งหมด และคืนเหรียญทองที่ถูกหักจากผลตัดชะตา หากใช้สกิลใส่ศัตรูถูกตัดชะตาอยู่แล้ว Dyadia จะพุ่งเข้าหาเป้าหมายและทำการคลายชะตา ซึ่งจะล็อกเป้าหมาย 0.75 วิ และสร้างความเสียหายเวท 640(+95% โบนัส AP) หน่วย (พร้อมคิดความเสียหายสะสมของผลตัดชะตาทันที) ระหว่างนี้ Dyadia จะได้รับความเสียหายเบาลง 40% (เพิ่มเป็น 50% หากเป้าหมายเกิดผลคลายชะตา) ภายใน 5 วินาที Dyadia สามารถกดใช้สกิลนี้อีกครั้ง หากไม่กดซ้ำ สกิลจะรีเซ็ตคูลดาวน์ ฮีโร่ศัตรูที่ถูกตัดชะตาจะถูกลดความเร็วเคลื่อนที่ 25% เมื่อเคลื่อนที่เข้าหากัน"
+        "desc_th": "Dyadia ตัดชะตาศัตรู พร้อมเปิดการมองเห็น 5 วิ สร้างความเสียหายเวท 50(+8%AP) หน่วยทุกวินาที และหัก 2 เหรียญทองของเป้าหมาย (เก็บไว้โดย Dyadia หากเป้าหมายสังหาร/ช่วยสังหารเธอได้ เป้าหมายจะได้รับเหรียญทองคืน 100%/50%) เมื่อครบระยะเวลาจะสร้างความเสียหายเวท 200(+35%AP) หน่วยอีกครั้ง หากศัตรูที่ถูกตัดชะตาเดินเข้าใกล้กัน จะเกิดผลคลายชะตา ยกเลิกความเสียหายทั้งหมด และคืนเหรียญทองที่ถูกหักจากผลตัดชะตา หากใช้สกิลใส่ศัตรูถูกตัดชะตาอยู่แล้ว Dyadia จะพุ่งเข้าหาเป้าหมายและทำการคลายชะตา ซึ่งจะล็อกเป้าหมาย 0.75 วิ และสร้างความเสียหายเวท 540(+100% โบนัส AP) หน่วย (พร้อมคิดความเสียหายสะสมของผลตัดชะตาทันที) ระหว่างนี้ Dyadia จะได้รับความเสียหายเบาลง 40% (เพิ่มเป็น 50% หากเป้าหมายเกิดผลคลายชะตา) ภายใน 5 วินาที Dyadia สามารถกดใช้สกิลนี้อีกครั้ง หากไม่กดซ้ำ สกิลจะรีเซ็ตคูลดาวน์ ฮีโร่ศัตรูที่ถูกตัดชะตาจะถูกลดความเร็วเคลื่อนที่ 25% เมื่อเคลื่อนที่เข้าหากัน"
       },
       {
         "slot": "Ultimate",
@@ -4954,18 +4961,18 @@
           45
         ],
         "base_damage": [
-          90,
-          108,
-          126,
-          144,
-          162,
-          180
+          125,
+          150,
+          175,
+          200,
+          225,
+          250
         ],
         "scaling": {
-          "ad_pct": 65.0
+          "ad_pct": 75.0
         },
-        "desc_th": "Fennik จะกำหนดเป้าหมายใส่ฮีโร่หรือสิ่งปลูกสร้างของศัตรู ซึ่งหลังจากผ่านไป 4 วิ จะระเบิดสร้าง ความเสียหายกายภาพ 90 (+65%AD) ระหว่างนั้นหากโจมตีปกติใส่ศัตรูดังกล่าว จะสามารถสะสม สัญลักษณ์ ใส่เป้าหมาย (สูงสุด 4 ครั้ง) ซึ่งสัญลักษณ์แต่ละครั้งจะสร้างโบนัส ความเสียหายกายภาพ เพิ่มขึ้น 90 (+65%AD) และหากสะสมครบ 4 ครั้ง สัญลักษณ์จะทำการระเบิดทันที\nขณะใช้สกิลนี้ Fennik จะสามารถพุ่งไปยังทิศที่กำหนดได้เล็กน้อย (ไม่สามารถข้ามกำแพงได้) รวมถึงเพิ่มความเร็วโจมตีขึ้น 35% และเพิ่มระยะโจมตีขึ้น 75 หน่วย เป็นเวลา 4 วิ\nสามารถขัดจังหวะการใช้สกิลนี้ได้ด้วยการใช้สกิล 2 และอัลติเมตทันที",
-        "description": "Fennik marks an enemy hero or structure, which detonates after 4s dealing 90/108/126/144/162/180 (+65% AD) physical damage. Normal attacks against the marked target add a mark stack (up to 4), each dealing 90/108/126/144/162/180 (+65% AD) bonus physical damage. Reaching 4 stacks detonates the mark immediately. On cast, Fennik dashes slightly in the target direction (cannot cross walls), gaining +35/42/49/56/63/70% attack speed and +75 attack range for 4s. Casting Skill 2 or Ultimate immediately cancels the animation.",
+        "desc_th": "Fennik จะกำหนดเป้าหมายใส่ฮีโร่หรือสิ่งปลูกสร้างของศัตรู ซึ่งหลังจากผ่านไป 4 วิ จะระเบิดสร้าง ความเสียหายกายภาพ 125 (+75%AD) ระหว่างนั้นหากโจมตีปกติใส่ศัตรูดังกล่าว จะสามารถสะสม สัญลักษณ์ ใส่เป้าหมาย (สูงสุด 4 ครั้ง) ซึ่งสัญลักษณ์แต่ละครั้งจะสร้างโบนัส ความเสียหายกายภาพ เพิ่มขึ้น 125 (+75%AD) และหากสะสมครบ 4 ครั้ง สัญลักษณ์จะทำการระเบิดทันที ขณะใช้สกิลนี้ Fennik จะสามารถพุ่งไปยังทิศที่กำหนดได้เล็กน้อย (ไม่สามารถข้ามกำแพงได้) รวมถึงเพิ่มความเร็วโจมตีขึ้น 35% และเพิ่มระยะโจมตีขึ้น 75 หน่วย เป็นเวลา 4 วิ สามารถขัดจังหวะการใช้สกิลนี้ได้ด้วยการใช้สกิล 2 และอัลติเมตทันที",
+        "description": "Fennik marks an enemy hero or structure, which detonates after 4s dealing 125/150/175/200/225/250 (+75% AD) physical damage. Normal attacks against the marked target add a mark stack (up to 4), each dealing 125/150/175/200/225/250 (+75% AD) bonus physical damage. Reaching 4 stacks detonates the mark immediately. On cast, Fennik dashes slightly in the target direction (cannot cross walls), gaining +35/42/49/56/63/70% attack speed and +75 attack range for 4s. Casting Skill 2 or Ultimate immediately cancels the animation.",
         "icon_url": "/skills/Fennik/1_thiefsmark.png"
       },
       {
@@ -5634,14 +5641,14 @@
           0
         ],
         "base_damage": [
-          40
+          55
         ],
         "scaling": {
           "ap_pct": 20,
           "own_hp_pct": 2
         },
-        "description": "Taking single-instance damage &gt;10% current HP triggers an explosion (2s CD) dealing 40 (+20% AP) (+2% Max HP) magic damage. Upon death, explodes after 3s dealing 160 (+80% AP) (+8% Max HP) magic damage.",
-        "desc_th": "เมื่อรับความเสียหายครั้งเดียวมากกว่า 10% ของHPที่มีอยู่จะทำให้เกิดการระเบิด (CD 2 วิ) สร้าง ความเสียหายเวท เท่ากับ 40 (+20%AP) (+2%Max HP) และหลังจาก Grakk ตายลง 3 วิ ตัวเขาจะระเบิดสร้าง ความเสียหายเวท 160 (+80%AP) (+8%Max HP)",
+        "description": "Taking single-instance damage >10% current HP triggers an explosion (2s CD) dealing 55 (+20% AP) (+2% Max HP) magic damage. Upon death, explodes after 3s dealing 225 (+80% AP) (+8% Max HP) magic damage.",
+        "desc_th": "เมื่อรับความเสียหายครั้งเดียวมากกว่า 10% ของHPที่มีอยู่จะทำให้เกิดการระเบิด (CD 2 วิ) สร้าง ความเสียหายเวท เท่ากับ 55 (+20%AP) (+2%Max HP) และหลังจาก Grakk ตายลง 3 วิ ตัวเขาจะระเบิดสร้าง ความเสียหายเวท 225 (+80%AP) (+8%Max HP)",
         "icon_url": "/skills/Grakk/0_bloodritual.png"
       },
       {
@@ -5656,18 +5663,18 @@
           60
         ],
         "base_damage": [
-          150,
           180,
-          210,
-          240,
-          270,
-          300
+          216,
+          252,
+          288,
+          324,
+          360
         ],
         "scaling": {
-          "ap_pct": 50
+          "ap_pct": 55
         },
-        "description": "Grakk stomps the ground, dealing 150/180/210/240/270/300 (+50% AP) magic damage and slowing enemies by 30% for 2s. Closer enemies take up to 2x damage and slow, and are silenced for 0.5s.",
-        "desc_th": "Grakk กระทืบพื้นโจมตีศัตรูรอบๆ สร้าง ความเสียหายเวท 150/180/210/240/270/300 (+50%AP) และ ลดความเร็วเคลื่อนที่ของศัตรู 30% เป็นเวลา 2 วิ หากศัตรูยิ่งอยู่ใกล้จะยิ่งได้รับความเสียหาย และ ลดความเร็ว เพิ่มขึ้น โดยจะเพิ่มสูงสุด 2 เท่า พร้อมกับ ใบ้ ศัตรู 0.5 วิ",
+        "description": "Grakk stomps the ground, dealing 180/216/252/288/324/360 (+55% AP) magic damage and slowing enemies by 30% for 2s. Closer enemies take up to 2x damage and slow, and are silenced for 0.5s.",
+        "desc_th": "Grakk กระทืบพื้นโจมตีศัตรูรอบๆ สร้าง ความเสียหายเวท 180 (+55%AP) และ ลดความเร็วเคลื่อนที่ของศัตรู 30% เป็นเวลา 2 วิ หากศัตรูยิ่งอยู่ใกล้จะยิ่งได้รับความเสียหาย และ ลดความเร็ว เพิ่มขึ้น โดยจะเพิ่มสูงสุด 2 เท่า พร้อมกับ ใบ้ ศัตรู 0.5 วิ",
         "icon_url": "/skills/Grakk/1_devilschain.png"
       },
       {
@@ -10593,11 +10600,11 @@
         "damage_type": "physical",
         "cooldown": [
           8.0,
-          8.0,
-          8.0,
-          8.0,
-          8.0,
-          8.0
+          7.7,
+          7.4,
+          7.1,
+          6.8,
+          6.5
         ],
         "mana_cost": [
           0,
@@ -10608,20 +10615,21 @@
           0
         ],
         "base_damage": [
-          20,
-          40,
-          60,
-          80,
-          100,
-          120
+          75,
+          90,
+          105,
+          120,
+          135,
+          150
         ],
         "scaling": {
-          "ad_pct": 40.0,
+          "ad_pct": 50.0,
+          "slash_ad_pct": 100.0,
           "target_hp_pct": 3.0
         },
         "icon_url": "/skills/Richter/1_junglestrike.png",
-        "desc_th": "Riktor พุ่งไปด้านหน้า สร้าง ความเสียหายกายภาพ 20 (+40%AD) จากนั้นใช้ดาบฟันกวาด สร้าง ความเสียหายกายภาพ 50 (+100%AD) การโจมตีครั้งต่อไปจะเป็นการพุ่งโจมตีสร้าง ความเสียหายเวท 125%AD ซึ่งหากโจมตีโดนเป้าหมาย จะรีเฟรชคูลดาวน์ทันที (ใช้ได้ทุก 3 วิ) สถานะพื้นดิน: หากโจมตีโดนศัตรูจะโจมตีเร็วขึ้น 30% เป็นเวลา 3 วิ สถานะพุ่มหญ้า: ทำให้ศัตรูลอยขึ้น 0.75 วิ และสร้าง ความเสียหายกายภาพ 3% HP สูงสุด (+1% ทุก 80 โบนัส AD) (มอนสเตอร์ป่าสูงสุด 500) ; สถานะน้ำ: จะเพิ่มระยะการพุ่งพร้อมสร้าง ความเสียหายกายภาพ 5% HP ที่เสียไปของศัตรู (+1% ทุก 60 โบนัส AD) (มอนสเตอร์ป่าสูงสุด 500) ;",
-        "description": "Riktor dashes forward dealing 20/40/60/80/100/120 (+40% AD) physical damage, then slashes dealing 50/100/150/200/250/300 (+100% AD) physical damage. Next attack lunges dealing 125% AD magic damage and resets cooldown on hit (once every 3s). Road: grants 30/36/42/48/54/60% attack speed for 3s. Bush: knocks enemies up for 0.75s and deals 3% max HP (+1% per 80 bonus AD) physical damage. River: increases dash distance and deals 5% lost HP (+1% per 60 bonus AD) physical damage."
+        "desc_th": "Riktor พุ่งไปด้านหน้า สร้าง ความเสียหายกายภาพ 75 (+50%AD) จากนั้นใช้ดาบฟันกวาด สร้าง ความเสียหายกายภาพ 150 (+100%AD) การโจมตีครั้งต่อไปจะเป็นการพุ่งโจมตีสร้าง ความเสียหายเวท 125%AD ซึ่งหากโจมตีโดนเป้าหมาย จะรีเฟรชคูลดาวน์ทันที (ใช้ได้ทุก 3 วิ) สถานะพื้นดิน: หากโจมตีโดนศัตรูจะโจมตีเร็วขึ้น 30% เป็นเวลา 3 วิ สถานะพุ่มหญ้า: ทำให้ศัตรูลอยขึ้น 0.75 วิ และสร้าง ความเสียหายกายภาพ 3% HP สูงสุด (+1% ทุก 80 โบนัส AD) (มอนสเตอร์ป่าสูงสุด 500) ; สถานะน้ำ: จะเพิ่มระยะการพุ่งพร้อมสร้าง ความเสียหายกายภาพ 5% HP ที่เสียไปของศัตรู (+1% ทุก 60 โบนัส AD) (มอนสเตอร์ป่าสูงสุด 500) ;",
+        "description": "Riktor dashes forward dealing 75/90/105/120/135/150 (+50% AD) physical damage, then slashes dealing 150/180/210/240/270/300 (+100% AD) physical damage. Next attack lunges dealing 125% AD magic damage and resets cooldown on hit (once every 3s). Road: grants 30/36/42/48/54/60% attack speed for 3s. Bush: knocks enemies up for 0.75s and deals 3% max HP (+1% per 80 bonus AD) physical damage. River: increases dash distance and deals 5% lost HP (+1% per 60 bonus AD) physical damage."
       },
       {
         "name": "Retaliate",
@@ -10675,17 +10683,17 @@
           0
         ],
         "base_damage": [
-          60,
-          90,
-          120
+          50,
+          75,
+          100
         ],
         "scaling": {
-          "ad_pct": 13.0,
-          "bonus_ad_pct": 100.0
+          "ad_pct": 20.0,
+          "bonus_ad_pct": 120.0
         },
         "icon_url": "/skills/Richter/3_markofthehunter.png",
-        "desc_th": "Riktor ระเบิดวงเวทใส่ศัตรู สร้าง ความเสียหายจริง 60 (+13%AD) ทุก 0.5 วิ และวิ่งช้าลงเป็นเวลา 5 วิ และหากศัตรูถูกโจมตีครบ 5 ครั้งจะสร้างโบนัส ความเสียหายจริง 330 (+100%AD) และเป็นใบ้ 1 วิ",
-        "description": "Riktor detonates a magical zone dealing 60/90/120 (+13% AD) true damage every 0.5s and slowing enemies for 5s. Enemies hit 5 times take bonus 330/495/660 (+100% AD) true damage and are silenced for 1s."
+        "desc_th": "Riktor ระเบิดวงเวทใส่ศัตรู สร้าง ความเสียหายจริง 50 (+20%AD) ทุก 0.5 วิ และวิ่งช้าลงเป็นเวลา 5 วิ และหากศัตรูถูกโจมตีครบ 5 ครั้งจะสร้างโบนัส ความเสียหายจริง 300 (+120%AD) และเป็นใบ้ 1 วิ",
+        "description": "Riktor detonates a magical zone dealing 50/75/100 (+20% AD) true damage every 0.5s and slowing enemies for 5s. Enemies hit 5 times take bonus 300/450/600 (+120% AD) true damage and are silenced for 1s."
       }
     ],
     "Rouie": [

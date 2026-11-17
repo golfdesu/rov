@@ -21,9 +21,10 @@ interface GlobalBanModalProps {
   heroMap: Map<string, Hero>;
   globalBans: GlobalBanState;
   seriesGames?: RecordedDraftGame[];
+  activeBoardHeroes?: ReadonlySet<string>;
   initialCategory?: GlobalBanCategoryKey;
   onChange: (next: GlobalBanState) => void;
-  onSelectGameNumber?: (g: number, globalBansOverride?: GlobalBanState) => void;
+  onSelectGameNumber?: (g: number, globalBansOverride?: GlobalBanState, skipAutoSave?: boolean) => void;
   onClose: () => void;
 }
 
@@ -36,11 +37,16 @@ const ROLE_LABELS: Record<RoleType, string> = {
   Support: "ซัพพอร์ต",
 };
 
+const MAX_TEAM_GLOBAL_BANS = 30;
+const MAX_UNIVERSAL_BANS = 20;
+const MAX_EFFECTIVE_MASKED_BANS = 40;
+
 export function GlobalBanModal({
   heroes,
   heroMap,
   globalBans,
   seriesGames = [],
+  activeBoardHeroes,
   initialCategory = "teamAUsed",
   onChange,
   onSelectGameNumber,
@@ -49,6 +55,7 @@ export function GlobalBanModal({
   const [activeCategory, setActiveCategory] = useState<GlobalBanCategoryKey>(initialCategory);
   const [query, setQuery] = useState("");
   const [role, setRole] = useState<RoleType | null>(null);
+  const [limitNotice, setLimitNotice] = useState<string | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const titleId = useId();
 
@@ -122,6 +129,30 @@ export function GlobalBanModal({
   const toggleHero = (heroName: string) => {
     const list = globalBans[activeCategory];
     const exists = list.includes(heroName);
+    if (!exists) {
+      if (activeBoardHeroes?.has(heroName)) {
+        setLimitNotice(`ไม่สามารถเพิ่ม ${displayName(heroName)} ได้ เนื่องจากถูกเลือก/แบนอยู่บนกระดานปัจจุบัน`);
+        return;
+      }
+      if (activeCategory === "universalBans" && list.length >= MAX_UNIVERSAL_BANS) {
+        setLimitNotice(`แบนร่วมทั้งซีรีส์ได้สูงสุด ${MAX_UNIVERSAL_BANS} ตัวละคร`);
+        return;
+      }
+      if (activeCategory !== "universalBans" && list.length >= MAX_TEAM_GLOBAL_BANS) {
+        setLimitNotice(`แบนสะสมต่อทีมได้สูงสุด ${MAX_TEAM_GLOBAL_BANS} ตัวละคร`);
+        return;
+      }
+      const nextTeamA = activeCategory === "teamAUsed" ? [...list, heroName] : globalBans.teamAUsed;
+      const nextTeamB = activeCategory === "teamBUsed" ? [...list, heroName] : globalBans.teamBUsed;
+      const nextUniv = activeCategory === "universalBans" ? [...list, heroName] : globalBans.universalBans;
+      const maskedA = new Set([...nextTeamA, ...nextUniv]).size;
+      const maskedB = new Set([...nextTeamB, ...nextUniv]).size;
+      if (maskedA > MAX_EFFECTIVE_MASKED_BANS || maskedB > MAX_EFFECTIVE_MASKED_BANS) {
+        setLimitNotice(`จำนวนแบนรวมต่อฝั่งต้องไม่เกิน ${MAX_EFFECTIVE_MASKED_BANS} ตัวละคร`);
+        return;
+      }
+    }
+    setLimitNotice(null);
     const nextList = exists ? list.filter((n) => n !== heroName) : [...list, heroName];
     onChange({
       ...globalBans,
@@ -177,22 +208,42 @@ export function GlobalBanModal({
   };
 
   const handleClose = () => {
-    const currentStatus = getGameUnlockStatus(globalBans.gameNumber, globalBans, seriesGames);
+    const normalized: GlobalBanState = {
+      ...globalBans,
+      teamAName: globalBans.teamAName.trim() || "TEAM A",
+      teamBName: globalBans.teamBName.trim() || "TEAM B",
+    };
+    const namesFixed =
+      normalized.teamAName !== globalBans.teamAName || normalized.teamBName !== globalBans.teamBName;
+
+    const currentStatus = getGameUnlockStatus(normalized.gameNumber, normalized, seriesGames);
     if (!currentStatus.isUnlocked) {
-      const maxUnlocked = getMaxUnlockedGame(globalBans, seriesGames);
+      const maxUnlocked = getMaxUnlockedGame(normalized, seriesGames);
       if (onSelectGameNumber) {
-        onSelectGameNumber(maxUnlocked);
+        onSelectGameNumber(maxUnlocked, normalized, true);
       } else {
-        onChange({ ...globalBans, gameNumber: maxUnlocked });
+        onChange({ ...normalized, gameNumber: maxUnlocked });
       }
+    } else if (namesFixed) {
+      onChange(normalized);
     }
     onClose();
   };
 
+  const handleTeamNameChange = (field: "teamAName" | "teamBName", value: string) => {
+    const anchorSeries =
+      !globalBans.seriesName && seriesGames.length > 0 ? resolveSeriesName(globalBans) : globalBans.seriesName;
+    onChange({
+      ...globalBans,
+      ...(anchorSeries !== undefined ? { seriesName: anchorSeries } : {}),
+      [field]: value,
+    });
+  };
+
   return (
-    <Modal labelledBy={titleId} className="max-h-[92vh] max-w-4xl" initialFocusRef={searchInputRef} onClose={handleClose}>
+    <Modal labelledBy={titleId} className="max-h-[92vh] max-w-4xl overflow-hidden" initialFocusRef={searchInputRef} onClose={handleClose}>
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-3">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-3">
         <div className="flex items-center gap-2.5">
           <Layers className="h-4 w-4 text-gold" />
           <div>
@@ -228,7 +279,7 @@ export function GlobalBanModal({
       </div>
 
       {/* Team Name & Side Assignment Bar (Left = Current BLUE, Right = Current RED) */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-panel-2/60 px-4 py-2.5">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-line bg-panel-2/60 px-4 py-2.5">
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-1.5">
             <span className="bg-blue px-1.5 py-0.5 font-mono text-[10px] font-bold text-ink">
@@ -238,9 +289,7 @@ export function GlobalBanModal({
               type="text"
               value={blueNameValue}
               placeholder="TEAM BLUE"
-              onChange={(e) =>
-                onChange({ ...globalBans, [blueTeamNameField]: e.target.value })
-              }
+              onChange={(e) => handleTeamNameChange(blueTeamNameField, e.target.value)}
               onBlur={(e) => {
                 if (!e.target.value.trim()) {
                   const fallback = blueTeamNameField === "teamAName" ? "TEAM A" : "TEAM B";
@@ -270,9 +319,7 @@ export function GlobalBanModal({
               type="text"
               value={redNameValue}
               placeholder="TEAM RED"
-              onChange={(e) =>
-                onChange({ ...globalBans, [redTeamNameField]: e.target.value })
-              }
+              onChange={(e) => handleTeamNameChange(redTeamNameField, e.target.value)}
               onBlur={(e) => {
                 if (!e.target.value.trim()) {
                   const fallback = redTeamNameField === "teamAName" ? "TEAM A" : "TEAM B";
@@ -345,7 +392,7 @@ export function GlobalBanModal({
       </div>
 
       {/* Category Tabs */}
-      <div className="grid grid-cols-3 gap-1.5 border-b border-line bg-bg/60 px-3 py-2 sm:gap-2 sm:px-4 sm:py-2.5">
+      <div className="grid shrink-0 grid-cols-3 gap-1.5 border-b border-line bg-bg/60 px-3 py-2 sm:gap-2 sm:px-4 sm:py-2.5">
         {categories.map((cat) => {
           const isActive = activeCategory === cat.key;
           const count = globalBans[cat.key].length;
@@ -377,7 +424,12 @@ export function GlobalBanModal({
       </div>
 
       {/* Active Category Selected Heroes Bar */}
-      <div className="border-b border-line bg-panel-2/40 px-4 py-2.5">
+      <div className="shrink-0 border-b border-line bg-panel-2/40 px-4 py-2.5">
+        {limitNotice && (
+          <div className="mb-2 border border-red/50 bg-red/10 px-2.5 py-1 text-[11px] font-medium text-red">
+            {limitNotice}
+          </div>
+        )}
         <div className="mb-1.5 flex items-center justify-between gap-2">
           <span className="text-[11px] text-muted">{currentCat.desc}</span>
           {activeList.length > 0 && (
@@ -429,7 +481,7 @@ export function GlobalBanModal({
       </div>
 
       {/* Search & Role Filters */}
-      <div className="flex flex-col gap-2 border-b border-line px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex shrink-0 flex-col gap-2 border-b border-line px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative flex flex-1 items-center">
           <Search size={15} className="pointer-events-none absolute left-3 text-dim" />
           <input
@@ -492,6 +544,7 @@ export function GlobalBanModal({
           <div className="grid grid-cols-5 gap-1.5 sm:grid-cols-7 md:grid-cols-9 lg:grid-cols-10">
             {filtered.map((h) => {
               const isSelected = activeSet.has(h.name);
+              const isOnActiveBoard = !isSelected && Boolean(activeBoardHeroes?.has(h.name));
               const inA = teamASet.has(h.name);
               const inB = teamBSet.has(h.name);
               const inUniv = univSet.has(h.name);
@@ -501,11 +554,15 @@ export function GlobalBanModal({
                 <button
                   key={h.name}
                   type="button"
+                  disabled={isOnActiveBoard}
                   onClick={() => toggleHero(h.name)}
+                  title={isOnActiveBoard ? `${dName} ถูกเลือก/แบนอยู่บนกระดานปัจจุบัน` : dName}
                   className={`group relative flex flex-col items-center border p-1 transition-all ${
                     isSelected
                       ? currentCat.ringClass
-                      : "border-line/70 bg-bg/40 hover:border-line-strong hover:bg-panel-2"
+                      : isOnActiveBoard
+                        ? "cursor-not-allowed border-line/40 bg-bg/20 opacity-40"
+                        : "border-line/70 bg-bg/40 hover:border-line-strong hover:bg-panel-2"
                   }`}
                 >
                   <div className="relative aspect-square w-full overflow-hidden">
@@ -560,7 +617,7 @@ export function GlobalBanModal({
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between border-t border-line bg-bg px-4 py-2.5">
+      <div className="flex shrink-0 items-center justify-between border-t border-line bg-bg px-4 py-2.5">
         <div className="flex flex-wrap items-center gap-3 font-mono text-xs text-muted">
           <span>
             {globalBans.teamAName} ({teamAIsBlue ? "Blue" : "Red"}):{" "}

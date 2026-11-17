@@ -14401,6 +14401,259 @@
       "screenshot": "2026_aog_winter/playoffs/2026_po_m1120_g6_win_aog_fpl_vs_boom.png"
     },
     {
+      "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1121",
+      "game_number": 1,
+      "date": "November 16, 2026 - 13:00",
+      "blue_team": "BMG",
+      "red_team": "GAM",
+      "blue_picks": [
+        "Dolia",
+        "Tachi",
+        "Zata",
+        "Capheny",
+        "Yena"
+      ],
+      "red_picks": [
+        "Astrid",
+        "Thane",
+        "Liliana",
+        "Airi",
+        "Murad"
+      ],
+      "source": "screenshot",
+      "screenshot": "2026_aic/wildcard/2026_wc_d1_m1_g1_aic_bmg_vs_gam.png"
+    },
+    {
+      "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1121",
+      "game_number": 2,
+      "date": "November 16, 2026 - 13:00",
+      "blue_team": "GAM",
+      "red_team": "BMG",
+      "blue_picks": [
+        "Rouie",
+        "Valhein",
+        "Chaugnar",
+        "Biron",
+        "Zanis"
+      ],
+      "red_picks": [
+        "Y'bneth",
+        "Sinestrea",
+        "Ignis",
+        "Stuart",
+        "Airi"
+      ],
+      "source": "screenshot",
+      "screenshot": "2026_aic/wildcard/2026_wc_d1_m1_g2_aic_bmg_vs_gam.png"
+    },
+    {
+      "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1121",
+      "game_number": 3,
+      "date": "November 16, 2026 - 13:00",
+      "blue_team": "BMG",
+      "red_team": "GAM",
+      "blue_picks": [
+        "Eland'orr",
+        "Zanis",
+        "TeeMee",
+        "Evita",
+        "Riktor"
+      ],
+      "red_picks": [
+        "Mina",
+        "Edras",
+        "Y'bneth",
+        "Lorion",
+        "Keera"
+      ],
+      "source": "screenshot",
+      "screenshot": "2026_aic/wildcard/2026_wc_d1_m1_g3_aic_bmg_vs_gam.png"
+    },
+    {
+      "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1122",
+      "game_number": 1,
+      "date": "November 16, 2026 - 19:00",
+      "blue_team": "GAM",
+      "red_team": "SLX",
+      "blue_picks": [
+        "Edras",
+        "Ryoma",
+        "Baldum",
+        "Hayate",
+        "Zata"
+      ],
+      "red_picks": [
+        "Marja",
+        "Maloch",
+        "Iggy",
+        "Taara",
+        "Preyta"
+      ],
+      "source": "screenshot",
+      "screenshot": "2026_aic/wildcard/2026_wc_d1_m3_g1_aic_gam_vs_slx.png"
+    },
+    {
+      "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1122",
+      "game_number": 2,
+      "date": "November 16, 2026 - 19:00",
+      "blue_team": "GAM",
+      "red_team": "SLX",
+      "blue_picks": [
+        "Tamyn",
+        "Iggy",
+        "Wiro",
+        "Biron",
+        "Zephys"
+      ],
+      "red_picks": [
+        "Y'bneth",
+        "Sinestrea",
+        "Liliana",
+        "Ryoma",
+        "Airi"
+      ],
+      "source": "screenshot",
+      "screenshot": "2026_aic/wildcard/2026_wc_d1_m3_g2_aic_gam_vs_slx.png"
+    },
+    {
+      "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1122",
+      "game_number": 3,
+      "date": "November 16, 2026 - 19:00",
+      "blue_team": "SLX",
+      "red_team": "GAM",
+      "blue_picks": [
+        "Wiro",
+        "Nakroth",
+        "Murad",
+        "Hayate",
+        "Yue"
+      ],
+      "red_picks": [
+        "Dolia",
+        "Tachi",
+        "Mganga",
+        "Stuart",
+        "Skud"
+      ],
+      "source": "screenshot",
+      "screenshot": "2026_aic/wildcard/2026_wc_d1_m3_g3_aic_gam_vs_slx.png"
+    },
+    {
+      "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1123",
+      "game_number": 1,
+      "date": "November 16, 2026 - 16:00",
+      "blue_team": "ONE",
+      "red_team": "FL",
+      "blue_picks": [
+        "Edras",
+        "Thane",
+        "Zephys",
+        "Zata",
+        "Florentino"
+      ],
+      "red_picks": [
+        "Dolia",
+        "Stuart",
+        "Tachi",
+        "Evita",
+        "Yena"
+      ],
+      "source": "screenshot",
+      "screenshot": "2026_aic/wildcard/2026_wc_d1_m2_g1_aic_one_vs_fl.png"
+    },
+    {
+      "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1123",
+      "game_number": 2,
+      "date": "November 16, 2026 - 16:00",
+      "blue_team": "FL",
+      "red_team": "ONE",
+      "blue_picks": [
+        "Rouie",
+        "Marja",
+        "Maloch",
+        "Astrid",
+        "Wiro"
+      ],
+      "red_picks": [
+        "Lorion",
+        "Stuart",
+        "Ryoma",
+        "Nakroth",
+        "Alice"
+      ],
+      "source": "screenshot",
+      "screenshot": "2026_aic/wildcard/2026_wc_d1_m2_g2_aic_one_vs_fl.png"
+    },
+    {
+      "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1123",
+      "game_number": 3,
+      "date": "November 16, 2026 - 16:00",
+      "blue_team": "FL",
+      "red_team": "ONE",
+      "blue_picks": [
+        "Y'bneth",
+        "Zephys",
+        "Valhein",
+        "Yan",
+        "Liliana"
+      ],
+      "red_picks": [
+        "Violet",
+        "TeeMee",
+        "Billow",
+        "Airi",
+        "Annette"
+      ],
+      "source": "screenshot",
+      "screenshot": "2026_aic/wildcard/2026_wc_d1_m2_g3_aic_one_vs_fl.png"
+    },
+    {
+      "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1123",
+      "game_number": 4,
+      "date": "November 16, 2026 - 16:00",
+      "blue_team": "ONE",
+      "red_team": "FL",
+      "blue_picks": [
+        "Sinestrea",
+        "Baldum",
+        "Hayate",
+        "D'Arcy",
+        "Yena"
+      ],
+      "red_picks": [
+        "Tamyn",
+        "Mina",
+        "Eland'orr",
+        "Ignis",
+        "Thane"
+      ],
+      "source": "screenshot",
+      "screenshot": "2026_aic/wildcard/2026_wc_d1_m2_g4_aic_one_vs_fl.png"
+    },
+    {
+      "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1123",
+      "game_number": 5,
+      "date": "November 16, 2026 - 16:00",
+      "blue_team": "ONE",
+      "red_team": "FL",
+      "blue_picks": [
+        "Evita",
+        "Eland'orr",
+        "Y'bneth",
+        "Taara",
+        "Omen"
+      ],
+      "red_picks": [
+        "Iggy",
+        "Toro",
+        "Edras",
+        "Violet",
+        "Ata"
+      ],
+      "source": "screenshot",
+      "screenshot": "2026_aic/wildcard/2026_wc_d1_m2_g5_aic_one_vs_fl.png"
+    },
+    {
       "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S232",
       "game_number": 1,
       "date": "July 4, 2026 - 13:00",

@@ -43,62 +43,33 @@ def test_predict_endpoint():
     assert len(data["red_next_picks"]) == 2
 
 
-def test_predict_matrix_endpoint():
-    response = client.post(
-        "/predict/matrix",
-        json={
-            "mode": "pick",
-            "side": "blue",
-            "phase": 1,
-            "ally_picks": ["Rouie", "Billow"],
-            "enemy_picks": ["TeeMee", "Hayate"],
-            "ally_bans": ["Goverra", "Dyadia"],
-            "enemy_bans": ["Heino", "Dolia"],
-            "global_bans": ["Marja"],
-            "top_k": 5,
-        },
-    )
-    assert response.status_code == 200
-    data = response.json()
-    assert data["architecture"] == "EmpiricalMatrixRules"
-    assert data["mode"] == "pick"
-    assert len(data["recommendations"]) == 5
-    rec_names = {r["hero_name"] for r in data["recommendations"]}
+def test_matrix_and_heuristic_routes_removed_and_matrix_core():
+    from src.api import predictor
+    from src.schemas import DraftStateRequest
+
+    payload = {
+        "mode": "pick",
+        "side": "blue",
+        "phase": 1,
+        "ally_picks": ["Rouie", "Billow"],
+        "enemy_picks": ["TeeMee", "Hayate"],
+        "ally_bans": ["Goverra", "Dyadia"],
+        "enemy_bans": ["Heino", "Dolia"],
+        "global_bans": ["Marja"],
+        "top_k": 5,
+    }
+    assert client.post("/predict/matrix", json=payload).status_code == 404
+    assert client.post("/predict/heuristic", json=payload).status_code == 404
+
+    data = predictor.predict_matrix(DraftStateRequest(**payload))
+    assert data.architecture == "EmpiricalMatrixRules"
+    assert data.mode == "pick"
+    assert len(data.recommendations) == 5
+    rec_names = {r.hero_name for r in data.recommendations}
     assert "Marja" not in rec_names
     assert "Rouie" not in rec_names
-    assert len(data["blue_next_picks"]) == 2
-    assert len(data["red_next_picks"]) == 2
-
-
-def test_predict_heuristic_endpoint():
-    response = client.post(
-        "/predict/heuristic",
-        json={
-            "mode": "pick",
-            "side": "blue",
-            "phase": 1,
-            "ally_picks": ["Rouie", "Billow"],
-            "enemy_picks": ["TeeMee", "Hayate"],
-            "ally_bans": ["Goverra", "Dyadia"],
-            "enemy_bans": ["Heino", "Dolia"],
-            "global_bans": ["Marja"],
-            "top_k": 5,
-        },
-    )
-    # Checkpoint is pending training via run_hpo_heuristic_h100.sbatch on H100
-    assert response.status_code in (200, 503)
-    if response.status_code == 200:
-        data = response.json()
-        assert data["architecture"] == "RoVDraftGNNTransformer"
-        assert data["mode"] == "pick"
-        assert len(data["recommendations"]) == 5
-        rec_names = {r["hero_name"] for r in data["recommendations"]}
-        assert "Marja" not in rec_names
-        assert "Rouie" not in rec_names
-        assert len(data["blue_next_picks"]) == 2
-        assert len(data["red_next_picks"]) == 2
-    else:
-        assert "Heuristic draft model artifact not found" in response.json()["detail"]
+    assert len(data.blue_next_picks) == 2
+    assert len(data.red_next_picks) == 2
 
 
 def test_predict_next_picks_ghost_forecast():
@@ -166,7 +137,7 @@ def test_ban_pick_bidirectional_intelligence():
 def test_web_ui_served():
     response = client.get("/")
     assert response.status_code == 200
-    assert "RoV Draft Intelligence" in response.text
+    assert "<title>MiniDraft</title>" in response.text
 
 
 def test_web_static_assets_served():
@@ -643,6 +614,9 @@ def test_series_winning_heroes_adaptation_boost():
 
 
 def test_per_lane_quota_in_sota_and_matrix_modes():
+    from src.api import predictor
+    from src.schemas import DraftStateRequest
+
     payload = {
         "mode": "pick",
         "side": "blue",
@@ -653,86 +627,82 @@ def test_per_lane_quota_in_sota_and_matrix_modes():
         "enemy_bans": ["TeeMee", "Marja", "Heino", "Goverra"],
         "top_k": 50,
     }
-    for endpoint in ("/predict", "/predict/matrix"):
-        resp = client.post(endpoint, json=payload)
-        assert resp.status_code == 200
-        recs = resp.json()["recommendations"]
+    resp = client.post("/predict", json=payload)
+    assert resp.status_code == 200
+    sota_recs = resp.json()["recommendations"]
+    matrix_recs = [r.model_dump() for r in predictor.predict_matrix(DraftStateRequest(**payload)).recommendations]
+    for label, recs in (("SOTA", sota_recs), ("Matrix", matrix_recs)):
         assert len(recs) == 50
         for lane in ("DS_Lane", "Jungle", "Mid", "Dragon_Lane", "Roam"):
             lane_recs = [r for r in recs if r["primary_lane"] == lane]
-            assert len(lane_recs) >= 5, f"{endpoint} returned <5 heroes for {lane}"
+            assert len(lane_recs) >= 5, f"{label} returned <5 heroes for {lane}"
             assert lane_recs[0]["probability_pct"] > 0.0
 
 
 def test_predict_matrix_forecasts_and_series_winner_parity():
+    from src.api import predictor
+    from src.schemas import DraftStateRequest
+
     # 1. Next picks must fill distinct lanes and respect per-side global bans
-    r_picks = client.post(
-        "/predict/matrix",
-        json={
-            "mode": "pick",
-            "side": "blue",
-            "phase": 1,
-            "ally_picks": ["Rouie"],
-            "enemy_picks": ["TeeMee"],
-            "ally_bans": ["Goverra", "Dyadia"],
-            "enemy_bans": ["Heino", "Dolia"],
-            "blue_global_bans": ["Billow"],
-            "red_global_bans": ["Hayate"],
-            "top_k": 5,
-        },
+    d_picks = predictor.predict_matrix(
+        DraftStateRequest(
+            mode="pick",
+            side="blue",
+            phase=1,
+            ally_picks=["Rouie"],
+            enemy_picks=["TeeMee"],
+            ally_bans=["Goverra", "Dyadia"],
+            enemy_bans=["Heino", "Dolia"],
+            blue_global_bans=["Billow"],
+            red_global_bans=["Hayate"],
+            top_k=5,
+        )
     )
-    assert r_picks.status_code == 200
-    d_picks = r_picks.json()
-    assert len(d_picks["blue_next_picks"]) == 2
-    assert len(d_picks["red_next_picks"]) == 2
-    blue_lanes = [r["primary_lane"] for r in d_picks["blue_next_picks"]]
-    red_lanes = [r["primary_lane"] for r in d_picks["red_next_picks"]]
+    assert len(d_picks.blue_next_picks) == 2
+    assert len(d_picks.red_next_picks) == 2
+    blue_lanes = [r.primary_lane for r in d_picks.blue_next_picks]
+    red_lanes = [r.primary_lane for r in d_picks.red_next_picks]
     assert blue_lanes[0] != blue_lanes[1]
     assert red_lanes[0] != red_lanes[1]
-    assert all(r["hero_name"] != "Billow" for r in d_picks["blue_next_picks"])
-    assert all(r["hero_name"] != "Hayate" for r in d_picks["red_next_picks"])
+    assert all(r.hero_name != "Billow" for r in d_picks.blue_next_picks)
+    assert all(r.hero_name != "Hayate" for r in d_picks.red_next_picks)
 
     # 2. Next bans must be populated when ban slots remain (Phase 2 Omen protection bans)
-    r_bans = client.post(
-        "/predict/matrix",
-        json={
-            "mode": "ban",
-            "side": "blue",
-            "phase": 2,
-            "ally_picks": ["Omen"],
-            "enemy_picks": ["Hayate"],
-            "ally_bans": ["Billow", "Dolia"],
-            "enemy_bans": ["Rouie", "TeeMee"],
-            "top_k": 5,
-        },
+    d_bans = predictor.predict_matrix(
+        DraftStateRequest(
+            mode="ban",
+            side="blue",
+            phase=2,
+            ally_picks=["Omen"],
+            enemy_picks=["Hayate"],
+            ally_bans=["Billow", "Dolia"],
+            enemy_bans=["Rouie", "TeeMee"],
+            top_k=5,
+        )
     )
-    assert r_bans.status_code == 200
-    d_bans = r_bans.json()
-    assert len(d_bans["blue_next_bans"]) == 2
-    assert len(d_bans["red_next_bans"]) == 2
-    assert [b["hero_name"] for b in d_bans["blue_next_bans"]] == ["Mina", "Florentino"]
+    assert len(d_bans.blue_next_bans) == 2
+    assert len(d_bans.red_next_bans) == 2
+    assert [b.hero_name for b in d_bans.blue_next_bans] == ["Mina", "Florentino"]
 
     # 3. Series winning heroes adaptation boost in matrix mode
-    target_hero = d_picks["recommendations"][2]["hero_name"]
-    base_prob = d_picks["recommendations"][2]["probability_pct"]
-    r_boost = client.post(
-        "/predict/matrix",
-        json={
-            "mode": "pick",
-            "side": "blue",
-            "phase": 1,
-            "ally_picks": ["Rouie"],
-            "enemy_picks": ["TeeMee"],
-            "ally_bans": ["Goverra", "Dyadia"],
-            "enemy_bans": ["Heino", "Dolia"],
-            "blue_global_bans": ["Billow"],
-            "red_global_bans": ["Hayate"],
-            "series_winning_heroes": [target_hero],
-            "top_k": 10,
-        },
+    target_hero = d_picks.recommendations[2].hero_name
+    base_prob = d_picks.recommendations[2].probability_pct
+    d_boost = predictor.predict_matrix(
+        DraftStateRequest(
+            mode="pick",
+            side="blue",
+            phase=1,
+            ally_picks=["Rouie"],
+            enemy_picks=["TeeMee"],
+            ally_bans=["Goverra", "Dyadia"],
+            enemy_bans=["Heino", "Dolia"],
+            blue_global_bans=["Billow"],
+            red_global_bans=["Hayate"],
+            series_winning_heroes=[target_hero],
+            top_k=10,
+        )
     )
-    assert r_boost.status_code == 200
-    boost_map = {r["hero_name"]: r["probability_pct"] for r in r_boost.json()["recommendations"]}
+    boost_map = {r.hero_name: r.probability_pct for r in d_boost.recommendations}
     assert boost_map[target_hero] > base_prob
 
 
@@ -1035,6 +1005,15 @@ def test_multi_user_auth_and_database_isolation(tmp_path, monkeypatch):
     # Logout and login verification
     assert client_a.post("/auth/logout").json()["authenticated"] is False
     assert client_a.get("/combat/builds").status_code == 401
+    # X-Expected-User protects against silent no-op saves after expiry and cross-tab account switches
+    assert (
+        client_a.put("/draft/session", json={"stepIndex": 1}, headers={"X-Expected-User": "user_alpha"}).status_code
+        == 401
+    )
+    assert (
+        client_b.put("/draft/session", json={"stepIndex": 1}, headers={"X-Expected-User": "user_alpha"}).status_code
+        == 409
+    )
     assert client_a.post("/auth/login", json={"username": "user_alpha", "password": "wrong"}).status_code == 401
 
     login_a = client_a.post("/auth/login", json={"username": "USER_ALPHA", "password": "secret-pass-a"})
@@ -1042,3 +1021,461 @@ def test_multi_user_auth_and_database_isolation(tmp_path, monkeypatch):
     assert login_a.json()["authenticated"] is True
     assert client_a.get("/draft/session").json()["bluePicks"] == ["Hayate"]
     assert client_a.get("/combat/builds").json()["a"]["level"] == 12
+
+    # > 20 seriesGames is allowed and DELETE writes a tombstone timestamp to prevent offline resurrection
+    many_games = [
+        {
+            "id": f"g-{i}",
+            "gameNumber": (i % 7) + 1,
+            "timestamp": "12:00:00",
+            "seriesName": f"S{i // 7}",
+            "blueTeamName": "BAC",
+            "redTeamName": "TLN",
+            "blueSideTeam": "A",
+            "blueBans": [],
+            "redBans": [],
+            "bluePicks": [],
+            "redPicks": [],
+            "blueWinRate": 50.0,
+        }
+        for i in range(25)
+    ]
+    r_many = client_a.put(
+        "/draft/session",
+        json={"seriesGames": many_games, "updatedAt": 1761650004000},
+        headers={"X-Expected-User": "user_alpha"},
+    )
+    assert r_many.status_code == 200
+    assert len(client_a.get("/draft/session").json()["seriesGames"]) == 25
+
+    assert client_a.delete("/draft/session", headers={"X-Expected-User": "user_alpha"}).status_code == 200
+    cleared = client_a.get("/draft/session").json()
+    assert cleared["stepIndex"] == 0
+    assert cleared["seriesGames"] == []
+    assert cleared["updatedAt"] > 0
+
+
+def test_sota_only_locked_endpoints_and_engine_normalization(tmp_path, monkeypatch):
+    from src.config import config
+
+    monkeypatch.setattr(config.paths, "app_db_path", tmp_path / "sota_only.db")
+    guest_client = TestClient(app)
+    reg_client = TestClient(app)
+
+    sample = {"mode": "pick", "side": "blue", "phase": 1, "top_k": 3}
+
+    # SOTA /predict works, while alternative model endpoints are gone for all callers
+    assert guest_client.post("/predict", json=sample).status_code == 200
+    assert guest_client.post("/predict/matrix", json=sample).status_code == 404
+    assert guest_client.post("/predict/heuristic", json=sample).status_code == 404
+
+    reg_res = reg_client.post("/auth/register", json={"username": "regular_player", "password": "user-pass-123"})
+    assert reg_res.status_code == 201
+    assert "can_switch_model" not in reg_res.json()["user"]
+    assert reg_client.post("/predict/matrix", json=sample).status_code == 404
+    assert reg_client.post("/predict/heuristic", json=sample).status_code == 404
+
+    # Any legacy engine value is coerced cleanly to sota
+    saved_user = reg_client.put("/draft/session", json={"engine": "matrix", "updatedAt": 1761650004000})
+    assert saved_user.status_code == 200
+    assert saved_user.json()["engine"] == "sota"
+    assert reg_client.get("/draft/session").json()["engine"] == "sota"
+
+
+def test_production_mode_lockdown_and_anti_scraping(tmp_path, monkeypatch):
+    from src.config import config
+
+    monkeypatch.setattr(config.paths, "app_db_path", tmp_path / "prod_lockdown.db")
+    guest_client = TestClient(app)
+    session_file = tmp_path / "draft_session_state.json"
+    monkeypatch.setattr(config.paths, "draft_session_path", session_file)
+    monkeypatch.setattr(config, "env", "production")
+
+    # 1. Docs, OpenAPI schema, metadata, alt model routes, and hidden media/asset paths return 404 in production
+    for blocked_path in (
+        "/docs",
+        "/docs/",
+        "/redoc",
+        "/redoc/",
+        "/openapi.json",
+        "/openapi.json/",
+        "/dataset_metadata.json",
+        "http://testserver//dataset_metadata.json",
+        "http://testserver/./dataset_metadata.json",
+        "http://testserver/%2e/dataset_metadata.json",
+        "http://testserver/foo/../dataset_metadata.json",
+        "/Dataset_Metadata.json",
+        "/items",
+        "/items/blade.png",
+        "/Items/blade.png",
+        "/items%5cblade.png",
+        "/enchantments/veda.png",
+        "/skills/liliana.png",
+        "/heroes-media/Liliana/skill/s1.jpg",
+        "/HEROES-MEDIA/Liliana/skill/s1.jpg",
+        "/items-media/Attack/blade.jpg",
+    ):
+        assert guest_client.get(blocked_path).status_code == 404, f"Expected 404 for {blocked_path}"
+    assert guest_client.post("/predict/matrix", json={"mode": "pick"}).status_code == 404
+    assert guest_client.post("/predict/heuristic", json={"mode": "pick"}).status_code == 404
+
+    # 2. Combat Lab & /combat/builds endpoints return 404 for both Guest and authenticated users in production
+    assert guest_client.get("/combat/catalog").status_code == 404
+    assert guest_client.get("/combat/builds").status_code == 404
+    assert guest_client.put("/combat/builds", json={"updatedAt": 123}).status_code == 404
+    assert guest_client.delete("/combat/builds").status_code == 404
+
+    reg_client = TestClient(app)
+    assert (
+        reg_client.post("/auth/register", json={"username": "prod_reg_user", "password": "user-pass-999"}).status_code
+        == 201
+    )
+    assert reg_client.get("/combat/builds").status_code == 404
+    assert reg_client.put("/combat/builds", json={"updatedAt": 123}).status_code == 404
+    assert reg_client.get("/combat/catalog").status_code == 404
+
+    assert guest_client.post("/combat/stats", json={"build": {"hero": "Liliana", "level": 15}}).status_code == 404
+    assert (
+        guest_client.post(
+            "/combat/duel",
+            json={
+                "a": {"hero": "Liliana", "level": 15},
+                "b": {"hero": "Toro", "level": 15},
+            },
+        ).status_code
+        == 404
+    )
+    assert guest_client.get("/combat/rune-recommendation", params={"hero": "Liliana"}).status_code == 404
+    assert guest_client.get("/combat/hero-screenshots/Liliana").status_code == 404
+    assert guest_client.get("/combat/item-screenshots/Claves%20Sancti").status_code == 404
+
+    # 3. /health strips internal architecture, val_loss, and dataset_metadata in production
+    health_res = guest_client.get("/health")
+    assert health_res.status_code == 200
+    health_data = health_res.json()
+    assert health_data == {"status": "healthy", "model_loaded": True}
+    assert "val_loss" not in health_data
+    assert "dataset_metadata" not in health_data
+    assert health_res.headers.get("X-Content-Type-Options") == "nosniff"
+    assert health_res.headers.get("X-Frame-Options") == "DENY"
+    assert health_res.headers.get("Cache-Control") == "no-store"
+
+    # 4. /heroes strips proprietary pro rates & tier_reason for everyone in production
+    for client_ctx in (guest_client, reg_client):
+        prod_heroes = client_ctx.get("/heroes").json()["hero_details"]
+        assert len(prod_heroes) == 130
+        assert "win_rate" not in prod_heroes[0]
+        assert "pick_rate" not in prod_heroes[0]
+        assert "ban_rate" not in prod_heroes[0]
+        assert "presence_rate" not in prod_heroes[0]
+        assert "tier_reason" not in prod_heroes[0]
+        assert set(prod_heroes[0].keys()) == {"id", "name", "role", "lane", "main_pro_lane", "tier", "image_url"}
+
+    # 5. Unauthenticated /draft/session does not read/write shared file on disk in production
+    put_guest = guest_client.put("/draft/session", json={"stepIndex": 3, "bluePicks": ["Liliana"], "updatedAt": 999})
+    assert put_guest.status_code == 200
+    assert not session_file.exists()
+    assert guest_client.get("/draft/session").json()["bluePicks"] == []
+
+    # 6. /predict enforces top_k <= 25, architecture redaction, error sanitization, global_bans bounds, and 413 body limit
+    for client_ctx in (guest_client, reg_client):
+        pred_res = client_ctx.post("/predict", json={"mode": "pick", "side": "blue", "phase": 1, "top_k": 50})
+        assert pred_res.status_code == 200
+        pred_json = pred_res.json()
+        assert len(pred_json["recommendations"]) == 25
+        assert pred_json["architecture"] == "RoV Draft AI"
+
+    hero_pool = guest_client.get("/heroes").json()["heroes"]
+    assert (
+        guest_client.post(
+            "/predict",
+            json={"mode": "pick", "side": "blue", "phase": 1, "global_bans": hero_pool[:21]},
+        ).status_code
+        == 400
+    )
+    assert (
+        guest_client.post(
+            "/predict",
+            json={
+                "mode": "ban",
+                "side": "blue",
+                "phase": 1,
+                "global_bans": hero_pool[:15],
+                "red_global_bans": hero_pool[15:41],
+            },
+        ).status_code
+        == 400
+    )
+    bad_hero = guest_client.post(
+        "/predict",
+        json={"mode": "pick", "side": "blue", "phase": 1, "ally_picks": ["NotAHeroXYZ"]},
+    )
+    assert bad_hero.status_code == 422
+    assert "NotAHeroXYZ" not in bad_hero.json()["detail"]
+    assert (
+        guest_client.post(
+            "/predict",
+            json={"mode": "pick", "side": "blue", "phase": 1, "ally_picks": ["A" * 65]},
+        ).status_code
+        == 422
+    )
+    huge_payload = '{"mode":"pick","pad":"' + ("x" * (270 * 1024)) + '"}'
+    assert (
+        guest_client.post(
+            "/predict",
+            content=huge_payload,
+            headers={"Content-Type": "application/json"},
+        ).status_code
+        == 413
+    )
+
+    # 7. Path normalizer & isolated dist-prod bundle sanity checks
+    from src.api import _normalize_request_path
+
+    assert _normalize_request_path("//dataset_metadata.json") == "/dataset_metadata.json"
+    assert _normalize_request_path("/foo/../Items\\blade.png") == "/items/blade.png"
+
+    dist_prod = config.paths.frontend_dist_prod_dir
+    if dist_prod.is_dir():
+        import re
+
+        prod_texts = [
+            (dist_prod / "index.html").read_text(encoding="utf-8"),
+            *(p.read_text(encoding="utf-8") for p in (dist_prod / "assets").glob("*.js")),
+        ]
+        combined = "\n".join(prod_texts)
+        assert not re.search(
+            r"predict/matrix|predict/heuristic|heuristic|bayes matrix|empirical matrix|3,512|\bgnn\b|transformer",
+            combined,
+            flags=re.IGNORECASE,
+        )
+
+
+def test_privacy_policy_and_google_oauth_flow(tmp_path, monkeypatch):
+    from urllib.parse import parse_qs, urlparse
+
+    import src.api as api_mod
+    from src.config import config
+
+    monkeypatch.setattr(config.paths, "app_db_path", tmp_path / "google_auth.db")
+    monkeypatch.setattr(api_mod, "_user_db", None)
+    monkeypatch.setattr(config, "google_client_id", "")
+    monkeypatch.setattr(config, "google_client_secret", "")
+
+    client = TestClient(app)
+
+    # 1. Privacy policy page is publicly accessible
+    priv = client.get("/privacy")
+    assert priv.status_code == 200
+    assert "Privacy Policy" in priv.text
+
+    # 2. Unconfigured Google login reports disabled in /auth/me and 503 on /auth/google/login
+    assert client.get("/auth/me").json()["google_login_enabled"] is False
+    assert client.get("/auth/google/login", follow_redirects=False).status_code == 503
+
+    # 3. Configure Google OAuth + mock token exchange and id_token verification
+    monkeypatch.setattr(config, "google_client_id", "test-client-id.apps.googleusercontent.com")
+    monkeypatch.setattr(config, "google_client_secret", "test-client-secret-value")
+    monkeypatch.setattr(config, "google_redirect_uri", "http://testserver/auth/google/callback")
+    assert client.get("/auth/me").json()["google_login_enabled"] is True
+
+    login_res = client.get("/auth/google/login", follow_redirects=False)
+    assert login_res.status_code == 302
+    loc = urlparse(login_res.headers["location"])
+    assert loc.netloc == "accounts.google.com"
+    qs = parse_qs(loc.query)
+    assert qs["client_id"] == ["test-client-id.apps.googleusercontent.com"]
+    assert qs["code_challenge_method"] == ["S256"]
+    oauth_state = qs["state"][0]
+    assert len(oauth_state) >= 16
+
+    # Tampered state must fail cleanly without creating session
+    bad_cb = client.get(
+        "/auth/google/callback?code=abc&state=wrong-state",
+        follow_redirects=False,
+    )
+    assert bad_cb.status_code == 302
+    assert "auth_error=invalid_state" in bad_cb.headers["location"]
+
+    class _FakeTokenResp:
+        status_code = 200
+
+        def json(self):
+            return {"id_token": "fake.jwt.token"}
+
+    captured_token_post: dict = {}
+
+    def _fake_httpx_post(url, data=None, timeout=None):
+        captured_token_post["url"] = url
+        captured_token_post["data"] = data
+        return _FakeTokenResp()
+
+    monkeypatch.setattr(api_mod.httpx, "post", _fake_httpx_post)
+    monkeypatch.setattr(
+        api_mod.google_id_token,
+        "verify_oauth2_token",
+        lambda token, req, aud, clock_skew_in_seconds=0: {
+            "iss": "https://accounts.google.com",
+            "aud": aud,
+            "sub": "google-sub-12345",
+            "email": "Coach.Alpha@gmail.com",
+            "email_verified": True,
+            "name": "Coach Alpha",
+            "_skew": clock_skew_in_seconds,
+        },
+    )
+
+    # Re-issue login to refresh state cookie after invalid_state cleared it
+    login_res2 = client.get("/auth/google/login", follow_redirects=False)
+    oauth_state2 = parse_qs(urlparse(login_res2.headers["location"]).query)["state"][0]
+
+    cb_res = client.get(
+        f"/auth/google/callback?code=auth-code-xyz&state={oauth_state2}",
+        follow_redirects=False,
+    )
+    assert cb_res.status_code == 302
+    assert cb_res.headers["location"] == "/"
+    assert captured_token_post["data"]["code"] == "auth-code-xyz"
+    assert len(captured_token_post["data"]["code_verifier"]) > 20
+
+    me = client.get("/auth/me").json()
+    assert me["authenticated"] is True
+    assert me["user"]["username"] == "coach.alpha"
+    assert me["user"]["display_name"] == "Coach Alpha"
+    assert me["user"]["email"] == "coach.alpha@gmail.com"
+    assert me["user"]["auth_provider"] == "google"
+
+    # Password login must never work against a Google-only account
+    assert client.post("/auth/login", json={"username": "coach.alpha", "password": "!google-oauth"}).status_code == 401
+
+    # Unverified email must be rejected
+    monkeypatch.setattr(
+        api_mod.google_id_token,
+        "verify_oauth2_token",
+        lambda token, req, aud, clock_skew_in_seconds=0: {
+            "iss": "https://accounts.google.com",
+            "aud": aud,
+            "sub": "google-sub-999",
+            "email": "unverified@gmail.com",
+            "email_verified": False,
+        },
+    )
+    unauth_client = TestClient(app)
+    r3 = unauth_client.get("/auth/google/login", follow_redirects=False)
+    s3 = parse_qs(urlparse(r3.headers["location"]).query)["state"][0]
+    cb_unverified = unauth_client.get(f"/auth/google/callback?code=c&state={s3}", follow_redirects=False)
+    assert cb_unverified.status_code == 302
+    assert "auth_error=email_unverified" in cb_unverified.headers["location"]
+    assert unauth_client.get("/auth/me").json()["authenticated"] is False
+
+
+def test_discord_oauth_flow(tmp_path, monkeypatch):
+    from urllib.parse import parse_qs, urlparse
+
+    import src.api as api_mod
+    from src.config import config
+
+    monkeypatch.setattr(config.paths, "app_db_path", tmp_path / "discord_auth.db")
+    monkeypatch.setattr(api_mod, "_user_db", None)
+    monkeypatch.setattr(config, "discord_client_id", "")
+    monkeypatch.setattr(config, "discord_client_secret", "")
+
+    client = TestClient(app)
+
+    # 1. Unconfigured Discord reports disabled and returns 503 on login
+    assert client.get("/auth/me").json()["discord_login_enabled"] is False
+    assert client.get("/auth/discord/login", follow_redirects=False).status_code == 503
+
+    # 2. Seed an existing Google user to verify verified vs unverified email linking rules
+    db = api_mod.get_user_db()
+    google_user = db.upsert_google_user("google-sub-seed", "shared.player@gmail.com", "Shared Player")
+
+    # 3. Configure Discord OAuth and verify authorize redirect + PKCE
+    monkeypatch.setattr(config, "discord_client_id", "123456789012345678")
+    monkeypatch.setattr(config, "discord_client_secret", "discord-test-secret-xyz")
+    monkeypatch.setattr(config, "discord_redirect_uri", "http://testserver/auth/discord/callback")
+    assert client.get("/auth/me").json()["discord_login_enabled"] is True
+
+    login_res = client.get("/auth/discord/login", follow_redirects=False)
+    assert login_res.status_code == 302
+    loc = urlparse(login_res.headers["location"])
+    assert loc.netloc == "discord.com"
+    qs = parse_qs(loc.query)
+    assert qs["client_id"] == ["123456789012345678"]
+    assert qs["code_challenge_method"] == ["S256"]
+    assert qs["scope"] == ["identify email"]
+    state_1 = qs["state"][0]
+
+    # Tampered state must fail
+    bad_cb = client.get("/auth/discord/callback?code=abc&state=bad", follow_redirects=False)
+    assert bad_cb.status_code == 302
+    assert "auth_error=discord_invalid_state" in bad_cb.headers["location"]
+
+    class _FakeResp:
+        def __init__(self, status_code: int, payload: dict):
+            self.status_code = status_code
+            self._payload = payload
+
+        def json(self):
+            return self._payload
+
+    # Unverified email on Discord must NOT hijack existing Google account
+    monkeypatch.setattr(
+        api_mod.httpx,
+        "post",
+        lambda url, data=None, headers=None, timeout=None: _FakeResp(200, {"access_token": "disc-tok-1"}),
+    )
+    monkeypatch.setattr(
+        api_mod.httpx,
+        "get",
+        lambda url, headers=None, timeout=None: _FakeResp(
+            200,
+            {
+                "id": "discord-uid-unverified",
+                "username": "RoV.ScrimLead",
+                "global_name": "Scrim Lead",
+                "email": "shared.player@gmail.com",
+                "verified": False,
+            },
+        ),
+    )
+
+    login_res2 = client.get("/auth/discord/login", follow_redirects=False)
+    state_2 = parse_qs(urlparse(login_res2.headers["location"]).query)["state"][0]
+    cb_res = client.get(f"/auth/discord/callback?code=disc-code&state={state_2}", follow_redirects=False)
+    assert cb_res.status_code == 302
+    assert cb_res.headers["location"] == "/"
+
+    me = client.get("/auth/me").json()
+    assert me["authenticated"] is True
+    assert me["user"]["id"] != google_user.id
+    assert me["user"]["username"] == "rov.scrimlead"
+    assert me["user"]["display_name"] == "Scrim Lead"
+    assert me["user"]["email"] is None
+    assert me["user"]["auth_provider"] == "discord"
+
+    # Verified matching email on Discord links cleanly to existing Google user
+    client2 = TestClient(app)
+    monkeypatch.setattr(
+        api_mod.httpx,
+        "get",
+        lambda url, headers=None, timeout=None: _FakeResp(
+            200,
+            {
+                "id": "discord-uid-verified",
+                "username": "shared_disc",
+                "global_name": "Shared Player",
+                "email": "shared.player@gmail.com",
+                "verified": True,
+            },
+        ),
+    )
+    login_res3 = client2.get("/auth/discord/login", follow_redirects=False)
+    state_3 = parse_qs(urlparse(login_res3.headers["location"]).query)["state"][0]
+    cb_linked = client2.get(f"/auth/discord/callback?code=disc-code-2&state={state_3}", follow_redirects=False)
+    assert cb_linked.status_code == 302
+    assert cb_linked.headers["location"] == "/"
+    me2 = client2.get("/auth/me").json()
+    assert me2["user"]["id"] == google_user.id
+    assert me2["user"]["auth_provider"] == "discord"
+    assert state_1 != state_2

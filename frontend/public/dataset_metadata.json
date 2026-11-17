@@ -1,21 +1,21 @@
 {
-  "updated_at": "2026-11-14T01:50:16.374584+00:00",
+  "updated_at": "2026-11-17T04:32:00.553671+00:00",
   "total_heroes": 130,
   "total_skills": 534,
-  "total_matches": 4329,
+  "total_matches": 4340,
   "matches_by_year": {
     "2024": 817,
     "2025": 1702,
-    "2026": 1810
+    "2026": 1821
   },
-  "training_matches": 3512,
-  "training_true_order": 1810,
-  "true_order_pct": 51.5,
-  "tpo_games": 1810,
-  "patch_changes": 349,
-  "patch_heroes": 97,
-  "synergy_pairs": 2517,
-  "counter_pairs": 6090,
+  "training_matches": 3523,
+  "training_true_order": 1821,
+  "true_order_pct": 51.7,
+  "tpo_games": 1821,
+  "patch_changes": 363,
+  "patch_heroes": 101,
+  "synergy_pairs": 2527,
+  "counter_pairs": 6118,
   "arcana_tier3": 30,
   "enchantments": 33,
   "flowborn_mage_matches": 9

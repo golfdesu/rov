@@ -38,7 +38,10 @@ TOURNAMENT_PAGES = [
     "Arena of Valor Premier League/2025/Playoffs",
     "Arena of Valor Premier League/2024/Swiss Stage",
     "Arena of Valor Premier League/2024/Playoffs",
-    # Arena of Valor International Championship (International) 2024-2025
+    # Arena of Valor International Championship (International) 2024-2026
+    "Arena of Valor International Championship/2026/Wildcard",
+    "Arena of Valor International Championship/2026/Swiss Stage",
+    "Arena of Valor International Championship/2026/Knockout Stage",
     "Arena of Valor International Championship/2025/Group Stage",
     "Arena of Valor International Championship/2025/Knockout Stage",
     "Arena of Valor International Championship/2024/Swiss Stage",
@@ -218,6 +221,11 @@ TEAM_ALIASES = {
     "GGL": "GGL",
 }
 
+# Verified durations from official broadcast VODs when Liquipedia omits |length=
+MANUAL_LENGTH_OVERRIDES = {
+    ("Arena of Glory", "2026/Spring/Group Stage 1", "April 10, 2026 - 19:30", frozenset({"GAM", "BOX"}), 4): "21:25",
+}
+
 
 def normalize_team(raw_team: str) -> str:
     """Normalize raw team string to standard official esports abbreviation."""
@@ -319,7 +327,7 @@ def parse_match_block(match_wt: str, tournament_page: str, series_idx: int, norm
         t1side_m = re.search(r"\|\s*team1side\s*=\s*(blue|red)", map_wt, re.IGNORECASE)
         t2side_m = re.search(r"\|\s*team2side\s*=\s*(blue|red)", map_wt, re.IGNORECASE)
         winner_m = re.search(r"\|\s*winner\s*=\s*([12])", map_wt)
-        len_m = re.search(r"\|\s*length\s*=\s*([0-9:]+)", map_wt)
+        len_m = re.search(r"\|\s*length\s*=\s*([0-9:;]+)", map_wt)
 
         t1_side = t1side_m.group(1).lower() if t1side_m else ""
         t2_side = t2side_m.group(1).lower() if t2side_m else ""
@@ -329,7 +337,16 @@ def parse_match_block(match_wt: str, tournament_page: str, series_idx: int, norm
             t2_side = "red" if t1_side == "blue" else "blue"
 
         winner = int(winner_m.group(1)) if winner_m else 0
-        game_length = len_m.group(1) if len_m else ""
+        game_length = len_m.group(1).replace(";", ":") if len_m else ""
+        if not game_length:
+            override_key = (
+                league,
+                f"{year}/{stage}" if year else stage,
+                match_date,
+                frozenset({team1, team2}),
+                game_num,
+            )
+            game_length = MANUAL_LENGTH_OVERRIDES.get(override_key, "")
 
         t1_picks = []
         t2_picks = []
@@ -456,6 +473,18 @@ def format_flat_row(g: dict) -> dict:
     }
 
 
+def _make_game_key(m: dict) -> tuple:
+    """Build a deduplication key tolerant of minor match-time edits on Liquipedia."""
+    date_day = (m.get("date") or "").split(" - ")[0].strip()
+    return (
+        m.get("league"),
+        m.get("stage"),
+        date_day,
+        frozenset([m.get("blue_team"), m.get("red_team")]),
+        m.get("game_number"),
+    )
+
+
 def main():
     normalize_hero = build_hero_normalizer()
     json_path = DATA_DIR / "matches_draft_full.json"
@@ -467,16 +496,7 @@ def main():
     if json_path.exists():
         with open(json_path, "r", encoding="utf-8") as f:
             existing_games = json.load(f)
-        existing_keys = {
-            (
-                m.get("league"),
-                m.get("stage"),
-                m.get("date"),
-                frozenset([m.get("blue_team"), m.get("red_team")]),
-                m.get("game_number"),
-            )
-            for m in existing_games
-        }
+        existing_keys = {_make_game_key(m) for m in existing_games}
         for m in existing_games:
             sid = m.get("series_id", "")
             if "_S" in sid:
@@ -504,30 +524,13 @@ def main():
                 continue
 
             # Check if any games in this match block are new
-            new_in_block = [
-                g
-                for g in probe_games
-                if (
-                    g.get("league"),
-                    g.get("stage"),
-                    g.get("date"),
-                    frozenset([g.get("blue_team"), g.get("red_team")]),
-                    g.get("game_number"),
-                )
-                not in existing_keys
-            ]
+            new_in_block = [g for g in probe_games if _make_game_key(g) not in existing_keys]
 
             if new_in_block:
                 series_counter += 1
                 actual_games = parse_match_block(m_block, page_title, series_counter, normalize_hero)
                 for g in actual_games:
-                    gk = (
-                        g.get("league"),
-                        g.get("stage"),
-                        g.get("date"),
-                        frozenset([g.get("blue_team"), g.get("red_team")]),
-                        g.get("game_number"),
-                    )
+                    gk = _make_game_key(g)
                     if gk not in existing_keys:
                         all_games.append(g)
                         existing_keys.add(gk)

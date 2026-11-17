@@ -134,3 +134,159 @@ def test_no_secrets_in_tracked_files():
         f for f in tracked if any(pat in os.path.basename(f).lower() for pat in forbidden) and not f.endswith(".py")
     ]
     assert not leaked, f"Potential sensitive files committed to git: {leaked}"
+
+
+def test_trusted_proxy_strict_loopback_default(monkeypatch):
+    """By default, private RFC1918 proxies cannot spoof CF-Connecting-IP / X-Forwarded-For."""
+    from src.api import _is_trusted_proxy
+    from src.config import config
+
+    monkeypatch.setattr(config, "trusted_proxies", ("loopback",))
+    assert _is_trusted_proxy("127.0.0.1") is True
+    assert _is_trusted_proxy("::1") is True
+    assert _is_trusted_proxy("10.0.0.5") is False
+    assert _is_trusted_proxy("172.16.0.10") is False
+    assert _is_trusted_proxy("203.0.113.10") is False
+
+    monkeypatch.setattr(config, "trusted_proxies", ("loopback", "10.0.0.0/8"))
+    assert _is_trusted_proxy("10.0.0.5") is True
+
+
+def test_rate_limiter_preserves_active_lockout():
+    """Low-volume spray keys must not evict actively locked-out keys from RateLimiter."""
+    from src.db import RateLimiter
+
+    limiter = RateLimiter(max_attempts=2, window_seconds=60, max_keys=4)
+    assert limiter.check_and_record("acct:target") is True
+    assert limiter.check_and_record("acct:target") is True
+    assert limiter.check_allowed("acct:target") is False
+
+    for i in range(6):
+        assert limiter.check_and_record(f"spray:{i}") is True
+
+    assert limiter.check_allowed("acct:target") is False
+
+
+def test_stale_unused_account_pruned_at_max_users(tmp_path):
+    """Abandoned accounts (>30d old, no active session, no saved states) are pruned when full."""
+    import sqlite3
+    import time
+
+    from src.db import SESSION_TTL_SECONDS, UserDatabase
+
+    db = UserDatabase(tmp_path / "prune.db", max_users=2)
+    old_user = db.register_user("oldbot", "password123")
+    active_user = db.register_user("keeper", "password123")
+    db.save_user_draft_state(active_user.id, {"bluePicks": ["Tulen"]}, int(time.time()))
+
+    # Backdate old_user past the 30-day inactivity threshold
+    old_ts = int(time.time()) - SESSION_TTL_SECONDS - 3600
+    with sqlite3.connect(db.db_path) as conn:
+        conn.execute("UPDATE users SET created_at = ? WHERE id = ?", (old_ts, old_user.id))
+
+    # 3rd signup succeeds by pruning old_user, while 4th fails because both remaining accounts are active/recent
+    fresh_user = db.register_user("newplayer", "password123")
+    assert fresh_user.username == "newplayer"
+    assert db.get_user_draft_state(active_user.id) == {"bluePicks": ["Tulen"]}
+    try:
+        db.register_user("overflow", "password123")
+        raise AssertionError("Expected max_users RuntimeError")
+    except RuntimeError:
+        pass
+
+
+def test_production_stream_body_cap_csrf_nan_and_csp(monkeypatch, tmp_path):
+    """Verifies chunked >256KB body cap, Infinity rejection, CSRF Origin check, and CSP form-action."""
+    import src.api as api_mod
+    from src.config import config
+
+    monkeypatch.setattr(config, "env", "production")
+    monkeypatch.setattr(config, "cors_origins", ["https://minidraft.app"])
+    monkeypatch.setattr(config.paths, "app_db_path", tmp_path / "sec_prod.db")
+    monkeypatch.setattr(api_mod, "_user_db", None)
+
+    with TestClient(app) as prod_client:
+        # 1. Chunked / streamed request > 256 KB without Content-Length header
+        chunk = b"x" * (64 * 1024)
+
+        def chunked_body():
+            yield b'{"mode":"pick","pad":"'
+            for _ in range(5):
+                yield chunk
+            yield b'"}'
+
+        r_chunk = prod_client.post(
+            "/predict",
+            content=chunked_body(),
+            headers={"Content-Type": "application/json", "Origin": "https://minidraft.app"},
+        )
+        assert r_chunk.status_code == 413
+
+        # 2. Infinity (1e400) rejected on DraftSessionStateSchema
+        r_inf = prod_client.put(
+            "/draft/session",
+            content='{"blueWinRate": 1e400, "winHistory": [1e400]}',
+            headers={"Content-Type": "application/json", "Origin": "https://minidraft.app"},
+        )
+        assert r_inf.status_code == 422
+
+        # 3. Cross-origin / subdomain Origin rejected on state-changing routes
+        assert (
+            prod_client.post(
+                "/auth/logout",
+                headers={"Origin": "https://evil.minidraft.app"},
+            ).status_code
+            == 403
+        )
+        assert (
+            prod_client.post(
+                "/auth/logout",
+                headers={"Origin": "null"},
+            ).status_code
+            == 403
+        )
+
+        # 4. CSP includes form-action 'self'
+        csp = prod_client.get("/health").headers.get("content-security-policy", "")
+        assert "form-action 'self'" in csp
+
+
+def test_multi_ip_account_lockout(monkeypatch, tmp_path):
+    """Per-account lockout triggers after 20 failures even when client IP rotates per attempt."""
+    import src.api as api_mod
+    from src.config import config
+    from src.db import RateLimiter
+
+    monkeypatch.setattr(config, "env", "production")
+    monkeypatch.setattr(config, "cors_origins", ["https://minidraft.app"])
+    monkeypatch.setattr(config, "trusted_proxies", ("private", "loopback"))
+    monkeypatch.setattr(config.paths, "app_db_path", tmp_path / "lockout.db")
+    monkeypatch.setattr(api_mod, "_user_db", None)
+    monkeypatch.setattr(api_mod, "_account_login_limiter", RateLimiter(max_attempts=20, window_seconds=300))
+    monkeypatch.setattr(api_mod, "_auth_rate_limiter", RateLimiter(max_attempts=100, window_seconds=60))
+    monkeypatch.setattr(api_mod, "_login_user_limiter", RateLimiter(max_attempts=10, window_seconds=300))
+    monkeypatch.setattr(api_mod, "_client_ip", lambda req: req.headers.get("x-test-ip", "1.1.1.1"))
+
+    with TestClient(app) as prod_client:
+        reg = prod_client.post(
+            "/auth/register",
+            json={"username": "victim1", "password": "correcthorse"},
+            headers={"Origin": "https://minidraft.app", "x-test-ip": "198.51.100.1"},
+        )
+        assert reg.status_code == 201
+
+        for i in range(20):
+            r = prod_client.post(
+                "/auth/login",
+                json={"username": "victim1", "password": "wrongpassword"},
+                headers={"Origin": "https://minidraft.app", "x-test-ip": f"203.0.113.{i + 1}"},
+            )
+            assert r.status_code == 401
+
+        # 21st attempt from yet another fresh IP must be blocked with 429
+        blocked = prod_client.post(
+            "/auth/login",
+            json={"username": "victim1", "password": "correcthorse"},
+            headers={"Origin": "https://minidraft.app", "x-test-ip": "203.0.113.200"},
+        )
+        assert blocked.status_code == 429

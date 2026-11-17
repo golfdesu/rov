@@ -1,25 +1,28 @@
 # RoV (Arena of Valor) Pro Draft Intelligence — SOTA GNN-Transformer
 
-Comprehensive hero database covering all **130 heroes (up to Evita)**, pro match dataset with **4,329 complete games (RPL, APL, AIC, AOG, GCS from 2024–2026)**, and State-of-the-Art architecture (**`RoVDraftGNNTransformer`**) for sequential draft recommendation (Next-Pick / Next-Ban) and win rate estimation (`PredWin%`) under **Global Ban Pick** rules.
+Comprehensive hero database covering all **130 heroes (up to Evita)**, pro match dataset with **4,340 complete games (RPL, APL, AIC, AOG, GCS from 2024–2026)**, and State-of-the-Art architecture (**`RoVDraftGNNTransformer`**) for sequential draft recommendation (Next-Pick / Next-Ban) and win rate estimation (`PredWin%`) under **Global Ban Pick** rules.
 
 ---
 
 ## Repository Structure
 
 * `data/heroes_130_full.json` & `data/heroes_130_summary.csv` — Full 130-hero dataset with detailed skill descriptions and 10 capability flags.
-* `data/matches_draft_full.json` & `data/matches_draft_flat.csv` — 4,329 pro match drafts with chronological ban/pick sequences and per-series Global Ban tracking.
-* `data/matches_training.json` — Curated training set: 3,512 games from 2025–2026 (2024 excluded), 51.5% with screenshot-verified true pick order. Rebuilt via `python src/build_training_dataset.py --min-year 2025`.
-* `data/true_pick_order.json` — 1,810 games with true chronological pick order read from broadcast draft screenshots.
+* `data/matches_draft_full.json` & `data/matches_draft_flat.csv` — 4,340 pro match drafts with chronological ban/pick sequences and per-series Global Ban tracking.
+* `data/matches_training.json` — Curated training set: 3,523 games from 2025–2026 (2024 excluded), 51.7% with screenshot-verified true pick order. Rebuilt via `python src/build_training_dataset.py --min-year 2025`.
+* `data/true_pick_order.json` — 1,821 games with true chronological pick order read from broadcast draft screenshots.
 * `data/hero_tier_overrides.json` — Hand-maintained tiers for new, reworked, or low-sample heroes (e.g. Evita, Zanis, Ata). Used by the `/heroes` API tier field and the `moba-meta-intel` tier list.
-* `data/hero_draft_stats.csv`, `data/synergy_matrix.csv`, `data/counter_matrix.csv` — Lane distribution stats across 5 main lanes, ally synergy matrix (2,517 pairs), and enemy counter matrix (6,090 pairs).
+* `data/hero_draft_stats.csv`, `data/synergy_matrix.csv`, `data/counter_matrix.csv` — Lane distribution stats across 5 main lanes, ally synergy matrix (2,527 pairs), and enemy counter matrix (6,118 pairs).
 * `src/train_sota_model.py` — SOTA **`RoVDraftGNNTransformer`** model (Multi-Relational Hero GNN + Multi-Head Draft Transformer + Bounded Neural Temperature Gate + Dual Policy & Win-Value Heads).
 * `src/predict_draft_cli.py` — CLI draft simulator and tournament scenario runner.
-* `src/api.py` — FastAPI service endpoints (`/health`, `/heroes`, `/draft/steps`, `/draft/session`, `/predict`, `/predict/matrix`, `/predict/heuristic`, `/combat/catalog`, `/combat/stats`, `/combat/duel`, `/combat/rune-recommendation`, `/combat/hero-screenshots/{hero}`, `/combat/item-screenshots/{item_name}`) and static file serving from `frontend/dist`.
+* `src/db.py` — SQLite multi-user store (`users`, `auth_sessions`, `user_oauth_accounts`, isolated per-user `user_draft_states` and `user_combat_builds`, `RateLimiter`).
+* `src/api.py` — FastAPI service endpoints (`/health`, `/heroes`, `/auth/*` including Username/Password and Google/Discord OAuth 2.0 PKCE, `/privacy`, `/draft/steps`, `/draft/session`, `/predict`, and dev-only `/combat/*`) plus static serving from `frontend/dist` (dev) or `frontend/dist-prod` (prod).
 * `src/combat_calculator.py` — Combat calculations: hero attributes (level + items + Tier-3 arcana + enchantments), mitigated skill damage (armor/magic defense/flat and percentage pierce), and 1v1 duel simulator (**Stat & Duel Lab** tab in web UI, direct link: `/#lab`).
-* `frontend/` — Broadcast-style draft web UI (React 19 + Vite + Tailwind CSS 4) displaying Thai server names (e.g. Mortos, Celica, Riktor).
+* `frontend/` — Broadcast-style draft web UI (React 19 + Vite + Tailwind CSS 4) displaying Thai server names (e.g. Mortos, Celica, Riktor), Guest/Account portal, and Global Ban Bo1–Bo7 series management.
+* `deploy/` & `scripts/start_public_15d.ps1` — Production Docker Compose + Caddy TLS stack (`deploy/docker-compose.yml`, `deploy/Caddyfile`) and local Windows Cloudflare Tunnel runner (`minidraft.app`).
+* `docs/SUBSCRIPTION_ROADMAP.md` — Planned future freemium subscription blueprint (currently open free access for all users).
 * `scripts/fetch_hero_icons.py` — Downloads 130 square hero icons to `frontend/public/avatars/`.
 * `data/items.json` — 114 items (numeric stats, gold price, passives) from rovmeta.com with patch note corrections via `data/items_overrides.json` (rov.in.th).
-* `data/hero_patch_history.json` — 349 numerical hero balance adjustments across 97 characters translated from official Taiwan patch notes (Garena TW) via `scripts/parse_tw_hero_patches.py`.
+* `data/hero_patch_history.json` — 363 numerical hero balance adjustments across 101 characters translated from official Taiwan patch notes (Garena TW) via `scripts/parse_tw_hero_patches.py`.
 * `data/hero_level_stats.json` & `data/hero_level_stats.csv` — Exact level 1–15 stats scaling tables for all 130 heroes (1,950 rows) built via `scripts/build_hero_level_stats.py`.
 * `data/hero_skills_full.json` — Structured numerical catalog of 534 hero skills for all 130 heroes (cooldowns, mana costs, base damage, and AD/AP/HP scaling ratios across all skill levels) built via `scripts/build_hero_skills_catalog.py`.
 * `data/arcana.json` — 30 Tier-III Arcana runes (10 Red / 10 Purple / 10 Green, Thai server names) with exact numerical stats and icon mappings.

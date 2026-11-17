@@ -111,7 +111,174 @@ def row_normalize_adj(mat: np.ndarray) -> np.ndarray:
     return (pos / np.maximum(row_sum, 1e-6)).astype(np.float32)
 
 
-def load_sota_data_and_graphs(dataset_path: Path | str | None = None):
+def _parse_game_sort_key(g: dict) -> tuple[int, int, int, str, int]:
+    """Chronological sort key (year, month, day, series_id, game_number)."""
+    y = int(g.get("year", 2025)) if str(g.get("year", "2025")).isdigit() else 2025
+    date_str = str(g.get("date", "")).strip()
+    if date_str:
+        try:
+            dt = datetime.strptime(date_str[:10], "%Y-%m-%d")
+            return (dt.year, dt.month, dt.day, str(g.get("series_id", "")), int(g.get("game_number", 0)))
+        except ValueError:
+            pass
+        cleaned = date_str.split("-")[0].strip()
+        for fmt in ("%B %d, %Y", "%b %d, %Y"):
+            try:
+                dt = datetime.strptime(cleaned, fmt)
+                return (dt.year, dt.month, dt.day, str(g.get("series_id", "")), int(g.get("game_number", 0)))
+            except Exception:
+                pass
+    return (y, 1, 1, str(g.get("series_id", "")), int(g.get("game_number", 0)))
+
+
+def compute_rolling_team_elo(
+    matches_path: Path | None = None,
+    k_factor: float = 24.0,
+    initial_elo: float = 1500.0,
+) -> dict[tuple[str, int], tuple[float, float]]:
+    """Compute leak-free chronological pre-game (blue_elo, red_elo) across the match archive."""
+    src_path = Path(matches_path) if matches_path is not None else (DATA_DIR / "matches_draft_full.json")
+    if not src_path.exists():
+        return {}
+    with open(src_path, "r", encoding="utf-8") as f:
+        archive = json.load(f)
+
+    ordered = sorted(archive, key=_parse_game_sort_key)
+    ratings: dict[str, float] = {}
+    pre_game_elos: dict[tuple[str, int], tuple[float, float]] = {}
+
+    for g in ordered:
+        bt = str(g.get("blue_team", "")).strip()
+        rt = str(g.get("red_team", "")).strip()
+        be = ratings.get(bt, initial_elo)
+        re_ = ratings.get(rt, initial_elo)
+        key = (str(g.get("series_id", "")), int(g.get("game_number", 0)))
+        pre_game_elos[key] = (be, re_)
+
+        bw = g.get("blue_win")
+        if bw in (0, 1) and bt and rt:
+            exp_b = 1.0 / (1.0 + 10.0 ** ((re_ - be) / 400.0))
+            ratings[bt] = be + k_factor * (float(bw) - exp_b)
+            ratings[rt] = re_ + k_factor * (float(1 - bw) - (1.0 - exp_b))
+
+    return pre_game_elos
+
+
+def _compute_match_recency_weight(
+    g: dict,
+    ref_ordinal: int,
+    half_life_days: float = 150.0,
+) -> float:
+    """Continuous exponential time-decay weight (half-life in days) * league balance weight."""
+    lg_id = encode_league_id(g.get("league", ""))
+    lg_mult = LEAGUE_SAMPLE_WEIGHTS[lg_id]
+    if half_life_days <= 0:
+        yr = int(g.get("year", 2025)) if str(g.get("year", "2025")).isdigit() else 2025
+        base = 1.0 if yr >= 2026 else (0.5 if yr == 2025 else 0.2)
+        return base * lg_mult
+    y, m, d = _parse_game_sort_key(g)[:3]
+    try:
+        g_ord = datetime(y, m, d).toordinal()
+    except ValueError:
+        g_ord = ref_ordinal
+    age_days = max(0, ref_ordinal - g_ord)
+    decay = math.exp(-math.log(2.0) * age_days / float(half_life_days))
+    return float(max(0.15, decay) * lg_mult)
+
+
+def _load_rich_hero_stat_features(hero_names: list[str], heroes_df: pd.DataFrame) -> np.ndarray:
+    """Extract 12 normalized mechanical stat, skill-scaling, and patch-activity features per hero."""
+    n = len(hero_names)
+    out = np.zeros((n, 12), dtype=np.float32)
+
+    level_stats_map: dict = {}
+    ls_path = DATA_DIR / "hero_level_stats.json"
+    if ls_path.exists():
+        with open(ls_path, "r", encoding="utf-8") as f:
+            level_stats_map = json.load(f).get("heroes", {})
+
+    skills_map: dict = {}
+    sk_path = DATA_DIR / "hero_skills_full.json"
+    if sk_path.exists():
+        with open(sk_path, "r", encoding="utf-8") as f:
+            skills_map = json.load(f).get("heroes", {})
+
+    patch_changes: list[dict] = []
+    ph_path = DATA_DIR / "hero_patch_history.json"
+    if ph_path.exists():
+        with open(ph_path, "r", encoding="utf-8") as f:
+            patch_changes = json.load(f).get("changes", [])
+
+    # Reference date for patch recency (latest patch date in file)
+    patch_dates: list[tuple[str, int]] = []
+    max_patch_ord = 0
+    for c in patch_changes:
+        ds = str(c.get("date", "")).strip()
+        try:
+            ord_v = datetime.strptime(ds, "%Y-%m-%d").toordinal()
+        except ValueError:
+            ord_v = 0
+        if ord_v > max_patch_ord:
+            max_patch_ord = ord_v
+        patch_dates.append((str(c.get("hero", "")), ord_v))
+
+    patch_90: dict[str, int] = {}
+    patch_180: dict[str, int] = {}
+    if max_patch_ord > 0:
+        for h_n, ord_v in patch_dates:
+            if ord_v <= 0:
+                continue
+            age = max_patch_ord - ord_v
+            if age <= 90:
+                patch_90[h_n] = patch_90.get(h_n, 0) + 1
+            if age <= 180:
+                patch_180[h_n] = patch_180.get(h_n, 0) + 1
+
+    range_by_name = dict(zip(heroes_df["name"], heroes_df.get("attack_range", ["Melee"] * n), strict=False))
+
+    for i, name in enumerate(hero_names):
+        lv_entry = level_stats_map.get(name, {}).get("levels", {})
+        lv1 = lv_entry.get("1", {})
+        lv15 = lv_entry.get("15", {})
+        hp1 = float(lv1.get("hp", 3200.0))
+        hp15 = float(lv15.get("hp", 7500.0))
+        atk1 = float(lv1.get("attack_damage", 160.0))
+        atk15 = float(lv15.get("attack_damage", 350.0))
+        arm1 = float(lv1.get("armor", 120.0))
+        ms = float(lv1.get("movement_speed", 360.0))
+        is_ranged = 1.0 if str(range_by_name.get(name, "")).strip().lower() == "ranged" else 0.0
+
+        cds = []
+        ad_sum = 0.0
+        ap_sum = 0.0
+        for sk in skills_map.get(name, []):
+            cd_list = sk.get("cooldown") or []
+            if cd_list and float(cd_list[0]) > 0:
+                cds.append(float(cd_list[0]))
+            sc = sk.get("scaling") or {}
+            ad_sum += float(sc.get("ad_pct", 0.0) or 0.0) + float(sc.get("bonus_ad_pct", 0.0) or 0.0)
+            ap_sum += float(sc.get("ap_pct", 0.0) or 0.0) + float(sc.get("bonus_ap_pct", 0.0) or 0.0)
+        avg_cd = float(sum(cds) / len(cds)) if cds else 8.0
+
+        out[i] = [
+            hp1 / 4000.0,
+            hp15 / 9000.0,
+            atk1 / 200.0,
+            atk15 / 450.0,
+            arm1 / 180.0,
+            (ms - 340.0) / 60.0,
+            is_ranged,
+            avg_cd / 15.0,
+            min(ad_sum / 300.0, 2.5),
+            min(ap_sum / 300.0, 2.5),
+            min(patch_90.get(name, 0) / 3.0, 2.0),
+            min(patch_180.get(name, 0) / 5.0, 2.0),
+        ]
+
+    return out
+
+
+def load_sota_data_and_graphs(dataset_path: Path | str | None = None, recency_half_life: float = 150.0):
     """Load 130 heroes, build multi-relational GNN adjacency matrices, and split train/val."""
     heroes_df = pd.read_csv(DATA_DIR / "heroes_130_summary.csv").sort_values("name").reset_index(drop=True)
     stats_df = pd.read_csv(DATA_DIR / "hero_draft_stats.csv").sort_values("name").reset_index(drop=True)
@@ -190,7 +357,9 @@ def load_sota_data_and_graphs(dataset_path: Path | str | None = None):
         feat_vec = np.concatenate([r_vec, l_prob, skill_flags, meta_stats]).astype(np.float32)
         feature_list.append(feat_vec)
 
-    hero_features = np.stack(feature_list, axis=0)  # (130, 25)
+    base_features = np.stack(feature_list, axis=0)  # (130, 25)
+    rich_stat_features = _load_rich_hero_stat_features(hero_names, heroes_df)  # (130, 12)
+    hero_features = np.concatenate([base_features, rich_stat_features], axis=1).astype(np.float32)  # (130, 37)
     lane_probs = np.stack(lane_probs_list, axis=0)  # (130, 5)
     skill_matrix = np.array(skill_flags_list, dtype=np.float32)  # (130, 10)
 
@@ -205,21 +374,7 @@ def load_sota_data_and_graphs(dataset_path: Path | str | None = None):
 
     print(f"Loaded {len(games)} draft games from {dataset_path.name}", flush=True)
 
-    # Chronological sort (2024 -> 2025 -> 2026) so validation set is strictly current 2026 pro meta
-    def _parse_game_date(g):
-        y = int(g.get("year", 2025)) if str(g.get("year", "2025")).isdigit() else 2025
-        date_str = str(g.get("date", "")).strip()
-        if date_str:
-            cleaned = date_str.split("-")[0].strip()
-            for fmt in ("%B %d, %Y", "%Y-%m-%d", "%b %d, %Y"):
-                try:
-                    dt = datetime.strptime(cleaned, fmt)
-                    return (dt.year, dt.month, dt.day)
-                except Exception:
-                    pass
-        return (y, 1, 1)
-
-    games = sorted(games, key=_parse_game_date)
+    games = sorted(games, key=lambda g: _parse_game_sort_key(g)[:3])
 
     n_train_games = int(len(games) * 0.85)
     train_games = games[:n_train_games]
@@ -249,6 +404,11 @@ def load_sota_data_and_graphs(dataset_path: Path | str | None = None):
     lg_ban_p1_counts = np.zeros((num_leagues, num_heroes), dtype=np.float32)
     lg_ban_p2_counts = np.zeros((num_leagues, num_heroes), dtype=np.float32)
 
+    ref_train_ord = (
+        max(datetime(*_parse_game_sort_key(g)[:3]).toordinal() for g in train_games)
+        if train_games
+        else datetime(2026, 1, 1).toordinal()
+    )
     for g in train_games:
         bw = g.get("blue_win")
         if bw not in (0, 1):
@@ -256,9 +416,9 @@ def load_sota_data_and_graphs(dataset_path: Path | str | None = None):
         yr = int(g.get("year", 2025)) if str(g.get("year", "2025")).isdigit() else 2025
         lg_id = encode_league_id(g.get("league", ""))
         lg_mult = LEAGUE_SAMPLE_WEIGHTS[lg_id]
-        w = (1.0 if yr >= 2026 else (0.5 if yr == 2025 else 0.2)) * lg_mult
+        w = _compute_match_recency_weight(g, ref_train_ord, half_life_days=recency_half_life)
         total_effective_w += w
-        w_2026 = (1.0 if yr >= 2026 else 0.35) * lg_mult
+        w_2026 = w if yr >= 2026 else 0.7 * w
         blue_win_mult = 1.25 if bw == 1 else 0.75
         red_win_mult = 1.25 if bw == 0 else 0.75
         bp = [hero_to_id[h] for h in g["blue_picks"] if h in hero_to_id]
@@ -487,7 +647,15 @@ def order_team_picks_by_draft_logic(team_picks_ids, enemy_phase2_ban_ids, lane_p
     return [h_id for _, h_id in scored]
 
 
-def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment_factor=1):
+def build_tensor_dataset(
+    games,
+    hero_to_id,
+    lane_probs,
+    priority_scores,
+    augment_factor=1,
+    team_elo_lookup: dict[tuple[str, int], tuple[float, float]] | None = None,
+    recency_half_life: float = 150.0,
+):
     """
     Pre-build contiguous PyTorch TensorDataset in memory.
     When augment_factor >= 2, only swaps simultaneous double-pick turns within the SAME phase
@@ -530,7 +698,15 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
     win_arr = np.zeros(total_steps, dtype=np.float32)
     pol_weight_arr = np.zeros(total_steps, dtype=np.float32)
     win_weight_arr = np.zeros(total_steps, dtype=np.float32)
+    elo_logit_arr = np.zeros(total_steps, dtype=np.float32)
+    step_idx_arr = np.zeros(total_steps, dtype=np.int64)
 
+    elo_to_logit = math.log(10.0) / 400.0
+    ref_ord = (
+        max(datetime(*_parse_game_sort_key(g)[:3]).toordinal() for g, *_ in valid_games)
+        if valid_games
+        else datetime(2026, 1, 1).toordinal()
+    )
     row_idx = 0
     for g, b_picks_raw, r_picks_raw, b_bans, r_bans in valid_games:
         b_gban = [hero_to_id[h] for h in g.get("blue_global_bans", []) if h in hero_to_id]
@@ -538,9 +714,16 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
         year_val = int(g.get("year", 2026)) if str(g.get("year", "2026")).isdigit() else 2026
         lg_id = encode_league_id(g.get("league", ""))
         lg_vec = [1.0 if i == lg_id else 0.0 for i in range(4)]
-        recency_w = (1.0 if year_val >= 2026 else (0.5 if year_val == 2025 else 0.2)) * LEAGUE_SAMPLE_WEIGHTS[lg_id]
+        recency_w = _compute_match_recency_weight(g, ref_ord, half_life_days=recency_half_life)
         blue_win = int(g["blue_win"])
         is_true_order = bool(g.get("is_true_order", False))
+
+        b_elo, r_elo = (
+            team_elo_lookup.get((str(g.get("series_id", "")), int(g.get("game_number", 0))), (1500.0, 1500.0))
+            if team_elo_lookup
+            else (1500.0, 1500.0)
+        )
+        blue_elo_logit = float((b_elo - r_elo) * elo_to_logit)
 
         if is_true_order:
             bp_canonical = list(b_picks_raw)
@@ -647,6 +830,8 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
                 ph_arr[row_idx] = phase
                 target_arr[row_idx] = safe_target
                 win_arr[row_idx] = acting_win
+                elo_logit_arr[row_idx] = blue_elo_logit if side == 0 else -blue_elo_logit
+                step_idx_arr[row_idx] = step_idx
 
                 # Decoupled supervision:
                 # 1. Win-value loss applies to all actions across all games (unbiased 1.0 outcome balance)
@@ -696,6 +881,8 @@ def build_tensor_dataset(games, hero_to_id, lane_probs, priority_scores, augment
         torch.from_numpy(win_arr),
         torch.from_numpy(pol_weight_arr),
         torch.from_numpy(win_weight_arr),
+        torch.from_numpy(elo_logit_arr),
+        torch.from_numpy(step_idx_arr),
     )
 
 
@@ -781,6 +968,111 @@ class RelationalHeroGNN(nn.Module):
         return (1.0 - g) * h0 + g * h2
 
 
+class DraftCrossValueHead(nn.Module):
+    """Anti-symmetric 5v5 Set-Interaction + Cross-Attention Value Evaluator.
+
+    Models higher-order ally-ally synergy, enemy-enemy synergy, and ally<->enemy
+    cross-matchup interactions without collapsing team structure to simple sums.
+    """
+
+    def __init__(self, d_model: int, nhead: int = 4, dropout: float = 0.20, skill_dim: int = 10):
+        super().__init__()
+        self.d_model = d_model
+        self.seed_token = nn.Parameter(torch.zeros(1, 1, d_model))
+        nn.init.normal_(self.seed_token, std=0.02)
+
+        self.team_self_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout, batch_first=True)
+        self.cross_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout, batch_first=True)
+        self.ln_self = nn.LayerNorm(d_model)
+        self.ln_cross = nn.LayerNorm(d_model)
+        self.drop = nn.Dropout(dropout)
+
+        # Anti-symmetric state evaluation: [a_rep - e_rep, a_rep * e_rep, skill_diff, ally_cnt, enemy_cnt]
+        state_in_dim = d_model * 2 + skill_dim + 2
+        self.state_mlp = nn.Sequential(
+            nn.Linear(state_in_dim, d_model),
+            nn.LayerNorm(d_model),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(d_model, 1),
+        )
+
+        # Action-conditioned advantage: candidate vs (ally_rep, enemy_rep, draft_ctx)
+        self.adv_ctx_proj = nn.Linear(d_model * 2, d_model)
+        self.adv_ally_proj = nn.Linear(d_model, d_model, bias=False)
+        self.adv_enemy_proj = nn.Linear(d_model, d_model, bias=False)
+        self.adv_scale = nn.Parameter(torch.tensor(1.0, dtype=torch.float32))
+        self.edge_scale = nn.Parameter(torch.tensor([1.0, 1.0, 1.0], dtype=torch.float32))
+
+    def _gather_team_set(
+        self, picks_vec: torch.Tensor, H_gnn: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        B = picks_vec.size(0)
+        vals, idx = torch.topk(picks_vec, k=5, dim=-1)
+        valid = vals > 0.5  # (B, 5)
+        hero_embs = H_gnn[idx] * valid.unsqueeze(-1).float()  # (B, 5, D)
+        seed = self.seed_token.expand(B, 1, -1)
+        set_seq = torch.cat([seed, hero_embs], dim=1)  # (B, 6, D)
+        seed_pad = torch.zeros((B, 1), dtype=torch.bool, device=picks_vec.device)
+        pad_mask = torch.cat([seed_pad, ~valid], dim=1)  # False where valid (seed always valid)
+        return set_seq, pad_mask, valid
+
+    @staticmethod
+    def _masked_mean(seq: torch.Tensor, pad_mask: torch.Tensor) -> torch.Tensor:
+        valid_f = (~pad_mask).unsqueeze(-1).float()
+        return (seq * valid_f).sum(dim=1) / torch.clamp(valid_f.sum(dim=1), min=1.0)
+
+    def forward(
+        self,
+        H_gnn: torch.Tensor,
+        ally_picks_vec: torch.Tensor,
+        enemy_picks_vec: torch.Tensor,
+        ally_skills: torch.Tensor,
+        enemy_skills: torch.Tensor,
+        joint_state: torch.Tensor,
+        is_pick: torch.Tensor,
+        hero_base_win_adv: torch.Tensor,
+        syn_score: torch.Tensor,
+        cnt_score: torch.Tensor,
+    ) -> torch.Tensor:
+        # Detach backbone representations so win-value noise does not corrupt policy accuracy
+        H_gnn_v = H_gnn.detach()
+        joint_v = joint_state.detach()
+
+        a_seq, a_pad, a_valid = self._gather_team_set(ally_picks_vec, H_gnn_v)
+        e_seq, e_pad, e_valid = self._gather_team_set(enemy_picks_vec, H_gnn_v)
+
+        a_sa, _ = self.team_self_attn(a_seq, a_seq, a_seq, key_padding_mask=a_pad, need_weights=False)
+        e_sa, _ = self.team_self_attn(e_seq, e_seq, e_seq, key_padding_mask=e_pad, need_weights=False)
+        a_ctx = self.ln_self(a_seq + self.drop(a_sa))
+        e_ctx = self.ln_self(e_seq + self.drop(e_sa))
+
+        a_ca, _ = self.cross_attn(a_ctx, e_ctx, e_ctx, key_padding_mask=e_pad, need_weights=False)
+        e_ca, _ = self.cross_attn(e_ctx, a_ctx, a_ctx, key_padding_mask=a_pad, need_weights=False)
+        a_cross = self.ln_cross(a_ctx + self.drop(a_ca))
+        e_cross = self.ln_cross(e_ctx + self.drop(e_ca))
+
+        a_rep = self._masked_mean(a_cross, a_pad)
+        e_rep = self._masked_mean(e_cross, e_pad)
+
+        a_cnt = a_valid.float().sum(dim=1, keepdim=True) / 5.0
+        e_cnt = e_valid.float().sum(dim=1, keepdim=True) / 5.0
+        state_in = torch.cat([a_rep - e_rep, a_rep * e_rep, ally_skills - enemy_skills, a_cnt, e_cnt], dim=-1)
+        v_state = self.state_mlp(state_in)
+
+        scale = 1.0 / math.sqrt(self.d_model)
+        adv_query = self.adv_ctx_proj(joint_v) + self.adv_ally_proj(a_rep) - self.adv_enemy_proj(e_rep)
+        neural_adv_raw = torch.matmul(adv_query, H_gnn_v.t()) * (scale * torch.clamp(self.adv_scale, min=0.1, max=2.0))
+        neural_adv = 1.5 * torch.tanh(neural_adv_raw)
+
+        es = self.edge_scale
+        pick_win_edge = es[0] * hero_base_win_adv.unsqueeze(0) + es[1] * syn_score + es[2] * cnt_score
+        ban_win_edge = -0.5 * es[0] * hero_base_win_adv.unsqueeze(0) - 0.67 * es[2] * cnt_score
+        domain_win_edge = torch.where(is_pick, pick_win_edge, ban_win_edge)
+
+        return v_state + neural_adv + domain_win_edge
+
+
 class RoVDraftGNNTransformer(nn.Module):
     """
     State-of-the-Art MOBA Draft AI Architecture:
@@ -802,12 +1094,16 @@ class RoVDraftGNNTransformer(nn.Module):
         num_layers=2,
         dropout=0.20,
         neural_scale=0.65,
+        use_cross_value_head=False,
+        use_global_ban_context=False,
     ):
         super().__init__()
         self.num_heroes = num_heroes
         self.d_model = d_model
         self.dropout_rate = dropout
         self.neural_scale_init = neural_scale
+        self.use_cross_value_head = bool(use_cross_value_head)
+        self.use_global_ban_context = bool(use_global_ban_context)
 
         self.register_buffer("hero_features", torch.tensor(hero_features, dtype=torch.float32))
         self.register_buffer("lane_probs", torch.tensor(lane_probs, dtype=torch.float32))
@@ -855,7 +1151,8 @@ class RoVDraftGNNTransformer(nn.Module):
         self.step_pos_embed = nn.Embedding(18, d_model)
 
         self.meta_dim = 11 if self.has_league_conditioning else 7
-        macro_dim = 4 * d_model + 10 + 20 + self.meta_dim
+        gb_dim = (d_model + 6) if self.use_global_ban_context else 0
+        macro_dim = 4 * d_model + 10 + 20 + self.meta_dim + gb_dim
         self.cls_proj = nn.Sequential(
             nn.Linear(macro_dim, d_model * 2),
             nn.LayerNorm(d_model * 2),
@@ -927,6 +1224,13 @@ class RoVDraftGNNTransformer(nn.Module):
             nn.Linear(64, 1),
         )
         self.action_adv_proj = nn.Linear(d_model * 2, d_model)
+        if self.use_cross_value_head:
+            self.cross_value_head = DraftCrossValueHead(
+                d_model=d_model,
+                nhead=nhead,
+                dropout=dropout,
+                skill_dim=int(self.skill_matrix.size(1)),
+            )
 
     def forward(
         self,
@@ -983,20 +1287,27 @@ class RoVDraftGNNTransformer(nn.Module):
         ally_skills = torch.matmul(ally_picks_vec, self.skill_matrix) * 0.2
         enemy_skills = torch.matmul(enemy_picks_vec, self.skill_matrix) * 0.2
 
-        macro_in = torch.cat(
-            [
-                ally_p_emb,
-                enemy_p_emb,
-                ally_b_emb,
-                enemy_b_emb,
-                ally_missing_lanes,
-                enemy_missing_lanes,
-                ally_skills,
-                enemy_skills,
-                meta_ctx_macro,
-            ],
-            dim=-1,
-        )
+        macro_parts = [
+            ally_p_emb,
+            enemy_p_emb,
+            ally_b_emb,
+            enemy_b_emb,
+            ally_missing_lanes,
+            enemy_missing_lanes,
+            ally_skills,
+            enemy_skills,
+            meta_ctx_macro,
+        ]
+        if self.use_global_ban_context:
+            board_used = (
+                (ally_picks_vec > 0.5) | (enemy_picks_vec > 0.5) | (ally_bans_vec > 0.5) | (enemy_bans_vec > 0.5)
+            )
+            acting_gb_vec = (unavailable_mask & ~board_used).float()
+            gb_emb = torch.matmul(acting_gb_vec, H_gnn) * 0.1
+            gb_lanes = torch.clamp(torch.matmul(acting_gb_vec, self.lane_probs) / 3.0, min=0.0, max=2.0)
+            gb_count = torch.clamp(acting_gb_vec.sum(dim=-1, keepdim=True) / 25.0, min=0.0, max=1.5)
+            macro_parts.extend([gb_emb, gb_lanes, gb_count])
+        macro_in = torch.cat(macro_parts, dim=-1)
         cls_tok = self.cls_proj(macro_in)
 
         hist_tokens = (H_gnn[tok_heroes] + self.token_type_embed(tok_types) + self.step_pos_embed(tok_steps)) * (
@@ -1079,17 +1390,31 @@ class RoVDraftGNNTransformer(nn.Module):
         policy_logits = torch.where(is_pick, pick_logits, ban_logits)
         policy_logits = policy_logits.masked_fill(unavailable_mask, -1e4)
 
-        v_state = self.state_value_head(joint_state)
-        neural_adv = torch.matmul(self.action_adv_proj(joint_state), H_gnn.t()) * scale
-        pick_win_edge = self.hero_base_win_adv.unsqueeze(0) + 1.5 * syn_score + 1.5 * cnt_score
-        ban_win_edge = -0.5 * self.hero_base_win_adv.unsqueeze(0) - 1.0 * cnt_score
-        domain_win_edge = torch.where(is_pick, pick_win_edge, ban_win_edge)
+        if self.use_cross_value_head:
+            q_win_logits = self.cross_value_head(
+                H_gnn=H_gnn,
+                ally_picks_vec=ally_picks_vec,
+                enemy_picks_vec=enemy_picks_vec,
+                ally_skills=ally_skills,
+                enemy_skills=enemy_skills,
+                joint_state=joint_state,
+                is_pick=is_pick,
+                hero_base_win_adv=self.hero_base_win_adv,
+                syn_score=syn_score,
+                cnt_score=cnt_score,
+            )
+        else:
+            v_state = self.state_value_head(joint_state)
+            neural_adv = torch.matmul(self.action_adv_proj(joint_state), H_gnn.t()) * scale
+            pick_win_edge = self.hero_base_win_adv.unsqueeze(0) + 1.5 * syn_score + 1.5 * cnt_score
+            ban_win_edge = -0.5 * self.hero_base_win_adv.unsqueeze(0) - 1.0 * cnt_score
+            domain_win_edge = torch.where(is_pick, pick_win_edge, ban_win_edge)
 
-        q_win_logits = v_state + 0.35 * torch.tanh(neural_adv) + domain_win_edge
+            q_win_logits = v_state + 0.35 * torch.tanh(neural_adv) + domain_win_edge
         return policy_logits, q_win_logits
 
 
-def evaluate_sota_model(model, loader, device):
+def evaluate_sota_model(model, loader, device, elo_alpha: float = 0.0):
     """Fully vectorized GPU evaluation (zero per-sample Python loops or CUDA syncs)."""
     model.eval()
     bucket_defs = [
@@ -1106,6 +1431,12 @@ def evaluate_sota_model(model, loader, device):
     total_count = 0
     win_correct_late = 0
     win_total_late = 0
+    term_correct_draft = 0
+    term_correct_elo = 0
+    term_correct_combined = 0
+    term_brier_draft = 0.0
+    term_brier_combined = 0.0
+    term_total = 0
 
     with torch.no_grad():
         for batch in loader:
@@ -1113,6 +1444,8 @@ def evaluate_sota_model(model, loader, device):
                 batch = [x.to(device, non_blocking=True) for x in batch]
             ap, ep, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph, target, win_lbl = batch[:14]
             pol_w = batch[14] if len(batch) > 14 else torch.ones_like(win_lbl)
+            elo_diff = batch[16] if len(batch) > 16 else torch.zeros_like(win_lbl)
+            step_idx = batch[17] if len(batch) > 17 else torch.full_like(act, -1)
 
             policy_logits, q_win_logits = model(ap, ep, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph)
 
@@ -1125,13 +1458,29 @@ def evaluate_sota_model(model, loader, device):
                 total_count += n_eval
 
             chosen_q = q_win_logits.gather(1, target.unsqueeze(1)).squeeze(1)
-            pred_win = (torch.sigmoid(chosen_q) >= 0.5).float()
+            prob_draft = torch.sigmoid(chosen_q)
+            pred_win = (prob_draft >= 0.5).float()
 
             late_mask = (act == 1) & (ph == 2)
             n_late = int(late_mask.sum().item())
             if n_late > 0:
                 win_total_late += n_late
                 win_correct_late += int((pred_win[late_mask] == win_lbl[late_mask]).sum().item())
+
+            term_mask = step_idx == 17
+            n_term = int(term_mask.sum().item())
+            if n_term > 0:
+                term_total += n_term
+                p_d = prob_draft[term_mask]
+                y_t = win_lbl[term_mask]
+                term_correct_draft += int(((p_d >= 0.5).float() == y_t).sum().item())
+                term_brier_draft += float(((p_d - y_t) ** 2).sum().item())
+
+                e_t = elo_diff[term_mask]
+                term_correct_elo += int(((e_t >= 0.0).float() == y_t).sum().item())
+                p_c = torch.sigmoid(chosen_q[term_mask] + elo_alpha * e_t)
+                term_correct_combined += int(((p_c >= 0.5).float() == y_t).sum().item())
+                term_brier_combined += float(((p_c - y_t) ** 2).sum().item())
 
             top10_preds = torch.topk(policy_logits, k=10, dim=-1).indices
             hits = top10_preds == target.unsqueeze(1)
@@ -1158,6 +1507,15 @@ def evaluate_sota_model(model, loader, device):
 
     avg_loss = total_loss / max(1, total_count)
     win_acc = (win_correct_late / max(1, win_total_late)) * 100.0
+    metrics["win_eval"] = {
+        "phase2_acc": win_acc,
+        "terminal_acc": (term_correct_draft / max(1, term_total)) * 100.0 if term_total else 0.0,
+        "terminal_brier": (term_brier_draft / max(1, term_total)) if term_total else 0.0,
+        "elo_only_acc": (term_correct_elo / max(1, term_total)) * 100.0 if term_total else 0.0,
+        "draft_plus_elo_acc": (term_correct_combined / max(1, term_total)) * 100.0 if term_total else 0.0,
+        "draft_plus_elo_brier": (term_brier_combined / max(1, term_total)) if term_total else 0.0,
+        "terminal_total": term_total,
+    }
     return avg_loss, metrics, win_acc
 
 
@@ -1176,6 +1534,27 @@ def parse_args():
     parser.add_argument("--weight-decay", type=float, default=None, help="AdamW weight decay")
     parser.add_argument("--label-smoothing", type=float, default=None, help="Cross-entropy label smoothing")
     parser.add_argument("--win-loss-weight", type=float, default=None, help="Weight of auxiliary win-value loss")
+    parser.add_argument(
+        "--elo-deconfound",
+        action="store_true",
+        help="De-confound Value Head training using chronological rolling Team Elo residuals",
+    )
+    parser.add_argument(
+        "--cross-value-head",
+        action="store_true",
+        help="Enable anti-symmetric 5v5 Set-Interaction + Cross-Attention Value Head",
+    )
+    parser.add_argument(
+        "--global-ban-context",
+        action="store_true",
+        help="Feed active Global Ban pool embeddings & lane depletion into Transformer context",
+    )
+    parser.add_argument(
+        "--recency-half-life",
+        type=float,
+        default=150.0,
+        help="Exponential recency decay half-life in days (default: 150.0; <=0 uses legacy year weights)",
+    )
     parser.add_argument(
         "--top-rank",
         type=int,
@@ -1219,10 +1598,12 @@ def main():
     best_params_file = args.best_params_path or (BEST_PARAMS_DIR / "sota_rov_best_params.json")
     top5_file = args.top5_path or (BEST_PARAMS_DIR / "sota_rov_top5_trials.json")
     tuned = {}
+    study_cfg = {}
     if top5_file.exists() and (args.top_rank is not None or args.use_safest):
         try:
             with open(top5_file, "r", encoding="utf-8") as f:
                 t5_data = json.load(f)
+            study_cfg = t5_data.get("study_config", {})
             if args.use_safest and t5_data.get("safest_recommended_trial"):
                 chosen = t5_data["safest_recommended_trial"]
                 tuned = chosen.get("params", {})
@@ -1248,6 +1629,7 @@ def main():
         try:
             with open(best_params_file, "r", encoding="utf-8") as f:
                 bp_data = json.load(f)
+                study_cfg = bp_data.get("study_config", {})
                 if bp_data.get("safest_recommended_trial"):
                     chosen = bp_data["safest_recommended_trial"]
                     tuned = chosen.get("params", bp_data.get("best_params", {}))
@@ -1300,6 +1682,9 @@ def main():
         torch.backends.cudnn.allow_tf32 = True
         torch.backends.cudnn.benchmark = True
 
+    recency_half_life = float(study_cfg.get("recency_half_life", args.recency_half_life))
+    use_global_ban_ctx = bool(args.global_ban_context or study_cfg.get("use_global_ban_context", False))
+
     t0 = time.time()
     (
         hero_names,
@@ -1311,15 +1696,36 @@ def main():
         priors,
         train_games,
         val_games,
-    ) = load_sota_data_and_graphs(args.dataset_path)
+    ) = load_sota_data_and_graphs(args.dataset_path, recency_half_life=recency_half_life)
+
+    team_elo_lookup = compute_rolling_team_elo() if args.elo_deconfound else None
+    if args.elo_deconfound:
+        print(f"Loaded leak-free rolling Team Elo for {len(team_elo_lookup):,} game records.", flush=True)
 
     print(
-        f"[{args.preset.upper()}] Building vectorized SOTA tensors (augment_factor={augment_factor}) "
+        f"[{args.preset.upper()}] Building vectorized SOTA tensors (augment_factor={augment_factor}, "
+        f"half_life={recency_half_life:.0f}d, gb_ctx={use_global_ban_ctx}) "
         f"from {len(train_games)} train games & {len(val_games)} val games...",
         flush=True,
     )
-    train_ds = build_tensor_dataset(train_games, hero_to_id, lane_probs, priority_scores, augment_factor=augment_factor)
-    val_ds = build_tensor_dataset(val_games, hero_to_id, lane_probs, priority_scores, augment_factor=1)
+    train_ds = build_tensor_dataset(
+        train_games,
+        hero_to_id,
+        lane_probs,
+        priority_scores,
+        augment_factor=augment_factor,
+        team_elo_lookup=team_elo_lookup,
+        recency_half_life=recency_half_life,
+    )
+    val_ds = build_tensor_dataset(
+        val_games,
+        hero_to_id,
+        lane_probs,
+        priority_scores,
+        augment_factor=1,
+        team_elo_lookup=team_elo_lookup,
+        recency_half_life=recency_half_life,
+    )
     print(
         f"Train decision steps: {len(train_ds):,} | Val decision steps: {len(val_ds):,} (built in {time.time() - t0:.1f}s)",
         flush=True,
@@ -1339,6 +1745,10 @@ def main():
         "dropout": dropout,
         "neural_scale": neural_scale,
     }
+    if args.cross_value_head:
+        model_config["use_cross_value_head"] = True
+    if use_global_ban_ctx:
+        model_config["use_global_ban_context"] = True
     model = RoVDraftGNNTransformer(
         num_heroes=len(hero_names),
         hero_features=hero_features,
@@ -1379,8 +1789,13 @@ def main():
             logging.getLogger("mlflow").setLevel(logging.ERROR)
             HAS_MLFLOW = False
 
+    elo_alpha_param = (
+        nn.Parameter(torch.tensor(0.5, dtype=torch.float32, device=device)) if args.elo_deconfound else None
+    )
     decay_params = [p for n, p in model.named_parameters() if p.requires_grad and "neural_temp" not in n]
     no_decay_params = [p for n, p in model.named_parameters() if p.requires_grad and "neural_temp" in n]
+    if elo_alpha_param is not None:
+        no_decay_params.append(elo_alpha_param)
     optimizer = torch.optim.AdamW(
         [
             {"params": decay_params, "weight_decay": weight_decay},
@@ -1390,6 +1805,24 @@ def main():
     )
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
     use_amp = device.type == "cuda" and torch.cuda.is_bf16_supported()
+
+    def _compute_step_loss(batch_tensors):
+        ap, ep, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph, target, win_lbl = batch_tensors[:14]
+        sw_pol = batch_tensors[14] if len(batch_tensors) > 14 else torch.ones_like(win_lbl)
+        sw_win = batch_tensors[15] if len(batch_tensors) > 15 else sw_pol
+        elo_diff = batch_tensors[16] if len(batch_tensors) > 16 else torch.zeros_like(win_lbl)
+
+        policy_logits, q_win_logits = model(ap, ep, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph)
+        pol_raw = F.cross_entropy(policy_logits, target, label_smoothing=label_smoothing, reduction="none")
+        pol_loss = (pol_raw * sw_pol).sum() / torch.clamp(sw_pol.sum(), min=1e-5)
+
+        chosen_q = q_win_logits.gather(1, target.unsqueeze(1)).squeeze(1)
+        if elo_alpha_param is not None:
+            eff_elo_alpha = F.softplus(elo_alpha_param)
+            chosen_q = chosen_q + eff_elo_alpha * elo_diff
+        win_raw = F.binary_cross_entropy_with_logits(chosen_q, win_lbl, reduction="none")
+        win_loss = (win_raw * sw_win).sum() / torch.clamp(sw_win.sum(), min=1e-5)
+        return policy_logits, pol_loss + win_loss_weight * win_loss, sw_pol, target
 
     best_val_loss = float("inf")
     best_metrics = None
@@ -1406,31 +1839,18 @@ def main():
         for batch in train_loader:
             if batch[0].device != device:
                 batch = [x.to(device, non_blocking=True) for x in batch]
-            ap, ep, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph, target, win_lbl = batch[:14]
-            sw_pol = batch[14] if len(batch) > 14 else torch.ones_like(win_lbl)
-            sw_win = batch[15] if len(batch) > 15 else sw_pol
             optimizer.zero_grad(set_to_none=True)
 
             if use_amp:
                 with torch.amp.autocast("cuda", dtype=torch.bfloat16):
-                    policy_logits, q_win_logits = model(ap, ep, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph)
-                    pol_raw = F.cross_entropy(policy_logits, target, label_smoothing=label_smoothing, reduction="none")
-                    pol_loss = (pol_raw * sw_pol).sum() / torch.clamp(sw_pol.sum(), min=1e-5)
-                    chosen_q = q_win_logits.gather(1, target.unsqueeze(1)).squeeze(1)
-                    win_raw = F.binary_cross_entropy_with_logits(chosen_q, win_lbl, reduction="none")
-                    win_loss = (win_raw * sw_win).sum() / torch.clamp(sw_win.sum(), min=1e-5)
-                    loss = pol_loss + win_loss_weight * win_loss
+                    policy_logits, loss, sw_pol, target = _compute_step_loss(batch)
             else:
-                policy_logits, q_win_logits = model(ap, ep, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph)
-                pol_raw = F.cross_entropy(policy_logits, target, label_smoothing=label_smoothing, reduction="none")
-                pol_loss = (pol_raw * sw_pol).sum() / torch.clamp(sw_pol.sum(), min=1e-5)
-                chosen_q = q_win_logits.gather(1, target.unsqueeze(1)).squeeze(1)
-                win_raw = F.binary_cross_entropy_with_logits(chosen_q, win_lbl, reduction="none")
-                win_loss = (win_raw * sw_win).sum() / torch.clamp(sw_win.sum(), min=1e-5)
-                loss = pol_loss + win_loss_weight * win_loss
+                policy_logits, loss, sw_pol, target = _compute_step_loss(batch)
 
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+            if elo_alpha_param is not None:
+                torch.nn.utils.clip_grad_norm_([elo_alpha_param], 1.0)
             optimizer.step()
 
             # Track unsmoothed cross-entropy on verified steps for apples-to-apples comparison with Val Loss
@@ -1443,19 +1863,24 @@ def main():
 
         scheduler.step()
 
-        val_loss, val_metrics, val_win_acc = evaluate_sota_model(model, val_loader, device)
+        cur_elo_alpha = float(F.softplus(elo_alpha_param).item()) if elo_alpha_param is not None else 0.0
+        val_loss, val_metrics, val_win_acc = evaluate_sota_model(model, val_loader, device, elo_alpha=cur_elo_alpha)
         ov = val_metrics["overall"]
         tot = max(1, ov["total"])
         t1 = ov["top1"] / tot * 100
         t3 = ov["top3"] / tot * 100
         t5 = ov["top5"] / tot * 100
         t10 = ov["top10"] / tot * 100
+        we = val_metrics.get("win_eval", {})
         is_best = val_loss < best_val_loss
         marker = " *BEST*" if is_best else ""
         train_loss_display = train_pol_loss / max(1, train_n)
+        elo_tag = f" | TermWin: {we.get('terminal_acc', 0.0):.1f}% (Brier={we.get('terminal_brier', 0.0):.4f})"
+        if args.elo_deconfound:
+            elo_tag += f" | +Elo: {we.get('draft_plus_elo_acc', 0.0):.1f}% (a={cur_elo_alpha:.2f})"
         print(
             f"  Epoch {epoch:02d}/{epochs:02d} ({time.time() - ep_start:.1f}s) | Pol Loss: {train_loss_display:.4f} | "
-            f"Val Loss: {val_loss:.4f} | Top-1: {t1:.2f}% | Top-3: {t3:.2f}% | Top-5: {t5:.2f}% | Top-10: {t10:.2f}% | WinAcc: {val_win_acc:.1f}%{marker}",
+            f"Val Loss: {val_loss:.4f} | Top-1: {t1:.2f}% | Top-3: {t3:.2f}% | Top-5: {t5:.2f}% | Top-10: {t10:.2f}% | WinAcc: {val_win_acc:.1f}%{elo_tag}{marker}",
             flush=True,
         )
 
@@ -1518,6 +1943,14 @@ def main():
             f"Top-5: {m['top5'] / tot * 100:5.2f}% | Top-10: {m['top10'] / tot * 100:5.2f}%",
             flush=True,
         )
+    we = best_metrics.get("win_eval", {})
+    print(
+        f"Win Value Metrics            -> Phase-2: {we.get('phase2_acc', best_win_acc):5.2f}% | "
+        f"Terminal 5v5 (Draft-Only): {we.get('terminal_acc', 0.0):5.2f}% (Brier={we.get('terminal_brier', 0.0):.4f}) | "
+        f"Team Elo Only: {we.get('elo_only_acc', 0.0):5.2f}% | "
+        f"Draft+Elo: {we.get('draft_plus_elo_acc', 0.0):5.2f}%",
+        flush=True,
+    )
     out_model_path = args.output_model_path or (MODEL_DIR / "sota_draft_gnn_transformer.pt")
     print(f"Saved SOTA checkpoint to: {out_model_path}", flush=True)
 

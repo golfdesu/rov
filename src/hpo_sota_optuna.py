@@ -120,6 +120,17 @@ def parse_args():
         default=None,
         help="Custom output path for best model checkpoint (default: models/sota_draft_gnn_transformer.pt)",
     )
+    parser.add_argument(
+        "--recency-half-life",
+        type=float,
+        default=150.0,
+        help="Exponential recency decay half-life in days (default: 150.0)",
+    )
+    parser.add_argument(
+        "--no-global-ban-context",
+        action="store_true",
+        help="Disable Global Ban pool context embeddings in Transformer",
+    )
     return parser.parse_args()
 
 
@@ -146,6 +157,7 @@ def main():
             logging.getLogger("mlflow").setLevel(logging.ERROR)
             HAS_MLFLOW = False
 
+    use_global_ban_ctx = not args.no_global_ban_context
     t0 = time.time()
     (
         hero_names,
@@ -157,12 +169,37 @@ def main():
         priors,
         train_games,
         val_games,
-    ) = load_sota_data_and_graphs(args.dataset_path)
+    ) = load_sota_data_and_graphs(args.dataset_path, recency_half_life=args.recency_half_life)
 
-    print("Pre-building and caching 1x and 2x datasets in memory/VRAM...", flush=True)
-    train_ds_1x = build_tensor_dataset(train_games, hero_to_id, lane_probs, priority_scores, augment_factor=1)
-    train_ds_2x = build_tensor_dataset(train_games, hero_to_id, lane_probs, priority_scores, augment_factor=2)
-    val_ds = build_tensor_dataset(val_games, hero_to_id, lane_probs, priority_scores, augment_factor=1)
+    print(
+        f"Pre-building and caching 1x and 2x datasets (feat_dim={hero_features.shape[1]}, "
+        f"half_life={args.recency_half_life:.0f}d, gb_ctx={use_global_ban_ctx})...",
+        flush=True,
+    )
+    train_ds_1x = build_tensor_dataset(
+        train_games,
+        hero_to_id,
+        lane_probs,
+        priority_scores,
+        augment_factor=1,
+        recency_half_life=args.recency_half_life,
+    )
+    train_ds_2x = build_tensor_dataset(
+        train_games,
+        hero_to_id,
+        lane_probs,
+        priority_scores,
+        augment_factor=2,
+        recency_half_life=args.recency_half_life,
+    )
+    val_ds = build_tensor_dataset(
+        val_games,
+        hero_to_id,
+        lane_probs,
+        priority_scores,
+        augment_factor=1,
+        recency_half_life=args.recency_half_life,
+    )
 
     if device.type == "cuda":
         val_loader = GPUTensorBatcher(val_ds, batch_size=2048, shuffle=False, device=device)
@@ -209,7 +246,8 @@ def main():
         lr = trial.suggest_float("lr", 4e-4, 3.5e-3, log=True)
         weight_decay = trial.suggest_float("weight_decay", 2e-4, 5e-2, log=True)
         label_smoothing = trial.suggest_float("label_smoothing", 0.0, 0.12)
-        win_loss_weight = trial.suggest_float("win_loss_weight", 0.10, 0.35)
+        # Keep win_loss_weight compact so value loss does not degrade Policy Val Loss / Top-K
+        win_loss_weight = trial.suggest_float("win_loss_weight", 0.02, 0.18)
         batch_size = trial.suggest_categorical("batch_size", [512, 1024])
         augment_factor = trial.suggest_categorical("augment_factor", [1, 2])
 
@@ -220,6 +258,7 @@ def main():
             "num_layers": num_layers,
             "dropout": dropout,
             "neural_scale": neural_scale,
+            "use_global_ban_context": use_global_ban_ctx,
         }
         model = RoVDraftGNNTransformer(
             num_heroes=len(hero_names),
@@ -490,12 +529,18 @@ def main():
         )
     print("=" * 95, flush=True)
 
+    study_cfg = {
+        "use_global_ban_context": use_global_ban_ctx,
+        "recency_half_life": args.recency_half_life,
+        "hero_feat_dim": int(hero_features.shape[1]),
+    }
     top5_path = args.output_top5 or (BEST_PARAMS_DIR / "sota_rov_top5_trials.json")
     with open(top5_path, "w", encoding="utf-8") as f:
         json.dump(
             {
                 "n_trials": args.n_trials,
                 "elapsed_seconds": round(hpo_elapsed, 2),
+                "study_config": study_cfg,
                 "safest_recommended_trial": safest_trial,
                 "top_5_trials": top5_trials,
             },
@@ -508,6 +553,7 @@ def main():
         "best_trial_number": study.best_trial.number,
         "best_val_loss": study.best_value,
         "best_params": study.best_params,
+        "study_config": study_cfg,
         "safest_recommended_trial": safest_trial,
         "top_5_trials": top5_trials,
         "n_trials": args.n_trials,

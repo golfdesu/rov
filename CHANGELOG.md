@@ -27,6 +27,616 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-17 12:12 (UTC+7) — Upgrade SOTA Architecture & Optuna HPO for Policy Accuracy (37-dim Hero Features, Continuous Time-Decay, Global Ban Context)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Rich Hero Features (`25 -> 37` dims) & Continuous Recency (`src/train_sota_model.py`):**
+  - Added `_load_rich_hero_stat_features()` appending 12 normalized hero attributes (Lv.1/Lv.15 HP, Atk, Armor, Magic Defense, Move Speed, skill cooldown/mana/count, and patch-history counts from `data/hero_level_stats.json`, `data/hero_skills_full.json`, `data/hero_patch_history.json`) to produce `(130, 37)` `hero_features` while remaining backward-compatible with legacy 25-dim checkpoints via dynamic input dimension handling.
+  - Added `_compute_match_recency_weight()` using continuous exponential time-decay (`recency_half_life = 150.0` days, `--recency-half-life`) replacing coarse yearly steps, and fixed `_parse_game_sort_key()` to parse `YYYY-MM-DD` dates cleanly before `split("-")`.
+- **Global Ban Pool Context & Isolated Value Head (`src/train_sota_model.py`):**
+  - Added `use_global_ban_context` (`--global-ban-context`) to `RoVDraftGNNTransformer` to embed remaining Global Ban pool vectors, lane saturation, and counts into the macro draft state.
+  - Detached `H_gnn` and `joint_state` inside `DraftCrossValueHead.forward()` and bounded `neural_adv` with `1.5 * torch.tanh(...)` so win-value gradients do not pollute policy representations.
+- **Policy-Focused HPO Tuning (`src/hpo_sota_optuna.py`):**
+  - Narrowed `win_loss_weight` Optuna search bounds to `[0.02, 0.18]`, enabled `use_global_ban_context=True` by default (`--no-global-ban-context` to opt out), added `--recency-half-life` (default `150.0`), and persisted `"study_config"` metadata in top-5 / best-params JSON outputs for `src/train_sota_model.py --use-safest` compatibility on ERAWAN H100 (`run_hpo_rov_h100.sbatch`).
+- **Tests & Cleanup:**
+  - Added `test_rich_hero_features_and_continuous_recency` and `test_global_ban_context_forward_and_predictor_load` to `tests/test_model_pipeline.py`.
+  - Removed the 4 temporary CPU benchmark checkpoints from `models/archive/` (`exp_baseline_d128.pt`, `exp_elo_cross_d128.pt`, `exp_elo_only_ep5.pt`, `exp_elo_cross_w015_ep5.pt`).
+
+### 📁 Modified Files
+- `src/train_sota_model.py`
+- `src/hpo_sota_optuna.py`
+- `tests/test_model_pipeline.py`
+- `DESIGN.md` (recorded iPad Landscape `2048 x 1423` px and iPhone Portrait `942 x 2048` px viewport/aspect reference before removing temporary `web_on_*.jpg` screenshots)
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `python -u src/hpo_sota_optuna.py --n-trials 2 --trial-epochs 1 --d-model 128` (outputting to temporary scratch files; `best_params/` and `models/sota_draft_gnn_transformer.pt` untouched): completed 2 trials cleanly (`feat_dim=37, half_life=150d, gb_ctx=True`, Trial #0 Val Loss `2.9762`, Top-1 `19.54%`, `study_config` saved cleanly).
+- `ruff check --fix .` & `ruff format .`: `All checks passed!`, `110 files left unchanged`.
+- `pytest -q --tb=short` (after final Python edits): `125 passed, 1 warning in 31.89s`.
+
+### ⚠️ Open Issues / Important Notes
+- Production checkpoint (`models/sota_draft_gnn_transformer.pt`) and `best_params/` remain unchanged; run `sbatch run_hpo_rov_h100.sbatch` on ERAWAN H100 HPC to produce and train with the new 50-trial Policy-focused HPO weights.
+
+---
+
+## 📅 2026-11-17 11:33 (UTC+7) — Apply Nov 17, 2026 Skill Patch (15 Screenshots) & Add Elo De-confound + Cross-Attention Value Head Experiment
+**Agent:** Antigravity (Gemini 4 Hydrogen High)
+
+### ✅ Completed Work
+- **Nov 17, 2026 Patch & In-Game Skill Screenshots (7 Heroes, 15 Images):**
+  - Filed 15 new in-game skill screenshots (`S__19947524_0.jpg`–`S__19947539_0.jpg`) into `heroes/{Richter,Butterfly,Fennik,Arduin,Grakk,Dirak,Dyadia}/skill/` and verified alignment with official `rov.in.th` / `garena.tw` Hotfix `2026-11-17` notes.
+  - Updated [data/hero_skills_full.json](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/hero_skills_full.json) and [data/heroes_130_full.json](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/heroes_130_full.json) in sync: `Riktor` (`Skill 1`, `Ultimate`), `Butterfly` (`Skill 1`, `Skill 2`, `Ultimate` rework), `Fennik` (`Skill 1`), `Arduin` (`Passive`, `Skill 2`, `Ultimate`), `Grakk` (`Passive`, `Skill 1`), `Dirak` (`Skill 2` CD `10.0–8.0s`), and `Dyadia` (`Passive`, `Skill 2`).
+  - Appended 14 entries to [data/hero_patch_history.json](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/hero_patch_history.json) (`count=363`, `heroes=101`), updated `Riktor` Ultimate detonation in [src/combat_calculator.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/combat_calculator.py#L1028-L1034), updated Dirak Skill 2 CD assertion in [tests/test_data_integrity.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/tests/test_data_integrity.py#L267), rebuilt [data/screenshots_manifest.json](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/screenshots_manifest.json) (`566` skill screenshots), and ran `scripts/sync_metadata.py`.
+- **Model R&D — Rolling Team Elo De-confounding & 5v5 Cross-Attention Value Head ([src/train_sota_model.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/train_sota_model.py)):**
+  - Added leak-free chronological `compute_rolling_team_elo()` (`--elo-deconfound`) and `DraftCrossValueHead` (`--cross-value-head`, backward-compatible default `use_cross_value_head=False`), plus `win_eval` reporting (`Phase-2`, `Terminal 5v5 Draft-Only`, `Brier`, `Team Elo Only`, `Draft+Elo`) and 2 unit tests in [tests/test_model_pipeline.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/tests/test_model_pipeline.py).
+  - Ran 8-epoch CPU A/B benchmark (`d_model=256`, 2,994 train / 529 val games, saved to `models/archive/` without touching production checkpoint):
+    - Baseline (`exp_baseline_d128.pt`, 2.47M params): `Val Loss = 2.8372`, `Top-1 = 21.15%`, `Top-5 = 60.29%`, `Phase-2 WinAcc = 51.75%`, `Terminal 5v5 = 52.74% (Brier = 0.2525)`.
+    - Upgrade (`exp_elo_cross_d128.pt`, 3.39M params, `--win-loss-weight 0.50 --elo-deconfound --cross-value-head`): `Val Loss = 2.8687`, `Top-1 = 20.39%`, `Top-5 = 58.73%`, `Phase-2 WinAcc = 54.44%`, `Terminal 5v5 = 53.88% (Brier = 0.3021; peaked 56.1% at Epoch 2)`, `Team Elo Only = 64.46%`.
+
+### 📁 Modified Files
+- [src/train_sota_model.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/train_sota_model.py), [src/combat_calculator.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/combat_calculator.py), [tests/test_model_pipeline.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/tests/test_model_pipeline.py), [tests/test_data_integrity.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/tests/test_data_integrity.py)
+- [data/hero_skills_full.json](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/hero_skills_full.json), [data/heroes_130_full.json](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/heroes_130_full.json), [data/hero_patch_history.json](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/hero_patch_history.json), [data/screenshots_manifest.json](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/screenshots_manifest.json), [data/dataset_metadata.json](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/dataset_metadata.json), [frontend/public/dataset_metadata.json](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/public/dataset_metadata.json)
+- `heroes/{Richter,Butterfly,Fennik,Arduin,Grakk,Dirak,Dyadia}/skill/*.jpg`, [AGENTS.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/AGENTS.md), [README.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/README.md), [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md)
+
+### 🧪 Verification
+- `python scripts/build_screenshots_manifest.py`: `566` skill screenshots matched cleanly.
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: `[PASS]`.
+- `ruff check --fix .` & `ruff format .`: `All checks passed!`.
+- `pytest -q --tb=short`: `123 passed, 1 warning in 19.15s`.
+
+### ⚠️ Open Issues / Important Notes
+- Before running full HPC training with `--cross-value-head`, note that `win_loss_weight=0.50` with shared `H_gnn` gradients caused value Brier drift (`0.2605 -> 0.3550`) and `+0.0315` policy Val Loss; detaching `H_gnn` into `DraftCrossValueHead` or keeping `win_loss_weight` around `0.12–0.20` (with `--elo-deconfound`) is recommended for HPO/H100 tuning.
+
+---
+
+## 📅 2026-11-17 10:17 (UTC+7) — Standardize Broadcast Templates to Canonical Thai Hero Names (`Mortos`, `Celica`, `Riktor`)
+**Agent:** Antigravity (Gemini 4 Hydrogen High)
+
+### ✅ Completed Work
+- Updated [scripts/build_broadcast_templates.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/scripts/build_broadcast_templates.py) to include `"aic"` in `detect_league_from_path()` and automatically prune stale template `.png` files not present in the canonical 130-hero catalog.
+- Rebuilt `data/broadcast_templates/` across 1,820 screenshots (`118` broadcast-harvested, `12` avatar fallbacks), replacing legacy `Arthur.png`, `Brunhilda.png`, and `Richter.png` with canonical [Mortos.png](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/broadcast_templates/Mortos.png), [Celica.png](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/broadcast_templates/Celica.png), and [Riktor.png](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/broadcast_templates/Riktor.png) (130 `.png` files total, synced with [manifest.json](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/broadcast_templates/manifest.json)).
+- Removed `LEGACY_TEMPLATE_ALIASES` from [scripts/process_draft_screenshots.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/scripts/process_draft_screenshots.py) so `load_templates()` loads canonical names directly.
+
+### 📁 Modified Files
+- [scripts/build_broadcast_templates.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/scripts/build_broadcast_templates.py), [scripts/process_draft_screenshots.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/scripts/process_draft_screenshots.py)
+- `data/broadcast_templates/*.png` (removed `Arthur.png`, `Brunhilda.png`, `Richter.png`; generated `Mortos.png`, `Celica.png`, `Riktor.png` and updated `manifest.json`)
+- [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md)
+
+### 🧪 Verification
+- `python -m scripts.build_broadcast_templates`: `Done! Created 130 templates (118 harvested from broadcast, 12 fallbacks).` (`Total PNGs: 130`, `['Celica.png', 'Mortos.png', 'Riktor.png']`).
+- `ruff check --fix .` & `ruff format .`: `All checks passed!`.
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: `[PASS]`.
+- `pytest -q --tb=short`: `121 passed, 1 warning in 14.26s`.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-17 10:04 (UTC+7) — Scrape AIC 2026 Wildcard & Ingest 11 True Pick Order Screenshots
+**Agent:** Antigravity (Gemini 4 Hydrogen High)
+
+### ✅ Completed Work
+- **Liquipedia Scraper ([src/scrape_matches.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/scrape_matches.py)):**
+  - Added `Arena of Valor International Championship/2026/Wildcard`, `Swiss Stage`, and `Knockout Stage` to `TOURNAMENT_PAGES`.
+  - Extracted `_make_game_key()` normalizing match dates to day granularity to prevent duplicate inserts when Liquipedia adjusts match start times (such as `GCS 2026 Summer Playoffs` Oct 31 `15:00` -> `10:40`).
+  - Scraped **+11 new AIC 2026 Wildcard games** (`BMG vs GAM` 3, `GAM vs SLX` 3, `ONE vs FL` 5), bringing [data/matches_draft_full.json](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/matches_draft_full.json) to **4,340 total pro games** (`0` unmapped heroes).
+- **Automated Screenshot Ingestion ([scripts/process_draft_screenshots.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/scripts/process_draft_screenshots.py)):**
+  - Added `aic` broadcast overlay coordinates (`LEAGUE_LAYOUTS["aic"]`), series prefix, `--league aic` preset, and generalized `build_international_series_schedule()` / `format_international_filename()` for both `apl` and `aic`.
+  - Added `LEGACY_TEMPLATE_ALIASES` (`Arthur -> Mortos`, `Brunhilda -> Celica`, `Richter -> Riktor`) in `load_templates()`.
+  - Created `data/draft_screenshots/2026_aic/{wildcard,swiss_stage,knockout_stage}/` and ingested all **11 AIC 2026 Wildcard screenshots** (visually verified 100% against Liquipedia) into `2026_aic/wildcard/` and [data/true_pick_order.json](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/true_pick_order.json) (**1,821 games total**, **100% of 2026 games**).
+- **Stats, Training Dataset & Metadata Sync:**
+  - Rebuilt [data/hero_draft_stats.csv](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/hero_draft_stats.csv), [data/synergy_matrix.csv](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/synergy_matrix.csv), [data/counter_matrix.csv](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/counter_matrix.csv), and [data/matches_training.json](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/matches_training.json) (**3,523 games**, **51.7%** true pick order).
+  - Ran `scripts/sync_metadata.py` and mirrored `.agents/skills/` to `.claude/skills/`.
+
+### 📁 Modified Files
+- `src/scrape_matches.py`, `scripts/process_draft_screenshots.py`, `tests/fixtures/predict_golden.json`
+- `data/matches_draft_full.json`, `data/matches_draft_flat.csv`, `data/true_pick_order.json`, `data/matches_training.json`, `data/hero_draft_stats.csv`, `data/synergy_matrix.csv`, `data/counter_matrix.csv`, `data/dataset_metadata.json`, `frontend/public/dataset_metadata.json`
+- `data/draft_screenshots/2026_aic/wildcard/*.png` (11 filed screenshots)
+- `AGENTS.md`, `README.md`, `docs/COMPETITORS.md`, `.agents/skills/*/SKILL.md`, `.claude/skills/*/SKILL.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: `[PASS]` (`130 heroes`, `4,340 total pro games`, `1,821` true pick order entries, `0 unmapped names`).
+- `ruff check --fix .` & `ruff format .`: `All checks passed!`.
+- Regenerated `tests/fixtures/predict_golden.json` (`tests.test_predictor_golden.regenerate()`) for the updated 4,340-game draft stats.
+- `pytest -q --tb=short`: `121 passed, 1 warning in 15.00s`.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+**Agent:** Antigravity
+- **Done:**
+  - Updated the History button in [frontend/src/components/DraftBoardView.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftBoardView.tsx) (`sm+` toolbar and `< sm` mobile menu) to prominently display `{seriesGames.length}/100` (`MAX_SERIES_GAMES`) at all times, showing the `"ประวัติ"` label from `md+`.
+  - Styled the `{games.length}/100` capacity badge inside [frontend/src/components/DraftHistoryModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftHistoryModal.tsx) header as a highlighted gold pill (`border-gold/60 bg-gold/15 text-gold`).
+  - Rebuilt `frontend/dist/` and `frontend/dist-prod/`.
+- **Files:** [frontend/src/components/DraftBoardView.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftBoardView.tsx), [frontend/src/components/DraftHistoryModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftHistoryModal.tsx), [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md).
+- **Verification:** `npm run lint` (`0 warnings and 0 errors`), `npm run build`, `VITE_DRAFT_ONLY=true VITE_OUT_DIR=dist-prod npm run build:prod`, and verified `http://127.0.0.1:8000/` serves the updated `dist-prod` bundle.
+
+---
+
+## 📅 2026-11-16 16:38 (UTC+7) — Use Lock-In Flash Animation for Side Swap & Restore Default Game Switch Behavior
+**Agent:** Antigravity
+- **Done:**
+  - Replaced `swap-from-right` / `swap-from-left` slide animations in [frontend/src/index.css](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/index.css) with `--animate-side-swap-flash` (`360ms` subtle scale + brightness flash matching `lock-in`).
+  - Removed the floating `boardBanner` and game-change animation triggers from [frontend/src/components/DraftBoardView.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftBoardView.tsx) so changing games (`G1..G7`) behaves cleanly as before, while clicking `สลับฝั่ง` plays `animate-side-swap-flash` on both team panels and rotates the `ArrowLeftRight` icon 180°.
+  - Rebuilt `frontend/dist/` and `frontend/dist-prod/`.
+- **Files:** [frontend/src/index.css](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/index.css), [frontend/src/components/DraftBoardView.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftBoardView.tsx), [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md).
+- **Verification:** `npm run lint` (`0 warnings and 0 errors`), `npm run build`, `VITE_DRAFT_ONLY=true VITE_OUT_DIR=dist-prod npm run build:prod`, and verified `http://127.0.0.1:8000/` serves the updated `dist-prod` bundle.
+
+---
+
+## 📅 2026-11-16 16:29 (UTC+7) — Display 100-Game History Capacity in DraftHistoryModal
+**Agent:** Antigravity
+- **Done:**
+  - Exported `MAX_SERIES_GAMES = 100` from [frontend/src/hooks/useDraft.ts](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/hooks/useDraft.ts) as single source of truth.
+  - Updated [frontend/src/components/DraftHistoryModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftHistoryModal.tsx) header, subtitle, and `shrink-0` footer to show `{games.length}/100` capacity, explain rolling eviction of oldest games above 100, and highlight near-full/full counts in gold.
+  - Rebuilt `frontend/dist/` and `frontend/dist-prod/`.
+- **Files:** [frontend/src/hooks/useDraft.ts](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/hooks/useDraft.ts), [frontend/src/components/DraftHistoryModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftHistoryModal.tsx), [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md).
+- **Verification:** `npm run lint` (`0 warnings and 0 errors`), `npm run build`, `VITE_DRAFT_ONLY=true VITE_OUT_DIR=dist-prod npm run build:prod`, and verified `http://127.0.0.1:8000/` serves the updated `dist-prod` bundle.
+
+---
+
+## 📅 2026-11-16 16:23 (UTC+7) — Fix 20 Real-Usage Bugs Across Auth/Sync, Draft State Machine, Modals & Tests
+**Agent:** Antigravity
+- **Done:**
+  - **Auth, Cross-Tab Sync & Persistence ([src/api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/api.py), [src/db.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/db.py), [src/schemas.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/schemas.py), [frontend/src/api/client.ts](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/api/client.ts), [frontend/src/App.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/App.tsx)):**
+    - Added `X-Expected-User` header validation (`401` on expired/evicted session, `409` on cross-tab account switch) on `/draft/session` and `/combat/builds`, plus `focus` / `visibilitychange` / `storage` session checks and immediate re-auth prompt without wiping local drafts.
+    - Stored tombstone `updatedAt` timestamps on `clear_user_draft_state` / `clear_user_combat_builds` so stale offline tabs cannot resurrect cleared data.
+    - Increased `DraftSessionStateSchema.seriesGames` `max_length` from `20` to `100` (with matching client cap `MAX_SERIES_GAMES = 100`) and surfaced `syncError` alerts instead of silent `PUT` failures.
+    - Added Guest-to-Account migration prompt (`maybeMigrateGuestDraft`) across password login/register and OAuth redirects.
+    - Moved `?auth_error=` URL stripping into `useEffect` (StrictMode-safe) and split Discord state errors to `discord_invalid_state`.
+  - **Draft State Machine & Prediction Sync ([frontend/src/hooks/useDraft.ts](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/hooks/useDraft.ts)):**
+    - Added `hasDirtyLocalChangesRef` + `initialSyncTick` to prevent slow initial `GET /draft/session` responses from overwriting or dropping early user picks.
+    - Exposed `retryPredict` with a Retry button on `<Alert>`, reported Step 18 `/predict` errors instead of swallowing them, decoupled `/predict` dependencies from team/series name keystrokes, deduplicated `normalizeHeroList`, guarded `redo` against active Global Bans, auto-saved unsaved active drafts before `loadRecordedGame`, added `skipAutoSave` for Global Ban unlock rollbacks, and moved `dispatch` out of `deleteSeriesGroup`'s state updater.
+  - **Draft UI, Modals & Shortcuts ([DraftBoardView.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftBoardView.tsx), [GlobalBanModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/GlobalBanModal.tsx), [NewSeriesModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/NewSeriesModal.tsx), [DraftHistoryModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftHistoryModal.tsx), [HeroGrid.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/HeroGrid.tsx), [Modal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/Modal.tsx), [MetaLab.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/meta_lab/MetaLab.tsx)):**
+    - Suppressed `DraftBoardView` global shortcuts while `AuthModal` is open and ignored `HTMLSelectElement` on `/`.
+    - Fixed reversed series score after side swap (`blueWins - redWins` aligned to `${bName} vs ${rName}`).
+    - Auto-disambiguated duplicate series names in `NewSeriesModal` (`Team A vs Team B (2)`).
+    - Guarded `HeroGrid` `Enter` lock with `!isLoading`.
+    - Disabled active-board heroes inside `GlobalBanModal`, enforced production Global Ban limits (`20` universal / `30` team / `40` effective), anchored `seriesName` before mid-series renames, restored empty team names on `Escape`, and added `max-h-[92dvh] overflow-y-auto` + `shrink-0` across modals.
+    - Updated `MetaLab` header copy to `"SOTA + Matrix Sandbox"` and updated [.agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py) (synced to `.claude/skills/`) to use `config.resolve_frontend_dist()`.
+  - Added regression assertions in [tests/test_api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/tests/test_api.py).
+- **Files:** [src/api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/api.py), [src/db.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/db.py), [src/schemas.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/schemas.py), [frontend/src/api/client.ts](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/api/client.ts), [frontend/src/App.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/App.tsx), [frontend/src/hooks/useDraft.ts](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/hooks/useDraft.ts), [frontend/src/components/Modal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/Modal.tsx), [frontend/src/components/NewSeriesModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/NewSeriesModal.tsx), [frontend/src/components/HeroGrid.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/HeroGrid.tsx), [frontend/src/components/GlobalBanModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/GlobalBanModal.tsx), [frontend/src/components/DraftHistoryModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftHistoryModal.tsx), [frontend/src/components/DraftBoardView.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftBoardView.tsx), [frontend/src/components/meta_lab/MetaLab.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/meta_lab/MetaLab.tsx), [.agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py), [.claude/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/.claude/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py), [tests/test_api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/tests/test_api.py), [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md).
+- **Verification:** `ruff check` & `ruff format --check` (`All checks passed!`, 110 files), `oxlint` (`0 warnings and 0 errors`), `npm run build` (`index-xpMCeT-R.js`), `build:prod` (`index-C-_2SY87.js`, `index-BIO4D7jZ.css`), `pytest -q --tb=short` (`121 passed in 19.96s`), `inspect_frontend_e2e.py` (`[PASS]`), and live server at `http://127.0.0.1:8000/` verified serving `index-C-_2SY87.js` and returning `401` for stale `X-Expected-User`.
+
+---
+
+## 📅 2026-11-16 16:02 (UTC+7) — Prevent Finishing Draft Game Before All 10 Picks Complete
+**Agent:** Antigravity
+- **Done:**
+  - Updated [frontend/src/components/DraftBoardView.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftBoardView.tsx) so the Finish Game button and `FinishGameModal` require `isDraftComplete` (`currentStep === null`, all 10 picks locked) instead of `hasAnyPick` (which enabled finishing after just 1 pick), and updated the disabled tooltip with current pick count (`X/10`).
+  - Added `if (bluePicks.length < 5 || redPicks.length < 5) return;` guard inside `recordGameToSeries` in [frontend/src/hooks/useDraft.ts](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/hooks/useDraft.ts) to prevent incomplete games from entering Global Ban or series history.
+  - Rebuilt both `frontend/dist/` and `frontend/dist-prod/`.
+- **Files:** [frontend/src/components/DraftBoardView.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftBoardView.tsx), [frontend/src/hooks/useDraft.ts](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/hooks/useDraft.ts), [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md).
+- **Verification:** `npm run lint` (`0 warnings and 0 errors`), `npm run build`, `VITE_DRAFT_ONLY=true VITE_OUT_DIR=dist-prod npm run build:prod`, and verified `http://127.0.0.1:8000/` serves the updated `dist-prod` bundle.
+
+---
+
+## 📅 2026-11-16 15:59 (UTC+7) — Apply Swap-Side Slide Animation & Banner to Game Transitions
+**Agent:** Antigravity
+- **Done:**
+  - Extended the swap-side panel transition (`animate-swap-from-right` / `animate-swap-from-left`) and 1.8s non-blocking top banner in [frontend/src/components/DraftBoardView.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftBoardView.tsx) to trigger automatically whenever `globalBans.gameNumber` changes (`G1..G7` selector, mobile game dropdown, `FinishGameModal`, or modal switches), via `boardAnimCount` + `boardBanner` (`kind: "swap" | "game"`).
+  - Rebuilt both `frontend/dist/` and `frontend/dist-prod/`.
+- **Files:** [frontend/src/components/DraftBoardView.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftBoardView.tsx), [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md).
+- **Verification:** `npm run lint` (`0 warnings and 0 errors`), `npm run build`, `VITE_DRAFT_ONLY=true VITE_OUT_DIR=dist-prod npm run build:prod`, and verified `http://127.0.0.1:8000/` serves the updated `dist-prod` bundle.
+
+---
+
+## 📅 2026-11-16 15:26 (UTC+7) — Remove Redundant Top Global Ban Button & Add Swap-Side Visual Feedback
+**Agent:** Antigravity
+- **Done:**
+  - Removed the redundant top toolbar `Global Ban` button (and mobile `< sm` `globalban` menu option + unused `Layers` import) from [frontend/src/components/DraftBoardView.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftBoardView.tsx), since both left/right team panels already provide direct `GlobalBanModal` entry across all viewports.
+  - Added `--animate-swap-from-right` and `--animate-swap-from-left` keyframes (`420ms`) in [frontend/src/index.css](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/index.css) (honoring `prefers-reduced-motion`).
+  - Wired `handleSwapSides()` in [frontend/src/components/DraftBoardView.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftBoardView.tsx) with 180° icon rotation on the `สลับฝั่ง` button, directional Blue/Red panel slide-in + highlight animation across desktop/compact/mobile team views, and a 1.8s non-blocking broadcast banner (`สลับฝั่งแล้ว · BLUE: <team> ⇄ RED: <team>`).
+  - Rebuilt both `frontend/dist/` and `frontend/dist-prod/`.
+- **Files:** [frontend/src/index.css](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/index.css), [frontend/src/components/DraftBoardView.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftBoardView.tsx), [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md).
+- **Verification:** `npm run lint` (`0 warnings and 0 errors`), `npm run build`, `VITE_DRAFT_ONLY=true VITE_OUT_DIR=dist-prod npm run build:prod`, and verified `http://127.0.0.1:8000/` serves the updated `dist-prod` bundle.
+
+---
+
+## 📅 2026-11-16 15:17 (UTC+7) — Style Guest CTA Button with Formal Slate (#334155) Palette
+**Agent:** Antigravity
+- **Done:**
+  - Updated the Guest CTA button (`onSecondaryAction`) in [frontend/src/components/AuthModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/AuthModal.tsx) (`AuthForm`) to a solid Slate `#334155` fill (`border-[#475569]`, hover `#3e4f66`, `#1e293b` icon badge, white primary text).
+  - Rebuilt `frontend/dist/` (`index-D6tUbuVA.js`) and `frontend/dist-prod/` (`index-DRPqFMXl.js`, `index-D86uii_W.css`).
+- **Files:** [frontend/src/components/AuthModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/AuthModal.tsx), [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md).
+- **Verification:** `npm run lint` (`0 warnings and 0 errors`), `npm run build`, `VITE_DRAFT_ONLY=true VITE_OUT_DIR=dist-prod npm run build:prod`, and `http://127.0.0.1:8000/` verified serving `index-DRPqFMXl.js`.
+
+---
+
+## 📅 2026-11-16 15:11 (UTC+7) — Move Guest Button Directly Below Discord Login in AuthForm
+**Agent:** Antigravity
+- **Done:**
+  - Moved the Guest CTA button (`onSecondaryAction`) from the bottom of `AuthForm` in [frontend/src/components/AuthModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/AuthModal.tsx) directly underneath the Google and Discord sign-in buttons (above the `"หรือใช้ชื่อผู้ใช้และรหัสผ่าน"` divider), and removed the redundant bottom `"หรือ"` divider.
+  - Rebuilt both `frontend/dist/` and `frontend/dist-prod/`.
+- **Files:** [frontend/src/components/AuthModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/AuthModal.tsx), [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md).
+- **Verification:** `npm run lint` (`0 warnings and 0 errors`), `npm run build`, `VITE_DRAFT_ONLY=true VITE_OUT_DIR=dist-prod npm run build:prod`, and verified `http://127.0.0.1:8000/` serves the updated `dist-prod` bundle.
+
+---
+
+## 📅 2026-11-16 15:07 (UTC+7) — Remove MiniDraftLogo Emblem from AuthLanding Sign-In Card Header
+**Agent:** Antigravity
+- **Done:**
+  - Removed `<MiniDraftLogo className="h-10 w-10 shrink-0" />` from the sign-in card header in [frontend/src/components/AuthModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/AuthModal.tsx) (`AuthLanding`).
+  - Rebuilt both `frontend/dist/` (`index-CERrMI2D.js`) and `frontend/dist-prod/` (`index-BVgnnPKM.js`).
+- **Files:** [frontend/src/components/AuthModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/AuthModal.tsx), [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md).
+- **Verification:** `npm run lint` (`0 warnings and 0 errors`), `npm run build`, `VITE_DRAFT_ONLY=true VITE_OUT_DIR=dist-prod npm run build:prod`, and `http://127.0.0.1:8000/` verified serving `index-BVgnnPKM.js`.
+
+---
+
+## 📅 2026-11-16 15:00 (UTC+7) — Sync Project Markdown Documentation for New AI Sessions
+**Agent:** Antigravity
+- **Done:**
+  - Updated [AGENTS.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/AGENTS.md) with `frontend/dist-prod` (`VITE_DRAFT_ONLY=true`), `src/db.py`, `deploy/`, `docs/SUBSCRIPTION_ROADMAP.md`, `scripts/start_public_15d.ps1`, `logo.png`, `privacy.html`, and Guardrail #15 (open free launch + OAuth secret hygiene).
+  - Updated [README.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/README.md) and [frontend/README.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/README.md) to remove obsolete `/predict/matrix` & `/predict/heuristic` endpoints and document `/auth/*` (Google + Discord OAuth 2.0 PKCE), `/privacy`, `build:prod`, and deployment files.
+  - Updated [.agents/skills/rov-draft-serving/SKILL.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/rov-draft-serving/SKILL.md) API route table and synced `.claude/skills/`.
+- **Files:** [AGENTS.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/AGENTS.md), [README.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/README.md), [frontend/README.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/README.md), [.agents/skills/rov-draft-serving/SKILL.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/rov-draft-serving/SKILL.md), [.claude/skills/rov-draft-serving/SKILL.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/.claude/skills/rov-draft-serving/SKILL.md), [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md).
+- **Verification:** `pytest -q --tb=short tests/test_skills_sync.py tests/test_security.py` (`12 passed in 5.54s`).
+
+---
+
+## 📅 2026-11-16 15:03 (UTC+7) — Refine Login Portal & AuthModal to Balanced Broadcast-Analytics Formal Design
+**Agent:** Antigravity
+- **Done:**
+  - Refined [frontend/src/components/AuthModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/AuthModal.tsx) (`AuthLanding`, `AuthModal`, `AuthForm`, `ShowcaseTeam`) to a balanced broadcast-analytics formal aesthetic (solid gold & team accent colors without neon glows or blurred orbs):
+    - Replaced plain slate styling with a static `panel-2` vignette + subtle dot-grid backdrop, 1px gold header hairline, gold eyebrow divider, and solid gold primary submit button.
+    - Added a 3-metric inline summary strip (`130`, `Bo1–Bo7`, `Global Ban` / `3,512`), a broadcast-style `ShowcaseTeam` draft preview (`B1..B5` / `R1..R5` mirrored Red side, solid Blue/Red win-probability bar), and a clean footer with Privacy Policy link.
+    - Unified `AuthLanding` and `AuthModal` headers (`MiniDraftLogo`, 2px solid gold top rule, gold underline tabs, and blue-accent Guest secondary button).
+  - Rebuilt both `frontend/dist/` and production `frontend/dist-prod/` (`VITE_DRAFT_ONLY=true VITE_OUT_DIR=dist-prod npm run build:prod`) so the live server at port 8000 serves the updated bundle immediately.
+- **Files:** [frontend/src/components/AuthModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/AuthModal.tsx), [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md).
+- **Verification:** `npm run lint` (`0 warnings and 0 errors`), `npm run build` (`index-Dyr4DVmT.js`), `VITE_DRAFT_ONLY=true VITE_OUT_DIR=dist-prod npm run build:prod` (`index-DZkEyEEr.js`, `index-DnEOvIX3.css`), and confirmed `frontend/dist-prod/index.html` references `index-DZkEyEEr.js` (note: local `uvicorn` at port 8000 is not currently running).
+
+---
+
+## 📅 2026-11-16 14:44 (UTC+7) — Redesign Login Portal & AuthModal to Formal Non-Neon Aesthetic
+**Agent:** Antigravity
+- **Done:**
+  - Updated [frontend/src/components/AuthModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/AuthModal.tsx) (`AuthLanding`, `AuthModal`, `AuthForm`) to a formal, clean dark slate design with zero neon glows or flashy gaming chrome:
+    - Removed blurred blue/red neon orbs, cyber grid background, tri-color gradient top bars (`from-blue via-gold to-red`), `clip-chamfer` corner cuts, and glowing drop-shadows (`shadow-[0_0_24px_...]`).
+    - Replaced bright gold/neon-blue tab switchers, submit buttons, and Guest CTA buttons with understated `rounded-md` / `rounded-lg` cards, neutral borders (`border-line`, `border-line-strong`), and subtle hover states.
+    - Neutralized header and hero badges (`130 HEROES · 2026 META`, `RoV Pro Draft Intelligence`) and feature highlight icons to muted slate tones.
+- **Files:** [frontend/src/components/AuthModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/AuthModal.tsx), [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md).
+- **Verification:** `npm run lint` (`0 warnings and 0 errors`), `npm run build`, and `npm run build:prod` in `frontend/` passed cleanly.
+
+---
+
+## 📅 2026-11-16 14:32 (UTC+7) — Remove Data_Dictionary.md from Commercial Export Package & Generator
+**Agent:** Antigravity
+- **Done:**
+  - Removed `write_data_dictionary()` and `Data_Dictionary.md` generation from [scripts/export_commercial_package.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/scripts/export_commercial_package.py), adding cleanup (`unlink(missing_ok=True)`) so any stale `Data_Dictionary.md` is deleted before packaging.
+  - Deleted `exports/RoV_Pro_Draft_Intelligence_2026/Data_Dictionary.md` and regenerated [RoV_Pro_Draft_Intelligence_2026.zip](file:///C:/Users/chaya/Documents/Program/Project/ROV/exports/RoV_Pro_Draft_Intelligence_2026.zip) (`715.3 KB`) without `Data_Dictionary.md`.
+- **Files:** [scripts/export_commercial_package.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/scripts/export_commercial_package.py), [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md), and `exports/RoV_Pro_Draft_Intelligence_2026*` outputs.
+- **Verification:** Confirmed `Data_Dictionary.md` is absent from both `exports/RoV_Pro_Draft_Intelligence_2026/` and `RoV_Pro_Draft_Intelligence_2026.zip`; ran `ruff check` & `ruff format --check`.
+
+---
+
+## 📅 2026-11-16 14:14 (UTC+7) — Fix Missing & Truncated Match Durations Across Datasets & Commercial Exports
+**Agent:** Antigravity
+- **Done:**
+  - Fixed 3 incomplete `length` entries in [data/matches_draft_full.json](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/matches_draft_full.json) and [data/matches_draft_flat.csv](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/matches_draft_flat.csv):
+    - `Arena_of_Glory_2025_Winter/Group_Stage_2_S815` Game 3 (`1S` vs `BOX`): `'26'` -> `'26:17'` (from Liquipedia wikitext `|length=26;17` semicolon typo).
+    - `Arena_of_Glory_2025_Winter/Group_Stage_2_S817` Game 2 (`SPN` vs `SGP`): `'09'` -> `'09:47'` (from Liquipedia wikitext `|length=09;47` semicolon typo).
+    - `Arena_of_Glory_2026_Spring/Group_Stage_1_S880` Game 4 (`GAM` vs `BOX`, commercial `M2026_0628`): `''` / `'N/A'` -> `'21:25'` (verified from official Garena VOD `flFRnUHEp-o` end-of-game scoreboard).
+  - Updated [src/scrape_matches.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/scrape_matches.py) to normalize `;` to `:` in `|length=` parsing and added `MANUAL_LENGTH_OVERRIDES` for the blank Liquipedia 2026 record.
+  - Rebuilt [data/matches_training.json](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/matches_training.json) (`build_training_dataset.py --min-year 2025`), updated [data/matches_training_heuristic.json](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/matches_training_heuristic.json), and regenerated commercial/sample exports ([true_draft_matches_2026.csv](file:///C:/Users/chaya/Documents/Program/Project/ROV/exports/RoV_Pro_Draft_Intelligence_2026/raw_csv/true_draft_matches_2026.csv), [RoV_Pro_Draft_Master_2026.xlsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/exports/RoV_Pro_Draft_Intelligence_2026/RoV_Pro_Draft_Master_2026.xlsx), [RoV_Pro_Draft_Intelligence_2026.zip](file:///C:/Users/chaya/Documents/Program/Project/ROV/exports/RoV_Pro_Draft_Intelligence_2026.zip), [RoV_Pro_Draft_Sample_2026.xlsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/exports/sample/RoV_Pro_Draft_Sample_2026.xlsx)).
+  - Added strict `MM:SS` duration validation (`0 <= secs < 60`) to `test_matches_draft_integrity()` in [tests/test_data_integrity.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/tests/test_data_integrity.py).
+- **Files:** [src/scrape_matches.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/scrape_matches.py), [data/matches_draft_full.json](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/matches_draft_full.json), [data/matches_draft_flat.csv](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/matches_draft_flat.csv), [data/matches_training.json](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/matches_training.json), [data/matches_training_heuristic.json](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/matches_training_heuristic.json), [tests/test_data_integrity.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/tests/test_data_integrity.py), [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md), and `exports/` outputs.
+- **Verification:** `ruff check --fix .` & `ruff format .` passed; verified 4,329/4,329 valid `MM:SS` in `matches_draft_full.json` & `matches_draft_flat.csv`, 3,512/3,512 in `matches_training.json`, 3,483/3,483 in `matches_training_heuristic.json`, and 1,810/1,810 in `true_draft_matches_2026.csv`, `RoV_Pro_Draft_Master_2026.xlsx`, and `RoV_Pro_Draft_Intelligence_2026.zip` (0 `N/A`); `pytest -q --tb=short tests/test_data_integrity.py` passed.
+
+---
+
+## 📅 2026-11-16 10:56 (UTC+7) — Add Multi-Provider OAuth Table & Discord OAuth 2.0 (PKCE) Support
+**Agent:** Antigravity
+- **Done:**
+  - Added optional `ROV_DISCORD_CLIENT_ID`, `ROV_DISCORD_CLIENT_SECRET`, and `ROV_DISCORD_REDIRECT_URI` settings in [src/config.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/config.py) and pass-throughs in [deploy/docker-compose.yml](file:///C:/Users/chaya/Documents/Program/Project/ROV/deploy/docker-compose.yml).
+  - Added `user_oauth_accounts` table (with automatic backfill from `users.google_sub`) and unified `upsert_oauth_user(...)` (linking across providers only when `email_verified=True`) in [src/db.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/db.py).
+  - Refactored shared OAuth state/PKCE/cookie helpers and added `GET /auth/discord/login` + `GET /auth/discord/callback` (`discord.com` token & `@me` profile) plus `discord_login_enabled` on `/auth/*` in [src/api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/api.py) and [src/schemas.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/schemas.py).
+  - Updated [frontend/src/types/auth.ts](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/types/auth.ts), [frontend/src/App.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/App.tsx), and [frontend/src/components/AuthModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/AuthModal.tsx) to render the Discord login button when enabled and surface Discord OAuth error banners.
+  - Added `test_discord_oauth_flow` in [tests/test_api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/tests/test_api.py).
+- **Files:** [src/config.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/config.py), [deploy/docker-compose.yml](file:///C:/Users/chaya/Documents/Program/Project/ROV/deploy/docker-compose.yml), [src/db.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/db.py), [src/schemas.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/schemas.py), [src/api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/api.py), [frontend/src/types/auth.ts](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/types/auth.ts), [frontend/src/App.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/App.tsx), [frontend/src/components/AuthModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/AuthModal.tsx), [tests/test_api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/tests/test_api.py), [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md).
+- **Verification:** `oxlint` (0 warnings, 0 errors), `npm run build` & `npm run build:prod` (`index-XLhqibYn.js`), `ruff check .` (`All checks passed!`), and `pytest -q --tb=short tests/test_api.py tests/test_security.py` (`46 passed in 7.27s`).
+
+---
+
+## 📅 2026-11-16 10:47 (UTC+7) — Allow 60s JWT Clock Skew for Google ID Tokens & Surface OAuth Errors in Guest Modal
+**Agent:** Antigravity
+- **Done:**
+  - Passed `clock_skew_in_seconds=60` to `google_id_token.verify_oauth2_token(...)` in [src/api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/api.py#L892-L897) after observing `Token used too early` (~17s Windows clock skew) in `logs/public_api.err.log`.
+  - Updated [frontend/src/App.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/App.tsx) and [frontend/src/components/AuthModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/AuthModal.tsx) so `?auth_error=...` redirects while in Guest mode automatically open `AuthModal` with the Thai error banner instead of silently failing.
+  - Updated `test_privacy_policy_and_google_oauth_flow` in [tests/test_api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/tests/test_api.py) to accept `clock_skew_in_seconds`.
+- **Files:** [src/api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/api.py), [frontend/src/App.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/App.tsx), [frontend/src/components/AuthModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/AuthModal.tsx), [tests/test_api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/tests/test_api.py), [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md).
+- **Verification:** `oxlint` (0 warnings, 0 errors), `npm run build` & `npm run build:prod` (`index-CgKVHJBr.js`), `ruff check` & `ruff format`, and `pytest -q --tb=short tests/test_api.py tests/test_security.py` (`45 passed in 9.21s`).
+
+---
+
+## 📅 2026-11-16 10:40 (UTC+7) — Auto-Load Local .env, Isolate OAuth Secret File & Pass OAuth Env in Docker
+**Agent:** Antigravity
+- **Done:**
+  - Added `.secrets/` and `client_secret_*.json` ignore rules to [.gitignore](file:///C:/Users/chaya/Documents/Program/Project/ROV/.gitignore) and [.dockerignore](file:///C:/Users/chaya/Documents/Program/Project/ROV/.dockerignore).
+  - Enabled automatic `.env` loading via `load_dotenv()` in [src/config.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/config.py) so local `uvicorn` and [scripts/start_public_15d.ps1](file:///C:/Users/chaya/Documents/Program/Project/ROV/scripts/start_public_15d.ps1) pick up Google OAuth credentials automatically.
+  - Added optional `ROV_GOOGLE_CLIENT_ID`, `ROV_GOOGLE_CLIENT_SECRET`, and `ROV_GOOGLE_REDIRECT_URI` pass-throughs to [deploy/docker-compose.yml](file:///C:/Users/chaya/Documents/Program/Project/ROV/deploy/docker-compose.yml).
+  - Moved the user's downloaded Google OAuth client JSON into gitignored `.secrets/` and populated local gitignored `.env` without printing secret values.
+- **Files:** [.gitignore](file:///C:/Users/chaya/Documents/Program/Project/ROV/.gitignore), [.dockerignore](file:///C:/Users/chaya/Documents/Program/Project/ROV/.dockerignore), [src/config.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/config.py), [deploy/docker-compose.yml](file:///C:/Users/chaya/Documents/Program/Project/ROV/deploy/docker-compose.yml), [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md).
+- **Verification:** `ruff check src/config.py` (`All checks passed!`), `ruff format --check src/config.py` (`1 file already formatted`), `config.google_oauth_enabled == True`, and `pytest -q --tb=short tests/test_api.py tests/test_security.py` (`45 passed in 9.33s`).
+
+---
+
+## 📅 2026-11-16 10:29 (UTC+7) — Add Logo PNG, Privacy Policy Page & Google OAuth 2.0 (PKCE) Sign-In
+**Agent:** Antigravity
+- **Done:**
+  - Rendered [frontend/public/favicon.svg](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/public/favicon.svg) to a `512x512` PNG at [frontend/public/logo.png](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/public/logo.png) and added it to [frontend/public/manifest.webmanifest](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/public/manifest.webmanifest) for Google OAuth Branding and PWA icons.
+  - Added [frontend/public/privacy.html](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/public/privacy.html) and `GET /privacy` in [src/api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/api.py), plus `/privacy` proxy entry in [frontend/vite.config.ts](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/vite.config.ts).
+  - Implemented backend Google OAuth 2.0 + PKCE (`GET /auth/google/login`, `GET /auth/google/callback`, `google_login_enabled` on `/auth/me`) using `httpx` and `google-auth` `id_token` verification in [src/api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/api.py), config fields in [src/config.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/config.py), schema updates in [src/schemas.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/schemas.py), and `google_sub`/`email`/`upsert_google_user()` in [src/db.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/db.py).
+  - Added the Google Sign-In button, OAuth error surfacing, and Privacy Policy link in [frontend/src/App.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/App.tsx), [frontend/src/components/AuthModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/AuthModal.tsx), and [frontend/src/types/auth.ts](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/types/auth.ts).
+  - Added `test_privacy_policy_and_google_oauth_flow` in [tests/test_api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/tests/test_api.py).
+- **Files:** [frontend/public/logo.png](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/public/logo.png), [frontend/public/privacy.html](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/public/privacy.html), [frontend/public/manifest.webmanifest](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/public/manifest.webmanifest), [frontend/vite.config.ts](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/vite.config.ts), [frontend/src/types/auth.ts](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/types/auth.ts), [frontend/src/App.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/App.tsx), [frontend/src/components/AuthModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/AuthModal.tsx), [src/config.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/config.py), [src/db.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/db.py), [src/schemas.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/schemas.py), [src/api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/api.py), [tests/test_api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/tests/test_api.py), [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md).
+- **Verification:** `oxlint` (0 warnings, 0 errors), `npm run build` & `npm run build:prod` (`dist` & `dist-prod` built cleanly), `ruff check .` (All checks passed!), and `pytest -q --tb=short tests/test_api.py tests/test_security.py` (`45 passed in 17.77s`).
+
+---
+
+## 📅 2026-11-16 09:21 (UTC+7) — Document Future Subscription Roadmap & Keep App Free for Open Launch
+**Agent:** Antigravity
+- **Done:**
+  - Documented the agreed future monetization roadmap (Free 36/day UTC+7 quota, Pro 50 THB/30d, Team Pro 149 THB/30d, PromptPay dynamic QR + EasySlip/SlipOK adapter, FIFO concurrent session caps) in [docs/SUBSCRIPTION_ROADMAP.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/docs/SUBSCRIPTION_ROADMAP.md).
+  - Reverted mid-session draft billing/gating edits in [src/config.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/config.py), [src/db.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/db.py), [src/schemas.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/schemas.py), [src/api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/api.py), and [frontend/src/api/client.ts](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/api/client.ts), and removed temporary `src/billing.py` and `scripts/manage_subscription.py` so the platform remains free for all users at launch.
+- **Files:** [docs/SUBSCRIPTION_ROADMAP.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/docs/SUBSCRIPTION_ROADMAP.md), [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md).
+- **Verification:** `ruff check src/config.py src/db.py src/schemas.py src/api.py` (all checks passed) and `pytest -q --tb=short tests/test_api.py tests/test_security.py` (44 passed in 26.93s).
+
+---
+
+## 📅 2026-11-15 19:54 (UTC+7) — Comprehensive Security Hardening (Proxy Trust, Chunked Cap, Account Lockout, CSRF, Finite Floats)
+**Agent:** Antigravity
+- **Done:**
+  - Restricted trusted proxy parsing via `config.trusted_proxies` (`ROV_TRUSTED_PROXIES`, defaulting to `"loopback"` only) in [src/config.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/config.py) and [src/api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/api.py) so untrusted private/RFC1918 hops (such as Azure direct ingress) cannot spoof `CF-Connecting-IP` or `X-Forwarded-For`.
+  - Replaced header-only `Content-Length` checking with a stream-counting ASGI middleware (`_MaxBodySizeMiddleware`) in [src/api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/api.py) to enforce the `256 KB` production body limit across `Transfer-Encoding: chunked` and invalid/negative `Content-Length` requests.
+  - Added per-account distributed brute-force lockout (`_account_login_limiter`: 20 failures / 300s), bounded `scrypt` worker concurrency (`_scrypt_semaphore = BoundedSemaphore(4)`), and lockout-preserving eviction (`max_keys = 8192`) in [src/db.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/db.py).
+  - Moved `PRAGMA journal_mode=WAL` from per-query `_connect()` into `ensure_schema()`, added safe `>30d` abandoned empty-account pruning when `users` hits `max_users`, and rejected non-finite JSON constants (`NaN`/`Infinity`) on SQLite read/write helpers in [src/db.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/db.py).
+  - Enforced finite percentage validation (`FinitePct = Annotated[float, Field(allow_inf_nan=False, ge=0.0, le=100.0)]`) in [src/schemas.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/schemas.py) and added a `RequestValidationError` handler in [src/api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/api.py) so `1e400`/`Infinity` inputs cleanly return `422` instead of crashing FastAPI's JSON error encoder with `500`.
+  - Added `Origin`/`Referer` validation on state-changing requests (`POST`/`PUT`/`PATCH`/`DELETE`) in production and appended `form-action 'self'` to `Content-Security-Policy` in [src/api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/api.py).
+  - Added 4 regression tests in [tests/test_security.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/tests/test_security.py).
+- **Files:** [src/config.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/config.py), [src/db.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/db.py), [src/schemas.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/schemas.py), [src/api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/api.py), [tests/test_security.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/tests/test_security.py), [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md).
+- **Verification:** `ruff check` & `ruff format`, full `pytest` suite, `audit_security.py`, `inspect_frontend_e2e.py`, and live checks on `https://minidraft.app/`.
+
+---
+
+## 📅 2026-11-15 19:34 (UTC+7) — Ensure 5-Per-Lane Recommendations in Prod & Highlight Top 10 in HeroGrid
+**Agent:** Antigravity
+- **Done:**
+  - Raised the production `/predict` `top_k` cap in [src/api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/api.py#L737-L743) from `15` to `25` so `_ensure_lane_quota(..., min_per_lane=5)` activates across all 5 lanes (`DS_Lane`, `Jungle`, `Mid`, `Dragon_Lane`, `Roam`) and lane filter tabs in [AiPanel.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/AiPanel.tsx) always show 5 candidates.
+  - Updated `recommendedRanks` in [DraftBoardView.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftBoardView.tsx#L140-L143) and [MetaLab.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/meta_lab/MetaLab.tsx#L115-L118) from `.slice(0, 5)` to `.slice(0, 10)` so the HeroGrid highlights and numbers ranks `#1`–`#10`, while `AiPanel` continues showing Top 5 in the top recommendation strip.
+  - Updated [tests/test_api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/tests/test_api.py#L1139-L1145) production hardening check to assert `top_k` clamping at `25`.
+- **Files:** [src/api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/api.py), [tests/test_api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/tests/test_api.py), [frontend/src/components/DraftBoardView.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftBoardView.tsx), [frontend/src/components/meta_lab/MetaLab.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/meta_lab/MetaLab.tsx), [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md).
+- **Verification:** Rebuilt `frontend/dist` and `frontend/dist-prod` (`index-CFdanGX4.js`), restarted production `uvicorn` on port 8000, and ran full post-edit checks (`oxlint`, `ruff`, `pytest`, `audit_security.py`, `inspect_frontend_e2e.py`, live `POST /predict` & `GET /`).
+
+---
+
+## 📅 2026-11-15 19:24 (UTC+7) — Lean Azure Docker Context/Image & Remove HeroGrid AI/A-Z Sort Toggle
+**Agent:** Antigravity
+- **Done:**
+  - Switched [.dockerignore](file:///C:/Users/chaya/Documents/Program/Project/ROV/.dockerignore) to an explicit allowlist for `data/*` (11 runtime JSON/CSV files) and `models/*` (`sota_draft_gnn_transformer.pt`), reducing runtime data + model payload from `1.34+ GB` down to `17.85 MB` and excluding `tests/`, `scripts/`, `best_params/`, `docs/`, `exports/`, `*.sbatch`, and `*.md` from the Docker build context.
+  - Updated [Dockerfile](file:///C:/Users/chaya/Documents/Program/Project/ROV/Dockerfile) to copy only those 11 runtime files in `data/` and `models/sota_draft_gnn_transformer.pt`, and set `ENV ROV_DB_PATH=/app/db/rov_app.db` so an Azure persistent disk mount at `/app/db` works out-of-the-box.
+  - Removed the `AI / A–Z` sort toggle button (`title="เรียงตามคำแนะนำ AI และเลนที่ขาด"`), unused `sortMode` state, and unused `ArrowDownAZ`/`Sparkles` imports from [frontend/src/components/HeroGrid.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/HeroGrid.tsx), keeping default smart ordering (available heroes, AI recommendation / missing lane, then alphabetical).
+- **Files:** [.dockerignore](file:///C:/Users/chaya/Documents/Program/Project/ROV/.dockerignore), [Dockerfile](file:///C:/Users/chaya/Documents/Program/Project/ROV/Dockerfile), [frontend/src/components/HeroGrid.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/HeroGrid.tsx), [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md).
+- **Verification:** Frontend `npm run lint` (`oxlint`: 0 warnings, 0 errors), `npm run build` (`frontend/dist`), `VITE_DRAFT_ONLY=true VITE_OUT_DIR=dist-prod npm run build:prod` (`frontend/dist-prod/assets/index-C_ZvInLi.js`, 0 leak matches), `ruff check --fix .` & `ruff format .`, `pytest` (`114 passed`), `inspect_frontend_e2e.py` (`[PASS]`), `audit_security.py` (`[PASS]`), and live `https://minidraft.app/` (`200`, serves `index-C_ZvInLi.js`).
+
+---
+
+## 📅 2026-11-15 19:03 (UTC+7) — RoV Arena Crossed Swords + Crown Logo (Tab & Navbar)
+**Agent:** Antigravity
+- **Done:**
+  - Replaced [frontend/public/favicon.svg](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/public/favicon.svg) with a letter-free RoV Arena emblem featuring crossed Blue/Red-accented blades with gold hilts beneath a 3-point Royal Gold Crown and blue center gem.
+  - Added [frontend/src/components/MiniDraftLogo.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/MiniDraftLogo.tsx) (1:1 inline SVG with `useId()` collision-free gradient IDs) and integrated it next to `MINIDRAFT` in both `AuthLanding` ([frontend/src/components/AuthModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/AuthModal.tsx)) and the workspace top navigation bar ([frontend/src/App.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/App.tsx)).
+  - Bumped favicon query cache-buster to `/favicon.svg?v=3` in [frontend/index.html](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/index.html) and [frontend/public/manifest.webmanifest](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/public/manifest.webmanifest).
+- **Verification:**
+  - `npm run lint` (`0 warnings and 0 errors`), `npm run build` (`frontend/dist`), `npm run build:prod` (`frontend/dist-prod`), and `dist-prod` bundle scan (`CLEAN: 0 matches`).
+  - `python -m pytest -p no:cacheprovider -q --tb=short` (`114 passed, 1 warning in 16.17s`), `inspect_frontend_e2e.py` (`[PASS]`), and live checks on `https://minidraft.app/` (`HOME_HAS_FAV_V3: True`, `/favicon.svg?v=3` -> `200`, `HAS_INLINE_LOGO: True`).
+
+---
+
+## 📅 2026-11-15 18:18 (UTC+7) — Update Browser Tab Favicon to Blue/Red Esports Shield + Gold `M`
+**Agent:** Antigravity
+- **Done:**
+  - Replaced [frontend/public/favicon.svg](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/public/favicon.svg) with a crisp 64×64 SVG esports shield split into Blue (`#3b9eff` -> `#14488a`) and Red (`#ff4d5e` -> `#8c1626`) halves, framed in gold (`#f5c451`) with a bold gold `M` center emblem on `#070b14`.
+  - Added `?v=2` cache-busting icon references in [frontend/index.html](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/index.html) and [frontend/public/manifest.webmanifest](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/public/manifest.webmanifest).
+- **Verification:**
+  - `npm run lint` (`0 warnings and 0 errors`), `npm run build` (`frontend/dist`), `npm run build:prod` (`frontend/dist-prod`), and `dist-prod` bundle scan (`CLEAN: 0 matches`).
+  - `python -m pytest -p no:cacheprovider -q --tb=short` (`114 passed, 1 warning in 16.05s`), `inspect_frontend_e2e.py` (`[PASS]`), and live checks on `https://minidraft.app/` (`HOME_HAS_FAV_V2: True`, `/favicon.svg?v=2` -> `200`, `MANIFEST_ICON` updated).
+
+---
+
+## 📅 2026-11-15 18:08 (UTC+7) — Persist Guest Mode Across F5 Page Reloads
+**Agent:** Antigravity
+- **Done:**
+  - Updated [frontend/src/App.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/App.tsx) to persist `guestEntered` in `localStorage` under `minidraft_guest_entered_v1` via safe `loadGuestEntered()`, `saveGuestEntered()`, and `updateGuestEntered()` helpers.
+  - Pressing `F5` after entering Guest mode now returns directly to the Draft Board instead of re-prompting `AuthLanding`, while signing in or logging out clears the Guest flag cleanly.
+- **Verification:**
+  - `npm run lint` (`0 warnings and 0 errors`), `npm run build` (`frontend/dist`), `npm run build:prod` (`frontend/dist-prod`), and `dist-prod` bundle scan (`CLEAN: 0 matches`).
+  - `python -m pytest -p no:cacheprovider -q --tb=short` (`114 passed, 1 warning in 16.41s`), `inspect_frontend_e2e.py` (`[PASS]`), and live bundle verify on `https://minidraft.app/assets/index-DcuqliI9.js` (`HAS_GUEST_PERSIST: True`).
+
+---
+
+## 📅 2026-11-15 18:01 (UTC+7) — Highlight Guest Login CTA in AuthLanding & AuthForm
+**Agent:** Antigravity
+- **Done:**
+  - Upgraded the Guest button in `AuthForm` ([frontend/src/components/AuthModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/AuthModal.tsx)) to a high-contrast Esports Blue card (`border-2 border-blue/75`, gradient background, blue icon badge, and `INSTANT` tag) with label `เข้าใช้งานทันที (Login as Guest)` on `AuthLanding`.
+  - Added a prominent `เริ่มใช้งานแบบ Guest ทันที` quick-launch button directly below the hero description in `AuthLanding` so desktop and mobile visitors see instant Guest access without scrolling.
+- **Verification:**
+  - `npm run lint` (`0 warnings and 0 errors`), `npm run build` (`frontend/dist`), `npm run build:prod` (`frontend/dist-prod`), and `dist-prod` bundle scan (`CLEAN: 0 matches`).
+  - `python -m pytest -p no:cacheprovider -q --tb=short` (`114 passed, 1 warning in 16.31s`), `inspect_frontend_e2e.py` (`[PASS]`), and live bundle verify on `https://minidraft.app/assets/index-DWv-ZieP.js` (`HAS_GUEST_CTA: True`).
+
+---
+
+## 📅 2026-11-15 17:36 (UTC+7) — Remove Draft Board Model/PRO AI Badge
+**Agent:** Antigravity
+- **Done:**
+  - Removed the `PRO AI` / `SOTA 51%` indicator badge and its left divider from the series sub-header in [frontend/src/components/DraftBoardView.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftBoardView.tsx), along with unused `ENGINE_OPTIONS`, `engine`, `modelBadge`, and `modelTooltip` props/imports.
+  - Removed unused `modelBadge` / `modelTooltip` props from `ScoreBarProps` in [frontend/src/components/ScoreBar.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/ScoreBar.tsx) and removed `DraftEngineOption` / `ENGINE_OPTIONS` from [frontend/src/types/draft.ts](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/types/draft.ts).
+- **Verification:**
+  - `npm run lint` (`0 warnings and 0 errors`), `npm run build` (`frontend/dist`), `npm run build:prod` (`frontend/dist-prod`), and `dist-prod` bundle scan (`CLEAN: 0 matches` incl. `PRO AI`).
+  - `ruff check --fix .` (`All checks passed!`), `ruff format .`, `python -m pytest -p no:cacheprovider -q --tb=short` (`114 passed, 1 warning`), `inspect_frontend_e2e.py` (`[PASS]`), and live bundle check on `https://minidraft.app/assets/index-BlX_MSFP.js` (`HAS_PRO_AI: False`).
+
+---
+
+## 📅 2026-11-15 17:32 (UTC+7) — Update Browser Tab Title & PWA Manifest to `MiniDraft`
+**Agent:** Antigravity
+- **Done:**
+  - Updated [frontend/index.html](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/index.html) `<title>` to `MiniDraft` and replaced the dev meta description with `RoV Pro Draft Assistant — Global Ban Bo1-Bo7 simulation &amp; matchup planning` (removing any architecture text from HTML).
+  - Updated [frontend/public/manifest.webmanifest](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/public/manifest.webmanifest) `name` and `short_name` to `MiniDraft`.
+  - Updated `test_web_ui_served` in [tests/test_api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/tests/test_api.py) to expect `<title>MiniDraft</title>`.
+- **Verification:**
+  - `npm run lint` (`0 warnings and 0 errors`), `npm run build` (`frontend/dist`), `npm run build:prod` (`frontend/dist-prod`), and `dist-prod` bundle scan (`CLEAN: 0 matches` incl. `Draft Intelligence`).
+  - `ruff check --fix .` (`All checks passed!`), `ruff format .`, `python -m pytest -p no:cacheprovider -q --tb=short` (`114 passed, 1 warning in 20.86s`), `inspect_frontend_e2e.py` (`[PASS]`).
+  - Live verification on `https://minidraft.app/`: `GET /` -> `200` (`TITLE: MiniDraft`), `GET /manifest.webmanifest` -> `200` (`name: MiniDraft`, `short_name: MiniDraft`).
+
+---
+
+## 📅 2026-11-15 17:29 (UTC+7) — Remove Admin Mode & Lock Entire System to SOTA Model
+**Agent:** Antigravity
+- **Done:**
+  - Completely removed admin mode and multi-engine switching (`model_admin_usernames`, `ROV_MODEL_ADMIN_USERNAMES`, `ROV_ADMIN_BOOTSTRAP_PASSWORD`, `can_switch_model`, `is_model_admin()`, `get_model_admin_user()`, `reserved_usernames`, `upsert_user()`, `heuristic_predictor`, `/predict/matrix`, and `/predict/heuristic`) across [src/config.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/config.py), [src/db.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/db.py), [src/schemas.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/schemas.py), [src/api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/api.py), and the frontend ([frontend/src/types/auth.ts](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/types/auth.ts), [frontend/src/types/draft.ts](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/types/draft.ts), [frontend/src/App.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/App.tsx), [frontend/src/hooks/useDraft.ts](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/hooks/useDraft.ts), [frontend/src/components/DraftBoardView.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftBoardView.tsx), [frontend/src/components/ScoreBar.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/ScoreBar.tsx), [frontend/src/components/meta_lab/MetaLab.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/meta_lab/MetaLab.tsx)).
+  - Locked `DraftSessionStateSchema.engine` strictly to `"sota"` (auto-normalizing legacy `"matrix"`/`"heuristic"` session payloads to `"sota"`), locked `/combat/*` endpoints strictly to development mode (`require_development`), and applied uniform production `/predict` lockdown (`top_k <= 15`, `lookahead_depth <= 2`, redacted `"RoV Draft AI"` metadata) to all callers without exception.
+  - Added `_MAX_PROD_BODY_BYTES = 256 * 1024` (`413 Payload Too Large` / `400 Invalid Content-Length`) guard on production `POST`/`PUT`/`PATCH` requests and `_FrontendStaticFiles` so unmatched non-GET/HEAD API paths (such as removed `/predict/matrix` and `/predict/heuristic`) return `404 Not Found` instead of `405`.
+  - Retained `RoVDraftPredictor.predict_matrix()` strictly as an internal Python/unit-test method in `src/predictor.py`.
+  - Updated [tests/test_api.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/tests/test_api.py) to test SOTA-only locked endpoints, `404` responses on removed `/predict/matrix` and `/predict/heuristic` routes, `413` production payload cap, and uniform production lockdown.
+- **Verification:**
+  - `npm run lint` (`oxlint`: 0 warnings, 0 errors), `npm run build` (`frontend/dist`), `npm run build:prod` (`frontend/dist-prod`), and `dist-prod` bundle scan (`CLEAN: 0 matches`).
+  - `ruff check --fix .` (`All checks passed!`), `ruff format .`, `python -m pytest -p no:cacheprovider -q --tb=short` (`114 passed, 1 warning in 15.49s`), `python -B .agents/skills/security-audit/scripts/audit_security.py` (`[PASS]`), `python -B .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py` (`[PASS]`).
+
+---
+
+## 📅 2026-11-15 17:15 (UTC+7) — 4-Round Red-Team Anti-Scraping & Bundle Hardening (`https://minidraft.app`)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Middleware Normalization, Fail-Fast Prod Bundle & Endpoint Parity (`src/api.py`, `src/config.py`)**:
+  - Added `_normalize_request_path` (`\\` -> `/`, slash collapse, `posixpath.normpath`, lowercase) in `security_and_lockdown_middleware` to defeat `/./`, `//`, `/%2e/`, `..`, trailing-slash, and Windows case/backslash bypasses.
+  - Added `Content-Security-Policy`, `Cross-Origin-Opener-Policy: same-origin`, `X-Permitted-Cross-Domain-Policies: none`, and HTTPS `Strict-Transport-Security` headers.
+  - Gated `GET/PUT/DELETE /combat/builds` with `require_dev_or_admin` (`404` for guests and regular users in production), sanitized `get_heuristic_predictor()` 503 messages, removed stale `sslip.io` from default production `cors_origins`, and made `resolve_frontend_dist()` fail fast if `frontend/dist-prod` is missing in production.
+- **Anti-Spoofing, Rate Limiting & `/predict` Anti-Pagination (`src/api.py`, `src/db.py`, `src/schemas.py`)**:
+  - Updated `_is_trusted_proxy`, `_parse_valid_ip`, and `_client_ip` to validate forwarding headers (`CF-Connecting-IP` / rightmost untrusted hop in `X-Forwarded-For`) only when peer is a trusted proxy.
+  - Converted `RateLimiter` to `OrderedDict` O(1) LRU eviction (`max_keys=2048`), added `check_allowed()`, added production `_login_user_limiter` (`pair:{ip}:{user}`, recorded only on failed password) and post-success `_global_reg_limiter`, and capped `auth_sessions` to 10 newest sessions per user.
+  - Added `HeroStr` / `ShortStr` bounds across `DraftStateRequest`, `CombatBuildRequest`, `GlobalBanStateSchema`, `RecordedDraftGameSchema`, and `DraftSessionStateSchema`, plus per-list deduplication on `global_bans` / `blue_global_bans` / `red_global_bans` / `series_winning_heroes`.
+  - In production for non-admin callers on `POST /predict`, enforced `mode`-aware Global Ban bounds (`universal <= 20`, per-side `<= 30`, effective masked `<= 40`) to stop 130-hero `global_bans` pagination extraction, redacted `architecture` to `"RoV Draft AI"`, and suppressed unbounded hero-name reflection in 422 errors.
+- **Zero-Leak Production Frontend (`frontend/vite.config.ts`, `frontend/src/vite-env.d.ts`, `frontend/src/types/draft.ts`, `frontend/src/hooks/useDraft.ts`, `frontend/src/App.tsx`, `frontend/src/components/AuthModal.tsx`, `frontend/src/components/DraftBoardView.tsx`, `frontend/src/components/ScoreBar.tsx`)**:
+  - Injected Vite compile-time `__DRAFT_ONLY__` and `transformIndexHtml` meta sanitization so `frontend/dist-prod/` tree-shakes all references to `/predict/matrix`, `/predict/heuristic`, `Heuristic`, `Bayes Matrix`, `3,512`, `GNN`, and `Transformer` to 0 matches.
+- **Deployment Hardening (`Dockerfile`, `deploy/Caddyfile`, `scripts/start_public_15d.ps1`, `tests/test_api.py`)**:
+  - Updated `Dockerfile` defaults to `VITE_DRAFT_ONLY=true` (`dist-prod`) + `ROV_ENV=production` + `--no-server-header`; hardened `Caddyfile` with HSTS and `-CF-Connecting-IP` / `X-Forwarded-For {remote_host}`; updated `start_public_15d.ps1` to pass `TUNNEL_TOKEN` via env var and `--no-server-header`.
+
+### 📁 Modified Files
+- `src/config.py`, `src/db.py`, `src/schemas.py`, `src/api.py`
+- `frontend/vite.config.ts`, `frontend/src/vite-env.d.ts`, `frontend/src/App.tsx`, `frontend/src/types/draft.ts`, `frontend/src/hooks/useDraft.ts`, `frontend/src/components/AuthModal.tsx`, `frontend/src/components/DraftBoardView.tsx`, `frontend/src/components/ScoreBar.tsx`
+- `Dockerfile`, `deploy/Caddyfile`, `scripts/start_public_15d.ps1`, `tests/test_api.py`, `CHANGELOG.md`
+
+### 🧪 Verification
+- 4-round iterative Fix + 3-Subagent Audit loop (covering `dist-prod/`, API bypasses, auth/rate-limits, and `POST /predict` extraction).
+- `npm run lint`, `npm run build` (`frontend/dist`), & `npm run build:prod` (`frontend/dist-prod`): 0 warnings/errors; **0 secret pattern matches** in `dist-prod/index.html` and `dist-prod/assets/*.js`.
+- `ruff check --fix .` & `ruff format .`: All checks passed.
+- `python -m pytest -p no:cacheprovider -q --tb=short`: **115 passed** in 13.38s.
+- `python -B .agents/skills/security-audit/scripts/audit_security.py` (**5/5 PASS**) & `python -B .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py` (**4/4 PASS**).
+
+---
+
+## 📅 2026-11-15 16:45 (UTC+7) — Develop vs Production Mode Separation & Public Anti-Scraping Lockdown (`https://minidraft.app`)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Dual-Mode Architecture (`src/config.py`)**: Added `ROV_ENV` (`development` default vs `production`), `is_production`, `cors_origins` allowlist (`https://minidraft.app`, `https://www.minidraft.app` in production), and `resolve_frontend_dist()` serving `frontend/dist-prod` in production while preserving `frontend/dist` for local development and E2E asset checks.
+- **API Anti-Scraping & Endpoint Lockdown (`src/api.py`, `src/schemas.py`, `src/db.py`)**:
+  - Disabled `/docs`, `/redoc`, `/openapi.json`, `/dataset_metadata.json`, `/heroes-media*`, `/items-media*`, `/items/*`, `/enchantments/*`, and `/skills/*` (`404`) when `config.is_production` is active.
+  - Restricted all `/combat/*` calculation and screenshot endpoints (`require_dev_or_admin`) to return `404` for non-admin callers in production while keeping full access for admin (`golfdesu`) and local development.
+  - Stripped internal model metadata (`architecture`, `val_loss`, `num_heroes`, `dataset_metadata`) from `/health` and stripped proprietary pro tournament statistics (`win_rate`, `pick_rate`, `ban_rate`, `presence_rate`, `tier_reason`, `rank`) from `/heroes` for non-admin callers in production.
+  - Added security headers (`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, `Permissions-Policy`, `Cache-Control: no-store`), constant-time dummy scrypt verification on missing usernames in `authenticate_user`, generic `409` on reserved usernames in production `/auth/register`, bounded `RateLimiter` key eviction (`max_keys=2048`), `/predict` rate limiting (`60 req/60s`) with `top_k <= 15` and `lookahead_depth <= 2` clamping for non-admin callers, and disabled unauthenticated disk reads/writes on `data/draft_session_state.json` in production.
+- **Isolated Production Frontend Build (`frontend/vite.config.ts`, `frontend/package.json`, `frontend/src/App.tsx`, `frontend/src/types/draft.ts`)**: Added `VITE_OUT_DIR` support (`npm run build:prod` -> `frontend/dist-prod`) and `prune-draft-only-public-assets` plugin to strip `dataset_metadata.json`, `items/`, `enchantments/`, and `skills/` from the public bundle, plus removed internal training descriptions from `ENGINE_OPTIONS` when `VITE_DRAFT_ONLY === "true"`.
+- **Deployment & Runner Hardening (`scripts/start_public_15d.ps1`, `deploy/docker-compose.yml`, `deploy/Caddyfile`, `.gitignore`, `.dockerignore`)**: Configured `ROV_ENV=production` and automatic `minidraft` Cloudflare Named Tunnel startup in `scripts/start_public_15d.ps1`.
+
+### 📁 Modified Files
+- `src/config.py`
+- `src/db.py`
+- `src/schemas.py`
+- `src/api.py`
+- `frontend/vite.config.ts`
+- `frontend/package.json`
+- `frontend/src/App.tsx`
+- `frontend/src/types/draft.ts`
+- `scripts/start_public_15d.ps1`
+- `deploy/docker-compose.yml`
+- `deploy/Caddyfile`
+- `.gitignore`
+- `.dockerignore`
+- `tests/test_api.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check --fix .` & `ruff format .`: 0 errors.
+- `npm run lint`, `npm run build` (`frontend/dist`), & `npm run build:prod` (`frontend/dist-prod`): 0 warnings, 0 errors; `dist-prod` JS chunk reduced from 581.39 kB to 391.00 kB with `dataset_metadata.json`, `items/`, `enchantments/`, and `skills/` removed.
+- `python -m pytest -p no:cacheprovider -q --tb=short`: **115 passed** in 13.11s (including `test_production_mode_lockdown_and_anti_scraping`).
+- `python -B .agents/skills/security-audit/scripts/audit_security.py`: **5/5 PASS**.
+- `python -B .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py`: **4/4 PASS**.
+
+### ⚠️ Open Issues / Important Notes
+- Local development (`uvicorn src.api:app --reload`) defaults to `ROV_ENV=development` (full 4-tab UI and docs enabled); public serving (`ROV_ENV=production`) serves `frontend/dist-prod` and enforces all anti-scraping lockdowns.
+
+---
+
+## 📅 2026-11-15 16:12 (UTC+7) — Login-First Landing Page & Admin-Only Model Switching (`golfdesu`)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **`src/config.py` & `src/db.py`**: Added `model_admin_usernames` (defaults to `{"golfdesu"}`, configurable via `ROV_MODEL_ADMIN_USERNAMES`), blocked public `/auth/register` from claiming reserved admin usernames (`403`), and added `UserDatabase.upsert_user` + optional runtime `ROV_ADMIN_BOOTSTRAP_PASSWORD` seeding (no plaintext password stored in repo files).
+- **`src/schemas.py` & `src/api.py`**: Added `can_switch_model: bool` to `AuthUserSchema`, restricted `/predict/matrix` and `/predict/heuristic` to admin accounts via `get_model_admin_user` (`401` unauthenticated, `403` non-admin), and coerced non-admin `/draft/session` `engine` to `"sota"`.
+- **`frontend/src/types/auth.ts`, `frontend/src/hooks/useDraft.ts` & `frontend/src/components/DraftBoardView.tsx`**: Locked `engine` to `"sota"` and hid the `MODEL:` dropdown unless `authUser.can_switch_model` is `true`.
+- **`frontend/src/components/AuthModal.tsx` & `frontend/src/App.tsx`**: Redesigned `<AuthLanding>` into an esports broadcast split-stage portal (arena gradient/grid backdrop, simulated Blue vs Red 5v5 hero avatar matchup bar, 3 feature cards, leading input icons + password visibility toggle, and Guest entry card; removed any personal name hints from input placeholders). Logging out returns to the login landing screen, and simplified the top-nav login button label to `เข้าสู่ระบบ`.
+- **`tests/test_api.py`**: Updated matrix/heuristic tests to authenticate with a synthetic temp-DB admin account and added `test_model_switch_admin_access_control`.
+
+### 📁 Modified Files
+- `src/config.py`
+- `src/db.py`
+- `src/schemas.py`
+- `src/api.py`
+- `frontend/src/types/auth.ts`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/components/AuthModal.tsx`
+- `frontend/src/App.tsx`
+- `tests/test_api.py`
+
+### 🧪 Verification
+- `ruff check --fix .` & `ruff format .`: `All checks passed!`
+- `frontend`: `npm run lint` (`oxlint`: `0 warnings and 0 errors`, 44 files) & `VITE_DRAFT_ONLY=true npm run build` (`tsc -b && vite build`, `944ms`).
+- `python -m pytest -p no:cacheprovider -q --tb=short`: `114 passed, 1 warning in 14.64s`.
+- `python -B .agents/skills/security-audit/scripts/audit_security.py`: `[PASS]` (5/5, `0 secret files tracked across 1151 git files`).
+- `python -B .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py`: `[PASS]` (4/4).
+
+### ⚠️ Open Issues / Important Notes
+- Local `data/rov_app.db` (gitignored) was seeded with the `golfdesu` admin user. Uncommitted working tree changes remain on local disk pending user confirmation to commit & push to GitHub.
+
+---
+
+## 📅 2026-11-15 12:39 (UTC+7) — Finish Game Winner Selection Popup Modal
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **`frontend/src/components/AiPanel.tsx`**: Updated AI panel heading from `AI BAN/PICK SUGGESTIONS` to `BAN PRIORITY` / `PICK PRIORITY`.
+- **`frontend/src/components/FinishGameModal.tsx`**: Created a centered accessible popup modal (`<Modal>`) for finishing the active draft game and selecting the match winner (Blue side win, Red side win, or skip without specifying a winner), displaying current series score, Global Ban carry-over info, and an inline warning banner when `< 10` picks are locked (replacing `window.confirm`).
+- **`frontend/src/components/DraftBoardView.tsx`**: Replaced the cramped inline top-bar `isSelectingWinner` controls with `isFinishGameModalOpen` launching `<FinishGameModal />`, and disabled the Enter quick-lock shortcut while the modal is open.
+
+### 📁 Modified Files
+- `frontend/src/components/AiPanel.tsx`
+- `frontend/src/components/FinishGameModal.tsx` (new)
+- `frontend/src/components/DraftBoardView.tsx`
+
+### 🧪 Verification
+- `frontend`: `npm run lint` (`oxlint`: `0 warnings and 0 errors`, 44 files) & `npm run build` (`tsc -b && vite build`, `958ms`).
+- `python -m pytest tests/test_api.py -p no:cacheprovider -q --tb=short`: `33 passed, 1 warning in 4.10s`.
+- `python -B .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py`: `[PASS]` (4/4).
+
+### ⚠️ Open Issues / Important Notes
+- Changes are built and verified locally; pending user confirmation if they also want to commit/push and rebuild the Azure VM container (`20.2.210.230`).
+
+---
+
 ## 📅 2026-11-15 12:27 (UTC+7) — Draft-Only Public Build Flag (`VITE_DRAFT_ONLY`)
 **Agent:** Antigravity
 

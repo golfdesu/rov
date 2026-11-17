@@ -1,6 +1,10 @@
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).resolve().parent.parent / ".env", override=False)
+
 
 class PathConfig:
     def __init__(self):
@@ -32,6 +36,9 @@ class PathConfig:
         self.draft_session_path: Path = self.data_dir / "draft_session_state.json"
         self.app_db_path: Path = Path(os.environ.get("ROV_DB_PATH", str(self.data_dir / "rov_app.db")))
         self.hero_tier_overrides_path: Path = self.data_dir / "hero_tier_overrides.json"
+        self.frontend_dir: Path = self.base_dir / "frontend"
+        self.frontend_dist_dir: Path = self.frontend_dir / "dist"
+        self.frontend_dist_prod_dir: Path = self.frontend_dir / "dist-prod"
 
         self.sota_model_path: Path = self.models_dir / "sota_draft_gnn_transformer.pt"
         self.heuristic_model_path: Path = self.models_dir / "sota_draft_gnn_transformer_heuristic.pt"
@@ -92,10 +99,67 @@ class Config:
         paths: PathConfig | None = None,
         model: DraftModelConfig | None = None,
         hpo: HPOConfig | None = None,
+        env: str | None = None,
     ):
         self.paths = paths if paths is not None else PathConfig()
         self.model = model if model is not None else DraftModelConfig()
         self.hpo = hpo if hpo is not None else HPOConfig()
+        self.env: str = (env or os.environ.get("ROV_ENV", "development")).strip().lower()
+
+        raw_origins = os.environ.get("ROV_CORS_ORIGINS", "").strip()
+        if raw_origins:
+            self.cors_origins: list[str] = [o.strip() for o in raw_origins.split(",") if o.strip()]
+        elif self.env == "production":
+            self.cors_origins = [
+                "https://minidraft.app",
+                "https://www.minidraft.app",
+            ]
+        else:
+            self.cors_origins = [
+                "http://localhost:3000",
+                "http://127.0.0.1:3000",
+                "http://localhost:5173",
+                "http://127.0.0.1:5173",
+                "http://localhost:8000",
+                "http://127.0.0.1:8000",
+            ]
+
+        raw_proxies = os.environ.get("ROV_TRUSTED_PROXIES", "loopback").strip()
+        self.trusted_proxies: tuple[str, ...] = tuple(
+            p.strip().lower() for p in raw_proxies.split(",") if p.strip()
+        ) or ("loopback",)
+
+        self.google_client_id: str = os.environ.get("ROV_GOOGLE_CLIENT_ID", "").strip()
+        self.google_client_secret: str = os.environ.get("ROV_GOOGLE_CLIENT_SECRET", "").strip()
+        self.google_redirect_uri: str = os.environ.get("ROV_GOOGLE_REDIRECT_URI", "").strip()
+        self.discord_client_id: str = os.environ.get("ROV_DISCORD_CLIENT_ID", "").strip()
+        self.discord_client_secret: str = os.environ.get("ROV_DISCORD_CLIENT_SECRET", "").strip()
+        self.discord_redirect_uri: str = os.environ.get("ROV_DISCORD_REDIRECT_URI", "").strip()
+
+    @property
+    def google_oauth_enabled(self) -> bool:
+        return bool(self.google_client_id and self.google_client_secret)
+
+    @property
+    def discord_oauth_enabled(self) -> bool:
+        return bool(self.discord_client_id and self.discord_client_secret)
+
+    @property
+    def is_production(self) -> bool:
+        return self.env == "production"
+
+    def resolve_frontend_dist(self) -> Path:
+        override = os.environ.get("ROV_FRONTEND_DIST", "").strip()
+        if override:
+            return Path(override)
+        if self.is_production:
+            if not self.paths.frontend_dist_prod_dir.is_dir():
+                raise RuntimeError(
+                    "Production frontend bundle missing at frontend/dist-prod/. "
+                    "Build it first via: VITE_DRAFT_ONLY=true VITE_OUT_DIR=dist-prod npm run build:prod"
+                )
+            return self.paths.frontend_dist_prod_dir
+        return self.paths.frontend_dist_dir
 
 
 config = Config()

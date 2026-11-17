@@ -1,7 +1,11 @@
 import re
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, StrictInt, model_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, field_validator, model_validator
+
+HeroStr = Annotated[str, Field(min_length=1, max_length=64)]
+ShortStr = Annotated[str, Field(max_length=64)]
+FinitePct = Annotated[float, Field(allow_inf_nan=False, ge=0.0, le=100.0)]
 
 _SCHEMA_HERO_ALIASES: dict[str, str] = {
     "riktor": "riktor",
@@ -42,36 +46,39 @@ class DraftStateRequest(BaseModel):
         le=2,
         description="Draft phase: 1 (first ban/pick phase) or 2 (second ban/pick phase)",
     )
-    ally_picks: list[str] = Field(
+    ally_picks: list[HeroStr] = Field(
         default_factory=list,
         max_length=5,
         description="Heroes already picked by the acting team (0 to 4 heroes if mode='pick', up to 5 if mode='ban')",
     )
-    enemy_picks: list[str] = Field(
+    enemy_picks: list[HeroStr] = Field(
         default_factory=list,
         max_length=5,
         description="Heroes already picked by the opposing team (0 to 5 heroes)",
     )
-    ally_bans: list[str] = Field(
+    ally_bans: list[HeroStr] = Field(
         default_factory=list,
         max_length=4,
         description="Heroes already banned by the acting team (0 to 4 heroes)",
     )
-    enemy_bans: list[str] = Field(
+    enemy_bans: list[HeroStr] = Field(
         default_factory=list,
         max_length=4,
         description="Heroes already banned by the opposing team (0 to 4 heroes)",
     )
-    global_bans: list[str] = Field(
+    global_bans: list[HeroStr] = Field(
         default_factory=list,
+        max_length=60,
         description="Heroes unavailable due to Global Ban Pick rule from previous games in the series",
     )
-    blue_global_bans: list[str] = Field(
+    blue_global_bans: list[HeroStr] = Field(
         default_factory=list,
+        max_length=35,
         description="Heroes unavailable specifically for Blue team due to being used in previous games",
     )
-    red_global_bans: list[str] = Field(
+    red_global_bans: list[HeroStr] = Field(
         default_factory=list,
+        max_length=35,
         description="Heroes unavailable specifically for Red team due to being used in previous games",
     )
     top_k: int = Field(
@@ -94,8 +101,9 @@ class DraftStateRequest(BaseModel):
         default="GLOBAL",
         description="Target regional pro league meta conditioning: 'RPL' (TH), 'AOG' (VN), 'GCS' (TW), 'INTL'/'APL'/'AIC' (international), or 'GLOBAL' (performance-adjusted global blend)",
     )
-    series_winning_heroes: list[str] = Field(
+    series_winning_heroes: list[HeroStr] = Field(
         default_factory=list,
+        max_length=35,
         description="Heroes that won previous games in the current series and remain available for steal-pick or target-ban adaptation",
     )
 
@@ -118,6 +126,21 @@ class DraftStateRequest(BaseModel):
                     raise ValueError(f"Duplicate hero '{raw}' in {field_name}")
                 seen.add(key)
             seen_by_field[field_name] = seen
+
+        for extra_name, extra_items in (
+            ("global_bans", self.global_bans),
+            ("blue_global_bans", self.blue_global_bans),
+            ("red_global_bans", self.red_global_bans),
+            ("series_winning_heroes", self.series_winning_heroes),
+        ):
+            extra_seen: set[str] = set()
+            for raw in extra_items:
+                key = _canon_hero_key(raw)
+                if not key:
+                    raise ValueError(f"Empty hero name in {extra_name}")
+                if key in extra_seen:
+                    raise ValueError(f"Duplicate hero '{raw}' in {extra_name}")
+                extra_seen.add(key)
 
         ap, ep = seen_by_field["ally_picks"], seen_by_field["enemy_picks"]
         ab, eb = seen_by_field["ally_bans"], seen_by_field["enemy_bans"]
@@ -188,27 +211,45 @@ class DraftPredictionResponse(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     model_loaded: bool
-    architecture: str
-    num_heroes: int
-    val_loss: float
+    architecture: str | None = None
+    num_heroes: int | None = None
+    val_loss: float | None = None
     dataset_metadata: dict[str, Any] | None = None
 
 
 class CombatBuildRequest(BaseModel):
-    hero: str
+    hero: HeroStr
     level: StrictInt = Field(default=1, ge=1, le=15)
-    items: list[str] = Field(default_factory=list, max_length=6)
-    arcana: dict[str, StrictInt] = Field(default_factory=dict, description="Tier 3 arcana name -> slot count")
-    primary_faction: str | None = None
-    primary_enchantments: list[str] = Field(default_factory=list, max_length=3)
-    secondary_faction: str | None = None
-    secondary_enchantments: list[str] = Field(default_factory=list, max_length=2)
-    skill_levels: dict[str, StrictInt] = Field(default_factory=dict, description="Override auto skill point allocation")
-    skill_hits: dict[str, StrictInt] = Field(default_factory=dict, description="Hits per cast for multi-hit skills")
-    skill_charges: dict[str, float] = Field(
-        default_factory=dict, description="Charge ratio (0.0 to 1.0) for charging skills"
+    items: list[ShortStr] = Field(default_factory=list, max_length=6)
+    arcana: dict[ShortStr, StrictInt] = Field(
+        default_factory=dict,
+        max_length=30,
+        description="Tier 3 arcana name -> slot count",
     )
-    active_combo_slots: list[str] | None = Field(default=None, description="Active skill slots included in combo/duel")
+    primary_faction: ShortStr | None = None
+    primary_enchantments: list[ShortStr] = Field(default_factory=list, max_length=3)
+    secondary_faction: ShortStr | None = None
+    secondary_enchantments: list[ShortStr] = Field(default_factory=list, max_length=2)
+    skill_levels: dict[ShortStr, StrictInt] = Field(
+        default_factory=dict,
+        max_length=16,
+        description="Override auto skill point allocation",
+    )
+    skill_hits: dict[ShortStr, StrictInt] = Field(
+        default_factory=dict,
+        max_length=16,
+        description="Hits per cast for multi-hit skills",
+    )
+    skill_charges: dict[ShortStr, float] = Field(
+        default_factory=dict,
+        max_length=16,
+        description="Charge ratio (0.0 to 1.0) for charging skills",
+    )
+    active_combo_slots: list[ShortStr] | None = Field(
+        default=None,
+        max_length=16,
+        description="Active skill slots included in combo/duel",
+    )
     enable_kiting: bool = Field(default=True, description="Whether ranged heroes kite melee opponents in 1v1 duels")
     enable_actives: bool = Field(
         default=True,
@@ -279,54 +320,61 @@ class CombatRuneRecommendationResponse(BaseModel):
 
 class DraftHistoryItemSchema(BaseModel):
     stepIndex: int = Field(default=0, ge=0, le=18)
-    bluePicks: list[str] = Field(default_factory=list)
-    redPicks: list[str] = Field(default_factory=list)
-    blueBans: list[str] = Field(default_factory=list)
-    redBans: list[str] = Field(default_factory=list)
+    bluePicks: list[ShortStr] = Field(default_factory=list, max_length=5)
+    redPicks: list[ShortStr] = Field(default_factory=list, max_length=5)
+    blueBans: list[ShortStr] = Field(default_factory=list, max_length=4)
+    redBans: list[ShortStr] = Field(default_factory=list, max_length=4)
 
 
 class GlobalBanStateSchema(BaseModel):
-    seriesName: str = Field(default="", description="Optional custom or derived series matchup name e.g. BRU vs FS")
-    teamAName: str = "TEAM A"
-    teamBName: str = "TEAM B"
-    teamAUsed: list[str] = Field(default_factory=list)
-    teamBUsed: list[str] = Field(default_factory=list)
-    universalBans: list[str] = Field(default_factory=list)
+    seriesName: ShortStr = Field(
+        default="", description="Optional custom or derived series matchup name e.g. BRU vs FS"
+    )
+    teamAName: ShortStr = "TEAM A"
+    teamBName: ShortStr = "TEAM B"
+    teamAUsed: list[ShortStr] = Field(default_factory=list, max_length=60)
+    teamBUsed: list[ShortStr] = Field(default_factory=list, max_length=60)
+    universalBans: list[ShortStr] = Field(default_factory=list, max_length=60)
     blueSideTeam: Literal["A", "B"] = "A"
     gameNumber: int = Field(default=1, ge=1, le=7)
 
 
 class RecordedDraftGameSchema(BaseModel):
-    id: str
+    id: ShortStr
     gameNumber: int = Field(default=1, ge=1, le=7)
-    timestamp: str
-    seriesName: str = Field(default="", description="Group or series matchup name e.g. BRU vs FS")
-    blueTeamName: str
-    redTeamName: str
+    timestamp: str = Field(max_length=32)
+    seriesName: ShortStr = Field(default="", description="Group or series matchup name e.g. BRU vs FS")
+    blueTeamName: ShortStr
+    redTeamName: ShortStr
     blueSideTeam: Literal["A", "B"] = "A"
-    blueBans: list[str] = Field(default_factory=list)
-    redBans: list[str] = Field(default_factory=list)
-    bluePicks: list[str] = Field(default_factory=list)
-    redPicks: list[str] = Field(default_factory=list)
-    blueWinRate: float = 50.0
+    blueBans: list[ShortStr] = Field(default_factory=list, max_length=4)
+    redBans: list[ShortStr] = Field(default_factory=list, max_length=4)
+    bluePicks: list[ShortStr] = Field(default_factory=list, max_length=5)
+    redPicks: list[ShortStr] = Field(default_factory=list, max_length=5)
+    blueWinRate: FinitePct = 50.0
     winner: Literal["A", "B"] | None = None
 
 
 class DraftSessionStateSchema(BaseModel):
     stepIndex: int = Field(default=0, ge=0, le=18)
-    bluePicks: list[str] = Field(default_factory=list)
-    redPicks: list[str] = Field(default_factory=list)
-    blueBans: list[str] = Field(default_factory=list)
-    redBans: list[str] = Field(default_factory=list)
-    history: list[DraftHistoryItemSchema] = Field(default_factory=list)
-    winHistory: list[float | None] = Field(default_factory=list)
-    blueWinRate: float = 50.0
+    bluePicks: list[ShortStr] = Field(default_factory=list, max_length=5)
+    redPicks: list[ShortStr] = Field(default_factory=list, max_length=5)
+    blueBans: list[ShortStr] = Field(default_factory=list, max_length=4)
+    redBans: list[ShortStr] = Field(default_factory=list, max_length=4)
+    history: list[DraftHistoryItemSchema] = Field(default_factory=list, max_length=25)
+    winHistory: list[FinitePct | None] = Field(default_factory=list, max_length=25)
+    blueWinRate: FinitePct = 50.0
     useLookahead: bool = False
-    engine: Literal["sota", "heuristic", "matrix"] = "sota"
+    engine: Literal["sota"] = "sota"
     league: Literal["RPL", "AOG", "GCS", "INTL", "APL", "AIC", "GLOBAL"] = "GLOBAL"
     globalBans: GlobalBanStateSchema = Field(default_factory=GlobalBanStateSchema)
-    seriesGames: list[RecordedDraftGameSchema] = Field(default_factory=list)
+    seriesGames: list[RecordedDraftGameSchema] = Field(default_factory=list, max_length=100)
     updatedAt: int = Field(default=0, description="Epoch milliseconds of last state update")
+
+    @field_validator("engine", mode="before")
+    @classmethod
+    def force_sota_engine(cls, _value: Any) -> Literal["sota"]:
+        return "sota"
 
 
 class AuthRegisterRequest(BaseModel):
@@ -344,11 +392,15 @@ class AuthUserSchema(BaseModel):
     id: int
     username: str
     display_name: str
+    email: str | None = None
+    auth_provider: Literal["password", "google", "discord"] = "password"
 
 
 class AuthStatusResponse(BaseModel):
     authenticated: bool
     user: AuthUserSchema | None = None
+    google_login_enabled: bool = False
+    discord_login_enabled: bool = False
 
 
 class CombatBuildsSyncSchema(BaseModel):

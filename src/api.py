@@ -1,16 +1,30 @@
+import base64
+import hashlib
+import hmac
+import ipaddress
 import json
 import logging
+import math
+import posixpath
 import re
+import secrets
 import threading
 import time
 import uuid
 from pathlib import Path
 from typing import Literal
+from urllib.parse import urlencode, urlparse
 
+import httpx
 import pandas as pd
-from fastapi import Cookie, Depends, FastAPI, HTTPException, Query, Request, Response
+from fastapi import Cookie, Depends, FastAPI, Header, HTTPException, Query, Request, Response
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from google.auth.transport import requests as google_auth_requests
+from google.oauth2 import id_token as google_id_token
 
 from src.combat_calculator import DEFAULT_ITEM_ALIASES, Build, get_engine
 from src.config import config
@@ -38,11 +52,12 @@ from src.schemas import (
     DraftSessionStateSchema,
     DraftStateRequest,
     HealthResponse,
+    _canon_hero_key,
 )
 from src.search.draft_mcts import DRAFT_STEPS
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
-FRONTEND_DIST = FRONTEND_DIR / "dist"
+FRONTEND_DIST = config.resolve_frontend_dist()
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 HEROES_DIR = Path(__file__).resolve().parent.parent / "heroes"
 ITEMS_DIR = Path(__file__).resolve().parent.parent / "item"
@@ -61,37 +76,201 @@ app = FastAPI(
     title="RoV SOTA Draft Intelligence API",
     description="Production-grade MOBA Draft Pick/Ban Recommendation & Win-Probability Serving Engine.",
     version="2.0.0",
+    docs_url=None if config.is_production else "/docs",
+    redoc_url=None if config.is_production else "/redoc",
+    openapi_url=None if config.is_production else "/openapi.json",
 )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(_request: Request, exc: RequestValidationError):
+    safe_errors = jsonable_encoder(
+        list(exc.errors()),
+        custom_encoder={float: lambda v: str(v) if not math.isfinite(v) else v},
+    )
+    return JSONResponse(status_code=422, content={"detail": safe_errors})
+
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=config.cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "Accept"],
 )
 
+_SECURITY_HEADERS = {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "no-referrer",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    "X-Permitted-Cross-Domain-Policies": "none",
+    "Cross-Origin-Opener-Policy": "same-origin",
+    "Content-Security-Policy": (
+        "default-src 'self'; "
+        "script-src 'self'; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com data:; "
+        "img-src 'self' data: blob:; "
+        "connect-src 'self'; "
+        "object-src 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self'; "
+        "frame-ancestors 'none'"
+    ),
+}
+_PROD_BLOCKED_PREFIXES = (
+    "/docs/",
+    "/redoc/",
+    "/openapi.json/",
+    "/heroes-media",
+    "/items-media",
+    "/items/",
+    "/enchantments/",
+    "/skills/",
+)
+_PROD_BLOCKED_EXACT = frozenset(
+    {
+        "/docs",
+        "/redoc",
+        "/openapi.json",
+        "/dataset_metadata.json",
+        "/items",
+        "/enchantments",
+        "/skills",
+    }
+)
+
+
+_MAX_PROD_BODY_BYTES = 256 * 1024
+
+
+class _MaxBodySizeMiddleware:
+    """ASGI guard capping production request bodies across Content-Length and chunked streams."""
+
+    def __init__(self, app_inner):
+        self.app_inner = app_inner
+
+    async def __call__(self, scope, receive, send) -> None:
+        if (
+            scope.get("type") != "http"
+            or not config.is_production
+            or scope.get("method") not in {"POST", "PUT", "PATCH"}
+        ):
+            await self.app_inner(scope, receive, send)
+            return
+
+        headers = {k.lower(): v for k, v in scope.get("headers", ())}
+        raw_cl = headers.get(b"content-length")
+        if raw_cl is not None:
+            try:
+                cl = int(raw_cl.decode("ascii").strip())
+            except (UnicodeDecodeError, ValueError):
+                resp = JSONResponse({"detail": "Invalid Content-Length"}, status_code=400, headers=_SECURITY_HEADERS)
+                await resp(scope, receive, send)
+                return
+            if cl < 0:
+                resp = JSONResponse({"detail": "Invalid Content-Length"}, status_code=400, headers=_SECURITY_HEADERS)
+                await resp(scope, receive, send)
+                return
+            if cl > _MAX_PROD_BODY_BYTES:
+                resp = JSONResponse({"detail": "Payload Too Large"}, status_code=413, headers=_SECURITY_HEADERS)
+                await resp(scope, receive, send)
+                return
+
+        received_bytes = 0
+        too_large = False
+        sent_413 = False
+
+        async def guarded_receive():
+            nonlocal received_bytes, too_large
+            if too_large:
+                return {"type": "http.request", "body": b"", "more_body": False}
+            message = await receive()
+            if message.get("type") == "http.request":
+                received_bytes += len(message.get("body", b""))
+                if received_bytes > _MAX_PROD_BODY_BYTES:
+                    too_large = True
+                    return {"type": "http.request", "body": b"", "more_body": False}
+            return message
+
+        async def tracked_send(message):
+            nonlocal sent_413
+            if too_large:
+                if message.get("type") == "http.response.body" and not message.get("more_body", False) and not sent_413:
+                    sent_413 = True
+                    resp = JSONResponse({"detail": "Payload Too Large"}, status_code=413, headers=_SECURITY_HEADERS)
+                    await resp(scope, receive, send)
+                return
+            await send(message)
+
+        await self.app_inner(scope, guarded_receive, tracked_send)
+        if too_large and not sent_413:
+            sent_413 = True
+            resp = JSONResponse({"detail": "Payload Too Large"}, status_code=413, headers=_SECURITY_HEADERS)
+            await resp(scope, receive, send)
+
+
+def _extract_origin(raw_url: str) -> str | None:
+    try:
+        parsed = urlparse(raw_url.strip())
+    except ValueError:
+        return None
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        return None
+    return f"{parsed.scheme.lower()}://{parsed.netloc.lower()}"
+
+
+def _is_same_or_allowed_origin(request: Request, candidate_origin: str) -> bool:
+    allowed = {o.rstrip("/").lower() for o in config.cors_origins}
+    host = (request.headers.get("host") or request.url.netloc or "").strip().lower()
+    if host:
+        scheme = "https" if _is_https_request(request) else request.url.scheme.lower()
+        allowed.add(f"{scheme}://{host}")
+        allowed.add(f"{request.url.scheme.lower()}://{host}")
+    return candidate_origin.rstrip("/").lower() in allowed
+
+
+def _normalize_request_path(raw_path: str) -> str:
+    cleaned = (raw_path or "/").replace("\\", "/")
+    collapsed = re.sub(r"/+", "/", cleaned)
+    norm = posixpath.normpath(collapsed)
+    if not norm.startswith("/"):
+        norm = "/" + norm
+    return norm.lower()
+
+
+@app.middleware("http")
+async def security_and_lockdown_middleware(request: Request, call_next):
+    norm_path = _normalize_request_path(request.url.path)
+    if config.is_production and (norm_path in _PROD_BLOCKED_EXACT or norm_path.startswith(_PROD_BLOCKED_PREFIXES)):
+        return JSONResponse({"detail": "Not Found"}, status_code=404, headers=_SECURITY_HEADERS)
+    if config.is_production and request.method in {"POST", "PUT", "PATCH", "DELETE"}:
+        origin_hdr = request.headers.get("origin", "").strip()
+        if origin_hdr:
+            origin_val = _extract_origin(origin_hdr)
+            if origin_val is None or not _is_same_or_allowed_origin(request, origin_val):
+                return JSONResponse({"detail": "Forbidden origin"}, status_code=403, headers=_SECURITY_HEADERS)
+        elif SESSION_COOKIE_NAME in request.cookies:
+            referer_hdr = request.headers.get("referer", "").strip()
+            if referer_hdr:
+                ref_origin = _extract_origin(referer_hdr)
+                if ref_origin is None or not _is_same_or_allowed_origin(request, ref_origin):
+                    return JSONResponse({"detail": "Forbidden referer"}, status_code=403, headers=_SECURITY_HEADERS)
+    response = await call_next(request)
+    for k, v in _SECURITY_HEADERS.items():
+        response.headers.setdefault(k, v)
+    if config.is_production and _is_https_request(request):
+        response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+    if norm_path.startswith(("/health", "/heroes", "/auth/", "/draft/session", "/predict", "/combat/")):
+        response.headers.setdefault("Cache-Control", "no-store")
+    return response
+
+
+app.add_middleware(_MaxBodySizeMiddleware)
+
+
 predictor = RoVDraftPredictor()
-heuristic_predictor: RoVDraftPredictor | None = None
-_heuristic_predictor_lock = threading.Lock()
-
-
-def get_heuristic_predictor() -> RoVDraftPredictor:
-    global heuristic_predictor
-    if heuristic_predictor is None:
-        with _heuristic_predictor_lock:
-            if heuristic_predictor is None:
-                model_path = config.paths.models_dir / "sota_draft_gnn_transformer_heuristic.pt"
-                if not model_path.exists():
-                    raise HTTPException(
-                        status_code=503,
-                        detail=(
-                            "Heuristic draft model artifact not found at models/sota_draft_gnn_transformer_heuristic.pt. "
-                            "Please run HPO or training first via run_hpo_heuristic_h100.sbatch or train_sota_model.py."
-                        ),
-                    )
-                heuristic_predictor = RoVDraftPredictor(model_path=model_path)
-    return heuristic_predictor
 
 
 logger = logging.getLogger(__name__)
@@ -290,6 +469,9 @@ except Exception:
     ]
 
 
+_PUBLIC_HERO_KEYS = ("id", "name", "role", "lane", "main_pro_lane", "tier", "image_url")
+public_hero_details_cache = [{k: h[k] for k in _PUBLIC_HERO_KEYS if k in h} for h in hero_details_cache]
+
 dataset_metadata_path = DATA_DIR / "dataset_metadata.json"
 
 
@@ -302,46 +484,15 @@ def get_dataset_metadata() -> dict | None:
     return None
 
 
-@app.get("/health", response_model=HealthResponse)
-def health_check():
-    return HealthResponse(
-        status="healthy",
-        model_loaded=predictor.model is not None,
-        architecture=predictor.architecture,
-        num_heroes=len(predictor.hero_names),
-        val_loss=round(predictor.val_loss, 5),
-        dataset_metadata=get_dataset_metadata(),
-    )
-
-
-@app.get("/heroes")
-def list_heroes():
-    return {
-        "count": len(predictor.hero_names),
-        "heroes": predictor.hero_names,
-        "hero_details": hero_details_cache,
-    }
-
-
-@app.get("/draft/steps")
-def get_draft_steps():
-    return {
-        "steps": [
-            {
-                "step": s[0],
-                "phase": s[1],
-                "action": "pick" if s[2] == 1 else "ban",
-                "side": "blue" if s[3] == 0 else "red",
-            }
-            for s in DRAFT_STEPS
-        ]
-    }
-
-
 _session_lock = threading.Lock()
 _db_lock = threading.Lock()
 _user_db: UserDatabase | None = None
 _auth_rate_limiter = RateLimiter(max_attempts=20, window_seconds=60)
+_login_user_limiter = RateLimiter(max_attempts=10, window_seconds=300)
+_account_login_limiter = RateLimiter(max_attempts=20, window_seconds=300)
+_global_reg_limiter = RateLimiter(max_attempts=40, window_seconds=3600)
+_predict_rate_limiter = RateLimiter(max_attempts=60, window_seconds=60)
+_scrypt_semaphore = threading.BoundedSemaphore(4)
 
 
 def get_user_db() -> UserDatabase:
@@ -354,16 +505,78 @@ def get_user_db() -> UserDatabase:
         return _user_db
 
 
+def _is_trusted_proxy(host: str | None) -> bool:
+    if not host:
+        return False
+    raw = host.strip().lower()
+    trusted = getattr(config, "trusted_proxies", ("loopback",))
+    if raw == "localhost":
+        return "loopback" in trusted or "localhost" in trusted or "127.0.0.1" in trusted
+    try:
+        ip = ipaddress.ip_address(raw)
+    except ValueError:
+        return False
+    for rule in trusted:
+        if rule == "loopback" and ip.is_loopback:
+            return True
+        if rule == "private" and (ip.is_loopback or ip.is_private):
+            return True
+        try:
+            if "/" in rule:
+                if ip in ipaddress.ip_network(rule, strict=False):
+                    return True
+            elif ip == ipaddress.ip_address(rule):
+                return True
+        except ValueError:
+            continue
+    return False
+
+
+def _parse_valid_ip(raw: str) -> str | None:
+    candidate = raw.strip()
+    if not candidate:
+        return None
+    try:
+        return str(ipaddress.ip_address(candidate))
+    except ValueError:
+        return None
+
+
 def _client_ip(request: Request) -> str:
-    forwarded = request.headers.get("cf-connecting-ip") or request.headers.get("x-forwarded-for")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return request.client.host if request.client else "unknown"
+    peer = request.client.host if request.client else ""
+    if _is_trusted_proxy(peer):
+        cf_ip = request.headers.get("cf-connecting-ip", "").strip()
+        if cf_ip:
+            valid_cf = _parse_valid_ip(cf_ip.split(",")[0])
+            if valid_cf:
+                return valid_cf
+        xff = request.headers.get("x-forwarded-for", "").strip()
+        if xff:
+            parts = [p.strip() for p in xff.split(",") if p.strip()]
+            for candidate in reversed(parts):
+                valid_ip = _parse_valid_ip(candidate)
+                if valid_ip and not _is_trusted_proxy(valid_ip):
+                    return valid_ip
+            for candidate in reversed(parts):
+                valid_ip = _parse_valid_ip(candidate)
+                if valid_ip:
+                    return valid_ip
+    return peer or "unknown"
 
 
 def _is_https_request(request: Request) -> bool:
-    proto = request.headers.get("x-forwarded-proto", "").split(",")[0].strip().lower()
-    return proto == "https" or request.url.scheme == "https"
+    if request.url.scheme == "https":
+        return True
+    peer = request.client.host if request.client else ""
+    if _is_trusted_proxy(peer):
+        proto = request.headers.get("x-forwarded-proto", "").split(",")[0].strip().lower()
+        if proto == "https":
+            return True
+    if config.is_production:
+        host = (request.url.hostname or request.headers.get("host", "")).split(":")[0].strip().lower()
+        if host and host not in {"127.0.0.1", "localhost", "testserver"}:
+            return True
+    return False
 
 
 def _set_session_cookie(response: Response, request: Request, token: str) -> None:
@@ -389,7 +602,13 @@ def _clear_session_cookie(response: Response, request: Request) -> None:
 
 
 def _to_user_schema(user: AuthUser) -> AuthUserSchema:
-    return AuthUserSchema(id=user.id, username=user.username, display_name=user.display_name)
+    return AuthUserSchema(
+        id=user.id,
+        username=user.username,
+        display_name=user.display_name,
+        email=user.email,
+        auth_provider=user.auth_provider,  # type: ignore[arg-type]
+    )
 
 
 def get_optional_user(
@@ -406,42 +625,431 @@ def get_required_user(user: AuthUser | None = Depends(get_optional_user)) -> Aut
     return user
 
 
-@app.get("/auth/me", response_model=AuthStatusResponse)
-def auth_me(user: AuthUser | None = Depends(get_optional_user)):
+def require_development() -> None:
+    if config.is_production:
+        raise HTTPException(status_code=404, detail="Not Found")
+
+
+@app.get("/health", response_model=HealthResponse, response_model_exclude_none=True)
+def health_check():
+    if config.is_production:
+        return HealthResponse(
+            status="healthy",
+            model_loaded=predictor.model is not None,
+        )
+    return HealthResponse(
+        status="healthy",
+        model_loaded=predictor.model is not None,
+        architecture=predictor.architecture,
+        num_heroes=len(predictor.hero_names),
+        val_loss=round(predictor.val_loss, 5),
+        dataset_metadata=get_dataset_metadata(),
+    )
+
+
+@app.get("/heroes")
+def list_heroes():
+    details = public_hero_details_cache if config.is_production else hero_details_cache
+    return {
+        "count": len(predictor.hero_names),
+        "heroes": predictor.hero_names,
+        "hero_details": details,
+    }
+
+
+@app.get("/draft/steps")
+def get_draft_steps():
+    return {
+        "steps": [
+            {
+                "step": s[0],
+                "phase": s[1],
+                "action": "pick" if s[2] == 1 else "ban",
+                "side": "blue" if s[3] == 0 else "red",
+            }
+            for s in DRAFT_STEPS
+        ]
+    }
+
+
+_OAUTH_STATE_COOKIE_NAME = "rov_oauth_state"
+_OAUTH_STATE_TTL_SECONDS = 600
+
+
+def _oauth_secret_for(provider: str) -> str:
+    return config.discord_client_secret if provider == "discord" else config.google_client_secret
+
+
+def _sign_oauth_state(provider: str, payload: dict[str, object]) -> str:
+    raw = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8")
+    b64 = base64.urlsafe_b64encode(raw).decode("ascii")
+    secret = _oauth_secret_for(provider).encode("utf-8")
+    sig = hmac.new(secret, b64.encode("ascii"), hashlib.sha256).hexdigest()
+    return f"{b64}.{sig}"
+
+
+def _verify_oauth_state(provider: str, token: str | None) -> dict[str, object] | None:
+    if not token or "." not in token:
+        return None
+    b64, _, sig = token.partition(".")
+    secret = _oauth_secret_for(provider).encode("utf-8")
+    expected = hmac.new(secret, b64.encode("ascii"), hashlib.sha256).hexdigest()
+    if not hmac.compare_digest(sig, expected):
+        return None
+    try:
+        padded = b64 + "=" * (-len(b64) % 4)
+        parsed = json.loads(base64.urlsafe_b64decode(padded.encode("ascii")).decode("utf-8"))
+    except Exception:
+        return None
+    if (
+        not isinstance(parsed, dict)
+        or parsed.get("provider") != provider
+        or int(parsed.get("exp") or 0) <= int(time.time())
+    ):
+        return None
+    return parsed
+
+
+def _resolve_oauth_redirect_uri(request: Request, provider: str, explicit_uri: str, route_name: str) -> str:
+    if explicit_uri:
+        return explicit_uri
+    host = (request.headers.get("host") or request.url.netloc or "").strip()
+    if host:
+        scheme = "https" if _is_https_request(request) else request.url.scheme
+        candidate = f"{scheme}://{host}"
+        if _is_same_or_allowed_origin(request, candidate) or not config.is_production:
+            return f"{candidate}/auth/{provider}/callback"
+    return str(request.url_for(route_name))
+
+
+def _auth_status_response(user: AuthUser | None) -> AuthStatusResponse:
     return AuthStatusResponse(
         authenticated=user is not None,
         user=_to_user_schema(user) if user is not None else None,
+        google_login_enabled=config.google_oauth_enabled,
+        discord_login_enabled=config.discord_oauth_enabled,
     )
+
+
+def _start_oauth_login(
+    request: Request,
+    provider: str,
+    authorize_url: str,
+    client_id: str,
+    redirect_uri: str,
+    scope: str,
+    extra_params: dict[str, str] | None = None,
+) -> RedirectResponse:
+    client_ip = _client_ip(request)
+    if not _auth_rate_limiter.check_and_record(f"oauth:{provider}:{client_ip}"):
+        raise HTTPException(status_code=429, detail="Too many login attempts, please try again in a minute")
+
+    state = secrets.token_urlsafe(24)
+    verifier = secrets.token_urlsafe(48)
+    challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode("ascii")).digest()).rstrip(b"=").decode("ascii")
+    query_params: dict[str, str] = {
+        "client_id": client_id,
+        "redirect_uri": redirect_uri,
+        "response_type": "code",
+        "scope": scope,
+        "state": state,
+        "code_challenge": challenge,
+        "code_challenge_method": "S256",
+    }
+    if extra_params:
+        query_params.update(extra_params)
+
+    resp = RedirectResponse(url=f"{authorize_url}?{urlencode(query_params)}", status_code=302)
+    signed_state = _sign_oauth_state(
+        provider,
+        {
+            "provider": provider,
+            "state": state,
+            "verifier": verifier,
+            "exp": int(time.time()) + _OAUTH_STATE_TTL_SECONDS,
+        },
+    )
+    resp.set_cookie(
+        key=_OAUTH_STATE_COOKIE_NAME,
+        value=signed_state,
+        max_age=_OAUTH_STATE_TTL_SECONDS,
+        httponly=True,
+        samesite="lax",
+        secure=_is_https_request(request),
+        path=f"/auth/{provider}",
+    )
+    return resp
+
+
+def _oauth_error_redirect(request: Request, provider: str, reason: str) -> RedirectResponse:
+    resp = RedirectResponse(url=f"/?auth_error={reason}", status_code=302)
+    resp.delete_cookie(
+        key=_OAUTH_STATE_COOKIE_NAME,
+        httponly=True,
+        samesite="lax",
+        secure=_is_https_request(request),
+        path=f"/auth/{provider}",
+    )
+    return resp
+
+
+def _oauth_success_redirect(request: Request, provider: str, session_token: str) -> RedirectResponse:
+    resp = RedirectResponse(url="/", status_code=302)
+    _set_session_cookie(resp, request, session_token)
+    resp.delete_cookie(
+        key=_OAUTH_STATE_COOKIE_NAME,
+        httponly=True,
+        samesite="lax",
+        secure=_is_https_request(request),
+        path=f"/auth/{provider}",
+    )
+    return resp
+
+
+@app.get("/privacy", response_class=HTMLResponse)
+def privacy_policy():
+    for candidate in (FRONTEND_DIST / "privacy.html", FRONTEND_DIR / "public" / "privacy.html"):
+        if candidate.is_file():
+            return HTMLResponse(content=candidate.read_text(encoding="utf-8"), status_code=200)
+    raise HTTPException(status_code=404, detail="Privacy policy page not found")
+
+
+@app.get("/auth/me", response_model=AuthStatusResponse)
+def auth_me(user: AuthUser | None = Depends(get_optional_user)):
+    return _auth_status_response(user)
 
 
 @app.post("/auth/register", response_model=AuthStatusResponse, status_code=201)
 def auth_register(payload: AuthRegisterRequest, request: Request, response: Response):
-    if not _auth_rate_limiter.check_and_record(f"reg:{_client_ip(request)}"):
+    client_ip = _client_ip(request)
+    if not _auth_rate_limiter.check_and_record(f"reg:{client_ip}"):
         raise HTTPException(status_code=429, detail="Too many attempts, please try again in a minute")
+    if config.is_production and not _global_reg_limiter.check_allowed("global:reg"):
+        raise HTTPException(status_code=503, detail="Registration is temporarily unavailable, please try again later")
     db = get_user_db()
+    if not _scrypt_semaphore.acquire(timeout=2.0):
+        raise HTTPException(status_code=503, detail="Authentication service busy, please try again shortly")
     try:
-        user = db.register_user(payload.username, payload.password, payload.display_name)
+        user = db.register_user(
+            payload.username,
+            payload.password,
+            payload.display_name,
+        )
     except ValueError as exc:
         status = 409 if "already taken" in str(exc).lower() else 400
         raise HTTPException(status_code=status, detail=str(exc)) from exc
     except RuntimeError as exc:
-        raise HTTPException(status_code=503, detail=str(exc)) from exc
+        detail = "Registration is temporarily unavailable" if config.is_production else str(exc)
+        raise HTTPException(status_code=503, detail=detail) from exc
+    finally:
+        _scrypt_semaphore.release()
+    if config.is_production:
+        _global_reg_limiter.check_and_record("global:reg")
     token = db.create_session(user.id)
     _set_session_cookie(response, request, token)
-    return AuthStatusResponse(authenticated=True, user=_to_user_schema(user))
+    return _auth_status_response(user)
 
 
 @app.post("/auth/login", response_model=AuthStatusResponse)
 def auth_login(payload: AuthLoginRequest, request: Request, response: Response):
-    if not _auth_rate_limiter.check_and_record(f"login:{_client_ip(request)}"):
+    client_ip = _client_ip(request)
+    norm_user = payload.username.strip().lower()
+    if not _auth_rate_limiter.check_and_record(f"login:{client_ip}"):
         raise HTTPException(status_code=429, detail="Too many login attempts, please try again in a minute")
+    login_pair_key = f"pair:{client_ip}:{norm_user}"
+    account_key = f"acct:{norm_user}"
+    if config.is_production and (
+        not _login_user_limiter.check_allowed(login_pair_key) or not _account_login_limiter.check_allowed(account_key)
+    ):
+        raise HTTPException(status_code=429, detail="Too many failed login attempts, please wait a few minutes")
     db = get_user_db()
-    user = db.authenticate_user(payload.username, payload.password)
+    if not _scrypt_semaphore.acquire(timeout=2.0):
+        raise HTTPException(status_code=503, detail="Authentication service busy, please try again shortly")
+    try:
+        user = db.authenticate_user(payload.username, payload.password)
+    finally:
+        _scrypt_semaphore.release()
     if user is None:
+        if config.is_production:
+            _login_user_limiter.check_and_record(login_pair_key)
+            _account_login_limiter.check_and_record(account_key)
         raise HTTPException(status_code=401, detail="Invalid username or password")
     token = db.create_session(user.id)
     _set_session_cookie(response, request, token)
-    return AuthStatusResponse(authenticated=True, user=_to_user_schema(user))
+    return _auth_status_response(user)
+
+
+@app.get("/auth/google/login")
+def auth_google_login(request: Request):
+    if not config.google_oauth_enabled:
+        raise HTTPException(status_code=503, detail="Google login is not configured")
+    redirect_uri = _resolve_oauth_redirect_uri(request, "google", config.google_redirect_uri, "auth_google_callback")
+    return _start_oauth_login(
+        request,
+        "google",
+        "https://accounts.google.com/o/oauth2/v2/auth",
+        config.google_client_id,
+        redirect_uri,
+        "openid email profile",
+        extra_params={"prompt": "select_account"},
+    )
+
+
+@app.get("/auth/google/callback", name="auth_google_callback")
+def auth_google_callback(
+    request: Request,
+    code: str | None = None,
+    state: str | None = None,
+    error: str | None = None,
+    oauth_cookie: str | None = Cookie(default=None, alias=_OAUTH_STATE_COOKIE_NAME),
+):
+    if not config.google_oauth_enabled:
+        return _oauth_error_redirect(request, "google", "google_unavailable")
+    if error:
+        return _oauth_error_redirect(
+            request, "google", "google_cancelled" if error == "access_denied" else "google_failed"
+        )
+    if not _auth_rate_limiter.check_and_record(f"gcb:{_client_ip(request)}"):
+        return _oauth_error_redirect(request, "google", "rate_limited")
+
+    stored = _verify_oauth_state("google", oauth_cookie)
+    if not stored or not code or not state or not hmac.compare_digest(str(stored.get("state") or ""), state):
+        return _oauth_error_redirect(request, "google", "invalid_state")
+
+    verifier = str(stored.get("verifier") or "")
+    redirect_uri = _resolve_oauth_redirect_uri(request, "google", config.google_redirect_uri, "auth_google_callback")
+    try:
+        token_resp = httpx.post(
+            "https://oauth2.googleapis.com/token",
+            data={
+                "code": code,
+                "client_id": config.google_client_id,
+                "client_secret": config.google_client_secret,
+                "redirect_uri": redirect_uri,
+                "grant_type": "authorization_code",
+                "code_verifier": verifier,
+            },
+            timeout=10.0,
+        )
+        token_data = token_resp.json()
+        raw_id_token = str(token_data.get("id_token") or "")
+        if token_resp.status_code >= 400 or not raw_id_token:
+            return _oauth_error_redirect(request, "google", "google_failed")
+
+        id_info = google_id_token.verify_oauth2_token(
+            raw_id_token,
+            google_auth_requests.Request(),
+            config.google_client_id,
+            clock_skew_in_seconds=60,
+        )
+        if id_info.get("iss") not in {"accounts.google.com", "https://accounts.google.com"}:
+            return _oauth_error_redirect(request, "google", "google_failed")
+        if id_info.get("email_verified") is not True:
+            return _oauth_error_redirect(request, "google", "email_unverified")
+
+        sub = str(id_info.get("sub") or "")
+        email = str(id_info.get("email") or "")
+        display_name = str(id_info.get("name") or "")
+        db = get_user_db()
+        user = db.upsert_google_user(sub, email, display_name)
+        session_token = db.create_session(user.id)
+    except RuntimeError:
+        return _oauth_error_redirect(request, "google", "registration_full")
+    except Exception:
+        logging.getLogger(__name__).exception("Google OAuth callback error")
+        return _oauth_error_redirect(request, "google", "google_failed")
+
+    return _oauth_success_redirect(request, "google", session_token)
+
+
+@app.get("/auth/discord/login")
+def auth_discord_login(request: Request):
+    if not config.discord_oauth_enabled:
+        raise HTTPException(status_code=503, detail="Discord login is not configured")
+    redirect_uri = _resolve_oauth_redirect_uri(request, "discord", config.discord_redirect_uri, "auth_discord_callback")
+    return _start_oauth_login(
+        request,
+        "discord",
+        "https://discord.com/oauth2/authorize",
+        config.discord_client_id,
+        redirect_uri,
+        "identify email",
+    )
+
+
+@app.get("/auth/discord/callback", name="auth_discord_callback")
+def auth_discord_callback(
+    request: Request,
+    code: str | None = None,
+    state: str | None = None,
+    error: str | None = None,
+    oauth_cookie: str | None = Cookie(default=None, alias=_OAUTH_STATE_COOKIE_NAME),
+):
+    if not config.discord_oauth_enabled:
+        return _oauth_error_redirect(request, "discord", "discord_unavailable")
+    if error:
+        return _oauth_error_redirect(
+            request, "discord", "discord_cancelled" if error == "access_denied" else "discord_failed"
+        )
+    if not _auth_rate_limiter.check_and_record(f"dcb:{_client_ip(request)}"):
+        return _oauth_error_redirect(request, "discord", "rate_limited")
+
+    stored = _verify_oauth_state("discord", oauth_cookie)
+    if not stored or not code or not state or not hmac.compare_digest(str(stored.get("state") or ""), state):
+        return _oauth_error_redirect(request, "discord", "discord_invalid_state")
+
+    verifier = str(stored.get("verifier") or "")
+    redirect_uri = _resolve_oauth_redirect_uri(request, "discord", config.discord_redirect_uri, "auth_discord_callback")
+    try:
+        token_resp = httpx.post(
+            "https://discord.com/api/oauth2/token",
+            data={
+                "client_id": config.discord_client_id,
+                "client_secret": config.discord_client_secret,
+                "grant_type": "authorization_code",
+                "code": code,
+                "redirect_uri": redirect_uri,
+                "code_verifier": verifier,
+            },
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            timeout=10.0,
+        )
+        token_data = token_resp.json()
+        access_token = str(token_data.get("access_token") or "")
+        if token_resp.status_code >= 400 or not access_token:
+            return _oauth_error_redirect(request, "discord", "discord_failed")
+
+        profile_resp = httpx.get(
+            "https://discord.com/api/users/@me",
+            headers={"Authorization": f"Bearer {access_token}"},
+            timeout=10.0,
+        )
+        profile = profile_resp.json()
+        if profile_resp.status_code >= 400 or not isinstance(profile, dict) or not profile.get("id"):
+            return _oauth_error_redirect(request, "discord", "discord_failed")
+
+        discord_id = str(profile["id"])
+        discord_username = str(profile.get("username") or "")
+        display_name = str(profile.get("global_name") or discord_username or "")
+        email = str(profile.get("email") or "") or None
+        email_verified = bool(profile.get("verified"))
+        db = get_user_db()
+        user = db.upsert_oauth_user(
+            "discord",
+            discord_id,
+            email=email,
+            preferred_username=discord_username,
+            display_name=display_name,
+            email_verified=email_verified,
+        )
+        session_token = db.create_session(user.id)
+    except RuntimeError:
+        return _oauth_error_redirect(request, "discord", "registration_full")
+    except Exception:
+        logging.getLogger(__name__).exception("Discord OAuth callback error")
+        return _oauth_error_redirect(request, "discord", "discord_failed")
+
+    return _oauth_success_redirect(request, "discord", session_token)
 
 
 @app.post("/auth/logout", response_model=AuthStatusResponse)
@@ -453,19 +1061,40 @@ def auth_logout(
     if session_token:
         get_user_db().delete_session(session_token)
     _clear_session_cookie(response, request)
-    return AuthStatusResponse(authenticated=False, user=None)
+    return _auth_status_response(None)
+
+
+def _verify_expected_user(user: AuthUser | None, expected_user: str | None) -> None:
+    """Reject stale/cross-tab requests when the client expects a specific logged-in username."""
+    if not expected_user:
+        return
+    expected = expected_user.strip().lower()
+    if not expected:
+        return
+    if user is None:
+        raise HTTPException(status_code=401, detail="Session expired or logged out")
+    if user.username.lower() != expected:
+        raise HTTPException(status_code=409, detail="Active account changed in another session")
 
 
 @app.get("/draft/session", response_model=DraftSessionStateSchema)
-def get_draft_session(user: AuthUser | None = Depends(get_optional_user)):
+def get_draft_session(
+    user: AuthUser | None = Depends(get_optional_user),
+    x_expected_user: str | None = Header(default=None, alias="X-Expected-User"),
+):
+    _verify_expected_user(user, x_expected_user)
     if user is not None:
         raw_user_state = get_user_db().get_user_draft_state(user.id)
         if not raw_user_state:
             return DraftSessionStateSchema()
         try:
-            return DraftSessionStateSchema.model_validate(raw_user_state)
+            state = DraftSessionStateSchema.model_validate(raw_user_state)
+            return state.model_copy(update={"engine": "sota"})
         except Exception:
             return DraftSessionStateSchema()
+
+    if config.is_production:
+        return DraftSessionStateSchema()
 
     session_path = config.paths.draft_session_path
     with _session_lock:
@@ -473,7 +1102,8 @@ def get_draft_session(user: AuthUser | None = Depends(get_optional_user)):
             return DraftSessionStateSchema()
         try:
             raw = json.loads(session_path.read_text(encoding="utf-8"))
-            return DraftSessionStateSchema.model_validate(raw)
+            state = DraftSessionStateSchema.model_validate(raw)
+            return state.model_copy(update={"engine": "sota"})
         except Exception:
             return DraftSessionStateSchema()
 
@@ -482,10 +1112,16 @@ def get_draft_session(user: AuthUser | None = Depends(get_optional_user)):
 def save_draft_session(
     session: DraftSessionStateSchema,
     user: AuthUser | None = Depends(get_optional_user),
+    x_expected_user: str | None = Header(default=None, alias="X-Expected-User"),
 ):
+    _verify_expected_user(user, x_expected_user)
+    session = session.model_copy(update={"engine": "sota"})
     if user is not None:
         dumped = session.model_dump()
         get_user_db().save_user_draft_state(user.id, dumped, int(session.updatedAt or 0))
+        return session
+
+    if config.is_production:
         return session
 
     session_path = config.paths.draft_session_path
@@ -510,9 +1146,16 @@ def save_draft_session(
 
 
 @app.delete("/draft/session", response_model=DraftSessionStateSchema)
-def clear_draft_session(user: AuthUser | None = Depends(get_optional_user)):
+def clear_draft_session(
+    user: AuthUser | None = Depends(get_optional_user),
+    x_expected_user: str | None = Header(default=None, alias="X-Expected-User"),
+):
+    _verify_expected_user(user, x_expected_user)
     if user is not None:
         get_user_db().clear_user_draft_state(user.id)
+        return DraftSessionStateSchema()
+
+    if config.is_production:
         return DraftSessionStateSchema()
 
     session_path = config.paths.draft_session_path
@@ -523,7 +1166,12 @@ def clear_draft_session(user: AuthUser | None = Depends(get_optional_user)):
 
 
 @app.get("/combat/builds", response_model=CombatBuildsSyncSchema)
-def get_combat_builds(user: AuthUser = Depends(get_required_user)):
+def get_combat_builds(
+    _guard: None = Depends(require_development),
+    user: AuthUser = Depends(get_required_user),
+    x_expected_user: str | None = Header(default=None, alias="X-Expected-User"),
+):
+    _verify_expected_user(user, x_expected_user)
     raw = get_user_db().get_user_combat_builds(user.id)
     if not raw:
         return CombatBuildsSyncSchema()
@@ -536,48 +1184,68 @@ def get_combat_builds(user: AuthUser = Depends(get_required_user)):
 @app.put("/combat/builds", response_model=CombatBuildsSyncSchema)
 def save_combat_builds(
     builds: CombatBuildsSyncSchema,
+    _guard: None = Depends(require_development),
     user: AuthUser = Depends(get_required_user),
+    x_expected_user: str | None = Header(default=None, alias="X-Expected-User"),
 ):
+    _verify_expected_user(user, x_expected_user)
     dumped = builds.model_dump()
     get_user_db().save_user_combat_builds(user.id, dumped, int(builds.updatedAt or 0))
     return builds
 
 
 @app.delete("/combat/builds", response_model=CombatBuildsSyncSchema)
-def clear_combat_builds(user: AuthUser = Depends(get_required_user)):
+def clear_combat_builds(
+    _guard: None = Depends(require_development),
+    user: AuthUser = Depends(get_required_user),
+    x_expected_user: str | None = Header(default=None, alias="X-Expected-User"),
+):
+    _verify_expected_user(user, x_expected_user)
     get_user_db().clear_user_combat_builds(user.id)
     return CombatBuildsSyncSchema()
 
 
 @app.post("/predict", response_model=DraftPredictionResponse)
-def predict_draft(request: DraftStateRequest):
+def predict_draft(
+    request: DraftStateRequest,
+    http_request: Request,
+):
+    restricted_prod = config.is_production
+    if restricted_prod:
+        if not _predict_rate_limiter.check_and_record(f"pred:{_client_ip(http_request)}"):
+            raise HTTPException(status_code=429, detail="Too many prediction requests, please slow down")
+        universal_keys = {_canon_hero_key(h) for h in request.global_bans}
+        blue_gb_keys = {_canon_hero_key(h) for h in request.blue_global_bans}
+        red_gb_keys = {_canon_hero_key(h) for h in request.red_global_bans}
+        if request.mode == "ban":
+            masked_side_keys = red_gb_keys if request.side == "blue" else blue_gb_keys
+        else:
+            masked_side_keys = blue_gb_keys if request.side == "blue" else red_gb_keys
+        effective_masked = universal_keys | masked_side_keys
+        if len(universal_keys) > 20 or len(blue_gb_keys) > 30 or len(red_gb_keys) > 30 or len(effective_masked) > 40:
+            raise HTTPException(status_code=400, detail="Global Ban count exceeds single-series limit")
+        if request.top_k > 25 or request.lookahead_depth > 2:
+            request = request.model_copy(
+                update={
+                    "top_k": min(request.top_k, 25),
+                    "lookahead_depth": min(request.lookahead_depth, 2),
+                }
+            )
     try:
-        return predictor.predict(request)
+        result = predictor.predict(request)
     except (ValueError, KeyError, IndexError) as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
-
-
-@app.post("/predict/matrix", response_model=DraftPredictionResponse)
-def predict_matrix_draft(request: DraftStateRequest):
-    try:
-        return predictor.predict_matrix(request)
-    except (ValueError, KeyError, IndexError) as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
-
-
-@app.post("/predict/heuristic", response_model=DraftPredictionResponse)
-def predict_heuristic_draft(request: DraftStateRequest):
-    try:
-        return get_heuristic_predictor().predict(request)
-    except (ValueError, KeyError, IndexError) as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
+        detail = "Invalid draft request or unknown hero name" if restricted_prod else str(exc)
+        raise HTTPException(status_code=422, detail=detail) from exc
+    if restricted_prod:
+        return result.model_copy(update={"architecture": "RoV Draft AI"})
+    return result
 
 
 _combat_catalog_cache = None
 
 
 @app.get("/combat/catalog", response_model=CombatCatalogResponse)
-def combat_catalog():
+def combat_catalog(_guard: None = Depends(require_development)):
     global _combat_catalog_cache
     if _combat_catalog_cache is None:
         _combat_catalog_cache = get_engine().catalog()
@@ -585,7 +1253,7 @@ def combat_catalog():
 
 
 @app.post("/combat/stats", response_model=CombatStatsResponse)
-def combat_stats(request: CombatStatsRequest):
+def combat_stats(request: CombatStatsRequest, _guard: None = Depends(require_development)):
     engine = get_engine()
     try:
         build = Build(**request.build.model_dump())
@@ -603,7 +1271,7 @@ def combat_stats(request: CombatStatsRequest):
 
 
 @app.post("/combat/duel", response_model=CombatDuelResponse)
-def combat_duel(request: CombatDuelRequest):
+def combat_duel(request: CombatDuelRequest, _guard: None = Depends(require_development)):
     try:
         return get_engine().duel(Build(**request.a.model_dump()), Build(**request.b.model_dump()))
     except (ValueError, KeyError, IndexError, ZeroDivisionError) as exc:
@@ -618,6 +1286,7 @@ def get_rune_recommendation(
         "DS_Lane", description="Lane: DS_Lane, Jungle, Mid, Dragon_Lane, Roam"
     ),
     level: int = Query(2, ge=1, le=15, description="Hero level (1-15)"),
+    _guard: None = Depends(require_development),
 ):
     try:
         return get_engine().recommend_matchup_runes(my_hero=my_hero, enemy_hero=enemy_hero, lane=lane, level=level)
@@ -651,7 +1320,7 @@ def _skill_sort_key(file_path: Path):
 
 
 @app.get("/combat/hero-screenshots/{hero}")
-def get_hero_screenshots(hero: str):
+def get_hero_screenshots(hero: str, _guard: None = Depends(require_development)):
     # Security check: prevent directory traversal and drive-relative paths
     if not hero.strip() or hero.strip() == "." or ".." in hero or "/" in hero or "\\" in hero or ":" in hero:
         raise HTTPException(status_code=400, detail="Invalid hero name")
@@ -716,7 +1385,7 @@ if _manifest_path.exists():
 
 
 @app.get("/combat/item-screenshots/{item_name}")
-def get_item_screenshots(item_name: str):
+def get_item_screenshots(item_name: str, _guard: None = Depends(require_development)):
     # Security check: prevent directory traversal and drive-relative paths
     if (
         not item_name.strip()
@@ -768,6 +1437,18 @@ if HEROES_DIR.is_dir():
 if ITEMS_DIR.is_dir():
     app.mount("/items-media", StaticFiles(directory=ITEMS_DIR), name="items_media")
 
+
+class _FrontendStaticFiles(StaticFiles):
+    """Serve frontend static assets while returning 404 (not 405) for unmatched non-GET/HEAD API paths."""
+
+    async def __call__(self, scope, receive, send) -> None:
+        if scope.get("type") == "http" and scope.get("method") not in ("GET", "HEAD"):
+            resp = JSONResponse({"detail": "Not Found"}, status_code=404)
+            await resp(scope, receive, send)
+            return
+        await super().__call__(scope, receive, send)
+
+
 # Mounted last so the API routes above take precedence over static files.
 if FRONTEND_DIST.is_dir():
-    app.mount("/", StaticFiles(directory=FRONTEND_DIST, html=True), name="frontend")
+    app.mount("/", _FrontendStaticFiles(directory=FRONTEND_DIST, html=True), name="frontend")

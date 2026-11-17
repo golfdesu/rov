@@ -208,7 +208,7 @@ export function AiPanel({
         <div className="flex min-w-0 items-center gap-2">
           <Sparkles className="h-4 w-4 shrink-0 text-gold" />
           <h2 className="truncate font-display text-xs font-bold tracking-wider sm:text-base">
-            AI {isBan ? "BAN" : "PICK"} SUGGESTIONS
+            {isBan ? "BAN PRIORITY" : "PICK PRIORITY"}
             <span className={`ml-1.5 ${sideText}`}>· {currentStep.side.toUpperCase()}</span>
           </h2>
           {isLoading && <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-muted" />}

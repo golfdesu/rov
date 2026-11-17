@@ -8,7 +8,7 @@ React 19 + Vite + Tailwind CSS 4 draft board for the RoV draft model. The FastAP
 # Terminal 1: API on :8000
 uvicorn src.api:app --reload --port 8000
 
-# Terminal 2: Vite dev server on :3000 (proxies /heroes, /predict, /draft, /health, /combat, /items-media to :8000)
+# Terminal 2: Vite dev server on :3000 (proxies /auth, /heroes, /predict, /draft, /health, /combat, /items-media, /privacy to :8000)
 cd frontend
 npm install
 npm run dev
@@ -18,18 +18,23 @@ npm run dev
 
 ```bash
 cd frontend
-npm run build   # tsc + vite build -> frontend/dist
+npm run build   # tsc + vite build -> frontend/dist (all tabs)
+VITE_DRAFT_ONLY=true VITE_OUT_DIR=dist-prod npm run build:prod  # isolated Draft-only prod bundle
 npm run lint    # oxlint
 ```
 
-Then open `http://localhost:8000` with uvicorn running. The Docker image builds the frontend in its own stage.
+Then open `http://localhost:8000` with uvicorn running (`ROV_ENV=production` serves `frontend/dist-prod/`). The Docker image builds `dist-prod` in its own stage.
 
 ## Layout
 
 | Path | Purpose |
 | :--- | :--- |
-| `src/App.tsx` | Main application frame, tab router (Draft Board, Combat Lab `#lab`, Meta Lab `#meta`, Tier List `#tierlist`), and global keyboard shortcuts (`/` search, `Enter` lock #1, `Ctrl+Z` undo) |
-| `src/api/client.ts` | Typed `getJson` / `postJson` with shared error handling and `AbortSignal` support. All API calls go through it |
+| `src/App.tsx` | Main application frame, Auth portal gating (`AuthLanding` / `AuthModal` / Guest), tab router (`Draft Board`, `#lab`, `#metalab`, `#tierlist`), and global keyboard shortcuts (`/` search, `Enter` lock #1, `Ctrl+Z` undo) |
+| `src/api/client.ts` | Typed `getJson` / `postJson` / `putJson` / `deleteJson` with shared error handling (`ApiError`) and `AbortSignal` support |
+| `src/types/auth.ts` | Multi-user auth & OAuth status types (`AuthUser`, `AuthStatusResponse`) |
+| `src/components/AuthModal.tsx` | Broadcast landing portal (`AuthLanding`) and modal (`AuthModal`) supporting Guest, Username/Password, Google & Discord OAuth 2.0, and `/privacy` link |
+| `src/components/MiniDraftLogo.tsx` | Inline SVG MiniDraft emblem |
+| `src/components/FinishGameModal.tsx` | Match winner recording and Global Ban progression dialog (`G1->G2..G7`) |
 | `src/hooks/useDraft.ts` | Hero catalog load, `/predict` calls; draft state lives in a `useReducer` with debounce session sync |
 | `src/hooks/useCombatLab.ts` | State management and API interaction for Combat Lab duel simulation |
 | `src/utils/draft.ts` | Pure draft logic: `draftReducer` (lock / undo / reset / predicted), `buildPredictPayload`, lane helpers |
@@ -55,4 +60,6 @@ Then open `http://localhost:8000` with uvicorn running. The Docker image builds 
 | `public/items/` | 114 item icons (scripts/fetch_item_icons.py) |
 | `public/skills/` | Hero skill icons |
 | `public/enchantments/` | 33 enchantment icons |
+| `public/logo.png` | `512x512` PNG MiniDraft logo (rendered from `favicon.svg`) |
+| `public/privacy.html` | Public Privacy Policy page (also served at `GET /privacy`) |
 | `public/hero_images.json` | Hero name -> avatar path, also read by the API for `/heroes` |

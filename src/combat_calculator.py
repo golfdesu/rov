@@ -1026,10 +1026,11 @@ class CombatEngine:
                 if "ad" in parts:
                     parts["ad"] *= 5.0
             elif build.hero == "Riktor" and slot == "Ultimate" and sl > 0:
-                # 10 ticks over 5s (60/90/120 + 13% AD each) + 5-hit detonation (330/495/660 + 100% AD)
-                det_base = [330.0, 495.0, 660.0][max(0, min(2, sl - 1))]
+                # 10 ticks over 5s (50/75/100 + 20% AD each) + 5-hit detonation (300/450/600 + 120% AD)
+                det_base = [300.0, 450.0, 600.0][max(0, min(2, sl - 1))]
+                det_ad_pct = sc.get("bonus_ad_pct", 120.0) / 100.0
                 parts["base"] = parts["base"] * 10.0 + det_base
-                parts["ad"] = (sc.get("ad_pct", 13.0) / 100.0 * 10.0 + 1.0) * a["attack_damage"]
+                parts["ad"] = (sc.get("ad_pct", 20.0) / 100.0 * 10.0 + det_ad_pct) * a["attack_damage"]
                 parts.pop("bonus_ad", None)
 
             if "explosion_damage" in sc or "explosion_ap_pct" in sc:

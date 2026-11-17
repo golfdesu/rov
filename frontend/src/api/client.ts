@@ -9,7 +9,26 @@ export class ApiError extends Error {
   }
 }
 
-async function parseResponse<T>(res: Response): Promise<T> {
+let expectedAuthUser: string | null = null;
+let sessionMismatchHandler: ((status: 401 | 409) => void) | null = null;
+
+export function setExpectedAuthUser(username: string | null): void {
+  expectedAuthUser = username;
+}
+
+export function setSessionMismatchHandler(handler: ((status: 401 | 409) => void) | null): void {
+  sessionMismatchHandler = handler;
+}
+
+function buildSyncHeaders(url: string, extra?: Record<string, string>): Record<string, string> {
+  const headers: Record<string, string> = { ...(extra ?? {}) };
+  if (expectedAuthUser && (url.startsWith("/draft/session") || url.startsWith("/combat/builds"))) {
+    headers["X-Expected-User"] = expectedAuthUser;
+  }
+  return headers;
+}
+
+async function parseResponse<T>(res: Response, checkedSyncAuth: boolean): Promise<T> {
   const text = await res.text();
   let body: unknown = null;
   try {
@@ -18,6 +37,9 @@ async function parseResponse<T>(res: Response): Promise<T> {
     // non-JSON body, keep raw text for the error message
   }
   if (!res.ok) {
+    if (checkedSyncAuth && (res.status === 401 || res.status === 409)) {
+      sessionMismatchHandler?.(res.status);
+    }
     const detail = (body as { detail?: unknown } | null)?.detail;
     const message = typeof detail === "string" ? detail : detail ? JSON.stringify(detail) : text || res.statusText;
     throw new ApiError(res.status, `Server returned ${res.status}: ${message}`);
@@ -26,7 +48,8 @@ async function parseResponse<T>(res: Response): Promise<T> {
 }
 
 export async function getJson<T>(url: string, signal?: AbortSignal): Promise<T> {
-  return parseResponse<T>(await fetch(url, { signal }));
+  const headers = buildSyncHeaders(url);
+  return parseResponse<T>(await fetch(url, { headers, signal }), Boolean(headers["X-Expected-User"]));
 }
 
 export async function postJson<T>(url: string, payload: unknown, signal?: AbortSignal): Promise<T> {
@@ -36,25 +59,28 @@ export async function postJson<T>(url: string, payload: unknown, signal?: AbortS
     body: JSON.stringify(payload),
     signal,
   });
-  return parseResponse<T>(res);
+  return parseResponse<T>(res, false);
 }
 
 export async function putJson<T>(url: string, payload: unknown, signal?: AbortSignal): Promise<T> {
+  const headers = buildSyncHeaders(url, { "Content-Type": "application/json" });
   const res = await fetch(url, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(payload),
     signal,
   });
-  return parseResponse<T>(res);
+  return parseResponse<T>(res, Boolean(headers["X-Expected-User"]));
 }
 
 export async function deleteJson<T>(url: string, signal?: AbortSignal): Promise<T> {
+  const headers = buildSyncHeaders(url);
   const res = await fetch(url, {
     method: "DELETE",
+    headers,
     signal,
   });
-  return parseResponse<T>(res);
+  return parseResponse<T>(res, Boolean(headers["X-Expected-User"]));
 }
 
 export function isAbortError(err: unknown): boolean {

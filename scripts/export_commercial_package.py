@@ -1637,70 +1637,6 @@ def write_excel_workbook(
     wb.save(excel_path)
 
 
-def write_data_dictionary(doc_path: Path, total_games: int):
-    content = f"""# RoV Pro Draft Intelligence 2026 — Commercial Data Package
-
-## 1. Package Overview
-This package contains **{total_games:,} verified Tier-1 professional Arena of Valor (RoV) games** from the 2026 competitive season across all major leagues:
-- **AOG** — Arena of Glory (Vietnam)
-- **RPL** — RoV Pro League (Thailand)
-- **GCS** — Garena Challenger Series (Taiwan)
-- **APL** — Arena of Valor Premier League (International)
-
-### Why This Dataset Is Unique (Dual-Order Ground Truth)
-Public websites (such as Liquipedia) list team picks strictly by **in-game lane (`DS Lane, Jungle, Mid, Dragon Lane, Roam`)**, losing the true draft sequence (`B1` vs `B4/B5`, `R1/R2` vs `R5`).
-Every single match in this 2026 dataset includes **BOTH**:
-1. **100% Verified True Chronological Pick Order (`B1..B5` and `R1..R5`)** extracted directly from official broadcast draft HUD screenshots before the hero swap phase.
-2. **Post-Swap In-Game 5-Lane Assignments (`DS_Lane, Jungle, Mid, Dragon_Lane, Roam`)** so analysts and ML models can track multi-role flex picks accurately.
-
----
-
-## 2. Statistical Methodology (Bradley-Terry Log-Odds Delta-2 & Empirical Bayes)
-Unlike naive MOBA stats sites that subtract `50%` from raw win rates (which confounds hero base strength with true matchup/synergy interaction), this package uses the **Bradley-Terry Log-Odds Delta-2** framework with **Empirical Bayes Shrinkage**:
-- **Bayesian Base Hero Win Probability**: `p_i = (Wins_i + 5) / (Picks_i + 10)` and `logit(p_i) = ln(p_i / (1 - p_i))`.
-- **Expected Synergy Win Rate (`Expected_BT_WR`)**: `sigmoid(logit(p_A) + logit(p_B))`.
-- **Expected Counter Win Rate (`Expected_BT_WR`)**: `sigmoid(logit(p_Counter) - logit(p_Target))`.
-- **Empirical Bayes Posterior Win Rate (`Posterior_EB_WR`)**: `(Wins + K * Expected_BT_WR) / (Games + K)` (`K = 12` for all-role pairs, `K = 8` for direct in-lane 1v1 pairs).
-- **Delta-2 Interaction Lift (`Synergy_Delta2_Lift` / `Counter_Delta2_Lift`)**: `Posterior_EB_WR - Expected_BT_WR`, isolating true mechanical synergy and counter value beyond individual hero win rates.
-- **Patch-Split & Meta Momentum Framework (3 Major Splits & Directional Trend)**:
-  - In professional MOBAs, assessing all heroes strictly across an entire annual calendar (1,810 games) introduces severe sample dilution for late-season releases and reworks, while simultaneously masking fallen heroes that were nerfed out of competitive viability.
-  - To eliminate stage-confounding bias (such as attributing patch changes to "playoffs") and capture both rising stars and nerfed champions, this package implements the **Patch-Split & Meta Momentum Framework**:
-    1. **`Recent_Patch_Presence`**: Computed across the 713 games of the Winter Split / Championship patch era (Sep-Nov 2026; 71 tournament games for Evita). This reflects the ground truth of the current competitive landscape and directly governs the **`Tier_2026`** ranking.
-    2. **`Recent_Patch_Win_Rate`**: Win rate strictly within the recent 713-game patch era.
-    3. **`Annual_Presence`**: Total season-long presence across all 1,810 games in 2026.
-    4. **`Spring_Presence` (Phase 1, 816 games)** & **`Summer_APL_Presence` (Phase 2, 281 games)**: Split-by-split presence showing the historical evolution of each hero across competitive patch cycles.
-    5. **`Meta_Trend`**: Directional momentum indicator comparing recent patch priority against early-season baseline:
-       - `▲ Rising`: Champions whose competitive contest rate surged by >= +10.0% or debuted late (e.g. Tamyn, Astrid, Flowborn Marksman, Evita, Zanis).
-       - `● Stable`: Evergreen staples maintaining consistent priority all year (e.g. Rouie, Marja, Eland'orr, Y'bneth).
-       - `▼ Falling`: Previously popular champions that were nerfed or fell out of the current meta by >= -10.0% (e.g. Keera, Toro, Fennik, Moren, Aya).
-       - `🔒 Disabled`: Globally disabled from official tournament play by league organizers (e.g. Volkath, disabled after APL on July 5, 2026 due to an ultimate invulnerability/desync bug; maintained at Tier B reflecting his 19.1% presence across 1,097 eligible games before disable).
-    6. **`Meta_Status`**: Classification tags including `Full Season Meta`, `Mid-Year Release`, `Late-Season Release`, `Mid-Year Patch Surge`, `Late-Season Rework`, `Fallen / Nerfed Meta`, and `Tournament Disabled (Bug Ban)`.
-
----
-
-## 3. Included Files
-- `RoV_Pro_Draft_Master_2026.xlsx`: 6-tab formatted Excel workbook (`Executive_Summary`, `Hero_Tier_List_2026`, `True_Draft_Log_2026`, `Top_Synergies_2026`, `Top_Counters_2026`, `Direct_Lane_Counters_2026`).
-- `raw_csv/executive_summary_2026.csv`: Regional breakdown and Blue/Red side win rates.
-- `raw_csv/hero_tier_stats_2026.csv`: Complete 130-hero presence, pick/ban phases, win rates, pick-slot frequencies (`B1`, `R1/R2`, `R5`), and 5-lane role shares.
-- `raw_csv/true_draft_matches_2026.csv`: All {total_games:,} games with 18-step true ban/pick sequence + 10 post-swap in-game lane columns.
-- `raw_csv/synergy_combos_2026.csv`: Top 300 hero duo combinations ranked by Bradley-Terry Delta-2 Synergy Lift, Z-score, Co-Pick Lift, Primary Lane Pair, and Kit Mechanism.
-- `raw_csv/counter_matchups_2026.csv`: Top 300 all-role hero counter matchups ranked by Bradley-Terry Delta-2 Counter Lift, Z-score, Same-Lane stats, and Kit Mechanism.
-- `raw_csv/direct_lane_counters_2026.csv`: Top 250 direct in-lane 1v1 counter matchups (strictly same post-swap lane role).
-
----
-
-## 4. Standard 18-Step Tournament Draft Sequence (`True_Draft_Log_2026`)
-| Phase | Turn Order | Columns |
-| :--- | :--- | :--- |
-| **Ban Phase 1** | Blue -> Red -> Blue -> Red | `Blue_Ban_1`, `Red_Ban_1`, `Blue_Ban_2`, `Red_Ban_2` |
-| **Pick Phase 1** | Blue 1 -> Red 1,2 -> Blue 2,3 -> Red 3 | `B1_Pick`, `R1_Pick`, `R2_Pick`, `B2_Pick`, `B3_Pick`, `R3_Pick` |
-| **Ban Phase 2** | Red -> Blue -> Red -> Blue | `Red_Ban_3`, `Blue_Ban_3`, `Red_Ban_4`, `Blue_Ban_4` |
-| **Pick Phase 2** | Red 4 -> Blue 4,5 -> Red 5 | `R4_Pick`, `B4_Pick`, `B5_Pick`, `R5_Pick` |
-| **Post-Swap Lanes** | 5 In-Game Roles per Team | `Blue_DS_Lane..Blue_Roam`, `Red_DS_Lane..Red_Roam` |
-"""
-    doc_path.write_text(content, encoding="utf-8")
-
-
 def main():
     PACKAGE_DIR.mkdir(parents=True, exist_ok=True)
     CSV_DIR.mkdir(parents=True, exist_ok=True)
@@ -1733,9 +1669,8 @@ def main():
         )
         active_excel_path = temp_excel_path
 
-    # Save Data Dictionary
-    doc_path = PACKAGE_DIR / "Data_Dictionary.md"
-    write_data_dictionary(doc_path, len(df_drafts))
+    # Remove legacy Data_Dictionary.md if present (not needed in package)
+    (PACKAGE_DIR / "Data_Dictionary.md").unlink(missing_ok=True)
 
     # Create commercial ZIP archive
     zip_path = EXPORT_ROOT / f"{PACKAGE_NAME}.zip"

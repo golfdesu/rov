@@ -1,7 +1,7 @@
 {
   "Airi": {
     "source": "broadcast_median",
-    "sample_count": 351
+    "sample_count": 375
   },
   "Aleister": {
     "source": "broadcast_median",
@@ -9,11 +9,11 @@
   },
   "Alice": {
     "source": "broadcast_median",
-    "sample_count": 139
+    "sample_count": 147
   },
   "Allain": {
-    "source": "avatar_fallback",
-    "sample_count": 0
+    "source": "broadcast_single",
+    "sample_count": 1
   },
   "Amily": {
     "source": "broadcast_median",
@@ -21,19 +21,15 @@
   },
   "Annette": {
     "source": "broadcast_median",
-    "sample_count": 279
+    "sample_count": 296
   },
   "Aoi": {
     "source": "broadcast_median",
-    "sample_count": 81
+    "sample_count": 83
   },
   "Arduin": {
     "source": "broadcast_median",
     "sample_count": 36
-  },
-  "Mortos": {
-    "source": "broadcast_median",
-    "sample_count": 8
   },
   "Arum": {
     "source": "broadcast_median",
@@ -41,15 +37,15 @@
   },
   "Astrid": {
     "source": "broadcast_median",
-    "sample_count": 232
+    "sample_count": 256
   },
   "Ata": {
     "source": "broadcast_median",
-    "sample_count": 16
+    "sample_count": 21
   },
   "Aya": {
     "source": "broadcast_median",
-    "sample_count": 69
+    "sample_count": 70
   },
   "Azzen'Ka": {
     "source": "broadcast_median",
@@ -57,7 +53,7 @@
   },
   "Baldum": {
     "source": "broadcast_median",
-    "sample_count": 100
+    "sample_count": 113
   },
   "Bijan": {
     "source": "broadcast_median",
@@ -65,35 +61,35 @@
   },
   "Billow": {
     "source": "broadcast_median",
-    "sample_count": 472
+    "sample_count": 495
   },
   "Biron": {
     "source": "broadcast_median",
-    "sample_count": 264
+    "sample_count": 287
   },
   "Bolt Baron": {
     "source": "broadcast_median",
-    "sample_count": 37
+    "sample_count": 39
   },
   "Bonnie": {
     "source": "avatar_fallback",
     "sample_count": 0
   },
   "Bright": {
-    "source": "broadcast_single",
-    "sample_count": 2
+    "source": "broadcast_median",
+    "sample_count": 3
+  },
+  "Butterfly": {
+    "source": "broadcast_median",
+    "sample_count": 90
+  },
+  "Capheny": {
+    "source": "broadcast_median",
+    "sample_count": 443
   },
   "Celica": {
     "source": "broadcast_single",
     "sample_count": 1
-  },
-  "Butterfly": {
-    "source": "broadcast_median",
-    "sample_count": 80
-  },
-  "Capheny": {
-    "source": "broadcast_median",
-    "sample_count": 429
   },
   "Charlotte": {
     "source": "broadcast_median",
@@ -101,15 +97,15 @@
   },
   "Chaugnar": {
     "source": "broadcast_median",
-    "sample_count": 66
+    "sample_count": 70
   },
   "Cresht": {
     "source": "broadcast_median",
-    "sample_count": 195
+    "sample_count": 204
   },
   "D'Arcy": {
     "source": "broadcast_median",
-    "sample_count": 37
+    "sample_count": 38
   },
   "Dextra": {
     "source": "avatar_fallback",
@@ -125,27 +121,27 @@
   },
   "Dolia": {
     "source": "broadcast_median",
-    "sample_count": 330
+    "sample_count": 350
   },
   "Dyadia": {
     "source": "broadcast_median",
-    "sample_count": 60
+    "sample_count": 67
   },
   "Edras": {
     "source": "broadcast_median",
-    "sample_count": 227
+    "sample_count": 244
   },
   "Eland'orr": {
     "source": "broadcast_median",
-    "sample_count": 533
+    "sample_count": 560
   },
   "Elsu": {
     "source": "broadcast_median",
-    "sample_count": 82
+    "sample_count": 84
   },
   "Enzo": {
     "source": "broadcast_median",
-    "sample_count": 275
+    "sample_count": 278
   },
   "Erin": {
     "source": "broadcast_median",
@@ -156,16 +152,16 @@
     "sample_count": 22
   },
   "Evita": {
-    "source": "avatar_fallback",
-    "sample_count": 0
+    "source": "broadcast_median",
+    "sample_count": 18
   },
   "Fennik": {
     "source": "broadcast_median",
-    "sample_count": 189
+    "sample_count": 190
   },
   "Florentino": {
     "source": "broadcast_median",
-    "sample_count": 177
+    "sample_count": 186
   },
   "Flowborn (Mage)": {
     "source": "broadcast_median",
@@ -173,7 +169,7 @@
   },
   "Flowborn (Marksman)": {
     "source": "broadcast_median",
-    "sample_count": 302
+    "sample_count": 322
   },
   "Gildur": {
     "source": "broadcast_median",
@@ -181,7 +177,7 @@
   },
   "Goverra": {
     "source": "broadcast_median",
-    "sample_count": 42
+    "sample_count": 46
   },
   "Grakk": {
     "source": "broadcast_median",
@@ -189,11 +185,11 @@
   },
   "Hayate": {
     "source": "broadcast_median",
-    "sample_count": 437
+    "sample_count": 457
   },
   "Heino": {
     "source": "broadcast_median",
-    "sample_count": 34
+    "sample_count": 36
   },
   "Helen": {
     "source": "broadcast_median",
@@ -201,11 +197,11 @@
   },
   "Iggy": {
     "source": "broadcast_median",
-    "sample_count": 308
+    "sample_count": 321
   },
   "Ignis": {
     "source": "broadcast_median",
-    "sample_count": 233
+    "sample_count": 244
   },
   "Ilumia": {
     "source": "broadcast_median",
@@ -221,7 +217,7 @@
   },
   "Kahlii": {
     "source": "broadcast_median",
-    "sample_count": 10
+    "sample_count": 11
   },
   "Kaine": {
     "source": "avatar_fallback",
@@ -229,7 +225,7 @@
   },
   "Keera": {
     "source": "broadcast_median",
-    "sample_count": 225
+    "sample_count": 231
   },
   "Kil'Groth": {
     "source": "broadcast_median",
@@ -245,7 +241,7 @@
   },
   "Krizzix": {
     "source": "broadcast_median",
-    "sample_count": 87
+    "sample_count": 92
   },
   "Lauriel": {
     "source": "avatar_fallback",
@@ -257,7 +253,7 @@
   },
   "Liliana": {
     "source": "broadcast_median",
-    "sample_count": 364
+    "sample_count": 387
   },
   "Lindis": {
     "source": "avatar_fallback",
@@ -265,7 +261,7 @@
   },
   "Lorion": {
     "source": "broadcast_median",
-    "sample_count": 485
+    "sample_count": 509
   },
   "Lu Bu": {
     "source": "broadcast_median",
@@ -277,11 +273,11 @@
   },
   "Maloch": {
     "source": "broadcast_median",
-    "sample_count": 195
+    "sample_count": 212
   },
   "Marja": {
     "source": "broadcast_median",
-    "sample_count": 532
+    "sample_count": 555
   },
   "Max": {
     "source": "broadcast_median",
@@ -289,11 +285,11 @@
   },
   "Mganga": {
     "source": "broadcast_median",
-    "sample_count": 260
+    "sample_count": 275
   },
   "Mina": {
     "source": "broadcast_median",
-    "sample_count": 182
+    "sample_count": 193
   },
   "Ming": {
     "source": "broadcast_median",
@@ -301,15 +297,19 @@
   },
   "Moren": {
     "source": "broadcast_median",
-    "sample_count": 97
+    "sample_count": 99
+  },
+  "Mortos": {
+    "source": "broadcast_median",
+    "sample_count": 9
   },
   "Murad": {
     "source": "broadcast_median",
-    "sample_count": 183
+    "sample_count": 195
   },
   "Nakroth": {
     "source": "broadcast_median",
-    "sample_count": 217
+    "sample_count": 235
   },
   "Natalya": {
     "source": "broadcast_median",
@@ -317,11 +317,11 @@
   },
   "Omega": {
     "source": "broadcast_median",
-    "sample_count": 14
+    "sample_count": 16
   },
   "Omen": {
     "source": "broadcast_median",
-    "sample_count": 100
+    "sample_count": 108
   },
   "Ormarr": {
     "source": "broadcast_median",
@@ -333,11 +333,11 @@
   },
   "Preyta": {
     "source": "broadcast_median",
-    "sample_count": 16
+    "sample_count": 18
   },
   "Qi": {
     "source": "broadcast_median",
-    "sample_count": 353
+    "sample_count": 365
   },
   "Quillen": {
     "source": "broadcast_single",
@@ -345,15 +345,15 @@
   },
   "Raz": {
     "source": "broadcast_median",
-    "sample_count": 24
+    "sample_count": 25
   },
   "Riktor": {
     "source": "broadcast_median",
-    "sample_count": 205
+    "sample_count": 214
   },
   "Rouie": {
     "source": "broadcast_median",
-    "sample_count": 373
+    "sample_count": 389
   },
   "Rourke": {
     "source": "broadcast_median",
@@ -361,11 +361,11 @@
   },
   "Roxie": {
     "source": "broadcast_median",
-    "sample_count": 14
+    "sample_count": 16
   },
   "Ryoma": {
     "source": "broadcast_median",
-    "sample_count": 371
+    "sample_count": 389
   },
   "Sephera": {
     "source": "broadcast_median",
@@ -373,11 +373,11 @@
   },
   "Sinestrea": {
     "source": "broadcast_median",
-    "sample_count": 315
+    "sample_count": 335
   },
   "Skud": {
     "source": "broadcast_median",
-    "sample_count": 324
+    "sample_count": 334
   },
   "Slimz": {
     "source": "broadcast_median",
@@ -385,7 +385,7 @@
   },
   "Stuart": {
     "source": "broadcast_median",
-    "sample_count": 335
+    "sample_count": 358
   },
   "Superman": {
     "source": "avatar_fallback",
@@ -393,19 +393,19 @@
   },
   "Taara": {
     "source": "broadcast_median",
-    "sample_count": 269
+    "sample_count": 280
   },
   "Tachi": {
     "source": "broadcast_median",
-    "sample_count": 380
+    "sample_count": 401
   },
   "Tamyn": {
     "source": "broadcast_median",
-    "sample_count": 112
+    "sample_count": 121
   },
   "TeeMee": {
     "source": "broadcast_median",
-    "sample_count": 382
+    "sample_count": 404
   },
   "Teeri": {
     "source": "avatar_fallback",
@@ -413,11 +413,11 @@
   },
   "Tel'Annas": {
     "source": "broadcast_median",
-    "sample_count": 30
+    "sample_count": 31
   },
   "Thane": {
     "source": "broadcast_median",
-    "sample_count": 332
+    "sample_count": 353
   },
   "The Flash": {
     "source": "avatar_fallback",
@@ -429,7 +429,7 @@
   },
   "Toro": {
     "source": "broadcast_median",
-    "sample_count": 540
+    "sample_count": 564
   },
   "Tulen": {
     "source": "broadcast_median",
@@ -437,7 +437,7 @@
   },
   "Valhein": {
     "source": "broadcast_median",
-    "sample_count": 269
+    "sample_count": 294
   },
   "Veera": {
     "source": "avatar_fallback",
@@ -449,7 +449,7 @@
   },
   "Violet": {
     "source": "broadcast_median",
-    "sample_count": 399
+    "sample_count": 424
   },
   "Volkath": {
     "source": "broadcast_median",
@@ -457,11 +457,11 @@
   },
   "Wiro": {
     "source": "broadcast_median",
-    "sample_count": 200
+    "sample_count": 218
   },
   "Wisp": {
     "source": "broadcast_median",
-    "sample_count": 394
+    "sample_count": 406
   },
   "Wonder Woman": {
     "source": "broadcast_median",
@@ -477,35 +477,35 @@
   },
   "Y'bneth": {
     "source": "broadcast_median",
-    "sample_count": 541
+    "sample_count": 569
   },
   "Yan": {
     "source": "broadcast_median",
-    "sample_count": 50
+    "sample_count": 52
   },
   "Yena": {
     "source": "broadcast_median",
-    "sample_count": 281
+    "sample_count": 289
   },
   "Yorn": {
     "source": "broadcast_single",
-    "sample_count": 1
+    "sample_count": 2
   },
   "Yue": {
     "source": "broadcast_median",
-    "sample_count": 200
+    "sample_count": 214
   },
   "Zanis": {
     "source": "broadcast_median",
-    "sample_count": 10
+    "sample_count": 23
   },
   "Zata": {
     "source": "broadcast_median",
-    "sample_count": 393
+    "sample_count": 413
   },
   "Zephys": {
     "source": "broadcast_median",
-    "sample_count": 385
+    "sample_count": 405
   },
   "Zill": {
     "source": "broadcast_single",
@@ -513,10 +513,10 @@
   },
   "Zip": {
     "source": "broadcast_median",
-    "sample_count": 9
+    "sample_count": 11
   },
   "Zuka": {
     "source": "broadcast_median",
-    "sample_count": 125
+    "sample_count": 131
   }
 }

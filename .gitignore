@@ -11,11 +11,18 @@ logs/*.log
 mlruns/
 .pytest_cache/
 *.db
+*.db-shm
+*.db-wal
 *.pem
+.env
+.env.*
+.secrets/
+client_secret_*.json
 mlflow.db
 .DS_Store
 Thumbs.db
 node_modules/
+frontend/dist-prod/
 
 # Large media & video files
 *.mp4

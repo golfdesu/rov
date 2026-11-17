@@ -21,10 +21,20 @@ Set-Location $RepoRoot
 
 $CloudflaredExe = (Get-Command cloudflared -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source -ErrorAction SilentlyContinue)
 if (-not $CloudflaredExe) {
-    $CloudflaredExe = "C:\Program Files\cloudflared\cloudflared.exe"
+    if (Test-Path "C:\Program Files (x86)\cloudflared\cloudflared.exe") {
+        $CloudflaredExe = "C:\Program Files (x86)\cloudflared\cloudflared.exe"
+    } else {
+        $CloudflaredExe = "C:\Program Files\cloudflared\cloudflared.exe"
+    }
 }
 if (-not (Test-Path $CloudflaredExe)) {
     throw "cloudflared.exe not found. Install via: winget install --id Cloudflare.cloudflared"
+}
+
+$env:ROV_ENV = "production"
+$ProdIndex = Join-Path $RepoRoot "frontend\dist-prod\index.html"
+if (-not (Test-Path $ProdIndex)) {
+    throw "Production frontend bundle not found at $ProdIndex. Run npm run build:prod in frontend/ first."
 }
 
 $LogDir = Join-Path $RepoRoot "logs"
@@ -44,7 +54,7 @@ $tunnelProc = $null
 function Start-ApiProcess {
     Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] Starting uvicorn on ${BindHost}:${Port}..." -ForegroundColor Green
     return Start-Process -FilePath "uvicorn" `
-        -ArgumentList @("src.api:app", "--host", $BindHost, "--port", "$Port") `
+        -ArgumentList @("src.api:app", "--host", $BindHost, "--port", "$Port", "--no-server-header") `
         -WorkingDirectory $RepoRoot `
         -RedirectStandardOutput $ApiOutLog `
         -RedirectStandardError $ApiErrLog `
@@ -53,9 +63,14 @@ function Start-ApiProcess {
 }
 
 function Start-TunnelProcess {
+    $NamedConfig = Join-Path $env:USERPROFILE ".cloudflared\config.yml"
     if ($env:CLOUDFLARE_TUNNEL_TOKEN) {
-        Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] Starting Cloudflare Named Tunnel..." -ForegroundColor Green
-        $args = @("tunnel", "--no-autoupdate", "run", "--token", $env:CLOUDFLARE_TUNNEL_TOKEN)
+        Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] Starting Cloudflare Named Tunnel (Token)..." -ForegroundColor Green
+        $env:TUNNEL_TOKEN = $env:CLOUDFLARE_TUNNEL_TOKEN
+        $args = @("tunnel", "--no-autoupdate", "run")
+    } elseif (Test-Path $NamedConfig) {
+        Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] Starting Cloudflare Named Tunnel (minidraft -> https://minidraft.app)..." -ForegroundColor Green
+        $args = @("tunnel", "--no-autoupdate", "run", "minidraft")
     } else {
         Write-Host "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] Starting Cloudflare Quick Tunnel -> http://${BindHost}:${Port}" -ForegroundColor Green
         $args = @("tunnel", "--no-autoupdate", "--url", "http://${BindHost}:${Port}")

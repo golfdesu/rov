@@ -80,21 +80,21 @@ uvicorn src.api:app --reload --port 8000
 
 | Route | Purpose |
 | :--- | :--- |
-| `GET /` | Draft UI, Combat Lab (`#lab`), Meta Lab (`#meta`), Tier List (`#tierlist`), served from `frontend/dist` |
-| `GET /health` | Health check & model status |
-| `GET /heroes` | 130 heroes + `hero_details` (role, lane, tier, `image_url`, override reason) |
+| `GET /` | Draft UI (plus `#lab`, `#metalab`, `#tierlist` in dev), served from `frontend/dist` (dev) or `frontend/dist-prod` (`ROV_ENV=production`) |
+| `GET /health` | Health check & model status (internal details stripped in production) |
+| `GET /heroes` | 130 heroes + `hero_details` (proprietary rates stripped in production) |
+| `GET /privacy` | Public Privacy Policy HTML page (`frontend/public/privacy.html`) |
+| `GET, POST /auth/*` | Multi-user auth (`me`, `register`, `login`, `logout`, `google/login`, `google/callback`, `discord/login`, `discord/callback`) |
 | `GET /draft/steps` | Canonical 18-step draft order |
-| `GET, PUT, DELETE /draft/session` | Multi-game series draft persistence & state reset |
+| `GET, PUT, DELETE /draft/session` | Per-user SQLite (`src/db.py`) or local dev file multi-game series persistence |
 | `POST /predict` | SOTA GNN-Transformer next pick/ban recommendations + forecasts |
-| `POST /predict/matrix` | Empirical co-occurrence / synergy baseline recommendation |
-| `POST /predict/heuristic` | 0% true pick order ablation model prediction |
-| `GET /combat/catalog` | Heroes, items, arcana, enchantments for the lab |
-| `POST /combat/stats` | Build stats for one hero build |
-| `POST /combat/duel` | 1v1 duel simulation for builds `a` and `b` |
-| `GET /combat/rune-recommendation` | Optimal Tier-3 Arcana & Enchantment recommendations |
-| `GET /combat/hero-screenshots/{hero}` | Skill and status screenshot manifest for hero |
-| `GET /combat/item-screenshots/{item_name}` | Equipment card screenshot pages for item |
-| `GET /docs` | Swagger UI |
+| `GET /combat/catalog` | Heroes, items, arcana, enchantments for the lab (dev-only: 404 in production) |
+| `POST /combat/stats` | Build stats for one hero build (dev-only) |
+| `POST /combat/duel` | 1v1 duel simulation for builds `a` and `b` (dev-only) |
+| `GET /combat/rune-recommendation` | Optimal Tier-3 Arcana & Enchantment recommendations (dev-only) |
+| `GET /combat/hero-screenshots/{hero}` | Skill and status screenshot manifest for hero (dev-only) |
+| `GET /combat/item-screenshots/{item_name}` | Equipment card screenshot pages for item (dev-only) |
+| `GET /docs` | Swagger UI (disabled in production) |
 
 Frontend dev server with hot reload (proxies the routes above to `:8000`):
 ```bash

@@ -1,10 +1,13 @@
 {
-  "name": "RoV Draft Intelligence",
-  "short_name": "RoV Draft",
+  "name": "MiniDraft",
+  "short_name": "MiniDraft",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#070b14",
   "theme_color": "#070b14",
   "lang": "th",
-  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+  "icons": [
+    { "src": "/favicon.svg?v=3", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "/logo.png", "sizes": "512x512", "type": "image/png" }
+  ]
 }

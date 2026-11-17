@@ -1,4 +1,4 @@
-import { ArrowDownAZ, Search, Sparkles, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { forwardRef, useMemo, useState } from "react";
 import type { DraftStep, Hero, RoleType } from "../types/draft";
 import { LANE_SHORT, ROLES, TIER_STYLE, heroLanes, laneKey, missingLaneKeys } from "../utils/draft";
@@ -16,6 +16,7 @@ interface HeroGridProps {
   recommendedRanks: Map<string, number>;
   missingAllyLanes: string[];
   currentStep: DraftStep | null;
+  isLoading?: boolean;
   isHeroesLoading: boolean;
   onLockHero: (name: string) => void;
 }
@@ -34,6 +35,7 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
     recommendedRanks,
     missingAllyLanes,
     currentStep,
+    isLoading = false,
     isHeroesLoading,
     onLockHero,
   },
@@ -42,7 +44,6 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
   const [query, setQuery] = useState("");
   const [role, setRole] = useState<RoleType | null>(null);
   const [lane, setLane] = useState<string | null>(null);
-  const [sortMode, setSortMode] = useState<"ai" | "az">("ai");
 
   const isBan = currentStep?.action === "ban";
   const isBlueTurn = currentStep?.side !== "red";
@@ -71,11 +72,8 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
     return heroes
       .filter((h) => (!q || matchesHeroQuery(h.name, q)) && (!role || h.role === role))
       .filter((h) => !lane || heroLanes(h.lane).includes(lane) || heroPrimaryLane(h) === lane)
-      .sort(
-        (a, b) =>
-          (sortMode === "ai" ? score(a) - score(b) : 0) || displayName(a.name).localeCompare(displayName(b.name)),
-      );
-  }, [heroes, query, role, lane, sortMode, unavailableHeroes, recommendedRanks, missing]);
+      .sort((a, b) => score(a) - score(b) || displayName(a.name).localeCompare(displayName(b.name)));
+  }, [heroes, query, role, lane, unavailableHeroes, recommendedRanks, missing]);
   const chip = (active: boolean) =>
     `h-6 shrink-0 border px-2 font-display text-[10px] font-semibold tracking-wide transition-colors sm:h-6.5 sm:px-2.5 sm:text-[11px] ${
       active ? "border-gold/60 bg-gold/10 text-gold" : "border-line text-muted hover:border-line-strong hover:text-ink"
@@ -99,6 +97,7 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
                 }
                 if (e.key === "Enter") {
                   e.stopPropagation();
+                  if (isLoading) return;
                   const first = filtered.find((h) => !unavailableHeroes.has(h.name));
                   if (first && currentStep) {
                     onLockHero(first.name);
@@ -142,15 +141,6 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
               ))}
             </select>
           </div>
-          <button
-            type="button"
-            onClick={() => setSortMode(sortMode === "ai" ? "az" : "ai")}
-            title={sortMode === "ai" ? "เรียงตามคำแนะนำ AI และเลนที่ขาด" : "เรียงตามชื่อ"}
-            className="flex h-8 shrink-0 items-center gap-1 border border-line-strong px-2 font-display text-[10px] font-semibold tracking-wide text-ink transition-colors hover:border-gold/60 hover:text-gold sm:px-2.5 sm:text-[11px]"
-          >
-            {sortMode === "ai" ? <Sparkles className="h-3 w-3 text-gold" /> : <ArrowDownAZ className="h-3 w-3" />}
-            {sortMode === "ai" ? "AI" : "A–Z"}
-          </button>
           <span className="hidden font-mono text-[11px] text-dim sm:inline">
             {filtered.length}/{heroes.length}
           </span>

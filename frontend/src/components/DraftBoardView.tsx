@@ -2,19 +2,17 @@ import {
   ArrowLeftRight,
   CheckCircle2,
   History,
-  Layers,
   LayoutGrid,
   PlusCircle,
   Sparkles,
-  Trophy,
   Users,
-  X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { useDraft } from "../hooks/useDraft";
+import { MAX_SERIES_GAMES, type useDraft } from "../hooks/useDraft";
 import {
   blueTeamName,
   blueUsedHeroes,
+  getGameSeriesGroup,
   getGameUnlockStatus,
   getMaxUnlockedGame,
   getSeriesScore,
@@ -23,11 +21,11 @@ import {
   redUsedHeroes,
   resolveSeriesName,
 } from "../utils/draft";
-import { ENGINE_OPTIONS } from "../types/draft";
 import { displayName } from "../utils/heroNames";
 import { AiPanel } from "./AiPanel";
 import { Alert } from "./Alert";
 import { DraftHistoryModal } from "./DraftHistoryModal";
+import { FinishGameModal } from "./FinishGameModal";
 import { type GlobalBanCategoryKey, GlobalBanModal } from "./GlobalBanModal";
 import { HeroGrid } from "./HeroGrid";
 import { NewSeriesModal } from "./NewSeriesModal";
@@ -38,18 +36,14 @@ export type MobileDraftView = "draft" | "ai" | "teams";
 
 export interface DraftBoardViewProps {
   draft: ReturnType<typeof useDraft>;
-  modelVariant?: "sota" | "heuristic" | "matrix";
-  modelBadge?: string;
-  modelTooltip?: string;
   isActiveTab: boolean;
+  disableShortcuts?: boolean;
 }
 
 export function DraftBoardView({
   draft,
-  modelVariant,
-  modelBadge,
-  modelTooltip,
   isActiveTab,
+  disableShortcuts = false,
 }: DraftBoardViewProps) {
   const {
     heroes,
@@ -76,8 +70,6 @@ export function DraftBoardView({
     recordGameToSeries,
     setRecordedGameWinner,
     unavailableHeroes,
-    engine,
-    setEngine,
     league,
     setLeague,
     useLookahead,
@@ -94,6 +86,8 @@ export function DraftBoardView({
     isLoading,
     isHeroesLoading,
     error,
+    syncError,
+    retryPredict,
     heroesFallback,
     lockHero,
     undo,
@@ -108,7 +102,13 @@ export function DraftBoardView({
   const [globalBanModalCat, setGlobalBanModalCat] = useState<GlobalBanCategoryKey | null>(null);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isNewSeriesModalOpen, setIsNewSeriesModalOpen] = useState(false);
-  const [isSelectingWinner, setIsSelectingWinner] = useState(false);
+  const [isFinishGameModalOpen, setIsFinishGameModalOpen] = useState(false);
+  const [swapCount, setSwapCount] = useState(0);
+
+  const handleSwapSides = () => {
+    swapTeamSides();
+    setSwapCount((c) => c + 1);
+  };
 
   const bUsed = useMemo(() => blueUsedHeroes(globalBans), [globalBans]);
   const rUsed = useMemo(() => redUsedHeroes(globalBans), [globalBans]);
@@ -140,27 +140,48 @@ export function DraftBoardView({
         `การลบ ${displayName(heroName)} จะทำให้จำนวน Global Ban ไม่ครบตามเงื่อนไขของ Game ${globalBans.gameNumber} (ต้องมีอย่างน้อยฝั่งละ ${statusAfter.requiredCount} ตัว)\n\nระบบจะย้อนกลับไปยัง Game ${maxUnlocked} อัตโนมัติ ยืนยันหรือไม่?`,
       );
       if (!ok) return;
-      setIsSelectingWinner(false);
-      selectGameNumber(maxUnlocked, candidateState);
+      setIsFinishGameModalOpen(false);
+      selectGameNumber(maxUnlocked, candidateState, true);
       return;
     }
     setGlobalBans(candidateState);
   };
 
   const recommendedRanks = useMemo(
-    () => new Map(recommendations.slice(0, 5).map((r) => [r.hero_name, r.rank])),
+    () => new Map(recommendations.slice(0, 10).map((r) => [r.hero_name, r.rank])),
     [recommendations],
   );
 
-  const hasAnyPick = bluePicks.length + redPicks.length > 0;
   const hasAnyAction = bluePicks.length + redPicks.length + blueBans.length + redBans.length > 0;
   const isDraftComplete = currentStep === null;
+  const activeBoardHeroes = useMemo(
+    () => new Set([...bluePicks, ...redPicks, ...blueBans, ...redBans]),
+    [bluePicks, redPicks, blueBans, redBans],
+  );
+  const existingSeriesNames = useMemo(
+    () => Array.from(new Set(seriesGames.map(getGameSeriesGroup).filter(Boolean))),
+    [seriesGames],
+  );
+  const blueWins = globalBans.blueSideTeam === "A" ? seriesScore.aWins : seriesScore.bWins;
+  const redWins = globalBans.blueSideTeam === "A" ? seriesScore.bWins : seriesScore.aWins;
 
   // Keyboard shortcuts: "/" focus search, Enter lock top suggestion, Ctrl/Cmd+Z undo, Ctrl/Cmd+Shift+Z or Ctrl/Cmd+Y redo
   useEffect(() => {
-    if (!isActiveTab || globalBanModalCat !== null || isHistoryModalOpen || isNewSeriesModalOpen) return;
+    if (
+      !isActiveTab ||
+      disableShortcuts ||
+      globalBanModalCat !== null ||
+      isHistoryModalOpen ||
+      isNewSeriesModalOpen ||
+      isFinishGameModalOpen
+    ) {
+      return;
+    }
     function onKey(e: KeyboardEvent) {
-      const typing = e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement;
+      const typing =
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        e.target instanceof HTMLSelectElement;
       if (typing) return;
 
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
@@ -178,9 +199,7 @@ export function DraftBoardView({
         searchRef.current?.focus();
       } else if (
         e.key === "Enter" &&
-        !isSelectingWinner &&
         !(e.target instanceof HTMLButtonElement) &&
-        !(e.target instanceof HTMLSelectElement) &&
         !(e.target instanceof HTMLAnchorElement) &&
         !(e.target instanceof HTMLElement && e.target.getAttribute("role") === "button")
       ) {
@@ -192,10 +211,11 @@ export function DraftBoardView({
     return () => window.removeEventListener("keydown", onKey);
   }, [
     isActiveTab,
+    disableShortcuts,
     globalBanModalCat,
     isHistoryModalOpen,
     isNewSeriesModalOpen,
-    isSelectingWinner,
+    isFinishGameModalOpen,
     undo,
     redo,
     lockHero,
@@ -210,28 +230,17 @@ export function DraftBoardView({
       {/* Sub-header series bar with compact global ban controls */}
       <div className="shrink-0 border-b border-line bg-panel/60 px-2.5 py-1.5 sm:px-3 xl:px-4">
         <div className="mx-auto flex max-w-[1920px] items-center justify-between gap-1.5 overflow-x-auto xl:gap-2">
-          {/* Left: Model Indicator and Series Name */}
-          <div className="flex shrink-0 items-center gap-2">
+          {/* Left: Series Name */}
+          <div className="flex min-w-0 shrink-0 items-center gap-2">
             <span
-              title={modelTooltip || ENGINE_OPTIONS.find((o) => o.id === engine)?.description}
-              className={`px-2 py-0.5 font-mono text-[10px] font-bold tracking-wider uppercase ${
-                engine === "sota"
-                  ? "border border-gold/60 bg-gold/15 text-gold"
-                  : engine === "heuristic"
-                    ? "border border-amber-500/60 bg-amber-500/15 text-amber-400"
-                    : "border border-cyan-500/60 bg-cyan-500/15 text-cyan-400"
-              }`}
-            >
-              {modelBadge || ENGINE_OPTIONS.find((o) => o.id === engine)?.badge}
-            </span>
-            <span
-              className="hidden max-w-[220px] truncate border-l border-line pl-2.5 font-display text-xs font-bold tracking-wider text-muted sm:inline-block"
+              className="hidden max-w-[220px] truncate font-display text-xs font-bold tracking-wider text-muted sm:inline-block"
               title={globalBans.seriesName || `${bName} vs ${rName}`}
             >
               {globalBans.seriesName || `${bName} vs ${rName}`}
               {seriesScore.aWins + seriesScore.bWins > 0 && (
                 <span className="ml-1.5 font-mono text-[11px] text-ink">
-                  ({seriesScore.aWins}-{seriesScore.bWins})
+                  ({globalBans.seriesName ? seriesScore.aWins : blueWins}-
+                  {globalBans.seriesName ? seriesScore.bWins : redWins})
                 </span>
               )}
             </span>
@@ -269,7 +278,7 @@ export function DraftBoardView({
                     }
                     return;
                   }
-                  setIsSelectingWinner(false);
+                  setIsFinishGameModalOpen(false);
                   selectGameNumber(g);
                 }}
                 className="h-7 border border-line bg-panel px-2 font-mono text-xs font-bold text-gold cursor-pointer focus:border-gold/60 focus:outline-none"
@@ -321,7 +330,7 @@ export function DraftBoardView({
                         }
                         return;
                       }
-                      setIsSelectingWinner(false);
+                      setIsFinishGameModalOpen(false);
                   selectGameNumber(g);
                     }}
                     title={buttonTitle}
@@ -346,8 +355,7 @@ export function DraftBoardView({
                 value=""
                 onChange={(e) => {
                   const act = e.target.value;
-                  if (act === "swap") swapTeamSides();
-                  else if (act === "globalban") setGlobalBanModalCat(blueCategoryKey);
+                  if (act === "swap") handleSwapSides();
                   else if (act === "history") setIsHistoryModalOpen(true);
                   e.target.value = "";
                 }}
@@ -357,10 +365,9 @@ export function DraftBoardView({
                   จัดการซีรีส์ ▼
                 </option>
                 <option value="swap">สลับฝั่งทีม ({bName} ⇄ {rName})</option>
-                <option value="globalban">
-                  Global Ban ({globalBans.universalBans.length > 0 ? `+${globalBans.universalBans.length}` : "0"})
+                <option value="history">
+                  ประวัติซีรีส์ ({seriesGames.length}/{MAX_SERIES_GAMES} เกม)
                 </option>
-                <option value="history">ประวัติซีรีส์ ({seriesGames.length} เกม)</option>
               </select>
             </div>
 
@@ -368,122 +375,58 @@ export function DraftBoardView({
             <div className="hidden sm:flex shrink-0 items-center gap-1.5">
               <button
                 type="button"
-                onClick={swapTeamSides}
+                onClick={handleSwapSides}
                 title={`สลับฝั่งทีม (${bName} ⇄ ${rName}) — ฮีโร่ที่แต่ละทีมเคยใช้จะย้ายฝั่งตามทีมไปอัตโนมัติ`}
                 className="flex h-7 shrink-0 items-center gap-1.5 border border-gold/60 bg-gold/10 px-2 font-display text-xs font-bold whitespace-nowrap text-gold transition-colors hover:bg-gold hover:text-bg"
               >
-                <ArrowLeftRight className="h-3.5 w-3.5 shrink-0" />
+                <ArrowLeftRight
+                  className={`h-3.5 w-3.5 shrink-0 transition-transform duration-300 ${
+                    swapCount % 2 === 1 ? "rotate-180" : "rotate-0"
+                  }`}
+                />
                 <span className="hidden md:inline">สลับฝั่ง</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => setGlobalBanModalCat(blueCategoryKey)}
-                title="ตั้งค่าชื่อทีม ฮีโร่ที่เคยใช้ในซีรีส์ และแบนถาวร"
-                className="flex h-7 shrink-0 items-center gap-1.5 border border-line-strong bg-bg px-2 font-display text-xs font-semibold whitespace-nowrap text-muted transition-colors hover:border-gold/60 hover:text-ink"
-              >
-                <Layers className="h-3.5 w-3.5 shrink-0 text-gold" />
-                <span className="hidden lg:inline">Global Ban</span>
-                {globalBans.universalBans.length > 0 && (
-                  <span className="bg-gold px-1 font-mono text-[10px] font-bold text-bg">
-                    +{globalBans.universalBans.length}
-                  </span>
-                )}
-              </button>
-
-              <button
-                type="button"
                 onClick={() => setIsHistoryModalOpen(true)}
-                title="ดูประวัติการดราฟต์ในซีรีส์ หรือกู้คืนกระดานเกมก่อนหน้า"
-                className="flex h-7 shrink-0 items-center gap-1.5 border border-line-strong bg-bg px-2 font-display text-xs font-semibold whitespace-nowrap text-muted transition-colors hover:border-gold/60 hover:text-ink"
+                title={`ดูประวัติการดราฟต์แยกตามกลุ่มซีรีส์ (บันทึกสูงสุด ${MAX_SERIES_GAMES} เกมล่าสุด)`}
+                className="flex h-7 shrink-0 items-center gap-1.5 border border-gold/45 bg-panel-2/80 px-2 font-display text-xs font-semibold whitespace-nowrap text-ink transition-colors hover:border-gold hover:bg-panel-2"
               >
                 <History className="h-3.5 w-3.5 shrink-0 text-gold" />
-                <span className="hidden lg:inline">ประวัติ</span>
-                {seriesGames.length > 0 && (
-                  <span className="bg-gold px-1 font-mono text-[10px] font-bold text-bg">
-                    {seriesGames.length}
-                  </span>
-                )}
+                <span className="hidden md:inline">ประวัติ</span>
+                <span
+                  className={`px-1.5 py-0.5 font-mono text-[10px] font-bold leading-none ${
+                    seriesGames.length > 0 ? "bg-gold text-bg" : "border border-line-strong bg-bg text-muted"
+                  }`}
+                >
+                  {seriesGames.length}/{MAX_SERIES_GAMES}
+                </span>
               </button>
             </div>
 
-            {isSelectingWinner && hasAnyPick ? (
-              <div className="inline-flex h-7 shrink-0 items-center gap-1 border border-gold bg-panel px-1.5">
-                <Trophy className="h-3.5 w-3.5 shrink-0 text-gold" />
-                <span className="font-display text-[11px] font-bold text-gold">ใครชนะ G{globalBans.gameNumber}?</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const blueTeamId = globalBans.blueSideTeam;
-                    recordGameToSeries(false, blueTeamId);
-                    setIsSelectingWinner(false);
-                  }}
-                  title={`${bName} (Blue) ชนะ — เกมถัดไป ${rName} จะได้เลือกฝั่ง Blue อัตโนมัติ`}
-                  className="h-5.5 bg-blue px-1.5 font-display text-[10px] font-bold text-bg transition-colors hover:bg-blue/90"
-                >
-                  {bName} ชนะ
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const redTeamId = globalBans.blueSideTeam === "A" ? "B" : "A";
-                    recordGameToSeries(false, redTeamId);
-                    setIsSelectingWinner(false);
-                  }}
-                  title={`${rName} (Red) ชนะ — เกมถัดไป ${bName} จะได้เลือกฝั่ง Blue อัตโนมัติ`}
-                  className="h-5.5 bg-red px-1.5 font-display text-[10px] font-bold text-bg transition-colors hover:bg-red/90"
-                >
-                  {rName} ชนะ
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    recordGameToSeries(false);
-                    setIsSelectingWinner(false);
-                  }}
-                  title="ข้ามการระบุผู้ชนะ (บันทึกเฉพาะ Global Ban)"
-                  className="h-5.5 border border-line bg-bg px-1 font-display text-[9.5px] font-semibold text-muted hover:text-ink"
-                >
-                  ข้าม
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsSelectingWinner(false)}
-                  title="ยกเลิก"
-                  aria-label="ยกเลิก"
-                  className="p-0.5 text-dim hover:text-ink"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                disabled={!hasAnyPick}
-                onClick={() => {
-                  if (
-                    !isDraftComplete &&
-                    !window.confirm(
-                      `Game ${globalBans.gameNumber} ยังดราฟต์ไม่ครบ 10 ตัว (${bluePicks.length + redPicks.length}/10)\n\nยืนยันต้องการจบเกมนี้และนำฮีโร่ที่เลือกเข้าสู่ Global Ban ของเกมถัดไปหรือไม่?`,
-                    )
-                  ) {
-                    return;
-                  }
-                  setIsSelectingWinner(true);
-                }}
-                title="บันทึกผลการแข่งขัน + ฮีโร่ที่ทั้ง 2 ทีมเลือกเข้า Global Ban ของแต่ละทีม และเริ่มเกมถัดไป"
-                className={`flex h-7 shrink-0 items-center gap-1.5 border px-2 font-display text-xs font-bold whitespace-nowrap transition-colors disabled:pointer-events-none disabled:opacity-35 ${
-                  isDraftComplete
-                    ? "border-gold bg-gold text-bg hover:bg-gold/90"
-                    : "border-good/60 bg-good/15 text-good hover:bg-good hover:text-bg"
-                }`}
-              >
-                <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-                <span>
-                  จบ G{globalBans.gameNumber}→G{Math.min(globalBans.gameNumber + 1, 7)}
-                </span>
-              </button>
-            )}
+            <button
+              type="button"
+              disabled={!isDraftComplete}
+              onClick={() => setIsFinishGameModalOpen(true)}
+              title={
+                isDraftComplete
+                  ? "บันทึกผลการแข่งขัน + ฮีโร่ที่ทั้ง 2 ทีมเลือกเข้า Global Ban ของแต่ละทีม และเริ่มเกมถัดไป"
+                  : `ต้องดราฟต์ให้ครบทั้ง 10 ตัวก่อนจึงจะจบเกมได้ (ปัจจุบัน ${bluePicks.length + redPicks.length}/10)`
+              }
+              className={`flex h-7 shrink-0 items-center gap-1.5 border px-2 font-display text-xs font-bold whitespace-nowrap transition-colors disabled:pointer-events-none disabled:opacity-35 ${
+                isDraftComplete
+                  ? "border-gold bg-gold text-bg hover:bg-gold/90"
+                  : "border-good/60 bg-good/15 text-good hover:bg-good hover:text-bg"
+              }`}
+            >
+              <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+              <span>
+                {globalBans.gameNumber >= 7
+                  ? "จบ Game 7"
+                  : `จบ G${globalBans.gameNumber}→G${globalBans.gameNumber + 1}`}
+              </span>
+            </button>
           </div>
         </div>
       </div>
@@ -501,16 +444,11 @@ export function DraftBoardView({
         onUndo={undo}
         onRedo={redo}
         onReset={() => {
-          setIsSelectingWinner(false);
+          setIsFinishGameModalOpen(false);
           reset();
         }}
         canUndo={canUndo}
         canRedo={canRedo}
-        engine={engine}
-        setEngine={setEngine}
-        modelBadge={modelBadge}
-        modelVariant={modelVariant ?? engine}
-        modelTooltip={modelTooltip}
       />
 
       {globalBanModalCat !== null && (
@@ -519,10 +457,11 @@ export function DraftBoardView({
           heroMap={heroMap}
           globalBans={globalBans}
           seriesGames={seriesGames}
+          activeBoardHeroes={activeBoardHeroes}
           initialCategory={globalBanModalCat}
           onChange={setGlobalBans}
           onSelectGameNumber={(...args) => {
-            setIsSelectingWinner(false);
+            setIsFinishGameModalOpen(false);
             selectGameNumber(...args);
           }}
           onClose={() => setGlobalBanModalCat(null)}
@@ -537,24 +476,24 @@ export function DraftBoardView({
           onSaveCurrentSnapshot={saveCurrentDraftSnapshot}
           onOpenNewSeries={() => setIsNewSeriesModalOpen(true)}
           onSwitchSeries={(...args) => {
-            setIsSelectingWinner(false);
+            setIsFinishGameModalOpen(false);
             switchSeries(...args);
           }}
           onLoadGame={(...args) => {
-            setIsSelectingWinner(false);
+            setIsFinishGameModalOpen(false);
             loadRecordedGame(...args);
           }}
           onSetGameWinner={setRecordedGameWinner}
           onDeleteGame={(...args) => {
-            setIsSelectingWinner(false);
+            setIsFinishGameModalOpen(false);
             deleteRecordedGame(...args);
           }}
           onDeleteGroup={(...args) => {
-            setIsSelectingWinner(false);
+            setIsFinishGameModalOpen(false);
             deleteSeriesGroup(...args);
           }}
           onClearAllSeries={() => {
-            setIsSelectingWinner(false);
+            setIsFinishGameModalOpen(false);
             clearAllHistory();
           }}
           onClose={() => setIsHistoryModalOpen(false)}
@@ -564,21 +503,58 @@ export function DraftBoardView({
       {isNewSeriesModalOpen && (
         <NewSeriesModal
           currentSeriesName={globalBans.seriesName}
+          existingSeriesNames={existingSeriesNames}
           defaultTeamA={globalBans.teamAName}
           defaultTeamB={globalBans.teamBName}
           hasCurrentActions={hasAnyAction}
           onConfirm={(...args) => {
-            setIsSelectingWinner(false);
+            setIsFinishGameModalOpen(false);
             startNewSeries(...args);
           }}
           onClose={() => setIsNewSeriesModalOpen(false)}
         />
       )}
 
+      {isFinishGameModalOpen && isDraftComplete && (
+        <FinishGameModal
+          gameNumber={globalBans.gameNumber}
+          seriesName={resolveSeriesName(globalBans)}
+          blueTeamName={bName}
+          redTeamName={rName}
+          blueSideTeam={globalBans.blueSideTeam}
+          blueWins={globalBans.blueSideTeam === "A" ? seriesScore.aWins : seriesScore.bWins}
+          redWins={globalBans.blueSideTeam === "A" ? seriesScore.bWins : seriesScore.aWins}
+          bluePickCount={bluePicks.length}
+          redPickCount={redPicks.length}
+          isDraftComplete={isDraftComplete}
+          onConfirmWinner={(winner) => {
+            recordGameToSeries(false, winner);
+            setIsFinishGameModalOpen(false);
+          }}
+          onClose={() => setIsFinishGameModalOpen(false)}
+        />
+      )}
+
       <main className="mx-auto flex min-h-0 w-full max-w-[1920px] flex-1 flex-col gap-1.5 overflow-hidden px-2 py-1.5 sm:px-3 sm:py-2">
         {error && (
           <div className="shrink-0">
-            <Alert>{error}</Alert>
+            <Alert>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span>{error}</span>
+                <button
+                  type="button"
+                  onClick={retryPredict}
+                  className="border border-red/50 bg-red/15 px-2 py-0.5 font-display text-[11px] font-bold text-ink transition-colors hover:bg-red hover:text-bg"
+                >
+                  ลองใหม่
+                </button>
+              </div>
+            </Alert>
+          </div>
+        )}
+        {syncError && (
+          <div className="shrink-0">
+            <Alert tone="warning">{syncError}</Alert>
           </div>
         )}
         {heroesFallback && (
@@ -595,53 +571,9 @@ export function DraftBoardView({
             mobileView === "teams" ? "hidden md:grid" : "grid"
           }`}
         >
-          <TeamColumn
-            variant="compact"
-            side="blue"
-            teamName={bName}
-            picks={bluePicks}
-            bans={blueBans}
-            usedHeroes={bUsed}
-            usedHeroOriginGames={blueOriginGames}
-            rawUsedCount={
-              globalBans.blueSideTeam === "A" ? globalBans.teamAUsed.length : globalBans.teamBUsed.length
-            }
-            gameNumber={globalBans.gameNumber}
-            heroMap={heroMap}
-            currentStep={currentStep}
-            predictedNextPicks={blueNextPicks}
-            predictedNextBans={blueNextBans}
-            onLockHero={lockHero}
-            onOpenGlobalBanForTeam={() => setGlobalBanModalCat(blueCategoryKey)}
-            onRemoveUsedHero={(heroName) => removeUsedHero(blueCategoryKey, heroName)}
-          />
-          <TeamColumn
-            variant="compact"
-            side="red"
-            teamName={rName}
-            picks={redPicks}
-            bans={redBans}
-            usedHeroes={rUsed}
-            usedHeroOriginGames={redOriginGames}
-            rawUsedCount={
-              globalBans.blueSideTeam === "A" ? globalBans.teamBUsed.length : globalBans.teamAUsed.length
-            }
-            gameNumber={globalBans.gameNumber}
-            heroMap={heroMap}
-            currentStep={currentStep}
-            predictedNextPicks={redNextPicks}
-            predictedNextBans={redNextBans}
-            onLockHero={lockHero}
-            onOpenGlobalBanForTeam={() => setGlobalBanModalCat(redCategoryKey)}
-            onRemoveUsedHero={(heroName) => removeUsedHero(redCategoryKey, heroName)}
-          />
-        </div>
-
-        {/* Mobile Full Teams & Global Ban View (< md when mobileView === "teams") */}
-        {mobileView === "teams" && (
-          <div className="grid min-h-0 flex-1 grid-cols-2 gap-2 overflow-y-auto md:hidden">
+          <div key={`compact-blue-${swapCount}`} className={`min-w-0 ${swapCount > 0 ? "animate-side-swap-flash" : ""}`}>
             <TeamColumn
-              variant="full"
+              variant="compact"
               side="blue"
               teamName={bName}
               picks={bluePicks}
@@ -660,8 +592,10 @@ export function DraftBoardView({
               onOpenGlobalBanForTeam={() => setGlobalBanModalCat(blueCategoryKey)}
               onRemoveUsedHero={(heroName) => removeUsedHero(blueCategoryKey, heroName)}
             />
+          </div>
+          <div key={`compact-red-${swapCount}`} className={`min-w-0 ${swapCount > 0 ? "animate-side-swap-flash" : ""}`}>
             <TeamColumn
-              variant="full"
+              variant="compact"
               side="red"
               teamName={rName}
               picks={redPicks}
@@ -681,6 +615,62 @@ export function DraftBoardView({
               onRemoveUsedHero={(heroName) => removeUsedHero(redCategoryKey, heroName)}
             />
           </div>
+        </div>
+
+        {/* Mobile Full Teams & Global Ban View (< md when mobileView === "teams") */}
+        {mobileView === "teams" && (
+          <div className="grid min-h-0 flex-1 grid-cols-2 gap-2 overflow-y-auto md:hidden">
+            <div
+              key={`mobile-blue-${swapCount}`}
+              className={`flex min-h-0 min-w-0 flex-col ${swapCount > 0 ? "animate-side-swap-flash" : ""}`}
+            >
+              <TeamColumn
+                variant="full"
+                side="blue"
+                teamName={bName}
+                picks={bluePicks}
+                bans={blueBans}
+                usedHeroes={bUsed}
+                usedHeroOriginGames={blueOriginGames}
+                rawUsedCount={
+                  globalBans.blueSideTeam === "A" ? globalBans.teamAUsed.length : globalBans.teamBUsed.length
+                }
+                gameNumber={globalBans.gameNumber}
+                heroMap={heroMap}
+                currentStep={currentStep}
+                predictedNextPicks={blueNextPicks}
+                predictedNextBans={blueNextBans}
+                onLockHero={lockHero}
+                onOpenGlobalBanForTeam={() => setGlobalBanModalCat(blueCategoryKey)}
+                onRemoveUsedHero={(heroName) => removeUsedHero(blueCategoryKey, heroName)}
+              />
+            </div>
+            <div
+              key={`mobile-red-${swapCount}`}
+              className={`flex min-h-0 min-w-0 flex-col ${swapCount > 0 ? "animate-side-swap-flash" : ""}`}
+            >
+              <TeamColumn
+                variant="full"
+                side="red"
+                teamName={rName}
+                picks={redPicks}
+                bans={redBans}
+                usedHeroes={rUsed}
+                usedHeroOriginGames={redOriginGames}
+                rawUsedCount={
+                  globalBans.blueSideTeam === "A" ? globalBans.teamBUsed.length : globalBans.teamAUsed.length
+                }
+                gameNumber={globalBans.gameNumber}
+                heroMap={heroMap}
+                currentStep={currentStep}
+                predictedNextPicks={redNextPicks}
+                predictedNextBans={redNextBans}
+                onLockHero={lockHero}
+                onOpenGlobalBanForTeam={() => setGlobalBanModalCat(redCategoryKey)}
+                onRemoveUsedHero={(heroName) => removeUsedHero(redCategoryKey, heroName)}
+              />
+            </div>
+          </div>
         )}
 
         {/* Main Single-Screen Workspace (Mobile Draft/AI, iPad Split-View, Laptop 3-Column) */}
@@ -690,7 +680,10 @@ export function DraftBoardView({
           }`}
         >
           {/* Laptop / Desktop Left Column: Blue Team Full Board */}
-          <div className="hidden min-h-0 flex-col lg:order-1 lg:flex">
+          <div
+            key={`desktop-blue-${swapCount}`}
+            className={`hidden min-h-0 flex-col lg:order-1 lg:flex ${swapCount > 0 ? "animate-side-swap-flash" : ""}`}
+          >
             <TeamColumn
               variant="full"
               side="blue"
@@ -714,7 +707,10 @@ export function DraftBoardView({
           </div>
 
           {/* Laptop / Desktop Right Column: Red Team Full Board */}
-          <div className="hidden min-h-0 flex-col lg:order-3 lg:flex">
+          <div
+            key={`desktop-red-${swapCount}`}
+            className={`hidden min-h-0 flex-col lg:order-3 lg:flex ${swapCount > 0 ? "animate-side-swap-flash" : ""}`}
+          >
             <TeamColumn
               variant="full"
               side="red"
@@ -795,6 +791,7 @@ export function DraftBoardView({
                 recommendedRanks={recommendedRanks}
                 missingAllyLanes={missingAllyLanes}
                 currentStep={currentStep}
+                isLoading={isLoading}
                 isHeroesLoading={isHeroesLoading}
                 onLockHero={lockHero}
               />

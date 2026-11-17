@@ -446,3 +446,154 @@ def test_predict_cli_aliases_ban_phase_and_completed_win_rate():
         )
         <= 0.02
     )
+
+
+def test_compute_rolling_team_elo_leak_free(tmp_path):
+    import json
+
+    from src.train_sota_model import compute_rolling_team_elo
+
+    sample_games = [
+        {
+            "series_id": "S1",
+            "game_number": 1,
+            "year": "2026",
+            "date": "March 1, 2026 - 15:00",
+            "blue_team": "ALPHA",
+            "red_team": "BETA",
+            "blue_win": 1,
+        },
+        {
+            "series_id": "S1",
+            "game_number": 2,
+            "year": "2026",
+            "date": "March 1, 2026 - 15:00",
+            "blue_team": "BETA",
+            "red_team": "ALPHA",
+            "blue_win": 0,
+        },
+    ]
+    p = tmp_path / "matches.json"
+    p.write_text(json.dumps(sample_games), encoding="utf-8")
+
+    elos = compute_rolling_team_elo(matches_path=p, k_factor=24.0)
+    assert elos[("S1", 1)] == (1500.0, 1500.0)
+    b2, r2 = elos[("S1", 2)]
+    assert b2 < 1500.0 and r2 > 1500.0
+    assert abs((b2 + r2) - 3000.0) < 1e-6
+
+
+def test_cross_value_head_forward_and_predictor_load(tmp_path):
+    import torch
+
+    from src.train_sota_model import RoVDraftGNNTransformer
+
+    base_pred = RoVDraftPredictor()
+    cfg = dict(base_pred.ckpt["model_config"])
+    cfg["use_cross_value_head"] = True
+    model = RoVDraftGNNTransformer(
+        num_heroes=len(base_pred.hero_names),
+        hero_features=base_pred.ckpt["hero_features"],
+        lane_probs=base_pred.ckpt["lane_probs"],
+        graphs=base_pred.ckpt["graphs"],
+        priors=base_pred.ckpt["priors"],
+        **cfg,
+    )
+    model.eval()
+
+    # Ensure zero-pick board (0 allies, 0 enemies) does not produce NaN in Cross-Attention
+    B, N = 2, len(base_pred.hero_names)
+    ap = torch.zeros((B, N), dtype=torch.float32)
+    ep = torch.zeros((B, N), dtype=torch.float32)
+    ap[1, :3] = 1.0
+    ep[1, 3:6] = 1.0
+    ab = torch.zeros((B, N), dtype=torch.float32)
+    eb = torch.zeros((B, N), dtype=torch.float32)
+    mask = torch.zeros((B, N), dtype=torch.bool)
+    mask[1, :6] = True
+    th = torch.zeros((B, 17), dtype=torch.long)
+    tt = torch.zeros((B, 17), dtype=torch.long)
+    ts = torch.zeros((B, 17), dtype=torch.long)
+    tpad = torch.ones((B, 17), dtype=torch.bool)
+    mctx = torch.zeros((B, 11), dtype=torch.float32)
+    act = torch.tensor([0, 1], dtype=torch.long)
+    ph = torch.tensor([1, 2], dtype=torch.long)
+
+    with torch.no_grad():
+        pol, q_win = model(ap, ep, ab, eb, mask, th, tt, ts, tpad, mctx, act, ph)
+    assert torch.isfinite(pol).all() and torch.isfinite(q_win).all()
+
+    ckpt_path = tmp_path / "exp_cross.pt"
+    ckpt = dict(base_pred.ckpt)
+    ckpt["model_config"] = cfg
+    ckpt["model_state_dict"] = model.state_dict()
+    torch.save(ckpt, ckpt_path)
+
+    loaded = RoVDraftPredictor(model_path=ckpt_path)
+    resp = loaded.predict(
+        DraftStateRequest(mode="pick", side="blue", phase=1, ally_picks=["Florentino"], enemy_picks=["Hayate"])
+    )
+    assert len(resp.recommendations) == 5
+    assert all(0.0 < r.predicted_win_rate_pct < 100.0 for r in resp.recommendations)
+
+
+def test_rich_hero_features_and_continuous_recency():
+    """Verify 37-dim rich hero features and monotonic continuous exponential time decay."""
+    import numpy as np
+
+    from src.train_sota_model import _compute_match_recency_weight, load_sota_data_and_graphs
+
+    hero_names, _, hero_features, *_ = load_sota_data_and_graphs(recency_half_life=150.0)
+    assert len(hero_names) == 130
+    assert hero_features.shape == (130, 37)
+    assert np.isfinite(hero_features).all()
+
+    w_recent = _compute_match_recency_weight({"date": "2026-11-01"}, ref_ordinal=739921, half_life_days=150.0)
+    w_older = _compute_match_recency_weight({"date": "2026-06-04"}, ref_ordinal=739921, half_life_days=150.0)
+    w_oldest = _compute_match_recency_weight({"date": "2025-01-01"}, ref_ordinal=739921, half_life_days=150.0)
+    assert w_recent > w_older > w_oldest > 0.0
+
+
+def test_global_ban_context_forward_and_predictor_load(tmp_path):
+    """Verify use_global_ban_context=True forward pass, checkpoint save/load, and inference."""
+    import torch
+
+    from src.predictor import RoVDraftPredictor
+    from src.schemas import DraftStateRequest
+    from src.train_sota_model import RoVDraftGNNTransformer, load_sota_data_and_graphs
+
+    base_pred = RoVDraftPredictor()
+    _, _, hero_features, _, _, _, _, _, _ = load_sota_data_and_graphs(recency_half_life=150.0)
+    cfg = dict(base_pred.ckpt["model_config"])
+    cfg["use_global_ban_context"] = True
+    model = RoVDraftGNNTransformer(
+        num_heroes=len(base_pred.hero_names),
+        hero_features=hero_features,
+        lane_probs=base_pred.ckpt["lane_probs"],
+        graphs=base_pred.ckpt["graphs"],
+        priors=base_pred.ckpt["priors"],
+        **cfg,
+    )
+    model.eval()
+
+    ckpt_path = tmp_path / "exp_gb.pt"
+    ckpt = dict(base_pred.ckpt)
+    ckpt["hero_features"] = hero_features
+    ckpt["model_config"] = cfg
+    ckpt["model_state_dict"] = model.state_dict()
+    torch.save(ckpt, ckpt_path)
+
+    loaded = RoVDraftPredictor(model_path=ckpt_path)
+    resp = loaded.predict(
+        DraftStateRequest(
+            mode="pick",
+            side="blue",
+            phase=1,
+            ally_picks=["Florentino"],
+            enemy_picks=["Hayate"],
+            blue_global_bans=["Murad", "Paine"],
+            red_global_bans=["Yena"],
+        )
+    )
+    assert len(resp.recommendations) == 5
+    assert all(0.0 < r.predicted_win_rate_pct < 100.0 for r in resp.recommendations)

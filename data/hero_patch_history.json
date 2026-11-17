@@ -1,8 +1,8 @@
 {
   "source": "https://moba.garena.tw/news (Garena TW, translated from Traditional Chinese)",
-  "fetched": "2026-10-30",
-  "count": 349,
-  "heroes": 97,
+  "fetched": "2026-11-17",
+  "count": 363,
+  "heroes": 101,
   "changes": [
     {
       "hero": "Airi",
@@ -3493,6 +3493,146 @@
       "date": "2026-10-30",
       "version": "Patch 2026-10-30",
       "source": "In-game patch client update"
+    },
+    {
+      "hero": "Butterfly",
+      "skill": "Skill 1",
+      "field": "shadow blade bonus damage (replaces +25%/target)",
+      "before": "+25% dmg per target hit",
+      "after": "80/96/112/128/144/160(+25%AD)",
+      "date": "2026-11-17",
+      "version": "Hotfix 2026-11-17",
+      "source": "https://rov.in.th"
+    },
+    {
+      "hero": "Butterfly",
+      "skill": "Skill 2",
+      "field": "crit mechanic & 3 empowered basic attacks",
+      "before": "first target 1.5x, +10% crit x2",
+      "after": "first hit crit magic + 3 empowered crit attacks (100%AD + 20/24/28/32/36/40(+30%AD) magic)",
+      "date": "2026-11-17",
+      "version": "Hotfix 2026-11-17",
+      "source": "https://rov.in.th"
+    },
+    {
+      "hero": "Butterfly",
+      "skill": "Ultimate",
+      "field": "heal trigger & ratio",
+      "before": "35% dmg healed on mark expiry/kill",
+      "after": "20% dmg healed immediately per hit on marked target (10% non-hero)",
+      "date": "2026-11-17",
+      "version": "Hotfix 2026-11-17",
+      "source": "https://rov.in.th"
+    },
+    {
+      "hero": "Arduin",
+      "skill": "Passive",
+      "field": "HP regeneration",
+      "before": "4% max HP",
+      "after": "180(+13/LV)(+5% bonus HP)",
+      "date": "2026-11-17",
+      "version": "Hotfix 2026-11-17",
+      "source": "https://rov.in.th"
+    },
+    {
+      "hero": "Arduin",
+      "skill": "Skill 2",
+      "field": "true damage",
+      "before": "125/150/175/200/225/250",
+      "after": "150/180/210/240/270/300(+50% bonus AD)",
+      "date": "2026-11-17",
+      "version": "Hotfix 2026-11-17",
+      "source": "https://rov.in.th"
+    },
+    {
+      "hero": "Arduin",
+      "skill": "Ultimate",
+      "field": "cooldown & physical damage",
+      "before": "CD 16s, 300/425/550(+120%AD)",
+      "after": "CD 16/15/14s, 300/450/600(+150%AD)",
+      "date": "2026-11-17",
+      "version": "Hotfix 2026-11-17",
+      "source": "https://rov.in.th"
+    },
+    {
+      "hero": "Grakk",
+      "skill": "Passive",
+      "field": "explosion damage",
+      "before": "40(+20%AP)(+2%Max HP) / death 160",
+      "after": "55(+20%AP)(+2%Max HP) / death 225(+80%AP)(+8%Max HP)",
+      "date": "2026-11-17",
+      "version": "Hotfix 2026-11-17",
+      "source": "https://rov.in.th"
+    },
+    {
+      "hero": "Grakk",
+      "skill": "Skill 1",
+      "field": "magic damage",
+      "before": "150/180/210/240/270/300(+50%AP)",
+      "after": "180/216/252/288/324/360(+55%AP)",
+      "date": "2026-11-17",
+      "version": "Hotfix 2026-11-17",
+      "source": "https://rov.in.th"
+    },
+    {
+      "hero": "Riktor",
+      "skill": "Skill 1",
+      "field": "cooldown & physical damage",
+      "before": "CD 8s, 20..120(+40%AD) / slash 50(+100%AD)",
+      "after": "CD 8..6.5s, 75..150(+50%AD) / slash 150..300(+100%AD)",
+      "date": "2026-11-17",
+      "version": "In-Game Buff Verified 2026-11-17",
+      "source": "in-game screenshot"
+    },
+    {
+      "hero": "Riktor",
+      "skill": "Ultimate",
+      "field": "true damage tick & 5-hit detonation",
+      "before": "60/90/120(+13%AD) / 330/495/660(+100%AD)",
+      "after": "50/75/100(+20%AD) / 300/450/600(+120%AD)",
+      "date": "2026-11-17",
+      "version": "In-Game Buff Verified 2026-11-17",
+      "source": "in-game screenshot"
+    },
+    {
+      "hero": "Fennik",
+      "skill": "Skill 1",
+      "field": "physical damage",
+      "before": "90/108/126/144/162/180(+65%AD)",
+      "after": "125/150/175/200/225/250(+75%AD)",
+      "date": "2026-11-17",
+      "version": "In-Game Verified 2026-11-17",
+      "source": "in-game screenshot"
+    },
+    {
+      "hero": "Dirak",
+      "skill": "Skill 2",
+      "field": "cooldown",
+      "before": "12.5/12/11.5/11/10.5/10s",
+      "after": "10/9.6/9.2/8.8/8.4/8s",
+      "date": "2026-11-17",
+      "version": "In-Game Verified 2026-11-17",
+      "source": "in-game screenshot"
+    },
+    {
+      "hero": "Dyadia",
+      "skill": "Passive",
+      "field": "magic damage",
+      "before": "150(+100%AD)(+30%AP)",
+      "after": "140(+100%AD)(+25%AP)",
+      "date": "2026-11-17",
+      "version": "In-Game Verified 2026-11-17",
+      "source": "in-game screenshot"
+    },
+    {
+      "hero": "Dyadia",
+      "skill": "Skill 2",
+      "field": "dash/recast magic damage",
+      "before": "640..1280(+95% bonus AP)",
+      "after": "540/648/756/864/972/1080(+100% bonus AP)",
+      "date": "2026-11-17",
+      "version": "In-Game Verified 2026-11-17",
+      "source": "in-game screenshot"
     }
   ]
 }

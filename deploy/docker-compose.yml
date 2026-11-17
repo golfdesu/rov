@@ -7,7 +7,14 @@ services:
         VITE_DRAFT_ONLY: "true"
     restart: unless-stopped
     environment:
+      - ROV_ENV=production
       - ROV_DB_PATH=/app/db/rov_app.db
+      - ROV_GOOGLE_CLIENT_ID=${ROV_GOOGLE_CLIENT_ID:-}
+      - ROV_GOOGLE_CLIENT_SECRET=${ROV_GOOGLE_CLIENT_SECRET:-}
+      - ROV_GOOGLE_REDIRECT_URI=${ROV_GOOGLE_REDIRECT_URI:-}
+      - ROV_DISCORD_CLIENT_ID=${ROV_DISCORD_CLIENT_ID:-}
+      - ROV_DISCORD_CLIENT_SECRET=${ROV_DISCORD_CLIENT_SECRET:-}
+      - ROV_DISCORD_REDIRECT_URI=${ROV_DISCORD_REDIRECT_URI:-}
     volumes:
       - rov_db_data:/app/db
     expose:

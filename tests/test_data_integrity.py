@@ -31,6 +31,8 @@ def test_heroes_130_completeness():
 
 
 def test_matches_draft_integrity():
+    import re
+
     assert config.paths.matches_json_path.exists()
     with open(config.paths.matches_json_path, "r", encoding="utf-8") as f:
         matches = json.load(f)
@@ -38,6 +40,7 @@ def test_matches_draft_integrity():
     assert len(matches) >= 4000
     heroes_df = pd.read_csv(config.paths.heroes_csv_path)
     valid_names = set(heroes_df["name"].tolist())
+    duration_re = re.compile(r"^(\d{1,2}):(\d{2})$")
 
     for g in matches:
         assert len(g["blue_picks"]) == 5
@@ -45,6 +48,13 @@ def test_matches_draft_integrity():
         assert 1 <= len(g["blue_bans"]) <= 4
         assert 1 <= len(g["red_bans"]) <= 4
         assert g.get("blue_win") in (0, 1)
+        raw_len = str(g.get("length", "") or "").strip()
+        m = duration_re.match(raw_len)
+        assert m, f"Invalid game duration {raw_len!r} in {g.get('series_id')} G{g.get('game_number')}"
+        mins, secs = int(m.group(1)), int(m.group(2))
+        assert mins > 0 and 0 <= secs < 60, (
+            f"Out-of-range duration {raw_len!r} in {g.get('series_id')} G{g.get('game_number')}"
+        )
         for h in g["blue_picks"] + g["red_picks"] + g["blue_bans"] + g["red_bans"]:
             if h:
                 assert h in valid_names, f"Unmapped hero in match data: {h}"
@@ -254,7 +264,7 @@ def test_latest_patch_alignments():
     assert "Skill 4" in dirak_skills
     assert dirak_skills["Skill 4"]["name"] == "Genesis Blast"
     assert dirak_skills["Skill 4"]["base_damage"] == [500, 750, 1000]
-    assert dirak_skills["Skill 2"]["cooldown"] == [12.5, 12.0, 11.5, 11.0, 10.5, 10.0]
+    assert dirak_skills["Skill 2"]["cooldown"] == [10.0, 9.6, 9.2, 8.8, 8.4, 8.0]
 
     # Wukong
     wukong_passive = next(s for s in heroes["Wukong"] if s["slot"] == "Passive")

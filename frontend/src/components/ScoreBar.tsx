@@ -1,5 +1,5 @@
-import { Cpu, Globe, Redo2, RotateCcw, Sparkles, Undo2 } from "lucide-react";
-import { type DraftStep, ENGINE_OPTIONS, type LeagueCode } from "../types/draft";
+import { Globe, Redo2, RotateCcw, Sparkles, Undo2 } from "lucide-react";
+import { type DraftStep, type LeagueCode } from "../types/draft";
 
 const LEAGUE_OPTIONS: { code: LeagueCode; label: string; title: string }[] = [
   {
@@ -44,11 +44,6 @@ interface ScoreBarProps {
   onReset: () => void;
   canUndo: boolean;
   canRedo?: boolean;
-  engine?: "sota" | "heuristic" | "matrix";
-  setEngine?: (engine: "sota" | "heuristic" | "matrix") => void;
-  modelBadge?: string;
-  modelVariant?: "sota" | "heuristic" | "matrix";
-  modelTooltip?: string;
 }
 
 export function ScoreBar({
@@ -66,8 +61,6 @@ export function ScoreBar({
   onReset,
   canUndo,
   canRedo = false,
-  engine,
-  setEngine,
 }: ScoreBarProps) {
   const safeBlue = Number.isFinite(blueWinRate) ? blueWinRate : 50.0;
   const blue = Math.min(Math.max(safeBlue, 0), 100);
@@ -154,37 +147,6 @@ export function ScoreBar({
 
         {/* Action Controls */}
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-          {/* Interactive AI Model Selector Dropdown */}
-          {engine && setEngine && (
-            <label
-              title={ENGINE_OPTIONS.find((o) => o.id === engine)?.description}
-              className={`inline-flex h-7.5 items-center gap-1 sm:gap-1.5 border px-1.5 font-mono text-[10.5px] font-bold sm:h-8.5 sm:px-2.5 sm:text-[11px] transition-colors ${
-                engine === "sota"
-                  ? "border-gold/60 bg-gold/10 text-gold"
-                  : engine === "heuristic"
-                    ? "border-amber-500/60 bg-amber-500/10 text-amber-400"
-                    : "border-cyan-500/60 bg-cyan-500/10 text-cyan-400"
-              }`}
-            >
-              <Cpu className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
-              <span className="hidden font-mono text-[10px] uppercase tracking-wider text-dim 2xl:inline">
-                MODEL:
-              </span>
-              <select
-                aria-label="Select Draft AI Model Engine"
-                value={engine}
-                onChange={(e) => setEngine(e.target.value as "sota" | "heuristic" | "matrix")}
-                className="max-w-[76px] sm:max-w-[110px] md:max-w-none bg-transparent font-mono text-[10.5px] sm:text-[11px] font-bold cursor-pointer focus:outline-none"
-              >
-                {ENGINE_OPTIONS.map((opt) => (
-                  <option key={opt.id} value={opt.id} className="bg-panel text-ink py-1">
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-
           {league && setLeague && (
             <label
               title="Select regional pro league meta conditioning"
@@ -208,7 +170,7 @@ export function ScoreBar({
               </select>
             </label>
           )}
-          {onToggleLookahead && engine !== "matrix" && (
+          {onToggleLookahead && (
             <button
               type="button"
               onClick={onToggleLookahead}

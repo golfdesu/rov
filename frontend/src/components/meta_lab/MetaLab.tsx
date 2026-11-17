@@ -94,7 +94,6 @@ export function MetaLab({
     canRedo,
     importDraft,
   } = useDraft({
-    engine: "matrix",
     persistSession: false,
     storageKey: "rov_matrix_draft_v1",
   });
@@ -114,7 +113,7 @@ export function MetaLab({
   const redOriginGames = globalBans.blueSideTeam === "A" ? originMap.teamBGameByHero : originMap.teamAGameByHero;
 
   const recommendedRanks = useMemo(
-    () => new Map(recommendations.slice(0, 5).map((r) => [r.hero_name, r.rank])),
+    () => new Map(recommendations.slice(0, 10).map((r) => [r.hero_name, r.rank])),
     [recommendations],
   );
 
@@ -212,14 +211,14 @@ export function MetaLab({
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <span className="font-display text-xs font-bold tracking-wide text-ink sm:text-sm">
-                  Matrix & Rule Draft
+                  SOTA + Matrix Sandbox
                 </span>
                 <span className="shrink-0 border border-gold/40 bg-gold/10 px-1.5 py-0.5 font-mono text-[9px] font-bold text-gold uppercase">
-                  Zero-Neural
+                  Simulation
                 </span>
               </div>
               <p className="truncate font-mono text-[10px] text-muted sm:text-xs">
-                คำนวณจาก Synergy Matrix + Counter Matrix + สถิติโปร {totalMatches ? `${totalMatches.toLocaleString()} ` : ""}เกมโดยตรง (ไม่ใช้โมเดล Deep Learning)
+                จำลองสถานการณ์ดราฟต์ด้วยโมเดล SOTA ร่วมกับ Synergy / Counter Matrix{totalMatches ? ` (${totalMatches.toLocaleString()} เกม)` : ""}
               </p>
             </div>
           </div>

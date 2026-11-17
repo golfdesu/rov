@@ -15,9 +15,9 @@ This repository follows Big Tech Machine Learning Engineering standards (modeled
 | Component | Status & Verified Metrics |
 | :--- | :--- |
 | **Hero & Skill Database** | **130 / 130 Heroes** (`data/heroes_130_full.json`, `data/heroes_130_summary.csv`, `data/hero_skills_full.json`) up to **Evita** (Oct 2026), **Tamyn** (Jul 2026), and **Flowborn (Marksman & Mage)**, each with `>= 4` skills, 100% numerical cooldowns/mana arrays, base damage, and AD/AP/HP scaling. |
-| **Pro Match Archive** | **4,329 Complete Pro Games** (`data/matches_draft_full.json`) from RPL, APL, AIC, AOG, and GCS (2024–2026) with Global Ban Pick tracking and **0 unmapped hero names**. |
-| **Curated Training Dataset** | **3,512 Games (2025–2026)** (`data/matches_training.json`). All 817 games from 2024 are strictly excluded to remove legacy meta noise; includes all 1,810 games from 2026 with 100% verified true pick order. **True Pick Order coverage = 51.5%** (1,810 / 3,512 games). |
-| **Draft Web UI** | React 19 + Vite + Tailwind 4 broadcast-style draft board (`frontend/`), served by FastAPI from `frontend/dist`. 130 / 130 square hero icons (`frontend/public/avatars/`), Thai display names (Arthur -> Mortos, Brunhilda -> Celica, Richter -> Riktor). |
+| **Pro Match Archive** | **4,340 Complete Pro Games** (`data/matches_draft_full.json`) from RPL, APL, AIC, AOG, and GCS (2024–2026) with Global Ban Pick tracking and **0 unmapped hero names**. |
+| **Curated Training Dataset** | **3,523 Games (2025–2026)** (`data/matches_training.json`). All 817 games from 2024 are strictly excluded to remove legacy meta noise; includes all 1,821 games from 2026 with 100% verified true pick order. **True Pick Order coverage = 51.7%** (1,821 / 3,523 games). |
+| **Draft Web UI** | React 19 + Vite + Tailwind 4 broadcast-style draft board (`frontend/`), served by FastAPI from `frontend/dist` (dev) or `frontend/dist-prod` (`VITE_DRAFT_ONLY=true` in production). 130 / 130 square hero icons (`frontend/public/avatars/`), Thai display names (Arthur -> Mortos, Brunhilda -> Celica, Richter -> Riktor), plus Guest/Account portal (Username/Password + Google & Discord OAuth 2.0 PKCE, `/privacy`, `logo.png`). |
 | **SOTA Architecture** | `RoVDraftGNNTransformer` (`src/train_sota_model.py`): Multi-Relational Hero GNN (`adj_copick`, `adj_synergy`, `adj_counter`, `adj_countered_by`) + Sequence Transformer + Bounded Neural Temperature Gate + Dual Policy & Win-Value Heads. |
 | **H100 Optuna HPO** | Completed 50 Trials on ERAWAN HPC H100 (`best_params/sota_rov_top5_trials.json`, `configs/selected_production_params.json`). |
 | **Champion Performance** | (Selector output, 2026-11-11) **Served checkpoint Val Loss = `2.86752`**, WinAcc = `52.13%` \| **HPO Rank #1 (Trial #13, Compact) Val = `2.83144`**, Top-1 = `21.20%`, Top-5 = `60.78%`, WinAcc = `52.61%` \| **Safest (Trial #01) Val = `2.83993`**, Top-1 = `20.86%`, Top-5 = `59.94%`, WinAcc = `51.47%` (130 heroes, trained on all 3,512 games from 2025 through Nov 7, 2026). Always re-quote from the selector script (rule 12). |
@@ -87,9 +87,9 @@ Every AI agent (including fast models such as `3.8flash`) MUST strictly obey the
     - Every skill ends with a **Related Skills** section. When adding or renaming a skill, update the Related Skills sections of its neighbors and the skill list in Section 2 below.
 
 13. **Curated Training Dataset & 2024 Exclusion Invariant (`data/matches_training.json`)**:
-    - `data/matches_draft_full.json` (4,329 games) is the historical archival repository (2024–2026).
+    - `data/matches_draft_full.json` (4,340 games) is the historical archival repository (2024–2026).
     - **STRICTLY FORBIDDEN to train the production model on 2024 data**. All 817 games from 2024 are excluded because legacy meta noise and obsolete hero priorities (e.g., pre-rework Wonder Woman, obsolete 2024 Erin dynamics) degrade model performance on the current meta.
-    - The active training dataset is `data/matches_training.json` containing **3,512 games strictly from 2025–2026** (1,702 from 2025 + 1,810 from 2026, through the AOG 2026 Winter Finals on Nov 7, 2026) with **51.5% True Pick Order coverage** (1,810 / 3,512 games = 100% of 2026 games, verified from broadcast screenshots).
+    - The active training dataset is `data/matches_training.json` containing **3,523 games strictly from 2025–2026** (1,702 from 2025 + 1,821 from 2026, through the AOG 2026 Winter Finals on Nov 7, 2026) with **51.7% True Pick Order coverage** (1,821 / 3,523 games = 100% of 2026 games, verified from broadcast screenshots).
     - `src/train_sota_model.py` automatically defaults to `data/matches_training.json` whenever it exists.
     - Regenerate the training set only with (reproduces the current file exactly; add `--max-date YYYY-MM-DD` only for a deliberate hold-out):
       `python src/build_training_dataset.py --min-year 2025`
@@ -98,6 +98,11 @@ Every AI agent (including fast models such as `3.8flash`) MUST strictly obey the
     - **Single Source of Ground Truth**: The exact numerical stats for hero level scalings (Lv. 1 to Lv. 15 in `data/hero_level_stats.*`, `data/hero_status_lv1.json`, `data/hero_status_lv15.json`), structured skill attributes, cooldowns, scalings (`data/hero_skills_full.json`, 534 skills), and item attributes (`data/items.json`, 114 items) originate directly from **the project owner's manual in-game screenshots** stored in `heroes/*/skill/` (566 screenshots), `heroes/*/status/` (268 screenshots), and `item/*/` (159 screenshots).
     - **Web Scraping Limitation**: External web sources (such as Liquipedia or AoV Fandom) were only used as an initial rough English text skeleton. Online wikis are notoriously outdated, riddled with incorrect numbers, and out of sync with the official Thai server client.
     - **Strict Agent Truthfulness Rule**: In all sessions, whenever an AI agent is asked where hero stats, level scaling, skills, or items came from, the agent **MUST ALWAYS tell the truth**: they were manually captured in-game by the project owner through screenshots, which served as the definitive ground truth to correct and override external wikis. Never attribute these numbers to automated web scrapers.
+
+15. **Open Free Launch, Multi-Provider OAuth & Secret Hygiene**:
+    - `minidraft.app` is currently **100% free for all users** (do NOT add paywalls or prediction quotas unless the owner explicitly initiates the future monetization phase documented in `docs/SUBSCRIPTION_ROADMAP.md`).
+    - Multi-user accounts and per-user draft/combat state live in SQLite (`src/db.py` -> `data/rov_app.db` locally or `ROV_DB_PATH=/app/db/rov_app.db` in Docker), supporting Username/Password (`scrypt`) plus optional Google and Discord OAuth 2.0 + PKCE (`user_oauth_accounts`).
+    - OAuth credentials (`ROV_GOOGLE_*`, `ROV_DISCORD_*`) and raw client JSON files MUST stay strictly inside gitignored `.env` and `.secrets/` — never commit secrets or tracked `*env*` filenames (`tests/test_security.py::test_no_secrets_in_tracked_files`).
 
 ---
 
@@ -115,7 +120,7 @@ ROV/
 ├── run_sota_rov_h100.sbatch         # SLURM job: Direct SOTA training on ERAWAN H100
 ├── .agents/
 │   └── skills/                      # Progressive-disclosure workspace skills (SOURCE OF TRUTH)
-│       ├── rov-data-guardian/       # Data integrity: 130 heroes, 4,329 matches, true_pick_order.json & tier overrides audit
+│       ├── rov-data-guardian/       # Data integrity: 130 heroes, 4,340 matches, true_pick_order.json & tier overrides audit
 │       ├── hpo-parsimony-selector/  # Top-5 HPO parsimony selector + served-checkpoint vs config check
 │       ├── erawan-hpc-ops/          # ERAWAN HPC H100 SLURM, MLflow & Git sync runbook
 │       ├── rov-draft-serving/       # CLI, FastAPI + web UI, golden test & pytest runbook
@@ -132,27 +137,31 @@ ROV/
 │   ├── sota_rov_best_params.json    # Raw Optuna HPO best output from ERAWAN H100
 │   ├── sota_rov_top5_trials.json    # Top 5 HPO candidates with Overfit Gap & safety metrics
 │   └── heuristic_sota_*.json        # H100 HPO results for the 0% true pick order heuristic experiment model
+├── deploy/
+│   ├── Caddyfile                    # Reverse proxy TLS + security headers -> app:8000
+│   └── docker-compose.yml           # Production Compose stack (app + Caddy + persistent /app/db volume)
 ├── docs/
-│   └── COMPETITORS.md               # Competitive landscape vs other draft tools
+│   ├── COMPETITORS.md               # Competitive landscape vs other draft tools
+│   └── SUBSCRIPTION_ROADMAP.md      # Planned future monetization spec (Pro 50 THB / Team Pro 149 THB + PromptPay slip verification)
 ├── data/
 │   ├── dataset_metadata.json        # Auto-generated SSOT metrics (matches, heroes, skills, true order %)
 │   ├── heroes_130_full.json         # Full 130 RoV heroes + skills + capability flags
 │   ├── heroes_130_summary.csv       # Tabular summary of all 130 heroes
-│   ├── matches_training.json        # Curated training set: 3,512 games (2025–2026 only, 2024 excluded, 51.5% true order)
+│   ├── matches_training.json        # Curated training set: 3,523 games (2025–2026 only, 2024 excluded, 51.7% true order)
 │   ├── matches_training_heuristic.json # 0% true pick order experiment set (3,483 games, lane-heuristic order only)
-│   ├── matches_draft_full.json      # Full historical archive: 4,329 pro tournament draft games (2024–2026)
+│   ├── matches_draft_full.json      # Full historical archive: 4,340 pro tournament draft games (2024–2026)
 │   ├── matches_draft_flat.csv       # Flattened match draft table
-│   ├── true_pick_order.json         # 1,810 screenshot-verified chronological pick orders (draft-screenshot-reader)
+│   ├── true_pick_order.json         # 1,821 screenshot-verified chronological pick orders (draft-screenshot-reader)
 │   ├── screenshots_manifest.json    # Hero skill/status & item card screenshot manifest (scripts/build_screenshots_manifest.py)
 │   ├── hero_tier_overrides.json     # Hand-maintained tiers for low-sample/new/reworked heroes (src/api.py, moba-meta-intel)
 │   ├── hero_draft_stats.csv         # 5-lane distributions, pick/ban/win/presence rates
-│   ├── synergy_matrix.csv           # Pairwise ally synergy matrix (2,517 pairs)
-│   ├── counter_matrix.csv           # Pairwise enemy counter matrix (6,090 pairs)
+│   ├── synergy_matrix.csv           # Pairwise ally synergy matrix (2,527 pairs)
+│   ├── counter_matrix.csv           # Pairwise enemy counter matrix (6,118 pairs)
 │   ├── items.json                   # 114 items: rovmeta.com + patch-note overrides (numeric stats, price, passives)
 │   ├── items_overrides.json         # Hand-maintained corrections from official Garena TH/TW patch notes
 │   ├── hero_names_zh_tw.json        # Traditional Chinese -> canonical English hero name dictionary
 │   ├── hero_patch_translations.json # Translation dictionary for patch note phrases & sentences
-│   ├── hero_patch_history.json      # 349 historical balance adjustments across 97 heroes from TW patch notes
+│   ├── hero_patch_history.json      # 363 historical balance adjustments across 101 heroes from TW patch notes
 │   ├── hero_level_stats.json        # Exact level 1-15 stats table for all 130 heroes (JSON catalog)
 │   ├── hero_level_stats.csv         # 1,950 row level 1-15 scaling table (130 heroes * 15 levels)
 │   ├── hero_status_lv1.json         # In-game status panel values at level 1
@@ -161,12 +170,14 @@ ROV/
 │   ├── arcana.json                  # 30 Tier-III Arcana runes (10 Red, 10 Purple, 10 Green, Thai server names)
 │   └── enchantments.json            # 33 official Enchantments across 4 factions (Veda, Lokheim, Afata, Humans)
 ├── frontend/                        # React 19 + Vite + Tailwind 4 draft UI (see frontend/README.md)
-│   ├── src/                         # App, api/client.ts, hooks/ (useDraft, useCombatLab), utils/draft.ts (reducer), components/ (draft board, Modal, Alert), components/lab/ (Combat Lab), components/meta_lab/, components/tierlist/
+│   ├── src/                         # App, api/client.ts, hooks/ (useDraft, useCombatLab), utils/draft.ts (reducer), components/ (draft board, AuthModal, FinishGameModal, Modal, Alert), components/lab/ (Combat Lab), components/meta_lab/, components/tierlist/
 │   └── public/
 │       ├── avatars/                 # 130 square 160x160 hero icons
 │       ├── items/                   # 114 item icons (scripts/fetch_item_icons.py)
 │       ├── skills/                  # Hero skill icons
 │       ├── enchantments/            # 33 enchantment icons
+│       ├── logo.png                 # 512x512 PNG MiniDraft logo (rendered from favicon.svg)
+│       ├── privacy.html             # Public Privacy Policy page (also served at GET /privacy)
 │       └── hero_images.json         # Hero name -> /avatars/<file> (also read by src/api.py)
 ├── heroes/                          # Local, gitignored: in-game skill/status screenshots per hero (served at /heroes-media)
 ├── item/                            # Local, gitignored: in-game item card screenshots (served at /items-media)
@@ -177,12 +188,13 @@ ROV/
 │   └── draft_predictor.pt           # Baseline Deep Sets + MLP checkpoint (not committed; created by src/train_draft_model.py)
 ├── src/
 │   ├── __init__.py
-│   ├── config.py                    # Centralized OOP configuration (PathConfig incl. hero_tier_overrides_path, DraftModelConfig)
+│   ├── config.py                    # Centralized OOP configuration (PathConfig, DraftModelConfig, HPOConfig, auto-.env load, OAuth env)
+│   ├── db.py                        # SQLite UserDatabase (users, auth_sessions, user_oauth_accounts, per-user draft/combat state, RateLimiter)
 │   ├── schemas.py                   # Pydantic V2 request/response validation schemas
 │   ├── predictor.py                 # Production OOP inference engine (RoVDraftPredictor)
 │   ├── search/
 │   │   └── draft_mcts.py            # DRAFT_STEPS, ModelInput/encode_batch/run_model, DraftMinimaxSearch lookahead
-│   ├── api.py                       # FastAPI endpoints (/health, /heroes, /draft/*, /predict*, /combat/*) + serves frontend/dist
+│   ├── api.py                       # FastAPI endpoints (/health, /heroes, /auth/*, /privacy, /draft/*, /predict, /combat/*) + serves dist/dist-prod
 │   ├── combat_calculator.py         # Stat builder (level+items+T3 arcana+enchantments), skill damage w/ mitigation, 1v1 duel sim
 │   ├── train_sota_model.py          # SOTA RoVDraftGNNTransformer model & training pipeline
 │   ├── hpo_sota_optuna.py           # Fast GPU-Resident Optuna HPO engine (saves Top 5 trials)
@@ -206,9 +218,10 @@ ROV/
 │   ├── normalize_team_names.py      # Team abbreviation normalization across datasets
 │   ├── export_commercial_package.py # 2026 analytics bundle export (reads hero_tier_overrides.json)
 │   ├── sync_metadata.py             # SSOT dataset metadata generator & automatic documentation synchronizer
+│   ├── start_public_15d.ps1         # Launches production uvicorn + Cloudflare Tunnel (minidraft.app) with auto-restart
 │   └── simulate_draft_selfplay.py   # 18-step AI vs AI self-play draft simulation
 └── tests/
-    ├── test_data_integrity.py       # Verifies 130 heroes, skills, 4,329 match mappings, and item catalog
+    ├── test_data_integrity.py       # Verifies 130 heroes, skills, 4,340 match mappings, and item catalog
     ├── test_model_pipeline.py       # Verifies SOTA checkpoint, masking, and predictor output
     ├── test_api.py                  # Verifies FastAPI endpoints and the served frontend build
     ├── test_combat_calculator.py    # Verifies mitigation formula, stat stacking, CDR cap, arcana/enchantment rules, duel

@@ -42,4 +42,11 @@ Dark esports broadcast style for the draft board in `frontend/`. Tokens live in 
 
 - `xl` and up: three columns (blue | AI panel + hero grid | red).
 - Below `xl`: both teams side by side on top, AI panel and hero grid full width below.
-- Hero grid: 4 columns on phones up to 8 on desktop, with no horizontal page scroll at 390px.
+- Hero grid: 4–5 columns on phones up to 7–8 on tablet/desktop, with no horizontal page scroll at 390px.
+
+### Verified Device Viewport & Screenshot Reference
+
+| Device / Orientation | Captured Resolution | Aspect Ratio | Observed Layout Mode |
+| :--- | :--- | :--- | :--- |
+| **iPad (Safari Landscape)** | `2048 x 1423` px | `~1.44 : 1` | Full 3-column `xl` broadcast layout (`Blue` \| `AI + 7-col Grid` \| `Red`) |
+| **iPhone (Safari Portrait)** | `942 x 2048` px | `~0.46 : 1` (`1 : 2.17`) | Compact mobile layout (side-by-side mini team boards, compact AI strip, 5-col grid, bottom quick-action bar) |

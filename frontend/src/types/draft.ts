@@ -104,7 +104,7 @@ export interface DraftSessionPayload {
   winHistory: (number | null)[];
   blueWinRate: number;
   useLookahead: boolean;
-  engine?: "sota" | "heuristic" | "matrix";
+  engine?: "sota";
   league?: LeagueCode;
   globalBans: GlobalBanState;
   seriesGames: RecordedDraftGame[];
@@ -140,39 +140,7 @@ export const CANONICAL_DRAFT_STEPS: DraftStep[] = [
   { step: 17, phase: 2, action: "pick", side: "red", label: "Red Pick 5" },
 ];
 
-export type DraftEngineKey = "sota" | "heuristic" | "matrix";
-
-export interface DraftEngineOption {
-  id: DraftEngineKey;
-  label: string;
-  badge: string;
-  shortLabel: string;
-  description: string;
-}
-
-export const ENGINE_OPTIONS: DraftEngineOption[] = [
-  {
-    id: "sota",
-    label: "SOTA (51%)",
-    badge: "SOTA 51%",
-    shortLabel: "SOTA",
-    description: "Production GNN-Transformer trained on 2025-2026 pro matches with 51.5% verified True Pick Order from broadcast screenshots",
-  },
-  {
-    id: "heuristic",
-    label: "Heuristic (0%)",
-    badge: "Heuristic 0%",
-    shortLabel: "Heuristic",
-    description: "Heuristic model trained on 2025-2026 pro matches with 0% True Order (ordered by Liquipedia in-game lane positions)",
-  },
-  {
-    id: "matrix",
-    label: "Matrix (Stat)",
-    badge: "Bayes Matrix",
-    shortLabel: "Matrix",
-    description: "Statistical co-pick synergy and counter matrix with Bradley-Terry log-odds and Empirical Bayes shrinkage",
-  },
-];
+export type DraftEngineKey = "sota";
 
 export interface DamageProfile {
   physical_pct: number;

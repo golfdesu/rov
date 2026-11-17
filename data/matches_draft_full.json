@@ -181790,7 +181790,7 @@
     "bestof": 5,
     "game_number": 3,
     "is_ultimate_battle": false,
-    "length": "26",
+    "length": "26:17",
     "blue_team": "1S",
     "red_team": "BOX",
     "blue_win": 1,
@@ -182056,7 +182056,7 @@
     "bestof": 5,
     "game_number": 2,
     "is_ultimate_battle": false,
-    "length": "09",
+    "length": "09:47",
     "blue_team": "SPN",
     "red_team": "SGP",
     "blue_win": 0,
@@ -196692,7 +196692,7 @@
     "bestof": 5,
     "game_number": 4,
     "is_ultimate_battle": false,
-    "length": "",
+    "length": "21:25",
     "blue_team": "GAM",
     "red_team": "BOX",
     "blue_win": 0,
@@ -256865,6 +256865,644 @@
       "Mganga",
       "Valhein",
       "Cresht"
+    ]
+  },
+  {
+    "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1121",
+    "league": "Arena of Valor International Championship",
+    "year": "2026",
+    "stage": "Wildcard",
+    "date": "November 16, 2026 - 13:00",
+    "bestof": 5,
+    "game_number": 1,
+    "is_ultimate_battle": false,
+    "length": "26:43",
+    "blue_team": "BMG",
+    "red_team": "GAM",
+    "blue_win": 1,
+    "blue_bans": [
+      "Y'bneth",
+      "Eland'orr",
+      "Marja",
+      "Omen"
+    ],
+    "red_bans": [
+      "Rouie",
+      "Tamyn",
+      "Valhein",
+      "Edras"
+    ],
+    "blue_picks": [
+      "Yena",
+      "Tachi",
+      "Zata",
+      "Capheny",
+      "Dolia"
+    ],
+    "red_picks": [
+      "Airi",
+      "Astrid",
+      "Liliana",
+      "Murad",
+      "Thane"
+    ],
+    "blue_global_bans": [],
+    "red_global_bans": []
+  },
+  {
+    "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1121",
+    "league": "Arena of Valor International Championship",
+    "year": "2026",
+    "stage": "Wildcard",
+    "date": "November 16, 2026 - 13:00",
+    "bestof": 5,
+    "game_number": 2,
+    "is_ultimate_battle": false,
+    "length": "13:43",
+    "blue_team": "GAM",
+    "red_team": "BMG",
+    "blue_win": 0,
+    "blue_bans": [
+      "Edras",
+      "Mina",
+      "Flowborn (Marksman)",
+      "Maloch"
+    ],
+    "red_bans": [
+      "Tamyn",
+      "Eland'orr",
+      "Omen",
+      "Taara"
+    ],
+    "blue_picks": [
+      "Biron",
+      "Zanis",
+      "Rouie",
+      "Valhein",
+      "Chaugnar"
+    ],
+    "red_picks": [
+      "Airi",
+      "Sinestrea",
+      "Ignis",
+      "Stuart",
+      "Y'bneth"
+    ],
+    "blue_global_bans": [
+      "Airi",
+      "Astrid",
+      "Liliana",
+      "Murad",
+      "Thane"
+    ],
+    "red_global_bans": [
+      "Yena",
+      "Tachi",
+      "Zata",
+      "Capheny",
+      "Dolia"
+    ]
+  },
+  {
+    "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1121",
+    "league": "Arena of Valor International Championship",
+    "year": "2026",
+    "stage": "Wildcard",
+    "date": "November 16, 2026 - 13:00",
+    "bestof": 5,
+    "game_number": 3,
+    "is_ultimate_battle": false,
+    "length": "18:45",
+    "blue_team": "BMG",
+    "red_team": "GAM",
+    "blue_win": 1,
+    "blue_bans": [
+      "Dolia",
+      "Sinestrea",
+      "Marja",
+      "Omen"
+    ],
+    "red_bans": [
+      "Rouie",
+      "Tamyn",
+      "Maloch",
+      "Florentino"
+    ],
+    "blue_picks": [
+      "Riktor",
+      "Zanis",
+      "Evita",
+      "Eland'orr",
+      "TeeMee"
+    ],
+    "red_picks": [
+      "Edras",
+      "Keera",
+      "Lorion",
+      "Mina",
+      "Y'bneth"
+    ],
+    "blue_global_bans": [
+      "Yena",
+      "Tachi",
+      "Zata",
+      "Capheny",
+      "Dolia",
+      "Airi",
+      "Sinestrea",
+      "Ignis",
+      "Stuart",
+      "Y'bneth"
+    ],
+    "red_global_bans": [
+      "Airi",
+      "Astrid",
+      "Liliana",
+      "Murad",
+      "Thane",
+      "Biron",
+      "Zanis",
+      "Rouie",
+      "Valhein",
+      "Chaugnar"
+    ]
+  },
+  {
+    "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1122",
+    "league": "Arena of Valor International Championship",
+    "year": "2026",
+    "stage": "Wildcard",
+    "date": "November 16, 2026 - 19:00",
+    "bestof": 5,
+    "game_number": 1,
+    "is_ultimate_battle": false,
+    "length": "18:02",
+    "blue_team": "GAM",
+    "red_team": "SLX",
+    "blue_win": 0,
+    "blue_bans": [
+      "Eland'orr",
+      "Sinestrea",
+      "Flowborn (Marksman)",
+      "Thane"
+    ],
+    "red_bans": [
+      "Rouie",
+      "Tamyn",
+      "Liliana",
+      "Raz"
+    ],
+    "blue_picks": [
+      "Ryoma",
+      "Edras",
+      "Zata",
+      "Hayate",
+      "Baldum"
+    ],
+    "red_picks": [
+      "Marja",
+      "Taara",
+      "Iggy",
+      "Preyta",
+      "Maloch"
+    ],
+    "blue_global_bans": [],
+    "red_global_bans": []
+  },
+  {
+    "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1122",
+    "league": "Arena of Valor International Championship",
+    "year": "2026",
+    "stage": "Wildcard",
+    "date": "November 16, 2026 - 19:00",
+    "bestof": 5,
+    "game_number": 2,
+    "is_ultimate_battle": false,
+    "length": "16:00",
+    "blue_team": "GAM",
+    "red_team": "SLX",
+    "blue_win": 0,
+    "blue_bans": [
+      "Edras",
+      "Eland'orr",
+      "Omen",
+      "Valhein"
+    ],
+    "red_bans": [
+      "Rouie",
+      "Dolia",
+      "Stuart",
+      "Mina"
+    ],
+    "blue_picks": [
+      "Biron",
+      "Zephys",
+      "Iggy",
+      "Tamyn",
+      "Wiro"
+    ],
+    "red_picks": [
+      "Airi",
+      "Sinestrea",
+      "Liliana",
+      "Ryoma",
+      "Y'bneth"
+    ],
+    "blue_global_bans": [
+      "Ryoma",
+      "Edras",
+      "Zata",
+      "Hayate",
+      "Baldum"
+    ],
+    "red_global_bans": [
+      "Marja",
+      "Taara",
+      "Iggy",
+      "Preyta",
+      "Maloch"
+    ]
+  },
+  {
+    "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1122",
+    "league": "Arena of Valor International Championship",
+    "year": "2026",
+    "stage": "Wildcard",
+    "date": "November 16, 2026 - 19:00",
+    "bestof": 5,
+    "game_number": 3,
+    "is_ultimate_battle": false,
+    "length": "14:31",
+    "blue_team": "SLX",
+    "red_team": "GAM",
+    "blue_win": 1,
+    "blue_bans": [
+      "Y'bneth",
+      "Sinestrea",
+      "Omen",
+      "Qi"
+    ],
+    "red_bans": [
+      "Tamyn",
+      "Rouie",
+      "Edras",
+      "Florentino"
+    ],
+    "blue_picks": [
+      "Murad",
+      "Nakroth",
+      "Yue",
+      "Hayate",
+      "Wiro"
+    ],
+    "red_picks": [
+      "Skud",
+      "Tachi",
+      "Mganga",
+      "Stuart",
+      "Dolia"
+    ],
+    "blue_global_bans": [
+      "Marja",
+      "Taara",
+      "Iggy",
+      "Preyta",
+      "Maloch",
+      "Airi",
+      "Sinestrea",
+      "Liliana",
+      "Ryoma",
+      "Y'bneth"
+    ],
+    "red_global_bans": [
+      "Ryoma",
+      "Edras",
+      "Zata",
+      "Hayate",
+      "Baldum",
+      "Biron",
+      "Zephys",
+      "Iggy",
+      "Tamyn",
+      "Wiro"
+    ]
+  },
+  {
+    "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1123",
+    "league": "Arena of Valor International Championship",
+    "year": "2026",
+    "stage": "Wildcard",
+    "date": "November 16, 2026 - 16:00",
+    "bestof": 5,
+    "game_number": 1,
+    "is_ultimate_battle": false,
+    "length": "14:05",
+    "blue_team": "ONE",
+    "red_team": "FL",
+    "blue_win": 1,
+    "blue_bans": [
+      "Eland'orr",
+      "Sinestrea",
+      "Marja",
+      "Airi"
+    ],
+    "red_bans": [
+      "Rouie",
+      "Tamyn",
+      "Yue",
+      "Yan"
+    ],
+    "blue_picks": [
+      "Florentino",
+      "Zephys",
+      "Zata",
+      "Edras",
+      "Thane"
+    ],
+    "red_picks": [
+      "Yena",
+      "Tachi",
+      "Evita",
+      "Stuart",
+      "Dolia"
+    ],
+    "blue_global_bans": [],
+    "red_global_bans": []
+  },
+  {
+    "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1123",
+    "league": "Arena of Valor International Championship",
+    "year": "2026",
+    "stage": "Wildcard",
+    "date": "November 16, 2026 - 16:00",
+    "bestof": 5,
+    "game_number": 2,
+    "is_ultimate_battle": false,
+    "length": "13:53",
+    "blue_team": "FL",
+    "red_team": "ONE",
+    "blue_win": 1,
+    "blue_bans": [
+      "Dolia",
+      "Baldum",
+      "Dyadia",
+      "Sinestrea"
+    ],
+    "red_bans": [
+      "Tamyn",
+      "Y'bneth",
+      "Edras",
+      "Omen"
+    ],
+    "blue_picks": [
+      "Marja",
+      "Astrid",
+      "Rouie",
+      "Maloch",
+      "Wiro"
+    ],
+    "red_picks": [
+      "Ryoma",
+      "Nakroth",
+      "Lorion",
+      "Stuart",
+      "Alice"
+    ],
+    "blue_global_bans": [
+      "Yena",
+      "Tachi",
+      "Evita",
+      "Stuart",
+      "Dolia"
+    ],
+    "red_global_bans": [
+      "Florentino",
+      "Zephys",
+      "Zata",
+      "Edras",
+      "Thane"
+    ]
+  },
+  {
+    "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1123",
+    "league": "Arena of Valor International Championship",
+    "year": "2026",
+    "stage": "Wildcard",
+    "date": "November 16, 2026 - 16:00",
+    "bestof": 5,
+    "game_number": 3,
+    "is_ultimate_battle": false,
+    "length": "09:57",
+    "blue_team": "FL",
+    "red_team": "ONE",
+    "blue_win": 1,
+    "blue_bans": [
+      "Rouie",
+      "Astrid",
+      "Evita",
+      "Ignis"
+    ],
+    "red_bans": [
+      "Tamyn",
+      "Sinestrea",
+      "Zata",
+      "D'Arcy"
+    ],
+    "blue_picks": [
+      "Yan",
+      "Zephys",
+      "Liliana",
+      "Valhein",
+      "Y'bneth"
+    ],
+    "red_picks": [
+      "Airi",
+      "Billow",
+      "Annette",
+      "Violet",
+      "TeeMee"
+    ],
+    "blue_global_bans": [
+      "Yena",
+      "Tachi",
+      "Evita",
+      "Stuart",
+      "Dolia",
+      "Marja",
+      "Astrid",
+      "Rouie",
+      "Maloch",
+      "Wiro"
+    ],
+    "red_global_bans": [
+      "Florentino",
+      "Zephys",
+      "Zata",
+      "Edras",
+      "Thane",
+      "Ryoma",
+      "Nakroth",
+      "Lorion",
+      "Stuart",
+      "Alice"
+    ]
+  },
+  {
+    "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1123",
+    "league": "Arena of Valor International Championship",
+    "year": "2026",
+    "stage": "Wildcard",
+    "date": "November 16, 2026 - 16:00",
+    "bestof": 5,
+    "game_number": 4,
+    "is_ultimate_battle": false,
+    "length": "21:36",
+    "blue_team": "ONE",
+    "red_team": "FL",
+    "blue_win": 1,
+    "blue_bans": [
+      "Zata",
+      "Edras",
+      "Lorion",
+      "Annette"
+    ],
+    "red_bans": [
+      "Rouie",
+      "Y'bneth",
+      "Evita",
+      "Liliana"
+    ],
+    "blue_picks": [
+      "Yena",
+      "Sinestrea",
+      "D'Arcy",
+      "Hayate",
+      "Baldum"
+    ],
+    "red_picks": [
+      "Mina",
+      "Tamyn",
+      "Ignis",
+      "Eland'orr",
+      "Thane"
+    ],
+    "blue_global_bans": [
+      "Florentino",
+      "Zephys",
+      "Zata",
+      "Edras",
+      "Thane",
+      "Ryoma",
+      "Nakroth",
+      "Lorion",
+      "Stuart",
+      "Alice",
+      "Airi",
+      "Billow",
+      "Annette",
+      "Violet",
+      "TeeMee"
+    ],
+    "red_global_bans": [
+      "Yena",
+      "Tachi",
+      "Evita",
+      "Stuart",
+      "Dolia",
+      "Marja",
+      "Astrid",
+      "Rouie",
+      "Maloch",
+      "Wiro",
+      "Yan",
+      "Zephys",
+      "Liliana",
+      "Valhein",
+      "Y'bneth"
+    ]
+  },
+  {
+    "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1123",
+    "league": "Arena of Valor International Championship",
+    "year": "2026",
+    "stage": "Wildcard",
+    "date": "November 16, 2026 - 16:00",
+    "bestof": 5,
+    "game_number": 5,
+    "is_ultimate_battle": false,
+    "length": "13:22",
+    "blue_team": "ONE",
+    "red_team": "FL",
+    "blue_win": 1,
+    "blue_bans": [
+      "Sinestrea",
+      "Zata",
+      "Butterfly",
+      "Florentino"
+    ],
+    "red_bans": [
+      "Tamyn",
+      "Rouie",
+      "Astrid",
+      "Marja"
+    ],
+    "blue_picks": [
+      "Omen",
+      "Taara",
+      "Evita",
+      "Eland'orr",
+      "Y'bneth"
+    ],
+    "red_picks": [
+      "Ata",
+      "Edras",
+      "Iggy",
+      "Violet",
+      "Toro"
+    ],
+    "blue_global_bans": [
+      "Florentino",
+      "Zephys",
+      "Zata",
+      "Edras",
+      "Thane",
+      "Ryoma",
+      "Nakroth",
+      "Lorion",
+      "Stuart",
+      "Alice",
+      "Airi",
+      "Billow",
+      "Annette",
+      "Violet",
+      "TeeMee",
+      "Yena",
+      "Sinestrea",
+      "D'Arcy",
+      "Hayate",
+      "Baldum"
+    ],
+    "red_global_bans": [
+      "Yena",
+      "Tachi",
+      "Evita",
+      "Stuart",
+      "Dolia",
+      "Marja",
+      "Astrid",
+      "Rouie",
+      "Maloch",
+      "Wiro",
+      "Yan",
+      "Zephys",
+      "Liliana",
+      "Valhein",
+      "Y'bneth",
+      "Mina",
+      "Tamyn",
+      "Ignis",
+      "Eland'orr",
+      "Thane"
     ]
   }
 ]

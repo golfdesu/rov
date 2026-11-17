@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { useId, useMemo, useState } from "react";
+import { MAX_SERIES_GAMES } from "../hooks/useDraft";
 import type { Hero, RecordedDraftGame, TeamId } from "../types/draft";
 import { getGameSeriesGroup } from "../utils/draft";
 import { displayName } from "../utils/heroNames";
@@ -78,17 +79,20 @@ export function DraftHistoryModal({
   }, [groups, activeGroup]);
 
   return (
-    <Modal labelledBy={titleId} className="max-h-[92vh] max-w-4xl" onClose={onClose}>
+    <Modal labelledBy={titleId} className="max-h-[92vh] max-w-4xl overflow-hidden" onClose={onClose}>
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-3">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-3">
         <div className="flex items-center gap-2.5">
           <History className="h-4 w-4 text-gold" />
           <div>
-            <h2 id={titleId} className="font-display text-sm font-bold tracking-wider text-ink">
-              DRAFT & SERIES HISTORY · ประวัติการดราฟต์แยกตามกลุ่มซีรีส์ ({games.length})
+            <h2 id={titleId} className="flex flex-wrap items-center gap-2 font-display text-sm font-bold tracking-wider text-ink">
+              <span>DRAFT &amp; SERIES HISTORY · ประวัติการดราฟต์แยกตามกลุ่มซีรีส์</span>
+              <span className="border border-gold/60 bg-gold/15 px-2 py-0.5 font-mono text-xs font-bold text-gold">
+                {games.length}/{MAX_SERIES_GAMES}
+              </span>
             </h2>
             <p className="text-[11px] text-dim">
-              ระบบจัดกลุ่มตามคู่แข่งขัน (เช่น BRU vs FS) อัตโนมัติ — บันทึกทนทานต่อการกด Refresh หรือรีสตาร์ทเซิร์ฟเวอร์
+              ระบบจัดกลุ่มตามคู่แข่งขัน (เช่น BRU vs FS) อัตโนมัติ — บันทึกสูงสุด {MAX_SERIES_GAMES} เกมล่าสุด (หากเกินจะลบเกมเก่าสุดอัตโนมัติ)
             </p>
           </div>
         </div>
@@ -146,7 +150,7 @@ export function DraftHistoryModal({
 
       {/* Series Group Selector Bar */}
       {groups.length > 0 && (
-        <div className="flex flex-wrap items-center gap-1.5 border-b border-line bg-panel-2/60 px-4 py-2">
+        <div className="flex shrink-0 flex-wrap items-center gap-1.5 border-b border-line bg-panel-2/60 px-4 py-2">
           <span className="flex items-center gap-1 font-mono text-[11px] font-bold text-muted mr-1">
             <Layers className="h-3.5 w-3.5 text-gold" />
             <span>GROUP / แมตช์:</span>
@@ -453,9 +457,13 @@ export function DraftHistoryModal({
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between border-t border-line bg-bg px-4 py-2.5">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-line bg-bg px-4 py-2.5">
         <span className="font-mono text-xs text-muted">
-          บันทึกอัตโนมัติ (LocalStorage / User DB · แยกตามบัญชี) · จัดกลุ่มตามคู่แข่งขันอัตโนมัติ
+          บันทึกอัตโนมัติ (สูงสุด {MAX_SERIES_GAMES} เกมล่าสุด · ปัจจุบัน{" "}
+          <strong className={games.length >= MAX_SERIES_GAMES - 10 ? "text-gold" : "text-ink"}>
+            {games.length}/{MAX_SERIES_GAMES}
+          </strong>
+          {games.length >= MAX_SERIES_GAMES ? " — ครบโควตาแล้ว เกมใหม่จะทับรายการเก่าสุด" : ""})
         </span>
         <button
           type="button"

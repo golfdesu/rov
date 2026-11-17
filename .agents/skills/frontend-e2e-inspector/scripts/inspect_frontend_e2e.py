@@ -21,14 +21,15 @@ if str(REPO_ROOT) not in sys.path:
 from fastapi.testclient import TestClient  # noqa: E402
 
 from src.api import app  # noqa: E402
+from src.config import config  # noqa: E402
 
 client = TestClient(app)
 
 
 def audit_bundle_integrity() -> None:
-    print("[1/4] Auditing Frontend Production Bundle (frontend/dist/)...")
-    dist_dir = REPO_ROOT / "frontend" / "dist"
-    assert dist_dir.is_dir(), f"frontend/dist/ directory not found at {dist_dir}. Run 'npm run build' first."
+    dist_dir = config.resolve_frontend_dist()
+    print(f"[1/4] Auditing Frontend Bundle ({dist_dir.relative_to(REPO_ROOT)})...")
+    assert dist_dir.is_dir(), f"Frontend dist directory not found at {dist_dir}. Run Vite build first."
 
     index_html = dist_dir / "index.html"
     assert index_html.is_file(), f"index.html missing at {index_html}"
@@ -118,8 +119,12 @@ def main() -> None:
     print("=" * 72)
     audit_bundle_integrity()
     audit_hero_avatars()
-    audit_hero_skill_media()
-    audit_item_card_media()
+    if config.is_production:
+        print("[3/4] Skipping Combat Lab hero media audit in production (dev-only route).")
+        print("[4/4] Skipping Combat Lab item media audit in production (dev-only route).")
+    else:
+        audit_hero_skill_media()
+        audit_item_card_media()
     print("=" * 72)
     print("[PASS] Frontend E2E assets and static endpoints verified healthy.")
     print("=" * 72)

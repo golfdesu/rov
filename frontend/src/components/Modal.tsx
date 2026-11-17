@@ -76,7 +76,7 @@ export function Modal({ labelledBy, className = "", initialFocusRef, onClose, ch
         aria-modal="true"
         aria-labelledby={labelledBy}
         tabIndex={-1}
-        className={`flex w-full flex-col rounded-lg border border-line bg-panel shadow-2xl outline-none clip-chamfer ${className}`}
+        className={`flex max-h-[92dvh] w-full flex-col overflow-y-auto rounded-lg border border-line bg-panel shadow-2xl outline-none clip-chamfer ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {children}
