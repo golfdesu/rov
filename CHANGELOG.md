@@ -27,6 +27,26 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-18 19:18 (UTC+7) — Fix GitHub Actions CI Pytest Failure on Gitignored `item/` Media
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **CI-Safe Item Screenshot Tests (`tests/test_api.py`):**
+  - Root cause of GitHub Actions CI failures (`test_combat_stats_rejects_bad_build` & `test_item_screenshots_endpoint`): assertions checked real `.jpg` counts in `item/`, which is gitignored (`.gitignore`) and absent on `ubuntu-latest` CI runners.
+  - Gated real-disk `item/` file count checks behind `api_mod.ITEMS_DIR.is_dir()` (matching the existing `HEROES_DIR` pattern in `test_hero_screenshots_endpoint`), while still unconditionally validating `folder` alias resolution, `pages_info` manifest metadata, and traversal protection.
+  - Added `tmp_path` + `monkeypatch` mock `ITEMS_DIR` assertions covering single-card items (`Amulet of Longevity`), natural page sorting (`item_card_1..4.jpg` for `Aquaflame - Accelerate`), and aliases (`Rankbreaker`, `Troy's Medallion`, `Fafnir`) so CI verifies enumeration and sorting logic cleanly.
+
+### 📁 Modified Files
+- `tests/test_api.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check .` & `ruff format --check .`: `All checks passed!`, `116 files already formatted`.
+- `pytest -q --tb=short tests/test_api.py` (local Windows with `item/`): `36 passed, 1 warning in 6.95s`.
+- Clean tracked-files CI simulation clone (without gitignored `item/` / `heroes/`): `pytest -q --tb=short` -> `130 passed, 1 warning in 36.09s` (exit code 0).
+
+---
+
 ## 📅 2026-11-18 18:20 (UTC+7) — Manual-Only Side Control, UX/UI Skill Gate (`audit_ux_ui.py`), & WCAG Target Fix
 **Agent:** Antigravity
 

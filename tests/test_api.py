@@ -303,10 +303,13 @@ def test_combat_stats_rejects_bad_build():
     assert duel_res.status_code == 200
     assert duel_res.json()["simulation"]["a"]["kiting"]["interval_multiplier"] > 1.0
 
+    import src.api as api_mod
+
     item_alias = client.get("/combat/item-screenshots/Rankbreaker")
     assert item_alias.status_code == 200
     assert item_alias.json()["folder"] == "Broken Spears"
-    assert len(item_alias.json()["screenshots"]) >= 1
+    if (api_mod.ITEMS_DIR / "Broken Spears").is_dir():
+        assert len(item_alias.json()["screenshots"]) >= 1
 
 
 def test_draft_session_persistence_endpoints(tmp_path, monkeypatch):
@@ -819,14 +822,17 @@ def test_hero_screenshots_endpoint(tmp_path, monkeypatch):
     ]
 
 
-def test_item_screenshots_endpoint():
+def test_item_screenshots_endpoint(tmp_path, monkeypatch):
+    import src.api as api_mod
+
     # 1. Single card item
     res_amulet = client.get("/combat/item-screenshots/Amulet%20of%20Longevity")
     assert res_amulet.status_code == 200
     data_amulet = res_amulet.json()
     assert data_amulet["item"] == "Amulet of Longevity"
-    assert len(data_amulet["screenshots"]) == 1
-    assert data_amulet["screenshots"][0].endswith("item_card.jpg")
+    if api_mod.ITEMS_DIR.is_dir():
+        assert len(data_amulet["screenshots"]) == 1
+        assert data_amulet["screenshots"][0].endswith("item_card.jpg")
     assert data_amulet["details"] is not None
     assert data_amulet["details"]["category"] == "defense"
 
@@ -835,13 +841,14 @@ def test_item_screenshots_endpoint():
     assert res_aqua.status_code == 200
     data_aqua = res_aqua.json()
     assert data_aqua["item"] == "Aquaflame - Accelerate"
-    assert len(data_aqua["screenshots"]) == 4
-    assert [p.split("/")[-1] for p in data_aqua["screenshots"]] == [
-        "item_card_1.jpg",
-        "item_card_2.jpg",
-        "item_card_3.jpg",
-        "item_card_4.jpg",
-    ]
+    if api_mod.ITEMS_DIR.is_dir():
+        assert len(data_aqua["screenshots"]) == 4
+        assert [p.split("/")[-1] for p in data_aqua["screenshots"]] == [
+            "item_card_1.jpg",
+            "item_card_2.jpg",
+            "item_card_3.jpg",
+            "item_card_4.jpg",
+        ]
     assert len(data_aqua["pages_info"]) == 4
 
     # 3. Non-existent item returns empty screenshots gracefully
@@ -859,12 +866,50 @@ def test_item_screenshots_endpoint():
     res_troy = client.get("/combat/item-screenshots/Troy's%20Medallion")
     assert res_troy.status_code == 200
     assert res_troy.json()["folder"] == "Medallion of Troy"
-    assert len(res_troy.json()["screenshots"]) == 1
+    if api_mod.ITEMS_DIR.is_dir():
+        assert len(res_troy.json()["screenshots"]) == 1
 
     res_fafnir = client.get("/combat/item-screenshots/Fafnir")
     assert res_fafnir.status_code == 200
     assert res_fafnir.json()["folder"] == "Fafnir's Talon"
-    assert len(res_fafnir.json()["screenshots"]) == 1
+    if api_mod.ITEMS_DIR.is_dir():
+        assert len(res_fafnir.json()["screenshots"]) == 1
+
+    # 6. Mock ITEMS_DIR so file enumeration, natural page sorting, and aliases run on CI without gitignored item/
+    mock_items_dir = tmp_path / "mock_items"
+    (mock_items_dir / "Amulet of Longevity").mkdir(parents=True)
+    (mock_items_dir / "Amulet of Longevity" / "item_card.jpg").write_text("fake")
+    (mock_items_dir / "Aquaflame - Accelerate").mkdir(parents=True)
+    for page_num in (4, 1, 3, 2):
+        (mock_items_dir / "Aquaflame - Accelerate" / f"item_card_{page_num}.jpg").write_text("fake")
+    (mock_items_dir / "Broken Spears").mkdir(parents=True)
+    (mock_items_dir / "Broken Spears" / "item_card.jpg").write_text("fake")
+    (mock_items_dir / "Medallion of Troy").mkdir(parents=True)
+    (mock_items_dir / "Medallion of Troy" / "item_card.jpg").write_text("fake")
+    (mock_items_dir / "Fafnir's Talon").mkdir(parents=True)
+    (mock_items_dir / "Fafnir's Talon" / "item_card.jpg").write_text("fake")
+
+    monkeypatch.setattr(api_mod, "ITEMS_DIR", mock_items_dir)
+
+    m_amulet = client.get("/combat/item-screenshots/Amulet%20of%20Longevity").json()
+    assert m_amulet["screenshots"] == ["/items-media/Amulet of Longevity/item_card.jpg"]
+
+    m_aqua = client.get("/combat/item-screenshots/Aquaflame%20-%20Accelerate").json()
+    assert [p.split("/")[-1] for p in m_aqua["screenshots"]] == [
+        "item_card_1.jpg",
+        "item_card_2.jpg",
+        "item_card_3.jpg",
+        "item_card_4.jpg",
+    ]
+    assert client.get("/combat/item-screenshots/Rankbreaker").json()["screenshots"] == [
+        "/items-media/Broken Spears/item_card.jpg"
+    ]
+    assert client.get("/combat/item-screenshots/Troy's%20Medallion").json()["screenshots"] == [
+        "/items-media/Medallion of Troy/item_card.jpg"
+    ]
+    assert client.get("/combat/item-screenshots/Fafnir").json()["screenshots"] == [
+        "/items-media/Fafnir's Talon/item_card.jpg"
+    ]
 
 
 def test_heroes_endpoint_returns_nonzero_presence_rate():
