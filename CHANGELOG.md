@@ -27,6 +27,30 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-18 17:04 (UTC+7) — UX/UI Accessibility & Touch-Target Polish + Portal ConfirmDialog (`ConfirmDialog.tsx`)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **WCAG AA Color Contrast ([frontend/src/index.css](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/index.css#L10-L11), [DESIGN.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/DESIGN.md#L19)):**
+  - Updated `--color-dim` from `#4b5878` (`2.45–2.78:1`) to **`#7383a5`** (`4.56:1` on `panel-2`, `4.88:1` on `panel`, `5.17:1` on `bg` — passing WCAG AA `>= 4.5:1` across all dark surfaces) and raised `--color-muted` to `#94a3c4` to maintain clear secondary-vs-tertiary hierarchy.
+- **Touch Target & Readability Fixes ([ScoreBar.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/ScoreBar.tsx), [DraftBoardView.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftBoardView.tsx), [AuthModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/AuthModal.tsx), [GlobalBanModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/GlobalBanModal.tsx)):**
+  - Added `h-full min-h-6` to `<select aria-label="Regional League Meta">` (`16px` -> `32px`), bumped mobile `ScoreBar` & Series Bar controls to `h-8` (`32px`), raised desktop `G1..G7` buttons (`h-6 min-w-6.5`, `>= 24px`), added `inline-flex min-h-6 items-center py-1` on footer `/privacy` link (`>= 24px`), and bumped modal Thai action/footer text from `text-[10px]` to `text-[11px]`.
+- **In-Theme Portal Confirmation Dialog ([ConfirmDialog.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/ConfirmDialog.tsx), [ScoreBar.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/ScoreBar.tsx), [DraftBoardView.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftBoardView.tsx), [DraftHistoryModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftHistoryModal.tsx)):**
+  - Added `ConfirmDialog` rendered via `createPortal(..., document.body)` (preventing `backdrop-blur-md` / `clip-chamfer` stacking-context clipping) and replaced all `6` native `window.confirm()` calls (Reset Draft, Series Clear, Group Delete, GlobalBan Game Revert, and Locked Game prompt).
+
+### 📁 Modified Files
+- `frontend/src/components/ConfirmDialog.tsx` (new)
+- `frontend/src/index.css`, `DESIGN.md`
+- `frontend/src/components/ScoreBar.tsx`, `DraftBoardView.tsx`, `DraftHistoryModal.tsx`, `GlobalBanModal.tsx`, `AuthModal.tsx`
+- `frontend/dist/`, `frontend/dist-prod/`, `CHANGELOG.md`
+
+### 🧪 Verification
+- **Frontend Lint & Builds:** `cd frontend && npm run lint` (`oxlint`: `0 warnings, 0 errors`, 49 files); `npm run build` (`dist/assets/index-9xSnzLbG.js` 616.00 kB, `index-Duvtyjx6.css` 108.83 kB) & `VITE_DRAFT_ONLY=true VITE_OUT_DIR=dist-prod npm run build` (`dist-prod/assets/index-DeskMboS.js` 424.59 kB).
+- **Playwright UX Audit (`390x844` Mobile & `1280x800` Desktop):** `errors: []`, `nativeDialogs: []`, `below24: 0` across Mobile Landing (`9` controls), Mobile Board (`160` controls), and Desktop Landing (`8` controls); `overflowX: False`; verified custom `ConfirmDialog` for both Locked Game 2 and Draft Reset interactions.
+- **E2E, Backend & Lint:** `python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py` `[PASS]`; `pytest -q --tb=short tests/test_api.py` (`36 passed, 1 warning in 5.16s`); `ruff check .` (`All checks passed!`).
+
+---
+
 ## 📅 2026-11-18 13:36 (UTC+7) — Upgrade ERAWAN HPO Sweep to 80 Trials & Gap-Aware TPE Exploration (`hpo_sota_optuna.py`, `run_hpo_rov_h100.sbatch`)
 **Agent:** Antigravity
 

@@ -25,6 +25,7 @@ import {
 import { displayName } from "../utils/heroNames";
 import { AiPanel } from "./AiPanel";
 import { Alert } from "./Alert";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { DraftHistoryModal } from "./DraftHistoryModal";
 import { FinishGameModal } from "./FinishGameModal";
 import { type GlobalBanCategoryKey, GlobalBanModal } from "./GlobalBanModal";
@@ -108,6 +109,14 @@ export function DraftBoardView({
   const [isNewSeriesModalOpen, setIsNewSeriesModalOpen] = useState(false);
   const [isFinishGameModalOpen, setIsFinishGameModalOpen] = useState(false);
   const [editingPickLane, setEditingPickLane] = useState<{ heroName: string; side: "blue" | "red" } | null>(null);
+  const [confirmState, setConfirmState] = useState<{
+    title: string;
+    message: string;
+    confirmLabel: string;
+    cancelLabel?: string;
+    tone?: "gold" | "danger";
+    onConfirm: () => void;
+  } | null>(null);
   const [swapCount, setSwapCount] = useState(0);
 
   const handleSwapSides = () => {
@@ -133,6 +142,24 @@ export function DraftBoardView({
   const blueOriginGames = globalBans.blueSideTeam === "A" ? originMap.teamAGameByHero : originMap.teamBGameByHero;
   const redOriginGames = globalBans.blueSideTeam === "A" ? originMap.teamBGameByHero : originMap.teamAGameByHero;
 
+  const promptLockedGame = (g: number) => {
+    const unlockStatus = getGameUnlockStatus(g, globalBans, seriesGames);
+    const missingStr = unlockStatus.missingGames.map((mg) => `Game ${mg}`).join(", ");
+    const teamAName = globalBans.teamAName || "Team A";
+    const teamBName = globalBans.teamBName || "Team B";
+    setConfirmState({
+      title: `Game ${g} ยังไม่ปลดล็อก`,
+      message: `เงื่อนไขการลัดไป Game ${g}:\n• ต้องบันทึกผล ${missingStr} ให้เสร็จก่อน หรือ\n• ใส่ Global Ban ของทั้งสองทีมอย่างน้อยฝั่งละ ${unlockStatus.requiredCount} ตัวละคร\n\nสถานะปัจจุบัน:\n• ${teamAName}: ${unlockStatus.aCount}/${unlockStatus.requiredCount} ตัว\n• ${teamBName}: ${unlockStatus.bCount}/${unlockStatus.requiredCount} ตัว\n\nต้องการเปิดหน้าต่าง Global Ban เพื่อตั้งค่าฮีโร่ทันทีหรือไม่?`,
+      confirmLabel: "เปิด Global Ban",
+      cancelLabel: "ปิด",
+      tone: "gold",
+      onConfirm: () => {
+        setConfirmState(null);
+        setGlobalBanModalCat(blueCategoryKey);
+      },
+    });
+  };
+
   const removeUsedHero = (catKey: "teamAUsed" | "teamBUsed", heroName: string) => {
     const candidateState = {
       ...globalBans,
@@ -141,12 +168,18 @@ export function DraftBoardView({
     const statusAfter = getGameUnlockStatus(globalBans.gameNumber, candidateState, seriesGames);
     if (globalBans.gameNumber > 1 && !statusAfter.isUnlocked) {
       const maxUnlocked = getMaxUnlockedGame(candidateState, seriesGames);
-      const ok = window.confirm(
-        `การลบ ${displayName(heroName)} จะทำให้จำนวน Global Ban ไม่ครบตามเงื่อนไขของ Game ${globalBans.gameNumber} (ต้องมีอย่างน้อยฝั่งละ ${statusAfter.requiredCount} ตัว)\n\nระบบจะย้อนกลับไปยัง Game ${maxUnlocked} อัตโนมัติ ยืนยันหรือไม่?`,
-      );
-      if (!ok) return;
-      setIsFinishGameModalOpen(false);
-      selectGameNumber(maxUnlocked, candidateState, true);
+      setConfirmState({
+        title: `ยืนยันการลบ ${displayName(heroName)}?`,
+        message: `การลบ ${displayName(heroName)} จะทำให้จำนวน Global Ban ไม่ครบตามเงื่อนไขของ Game ${globalBans.gameNumber} (ต้องมีอย่างน้อยฝั่งละ ${statusAfter.requiredCount} ตัว)\n\nระบบจะย้อนกลับไปยัง Game ${maxUnlocked} อัตโนมัติ`,
+        confirmLabel: `ย้อนไป Game ${maxUnlocked}`,
+        cancelLabel: "ยกเลิก",
+        tone: "danger",
+        onConfirm: () => {
+          setConfirmState(null);
+          setIsFinishGameModalOpen(false);
+          selectGameNumber(maxUnlocked, candidateState, true);
+        },
+      });
       return;
     }
     setGlobalBans(candidateState);
@@ -179,7 +212,8 @@ export function DraftBoardView({
       isHistoryModalOpen ||
       isNewSeriesModalOpen ||
       isFinishGameModalOpen ||
-      editingPickLane !== null
+      editingPickLane !== null ||
+      confirmState !== null
     ) {
       return;
     }
@@ -223,6 +257,7 @@ export function DraftBoardView({
     isNewSeriesModalOpen,
     isFinishGameModalOpen,
     editingPickLane,
+    confirmState,
     undo,
     redo,
     lockHero,
@@ -264,7 +299,7 @@ export function DraftBoardView({
                 onClick={() => setIsNewSeriesModalOpen(true)}
                 aria-label="เริ่มแมตช์ / ซีรีส์ใหม่"
                 title="เริ่มแมตช์ / ซีรีส์ใหม่ (แยกประวัติออกจากแมตช์เดิม)"
-                className="flex h-7 shrink-0 items-center gap-1.5 border border-gold bg-gold px-2 font-display text-xs font-bold tracking-wide whitespace-nowrap text-bg transition-colors hover:bg-gold/90"
+                className="flex h-8 shrink-0 items-center gap-1.5 border border-gold bg-gold px-2 font-display text-xs font-bold tracking-wide whitespace-nowrap text-bg transition-colors hover:bg-gold/90 sm:h-7"
               >
                 <PlusCircle className="h-3.5 w-3.5 shrink-0" />
                 <span className="hidden sm:inline">+ แมตช์ใหม่</span>
@@ -279,21 +314,13 @@ export function DraftBoardView({
                     const g = Number(e.target.value);
                     const unlockStatus = getGameUnlockStatus(g, globalBans, seriesGames);
                     if (!unlockStatus.isUnlocked) {
-                      const missingStr = unlockStatus.missingGames.map((mg) => `Game ${mg}`).join(", ");
-                      const teamAName = globalBans.teamAName || "Team A";
-                      const teamBName = globalBans.teamBName || "Team B";
-                      const wantOpenModal = window.confirm(
-                        `Game ${g} ยังไม่ปลดล็อก!\n\nเงื่อนไขการลัดไป Game ${g}:\n- ต้องบันทึกผล ${missingStr} ให้เสร็จก่อน หรือ\n- ใส่ Global Ban ของทั้งสองทีมอย่างน้อยฝั่งละ ${unlockStatus.requiredCount} ตัวละคร\n\nสถานะปัจจุบัน:\n- ${teamAName}: ${unlockStatus.aCount}/${unlockStatus.requiredCount} ตัว\n- ${teamBName}: ${unlockStatus.bCount}/${unlockStatus.requiredCount} ตัว\n\nต้องการเปิดหน้าต่าง Global Ban เพื่อตั้งค่าฮีโร่ทันทีหรือไม่?`,
-                      );
-                      if (wantOpenModal) {
-                        setGlobalBanModalCat(blueCategoryKey);
-                      }
+                      promptLockedGame(g);
                       return;
                     }
                     setIsFinishGameModalOpen(false);
                     selectGameNumber(g);
                   }}
-                  className="h-7 w-[86px] max-w-[86px] truncate border border-line bg-panel px-1.5 font-mono text-xs font-bold text-gold cursor-pointer focus:border-gold/60 focus:outline-none sm:w-auto sm:max-w-none sm:px-2"
+                  className="h-8 w-[86px] max-w-[86px] truncate border border-line bg-panel px-1.5 font-mono text-xs font-bold text-gold cursor-pointer focus:border-gold/60 focus:outline-none sm:h-7 sm:w-auto sm:max-w-none sm:px-2"
                 >
                   {[1, 2, 3, 4, 5, 6, 7].map((g) => {
                     const unlockStatus = getGameUnlockStatus(g, globalBans, seriesGames);
@@ -331,26 +358,18 @@ export function DraftBoardView({
                       type="button"
                       onClick={() => {
                         if (!isUnlocked) {
-                          const missingStr = unlockStatus.missingGames.map((mg) => `Game ${mg}`).join(", ");
-                          const teamAName = globalBans.teamAName || "Team A";
-                          const teamBName = globalBans.teamBName || "Team B";
-                          const wantOpenModal = window.confirm(
-                            `Game ${g} ยังไม่ปลดล็อก!\n\nเงื่อนไขการลัดไป Game ${g}:\n- ต้องบันทึกผล ${missingStr} ให้เสร็จก่อน หรือ\n- ใส่ Global Ban ของทั้งสองทีมอย่างน้อยฝั่งละ ${unlockStatus.requiredCount} ตัวละคร\n\nสถานะปัจจุบัน:\n- ${teamAName}: ${unlockStatus.aCount}/${unlockStatus.requiredCount} ตัว\n- ${teamBName}: ${unlockStatus.bCount}/${unlockStatus.requiredCount} ตัว\n\nต้องการเปิดหน้าต่าง Global Ban เพื่อตั้งค่าฮีโร่ทันทีหรือไม่?`,
-                          );
-                          if (wantOpenModal) {
-                            setGlobalBanModalCat(blueCategoryKey);
-                          }
+                          promptLockedGame(g);
                           return;
                         }
                         setIsFinishGameModalOpen(false);
                         selectGameNumber(g);
                       }}
                       title={buttonTitle}
-                      className={`h-5.5 px-1.5 font-mono text-[11px] font-bold transition-colors ${
+                      className={`h-6 min-w-6.5 px-1.5 font-mono text-[11px] font-bold transition-colors ${
                         isCurrent
                           ? "bg-gold text-bg"
                           : !isUnlocked
-                            ? "cursor-not-allowed text-dim/40 hover:bg-panel-2/40 hover:text-muted"
+                            ? "cursor-not-allowed text-dim hover:bg-panel-2/40 hover:text-muted"
                             : "text-muted hover:bg-panel-2 hover:text-ink"
                       }`}
                     >
@@ -368,7 +387,7 @@ export function DraftBoardView({
                 onClick={handleSwapSides}
                 aria-label="สลับฝั่งทีม"
                 title={`สลับฝั่งทีม (${bName} ⇄ ${rName}) — ฮีโร่ที่แต่ละทีมเคยใช้จะย้ายฝั่งตามทีมไปอัตโนมัติ`}
-                className="flex h-7 shrink-0 items-center gap-1.5 border border-gold/60 bg-gold/10 px-2 font-display text-xs font-bold whitespace-nowrap text-gold transition-colors hover:bg-gold hover:text-bg"
+                className="flex h-8 shrink-0 items-center gap-1.5 border border-gold/60 bg-gold/10 px-2 font-display text-xs font-bold whitespace-nowrap text-gold transition-colors hover:bg-gold hover:text-bg sm:h-7"
               >
                 <ArrowLeftRight
                   className={`h-3.5 w-3.5 shrink-0 transition-transform duration-300 ${
@@ -383,7 +402,7 @@ export function DraftBoardView({
                 onClick={() => setIsHistoryModalOpen(true)}
                 aria-label="ประวัติซีรีส์"
                 title={`ดูประวัติการดราฟต์แยกตามกลุ่มซีรีส์ (บันทึกสูงสุด ${MAX_SERIES_GAMES} เกมล่าสุด)`}
-                className="flex h-7 shrink-0 items-center gap-1.5 border border-gold/45 bg-panel-2/80 px-2 font-display text-xs font-semibold whitespace-nowrap text-ink transition-colors hover:border-gold hover:bg-panel-2"
+                className="flex h-8 shrink-0 items-center gap-1.5 border border-gold/45 bg-panel-2/80 px-2 font-display text-xs font-semibold whitespace-nowrap text-ink transition-colors hover:border-gold hover:bg-panel-2 sm:h-7"
               >
                 <History className="h-3.5 w-3.5 shrink-0 text-gold" />
                 <span className="hidden md:inline">ประวัติ</span>
@@ -406,7 +425,7 @@ export function DraftBoardView({
                     ? "บันทึกผลการแข่งขัน + ฮีโร่ที่ทั้ง 2 ทีมเลือกเข้า Global Ban ของแต่ละทีม และเริ่มเกมถัดไป"
                     : `ต้องดราฟต์ให้ครบทั้ง 10 ตัวก่อนจึงจะจบเกมได้ (ปัจจุบัน ${bluePicks.length + redPicks.length}/10)`
                 }
-                className={`flex h-7 shrink-0 items-center gap-1.5 border px-2 font-display text-xs font-bold whitespace-nowrap transition-colors disabled:pointer-events-none disabled:opacity-35 ${
+                className={`flex h-8 shrink-0 items-center gap-1.5 border px-2 font-display text-xs font-bold whitespace-nowrap transition-colors disabled:pointer-events-none disabled:opacity-35 sm:h-7 ${
                   isDraftComplete
                     ? "border-gold bg-gold text-bg hover:bg-gold/90"
                     : "border-good/60 bg-good/15 text-good hover:bg-good hover:text-bg"
@@ -538,6 +557,18 @@ export function DraftBoardView({
             setIsFinishGameModalOpen(false);
           }}
           onClose={() => setIsFinishGameModalOpen(false)}
+        />
+      )}
+
+      {confirmState && (
+        <ConfirmDialog
+          title={confirmState.title}
+          message={confirmState.message}
+          confirmLabel={confirmState.confirmLabel}
+          cancelLabel={confirmState.cancelLabel}
+          tone={confirmState.tone}
+          onConfirm={confirmState.onConfirm}
+          onCancel={() => setConfirmState(null)}
         />
       )}
 

@@ -268,7 +268,7 @@ export function GlobalBanModal({
             onClick={clearAll}
             disabled={totalCount === 0}
             title="ล้างข้อมูลฮีโร่ที่เคยใช้ทั้งหมด"
-            className="flex h-7 shrink-0 items-center gap-1 border border-red/40 bg-red/10 px-2 font-display text-[10px] font-semibold tracking-wide whitespace-nowrap text-red transition-colors hover:bg-red hover:text-ink disabled:pointer-events-none disabled:opacity-35 sm:h-8 sm:gap-1.5 sm:px-2.5 sm:text-[11px]"
+            className="flex h-7 shrink-0 items-center gap-1 border border-red/40 bg-red/10 px-2 font-display text-[11px] font-semibold tracking-wide whitespace-nowrap text-red transition-colors hover:bg-red hover:text-ink disabled:pointer-events-none disabled:opacity-35 sm:h-8 sm:gap-1.5 sm:px-2.5"
           >
             <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             <span>ล้างทั้งหมด</span>
@@ -444,7 +444,7 @@ export function GlobalBanModal({
             </div>
           )}
           <div className="mb-1 flex items-center justify-between gap-2 sm:mb-1.5">
-            <span className="truncate text-[10px] text-muted sm:hidden">
+            <span className="truncate text-[11px] text-muted sm:hidden">
               {currentCat.label} ({activeList.length})
             </span>
             <span className="hidden text-[11px] text-muted sm:inline">{currentCat.desc}</span>
@@ -634,7 +634,7 @@ export function GlobalBanModal({
 
       {/* Footer */}
       <div className="flex shrink-0 items-center justify-between gap-2 border-t border-line bg-bg px-3 py-2 sm:px-4 sm:py-2.5">
-        <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[10px] text-muted sm:gap-3 sm:text-xs">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[11px] text-muted sm:gap-3 sm:text-xs">
           <span>
             {globalBans.teamAName}
             <span className="hidden sm:inline"> ({teamAIsBlue ? "Blue" : "Red"})</span>:{" "}

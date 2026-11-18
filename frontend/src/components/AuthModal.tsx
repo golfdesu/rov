@@ -577,7 +577,10 @@ export function AuthLanding({
       <footer className="relative z-10 border-t border-line">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-3 text-[11px] text-dim sm:px-6">
           <span>© 2026 MiniDraft · อ้างอิงเมต้าโปรลีกระดับโลก</span>
-          <a href="/privacy" className="underline decoration-line-strong underline-offset-2 hover:text-muted">
+          <a
+            href="/privacy"
+            className="inline-flex min-h-6 items-center py-1 underline decoration-line-strong underline-offset-2 hover:text-muted"
+          >
             นโยบายความเป็นส่วนตัว (Privacy Policy)
           </a>
         </div>

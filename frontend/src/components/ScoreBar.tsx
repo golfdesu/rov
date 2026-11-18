@@ -1,5 +1,7 @@
 import { Globe, Redo2, RotateCcw, Sparkles, Undo2 } from "lucide-react";
+import { useState } from "react";
 import { type DraftStep, type LeagueCode } from "../types/draft";
+import { ConfirmDialog } from "./ConfirmDialog";
 
 const LEAGUE_OPTIONS: { code: LeagueCode; label: string; title: string }[] = [
   {
@@ -62,6 +64,7 @@ export function ScoreBar({
   canUndo,
   canRedo = false,
 }: ScoreBarProps) {
+  const [confirmResetOpen, setConfirmResetOpen] = useState(false);
   const safeBlue = Number.isFinite(blueWinRate) ? blueWinRate : 50.0;
   const blue = Math.min(Math.max(safeBlue, 0), 100);
   const red = 100 - blue;
@@ -150,7 +153,7 @@ export function ScoreBar({
           {league && setLeague && (
             <label
               title="Select regional pro league meta conditioning"
-              className="inline-flex h-7.5 items-center gap-1 border border-line-strong bg-panel px-1.5 font-mono text-[10.5px] font-bold text-gold sm:h-8.5 sm:px-2 sm:text-[11px] transition-colors hover:border-gold/60"
+              className="inline-flex h-8 items-center gap-1 border border-line-strong bg-panel px-1.5 font-mono text-[11px] font-bold text-gold sm:h-8.5 sm:px-2 transition-colors hover:border-gold/60"
             >
               <Globe className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0 text-gold" />
               <span className="hidden font-mono text-[10px] uppercase tracking-wider text-dim 2xl:inline">
@@ -160,7 +163,7 @@ export function ScoreBar({
                 aria-label="Regional League Meta"
                 value={league}
                 onChange={(e) => setLeague(e.target.value as LeagueCode)}
-                className="bg-transparent font-mono text-[10.5px] sm:text-[11px] font-bold text-gold cursor-pointer focus:outline-none"
+                className="h-full min-h-6 bg-transparent font-mono text-[11px] font-bold text-gold cursor-pointer focus:outline-none"
               >
                 {LEAGUE_OPTIONS.map((opt) => (
                   <option key={opt.code} value={opt.code} className="bg-panel text-ink py-1">
@@ -180,7 +183,7 @@ export function ScoreBar({
                   ? "Lookahead Minimax Search เปิดอยู่ (ค้นหาล่วงหน้าหลายเทิร์น — ช้าลงเล็กน้อยแต่แม่นยำขึ้น)"
                   : "เปิดโหมด Lookahead Minimax Search เพื่อคำนวณตอบโต้ล่วงหน้า 3-4 เทิร์น"
               }
-              className={`inline-flex h-7.5 items-center gap-1 border px-1.5 font-mono text-[10px] font-bold transition-colors sm:h-8.5 sm:px-2 sm:text-[11px] ${
+              className={`inline-flex h-8 min-w-8 items-center justify-center gap-1 border px-1.5 font-mono text-[11px] font-bold transition-colors sm:h-8.5 sm:px-2 ${
                 useLookahead
                   ? "border-gold bg-gold/15 text-gold shadow-sm"
                   : "border-line-strong bg-panel text-muted hover:border-gold/50 hover:text-ink"
@@ -196,7 +199,7 @@ export function ScoreBar({
             disabled={!canUndo}
             title="Undo ย้อนกลับ (Ctrl+Z)"
             aria-label="Undo"
-            className="flex h-7.5 w-7.5 items-center justify-center border border-ink/30 bg-panel-2 font-display text-xs font-bold text-ink transition-colors hover:border-ink hover:bg-line-strong disabled:pointer-events-none disabled:opacity-35 sm:h-8.5 sm:w-8.5"
+            className="flex h-8 w-8 items-center justify-center border border-ink/30 bg-panel-2 font-display text-xs font-bold text-ink transition-colors hover:border-ink hover:bg-line-strong disabled:pointer-events-none disabled:opacity-35 sm:h-8.5 sm:w-8.5"
           >
             <Undo2 className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
           </button>
@@ -206,19 +209,17 @@ export function ScoreBar({
             disabled={!canRedo}
             title="Forward เดินหน้า (Ctrl+Y / Ctrl+Shift+Z)"
             aria-label="Forward"
-            className="flex h-7.5 w-7.5 items-center justify-center border border-ink/30 bg-panel-2 font-display text-xs font-bold text-ink transition-colors hover:border-ink hover:bg-line-strong disabled:pointer-events-none disabled:opacity-35 sm:h-8.5 sm:w-8.5"
+            className="flex h-8 w-8 items-center justify-center border border-ink/30 bg-panel-2 font-display text-xs font-bold text-ink transition-colors hover:border-ink hover:bg-line-strong disabled:pointer-events-none disabled:opacity-35 sm:h-8.5 sm:w-8.5"
           >
             <Redo2 className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
           </button>
           <button
             type="button"
-            onClick={() => {
-              if (window.confirm("เริ่มดราฟต์ใหม่ทั้งหมด?")) onReset();
-            }}
+            onClick={() => setConfirmResetOpen(true)}
             disabled={!canUndo && !canRedo}
             title="Reset draft"
             aria-label="Reset draft"
-            className="flex h-7.5 w-7.5 items-center justify-center gap-1.5 border border-red/50 bg-red/10 font-display text-xs font-bold tracking-wide text-red transition-colors hover:bg-red hover:text-ink disabled:pointer-events-none disabled:opacity-35 sm:h-8.5 sm:w-auto sm:px-3"
+            className="flex h-8 w-8 items-center justify-center gap-1.5 border border-red/50 bg-red/10 font-display text-xs font-bold tracking-wide text-red transition-colors hover:bg-red hover:text-ink disabled:pointer-events-none disabled:opacity-35 sm:h-8.5 sm:w-auto sm:px-3"
           >
             <RotateCcw className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
             <span className="hidden xl:inline">RESET</span>
@@ -232,6 +233,21 @@ export function ScoreBar({
           {winBarComponent}
         </div>
       </div>
+
+      {confirmResetOpen && (
+        <ConfirmDialog
+          title="เริ่มดราฟต์ใหม่ทั้งหมด?"
+          message="การรีเซ็ตจะล้างรายชื่อฮีโร่ที่แบนและเลือกไว้ในกระดานปัจจุบันทั้งหมด (ประวัติซีรีส์และ Global Ban ยังอยู่)"
+          confirmLabel="รีเซ็ตกระดาน"
+          cancelLabel="ยกเลิก"
+          tone="danger"
+          onConfirm={() => {
+            setConfirmResetOpen(false);
+            onReset();
+          }}
+          onCancel={() => setConfirmResetOpen(false)}
+        />
+      )}
     </header>
   );
 }

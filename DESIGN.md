@@ -16,7 +16,7 @@ Dark esports broadcast style for the draft board in `frontend/`. Tokens live in 
 | `bg` | `#070b14` | Page background (with faint blue/red corner glows) |
 | `panel` / `panel-2` | `#0c1322` / `#111a2e` | Cards, slots / bars, chips |
 | `line` / `line-strong` | `#1c2740` / `#2a3858` | Borders, dividers |
-| `ink` / `muted` / `dim` | `#e8edf7` / `#8190b0` / `#4b5878` | Primary, secondary, tertiary text |
+| `ink` / `muted` / `dim` | `#e8edf7` / `#94a3c4` / `#7383a5` | Primary, secondary, tertiary text (WCAG AA `>= 4.5:1`) |
 | `blue` / `blue-deep` | `#3b9eff` / `#0b3a73` | Blue side |
 | `red` / `red-deep` | `#ff4d5e` / `#6e1622` | Red side, ban strike, negative edges |
 | `gold` | `#f5c451` | Active step, AI #1 pick, focus ring |

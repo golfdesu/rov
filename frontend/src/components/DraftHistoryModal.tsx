@@ -16,6 +16,7 @@ import { MAX_SERIES_GAMES } from "../hooks/useDraft";
 import type { Hero, RecordedDraftGame, TeamId } from "../types/draft";
 import { getGameSeriesGroup } from "../utils/draft";
 import { displayName } from "../utils/heroNames";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { HeroPortrait } from "./HeroPortrait";
 import { Modal } from "./Modal";
 
@@ -50,6 +51,12 @@ export function DraftHistoryModal({
 }: DraftHistoryModalProps) {
   const titleId = useId();
   const [selectedGroup, setSelectedGroup] = useState<string>("ALL");
+  const [confirmState, setConfirmState] = useState<{
+    title: string;
+    message: string;
+    confirmLabel: string;
+    onConfirm: () => void;
+  } | null>(null);
 
   const groups = useMemo(() => {
     const map = new Map<string, RecordedDraftGame[]>();
@@ -140,13 +147,19 @@ export function DraftHistoryModal({
           <button
             type="button"
             disabled={games.length === 0}
-            onClick={() => {
-              if (window.confirm("ล้างประวัติซีรีส์, Global Ban และกระดานปัจจุบันทั้งหมดเพื่อเริ่มซีรีส์ใหม่?")) {
-                onClearAllSeries();
-                onClose();
-              }
-            }}
-            className="flex h-7 items-center gap-1 border border-red/40 bg-red/10 px-2 font-display text-[10px] font-semibold tracking-wide whitespace-nowrap text-red transition-colors hover:bg-red hover:text-ink disabled:pointer-events-none disabled:opacity-35 sm:h-8 sm:gap-1.5 sm:px-2.5 sm:text-[11px]"
+            onClick={() =>
+              setConfirmState({
+                title: "รีเซ็ตประวัติทั้งซีรีส์?",
+                message: "ล้างประวัติซีรีส์, Global Ban และกระดานปัจจุบันทั้งหมดเพื่อเริ่มซีรีส์ใหม่? (ไม่สามารถย้อนกลับได้)",
+                confirmLabel: "ล้างทั้งหมด",
+                onConfirm: () => {
+                  setConfirmState(null);
+                  onClearAllSeries();
+                  onClose();
+                },
+              })
+            }
+            className="flex h-7 items-center gap-1 border border-red/40 bg-red/10 px-2 font-display text-[11px] font-semibold tracking-wide whitespace-nowrap text-red transition-colors hover:bg-red hover:text-ink disabled:pointer-events-none disabled:opacity-35 sm:h-8 sm:gap-1.5 sm:px-2.5"
           >
             <RotateCcw className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             <span className="sm:hidden">รีเซ็ตทั้งหมด</span>
@@ -265,13 +278,19 @@ export function DraftHistoryModal({
                     )}
                     <button
                       type="button"
-                      onClick={() => {
-                        if (window.confirm(`ต้องการลบประวัติของกลุ่ม "${grp.name}" ทั้งหมด (${grp.count} เกม)?`)) {
-                          onDeleteGroup(grp.name);
-                        }
-                      }}
+                      onClick={() =>
+                        setConfirmState({
+                          title: `ลบประวัติกลุ่ม "${grp.name}"?`,
+                          message: `ต้องการลบประวัติทั้งหมดของกลุ่ม "${grp.name}" (${grp.count} เกม) ออกจากระบบหรือไม่?`,
+                          confirmLabel: "ลบกลุ่มนี้",
+                          onConfirm: () => {
+                            setConfirmState(null);
+                            onDeleteGroup(grp.name);
+                          },
+                        })
+                      }
                       title={`ลบประวัติเฉพาะกลุ่ม ${grp.name}`}
-                      className="flex h-6 items-center gap-1 border border-red/40 bg-red/10 px-2 font-display text-[10px] font-semibold text-red transition-colors hover:bg-red hover:text-ink"
+                      className="flex h-7 items-center gap-1 border border-red/40 bg-red/10 px-2 font-display text-[11px] font-semibold text-red transition-colors hover:bg-red hover:text-ink"
                     >
                       <Trash2 className="h-3 w-3" />
                       <span>ลบเฉพาะกลุ่มนี้</span>
@@ -473,7 +492,7 @@ export function DraftHistoryModal({
 
       {/* Footer */}
       <div className="flex shrink-0 items-center justify-between gap-2 border-t border-line bg-bg px-3 py-2 sm:px-4 sm:py-2.5">
-        <span className="min-w-0 truncate font-mono text-[10px] text-muted sm:text-xs">
+        <span className="min-w-0 truncate font-mono text-[11px] text-muted sm:text-xs">
           <span className="sm:hidden">บันทึกอัตโนมัติ · </span>
           <span className="hidden sm:inline">บันทึกอัตโนมัติ (สูงสุด {MAX_SERIES_GAMES} เกมล่าสุด · ปัจจุบัน </span>
           <strong className={games.length >= MAX_SERIES_GAMES - 10 ? "text-gold" : "text-ink"}>
@@ -491,6 +510,18 @@ export function DraftHistoryModal({
           ปิดหน้าต่าง
         </button>
       </div>
+
+      {confirmState && (
+        <ConfirmDialog
+          title={confirmState.title}
+          message={confirmState.message}
+          confirmLabel={confirmState.confirmLabel}
+          cancelLabel="ยกเลิก"
+          tone="danger"
+          onConfirm={confirmState.onConfirm}
+          onCancel={() => setConfirmState(null)}
+        />
+      )}
     </Modal>
   );
 }
