@@ -69,13 +69,17 @@ def main():
     total_effective_games = 0.0
 
     for _, row in matches_df.iterrows():
+        blue_win = int(row["blue_win"])
+        if blue_win not in (0, 1):
+            continue
         yr = int(row["year"]) if str(row.get("year", "2025")).isdigit() else 2025
         weight = get_recency_weight(yr)
         total_effective_games += weight
-        blue_win = int(row["blue_win"])
 
-        b_picks = [row[c] for c in blue_pick_cols if row[c] in stats]
-        r_picks = [row[c] for c in red_pick_cols if row[c] in stats]
+        b_picks_by_lane = [(idx, row[c]) for idx, c in enumerate(blue_pick_cols) if row[c] in stats]
+        r_picks_by_lane = [(idx, row[c]) for idx, c in enumerate(red_pick_cols) if row[c] in stats]
+        b_picks = [h for _, h in b_picks_by_lane]
+        r_picks = [h for _, h in r_picks_by_lane]
         b_bans = [row[c] for c in blue_ban_cols if row[c] in stats]
         r_bans = [row[c] for c in red_ban_cols if row[c] in stats]
         b_bans_p2 = [row[c] for c in blue_ban_cols[2:4] if row[c] in stats]
@@ -107,7 +111,7 @@ def main():
                 co_p2ban_same_team[(hp, hb)] += weight
 
         # Blue picks (h1=DS, h2=Jungle, h3=Mid, h4=Dragon/Carry, h5=Roam)
-        for idx, h in enumerate(b_picks):
+        for idx, h in b_picks_by_lane:
             stats[h]["picks"] += 1
             stats[h]["weighted_picks"] += weight
             stats[h]["blue_picks"] += 1
@@ -118,7 +122,7 @@ def main():
                 stats[h][lane_keys[idx]] += weight
 
         # Red picks (h1=DS, h2=Jungle, h3=Mid, h4=Dragon/Carry, h5=Roam)
-        for idx, h in enumerate(r_picks):
+        for idx, h in r_picks_by_lane:
             stats[h]["picks"] += 1
             stats[h]["weighted_picks"] += weight
             stats[h]["red_picks"] += 1

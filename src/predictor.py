@@ -168,7 +168,8 @@ class RoVDraftPredictor:
         for g, m in enumerate(matches):
             is_2026 = int(m.get("year", 0)) == 2026 or "2026" in m.get("series_id", "") or "2026" in m.get("date", "")
             for row, side, opp in ((2 * g, "blue", "red"), (2 * g + 1, "red", "blue")):
-                won[row] = bool(m.get("blue_win")) == (side == "blue")
+                bw = m.get("blue_win")
+                won[row] = (bw == 1) if side == "blue" else (bw == 0)
                 side_bans = m.get(f"{side}_bans", [])
                 side_picks = m.get(f"{side}_picks", [])
                 bans[row, [ids[h] for h in side_bans if h in ids]] = 1.0
@@ -306,10 +307,18 @@ class RoVDraftPredictor:
                 "telannas": "Tel'Annas",
                 "flowborn": "Flowborn (Marksman)",
                 "flowborn mm": "Flowborn (Marksman)",
+                "flowborn archer": "Flowborn (Marksman)",
+                "flowborn (archer)": "Flowborn (Marksman)",
                 "flowborn marksman": "Flowborn (Marksman)",
                 "flowborn (marksman)": "Flowborn (Marksman)",
                 "flowborn mage": "Flowborn (Mage)",
                 "flowborn (mage)": "Flowborn (Mage)",
+                "doria": "Dolia",
+                "jinna": "Jinnar",
+                "illumia": "Ilumia",
+                "wiro sableng": "Wiro",
+                "ming shiyin": "Ming",
+                "sikong zhen": "Bolt Baron",
             }
         )
         for k, v in list(lookup.items()):
@@ -729,22 +738,20 @@ class RoVDraftPredictor:
             blended_probs = probs
 
         opp_needed_lanes = self._needed_lanes_for_picks(team.opp_picks, ep_row, explicit_lanes=opp_explicit_lanes)
-        blended_probs = self._apply_lane_filter(blended_probs, opp_needed_lanes)
+        filtered_probs = self._apply_lane_filter(blended_probs, opp_needed_lanes)
 
+        sorted_order = np.argsort(filtered_probs)[::-1]
+        chosen_set: set[int] = set()
         forecast: list[HeroRecommendation] = []
-        for cand_idx in np.argsort(blended_probs)[::-1]:
-            if blended_probs[cand_idx] <= 0 or len(forecast) >= slots:
-                break
-            c_idx = int(cand_idx)
-            if opp_needed_lanes and self._lane_key[c_idx] not in opp_needed_lanes:
-                continue
+
+        def _append_ban_cand(c_idx: int, score_probs: np.ndarray) -> None:
             triggers = p2b_triggers.get(c_idx, list(team.picks[:1]))
             reason: Literal["counter", "combo", "ban_unlock", "protect"] | None = "protect" if triggers else None
             forecast.append(
                 self._build_hero_recommendation(
                     rank_idx=len(forecast) + 1,
                     h_idx=c_idx,
-                    probs=blended_probs,
+                    probs=score_probs,
                     win_probs=win_probs,
                     ap_row=ap_row,
                     ep_row=ep_row,
@@ -752,6 +759,25 @@ class RoVDraftPredictor:
                     trigger_reason=reason,
                 )
             )
+            chosen_set.add(c_idx)
+
+        for cand_idx in sorted_order:
+            if filtered_probs[cand_idx] <= 0 or len(forecast) >= slots:
+                break
+            c_idx = int(cand_idx)
+            if opp_needed_lanes and self._lane_key[c_idx] not in opp_needed_lanes:
+                continue
+            _append_ban_cand(c_idx, filtered_probs)
+
+        # Fallback if opponent's strictly needed lanes are all banned/picked
+        if len(forecast) < slots:
+            for cand_idx in np.argsort(blended_probs)[::-1]:
+                if len(forecast) >= slots or blended_probs[cand_idx] <= 0:
+                    break
+                c_idx = int(cand_idx)
+                if c_idx in chosen_set or unavail_row[c_idx]:
+                    continue
+                _append_ban_cand(c_idx, blended_probs)
         return forecast
 
     def _evaluate_with_forecasts(

@@ -851,7 +851,7 @@ def test_full_130_hero_skill_mechanics_coverage(engine):
     m_side = _make_side(mal_b, thane_b)
     t_side["hp"] = 0.25 * t_side["max_hp"]
     _take_damage(t_side, m_side, 100.0, "physical", 1.0)
-    assert t_side["hero_dr_pct"] >= 0.40
+    assert t_side["hero_dr_pct"] == pytest.approx(40.0)
     assert t_side["hero_dr_until"] == pytest.approx(5.0)
     assert len(t_side["hots"]) >= 1
 
@@ -877,3 +877,18 @@ def test_full_130_hero_skill_mechanics_coverage(engine):
     res_tm = engine.duel(Build(hero="Maloch", level=15), Build(hero="Thane", level=15))
     assert res_tm["simulation"]["winner"] == "a"
     assert res_tm["simulation"]["a"]["damage_breakdown"].get("Cleave", 0.0) > 2000.0
+
+    # 7. Audited fixes: no Ult double-mult on Murad/Natalya, Thorne S1 excluded as active nuke, Alice S2 shield, AP assassin/Tank rune presets
+    assert "sim_mult" not in HERO_SKILL_EFFECTS[("Murad", "Ultimate")]
+    assert "sim_mult" not in HERO_SKILL_EFFECTS[("Natalya", "Ultimate")]
+    assert HERO_SKILL_EFFECTS[("Alice", "Skill 2")]["shield_ap"] == pytest.approx(0.95)
+    assert "heal_max_hp_per_100_bad" in HERO_SKILL_EFFECTS[("Amily", "Skill 1")]
+    th_side = _make_side(Build(hero="Thorne", level=15), mal_b)
+    assert all(sk["slot"] != "Skill 1" for sk in th_side["skills"])
+    assert th_side["thorne_s1_level"] == 6
+    assert engine.hero_meta["Paine"]["damage_type"] == "Magic"
+    assert engine.hero_meta["Keera"]["damage_type"] == "Magic"
+    paine_runes = engine.recommend_matchup_runes("Paine", "Valhein", "Jungle")
+    assert "Magic Pierce 88" in paine_runes["standard_preset"]["name"]
+    roxie_runes = engine.recommend_matchup_runes("Roxie", "Omen", "DS_Lane")
+    assert "Bulky Frontline" in roxie_runes["standard_preset"]["name"]

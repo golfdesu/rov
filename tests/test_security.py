@@ -290,3 +290,52 @@ def test_multi_ip_account_lockout(monkeypatch, tmp_path):
             headers={"Origin": "https://minidraft.app", "x-test-ip": "203.0.113.200"},
         )
         assert blocked.status_code == 429
+
+
+def test_updated_at_bounds_cors_header_csp_and_db_monotonic_guard(monkeypatch, tmp_path):
+    """Verify updatedAt >= 2**63 returns 422, CORS allows X-Expected-User, and stale writes do not overwrite newer DB state."""
+    import src.api as api_mod
+    from src.config import config
+    from src.db import UserDatabase
+
+    # 1. Monotonic updated_at guard prevents stale client overwrites
+    db = UserDatabase(tmp_path / "sync.db")
+    u = db.register_user("syncuser", "password123")
+    db.save_user_draft_state(u.id, {"stepIndex": 5, "updatedAt": 2000}, 2000)
+    db.save_user_draft_state(u.id, {"stepIndex": 0, "updatedAt": 1000}, 1000)
+    assert db.get_user_draft_state(u.id)["stepIndex"] == 5
+
+    # 2. CORS preflight allows X-Expected-User, dev CSP permits Arcana CDN icons, and updatedAt >= 2**63 returns 422
+    monkeypatch.setattr(config, "env", "development")
+    monkeypatch.setattr(config, "cors_origins", ["http://localhost:3000"])
+    monkeypatch.setattr(config.paths, "app_db_path", tmp_path / "sync.db")
+    monkeypatch.setattr(api_mod, "_user_db", db)
+    with TestClient(app) as dev_client:
+        preflight = dev_client.options(
+            "/draft/session",
+            headers={
+                "Origin": "http://localhost:3000",
+                "Access-Control-Request-Method": "PUT",
+                "Access-Control-Request-Headers": "Content-Type, X-Expected-User",
+            },
+        )
+        assert preflight.status_code == 200
+        assert "x-expected-user" in preflight.headers.get("access-control-allow-headers", "").lower()
+
+        dev_csp = dev_client.get("/health").headers.get("content-security-policy", "")
+        assert "https://cdngarenanow-a.akamaihd.net" in dev_csp
+
+        assert (
+            dev_client.post(
+                "/auth/login",
+                json={"username": "syncuser", "password": "password123"},
+                headers={"Origin": "http://localhost:3000"},
+            ).status_code
+            == 200
+        )
+        r_huge = dev_client.put(
+            "/draft/session", json={"updatedAt": 10**25}, headers={"Origin": "http://localhost:3000"}
+        )
+        assert r_huge.status_code == 422
+        r_neg = dev_client.put("/draft/session", json={"updatedAt": -5}, headers={"Origin": "http://localhost:3000"})
+        assert r_neg.status_code == 422

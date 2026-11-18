@@ -174,6 +174,7 @@ export function HeroSkillsModal({
   const [viewMode, setViewMode] = useState<ViewMode>("ingame");
   const [screenshotsData, setScreenshotsData] = useState<HeroScreenshotsResponse | null>(null);
   const [selectedScreenshotIdx, setSelectedScreenshotIdx] = useState<number>(0);
+  const [failedIcons, setFailedIcons] = useState<Record<string, boolean>>({});
 
   if (prevHero !== hero) {
     setPrevHero(hero);
@@ -536,13 +537,17 @@ export function HeroSkillsModal({
                   : "border-line/60 bg-panel/70 text-muted hover:border-line hover:text-ink"
               }`}
             >
-              {s.icon_url ? (
+              {s.icon_url && !failedIcons[s.icon_url] ? (
                 <img
+                  key={s.icon_url}
                   src={s.icon_url}
                   alt={s.name}
                   className="h-6 w-6 rounded object-contain"
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none";
+                  onError={() => {
+                    if (s.icon_url) {
+                      const iconUrl = s.icon_url;
+                      setFailedIcons((prev) => ({ ...prev, [iconUrl]: true }));
+                    }
                   }}
                 />
               ) : (

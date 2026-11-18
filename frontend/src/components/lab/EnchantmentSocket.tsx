@@ -1,4 +1,5 @@
 import { X } from "lucide-react";
+import { useState } from "react";
 import type { CatalogEnchantment } from "../../types/combat";
 import { ROMAN } from "./enchantmentFactions";
 
@@ -19,6 +20,7 @@ export function SocketItem({
   onClear: () => void;
 }) {
   const sizeClass = isMajor ? "h-14 w-14" : "h-11 w-11";
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
 
   if (!ench || !name) {
     return (
@@ -40,12 +42,20 @@ export function SocketItem({
           factionColor || (isMajor ? "ring-gold shadow-md shadow-gold/20" : "ring-line-strong")
         }`}
       >
-        <img
-          src={ench.icon_url}
-          alt={name}
-          className="h-full w-full rounded-full object-contain"
-          loading="lazy"
-        />
+        {ench.icon_url && failedSrc !== ench.icon_url ? (
+          <img
+            key={ench.icon_url}
+            src={ench.icon_url}
+            alt={name}
+            className="h-full w-full rounded-full object-contain"
+            loading="lazy"
+            onError={() => setFailedSrc(ench.icon_url ?? null)}
+          />
+        ) : (
+          <div className="grid h-full w-full place-items-center rounded-full bg-panel font-mono text-[10px] font-bold text-gold">
+            {ROMAN[tier]}
+          </div>
+        )}
         <button
           type="button"
           onClick={(e) => {

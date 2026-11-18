@@ -71,6 +71,8 @@ function formatScalingFormula(scaling?: Record<string, ScalingValue>, skillLevel
 export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDamageTableProps) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [draftHits, setDraftHits] = useState<Record<string, string>>({});
+  const [draftLevels, setDraftLevels] = useState<Record<string, string>>({});
+  const [failedIcons, setFailedIcons] = useState<Record<string, boolean>>({});
 
   const setNum = (key: "skill_levels" | "skill_hits", slot: string, v: number) =>
     onChange({ [key]: { ...build[key], [slot]: v } });
@@ -290,13 +292,17 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                       {/* Skill icon & name */}
                       <div className="flex-1 min-w-0 pr-2">
                         <div className="flex items-center gap-2">
-                          {s.icon_url ? (
+                          {s.icon_url && !failedIcons[s.icon_url] ? (
                             <img
+                              key={s.icon_url}
                               src={s.icon_url}
                               alt={s.name}
                               className="h-8 w-8 shrink-0 rounded object-contain border border-line/70 bg-bg p-0.5"
-                              onError={(e) => {
-                                e.currentTarget.style.display = "none";
+                              onError={() => {
+                                if (s.icon_url) {
+                                  const iconUrl = s.icon_url;
+                                  setFailedIcons((prev) => ({ ...prev, [iconUrl]: true }));
+                                }
                               }}
                             />
                           ) : (
@@ -374,13 +380,36 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                             (() => {
                               const levelKey = s.level_slot || s.slot;
                               const isUlt = levelKey === "Ultimate" || s.base_damage?.length === 3;
+                              const maxLv = isUlt ? 3 : 6;
                               return (
                                 <input
                                   type="number"
                                   min={0}
-                                  max={isUlt ? 3 : 6}
-                                  value={s.skill_level}
-                                  onChange={(e) => setNum("skill_levels", levelKey, Number(e.target.value))}
+                                  max={maxLv}
+                                  value={draftLevels[levelKey] ?? String(s.skill_level)}
+                                  onChange={(e) => {
+                                    const raw = e.target.value;
+                                    setDraftLevels((prev) => ({ ...prev, [levelKey]: raw }));
+                                    if (raw === "") return;
+                                    const parsed = Number(raw);
+                                    if (Number.isInteger(parsed) && parsed >= 0 && parsed <= maxLv) {
+                                      setNum("skill_levels", levelKey, parsed);
+                                    }
+                                  }}
+                                  onBlur={() => {
+                                    const raw = draftLevels[levelKey];
+                                    setDraftLevels((prev) => {
+                                      const next = { ...prev };
+                                      delete next[levelKey];
+                                      return next;
+                                    });
+                                    if (raw === undefined) return;
+                                    const parsed = Math.round(Number(raw));
+                                    if (Number.isFinite(parsed) && raw.trim() !== "") {
+                                      const clamped = Math.max(0, Math.min(maxLv, parsed));
+                                      if (clamped !== s.skill_level) setNum("skill_levels", levelKey, clamped);
+                                    }
+                                  }}
                                   className="w-10 rounded border border-line bg-bg px-1 py-0.5 text-center font-mono focus:border-gold outline-none"
                                   aria-label={`เลเวล ${s.name}`}
                                 />

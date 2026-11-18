@@ -346,7 +346,9 @@ def test_true_pick_order_matches_liquipedia():
         assert sorted(t["red_picks"]) == sorted(g["red_picks"]), f"Red pick set mismatch: {key}"
         assert t["source"] in {"screenshot", "manual"}, key
         if t["source"] == "screenshot":
-            assert (config.paths.data_dir / "draft_screenshots" / t["screenshot"]).exists() or not (
+            shot_rel = str(t.get("screenshot") or "").strip()
+            assert shot_rel, f"Empty screenshot path for {key}"
+            assert (config.paths.data_dir / "draft_screenshots" / shot_rel).is_file() or not (
                 config.paths.data_dir / "draft_screenshots"
             ).exists(), f"Missing screenshot for {key}"
 

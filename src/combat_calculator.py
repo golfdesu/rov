@@ -174,7 +174,7 @@ HERO_STACK_PASSIVES: dict[str, dict] = {
     "Gildur": {"slot": "Passive", "hits_needed": 4, "cooldown": 0.0, "trigger": "attack"},
     "Jinnar": {"slot": "Passive", "hits_needed": 4, "cooldown": 0.0, "trigger": "any"},
     "Veres": {"slot": "Passive", "hits_needed": 4, "cooldown": 0.0, "trigger": "any", "heal_lost_hp_pct": 12.0},
-    "Charlotte": {"slot": "Passive", "hits_needed": 3, "cooldown": 0.0, "trigger": "skill"},
+    "Charlotte": {"slot": "Passive", "hits_needed": 3, "cooldown": 0.0, "trigger": "skill", "procs_per_trigger": 7},
     "Kriknak": {"slot": "Passive", "hits_needed": 2, "cooldown": 0.0, "trigger": "attack"},
     "Wukong": {"slot": "Passive", "hits_needed": 1, "cooldown": 2.5, "trigger": "attack"},
     "Paine": {"slot": "Passive", "hits_needed": 2, "cooldown": 0.0, "trigger": "attack"},
@@ -266,7 +266,7 @@ HERO_SKILL_EFFECTS: dict[tuple[str, str], dict] = {
     ("Bright", "Skill 2"): {"as_pct": 75.0, "hot_base_sec": 125.0, "duration": 3.0},
     ("Bright", "Ultimate"): {"dr_pct": 25.0, "duration": 6.0},
     ("Charlotte", "Skill 2"): {"heal_base": 420.0, "heal_bonus_hp_pct": 6.0},
-    ("Mina", "Skill 1"): {"heal_base": 140.0, "heal_lost_hp_pct": 8.0},
+    ("Mina", "Skill 1"): {"heal_max_hp_pct": 4.0},
     ("Kriknak", "Skill 2"): {"heal_base": [250.0, 300.0, 350.0, 400.0, 450.0, 500.0], "heal_bonus_ad": 1.0},
     ("Slimz", "Skill 2"): {"bonus_ad": [50.0, 60.0, 70.0, 80.0, 90.0, 100.0], "duration": 5.0},
     ("Arduin", "Skill 2"): {"shield_own_hp_pct": 15.0, "duration": 5.0},
@@ -619,12 +619,26 @@ class CombatEngine:
             feat = h.get("features", {})
             has_mag = bool(h.get("has_magic_damage") or feat.get("has_magic_damage"))
             has_phys = bool(h.get("has_physical_damage") or feat.get("has_physical_damage"))
+            h_skills = self.skills.get(h["name"], [])
+            ap_sc = sum(
+                float((sk.get("scaling") or {}).get(k) or 0)
+                for sk in h_skills
+                for k in ("ap_pct", "bonus_ap_pct")
+                if not isinstance((sk.get("scaling") or {}).get(k), list)
+            )
+            ad_sc = sum(
+                float((sk.get("scaling") or {}).get(k) or 0)
+                for sk in h_skills
+                for k in ("ad_pct", "bonus_ad_pct")
+                if not isinstance((sk.get("scaling") or {}).get(k), list)
+            )
+            is_magic_dom = has_mag and (not has_phys or (ap_sc > ad_sc and ap_sc >= 100.0))
             self.hero_meta[h["name"]] = {
                 "role": h.get("primary_role"),
                 "primary_role": h.get("primary_role"),
                 "secondary_role": h.get("secondary_role"),
                 "ranged": "rang" in (h.get("attack_range") or "").lower(),
-                "damage_type": "Magic" if has_mag and not has_phys else "Physical",
+                "damage_type": "Magic" if is_magic_dom else "Physical",
                 "has_true_damage": bool(h.get("has_true_damage") or feat.get("has_true_damage")),
                 "has_hard_cc": bool(h.get("has_hard_cc") or feat.get("has_hard_cc")),
                 "has_mobility": bool(h.get("has_mobility") or feat.get("has_mobility")),
@@ -1528,10 +1542,10 @@ class CombatEngine:
             dmg_type = meta.get("damage_type", "Physical")
             if role == "Carry":
                 return "Rampage Crit (มาตรฐานแครี่)", {"Rampage": 10, "Spirit": 10, "Dragon's Claw": 10}
-            if role == "Mage" or dmg_type == "Magic":
-                return "Magic Pierce 88 (มาตรฐานเมจ)", {"Desolate": 10, "Spirit": 10, "Flurry": 10}
             if role in ("Tank", "Support"):
                 return "Bulky Frontline (มาตรฐานแทงค์/ซัพพอร์ต)", {"Golden Body": 10, "Colossus": 10, "Prowess": 10}
+            if role == "Mage" or dmg_type == "Magic":
+                return "Magic Pierce 88 (มาตรฐานเมจ)", {"Desolate": 10, "Spirit": 10, "Flurry": 10}
             return "Armor Pierce 100 (มาตรฐานไฟต์เตอร์/แอสซาซิน)", {"Onslaught": 10, "Spirit": 10, "Dragon's Claw": 10}
 
         std_my_name, std_my_runes = get_standard_rune(my_h, my_meta)
@@ -1541,6 +1555,9 @@ class CombatEngine:
             (std_my_name, std_my_runes, "เซ็ตมาตรฐานประจำสายอาชีพ"),
         ]
 
+        my_is_magic = my_role == "Mage" or (
+            my_meta.get("damage_type") == "Magic" and my_role not in ("Tank", "Support")
+        )
         has_true = enemy_meta.get("has_true_damage") or enemy_h in (
             "Florentino",
             "Airi",
@@ -1552,7 +1569,7 @@ class CombatEngine:
             "Allain",
         )
         if has_true:
-            if my_role in ("Fighter", "Tank", "Support"):
+            if my_role in ("Fighter", "Tank", "Support") or (my_role == "Assassin" and not my_is_magic):
                 candidates.append(
                     (
                         "Anti-True Damage Bulk (เลือดต้านทรูดาเมจ)",
@@ -1568,7 +1585,7 @@ class CombatEngine:
                         "เสริมดูดเลือด 9.6% และความเร็วโจมตีเพื่อยิงตอดและรีเจนเลือด ป้องกันการโดนเข้าประชิด",
                     )
                 )
-            elif my_role == "Mage":
+            elif my_is_magic:
                 candidates.append(
                     (
                         "Max HP Kite (เสริมเลือดเว้นระยะ)",
@@ -1606,7 +1623,7 @@ class CombatEngine:
                         "ศัตรูเน้นการตอดดาเมจเวท เสริมเกราะเวท (+90) และเลือด (+787) ลดทอนดาเมจเวทลงกว่า 25%",
                     )
                 )
-            elif my_role == "Mage":
+            elif my_is_magic:
                 candidates.append(
                     (
                         "Magic Life Steal Sustain (ดูดเลือดเวทชิงจังหวะ)",
@@ -1625,6 +1642,7 @@ class CombatEngine:
 
         is_enemy_phys_burst = (
             enemy_role in ("Assassin", "Fighter")
+            and enemy_meta.get("damage_type") != "Magic"
             and not has_true
             or enemy_h in ("Biron", "Qi", "Kriknak", "Nakroth", "Ryoma", "Kaine", "Skud", "Wukong", "Zuka", "Aoi")
         )
@@ -1815,6 +1833,8 @@ def _calc_live_damage(attacker: dict, defender: dict, raw: float, dtype: str, t:
         dealt_pct += attacker["hero_dmg_dealt_pct"]
     if attacker["hero"] == "Amily":
         dealt_pct += 50.0  # Duel passive (+50% 1v1 single-target damage)
+    elif attacker["hero"] == "Enzo":
+        dealt_pct += 15.0  # Average ranged tether bonus
     elif attacker["hero"] == "Billow" and defender["hp"] < 0.30 * defender["max_hp"]:
         dealt_pct += 15.0
     if "Fenrir's Tooth" in attacker["items"] and defender["hp"] < 0.5 * defender["max_hp"]:
@@ -1830,6 +1850,8 @@ def _calc_live_damage(attacker: dict, defender: dict, raw: float, dtype: str, t:
         taken_pct -= 40.0
     if defender["hero_dr_until"] > t:
         taken_pct -= defender["hero_dr_pct"]
+    if defender["hero"] == "Allain" and defender["allain_until"] > t:
+        taken_pct -= defender["allain_stacks"] * 2.0
     if defender["hero"] == "Zephys" and defender["max_hp"] > 0:
         missing_pct = 100.0 * max(0.0, 1.0 - defender["hp"] / defender["max_hp"])
         taken_pct -= min(33.3, missing_pct / 3.0)
@@ -1841,6 +1863,9 @@ def _calc_live_damage(attacker: dict, defender: dict, raw: float, dtype: str, t:
     if defender["qi_stacks"] > 0 and defender["qi_until"] > t:
         bonus_def += defender["qi_stacks"] * (30.0 + 5.0 * defender["level"])
     pct_shred = defender["opp_def_shred_pct"] if defender["opp_def_shred_until"] > t else 0.0
+    allain_pierce = (
+        attacker["allain_stacks"] * 3.0 if attacker["hero"] == "Allain" and attacker["allain_until"] > t else 0.0
+    )
     if dtype == "physical":
         shred = min(24.0, attacker["longinus_stacks"] * 6.0)
         armor_flat_shred = (defender["opp_armor_shred"] if defender["opp_armor_shred_until"] > t else 0.0) + (
@@ -1852,7 +1877,9 @@ def _calc_live_damage(attacker: dict, defender: dict, raw: float, dtype: str, t:
         flat_p = a_st["armor_pierce_flat"] + (
             attacker["hero_pierce_flat"] if attacker["hero_pierce_until"] > t else 0.0
         )
-        pierce_pct = min(100.0, a_st["armor_pierce_pct"] + (15.0 if attacker["desperate_active"] else 0.0))
+        pierce_pct = min(
+            100.0, a_st["armor_pierce_pct"] + allain_pierce + (15.0 if attacker["desperate_active"] else 0.0)
+        )
         mit = mitigation_multiplier(eff_armor, flat_p, pierce_pct)
         phys_taken = 1.0 + d_st.get("physical_damage_taken_pct", 0.0) / 100.0
         return raw * mit * dealt_mult * phys_taken
@@ -1866,7 +1893,7 @@ def _calc_live_damage(attacker: dict, defender: dict, raw: float, dtype: str, t:
     if defender["opp_mdef_shred_until"] > t:
         mdef = max(0.0, mdef - defender["opp_mdef_shred"])
     m_flat = a_st["magic_pierce_flat"] + attacker["soaring_stacks"] * attacker["soaring_per_stack"]
-    m_pct = min(100.0, a_st["magic_pierce_pct"] + (15.0 if attacker["desperate_active"] else 0.0))
+    m_pct = min(100.0, a_st["magic_pierce_pct"] + allain_pierce + (15.0 if attacker["desperate_active"] else 0.0))
     mit = mitigation_multiplier(mdef, m_flat, m_pct)
     return raw * mit * dealt_mult
 
@@ -1915,9 +1942,14 @@ def _init_sim_side(
     lv = int(m.get("level") or stats.get("level", 12))
     bonus_hp = max(0.0, s["max_hp"] - stats.get("sources", {}).get("level", {}).get("max_hp", 0.0))
     hero = m.get("hero", stats.get("hero", ""))
+    edras_normal_passive = any(sk["slot"] == "Passive" for sk in skills)
+    thorne_s1_level = 0
     sim_skills = []
     for sk in skills:
         if sk.get("skill_level", 1) <= 0:
+            continue
+        if hero == "Thorne" and sk["slot"] == "Skill 1":
+            thorne_s1_level = int(sk.get("skill_level", 1))
             continue
         if sk["slot"].startswith("Passive") and hero in STATEFUL_PASSIVE_HEROES:
             continue
@@ -1978,6 +2010,10 @@ def _init_sim_side(
         eff_ba["raw_per_hit"] = 1.80 * (s["attack_damage"] + extra_ad)
         eff_ba["crit_mult"] = 1.80
         hero_as_interval_mult = 1.40
+    elif hero == "Allain":
+        # Allain converts 1% bonus attack speed into +2 AD (attacks use fixed cadence)
+        hero_static_bonus_ad = 2.0 * max(0.0, s["attack_speed"])
+        eff_ba["crit_mult"] = 1.0 + crit_ratio * (crit_dmg_mult - 1.0)
     elif hero == "Thorne":
         # Thorne converts 1% CDR -> +4 AD, basic attacks deal 85% AD physical (+ magic bullets in loop)
         extra_ad = 4.0 * s["cooldown_reduction"]
@@ -2053,6 +2089,15 @@ def _init_sim_side(
         "laville_until": -1.0,
         "celica_stacks": 0,
         "celica_until": -1.0,
+        "thorne_s1_level": thorne_s1_level,
+        "sinestrea_stacks": 0,
+        "sinestrea_until": -1.0,
+        "edras_hits": 0,
+        "edras_normal_passive": edras_normal_passive,
+        "allain_stacks": 0,
+        "allain_until": -1.0,
+        "zanis_stacks": 0,
+        "zanis_until": -1.0,
         "omen_thirst": 0,
         "omen_thirst_until": -1.0,
         "omen_s2_reflect_ready": False,
@@ -2196,6 +2241,8 @@ def _attack_interval_for(side: dict, t: float) -> float:
         bonus += 20.0
     if side["laville_until"] > t:
         bonus += side["laville_stacks"] * 10.0
+    if side["sinestrea_until"] > t:
+        bonus += side["sinestrea_stacks"] * lerp_by_level([7, 14], side["level"])
     if side["sentinel_until"] > t or "The Aegis" in side["opp_items"]:
         bonus -= 30.0
     eff_as = max(-50.0, min(ATTACK_SPEED_CAP, base_as + bonus))
@@ -2208,6 +2255,8 @@ def _current_ba_raw(me: dict, t: float) -> float:
     extra_ad = me["hero_bonus_ad"] + (me["hero_temp_ad"] if me["hero_temp_ad_until"] > t else 0.0)
     if me["hero"] == "Celica" and me["celica_until"] > t:
         extra_ad += me["celica_stacks"] * 8.0
+    if me["hero"] == "Zanis" and me["zanis_until"] > t:
+        extra_ad += me["zanis_stacks"] * lerp_by_level([15, 29], me["level"])
     if me["hero"] == "Taara" and me["max_hp"] > 0:
         missing_pct = max(0.0, 100.0 * (1.0 - me["hp"] / me["max_hp"]))
         extra_ad += missing_pct * lerp_by_level([3, 7], me["level"])
@@ -2422,7 +2471,8 @@ def _take_damage(defender: dict, attacker: dict, dmg: float, dtype: str, t: floa
         if defender["hero"] == "Thane" and 0 < defender["hp"] < 0.30 * defender["max_hp"]:
             if t + 1e-9 >= defender["thane_passive_ready"]:
                 defender["thane_passive_ready"] = t + 75.0
-                defender["hero_dr_pct"] = max(defender["hero_dr_pct"], 0.40)
+                cur_dr = defender["hero_dr_pct"] if defender["hero_dr_until"] > t else 0.0
+                defender["hero_dr_pct"] = max(cur_dr, 40.0)
                 defender["hero_dr_until"] = max(defender["hero_dr_until"], t + 4.0)
                 heal_total = 0.24 * defender["max_hp"]
                 defender["hots"].append({"per_dt": heal_total / (4.0 / DUEL_DT), "until": t + 4.0})
@@ -2625,11 +2675,13 @@ def _apply_effect_heal_and_shield(me: dict, eff: dict, t: float, sl: int = 1) ->
     if "heal_ap" in eff:
         heal += float(eff["heal_ap"]) * ap
     if "heal_bonus_hp_pct" in eff:
-        heal += float(eff["heal_bonus_hp_pct"]) / 100.0 * me["bonus_hp"]
+        heal += _pick_effect_val(eff["heal_bonus_hp_pct"], sl) / 100.0 * me["bonus_hp"]
     if "heal_lost_hp_pct" in eff:
-        heal += float(eff["heal_lost_hp_pct"]) / 100.0 * lost_hp
+        heal += _pick_effect_val(eff["heal_lost_hp_pct"], sl) / 100.0 * lost_hp
     if "heal_max_hp_pct" in eff:
-        heal += float(eff["heal_max_hp_pct"]) / 100.0 * me["max_hp"]
+        heal += _pick_effect_val(eff["heal_max_hp_pct"], sl) / 100.0 * me["max_hp"]
+    if "heal_max_hp_per_100_bad" in eff:
+        heal += (_pick_effect_val(eff["heal_max_hp_per_100_bad"], sl) / 100.0) * (bad / 100.0) * me["max_hp"]
     if heal > 0:
         _apply_heal(me, heal, t)
 
@@ -2639,8 +2691,10 @@ def _apply_effect_heal_and_shield(me: dict, eff: dict, t: float, sl: int = 1) ->
         hot_per_dt += _pick_effect_val(eff["hot_base_sec"], sl) * DUEL_DT
     if "hot_bonus_ad_sec" in eff:
         hot_per_dt += float(eff["hot_bonus_ad_sec"]) * bad * DUEL_DT
+    if "hot_ap_sec" in eff:
+        hot_per_dt += float(eff["hot_ap_sec"]) * ap * DUEL_DT
     if "hot_max_hp_pct_sec" in eff:
-        hot_per_dt += (float(eff["hot_max_hp_pct_sec"]) / 100.0 * me["max_hp"]) * DUEL_DT
+        hot_per_dt += (_pick_effect_val(eff["hot_max_hp_pct_sec"], sl) / 100.0 * me["max_hp"]) * DUEL_DT
     lost_pct_dt = (float(eff.get("hot_lost_hp_pct_sec", 0.0)) / 100.0) * DUEL_DT
     if hot_per_dt > 0 or lost_pct_dt > 0:
         me["hero_hots"].append({"per_dt": hot_per_dt, "lost_hp_pct_per_dt": lost_pct_dt, "until": t + dur})
@@ -2684,7 +2738,8 @@ def _apply_hero_skill_effect(me: dict, opp: dict, sk: dict, t: float) -> None:
     dur = _pick_effect_val(eff.get("duration", 3.0), sl)
 
     if "dr_pct" in eff:
-        me["hero_dr_pct"] = _pick_effect_val(eff["dr_pct"], sl)
+        cur_dr = me["hero_dr_pct"] if me["hero_dr_until"] > t else 0.0
+        me["hero_dr_pct"] = max(cur_dr, _pick_effect_val(eff["dr_pct"], sl))
         me["hero_dr_until"] = max(me["hero_dr_until"], t + dur)
     if eff.get("reflect_ba"):
         me["omen_s2_reflect_ready"] = True
@@ -2827,6 +2882,9 @@ def _handle_post_hit_effects(
         if did_skill and hero == "Lu Bu":
             me["hero_as_pct"] = lerp_by_level([35, 70], me["level"])
             me["hero_as_until"] = max(me["hero_as_until"], t + 3.0)
+        if did_skill and skill_used and skill_used.get("is_cc") and opp["hero"] == "Zanis":
+            opp["zanis_stacks"] = min(3, opp["zanis_stacks"] + 2)
+            opp["zanis_until"] = t + 6.0
 
         # On-damage-dealt item triggers (Light Shield, Frost Hammer, Spear of Longinus, Soaring Aura)
         if "Light Shield" in me["items"] and t + 1e-9 >= me["light_shield_ready"]:
@@ -2923,10 +2981,50 @@ def _handle_post_hit_effects(
             _emit_damage(
                 me, opp, "Dark Tides (Basic Magic)", 0.35 * me["raw_stats"]["ability_power"], "magic", t, is_proc=True
             )
-        elif hero == "Thorne":
-            sl_s1 = next((sk.get("skill_level", 1) for sk in me["skills"] if sk["slot"] == "Skill 1"), 3)
+        elif hero == "Thorne" and me["thorne_s1_level"] > 0:
+            sl_s1 = me["thorne_s1_level"]
             pct = [0.03, 0.045, 0.06][min(2, max(0, (sl_s1 - 1) // 2))]
             _emit_damage(me, opp, "Magic Bullet (Purple)", pct * opp["max_hp"], "magic", t, is_proc=True)
+        elif hero == "Sinestrea":
+            me["sinestrea_stacks"] = min(4, me["sinestrea_stacks"] + 1)
+            me["sinestrea_until"] = t + 4.0
+        elif hero == "Edras" and me["edras_normal_passive"]:
+            me["edras_hits"] += 1
+            if me["edras_hits"] >= 2:
+                me["edras_hits"] = 0
+                _emit_damage(
+                    me,
+                    opp,
+                    "Edras Passive (+50% AD)",
+                    0.50 * me["raw_stats"]["attack_damage"],
+                    "physical",
+                    t,
+                    is_proc=True,
+                )
+        elif hero == "Allain":
+            me["allain_stacks"] = min(16, me["allain_stacks"] + 1)
+            me["allain_until"] = t + 1.5
+            if me["allain_stacks"] == 16:
+                _apply_heal(me, 0.03 * max(0.0, me["max_hp"] - me["hp"]), t)
+            _emit_damage(
+                me,
+                opp,
+                "Howling Sword (Passive True)",
+                10.0 + 0.12 * me["raw_stats"]["attack_damage"],
+                "true",
+                t,
+                is_proc=True,
+            )
+        elif hero == "Bright":
+            _emit_damage(
+                me,
+                opp,
+                "Holy Light (Passive True)",
+                12.0 + 0.50 * me["raw_stats"]["attack_damage"],
+                "true",
+                t,
+                is_proc=True,
+            )
         if hero == "Lu Bu" and me["lubu_on_hit_heal_until"] > t:
             _apply_heal(me, 60.0 + 0.20 * me["raw_stats"]["attack_damage"], t)
 
@@ -3091,9 +3189,10 @@ def simulate_duel(
                                 raw_dmg *= float(eff["sim_mult"])
                             ex = eff.get("extra_sim")
                             if ex:
-                                raw_dmg += _pick_effect_val(ex.get("base", 0.0), sk.get("skill_level", 1))
-                                raw_dmg += ex.get("ap", 0.0) * me["raw_stats"]["ability_power"]
-                                raw_dmg += ex.get("ad", 0.0) * me["raw_stats"]["attack_damage"]
+                                ex_sl = sk.get("skill_level", 1)
+                                raw_dmg += _pick_effect_val(ex.get("base", 0.0), ex_sl)
+                                raw_dmg += _pick_effect_val(ex.get("ap", 0.0), ex_sl) * me["raw_stats"]["ability_power"]
+                                raw_dmg += _pick_effect_val(ex.get("ad", 0.0), ex_sl) * me["raw_stats"]["attack_damage"]
                                 if ex.get("true_base"):
                                     _emit_damage(
                                         me, opp, f"{sk['name']} (True)", ex["true_base"], "true", t, is_proc=True
@@ -3133,7 +3232,7 @@ def simulate_duel(
                             sk["ready"] = t + 0.5
                         else:
                             cd_ready = t + max(sk["cooldown"], 0.5)
-                            if sk["ready"] <= t:
+                            if sk["ready"] <= t + 1e-9:
                                 sk["ready"] = cd_ready
                             if me["dual_form"]:
                                 grp = sk.get("level_slot", sk["slot"])

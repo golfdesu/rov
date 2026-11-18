@@ -79,6 +79,9 @@ export function useCombatLab(options: UseCombatLabOptions = {}) {
   const lastSavedAtRef = useRef<number>(initialState.updatedAt);
   const isHydratingRemoteRef = useRef<boolean>(false);
   const hasCompletedRemoteSyncRef = useRef<boolean>(!persistRemote);
+  const hasDirtyRemoteBuildsRef = useRef<boolean>(false);
+  const initialBuildSnapshotRef = useRef<string | null>(null);
+  const [remoteSyncTick, setRemoteSyncTick] = useState(0);
 
   useEffect(() => {
     if (!persistRemote) {
@@ -89,7 +92,7 @@ export function useCombatLab(options: UseCombatLabOptions = {}) {
     hasCompletedRemoteSyncRef.current = false;
     getJson<CombatBuildsSyncPayload>("/combat/builds", ctrl.signal)
       .then((remote) => {
-        if (remote && typeof remote.updatedAt === "number" && remote.updatedAt > lastSavedAtRef.current) {
+        if (remote && typeof remote.updatedAt === "number" && remote.updatedAt > lastSavedAtRef.current && !hasDirtyRemoteBuildsRef.current) {
           isHydratingRemoteRef.current = true;
           lastSavedAtRef.current = remote.updatedAt;
           const nextA = sanitizeBuild(remote.a, "Valhein");
@@ -121,7 +124,12 @@ export function useCombatLab(options: UseCombatLabOptions = {}) {
         }
       })
       .finally(() => {
-        hasCompletedRemoteSyncRef.current = true;
+        if (!ctrl.signal.aborted) {
+          hasCompletedRemoteSyncRef.current = true;
+          if (hasDirtyRemoteBuildsRef.current) {
+            setRemoteSyncTick((n) => n + 1);
+          }
+        }
       });
     return () => ctrl.abort();
   }, [persistRemote, storageKey]);
@@ -131,12 +139,17 @@ export function useCombatLab(options: UseCombatLabOptions = {}) {
     getJson<CombatCatalog>("/combat/catalog", ctrl.signal)
       .then((cat) => {
         setCatalog(cat);
-        // Saved heroes may no longer exist; reset those to defaults
+        // Saved heroes may no longer exist; reset only invalid heroes without churn
         const known = new Set(cat.heroes.map((h) => h.name));
-        setBuilds((prev) => ({
-          a: known.has(prev.a.hero) ? prev.a : emptyBuild("Valhein"),
-          b: known.has(prev.b.hero) ? prev.b : emptyBuild("Toro"),
-        }));
+        setBuilds((prev) => {
+          const validA = known.has(prev.a.hero);
+          const validB = known.has(prev.b.hero);
+          if (validA && validB) return prev;
+          return {
+            a: validA ? prev.a : emptyBuild("Valhein"),
+            b: validB ? prev.b : emptyBuild("Toro"),
+          };
+        });
       })
       .catch((e: unknown) => {
         if (!isAbortError(e)) setError(`โหลดข้อมูลไม่สำเร็จ: ${e instanceof Error ? e.message : String(e)}`);
@@ -145,13 +158,28 @@ export function useCombatLab(options: UseCombatLabOptions = {}) {
   }, [catalogReloadKey]);
 
   useEffect(() => {
-    const shouldPersistSync = !isHydratingRemoteRef.current && hasCompletedRemoteSyncRef.current;
-    if (isHydratingRemoteRef.current) {
+    const snapshotKey = JSON.stringify({ a: builds.a, b: builds.b, enableKiting, enableActives });
+    if (initialBuildSnapshotRef.current === null) {
+      initialBuildSnapshotRef.current = snapshotKey;
+    }
+    const wasHydrating = isHydratingRemoteRef.current;
+    if (wasHydrating) {
       isHydratingRemoteRef.current = false;
+      initialBuildSnapshotRef.current = snapshotKey;
+    }
+
+    const isDirty = snapshotKey !== initialBuildSnapshotRef.current;
+    const waitingForRemote = persistRemote && !hasCompletedRemoteSyncRef.current;
+    if (waitingForRemote && isDirty && !wasHydrating) {
+      hasDirtyRemoteBuildsRef.current = true;
+    }
+    const shouldPersistSync = !wasHydrating && !waitingForRemote && (isDirty || hasDirtyRemoteBuildsRef.current);
+    if (shouldPersistSync) {
+      hasDirtyRemoteBuildsRef.current = false;
     }
 
     const now = Date.now();
-    if (shouldPersistSync) {
+    if (shouldPersistSync || (isDirty && !wasHydrating)) {
       lastSavedAtRef.current = now;
       try {
         localStorage.setItem(
@@ -172,6 +200,7 @@ export function useCombatLab(options: UseCombatLabOptions = {}) {
     const ctrl = new AbortController();
     const timer = setTimeout(async () => {
       setIsLoading(true);
+      let duelSucceeded = false;
       try {
         const duelPayload = {
           a: { ...builds.a, enable_kiting: enableKiting, enable_actives: enableActives },
@@ -179,12 +208,13 @@ export function useCombatLab(options: UseCombatLabOptions = {}) {
         };
         setResult(await postJson<DuelResult>("/combat/duel", duelPayload, ctrl.signal));
         setError(null);
+        duelSucceeded = true;
       } catch (e) {
         if (!isAbortError(e)) setError(e instanceof Error ? e.message : String(e));
       } finally {
         if (!ctrl.signal.aborted) setIsLoading(false);
       }
-      if (persistRemote && shouldPersistSync && !ctrl.signal.aborted) {
+      if (duelSucceeded && persistRemote && shouldPersistSync && !ctrl.signal.aborted) {
         putJson(
           "/combat/builds",
           {
@@ -204,7 +234,7 @@ export function useCombatLab(options: UseCombatLabOptions = {}) {
       clearTimeout(timer);
       ctrl.abort();
     };
-  }, [builds, enableKiting, enableActives, persistRemote, storageKey]);
+  }, [builds, enableKiting, enableActives, persistRemote, storageKey, remoteSyncTick]);
 
   const retryCatalog = useCallback(() => {
     setError(null);

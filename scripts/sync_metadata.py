@@ -467,6 +467,7 @@ def sync_metadata(check: bool = False, quiet: bool = False) -> dict:
 
     file_targets = [
         (REPO_ROOT / "AGENTS.md", update_agents_md),
+        (REPO_ROOT / "docs" / "ARCHITECTURE_MAP.md", update_agents_md),
         (REPO_ROOT / "README.md", update_readme_md),
         (REPO_ROOT / "docs" / "COMPETITORS.md", update_competitors_md),
         (

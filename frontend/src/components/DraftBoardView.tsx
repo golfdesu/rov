@@ -509,7 +509,7 @@ export function DraftBoardView({
 
       {isNewSeriesModalOpen && (
         <NewSeriesModal
-          currentSeriesName={globalBans.seriesName}
+          currentSeriesName={resolveSeriesName(globalBans)}
           existingSeriesNames={existingSeriesNames}
           defaultTeamA={globalBans.teamAName}
           defaultTeamB={globalBans.teamBName}

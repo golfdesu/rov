@@ -15,6 +15,7 @@ import { Modal } from "../Modal";
 
 interface TierListViewProps {
   heroes: Hero[];
+  disableShortcuts?: boolean;
 }
 
 type LaneFilter = "ALL" | "DS_Lane" | "Jungle" | "Mid" | "Dragon_Lane" | "Roam";
@@ -99,7 +100,7 @@ const TIER_META: Record<
   },
 };
 
-export function TierListView({ heroes }: TierListViewProps) {
+export function TierListView({ heroes, disableShortcuts = false }: TierListViewProps) {
   const [selectedLane, setSelectedLane] = useState<LaneFilter>("ALL");
   const [selectedRole, setSelectedRole] = useState<RoleFilter>("ALL");
   const [includeFlex, setIncludeFlex] = useState<boolean>(false);
@@ -115,7 +116,7 @@ export function TierListView({ heroes }: TierListViewProps) {
 
   // Global keydown: shortcut '/' to focus search
   useEffect(() => {
-    if (inspectHero) return;
+    if (inspectHero || disableShortcuts) return;
     function onKey(e: KeyboardEvent) {
       if (e.ctrlKey || e.metaKey || e.altKey) return;
       const typing =
@@ -130,7 +131,7 @@ export function TierListView({ heroes }: TierListViewProps) {
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [inspectHero]);
+  }, [inspectHero, disableShortcuts]);
 
   // Filtered heroes list
   const filteredHeroes = useMemo(() => {

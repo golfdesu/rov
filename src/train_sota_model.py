@@ -834,8 +834,8 @@ def build_tensor_dataset(
                 step_idx_arr[row_idx] = step_idx
 
                 # Decoupled supervision:
-                # 1. Win-value loss applies to all actions across all games (unbiased 1.0 outcome balance)
-                win_weight_arr[row_idx] = recency_w
+                # 1. Win-value loss applies to valid observed steps (zeroed on missing ban steps so target=0 is not blamed)
+                win_weight_arr[row_idx] = 0.0 if is_missing_step else recency_w
 
                 # 2. Policy loss applies to all bans (chronological on Liquipedia) and verified picks,
                 #    with Advantage-Weighted Policy Imitation (1.25x for winning side picks, 0.75x for losing side picks)
@@ -1552,8 +1552,8 @@ def parse_args():
     parser.add_argument(
         "--recency-half-life",
         type=float,
-        default=150.0,
-        help="Exponential recency decay half-life in days (default: 150.0; <=0 uses legacy year weights)",
+        default=None,
+        help="Exponential recency decay half-life in days (default: 150.0 or study_config value; <=0 uses legacy year weights)",
     )
     parser.add_argument(
         "--top-rank",
@@ -1682,7 +1682,11 @@ def main():
         torch.backends.cudnn.allow_tf32 = True
         torch.backends.cudnn.benchmark = True
 
-    recency_half_life = float(study_cfg.get("recency_half_life", args.recency_half_life))
+    recency_half_life = (
+        float(args.recency_half_life)
+        if args.recency_half_life is not None
+        else float(study_cfg.get("recency_half_life", 150.0))
+    )
     use_global_ban_ctx = bool(args.global_ban_context or study_cfg.get("use_global_ban_context", False))
 
     t0 = time.time()
@@ -1803,7 +1807,7 @@ def main():
         ],
         lr=lr,
     )
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=max(1, epochs))
     use_amp = device.type == "cuda" and torch.cuda.is_bf16_supported()
 
     def _compute_step_loss(batch_tensors):
@@ -1927,6 +1931,14 @@ def main():
             if bad_epochs >= patience:
                 print(f"  Early stopping triggered at epoch {epoch} (best Val Loss: {best_val_loss:.4f})", flush=True)
                 break
+
+    if best_metrics is None:
+        _, best_metrics, best_win_acc = evaluate_sota_model(
+            model,
+            val_loader,
+            device,
+            elo_alpha=float(F.softplus(elo_alpha_param).item()) if elo_alpha_param is not None else 0.0,
+        )
 
     print("\n=== SOTA RoVDraftGNNTransformer Validation Metrics (Out of 130 Heroes) ===", flush=True)
     for k, label in [

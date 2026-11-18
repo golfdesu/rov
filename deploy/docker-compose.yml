@@ -9,6 +9,7 @@ services:
     environment:
       - ROV_ENV=production
       - ROV_DB_PATH=/app/db/rov_app.db
+      - ROV_TRUSTED_PROXIES=private,loopback
       - ROV_GOOGLE_CLIENT_ID=${ROV_GOOGLE_CLIENT_ID:-}
       - ROV_GOOGLE_CLIENT_SECRET=${ROV_GOOGLE_CLIENT_SECRET:-}
       - ROV_GOOGLE_REDIRECT_URI=${ROV_GOOGLE_REDIRECT_URI:-}

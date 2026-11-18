@@ -265,6 +265,7 @@ export function useDraft(options: UseDraftOptions = {}) {
 
   const lastSavedAtRef = useRef<number>(initialSession?.updatedAt ?? 0);
   const isHydratingRemoteRef = useRef<boolean>(false);
+  const initialSnapshotKeyRef = useRef<string | null>(null);
   const hasCompletedInitialSyncRef = useRef<boolean>(!persistSession);
   const hasDirtyLocalChangesRef = useRef<boolean>(false);
   const [initialSyncTick, setInitialSyncTick] = useState(0);
@@ -313,9 +314,11 @@ export function useDraft(options: UseDraftOptions = {}) {
           console.warn("Could not fetch /draft/session from server, using local storage:", err);
         }
       } finally {
-        hasCompletedInitialSyncRef.current = true;
-        if (hasDirtyLocalChangesRef.current && !ctrl.signal.aborted) {
-          setInitialSyncTick((t) => t + 1);
+        if (!ctrl.signal.aborted) {
+          hasCompletedInitialSyncRef.current = true;
+          if (hasDirtyLocalChangesRef.current) {
+            setInitialSyncTick((t) => t + 1);
+          }
         }
       }
     }
@@ -334,14 +337,7 @@ export function useDraft(options: UseDraftOptions = {}) {
 
   // Persist every draft/series change to both localStorage (instant F5 reload) and backend disk (/draft/session)
   useEffect(() => {
-    if (isHydratingRemoteRef.current) {
-      isHydratingRemoteRef.current = false;
-      return;
-    }
-
-    const now = Date.now();
-    lastSavedAtRef.current = now;
-    const payload: DraftSessionPayload = {
+    const bodyWithoutTimestamp = {
       stepIndex,
       bluePicks,
       redPicks,
@@ -356,6 +352,28 @@ export function useDraft(options: UseDraftOptions = {}) {
       league,
       globalBans,
       seriesGames,
+    };
+    const snapshotKey = JSON.stringify(bodyWithoutTimestamp);
+
+    if (isHydratingRemoteRef.current) {
+      isHydratingRemoteRef.current = false;
+      initialSnapshotKeyRef.current = snapshotKey;
+      return;
+    }
+
+    if (initialSnapshotKeyRef.current === null) {
+      initialSnapshotKeyRef.current = snapshotKey;
+    }
+
+    // In StrictMode or before initial GET /draft/session settles, ignore unchanged mount state
+    if (persistSession && !hasCompletedInitialSyncRef.current && snapshotKey === initialSnapshotKeyRef.current) {
+      return;
+    }
+
+    const now = Date.now();
+    lastSavedAtRef.current = now;
+    const payload: DraftSessionPayload = {
+      ...bodyWithoutTimestamp,
       updatedAt: now,
     };
     saveLocalSession(payload, storageKey);
@@ -415,10 +433,10 @@ export function useDraft(options: UseDraftOptions = {}) {
     [bluePicks, redPicks, blueBans, redBans, globalBans, stepIndex],
   );
 
-  const seriesWinningHeroes = useMemo(
-    () => getSeriesWinningHeroes(seriesGames, resolveSeriesName(globalBans), globalBans.gameNumber),
-    [seriesGames, globalBans],
-  );
+  const rawSeriesWinningHeroes = getSeriesWinningHeroes(seriesGames, resolveSeriesName(globalBans), globalBans.gameNumber);
+  const seriesWinningHeroesKey = rawSeriesWinningHeroes.join("|");
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- stabilize reference by value so typing names does not refire /predict
+  const seriesWinningHeroes = useMemo(() => rawSeriesWinningHeroes, [seriesWinningHeroesKey]);
 
   // Isolate inference dependencies from team/series name edits so typing names never fires /predict
   const predictGlobalBans = useMemo<GlobalBanState>(
@@ -985,6 +1003,7 @@ export function useDraft(options: UseDraftOptions = {}) {
                     : "A"
                   : globalBans.blueSideTeam;
             dispatch({ type: "reset" });
+            setPickLanes({});
             setPredictError(null);
             setGlobalBans({
               ...finalState,
@@ -996,6 +1015,7 @@ export function useDraft(options: UseDraftOptions = {}) {
 
         if (isDeletedActiveGame) {
           dispatch({ type: "reset" });
+          setPickLanes({});
           setPredictError(null);
           setGlobalBans({
             ...finalState,
@@ -1015,6 +1035,7 @@ export function useDraft(options: UseDraftOptions = {}) {
       setSeriesGames((prev) => prev.filter((g) => getGameSeriesGroup(g) !== groupName));
       if (resolveSeriesName(globalBans) === groupName) {
         dispatch({ type: "reset" });
+        setPickLanes({});
         setPredictError(null);
         setGlobalBans((prev) => ({
           ...prev,

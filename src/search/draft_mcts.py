@@ -115,13 +115,17 @@ def sequence_events(inp: ModelInput) -> list[tuple[int, int, int]]:
 
     # Append any overflow tokens from custom/non-standard board states
     for h in b_bans[bb_i:]:
-        events.append((h, 3 if acting_side == 0 else 4, 17))
+        if h is not None and h != -1:
+            events.append((h, 3 if acting_side == 0 else 4, 17))
     for h in r_bans[rb_i:]:
-        events.append((h, 4 if acting_side == 0 else 3, 17))
+        if h is not None and h != -1:
+            events.append((h, 4 if acting_side == 0 else 3, 17))
     for h in b_picks[bp_i:]:
-        events.append((h, 1 if acting_side == 0 else 2, 17))
+        if h is not None and h != -1:
+            events.append((h, 1 if acting_side == 0 else 2, 17))
     for h in r_picks[rp_i:]:
-        events.append((h, 2 if acting_side == 0 else 1, 17))
+        if h is not None and h != -1:
+            events.append((h, 2 if acting_side == 0 else 1, 17))
     return events
 
 

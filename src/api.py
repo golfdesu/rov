@@ -96,7 +96,7 @@ app.add_middleware(
     allow_origins=config.cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization", "Accept"],
+    allow_headers=["Content-Type", "Authorization", "Accept", "X-Expected-User"],
 )
 
 _SECURITY_HEADERS = {
@@ -259,6 +259,11 @@ async def security_and_lockdown_middleware(request: Request, call_next):
                     return JSONResponse({"detail": "Forbidden referer"}, status_code=403, headers=_SECURITY_HEADERS)
     response = await call_next(request)
     for k, v in _SECURITY_HEADERS.items():
+        if k == "Content-Security-Policy" and not config.is_production:
+            v = v.replace(
+                "img-src 'self' data: blob:;",
+                "img-src 'self' https://cdngarenanow-a.akamaihd.net data: blob:;",
+            )
         response.headers.setdefault(k, v)
     if config.is_production and _is_https_request(request):
         response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")

@@ -24,6 +24,14 @@ _SCHEMA_HERO_ALIASES: dict[str, str] = {
     "kilgrooth": "kilgroth",
     "flowborn": "flowbornmarksman",
     "flowbornmm": "flowbornmarksman",
+    "flowbornarcher": "flowbornmarksman",
+    "doria": "dolia",
+    "jinna": "jinnar",
+    "illumia": "ilumia",
+    "wiro": "wiro",
+    "wirosableng": "wiro",
+    "mingshiyin": "ming",
+    "sikongzhen": "boltbaron",
 }
 
 
@@ -381,7 +389,12 @@ class DraftSessionStateSchema(BaseModel):
     league: Literal["RPL", "AOG", "GCS", "INTL", "APL", "AIC", "GLOBAL"] = "GLOBAL"
     globalBans: GlobalBanStateSchema = Field(default_factory=GlobalBanStateSchema)
     seriesGames: list[RecordedDraftGameSchema] = Field(default_factory=list, max_length=100)
-    updatedAt: int = Field(default=0, description="Epoch milliseconds of last state update")
+    updatedAt: int = Field(
+        default=0,
+        ge=0,
+        le=9223372036854775807,
+        description="Epoch milliseconds of last state update",
+    )
 
     @field_validator("pickLanes")
     @classmethod
@@ -428,4 +441,4 @@ class CombatBuildsSyncSchema(BaseModel):
     b: CombatBuildRequest | None = None
     enable_kiting: bool = True
     enable_actives: bool = True
-    updatedAt: int = Field(default=0, ge=0)
+    updatedAt: int = Field(default=0, ge=0, le=9223372036854775807)

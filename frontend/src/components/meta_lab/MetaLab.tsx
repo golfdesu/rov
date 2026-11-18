@@ -28,6 +28,7 @@ interface MetaLabProps {
   mainRedBans?: string[];
   mainGlobalBans?: GlobalBanState;
   mainSeriesGames?: RecordedDraftGame[];
+  disableShortcuts?: boolean;
 }
 
 type MobileDraftView = "draft" | "ai" | "teams";
@@ -40,6 +41,7 @@ export function MetaLab({
   mainRedBans = [],
   mainGlobalBans,
   mainSeriesGames = [],
+  disableShortcuts = false,
 }: MetaLabProps) {
   const [mobileView, setMobileView] = useState<MobileDraftView>("draft");
   const [globalBanModalCat, setGlobalBanModalCat] = useState<GlobalBanCategoryKey | null>(null);
@@ -102,6 +104,10 @@ export function MetaLab({
   const rName = redTeamName(globalBans);
   const bUsed = useMemo(() => blueUsedHeroes(globalBans), [globalBans]);
   const rUsed = useMemo(() => redUsedHeroes(globalBans), [globalBans]);
+  const activeBoardHeroes = useMemo(
+    () => new Set([...bluePicks, ...redPicks, ...blueBans, ...redBans]),
+    [bluePicks, redPicks, blueBans, redBans],
+  );
   const blueCategoryKey: GlobalBanCategoryKey = globalBans.blueSideTeam === "A" ? "teamAUsed" : "teamBUsed";
   const redCategoryKey: GlobalBanCategoryKey = globalBans.blueSideTeam === "A" ? "teamBUsed" : "teamAUsed";
 
@@ -161,7 +167,7 @@ export function MetaLab({
   };
 
   useEffect(() => {
-    if (globalBanModalCat !== null) return;
+    if (globalBanModalCat !== null || disableShortcuts) return;
     function onKey(e: KeyboardEvent) {
       const typing =
         e.target instanceof HTMLInputElement ||
@@ -197,7 +203,7 @@ export function MetaLab({
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [globalBanModalCat, recommendations, currentStep, isLoading, unavailableHeroes, lockHero, undo, redo]);
+  }, [globalBanModalCat, disableShortcuts, recommendations, currentStep, isLoading, unavailableHeroes, lockHero, undo, redo]);
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-bg">
@@ -277,6 +283,7 @@ export function MetaLab({
           heroMap={heroMap}
           globalBans={globalBans}
           seriesGames={seriesGames}
+          activeBoardHeroes={activeBoardHeroes}
           initialCategory={globalBanModalCat}
           onChange={setGlobalBans}
           onSelectGameNumber={selectGameNumber}
@@ -505,6 +512,7 @@ export function MetaLab({
                 recommendedRanks={recommendedRanks}
                 missingAllyLanes={missingAllyLanes}
                 currentStep={currentStep}
+                isLoading={isLoading}
                 isHeroesLoading={isHeroesLoading}
                 onLockHero={lockHero}
               />

@@ -106,7 +106,7 @@ def choose_archetype(hero: str, meta: dict, skills: list[dict], main_lane: str) 
     role = str(meta.get("primary_role", "Fighter"))
     sec_role = str(meta.get("secondary_role", "") or "")
     dmg_type = str(meta.get("damage_type", "Physical"))
-    is_ranged = str(meta.get("attack_range", "Melee")).lower() == "ranged"
+    is_ranged = bool(meta.get("ranged"))
 
     ap_scale = 0.0
     ad_scale = 0.0
@@ -489,8 +489,8 @@ def compute_kit_interaction_edge(
 
     role_a = str(meta_a.get("primary_role", ""))
     role_b = str(meta_b.get("primary_role", ""))
-    ranged_a = str(meta_a.get("attack_range", "")).lower() == "ranged"
-    ranged_b = str(meta_b.get("attack_range", "")).lower() == "ranged"
+    ranged_a = bool(meta_a.get("ranged"))
+    ranged_b = bool(meta_b.get("ranged"))
     is_magic_a = "Mage" in arch_a or "AP" in arch_a or h_a in ("Valhein", "Thorne", "Erin", "Keera", "Paine", "Zill")
     is_magic_b = "Mage" in arch_b or "AP" in arch_b or h_b in ("Valhein", "Thorne", "Erin", "Keera", "Paine", "Zill")
 
@@ -776,7 +776,7 @@ def main() -> None:
             "Sinestrea",
         ):
             if "Mage" in my_arch or "AP" in my_arch or "Enchanter" in my_arch:
-                counter_candidates.append(("Tome of the Reaper", "ตัดเลือดเวท 40% แก้ทางตัวฮีล/ดูดเลือดจัด"))
+                counter_candidates.append(("Soul Scroll", "ตัดเลือดเวท 40% แก้ทางตัวฮีล/ดูดเลือดจัด"))
             else:
                 counter_candidates.append(("Curse of Death", "ตัดเลือดกายภาพ 40% แก้ทางตัวฮีล/ดูดเลือดจัด"))
 

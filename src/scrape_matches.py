@@ -511,6 +511,7 @@ def main():
     raw_pages = fetch_liquipedia_wikitext_batches(TOURNAMENT_PAGES)
 
     all_games = list(existing_games)
+    key_to_series_id = {_make_game_key(g): g.get("series_id") for g in all_games}
     new_games_count = 0
     series_counter = max_series_idx
 
@@ -523,19 +524,28 @@ def main():
             if not probe_games:
                 continue
 
-            # Check if any games in this match block are new
+            # Check if any games in this match block are new; reuse series_id if earlier games already exist
             new_in_block = [g for g in probe_games if _make_game_key(g) not in existing_keys]
+            if not new_in_block:
+                continue
 
-            if new_in_block:
+            existing_sid = next(
+                (key_to_series_id[_make_game_key(g)] for g in probe_games if _make_game_key(g) in key_to_series_id),
+                None,
+            )
+            if existing_sid:
+                actual_games = [dict(g, series_id=existing_sid) for g in probe_games]
+            else:
                 series_counter += 1
                 actual_games = parse_match_block(m_block, page_title, series_counter, normalize_hero)
-                for g in actual_games:
-                    gk = _make_game_key(g)
-                    if gk not in existing_keys:
-                        all_games.append(g)
-                        existing_keys.add(gk)
-                        new_games_count += 1
-                        page_new_count += 1
+            for g in actual_games:
+                gk = _make_game_key(g)
+                if gk not in existing_keys:
+                    all_games.append(g)
+                    existing_keys.add(gk)
+                    key_to_series_id[gk] = g.get("series_id")
+                    new_games_count += 1
+                    page_new_count += 1
 
         if page_new_count > 0:
             print(f"  {page_title}: added {page_new_count} new draft games")

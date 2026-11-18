@@ -582,6 +582,19 @@ export function buildPredictPayload(
   const rUsed = redUsedHeroes(gbState);
 
   const step = CANONICAL_DRAFT_STEPS[stepIndex];
+  const actingUsedCount = !step
+    ? Math.max(bUsed.length, rUsed.length)
+    : step.action === "ban"
+      ? step.side === "blue"
+        ? rUsed.length
+        : bUsed.length
+      : step.side === "blue"
+        ? bUsed.length
+        : rUsed.length;
+  const maxUniversal = Math.max(0, 40 - actingUsedCount);
+  const cappedUniversalBans =
+    gbState.universalBans.length > maxUniversal ? gbState.universalBans.slice(0, maxUniversal) : gbState.universalBans;
+
   if (!step) {
     return {
       mode: "pick",
@@ -591,7 +604,7 @@ export function buildPredictPayload(
       enemy_picks: state.redPicks,
       ally_bans: state.blueBans,
       enemy_bans: state.redBans,
-      global_bans: gbState.universalBans,
+      global_bans: cappedUniversalBans,
       blue_global_bans: bUsed,
       red_global_bans: rUsed,
       top_k: 1,
@@ -613,7 +626,7 @@ export function buildPredictPayload(
     enemy_picks: enemyPicks,
     ally_bans: isBlue ? state.blueBans : state.redBans,
     enemy_bans: isBlue ? state.redBans : state.blueBans,
-    global_bans: gbState.universalBans,
+    global_bans: cappedUniversalBans,
     blue_global_bans: bUsed,
     red_global_bans: rUsed,
     top_k: candidatePool,

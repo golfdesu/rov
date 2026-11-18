@@ -108,7 +108,13 @@ function AuthForm({
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [prevInitialError, setPrevInitialError] = useState<string | null>(initialError);
   const [error, setError] = useState<string | null>(initialError);
+
+  if (prevInitialError !== initialError) {
+    setPrevInitialError(initialError);
+    setError(initialError);
+  }
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();

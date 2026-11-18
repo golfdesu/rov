@@ -395,7 +395,7 @@ export function EnchantmentBoard({
               const options = catalog.enchantments.filter(
                 (e) => e.faction === primaryFaction && e.tier === tier
               );
-              const currentName = primaryEnchantments.find((n) => options.some((o) => o.name === n));
+              const currentName = primaryEnchantments.find((n) => options.some((o) => o.name === n || o.alias === n));
               const activeEnch = currentName ? enchMap.get(currentName) : null;
 
               return (
@@ -560,7 +560,7 @@ export function EnchantmentBoard({
                 const options = catalog.enchantments.filter(
                   (e) => e.faction === effectiveSecFaction && e.tier === tier
                 );
-                const currentName = secondaryEnchantments.find((n) => options.some((o) => o.name === n));
+                const currentName = secondaryEnchantments.find((n) => options.some((o) => o.name === n || o.alias === n));
                 const activeEnch = currentName ? enchMap.get(currentName) : null;
 
                 return (

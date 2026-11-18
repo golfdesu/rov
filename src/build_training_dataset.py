@@ -81,11 +81,19 @@ def load_true_pick_order_lookup():
 def parse_match_date(date_str: str) -> datetime | None:
     if not date_str:
         return None
-    cleaned = date_str.split("-")[0].strip()
-    try:
-        return datetime.strptime(cleaned, "%B %d, %Y")
-    except Exception:
-        return None
+    raw = date_str.strip()
+    if len(raw) >= 10 and raw[4:5] == "-" and raw[7:8] == "-":
+        try:
+            return datetime.strptime(raw[:10], "%Y-%m-%d")
+        except ValueError:
+            pass
+    cleaned = raw.split(" - ")[0].split("–")[0].strip()
+    for fmt in ("%B %d, %Y", "%b %d, %Y", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(cleaned, fmt)
+        except ValueError:
+            continue
+    return None
 
 
 def normalize_league_token(league_str: str) -> str:
@@ -113,6 +121,8 @@ def build_training_dataset(
     output_path: Path = DEFAULT_OUTPUT_PATH,
     flat_csv_path: Path | None = None,
 ):
+    if only_true_order and no_true_order:
+        raise ValueError("Cannot pass both --only-true-order and --no-true-order")
     with open(MATCHES_FULL_PATH, "r", encoding="utf-8") as f:
         all_games = json.load(f)
 
@@ -142,6 +152,8 @@ def build_training_dataset(
         missing_bans = sum(1 for x in g.get("blue_bans", []) + g.get("red_bans", []) if not x)
         if missing_bans > 1:
             continue
+        if g.get("blue_win") not in (0, 1):
+            continue
 
         # Year filter
         year_str = str(g.get("year", "2026"))
@@ -152,7 +164,7 @@ def build_training_dataset(
         # Max date filter
         if max_dt:
             m_dt = parse_match_date(g.get("date", ""))
-            if m_dt and m_dt > max_dt:
+            if m_dt is None or m_dt > max_dt:
                 continue
 
         # League filter

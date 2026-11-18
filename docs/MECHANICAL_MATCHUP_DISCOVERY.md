@@ -20,13 +20,12 @@
 
 | Winner (Counter) | Loser (Target) | Counter Score (`Rel / Raw`) | `Lv.4 / Lv.10 / Lv.15` Margin | Pro Record | Key Mechanical Reason |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Murad** | **Kil'Groth** | `+66.5 / +54.2` | `+100% / +100% / +97% HP` | `0g` | Invuln S2/Ult dodges auto-attack DPS windows while bursting cleanly |
-| **Omen** | **Biron** | `+60.7 / +77.4` | `+33% / +89% / +76% HP` | `8g` | `Thirst` True Damage + `Untouchable` 60% DR + Ult `-20%` dmg + `Suppress` lock |
-| **Murad** | **Florentino** | `+60.5 / +51.1` | `+83% / +79% / +76% HP` | `39g` | Invuln frames disrupt Florentino's Triple Threat window across all stages |
-| **Omen** | **Charlotte** | `+56.2 / +69.6` | `+45% / +84% / +82% HP` | `4g` | Blocks 7-Star Sword burst with S2 DR and shreds through sustain |
-| **Riktor** | **Murad** | `+44.5 / +36.2` | `+48% / +62% / +56% HP` | `18g` | S2 `0.75s` invuln blocks Murad Ult + jungle/river form burst |
+| **Omen** | **Biron** | `+60.5 / +77.4` | `+33% / +89% / +76% HP` | `8g` | `Thirst` True Damage + `Untouchable` 60% DR + Ult `-20%` dmg + `Suppress` lock |
+| **Omen** | **Yena** | `+54.2 / +70.4` | `+38% / +84% / +89% HP` | `29g` | `Untouchable` DR + `Thirst` True Damage shuts down combo burst |
+| **Mina** | **Kil'Groth** | `+42.3 / +39.5` | `+83% / +63% / +83% HP` | `0g` | High-AS basic attacks feed `Sweet Revenge` 10-stack True spin + S1 `%Max HP` heal |
+| **Mina** | **Taara** | `+41.9 / +40.4` | `+32% / +68% / +60% HP` | `18g` | True spin + sustain out-trades tank attrition |
+| **Kil'Groth** *(Hidden Gem)* | **Kaine** | `+40.7 / +57.3` | `+37% / +98% / +73% HP` | **`0g` (Unseen)** | `The Fanatic` + `Enraged Spear` sustain survives Kaine burst and out-scales |
 | **Omen** | **Bijan** | `+19.6 / +37.0` | `+24% / +77% / +60% HP` | `0g` | `S2` DR + `Death's Embrace` `-20%` dmg + `Fafnir/Blitz/Thirst` destroys Bijan at every stage |
-| **Kil'Groth** *(Hidden Gem)* | **Charlotte** | `+50.6 / +62.3` | `+48% / +94% / +89% HP` | **`0g` (Unseen)** | `The Fanatic` + `Enraged Spear` sustain out-brawls Charlotte |
 
 ### 1.2 Jungle (`Jungle`)
 
@@ -50,9 +49,9 @@
 
 | Winner (Counter) | Loser (Target) | Counter Score (`Rel / Raw`) | `Lv.4 / Lv.10 / Lv.15` Margin | Pro Record | Key Mechanical Reason |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Stuart** | **Wisp / Yorn / Teeri / Tel'Annas** | `+56.6 to +77.1` | `+65..73% / +81..90% / +81..97% HP` | `0–51g` | **S2 (`2.0s` Physical Immunity)** + `Drain Charge` (`+80% AS`) crushes physical crit marksmen |
-| **Hayate** | **Capheny / Slimz** | `+57.6 to +58.8` | `+23..68% / +75..84% / +60..72% HP` | `11–166g` | `Blood of the Dragon` True Damage + `Shadowstep` damage amp |
-| **Laville** *(Hidden Gem)* | **Valhein** | `+40.6 / +51.9` | `+34% / +53% / +93% HP` | **`0g`** | `Protective Bubble` S2 shield + multi-bolt crit scaling dominates late duels |
+| **Stuart** | **Wisp / Yorn** | `+72.2 to +76.9` | `+65..70% / +81..87% / +81..93% HP` | `0–51g` | **S2 (`2.0s` Physical Immunity)** + `Drain Charge` (`+80% AS`) crushes physical crit marksmen |
+| **Hayate** | **Capheny / Slimz** | `+58.1 to +58.8` | `+23..70% / +75..85% / +60..73% HP` | `11–166g` | `Blood of the Dragon` True Damage + `Shadowstep` damage amp |
+| **Bright** *(Hidden Gem)* | **Celica** | `+42.2 / +52.8` | `+71% / +68% / +60% HP` | **`0g`** | `Holy Light` true damage passive + Ult invulnerability bursts through siege ADC |
 
 ### 1.5 Roam / Support (`Roam`)
 
@@ -82,11 +81,12 @@
 
 ---
 
-## 3. Single-Item Counter Flips (`206` Matchup Reversals at Lv.15)
+## 3. Single-Item Counter Flips (`235` Matchup Reversals at Lv.15)
 
-- **`Medallion of Troy` (`136` reversals)**: e.g. `Natalya vs Heino` (`-52.8% -> +100.0%`, `+152.8%` swing), `Erin vs Bonnie` (`-56.6% -> +79.4%`, `+136.0%` swing), `Raz vs Azzen'Ka` (`+134.0%` swing), `Raz vs Flowborn (Mage)` (`+133.6%` swing).
-- **`Mail of Pain` (`55` reversals)**: reflects physical DPS / crit burst back onto auto-attackers.
-- **`Curse of Death` (`15` reversals)**: shuts down high-heal / lifesteal duelists (`Tachi`, `Errol`, `Taara`, etc.) with `40%` anti-heal.
+- **`Medallion of Troy` (`149` reversals)**: e.g. `Erin vs Bonnie` (`-56.6% -> +79.4%`, `+136.0%` swing), `Raz vs Azzen'Ka` (`-47.1% -> +86.9%`, `+134.0%` swing), `Raz vs Flowborn (Mage)` (`+133.6%` swing), `Liliana vs Flowborn (Mage)` (`+126.5%` swing).
+- **`Mail of Pain` (`57` reversals)**: reflects physical DPS / crit burst back onto auto-attackers.
+- **`Curse of Death` (`16` reversals)**: shuts down physical sustain/lifesteal duelists (`Tachi`, `Errol`, `Taara`, etc.) with `40%` anti-heal.
+- **`Soul Scroll` (`13` reversals)**: shuts down high-heal AP/support sustain with `40%` magic anti-heal.
 
 ---
 

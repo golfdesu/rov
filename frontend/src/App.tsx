@@ -1,5 +1,5 @@
 import { LogIn, LogOut, User } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getJson, postJson, setExpectedAuthUser, setSessionMismatchHandler } from "./api/client";
 import { AuthLanding, AuthModal } from "./components/AuthModal";
 import { DraftBoardView } from "./components/DraftBoardView";
@@ -128,7 +128,7 @@ function Workspace({
 
       <ErrorBoundary resetKey={`${tab}:${scope}`}>
         {!DRAFT_ONLY && tab === "tierlist" ? (
-          <TierListView heroes={draft.heroes} />
+          <TierListView heroes={draft.heroes} disableShortcuts={disableShortcuts} />
         ) : !DRAFT_ONLY && tab === "metalab" ? (
           <MetaLab
             heroMap={draft.heroMap}
@@ -138,6 +138,7 @@ function Workspace({
             mainRedBans={draft.redBans}
             mainGlobalBans={draft.globalBans}
             mainSeriesGames={draft.seriesGames}
+            disableShortcuts={disableShortcuts}
           />
         ) : !DRAFT_ONLY && tab === "lab" ? (
           <main className="mx-auto w-full max-w-[1680px] flex-1 overflow-y-auto px-4 py-4">
@@ -251,6 +252,7 @@ function formatOAuthError(code: string | null): string | null {
 export function App() {
   const [tab, setTab] = useState<Tab>(initialTab);
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const authUserRef = useRef<AuthUser | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [googleLoginEnabled, setGoogleLoginEnabled] = useState(false);
   const [discordLoginEnabled, setDiscordLoginEnabled] = useState(false);
@@ -292,6 +294,7 @@ export function App() {
   }, []);
 
   useEffect(() => {
+    authUserRef.current = authUser;
     setExpectedAuthUser(authUser?.username ?? null);
   }, [authUser]);
 
@@ -310,12 +313,10 @@ export function App() {
           setAuthUser((prev) => (prev?.username === res.user?.username ? prev : res.user));
         } else {
           setExpectedAuthUser(null);
-          setAuthUser((prev) => {
-            if (prev !== null) {
-              setOauthError("เซสชันหมดอายุหรือถูกออกจากระบบจากอุปกรณ์อื่น กรุณาเข้าสู่ระบบใหม่");
-            }
-            return null;
-          });
+          if (authUserRef.current !== null) {
+            setOauthError("เซสชันหมดอายุหรือถูกออกจากระบบจากอุปกรณ์อื่น กรุณาเข้าสู่ระบบใหม่");
+          }
+          setAuthUser(null);
         }
       } catch {
         // Keep current client state on transient offline checks during focus refresh
