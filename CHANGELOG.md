@@ -27,6 +27,54 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-18 13:36 (UTC+7) — Upgrade ERAWAN HPO Sweep to 80 Trials & Gap-Aware TPE Exploration (`hpo_sota_optuna.py`, `run_hpo_rov_h100.sbatch`)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Expand ERAWAN H100 HPO Budget ([run_hpo_rov_h100.sbatch](file:///C:/Users/chaya/Documents/Program/Project/ROV/run_hpo_rov_h100.sbatch#L82)):**
+  - Updated SLURM job sweep from `--n-trials 50` to **`--n-trials 80`** (`14` Epochs/Trial, ~13–14 min expected runtime on H100 within the `01:30:00` wall limit).
+- **Gap-Aware TPE Objective & Warm-Start Seed Update ([src/hpo_sota_optuna.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/src/hpo_sota_optuna.py#L446-L488)):**
+  - Configured `TPESampler(seed=SEED, n_startup_trials=15)` with `MedianPruner(n_startup_trials=8, n_warmup_steps=3)` for broader initial exploration.
+  - Updated enqueued Trial #2 from legacy `Trial #13` (`val=2.83144`) to `Trial #31` (`val=2.78136`, `gap=+0.22531`) alongside champion `Trial #00` (`val=2.78122`, `gap=+0.11577`).
+  - Returned `best_trial_loss + 0.10 * max(0.0, overfit_gap)` as Optuna's TPE search objective so `TPESampler` favors configurations with both low validation loss and tight generalization gap (while `top_5_trials` and `[SAFEST]` continue logging raw `val_loss` and `overfit_gap`).
+
+### 📁 Modified Files
+- `run_hpo_rov_h100.sbatch`
+- `src/hpo_sota_optuna.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Checked `run_hpo_rov_h100.sbatch` & `src/hpo_sota_optuna.py` line endings (`LF` preserved for Linux/SLURM).
+- `ruff check --fix .`, `ruff format .`, and `pytest -q --tb=short` (CPU smoke test skipped per explicit user instruction).
+
+---
+
+## 📅 2026-11-18 13:02 (UTC+7) — Sync New H100 HPO Checkpoint (`2.76695`), Production Config, Golden Snapshots & Live API Reload
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Pulled New H100 HPO & Trained Checkpoint (`origin/main` commit `8d00035`):**
+  - Audited with `select_parsimonious_params.py`: Served checkpoint [models/sota_draft_gnn_transformer.pt](file:///C:/Users/chaya/Documents/Program/Project/ROV/models/sota_draft_gnn_transformer.pt) improved from `val_loss = 2.81054` down to **`val_loss = 2.76695`** (`win_acc = 52.64%`); New HPO Rank #1 & Safest is **Trial #00** (`Val = 2.78122`, `Overfit Gap = +0.11577`, `Top-1 = 23.50%`, `Top-5 = 61.09%`, `WinAcc = 51.89%`, `Params = 2,606,112`) on `3,530` curated games (through Nov 17, 2026 AIC Wildcard).
+- **Updated Config, Status Table & Golden Snapshots:**
+  - Updated [configs/selected_production_params.json](file:///C:/Users/chaya/Documents/Program/Project/ROV/configs/selected_production_params.json) and [AGENTS.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/AGENTS.md#L23) to reflect `Trial #00` and the `2.76695` served checkpoint (`3,530` games / `3,000` train / `530` val).
+  - Regenerated [tests/fixtures/predict_golden.json](file:///C:/Users/chaya/Documents/Program/Project/ROV/tests/fixtures/predict_golden.json) (`from tests.test_predictor_golden import regenerate; regenerate()`) so the 72 pro draft state snapshots pin cleanly against the updated checkpoint.
+- **Reloaded Live API Process:**
+  - Stopped the active `uvicorn` child process (`PID 15588`) so `scripts/start_public_15d.ps1` automatically respawned it with `models/sota_draft_gnn_transformer.pt` (`2.76695`) loaded in memory for `127.0.0.1:8000` and `https://minidraft.app/`.
+
+### 📁 Modified Files
+- `configs/selected_production_params.json`
+- `AGENTS.md`
+- `tests/fixtures/predict_golden.json`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `python .agents/skills/hpo-parsimony-selector/scripts/select_parsimonious_params.py`: Served `val_loss=2.76695`, `win_acc=52.64%`; config synced to `Trial #00` (`2.78122`).
+- `python .agents/skills/regression-guard/scripts/audit_regression_guard.py`: `72/72` predictions passed + `3/3` combat duels passed.
+- `pytest -q --tb=short`: `130 passed, 1 warning in 23.76s`; `ruff check .`: `All checks passed!`.
+- Live `/predict` on `http://127.0.0.1:8000/predict` (`status=200`) & `https://minidraft.app/` verified healthy.
+
+---
+
 ## 📅 2026-11-18 12:12 (UTC+7) — AIC 2026 Wildcard Day 2 Match Scrape & True Pick Order Ingestion (7 Games)
 **Agent:** Antigravity
 

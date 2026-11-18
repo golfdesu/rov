@@ -443,16 +443,17 @@ def main():
             global_best["state_dict"] = best_trial_state
             global_best["trial_number"] = trial.number
 
-        return best_trial_loss
+        # Guide TPE toward low val_loss AND narrow generalization gap (Top-5/SAFEST still track raw metrics)
+        return best_trial_loss + 0.10 * max(0.0, overfit_gap)
 
     study = optuna.create_study(
         direction="minimize",
-        sampler=TPESampler(seed=SEED),
-        pruner=MedianPruner(n_startup_trials=6, n_warmup_steps=3),
+        sampler=TPESampler(seed=SEED, n_startup_trials=15),
+        pruner=MedianPruner(n_startup_trials=8, n_warmup_steps=3),
     )
 
-    # Enqueue locked-architecture benchmarks for MedianPruner (from configs/selected_production_params.json):
-    # 1. Trial #1 (Safest Production: Rank #3 in 50-trial H100 run, val_loss=2.83993, overfit_gap=+0.29107)
+    # Enqueue locked-architecture benchmarks for MedianPruner & TPE warm-start:
+    # 1. Trial #00 (Safest Rank #1 in Nov 18 3,530-game H100 run: val_loss=2.78122, overfit_gap=+0.11577)
     study.enqueue_trial(
         {
             "d_model": args.d_model,
@@ -468,18 +469,18 @@ def main():
             "augment_factor": 1,
         }
     )
-    # 2. Trial #13 (Rank #1 Best Val Loss in 50-trial H100 run, val_loss=2.83144, overfit_gap=+0.34375)
+    # 2. Trial #31 (Rank #1 in Nov 17 3,523-game H100 run: val_loss=2.78136, overfit_gap=+0.22531)
     study.enqueue_trial(
         {
             "d_model": args.d_model,
             "nhead": args.nhead,
             "num_layers": args.num_layers,
-            "dropout": 0.12738447976503794,
-            "neural_scale": 1.2156997966331409,
-            "lr": 0.000788156852185878,
-            "weight_decay": 0.0013275232132202762,
-            "label_smoothing": 0.020544467817313013,
-            "win_loss_weight": 0.10056205564003799,
+            "dropout": 0.25116776789853273,
+            "neural_scale": 1.3345978038910433,
+            "lr": 0.0009022652855896566,
+            "weight_decay": 0.001827671190185757,
+            "label_smoothing": 0.024972029184531237,
+            "win_loss_weight": 0.17301897344910794,
             "batch_size": 512,
             "augment_factor": 1,
         }
