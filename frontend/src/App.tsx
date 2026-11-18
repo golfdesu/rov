@@ -1,6 +1,6 @@
 import { LogIn, LogOut, User } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { getJson, postJson, setExpectedAuthUser, setSessionMismatchHandler } from "./api/client";
+import { getJson, postJson, putJson, setExpectedAuthUser, setSessionMismatchHandler } from "./api/client";
 import { AuthLanding, AuthModal } from "./components/AuthModal";
 import { DraftBoardView } from "./components/DraftBoardView";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -9,8 +9,9 @@ import { Modal } from "./components/Modal";
 import { CombatLab } from "./components/lab/CombatLab";
 import { MetaLab } from "./components/meta_lab/MetaLab";
 import { TierListView } from "./components/tierlist/TierListView";
-import { useDraft } from "./hooks/useDraft";
+import { mergeGuestIntoAccountSession, normalizeSessionPayload, useDraft } from "./hooks/useDraft";
 import type { AuthStatusResponse, AuthUser } from "./types/auth";
+import type { DraftSessionPayload } from "./types/draft";
 
 export type Tab = "draft" | "tierlist" | "metalab" | "lab";
 
@@ -200,7 +201,7 @@ function broadcastAuthChange(username: string | null): void {
 
 interface PendingGuestDraft {
   rawKey: string;
-  parsed: Record<string, unknown>;
+  parsed: Partial<DraftSessionPayload>;
   actionsCount: number;
   seriesCount: number;
   globalBanCount: number;
@@ -218,7 +219,7 @@ function readPendingGuestDraft(): PendingGuestDraft | null {
       redBans?: unknown[];
       seriesGames?: unknown[];
       globalBans?: { teamAUsed?: unknown[]; teamBUsed?: unknown[]; universalBans?: unknown[] };
-    } & Record<string, unknown>;
+    } & Partial<DraftSessionPayload>;
     const actionsCount =
       (parsed.bluePicks?.length ?? 0) +
       (parsed.redPicks?.length ?? 0) +
@@ -236,10 +237,21 @@ function readPendingGuestDraft(): PendingGuestDraft | null {
   }
 }
 
-function commitGuestDraftMigration(username: string, parsed: Record<string, unknown>, rawKey: string): void {
+function readLocalUserDraft(username: string): DraftSessionPayload | null {
   try {
-    const migrated = { ...parsed, updatedAt: Date.now() };
-    window.localStorage.setItem(`${DRAFT_STORAGE_PREFIX}:user:${username}`, JSON.stringify(migrated));
+    const raw = window.localStorage.getItem(`${DRAFT_STORAGE_PREFIX}:user:${username}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<DraftSessionPayload>;
+    if (!parsed || typeof parsed !== "object") return null;
+    return normalizeSessionPayload(parsed);
+  } catch {
+    return null;
+  }
+}
+
+function commitGuestDraftMigration(username: string, merged: DraftSessionPayload, rawKey: string): void {
+  try {
+    window.localStorage.setItem(`${DRAFT_STORAGE_PREFIX}:user:${username}`, JSON.stringify(merged));
     window.localStorage.removeItem(rawKey);
   } catch {
     // Ignore storage quota or serialization errors
@@ -275,6 +287,8 @@ export function App() {
   const [guestEntered, setGuestEntered] = useState<boolean>(loadGuestEntered);
   const [authModalOpen, setAuthModalOpen] = useState<boolean>(() => Boolean(oauthError && loadGuestEntered()));
   const [pendingMigration, setPendingMigration] = useState<{ user: AuthUser; draft: PendingGuestDraft } | null>(null);
+  const [migrationBusy, setMigrationBusy] = useState(false);
+  const [migrationError, setMigrationError] = useState<string | null>(null);
   const migrationTitleId = useId();
 
   const updateGuestEntered = useCallback((enabled: boolean) => {
@@ -394,6 +408,9 @@ export function App() {
     setSessionMismatchHandler((status) => {
       setExpectedAuthUser(null);
       setAuthUser(null);
+      setPendingMigration(null);
+      setMigrationBusy(false);
+      setMigrationError(null);
       updateGuestEntered(false);
       setOauthError(
         status === 409
@@ -468,21 +485,41 @@ export function App() {
     );
   }
 
-  const handleConfirmMigration = () => {
-    if (!pendingMigration) return;
-    commitGuestDraftMigration(
-      pendingMigration.user.username,
-      pendingMigration.draft.parsed,
-      pendingMigration.draft.rawKey,
-    );
-    const user = pendingMigration.user;
-    setPendingMigration(null);
-    finalizeAuthenticatedUser(user);
+  const handleConfirmMigration = async () => {
+    if (!pendingMigration || migrationBusy) return;
+    const { user, draft } = pendingMigration;
+    setMigrationBusy(true);
+    setMigrationError(null);
+    setExpectedAuthUser(user.username);
+    try {
+      const remoteRaw = await getJson<Partial<DraftSessionPayload>>("/draft/session");
+      const remoteNormalized = normalizeSessionPayload(remoteRaw ?? {});
+      const localAccount = readLocalUserDraft(user.username);
+      const existingAccount =
+        localAccount && localAccount.updatedAt > remoteNormalized.updatedAt ? localAccount : remoteNormalized;
+
+      const merged = mergeGuestIntoAccountSession(draft.parsed, existingAccount);
+      const saved = await putJson<DraftSessionPayload>("/draft/session", merged);
+
+      commitGuestDraftMigration(user.username, normalizeSessionPayload(saved ?? merged), draft.rawKey);
+      setPendingMigration(null);
+      finalizeAuthenticatedUser(user);
+    } catch (err) {
+      if (!authUserRef.current) {
+        setExpectedAuthUser(null);
+      }
+      setMigrationError(
+        `ไม่สามารถรวมข้อมูลกับเซิร์ฟเวอร์ได้ในขณะนี้ (${err instanceof Error ? err.message : "Network error"}) — ข้อมูลเดิมในบัญชีและโหมด Guest ยังอยู่ครบ`,
+      );
+    } finally {
+      setMigrationBusy(false);
+    }
   };
 
   const handleIgnoreMigration = () => {
-    if (!pendingMigration) return;
+    if (!pendingMigration || migrationBusy) return;
     const user = pendingMigration.user;
+    setMigrationError(null);
     setPendingMigration(null);
     finalizeAuthenticatedUser(user);
   };
@@ -517,7 +554,7 @@ export function App() {
         <Modal
           labelledBy={migrationTitleId}
           className="max-w-md border-gold/40"
-          onClose={handleIgnoreMigration}
+          onClose={migrationBusy ? () => {} : handleIgnoreMigration}
         >
           <div className="border-b border-line px-5 py-3.5">
             <h2 id={migrationTitleId} className="font-display text-sm font-bold tracking-wide text-ink sm:text-base">
@@ -540,24 +577,31 @@ export function App() {
               <span className="font-mono font-bold text-gold">@{pendingMigration.user.username}</span> หรือไม่?
             </p>
             <p className="text-[11px] text-dim sm:text-xs">
-              <strong className="text-ink">Confirm</strong> = นำเข้าสู่บัญชีนี้ ·{" "}
+              <strong className="text-ink">Confirm</strong> = นำเข้าสู่บัญชีและรวมกับประวัติเดิม (ไม่ลบประวัติเก่า) ·{" "}
               <strong className="text-ink">Ignore</strong> = โหลดข้อมูลเดิมของบัญชี
             </p>
+            {migrationError && (
+              <div className="border border-red/40 bg-red/10 px-3 py-2 text-[11px] text-red sm:text-xs">
+                {migrationError}
+              </div>
+            )}
           </div>
           <div className="flex items-center justify-end gap-2 border-t border-line bg-panel-2/40 px-5 py-3">
             <button
               type="button"
+              disabled={migrationBusy}
               onClick={handleIgnoreMigration}
-              className="border border-line-strong bg-panel px-4 py-1.5 font-display text-xs font-semibold text-muted transition-colors hover:border-ink/40 hover:text-ink"
+              className="border border-line-strong bg-panel px-4 py-1.5 font-display text-xs font-semibold text-muted transition-colors hover:border-ink/40 hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
             >
               Ignore
             </button>
             <button
               type="button"
-              onClick={handleConfirmMigration}
-              className="border border-gold bg-gold px-4 py-1.5 font-display text-xs font-bold text-bg transition-colors hover:bg-gold/90"
+              disabled={migrationBusy}
+              onClick={() => void handleConfirmMigration()}
+              className="border border-gold bg-gold px-4 py-1.5 font-display text-xs font-bold text-bg transition-colors hover:bg-gold/90 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Confirm
+              {migrationBusy ? "กำลังรวมข้อมูล..." : "Confirm"}
             </button>
           </div>
         </Modal>

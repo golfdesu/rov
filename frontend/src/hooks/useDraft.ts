@@ -96,7 +96,7 @@ function normalizePickLanes(raw: unknown): Record<string, LaneKey> {
   return out;
 }
 
-function normalizeSessionPayload(parsed: Partial<DraftSessionPayload>): DraftSessionPayload {
+export function normalizeSessionPayload(parsed: Partial<DraftSessionPayload>): DraftSessionPayload {
   const rawGb = parsed.globalBans ? { ...EMPTY_GLOBAL_BANS, ...parsed.globalBans } : EMPTY_GLOBAL_BANS;
   const globalBans: GlobalBanState = {
     ...rawGb,
@@ -138,6 +138,43 @@ function normalizeSessionPayload(parsed: Partial<DraftSessionPayload>): DraftSes
     globalBans,
     seriesGames,
     updatedAt: typeof parsed.updatedAt === "number" ? parsed.updatedAt : 0,
+  };
+}
+
+/**
+ * Merges a guest draft session into an existing account session without discarding
+ * the account's saved series history (`seriesGames`).
+ */
+export function mergeGuestIntoAccountSession(
+  rawGuest: Partial<DraftSessionPayload>,
+  rawAccount: Partial<DraftSessionPayload> | null,
+): DraftSessionPayload {
+  const guest = normalizeSessionPayload(rawGuest);
+  const account = rawAccount ? normalizeSessionPayload(rawAccount) : normalizeSessionPayload({});
+
+  const guestBoardCount =
+    guest.bluePicks.length + guest.redPicks.length + guest.blueBans.length + guest.redBans.length;
+  const guestGbCount =
+    guest.globalBans.teamAUsed.length + guest.globalBans.teamBUsed.length + guest.globalBans.universalBans.length;
+  const useGuestBoard = guestBoardCount > 0 || guestGbCount > 0;
+  const boardSource = useGuestBoard ? guest : account;
+
+  const seenIds = new Set<string>();
+  const mergedSeriesGames: RecordedDraftGame[] = [];
+  for (const game of [...guest.seriesGames, ...account.seriesGames]) {
+    const gid = typeof game.id === "string" ? game.id.trim() : "";
+    if (gid) {
+      if (seenIds.has(gid)) continue;
+      seenIds.add(gid);
+    }
+    mergedSeriesGames.push(game);
+    if (mergedSeriesGames.length >= MAX_SERIES_GAMES) break;
+  }
+
+  return {
+    ...boardSource,
+    seriesGames: mergedSeriesGames,
+    updatedAt: Math.max(Date.now(), account.updatedAt + 1),
   };
 }
 

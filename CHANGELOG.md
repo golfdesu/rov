@@ -27,6 +27,32 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-18 17:55 (UTC+7) — Non-Destructive Guest-to-Account Draft Migration (Preserve & Merge History)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Safe Series History Preservation on Guest Login (`frontend/src/hooks/useDraft.ts`, `frontend/src/App.tsx`):**
+  - Added and exported `mergeGuestIntoAccountSession(rawGuest, rawAccount)` (alongside exported `normalizeSessionPayload`) in `frontend/src/hooks/useDraft.ts`:
+    - **Series History (`seriesGames`):** Preserves all saved account games by merging `guest.seriesGames` + `account.seriesGames`, deduplicating by `game.id` and capping at `MAX_SERIES_GAMES = 100`.
+    - **Active Board & Global Bans:** Brings forward Guest active board/global bans only when Guest actually has active picks/bans/global bans; when Guest only recorded series history (`actionsCount === 0 && globalBanCount === 0`), keeps the existing account active board intact.
+  - Updated `handleConfirmMigration` in `frontend/src/App.tsx` to async-fetch `/draft/session` (and compare against cached `rov_draft_session_v1:user:<username>` by `updatedAt`), merge guest data cleanly without dropping account history, persist `PUT /draft/session` immediately before clearing the `:guest` key, set `X-Expected-User` guard + `migrationBusy`/`migrationError` modal handling, and clear `pendingMigration` inside `setSessionMismatchHandler`.
+  - Updated Confirm modal text to explicitly state that old account history is preserved and merged.
+
+### 📁 Modified Files
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/App.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `cd frontend && npm run lint`: `oxlint` 0 warnings, 0 errors across 49 files.
+- `cd frontend && npm run build` & `VITE_DRAFT_ONLY=true VITE_OUT_DIR=dist-prod npm run build:prod`: Both bundles compiled cleanly (`index-C_vIwA5t.js` dev, `index-C45A_agt.js` prod).
+- `pytest -q --tb=short tests/test_api.py`: `36 passed, 1 warning in 6.26s`.
+- `python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py`: `[PASS]`.
+- Ephemeral Playwright E2E test (`verify_guest_merge_e2e.py` against `dist-prod` + FastAPI): Verified Case 1 (Guest board + saved game merged with existing account history `['guest-game-1', 'old-game-1']`, `:guest` key removed, Draft History `2/100` shows both series) and Case 2 (Guest history-only import preserves account board `['Florentino']` and merges to `['guest-game-2', 'guest-game-1', 'old-game-1']`).
+- `ruff check .` & `ruff format --check .`: Passed (`114 files already formatted`).
+
+---
+
 ## 📅 2026-11-18 17:04 (UTC+7) — UX/UI Accessibility & Touch-Target Polish + Portal ConfirmDialog (`ConfirmDialog.tsx`)
 **Agent:** Antigravity
 
