@@ -95,11 +95,7 @@ export function FinishGameModal({
               </span>
               <CheckCircle2 className="h-5 w-5 shrink-0 text-blue opacity-70 transition-opacity group-hover:opacity-100" />
             </div>
-            <span className="text-[11px] text-muted">
-              {isUltimateGame
-                ? `บันทึกผลชัยชนะให้ ${blueTeamName}`
-                : `เกมถัดไป ${redTeamName} จะได้ฝั่ง Blue`}
-            </span>
+            <span className="text-[11px] text-muted">บันทึกผลชัยชนะให้ {blueTeamName}</span>
           </button>
 
           <button
@@ -119,11 +115,7 @@ export function FinishGameModal({
               </span>
               <CheckCircle2 className="h-5 w-5 shrink-0 text-red opacity-70 transition-opacity group-hover:opacity-100" />
             </div>
-            <span className="text-[11px] text-muted">
-              {isUltimateGame
-                ? `บันทึกผลชัยชนะให้ ${redTeamName}`
-                : `เกมถัดไป ${blueTeamName} จะได้ฝั่ง Blue`}
-            </span>
+            <span className="text-[11px] text-muted">บันทึกผลชัยชนะให้ {redTeamName}</span>
           </button>
         </div>
 

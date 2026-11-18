@@ -27,6 +27,38 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-18 18:20 (UTC+7) — Manual-Only Side Control, UX/UI Skill Gate (`audit_ux_ui.py`), & WCAG Target Fix
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Eliminated All Automatic Side-Switching Conditions (`frontend/src/hooks/useDraft.ts`, `frontend/src/components/FinishGameModal.tsx`):**
+  - Removed automatic `blueSideTeam` flipping triggered by winner outcomes in `recordGameToSeries`, `setRecordedGameWinner`, `selectGameNumber`, `deleteRecordedGame` rollback, and `switchSeries`. Sides now change only on explicit `Swap Sides` click (or when loading an existing historical game snapshot recorded on the opposite side).
+  - Updated `FinishGameModal` button subtexts from `"เกมถัดไป ... จะได้ฝั่ง Blue"` to `"บันทึกผลชัยชนะให้ <Team>"` so UI copy matches manual-only side control.
+- **Upgraded `DESIGN.md` & `frontend-e2e-inspector` Skill (Option 1 — Synced to `.claude/skills/`):**
+  - Added **"UX, Accessibility & Safety Guardrails"** to `DESIGN.md` (WCAG AA contrast & `>= 24px` touch targets, Portal `ConfirmDialog`, no native dialogs, mobile modal ergonomics, `0px` horizontal overflow, explicit side control).
+  - Created `.agents/skills/frontend-e2e-inspector/scripts/audit_ux_ui.py` (automated Playwright gate verifying `375x667`, `390x844`, `768x1024`, `1280x800`, `>= 24px` touch targets, mobile modal ergonomics, portal confirm dialogs, and no auto side-swap on game finish), updated `.agents/skills/frontend-e2e-inspector/SKILL.md`, and mirrored `.agents/skills/` to `.claude/skills/`.
+- **WCAG 2.2 AA Touch Target Fix (`frontend/src/components/TeamColumn.tsx`):**
+  - Caught by `audit_ux_ui.py` at `1280x800`: the desktop/tablet Global Ban `"เลือกตัวที่เคยใช้"` button measured `21px` high; added `min-h-6` (`>= 24px`).
+
+### 📁 Modified / Created Files
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/FinishGameModal.tsx`
+- `frontend/src/components/TeamColumn.tsx`
+- `DESIGN.md`
+- `.agents/skills/frontend-e2e-inspector/SKILL.md` & `.claude/skills/frontend-e2e-inspector/SKILL.md`
+- `.agents/skills/frontend-e2e-inspector/scripts/audit_ux_ui.py` & `.claude/skills/frontend-e2e-inspector/scripts/audit_ux_ui.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `cd frontend && npm run lint`: `oxlint` 0 warnings, 0 errors across 49 files.
+- `cd frontend && npm run build` & `VITE_DRAFT_ONLY=true VITE_OUT_DIR=dist-prod npm run build:prod`: Compiled cleanly (`index-BEDHNFur.js` dev, `index-DTiCwLIw.js` prod).
+- `python .agents/skills/frontend-e2e-inspector/scripts/audit_ux_ui.py`: `[PASS] UX/UI accessibility, mobile layout, portal dialogs, and side-lock verified.`
+- `python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py`: `[PASS] Frontend E2E assets and static endpoints verified healthy.`
+- `pytest -q --tb=short tests/test_skills_sync.py tests/test_api.py`: `38 passed, 1 warning in 5.59s`.
+- `ruff check .` & `ruff format --check .`: `All checks passed!`, `116 files already formatted`.
+
+---
+
 ## 📅 2026-11-18 17:55 (UTC+7) — Non-Destructive Guest-to-Account Draft Migration (Preserve & Merge History)
 **Agent:** Antigravity
 

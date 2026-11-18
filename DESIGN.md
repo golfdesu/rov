@@ -50,3 +50,11 @@ Dark esports broadcast style for the draft board in `frontend/`. Tokens live in 
 | :--- | :--- | :--- | :--- |
 | **iPad (Safari Landscape)** | `2048 x 1423` px | `~1.44 : 1` | Full 3-column `xl` broadcast layout (`Blue` \| `AI + 7-col Grid` \| `Red`) |
 | **iPhone (Safari Portrait)** | `942 x 2048` px | `~0.46 : 1` (`1 : 2.17`) | Compact mobile layout (side-by-side mini team boards, compact AI strip, 5-col grid, bottom quick-action bar) |
+
+## UX, Accessibility & Safety Guardrails
+
+- **WCAG 2.2 AA Contrast & Target Size:** Keep `--color-dim: #7383a5` (`>= 4.5:1` on `panel-2`, `panel`, `bg`) and `--color-muted: #94a3c4`. Visible interactive controls (`button`, `a`, `select`) MUST maintain rendered height `>= 24px` (use `h-8` / `min-h-6` on compact controls, never unpadded `text-[10px]` links).
+- **Portal Confirmations (No Native Dialogs):** Never call `window.confirm()`, `window.alert()`, or `window.prompt()`. Use [`ConfirmDialog`](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/ConfirmDialog.tsx) rendered via `createPortal(..., document.body)` so confirmation overlays escape `<header backdrop-blur-md>` and `Modal clip-chamfer` containing blocks cleanly.
+- **Mobile Modal Ergonomics:** Never auto-focus text inputs (`initialFocusRef` on search) when opening modals on touch devices; pin the `X` close button top-right on `< sm`; use a unified vertical scroll body on `< sm` (`max-h-[92dvh]`) so mobile toolbars never crush lists (`>= 200px`) or push footer actions off-screen.
+- **Compact Cards & Zero Horizontal Overflow:** On `< sm` (`375px–639px`), hide picked/ghost hero text overlays inside `variant="compact"` slots (`hidden sm:block`) to preserve square portraits and lane badges, and keep `scrollWidth <= clientWidth` across `375x667`, `390x844`, `768x1024`, and `1280x800`.
+- **Explicit Side Control:** Side switching (`blueSideTeam`) is strictly manual via the Swap Sides action (or loading an existing historical game recorded on the opposite side). Recording a game winner or advancing/switching games (`G1..G7`) MUST NEVER auto-swap sides behind the user's back.

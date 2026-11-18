@@ -603,7 +603,7 @@ export function TeamColumn({
           <button
             type="button"
             onClick={onOpenGlobalBanForTeam}
-            className={`flex shrink-0 items-center gap-1 border px-1.5 py-0.5 font-display text-[10px] font-bold tracking-wide transition-colors sm:px-2 ${
+            className={`flex min-h-6 shrink-0 items-center gap-1 border px-1.5 py-0.5 font-display text-[10px] font-bold tracking-wide transition-colors sm:px-2 ${
               isBlue
                 ? "border-blue/50 bg-blue/10 text-blue hover:bg-blue hover:text-ink"
                 : "border-red/50 bg-red/10 text-red hover:bg-red hover:text-ink"

@@ -814,16 +814,12 @@ export function useDraft(options: UseDraftOptions = {}) {
         const addToA = blueIsA ? bluePicks : redPicks;
         const addToB = blueIsA ? redPicks : bluePicks;
         const synced = syncSeriesGlobalBans(prev, nextSeriesGames, nextGame, overwrittenGames);
-        // Pro rule: losing team gets first side choice (defaulting to Blue side) in the next game
-        const nextBlueSide: TeamId = effectiveWinner
-          ? effectiveWinner === "A"
+        // Side switching is strictly manual via Swap Sides; finishing a game keeps the current side assignment.
+        const nextBlueSide: TeamId = swapAfter
+          ? prev.blueSideTeam === "A"
             ? "B"
             : "A"
-          : swapAfter
-            ? prev.blueSideTeam === "A"
-              ? "B"
-              : "A"
-            : prev.blueSideTeam;
+          : prev.blueSideTeam;
         return {
           ...prev,
           teamAUsed: Array.from(new Set([...synced.teamAUsed, ...addToA])),
@@ -848,25 +844,9 @@ export function useDraft(options: UseDraftOptions = {}) {
     ],
   );
 
-  const setRecordedGameWinner = useCallback(
-    (id: string, winner?: TeamId) => {
-      const target = seriesGames.find((g) => g.id === id);
-      setSeriesGames((prev) => prev.map((g) => (g.id === id ? { ...g, winner } : g)));
-      if (
-        target &&
-        winner &&
-        getGameSeriesGroup(target) === resolveSeriesName(globalBans) &&
-        target.gameNumber === globalBans.gameNumber - 1 &&
-        stepIndex === 0
-      ) {
-        setGlobalBans((prev) => ({
-          ...prev,
-          blueSideTeam: winner === "A" ? "B" : "A",
-        }));
-      }
-    },
-    [seriesGames, globalBans, stepIndex],
-  );
+  const setRecordedGameWinner = useCallback((id: string, winner?: TeamId) => {
+    setSeriesGames((prev) => prev.map((g) => (g.id === id ? { ...g, winner } : g)));
+  }, []);
 
   const saveCurrentDraftSnapshot = useCallback(() => {
     const hasAnyAction = bluePicks.length + redPicks.length + blueBans.length + redBans.length > 0;
@@ -959,24 +939,16 @@ export function useDraft(options: UseDraftOptions = {}) {
       if (targetGame) {
         loadRecordedGame(targetGame, nextSeriesGames, effectiveGlobalBans);
       } else {
-        const prevGame = nextSeriesGames.find(
-          (g) => getGameSeriesGroup(g) === currentGroup && g.gameNumber === nextGameNumber - 1,
-        );
         dispatch({ type: "reset" });
         setPickLanes({});
         setPredictError(null);
         setGlobalBans((prev) => {
           const base = globalBansOverride ?? prev;
           const synced = syncSeriesGlobalBans(base, nextSeriesGames, nextGameNumber, overwrittenGames);
-          const nextBlueSide: TeamId = prevGame?.winner
-            ? prevGame.winner === "A"
-              ? "B"
-              : "A"
-            : base.blueSideTeam;
           return {
             ...base,
             ...synced,
-            blueSideTeam: nextBlueSide,
+            blueSideTeam: base.blueSideTeam,
             gameNumber: nextGameNumber,
           };
         });
@@ -1028,17 +1000,8 @@ export function useDraft(options: UseDraftOptions = {}) {
           if (targetGame) {
             loadRecordedGame(targetGame, nextSeriesGames, finalState);
           } else {
-            const prevGame = nextSeriesGames.find(
-              (g) => getGameSeriesGroup(g) === currentGroup && g.gameNumber === clampedGame - 1,
-            );
             const nextBlueSide: TeamId =
-              deleted.gameNumber === clampedGame
-                ? deleted.blueSideTeam
-                : prevGame?.winner
-                  ? prevGame.winner === "A"
-                    ? "B"
-                    : "A"
-                  : globalBans.blueSideTeam;
+              deleted.gameNumber === clampedGame ? deleted.blueSideTeam : globalBans.blueSideTeam;
             dispatch({ type: "reset" });
             setPickLanes({});
             setPredictError(null);
@@ -1162,11 +1125,7 @@ export function useDraft(options: UseDraftOptions = {}) {
       const teamAName = latest.blueSideTeam === "A" ? latest.blueTeamName : latest.redTeamName;
       const teamBName = latest.blueSideTeam === "A" ? latest.redTeamName : latest.blueTeamName;
       const targetGameNumber = Math.min(latest.gameNumber + 1, 7);
-      const nextBlueSide: TeamId = latest.winner
-        ? latest.winner === "A"
-          ? "B"
-          : "A"
-        : latest.blueSideTeam;
+      const nextBlueSide: TeamId = latest.blueSideTeam;
 
       const baseBans: GlobalBanState = {
         seriesName: latest.seriesName || groupName,
