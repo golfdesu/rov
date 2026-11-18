@@ -1,5 +1,338 @@
 [
   {
+    "series_id": "Arena_of_Valor_Premier_League_2025_Playoffs_S176",
+    "league": "Arena of Valor Premier League",
+    "year": "2025",
+    "stage": "Playoffs",
+    "date": "July 10, 2025- 16:00",
+    "bestof": 5,
+    "game_number": 1,
+    "is_ultimate_battle": false,
+    "length": "18:20",
+    "blue_team": "SGP",
+    "red_team": "FS",
+    "blue_win": 1,
+    "blue_bans": [
+      "Murad",
+      "Annette",
+      "Biron",
+      "Qi"
+    ],
+    "red_bans": [
+      "Rouie",
+      "Valhein",
+      "Aoi",
+      "Eland'orr"
+    ],
+    "blue_picks": [
+      "Yena",
+      "Marja",
+      "Lorion",
+      "Wisp",
+      "Enzo"
+    ],
+    "red_picks": [
+      "Riktor",
+      "Billow",
+      "Liliana",
+      "Hayate",
+      "TeeMee"
+    ],
+    "blue_global_bans": [],
+    "red_global_bans": [],
+    "is_true_order": false,
+    "true_pick_source": "liquipedia_lane_order",
+    "true_screenshot": ""
+  },
+  {
+    "series_id": "Arena_of_Valor_Premier_League_2025_Playoffs_S176",
+    "league": "Arena of Valor Premier League",
+    "year": "2025",
+    "stage": "Playoffs",
+    "date": "July 10, 2025- 16:00",
+    "bestof": 5,
+    "game_number": 2,
+    "is_ultimate_battle": false,
+    "length": "13:44",
+    "blue_team": "SGP",
+    "red_team": "FS",
+    "blue_win": 0,
+    "blue_bans": [
+      "Marja",
+      "Annette",
+      "Florentino",
+      "Maloch"
+    ],
+    "red_bans": [
+      "Rouie",
+      "Billow",
+      "Toro",
+      "Thane"
+    ],
+    "blue_picks": [
+      "Riktor",
+      "Tachi",
+      "Heino",
+      "Valhein",
+      "TeeMee"
+    ],
+    "red_picks": [
+      "Biron",
+      "Keera",
+      "Lorion",
+      "Fennik",
+      "Enzo"
+    ],
+    "blue_global_bans": [
+      "Yena",
+      "Marja",
+      "Lorion",
+      "Wisp",
+      "Enzo"
+    ],
+    "red_global_bans": [
+      "Riktor",
+      "Billow",
+      "Liliana",
+      "Hayate",
+      "TeeMee"
+    ],
+    "is_true_order": false,
+    "true_pick_source": "liquipedia_lane_order",
+    "true_screenshot": ""
+  },
+  {
+    "series_id": "Arena_of_Valor_Premier_League_2025_Playoffs_S176",
+    "league": "Arena of Valor Premier League",
+    "year": "2025",
+    "stage": "Playoffs",
+    "date": "July 10, 2025- 16:00",
+    "bestof": 5,
+    "game_number": 3,
+    "is_ultimate_battle": false,
+    "length": "12:46",
+    "blue_team": "FS",
+    "red_team": "SGP",
+    "blue_win": 1,
+    "blue_bans": [
+      "Billow",
+      "Stuart",
+      "Aoi",
+      "Keera"
+    ],
+    "red_bans": [
+      "Marja",
+      "Rouie",
+      "Ming",
+      "Raz"
+    ],
+    "blue_picks": [
+      "Qi",
+      "Nakroth",
+      "Mganga",
+      "Valhein",
+      "Annette"
+    ],
+    "red_picks": [
+      "Skud",
+      "Zephys",
+      "Iggy",
+      "Capheny",
+      "Toro"
+    ],
+    "blue_global_bans": [
+      "Riktor",
+      "Billow",
+      "Liliana",
+      "Hayate",
+      "TeeMee",
+      "Biron",
+      "Keera",
+      "Lorion",
+      "Fennik",
+      "Enzo"
+    ],
+    "red_global_bans": [
+      "Yena",
+      "Marja",
+      "Lorion",
+      "Wisp",
+      "Enzo",
+      "Riktor",
+      "Tachi",
+      "Heino",
+      "Valhein",
+      "TeeMee"
+    ],
+    "is_true_order": false,
+    "true_pick_source": "liquipedia_lane_order",
+    "true_screenshot": ""
+  },
+  {
+    "series_id": "Arena_of_Valor_Premier_League_2025_Playoffs_S176",
+    "league": "Arena of Valor Premier League",
+    "year": "2025",
+    "stage": "Playoffs",
+    "date": "July 10, 2025- 16:00",
+    "bestof": 5,
+    "game_number": 4,
+    "is_ultimate_battle": false,
+    "length": "36:16",
+    "blue_team": "FS",
+    "red_team": "SGP",
+    "blue_win": 0,
+    "blue_bans": [
+      "Billow",
+      "Keera",
+      "Thane",
+      "Annette"
+    ],
+    "red_bans": [
+      "Rouie",
+      "Marja",
+      "Omen",
+      "Stuart"
+    ],
+    "blue_picks": [
+      "Airi",
+      "Bolt Baron",
+      "Maloch",
+      "Eland'orr",
+      "Dolia"
+    ],
+    "red_picks": [
+      "Murad",
+      "Aoi",
+      "Raz",
+      "Violet",
+      "Mina"
+    ],
+    "blue_global_bans": [
+      "Riktor",
+      "Billow",
+      "Liliana",
+      "Hayate",
+      "TeeMee",
+      "Biron",
+      "Keera",
+      "Lorion",
+      "Fennik",
+      "Enzo",
+      "Qi",
+      "Nakroth",
+      "Mganga",
+      "Valhein",
+      "Annette"
+    ],
+    "red_global_bans": [
+      "Yena",
+      "Marja",
+      "Lorion",
+      "Wisp",
+      "Enzo",
+      "Riktor",
+      "Tachi",
+      "Heino",
+      "Valhein",
+      "TeeMee",
+      "Skud",
+      "Zephys",
+      "Iggy",
+      "Capheny",
+      "Toro"
+    ],
+    "is_true_order": false,
+    "true_pick_source": "liquipedia_lane_order",
+    "true_screenshot": ""
+  },
+  {
+    "series_id": "Arena_of_Valor_Premier_League_2025_Playoffs_S176",
+    "league": "Arena of Valor Premier League",
+    "year": "2025",
+    "stage": "Playoffs",
+    "date": "July 10, 2025- 16:00",
+    "bestof": 5,
+    "game_number": 5,
+    "is_ultimate_battle": false,
+    "length": "09:18",
+    "blue_team": "SGP",
+    "red_team": "FS",
+    "blue_win": 0,
+    "blue_bans": [
+      "Marja",
+      "Murad",
+      "Florentino",
+      "Heino"
+    ],
+    "red_bans": [
+      "Rouie",
+      "Billow",
+      "Keera",
+      "Eland'orr"
+    ],
+    "blue_picks": [
+      "Bolt Baron",
+      "Veres",
+      "Dolia",
+      "Hayate",
+      "Maloch"
+    ],
+    "red_picks": [
+      "Ryoma",
+      "Tachi",
+      "Raz",
+      "Capheny",
+      "Toro"
+    ],
+    "blue_global_bans": [
+      "Yena",
+      "Marja",
+      "Lorion",
+      "Wisp",
+      "Enzo",
+      "Riktor",
+      "Tachi",
+      "Heino",
+      "Valhein",
+      "TeeMee",
+      "Skud",
+      "Zephys",
+      "Iggy",
+      "Capheny",
+      "Toro",
+      "Murad",
+      "Aoi",
+      "Raz",
+      "Violet",
+      "Mina"
+    ],
+    "red_global_bans": [
+      "Riktor",
+      "Billow",
+      "Liliana",
+      "Hayate",
+      "TeeMee",
+      "Biron",
+      "Keera",
+      "Lorion",
+      "Fennik",
+      "Enzo",
+      "Qi",
+      "Nakroth",
+      "Mganga",
+      "Valhein",
+      "Annette",
+      "Airi",
+      "Bolt Baron",
+      "Maloch",
+      "Eland'orr",
+      "Dolia"
+    ],
+    "is_true_order": false,
+    "true_pick_source": "liquipedia_lane_order",
+    "true_screenshot": ""
+  },
+  {
     "series_id": "RoV_Pro_League_2025_Summer/Group_Stage_S409",
     "league": "RoV Pro League",
     "year": "2025",
@@ -51617,339 +51950,6 @@
       "Heino",
       "Capheny",
       "Toro"
-    ],
-    "is_true_order": false,
-    "true_pick_source": "liquipedia_lane_order",
-    "true_screenshot": ""
-  },
-  {
-    "series_id": "Arena_of_Valor_Premier_League_2025_Playoffs_S176",
-    "league": "Arena of Valor Premier League",
-    "year": "2025",
-    "stage": "Playoffs",
-    "date": "July 10, 2025- 16:00",
-    "bestof": 5,
-    "game_number": 1,
-    "is_ultimate_battle": false,
-    "length": "18:20",
-    "blue_team": "SGP",
-    "red_team": "FS",
-    "blue_win": 1,
-    "blue_bans": [
-      "Murad",
-      "Annette",
-      "Biron",
-      "Qi"
-    ],
-    "red_bans": [
-      "Rouie",
-      "Valhein",
-      "Aoi",
-      "Eland'orr"
-    ],
-    "blue_picks": [
-      "Yena",
-      "Marja",
-      "Lorion",
-      "Wisp",
-      "Enzo"
-    ],
-    "red_picks": [
-      "Riktor",
-      "Billow",
-      "Liliana",
-      "Hayate",
-      "TeeMee"
-    ],
-    "blue_global_bans": [],
-    "red_global_bans": [],
-    "is_true_order": false,
-    "true_pick_source": "liquipedia_lane_order",
-    "true_screenshot": ""
-  },
-  {
-    "series_id": "Arena_of_Valor_Premier_League_2025_Playoffs_S176",
-    "league": "Arena of Valor Premier League",
-    "year": "2025",
-    "stage": "Playoffs",
-    "date": "July 10, 2025- 16:00",
-    "bestof": 5,
-    "game_number": 2,
-    "is_ultimate_battle": false,
-    "length": "13:44",
-    "blue_team": "SGP",
-    "red_team": "FS",
-    "blue_win": 0,
-    "blue_bans": [
-      "Marja",
-      "Annette",
-      "Florentino",
-      "Maloch"
-    ],
-    "red_bans": [
-      "Rouie",
-      "Billow",
-      "Toro",
-      "Thane"
-    ],
-    "blue_picks": [
-      "Riktor",
-      "Tachi",
-      "Heino",
-      "Valhein",
-      "TeeMee"
-    ],
-    "red_picks": [
-      "Biron",
-      "Keera",
-      "Lorion",
-      "Fennik",
-      "Enzo"
-    ],
-    "blue_global_bans": [
-      "Yena",
-      "Marja",
-      "Lorion",
-      "Wisp",
-      "Enzo"
-    ],
-    "red_global_bans": [
-      "Riktor",
-      "Billow",
-      "Liliana",
-      "Hayate",
-      "TeeMee"
-    ],
-    "is_true_order": false,
-    "true_pick_source": "liquipedia_lane_order",
-    "true_screenshot": ""
-  },
-  {
-    "series_id": "Arena_of_Valor_Premier_League_2025_Playoffs_S176",
-    "league": "Arena of Valor Premier League",
-    "year": "2025",
-    "stage": "Playoffs",
-    "date": "July 10, 2025- 16:00",
-    "bestof": 5,
-    "game_number": 3,
-    "is_ultimate_battle": false,
-    "length": "12:46",
-    "blue_team": "FS",
-    "red_team": "SGP",
-    "blue_win": 1,
-    "blue_bans": [
-      "Billow",
-      "Stuart",
-      "Aoi",
-      "Keera"
-    ],
-    "red_bans": [
-      "Marja",
-      "Rouie",
-      "Ming",
-      "Raz"
-    ],
-    "blue_picks": [
-      "Qi",
-      "Nakroth",
-      "Mganga",
-      "Valhein",
-      "Annette"
-    ],
-    "red_picks": [
-      "Skud",
-      "Zephys",
-      "Iggy",
-      "Capheny",
-      "Toro"
-    ],
-    "blue_global_bans": [
-      "Riktor",
-      "Billow",
-      "Liliana",
-      "Hayate",
-      "TeeMee",
-      "Biron",
-      "Keera",
-      "Lorion",
-      "Fennik",
-      "Enzo"
-    ],
-    "red_global_bans": [
-      "Yena",
-      "Marja",
-      "Lorion",
-      "Wisp",
-      "Enzo",
-      "Riktor",
-      "Tachi",
-      "Heino",
-      "Valhein",
-      "TeeMee"
-    ],
-    "is_true_order": false,
-    "true_pick_source": "liquipedia_lane_order",
-    "true_screenshot": ""
-  },
-  {
-    "series_id": "Arena_of_Valor_Premier_League_2025_Playoffs_S176",
-    "league": "Arena of Valor Premier League",
-    "year": "2025",
-    "stage": "Playoffs",
-    "date": "July 10, 2025- 16:00",
-    "bestof": 5,
-    "game_number": 4,
-    "is_ultimate_battle": false,
-    "length": "36:16",
-    "blue_team": "FS",
-    "red_team": "SGP",
-    "blue_win": 0,
-    "blue_bans": [
-      "Billow",
-      "Keera",
-      "Thane",
-      "Annette"
-    ],
-    "red_bans": [
-      "Rouie",
-      "Marja",
-      "Omen",
-      "Stuart"
-    ],
-    "blue_picks": [
-      "Airi",
-      "Bolt Baron",
-      "Maloch",
-      "Eland'orr",
-      "Dolia"
-    ],
-    "red_picks": [
-      "Murad",
-      "Aoi",
-      "Raz",
-      "Violet",
-      "Mina"
-    ],
-    "blue_global_bans": [
-      "Riktor",
-      "Billow",
-      "Liliana",
-      "Hayate",
-      "TeeMee",
-      "Biron",
-      "Keera",
-      "Lorion",
-      "Fennik",
-      "Enzo",
-      "Qi",
-      "Nakroth",
-      "Mganga",
-      "Valhein",
-      "Annette"
-    ],
-    "red_global_bans": [
-      "Yena",
-      "Marja",
-      "Lorion",
-      "Wisp",
-      "Enzo",
-      "Riktor",
-      "Tachi",
-      "Heino",
-      "Valhein",
-      "TeeMee",
-      "Skud",
-      "Zephys",
-      "Iggy",
-      "Capheny",
-      "Toro"
-    ],
-    "is_true_order": false,
-    "true_pick_source": "liquipedia_lane_order",
-    "true_screenshot": ""
-  },
-  {
-    "series_id": "Arena_of_Valor_Premier_League_2025_Playoffs_S176",
-    "league": "Arena of Valor Premier League",
-    "year": "2025",
-    "stage": "Playoffs",
-    "date": "July 10, 2025- 16:00",
-    "bestof": 5,
-    "game_number": 5,
-    "is_ultimate_battle": false,
-    "length": "09:18",
-    "blue_team": "SGP",
-    "red_team": "FS",
-    "blue_win": 0,
-    "blue_bans": [
-      "Marja",
-      "Murad",
-      "Florentino",
-      "Heino"
-    ],
-    "red_bans": [
-      "Rouie",
-      "Billow",
-      "Keera",
-      "Eland'orr"
-    ],
-    "blue_picks": [
-      "Bolt Baron",
-      "Veres",
-      "Dolia",
-      "Hayate",
-      "Maloch"
-    ],
-    "red_picks": [
-      "Ryoma",
-      "Tachi",
-      "Raz",
-      "Capheny",
-      "Toro"
-    ],
-    "blue_global_bans": [
-      "Yena",
-      "Marja",
-      "Lorion",
-      "Wisp",
-      "Enzo",
-      "Riktor",
-      "Tachi",
-      "Heino",
-      "Valhein",
-      "TeeMee",
-      "Skud",
-      "Zephys",
-      "Iggy",
-      "Capheny",
-      "Toro",
-      "Murad",
-      "Aoi",
-      "Raz",
-      "Violet",
-      "Mina"
-    ],
-    "red_global_bans": [
-      "Riktor",
-      "Billow",
-      "Liliana",
-      "Hayate",
-      "TeeMee",
-      "Biron",
-      "Keera",
-      "Lorion",
-      "Fennik",
-      "Enzo",
-      "Qi",
-      "Nakroth",
-      "Mganga",
-      "Valhein",
-      "Annette",
-      "Airi",
-      "Bolt Baron",
-      "Maloch",
-      "Eland'orr",
-      "Dolia"
     ],
     "is_true_order": false,
     "true_pick_source": "liquipedia_lane_order",
@@ -219539,5 +219539,420 @@
     "is_true_order": true,
     "true_pick_source": "screenshot",
     "true_screenshot": "2026_aic/wildcard/2026_wc_d1_m3_g3_aic_gam_vs_slx.png"
+  },
+  {
+    "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1125",
+    "league": "Arena of Valor International Championship",
+    "year": "2026",
+    "stage": "Wildcard",
+    "date": "November 17, 2026 - 13:00",
+    "bestof": 5,
+    "game_number": 1,
+    "is_ultimate_battle": false,
+    "length": "14:11",
+    "blue_team": "FL",
+    "red_team": "KOG",
+    "blue_win": 0,
+    "blue_bans": [
+      "Sinestrea",
+      "Eland'orr",
+      "Taara",
+      "Florentino"
+    ],
+    "red_bans": [
+      "Marja",
+      "Dolia",
+      "Chaugnar",
+      "Wiro"
+    ],
+    "blue_picks": [
+      "Tamyn",
+      "Edras",
+      "Ignis",
+      "Biron",
+      "TeeMee"
+    ],
+    "red_picks": [
+      "Rouie",
+      "Y'bneth",
+      "Billow",
+      "Ryoma",
+      "Skud"
+    ],
+    "blue_global_bans": [],
+    "red_global_bans": [],
+    "is_true_order": true,
+    "true_pick_source": "screenshot",
+    "true_screenshot": "2026_aic/wildcard/2026_wc_d2_m1_g1_aic_fl_vs_kog.png"
+  },
+  {
+    "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1125",
+    "league": "Arena of Valor International Championship",
+    "year": "2026",
+    "stage": "Wildcard",
+    "date": "November 17, 2026 - 13:00",
+    "bestof": 5,
+    "game_number": 2,
+    "is_ultimate_battle": false,
+    "length": "10:50",
+    "blue_team": "KOG",
+    "red_team": "FL",
+    "blue_win": 1,
+    "blue_bans": [
+      "Rouie",
+      "Eland'orr",
+      "Florentino",
+      "Skud"
+    ],
+    "red_bans": [
+      "Tamyn",
+      "Edras",
+      "Marja",
+      "Omen"
+    ],
+    "blue_picks": [
+      "Dolia",
+      "Tachi",
+      "Valhein",
+      "Yena",
+      "Iggy"
+    ],
+    "red_picks": [
+      "Thane",
+      "Astrid",
+      "Maloch",
+      "Airi",
+      "Liliana"
+    ],
+    "blue_global_bans": [
+      "Skud",
+      "Billow",
+      "Rouie",
+      "Ryoma",
+      "Y'bneth"
+    ],
+    "red_global_bans": [
+      "Biron",
+      "Tamyn",
+      "Ignis",
+      "Edras",
+      "TeeMee"
+    ],
+    "is_true_order": true,
+    "true_pick_source": "screenshot",
+    "true_screenshot": "2026_aic/wildcard/2026_wc_d2_m1_g2_aic_fl_vs_kog.png"
+  },
+  {
+    "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1125",
+    "league": "Arena of Valor International Championship",
+    "year": "2026",
+    "stage": "Wildcard",
+    "date": "November 17, 2026 - 13:00",
+    "bestof": 5,
+    "game_number": 3,
+    "is_ultimate_battle": false,
+    "length": "13:54",
+    "blue_team": "KOG",
+    "red_team": "FL",
+    "blue_win": 1,
+    "blue_bans": [
+      "Rouie",
+      "Dolia",
+      "Skud",
+      "Florentino"
+    ],
+    "red_bans": [
+      "Tamyn",
+      "Edras",
+      "Keera",
+      "Krizzix"
+    ],
+    "blue_picks": [
+      "Eland'orr",
+      "Mina",
+      "Liliana",
+      "Zephys",
+      "Thane"
+    ],
+    "red_picks": [
+      "Wiro",
+      "Sinestrea",
+      "Erin",
+      "Taara",
+      "Marja"
+    ],
+    "blue_global_bans": [
+      "Skud",
+      "Billow",
+      "Rouie",
+      "Ryoma",
+      "Y'bneth",
+      "Yena",
+      "Tachi",
+      "Iggy",
+      "Valhein",
+      "Dolia"
+    ],
+    "red_global_bans": [
+      "Biron",
+      "Tamyn",
+      "Ignis",
+      "Edras",
+      "TeeMee",
+      "Airi",
+      "Astrid",
+      "Liliana",
+      "Maloch",
+      "Thane"
+    ],
+    "is_true_order": true,
+    "true_pick_source": "screenshot",
+    "true_screenshot": "2026_aic/wildcard/2026_wc_d2_m1_g3_aic_fl_vs_kog.png"
+  },
+  {
+    "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1124",
+    "league": "Arena of Valor International Championship",
+    "year": "2026",
+    "stage": "Wildcard",
+    "date": "November 17, 2026 - 16:00",
+    "bestof": 5,
+    "game_number": 1,
+    "is_ultimate_battle": false,
+    "length": "12:51",
+    "blue_team": "BMG",
+    "red_team": "SLX",
+    "blue_win": 1,
+    "blue_bans": [
+      "Y'bneth",
+      "Sinestrea",
+      "Annette",
+      "Marja"
+    ],
+    "red_bans": [
+      "Rouie",
+      "Tamyn",
+      "Omen",
+      "Florentino"
+    ],
+    "blue_picks": [
+      "Eland'orr",
+      "Dolia",
+      "Zata",
+      "Airi",
+      "Tachi"
+    ],
+    "red_picks": [
+      "Violet",
+      "Maloch",
+      "Murad",
+      "Mina",
+      "Allain"
+    ],
+    "blue_global_bans": [],
+    "red_global_bans": [],
+    "is_true_order": true,
+    "true_pick_source": "screenshot",
+    "true_screenshot": "2026_aic/wildcard/2026_wc_d2_m2_g1_aic_bmg_vs_slx.png"
+  },
+  {
+    "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1124",
+    "league": "Arena of Valor International Championship",
+    "year": "2026",
+    "stage": "Wildcard",
+    "date": "November 17, 2026 - 16:00",
+    "bestof": 5,
+    "game_number": 2,
+    "is_ultimate_battle": false,
+    "length": "18:38",
+    "blue_team": "BMG",
+    "red_team": "SLX",
+    "blue_win": 0,
+    "blue_bans": [
+      "Dolia",
+      "Sinestrea",
+      "Florentino",
+      "Airi"
+    ],
+    "red_bans": [
+      "Rouie",
+      "Tamyn",
+      "Zephys",
+      "Astrid"
+    ],
+    "blue_picks": [
+      "Y'bneth",
+      "Lorion",
+      "Valhein",
+      "Taara",
+      "Zanis"
+    ],
+    "red_picks": [
+      "Enzo",
+      "Eland'orr",
+      "Edras",
+      "Yue",
+      "Ata"
+    ],
+    "blue_global_bans": [
+      "Airi",
+      "Tachi",
+      "Zata",
+      "Eland'orr",
+      "Dolia"
+    ],
+    "red_global_bans": [
+      "Allain",
+      "Violet",
+      "Murad",
+      "Mina",
+      "Maloch"
+    ],
+    "is_true_order": true,
+    "true_pick_source": "screenshot",
+    "true_screenshot": "2026_aic/wildcard/2026_wc_d2_m2_g2_aic_bmg_vs_slx.png"
+  },
+  {
+    "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1124",
+    "league": "Arena of Valor International Championship",
+    "year": "2026",
+    "stage": "Wildcard",
+    "date": "November 17, 2026 - 16:00",
+    "bestof": 5,
+    "game_number": 3,
+    "is_ultimate_battle": false,
+    "length": "13:16",
+    "blue_team": "SLX",
+    "red_team": "BMG",
+    "blue_win": 0,
+    "blue_bans": [
+      "Maloch",
+      "Mina",
+      "Florentino",
+      "Marja"
+    ],
+    "red_bans": [
+      "Tamyn",
+      "Rouie",
+      "Zata",
+      "Ryoma"
+    ],
+    "blue_picks": [
+      "Sinestrea",
+      "Y'bneth",
+      "Stuart",
+      "Lorion",
+      "Skud"
+    ],
+    "red_picks": [
+      "Capheny",
+      "Wiro",
+      "Evita",
+      "Aoi",
+      "Veres"
+    ],
+    "blue_global_bans": [
+      "Allain",
+      "Violet",
+      "Murad",
+      "Mina",
+      "Maloch",
+      "Ata",
+      "Edras",
+      "Yue",
+      "Eland'orr",
+      "Enzo"
+    ],
+    "red_global_bans": [
+      "Airi",
+      "Tachi",
+      "Zata",
+      "Eland'orr",
+      "Dolia",
+      "Zanis",
+      "Taara",
+      "Lorion",
+      "Valhein",
+      "Y'bneth"
+    ],
+    "is_true_order": true,
+    "true_pick_source": "screenshot",
+    "true_screenshot": "2026_aic/wildcard/2026_wc_d2_m2_g3_aic_bmg_vs_slx.png"
+  },
+  {
+    "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1124",
+    "league": "Arena of Valor International Championship",
+    "year": "2026",
+    "stage": "Wildcard",
+    "date": "November 17, 2026 - 16:00",
+    "bestof": 5,
+    "game_number": 4,
+    "is_ultimate_battle": false,
+    "length": "11:14",
+    "blue_team": "BMG",
+    "red_team": "SLX",
+    "blue_win": 1,
+    "blue_bans": [
+      "Dolia",
+      "Evita",
+      "Airi",
+      "Taara"
+    ],
+    "red_bans": [
+      "Rouie",
+      "Tamyn",
+      "Liliana",
+      "Raz"
+    ],
+    "blue_picks": [
+      "Flowborn (Marksman)",
+      "Edras",
+      "Baldum",
+      "Erin",
+      "Ryoma"
+    ],
+    "red_picks": [
+      "Hayate",
+      "Wiro",
+      "Iggy",
+      "Marja",
+      "Zanis"
+    ],
+    "blue_global_bans": [
+      "Airi",
+      "Tachi",
+      "Zata",
+      "Eland'orr",
+      "Dolia",
+      "Zanis",
+      "Taara",
+      "Lorion",
+      "Valhein",
+      "Y'bneth",
+      "Veres",
+      "Aoi",
+      "Evita",
+      "Capheny",
+      "Wiro"
+    ],
+    "red_global_bans": [
+      "Allain",
+      "Violet",
+      "Murad",
+      "Mina",
+      "Maloch",
+      "Ata",
+      "Edras",
+      "Yue",
+      "Eland'orr",
+      "Enzo",
+      "Skud",
+      "Sinestrea",
+      "Lorion",
+      "Stuart",
+      "Y'bneth"
+    ],
+    "is_true_order": true,
+    "true_pick_source": "screenshot",
+    "true_screenshot": "2026_aic/wildcard/2026_wc_d2_m2_g4_aic_bmg_vs_slx.png"
   }
 ]

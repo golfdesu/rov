@@ -103,6 +103,8 @@ function AuthForm({
   initialError = null,
   showPrivacyLink = true,
 }: AuthFormProps) {
+  const hasOAuth = googleLoginEnabled || discordLoginEnabled;
+  const [showCredentials, setShowCredentials] = useState(!hasOAuth);
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
@@ -205,108 +207,145 @@ function AuthForm({
               <span>ดำเนินการต่อด้วย Discord</span>
             </button>
           )}
-          <button
-            type="button"
-            onClick={onSecondaryAction}
-            className="group flex w-full items-center justify-between gap-3 rounded-md border border-[#475569] bg-[#334155] px-3.5 py-2.5 text-left transition-colors hover:border-[#64748b] hover:bg-[#3e4f66]"
-          >
-            <div className="flex min-w-0 items-center gap-2.5">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded border border-[#64748b]/60 bg-[#1e293b] text-slate-100">
-                <UserCheck className="h-4 w-4" />
-              </div>
-              <div className="min-w-0">
-                <div className="font-display text-[13px] font-semibold text-white">{secondaryLabel}</div>
-                {secondaryHint && <div className="truncate text-[11px] text-slate-300">{secondaryHint}</div>}
-              </div>
-            </div>
-            <ArrowRight className="h-4 w-4 shrink-0 text-slate-300 transition-all group-hover:translate-x-0.5 group-hover:text-white" />
-          </button>
+          {!showCredentials && (
+            <button
+              type="button"
+              onClick={() => {
+                setShowCredentials(true);
+                requestAnimationFrame(() => usernameRef?.current?.focus());
+              }}
+              className="flex h-10 w-full items-center justify-center gap-2.5 rounded-md border border-line-strong bg-bg px-4 text-[13px] font-semibold text-ink transition-colors hover:border-gold/70 hover:bg-panel-2"
+            >
+              <User className="h-4 w-4 shrink-0 text-gold" />
+              <span>{mode === "login" ? "เข้าสู่ระบบด้วย Username" : "สมัครสมาชิกด้วย Username"}</span>
+            </button>
+          )}
         </div>
+
+        {showCredentials && (
+          <div className="flex flex-col gap-3.5 rounded-md border border-line bg-bg/50 p-3.5">
+            {hasOAuth && (
+              <div className="flex items-center justify-between gap-2">
+                <span className="flex items-center gap-1.5 text-[11px] font-semibold text-gold">
+                  <User className="h-3.5 w-3.5" />
+                  <span>{mode === "login" ? "เข้าสู่ระบบด้วย Username" : "สมัครด้วย Username"}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCredentials(false);
+                    setError(null);
+                  }}
+                  className="text-[11px] text-dim underline underline-offset-2 hover:text-ink"
+                >
+                  ซ่อน
+                </button>
+              </div>
+            )}
+
+            <label className="flex flex-col gap-1.5">
+              <span className="flex items-center justify-between text-xs font-medium text-ink/90">
+                <span>ชื่อผู้ใช้</span>
+                <span className="font-mono text-[10px] text-dim">a-z 0-9 _ - .</span>
+              </span>
+              <div className="relative flex items-center">
+                <User className="pointer-events-none absolute left-3 h-4 w-4 text-dim" />
+                <input
+                  ref={usernameRef}
+                  type="text"
+                  autoComplete="username"
+                  required
+                  minLength={3}
+                  maxLength={32}
+                  pattern="^[a-zA-Z0-9_.-]+$"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="เช่น coach_pro"
+                  className={`${INPUT_CLASS} pr-3 font-mono`}
+                />
+              </div>
+            </label>
+
+            {mode === "register" && (
+              <label className="flex flex-col gap-1.5">
+                <span className="text-xs font-medium text-ink/90">
+                  ชื่อที่แสดง <span className="font-normal text-dim">(ไม่บังคับ)</span>
+                </span>
+                <div className="relative flex items-center">
+                  <Sparkles className="pointer-events-none absolute left-3 h-4 w-4 text-dim" />
+                  <input
+                    type="text"
+                    maxLength={40}
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    placeholder="เช่น Coach A"
+                    className={`${INPUT_CLASS} pr-3`}
+                  />
+                </div>
+              </label>
+            )}
+
+            <label className="flex flex-col gap-1.5">
+              <span className="flex items-center justify-between text-xs font-medium text-ink/90">
+                <span>รหัสผ่าน</span>
+                {mode === "register" && <span className="font-mono text-[10px] text-dim">อย่างน้อย 6 ตัวอักษร</span>}
+              </span>
+              <div className="relative flex items-center">
+                <Lock className="pointer-events-none absolute left-3 h-4 w-4 text-dim" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  autoComplete={mode === "register" ? "new-password" : "current-password"}
+                  required
+                  minLength={mode === "register" ? 6 : 1}
+                  maxLength={128}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className={`${INPUT_CLASS} pr-10 font-mono`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+                  className="absolute right-2 p-1.5 text-dim transition-colors hover:text-ink"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </label>
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="mt-0.5 flex h-11 w-full items-center justify-center gap-2 rounded-md bg-gold px-4 font-display text-sm font-bold text-bg transition-colors hover:bg-[#f8d27a] active:bg-[#e9b73f] disabled:opacity-50"
+            >
+              {mode === "login" ? <LogIn className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
+              <span>{submitting ? "กำลังดำเนินการ…" : mode === "login" ? "เข้าสู่ระบบ" : "สร้างบัญชีและเข้าใช้งาน"}</span>
+            </button>
+          </div>
+        )}
 
         <div className="flex items-center gap-3">
           <div className="h-px flex-1 bg-line" />
-          <span className="text-[11px] text-dim">หรือใช้ชื่อผู้ใช้และรหัสผ่าน</span>
+          <span className="text-[11px] text-dim">หรือ</span>
           <div className="h-px flex-1 bg-line" />
         </div>
 
-        <label className="flex flex-col gap-1.5">
-          <span className="flex items-center justify-between text-xs font-medium text-ink/90">
-            <span>ชื่อผู้ใช้</span>
-            <span className="font-mono text-[10px] text-dim">a-z 0-9 _ - .</span>
-          </span>
-          <div className="relative flex items-center">
-            <User className="pointer-events-none absolute left-3 h-4 w-4 text-dim" />
-            <input
-              ref={usernameRef}
-              type="text"
-              autoComplete="username"
-              required
-              minLength={3}
-              maxLength={32}
-              pattern="^[a-zA-Z0-9_.-]+$"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="เช่น coach_pro"
-              className={`${INPUT_CLASS} pr-3 font-mono`}
-            />
-          </div>
-        </label>
-
-        {mode === "register" && (
-          <label className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-ink/90">
-              ชื่อที่แสดง <span className="font-normal text-dim">(ไม่บังคับ)</span>
-            </span>
-            <div className="relative flex items-center">
-              <Sparkles className="pointer-events-none absolute left-3 h-4 w-4 text-dim" />
-              <input
-                type="text"
-                maxLength={40}
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="เช่น Coach A"
-                className={`${INPUT_CLASS} pr-3`}
-              />
-            </div>
-          </label>
-        )}
-
-        <label className="flex flex-col gap-1.5">
-          <span className="flex items-center justify-between text-xs font-medium text-ink/90">
-            <span>รหัสผ่าน</span>
-            {mode === "register" && <span className="font-mono text-[10px] text-dim">อย่างน้อย 6 ตัวอักษร</span>}
-          </span>
-          <div className="relative flex items-center">
-            <Lock className="pointer-events-none absolute left-3 h-4 w-4 text-dim" />
-            <input
-              type={showPassword ? "text" : "password"}
-              autoComplete={mode === "register" ? "new-password" : "current-password"}
-              required
-              minLength={mode === "register" ? 6 : 1}
-              maxLength={128}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className={`${INPUT_CLASS} pr-10 font-mono`}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword((prev) => !prev)}
-              aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
-              className="absolute right-2 p-1.5 text-dim transition-colors hover:text-ink"
-            >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </button>
-          </div>
-        </label>
-
         <button
-          type="submit"
-          disabled={submitting}
-          className="mt-1 flex h-11 w-full items-center justify-center gap-2 rounded-md bg-gold px-4 font-display text-sm font-bold text-bg transition-colors hover:bg-[#f8d27a] active:bg-[#e9b73f] disabled:opacity-50"
+          type="button"
+          onClick={onSecondaryAction}
+          className="group flex w-full items-center justify-between gap-3 rounded-md border border-[#475569] bg-[#334155] px-3.5 py-2.5 text-left transition-colors hover:border-[#64748b] hover:bg-[#3e4f66]"
         >
-          {mode === "login" ? <LogIn className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
-          <span>{submitting ? "กำลังดำเนินการ…" : mode === "login" ? "เข้าสู่ระบบ" : "สร้างบัญชีและเข้าใช้งาน"}</span>
+          <div className="flex min-w-0 items-center gap-2.5">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded border border-[#64748b]/60 bg-[#1e293b] text-slate-100">
+              <UserCheck className="h-4 w-4" />
+            </div>
+            <div className="min-w-0">
+              <div className="font-display text-[13px] font-semibold text-white">{secondaryLabel}</div>
+              {secondaryHint && <div className="truncate text-[11px] text-slate-300">{secondaryHint}</div>}
+            </div>
+          </div>
+          <ArrowRight className="h-4 w-4 shrink-0 text-slate-300 transition-all group-hover:translate-x-0.5 group-hover:text-white" />
         </button>
 
         {showPrivacyLink && (
@@ -382,6 +421,7 @@ export function AuthLanding({
 }: AuthLandingProps) {
   const [mode, setMode] = useState<"login" | "register">("login");
   const usernameRef = useRef<HTMLInputElement>(null);
+  const loginCardRef = useRef<HTMLElement>(null);
 
   const stats = [
     { value: "130", label: "ฮีโร่ครบเมต้า 2026" },
@@ -453,7 +493,7 @@ export function AuthLanding({
                 ))}
               </dl>
 
-              <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2">
+              <div className="mt-6 flex flex-wrap items-center gap-2.5 sm:gap-3">
                 <button
                   type="button"
                   onClick={onContinueGuest}
@@ -463,8 +503,18 @@ export function AuthLanding({
                   <span>เข้าใช้งานแบบ Guest ทันที</span>
                   <ArrowRight className="h-3.5 w-3.5 shrink-0 text-muted transition-all group-hover:translate-x-0.5 group-hover:text-blue" />
                 </button>
-                <span className="text-xs text-dim">ไม่ต้องสมัครสมาชิก · เปิดกระดานดราฟต์ได้ทันที</span>
+                <button
+                  type="button"
+                  onClick={() => loginCardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                  className="inline-flex items-center gap-2 rounded-md border border-gold bg-gold px-4 py-2.5 font-display text-[13px] font-bold text-bg transition-colors hover:bg-[#f8d27a] lg:hidden"
+                >
+                  <LogIn className="h-4 w-4 shrink-0" />
+                  <span>เข้าสู่ระบบ</span>
+                </button>
               </div>
+              <p className="mt-2 text-xs text-dim">
+                ไม่ต้องสมัครสมาชิก · เปิดกระดานดราฟต์ได้ทันที หรือเข้าสู่ระบบด้วย Google / Discord / Username
+              </p>
             </div>
 
             {/* Broadcast-style draft preview */}
@@ -492,7 +542,7 @@ export function AuthLanding({
           </section>
 
           {/* Right column: sign-in card */}
-          <section className="lg:col-span-5">
+          <section ref={loginCardRef} className="scroll-mt-4 lg:col-span-5">
             <div className="overflow-hidden rounded-lg border border-line bg-panel shadow-[0_24px_60px_-24px_rgba(0,0,0,0.8)]">
               <div className="h-0.5 w-full bg-gold" />
               <div className="border-b border-line px-6 py-5">

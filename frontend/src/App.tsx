@@ -1,10 +1,11 @@
 import { LogIn, LogOut, User } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { getJson, postJson, setExpectedAuthUser, setSessionMismatchHandler } from "./api/client";
 import { AuthLanding, AuthModal } from "./components/AuthModal";
 import { DraftBoardView } from "./components/DraftBoardView";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { MiniDraftLogo } from "./components/MiniDraftLogo";
+import { Modal } from "./components/Modal";
 import { CombatLab } from "./components/lab/CombatLab";
 import { MetaLab } from "./components/meta_lab/MetaLab";
 import { TierListView } from "./components/tierlist/TierListView";
@@ -197,11 +198,19 @@ function broadcastAuthChange(username: string | null): void {
   }
 }
 
-function maybeMigrateGuestDraft(username: string): void {
+interface PendingGuestDraft {
+  rawKey: string;
+  parsed: Record<string, unknown>;
+  actionsCount: number;
+  seriesCount: number;
+  globalBanCount: number;
+}
+
+function readPendingGuestDraft(): PendingGuestDraft | null {
   try {
     const guestKey = `${DRAFT_STORAGE_PREFIX}:guest`;
     const raw = window.localStorage.getItem(guestKey);
-    if (!raw) return;
+    if (!raw) return null;
     const parsed = JSON.parse(raw) as {
       bluePicks?: unknown[];
       redPicks?: unknown[];
@@ -209,28 +218,31 @@ function maybeMigrateGuestDraft(username: string): void {
       redBans?: unknown[];
       seriesGames?: unknown[];
       globalBans?: { teamAUsed?: unknown[]; teamBUsed?: unknown[]; universalBans?: unknown[] };
-    };
-    const hasDraft =
+    } & Record<string, unknown>;
+    const actionsCount =
       (parsed.bluePicks?.length ?? 0) +
-        (parsed.redPicks?.length ?? 0) +
-        (parsed.blueBans?.length ?? 0) +
-        (parsed.redBans?.length ?? 0) +
-        (parsed.seriesGames?.length ?? 0) +
-        (parsed.globalBans?.teamAUsed?.length ?? 0) +
-        (parsed.globalBans?.teamBUsed?.length ?? 0) +
-        (parsed.globalBans?.universalBans?.length ?? 0) >
-      0;
-    if (!hasDraft) return;
-    const shouldImport = window.confirm(
-      `พบข้อมูลดราฟต์หรือประวัติที่ทำค้างไว้ในโหมด Guest — ต้องการย้ายมาใช้งานต่อในบัญชี @${username} หรือไม่?\n\n(กด ตกลง เพื่อนำเข้าสู่บัญชีนี้ / กด ยกเลิก เพื่อโหลดข้อมูลเดิมของบัญชี)`,
-    );
-    if (shouldImport) {
-      const migrated = { ...parsed, updatedAt: Date.now() };
-      window.localStorage.setItem(`${DRAFT_STORAGE_PREFIX}:user:${username}`, JSON.stringify(migrated));
-      window.localStorage.removeItem(guestKey);
-    }
+      (parsed.redPicks?.length ?? 0) +
+      (parsed.blueBans?.length ?? 0) +
+      (parsed.redBans?.length ?? 0);
+    const seriesCount = parsed.seriesGames?.length ?? 0;
+    const globalBanCount =
+      (parsed.globalBans?.teamAUsed?.length ?? 0) +
+      (parsed.globalBans?.teamBUsed?.length ?? 0) +
+      (parsed.globalBans?.universalBans?.length ?? 0);
+    if (actionsCount + seriesCount + globalBanCount <= 0) return null;
+    return { rawKey: guestKey, parsed, actionsCount, seriesCount, globalBanCount };
   } catch {
-    // Ignore storage or JSON errors
+    return null;
+  }
+}
+
+function commitGuestDraftMigration(username: string, parsed: Record<string, unknown>, rawKey: string): void {
+  try {
+    const migrated = { ...parsed, updatedAt: Date.now() };
+    window.localStorage.setItem(`${DRAFT_STORAGE_PREFIX}:user:${username}`, JSON.stringify(migrated));
+    window.localStorage.removeItem(rawKey);
+  } catch {
+    // Ignore storage quota or serialization errors
   }
 }
 
@@ -262,17 +274,16 @@ export function App() {
   });
   const [guestEntered, setGuestEntered] = useState<boolean>(loadGuestEntered);
   const [authModalOpen, setAuthModalOpen] = useState<boolean>(() => Boolean(oauthError && loadGuestEntered()));
+  const [pendingMigration, setPendingMigration] = useState<{ user: AuthUser; draft: PendingGuestDraft } | null>(null);
+  const migrationTitleId = useId();
 
   const updateGuestEntered = useCallback((enabled: boolean) => {
     saveGuestEntered(enabled);
     setGuestEntered(enabled);
   }, []);
 
-  const applyAuthenticatedUser = useCallback(
-    (user: AuthUser, fromGuestFlow: boolean) => {
-      if (fromGuestFlow) {
-        maybeMigrateGuestDraft(user.username);
-      }
+  const finalizeAuthenticatedUser = useCallback(
+    (user: AuthUser) => {
       setExpectedAuthUser(user.username);
       setOauthError(null);
       setAuthUser(user);
@@ -281,6 +292,21 @@ export function App() {
       broadcastAuthChange(user.username);
     },
     [updateGuestEntered],
+  );
+
+  const applyAuthenticatedUser = useCallback(
+    (user: AuthUser, fromGuestFlow: boolean) => {
+      if (fromGuestFlow) {
+        const pending = readPendingGuestDraft();
+        if (pending) {
+          setAuthModalOpen(false);
+          setPendingMigration({ user, draft: pending });
+          return;
+        }
+      }
+      finalizeAuthenticatedUser(user);
+    },
+    [finalizeAuthenticatedUser],
   );
 
   // Strip ?auth_error=... in an effect so React StrictMode double-init never erases the initial error
@@ -306,7 +332,12 @@ export function App() {
         setDiscordLoginEnabled(Boolean(res.discord_login_enabled));
         if (res.authenticated && res.user) {
           if (allowGuestMigration && loadGuestEntered()) {
-            maybeMigrateGuestDraft(res.user.username);
+            const pending = readPendingGuestDraft();
+            if (pending) {
+              setAuthModalOpen(false);
+              setPendingMigration({ user: res.user, draft: pending });
+              return;
+            }
             updateGuestEntered(false);
           }
           setExpectedAuthUser(res.user.username);
@@ -329,11 +360,16 @@ export function App() {
     const ctrl = new AbortController();
     getJson<AuthStatusResponse>("/auth/me", ctrl.signal)
       .then((res) => {
+        if (ctrl.signal.aborted) return;
         setGoogleLoginEnabled(Boolean(res.google_login_enabled));
         setDiscordLoginEnabled(Boolean(res.discord_login_enabled));
         if (res.authenticated && res.user) {
           if (loadGuestEntered()) {
-            maybeMigrateGuestDraft(res.user.username);
+            const pending = readPendingGuestDraft();
+            if (pending) {
+              setPendingMigration({ user: res.user, draft: pending });
+              return;
+            }
             updateGuestEntered(false);
           }
           setExpectedAuthUser(res.user.username);
@@ -432,6 +468,25 @@ export function App() {
     );
   }
 
+  const handleConfirmMigration = () => {
+    if (!pendingMigration) return;
+    commitGuestDraftMigration(
+      pendingMigration.user.username,
+      pendingMigration.draft.parsed,
+      pendingMigration.draft.rawKey,
+    );
+    const user = pendingMigration.user;
+    setPendingMigration(null);
+    finalizeAuthenticatedUser(user);
+  };
+
+  const handleIgnoreMigration = () => {
+    if (!pendingMigration) return;
+    const user = pendingMigration.user;
+    setPendingMigration(null);
+    finalizeAuthenticatedUser(user);
+  };
+
   const workspaceKey = authUser ? `user:${authUser.username}` : "guest";
 
   return (
@@ -442,7 +497,7 @@ export function App() {
         selectTab={selectTab}
         authUser={authUser}
         authLoading={authLoading}
-        disableShortcuts={authModalOpen}
+        disableShortcuts={authModalOpen || pendingMigration !== null}
         onOpenAuthModal={() => setAuthModalOpen(true)}
         onLogout={handleLogout}
       />
@@ -457,6 +512,55 @@ export function App() {
             setAuthModalOpen(false);
           }}
         />
+      )}
+      {pendingMigration && (
+        <Modal
+          labelledBy={migrationTitleId}
+          className="max-w-md border-gold/40"
+          onClose={handleIgnoreMigration}
+        >
+          <div className="border-b border-line px-5 py-3.5">
+            <h2 id={migrationTitleId} className="font-display text-sm font-bold tracking-wide text-ink sm:text-base">
+              พบข้อมูลดราฟต์จากโหมด Guest
+            </h2>
+          </div>
+          <div className="space-y-3 px-5 py-4 text-xs leading-relaxed text-muted sm:text-sm">
+            <p className="text-ink">
+              มีข้อมูลที่ทำค้างไว้ (
+              {[
+                pendingMigration.draft.actionsCount > 0 ? `เลือก/แบน ${pendingMigration.draft.actionsCount} ตัว` : null,
+                pendingMigration.draft.seriesCount > 0 ? `บันทึก ${pendingMigration.draft.seriesCount} เกม` : null,
+                pendingMigration.draft.globalBanCount > 0
+                  ? `Global Ban ${pendingMigration.draft.globalBanCount} ตัว`
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+              ) ต้องการย้ายมาใช้ต่อในบัญชี{" "}
+              <span className="font-mono font-bold text-gold">@{pendingMigration.user.username}</span> หรือไม่?
+            </p>
+            <p className="text-[11px] text-dim sm:text-xs">
+              <strong className="text-ink">Confirm</strong> = นำเข้าสู่บัญชีนี้ ·{" "}
+              <strong className="text-ink">Ignore</strong> = โหลดข้อมูลเดิมของบัญชี
+            </p>
+          </div>
+          <div className="flex items-center justify-end gap-2 border-t border-line bg-panel-2/40 px-5 py-3">
+            <button
+              type="button"
+              onClick={handleIgnoreMigration}
+              className="border border-line-strong bg-panel px-4 py-1.5 font-display text-xs font-semibold text-muted transition-colors hover:border-ink/40 hover:text-ink"
+            >
+              Ignore
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmMigration}
+              className="border border-gold bg-gold px-4 py-1.5 font-display text-xs font-bold text-bg transition-colors hover:bg-gold/90"
+            >
+              Confirm
+            </button>
+          </div>
+        </Modal>
       )}
     </>
   );

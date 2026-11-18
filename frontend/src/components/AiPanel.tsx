@@ -239,8 +239,10 @@ export function AiPanel({
                         : "border-line bg-bg text-muted hover:border-line-strong hover:text-ink"
                   }`}
                 >
-                  {tab.key !== "ALL" && <LaneIcon lane={tab.key} className="h-3 w-3" />}
-                  <span>{isMissing && !active ? `+${tab.label}` : tab.label}</span>
+                  {tab.key !== "ALL" && <LaneIcon lane={tab.key} className="h-3.5 w-3.5 sm:h-3 sm:w-3" />}
+                  <span className={tab.key === "ALL" ? undefined : "hidden sm:inline"}>
+                    {isMissing && !active ? `+${tab.label}` : tab.label}
+                  </span>
                 </button>
               );
             })}
@@ -454,18 +456,22 @@ export function AiPanel({
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <div className="flex min-w-0 items-baseline gap-1.5">
+                      <div className="flex min-w-0 items-center gap-1.5">
                         <span className="truncate font-display text-sm font-bold leading-tight tracking-wide sm:text-base">
                           {displayName(rec.hero_name)}
                         </span>
                         <span
-                          className={`shrink-0 font-mono text-[9.5px] font-bold sm:text-[10px] ${
-                            fillsLane ? "border border-good/50 bg-good/10 px-1 text-good" : "text-muted"
+                          className={`inline-flex shrink-0 items-center gap-1 font-mono text-[9.5px] font-bold sm:text-[10px] ${
+                            fillsLane ? "border border-good/50 bg-good/10 p-0.5 text-good sm:px-1 sm:py-0" : "text-muted"
                           }`}
-                          title={fillsLane ? `เติมเลนที่ยังขาด: ${LANE_SHORT[lane]?.th ?? lane}` : undefined}
+                          title={fillsLane ? `เติมเลนที่ยังขาด: ${LANE_SHORT[lane]?.th ?? lane}` : LANE_SHORT[lane]?.th ?? lane}
+                          aria-label={LANE_SHORT[lane]?.th ?? lane}
                         >
-                          {fillsLane && "+"}
-                          {LANE_SHORT[lane]?.en ?? lane}
+                          <LaneIcon lane={lane} className="h-3 w-3 shrink-0" />
+                          <span className="hidden sm:inline">
+                            {fillsLane && "+"}
+                            {LANE_SHORT[lane]?.en ?? lane}
+                          </span>
                         </span>
                       </div>
 

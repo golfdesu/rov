@@ -79,25 +79,38 @@ export function DraftHistoryModal({
   }, [groups, activeGroup]);
 
   return (
-    <Modal labelledBy={titleId} className="max-h-[92vh] max-w-4xl overflow-hidden" onClose={onClose}>
+    <Modal labelledBy={titleId} className="max-w-4xl overflow-hidden" onClose={onClose}>
       {/* Header */}
-      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-3">
-        <div className="flex items-center gap-2.5">
-          <History className="h-4 w-4 text-gold" />
-          <div>
-            <h2 id={titleId} className="flex flex-wrap items-center gap-2 font-display text-sm font-bold tracking-wider text-ink">
-              <span>DRAFT &amp; SERIES HISTORY · ประวัติการดราฟต์แยกตามกลุ่มซีรีส์</span>
-              <span className="border border-gold/60 bg-gold/15 px-2 py-0.5 font-mono text-xs font-bold text-gold">
-                {games.length}/{MAX_SERIES_GAMES}
-              </span>
-            </h2>
-            <p className="text-[11px] text-dim">
-              ระบบจัดกลุ่มตามคู่แข่งขัน (เช่น BRU vs FS) อัตโนมัติ — บันทึกสูงสุด {MAX_SERIES_GAMES} เกมล่าสุด (หากเกินจะลบเกมเก่าสุดอัตโนมัติ)
-            </p>
+      <div className="flex shrink-0 flex-col gap-2 border-b border-line px-3 py-2 sm:flex-row sm:items-center sm:justify-between sm:px-4 sm:py-3">
+        <div className="flex min-w-0 items-start justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2">
+            <History className="h-4 w-4 shrink-0 text-gold" />
+            <div className="min-w-0">
+              <h2 id={titleId} className="flex flex-wrap items-center gap-1.5 font-display text-xs font-bold tracking-wider text-ink sm:gap-2 sm:text-sm">
+                <span>
+                  DRAFT HISTORY<span className="hidden sm:inline"> &amp; SERIES · ประวัติการดราฟต์แยกตามกลุ่มซีรีส์</span>
+                </span>
+                <span className="border border-gold/60 bg-gold/15 px-1.5 py-0.5 font-mono text-[10px] font-bold text-gold sm:px-2 sm:text-xs">
+                  {games.length}/{MAX_SERIES_GAMES}
+                </span>
+              </h2>
+              <p className="hidden text-[11px] text-dim sm:block">
+                ระบบจัดกลุ่มตามคู่แข่งขัน (เช่น BRU vs FS) อัตโนมัติ — บันทึกสูงสุด {MAX_SERIES_GAMES} เกมล่าสุด (หากเกินจะลบเกมเก่าสุดอัตโนมัติ)
+              </p>
+            </div>
           </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="shrink-0 rounded p-1 text-dim transition-colors hover:bg-panel-2 hover:text-ink sm:hidden"
+            aria-label="ปิด"
+          >
+            <X size={18} />
+          </button>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 sm:shrink-0 sm:gap-2">
           {onOpenNewSeries && (
             <button
               type="button"
@@ -106,9 +119,9 @@ export function DraftHistoryModal({
                 onOpenNewSeries();
               }}
               title="เริ่มแมตช์ / ซีรีส์ใหม่ (แยกประวัติออกจากแมตช์เดิม)"
-              className="flex h-8 items-center gap-1.5 border border-gold bg-gold px-2.5 font-display text-[11px] font-bold tracking-wide text-bg transition-colors hover:bg-gold/90"
+              className="flex h-7 items-center gap-1 border border-gold bg-gold px-2 font-display text-[10px] font-bold tracking-wide whitespace-nowrap text-bg transition-colors hover:bg-gold/90 sm:h-8 sm:gap-1.5 sm:px-2.5 sm:text-[11px]"
             >
-              <PlusCircle className="h-3.5 w-3.5" />
+              <PlusCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
               <span>+ แมตช์ใหม่</span>
             </button>
           )}
@@ -117,10 +130,11 @@ export function DraftHistoryModal({
               type="button"
               onClick={onSaveCurrentSnapshot}
               title="บันทึกกระดานดราฟต์ปัจจุบันเก็บเข้าประวัติโดยไม่ล้างกระดาน"
-              className="flex h-8 items-center gap-1.5 border border-gold/60 bg-gold/10 px-2.5 font-display text-[11px] font-bold tracking-wide text-gold transition-colors hover:bg-gold hover:text-bg"
+              className="flex h-7 items-center gap-1 border border-gold/60 bg-gold/10 px-2 font-display text-[10px] font-bold tracking-wide whitespace-nowrap text-gold transition-colors hover:bg-gold hover:text-bg sm:h-8 sm:gap-1.5 sm:px-2.5 sm:text-[11px]"
             >
-              <BookmarkPlus className="h-3.5 w-3.5" />
-              <span>บันทึกกระดานปัจจุบัน</span>
+              <BookmarkPlus className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+              <span className="sm:hidden">บันทึกปัจจุบัน</span>
+              <span className="hidden sm:inline">บันทึกกระดานปัจจุบัน</span>
             </button>
           )}
           <button
@@ -132,15 +146,16 @@ export function DraftHistoryModal({
                 onClose();
               }
             }}
-            className="flex h-8 items-center gap-1.5 border border-red/40 bg-red/10 px-2.5 font-display text-[11px] font-semibold tracking-wide text-red transition-colors hover:bg-red hover:text-ink disabled:pointer-events-none disabled:opacity-35"
+            className="flex h-7 items-center gap-1 border border-red/40 bg-red/10 px-2 font-display text-[10px] font-semibold tracking-wide whitespace-nowrap text-red transition-colors hover:bg-red hover:text-ink disabled:pointer-events-none disabled:opacity-35 sm:h-8 sm:gap-1.5 sm:px-2.5 sm:text-[11px]"
           >
-            <RotateCcw className="h-3.5 w-3.5" />
-            <span>รีเซ็ตทั้งซีรีส์</span>
+            <RotateCcw className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+            <span className="sm:hidden">รีเซ็ตทั้งหมด</span>
+            <span className="hidden sm:inline">รีเซ็ตทั้งซีรีส์</span>
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="rounded p-1 text-dim transition-colors hover:bg-panel-2 hover:text-ink"
+            className="hidden shrink-0 rounded p-1 text-dim transition-colors hover:bg-panel-2 hover:text-ink sm:block"
             aria-label="ปิด"
           >
             <X size={18} />
@@ -150,15 +165,15 @@ export function DraftHistoryModal({
 
       {/* Series Group Selector Bar */}
       {groups.length > 0 && (
-        <div className="flex shrink-0 flex-wrap items-center gap-1.5 border-b border-line bg-panel-2/60 px-4 py-2">
-          <span className="flex items-center gap-1 font-mono text-[11px] font-bold text-muted mr-1">
-            <Layers className="h-3.5 w-3.5 text-gold" />
-            <span>GROUP / แมตช์:</span>
+        <div className="flex shrink-0 flex-nowrap items-center gap-1.5 overflow-x-auto border-b border-line bg-panel-2/60 px-3 py-1.5 sm:flex-wrap sm:overflow-visible sm:px-4 sm:py-2">
+          <span className="mr-0.5 flex shrink-0 items-center gap-1 font-mono text-[10px] font-bold text-muted sm:mr-1 sm:text-[11px]">
+            <Layers className="h-3 w-3 text-gold sm:h-3.5 sm:w-3.5" />
+            <span className="hidden sm:inline">GROUP / แมตช์:</span>
           </span>
           <button
             type="button"
             onClick={() => setSelectedGroup("ALL")}
-            className={`flex h-7 items-center gap-1.5 border px-2.5 font-display text-xs font-bold transition-colors ${
+            className={`flex h-6.5 shrink-0 items-center gap-1.5 border px-2 font-display text-[11px] font-bold whitespace-nowrap transition-colors sm:h-7 sm:px-2.5 sm:text-xs ${
               activeGroup === "ALL"
                 ? "border-gold bg-gold text-bg"
                 : "border-line bg-bg text-muted hover:border-line-strong hover:text-ink"
@@ -181,7 +196,7 @@ export function DraftHistoryModal({
                 key={grp.name}
                 type="button"
                 onClick={() => setSelectedGroup(grp.name)}
-                className={`flex h-7 items-center gap-1.5 border px-2.5 font-display text-xs font-bold transition-colors ${
+                className={`flex h-6.5 shrink-0 items-center gap-1.5 border px-2 font-display text-[11px] font-bold whitespace-nowrap transition-colors sm:h-7 sm:px-2.5 sm:text-xs ${
                   isSelected
                     ? "border-gold bg-gold text-bg"
                     : "border-line bg-bg text-muted hover:border-line-strong hover:text-ink"
@@ -202,7 +217,7 @@ export function DraftHistoryModal({
       )}
 
       {/* Saved Games List Grouped by Matchup */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="min-h-0 flex-1 overflow-y-auto p-2.5 sm:p-4">
         {games.length === 0 ? (
           <div className="flex h-52 flex-col items-center justify-center gap-2 border border-dashed border-line bg-bg/40 p-6 text-center text-dim">
             <History className="h-7 w-7 text-muted/60" />
@@ -457,18 +472,21 @@ export function DraftHistoryModal({
       </div>
 
       {/* Footer */}
-      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-line bg-bg px-4 py-2.5">
-        <span className="font-mono text-xs text-muted">
-          บันทึกอัตโนมัติ (สูงสุด {MAX_SERIES_GAMES} เกมล่าสุด · ปัจจุบัน{" "}
+      <div className="flex shrink-0 items-center justify-between gap-2 border-t border-line bg-bg px-3 py-2 sm:px-4 sm:py-2.5">
+        <span className="min-w-0 truncate font-mono text-[10px] text-muted sm:text-xs">
+          <span className="sm:hidden">บันทึกอัตโนมัติ · </span>
+          <span className="hidden sm:inline">บันทึกอัตโนมัติ (สูงสุด {MAX_SERIES_GAMES} เกมล่าสุด · ปัจจุบัน </span>
           <strong className={games.length >= MAX_SERIES_GAMES - 10 ? "text-gold" : "text-ink"}>
             {games.length}/{MAX_SERIES_GAMES}
           </strong>
-          {games.length >= MAX_SERIES_GAMES ? " — ครบโควตาแล้ว เกมใหม่จะทับรายการเก่าสุด" : ""})
+          <span className="hidden sm:inline">
+            {games.length >= MAX_SERIES_GAMES ? " — ครบโควตาแล้ว เกมใหม่จะทับรายการเก่าสุด" : ""})
+          </span>
         </span>
         <button
           type="button"
           onClick={onClose}
-          className="border border-gold bg-gold px-4 py-1.5 font-display text-xs font-bold tracking-wider text-bg transition-colors hover:bg-gold/90"
+          className="shrink-0 border border-gold bg-gold px-3 py-1.5 font-display text-xs font-bold tracking-wider whitespace-nowrap text-bg transition-colors hover:bg-gold/90 sm:px-4"
         >
           ปิดหน้าต่าง
         </button>

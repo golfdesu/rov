@@ -27,6 +27,194 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-18 12:12 (UTC+7) — AIC 2026 Wildcard Day 2 Match Scrape & True Pick Order Ingestion (7 Games)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Liquipedia Match Scrape (`src/scrape_matches.py`):**
+  - Scraped **7 new AIC 2026 Wildcard Day 2** games (`FL vs KOG` G1–G3 `S1125`, `BMG vs SLX` G1–G4 `S1124`) into [data/matches_draft_full.json](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/matches_draft_full.json) (**4,347 games**, 0 unmapped names) and [data/matches_draft_flat.csv](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/matches_draft_flat.csv).
+- **True Pick Order Screenshot Ingestion (`scripts/process_draft_screenshots.py`):**
+  - Visually verified against Liquipedia & hero avatars (`Tamyn`/`Edras`/`Stuart`/`Lorion`/`Yue`) and ingested all **7 matching screenshots** into `data/draft_screenshots/2026_aic/wildcard/` (`2026_wc_d2_m1_g1..g3_aic_fl_vs_kog.png`, `2026_wc_d2_m2_g1..g4_aic_bmg_vs_slx.png`) and [data/true_pick_order.json](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/true_pick_order.json) (**1,828 games total**).
+- **Derived Datasets, Metadata & Golden Fixture Sync:**
+  - Rebuilt [data/hero_draft_stats.csv](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/hero_draft_stats.csv), [data/synergy_matrix.csv](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/synergy_matrix.csv), [data/counter_matrix.csv](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/counter_matrix.csv), and [data/matches_training.json](file:///C:/Users/chaya/Documents/Program/Project/ROV/data/matches_training.json) (**3,530 games**, **51.8%** true pick order).
+  - Synced metadata ([scripts/sync_metadata.py](file:///C:/Users/chaya/Documents/Program/Project/ROV/scripts/sync_metadata.py)), mirrored `.agents/skills/` to `.claude/skills/`, and regenerated [tests/fixtures/predict_golden.json](file:///C:/Users/chaya/Documents/Program/Project/ROV/tests/fixtures/predict_golden.json) to reflect updated draft stats.
+
+### 📁 Modified Files
+- `data/matches_draft_full.json`, `data/matches_draft_flat.csv`, `data/true_pick_order.json`, `data/matches_training.json`
+- `data/hero_draft_stats.csv`, `data/synergy_matrix.csv`, `data/counter_matrix.csv`
+- `data/dataset_metadata.json`, `frontend/public/dataset_metadata.json`
+- `data/draft_screenshots/2026_aic/wildcard/2026_wc_d2_m1_g*.png` (3 files), `2026_wc_d2_m2_g*.png` (4 files)
+- `AGENTS.md`, `README.md`, `docs/ARCHITECTURE_MAP.md`, `docs/COMPETITORS.md`, `.agents/skills/{draft-screenshot-reader,rov-data-guardian}/SKILL.md`, `.claude/skills/...`
+- `tests/fixtures/predict_golden.json`, `CHANGELOG.md`
+
+### 🧪 Verification
+- `python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py`: `[PASS]` (`130 heroes`, `4,347 total pro games`, `1,828 true_pick_order` games, 0 unmapped names).
+- `pytest -q --tb=short tests/test_data_integrity.py tests/test_skills_sync.py tests/test_predictor_golden.py`: `18 passed in 4.21s`.
+- `python .agents/skills/regression-guard/scripts/audit_regression_guard.py`: `72/72` prediction states + `3/3` combat duels passed.
+- `ruff check .` & `ruff format --check .`: All checks passed (114 files formatted).
+
+### ⚠️ Open Issues / Important Notes
+- **5 Pending AIC 2026 Wildcard Screenshots (`KOG vs ONE` G1–G5):** `Screenshot 2026-11-18 115955.png`, `120018.png`, `120044.png`, `120110.png`, `120140.png` remain in `data/draft_screenshots/` because Liquipedia (`Arena of Valor International Championship/2026/Wildcard`) currently has only `winner=` populated without `t1h1..t2h5` hero picks/bans. Re-run `scrape_matches.py` and `process_draft_screenshots.py` once Liquipedia publishes those drafts.
+
+---
+
+## 📅 2026-11-18 11:57 (UTC+7) — Mobile Landing Login CTA & Collapsible Username Auth Button (`AuthModal.tsx`)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Mobile Landing Login CTA ([frontend/src/components/AuthModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/AuthModal.tsx#L496-L545)):**
+  - Added a gold `เข้าสู่ระบบ` button (`lg:hidden`) next to `เข้าใช้งานแบบ Guest ทันที` on `< lg` screens that smooth-scrolls to the Sign-in card (`loginCardRef`) without forcing focus onto inputs (so mobile virtual keyboard doesn't obscure OAuth options), while leaving the 2-column Desktop layout unchanged.
+- **Collapsible Username/Password Auth Button ([frontend/src/components/AuthModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/AuthModal.tsx#L107-L295)):**
+  - Converted the always-expanded Username/Password inputs in `AuthForm` into an `h-10` button (`เข้าสู่ระบบด้วย Username` / `สมัครสมาชิกด้วย Username`) styled inline with the Google and Discord buttons when OAuth is enabled (`hasOAuth`); clicking it expands the credentials panel and focuses `usernameRef` (and provides a `ซ่อน` button). Automatically starts expanded when neither OAuth provider is configured.
+
+### 📁 Modified Files
+- `frontend/src/components/AuthModal.tsx`
+- `frontend/dist/`, `frontend/dist-prod/`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- **Frontend Lint & Builds:** `cd frontend && npm run lint` (`oxlint`: `0 warnings, 0 errors`, 48 files); `npm run build` (`dist/assets/index-D_aOs1F_.js` 613.45 kB) & `VITE_DRAFT_ONLY=true VITE_OUT_DIR=dist-prod npm run build` (`dist-prod/assets/index-DJY93FKv.js` 422.03 kB).
+- **Playwright Live Check (`http://127.0.0.1:8000`):**
+  - `390x844`: `errors: []`, Guest + gold `เข้าสู่ระบบ` buttons visible side-by-side at top; clicking `เข้าสู่ระบบ` smoothly scrolls to the sign-in card (`scrollY: 641`); `เข้าสู่ระบบด้วย Username` starts collapsed and expands/focuses `username` on click.
+  - `1280x800`: `errors: []`, standalone `lg:hidden` CTA hidden on desktop, balanced 2-column layout with collapsed Username button (`userExpandBtnVisible: True`).
+- **E2E, Backend & Lint:** `python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py` `[PASS]`; `pytest -q --tb=short tests/test_api.py` (`36 passed, 1 warning in 6.07s`); `ruff check .` (`All checks passed!`); live `https://minidraft.app/` verified serving `index-DJY93FKv` (`True`).
+
+### ⚠️ Open Issues / Important Notes
+- Local UI edits remain uncommitted locally and live on `minidraft.app`, pending `git commit`/`git push` when requested.
+
+---
+
+## 📅 2026-11-18 11:50 (UTC+7) — Disable Search Auto-Focus in GlobalBanModal (`initialFocusRef`)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Prevent Mobile Keyboard Popup on Global Ban Open ([frontend/src/components/GlobalBanModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/GlobalBanModal.tsx#L248)):**
+  - Removed `initialFocusRef={searchInputRef}` (and the unused `searchInputRef` / `useRef`) so opening `GlobalBanModal` focuses the non-input close button (`activeTag: 'BUTTON'`, `isInputFocused: False`, `bodyScrollTop: 0`) instead of auto-focusing the search `<input>` and triggering the mobile virtual keyboard or jumping scroll position.
+
+### 📁 Modified Files
+- `frontend/src/components/GlobalBanModal.tsx`
+- `frontend/dist/`, `frontend/dist-prod/`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- **Frontend Lint & Builds:** `cd frontend && npm run lint` (`oxlint`: `0 warnings, 0 errors`, 48 files); `npm run build` (`dist/assets/index-DJ0cpff-.js` 611.77 kB) & `VITE_DRAFT_ONLY=true VITE_OUT_DIR=dist-prod npm run build` (`dist-prod/assets/index-cdY-lcXl.js` 420.35 kB).
+- **Playwright Focus Check (`390x844`):** `errors: []`, `focusInfo: {'activeTag': 'BUTTON', 'activeAriaLabel': 'ปิด', 'isInputFocused': False, 'bodyScrollTop': 0}`.
+- **E2E, Backend & Lint:** `python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py` `[PASS]`; `pytest -q --tb=short tests/test_api.py` (`36 passed`); `ruff check .` (`All checks passed!`); live `https://minidraft.app/` serving `index-cdY-lcXl` (`True`).
+
+### ⚠️ Open Issues / Important Notes
+- Local UI edits remain uncommitted locally and served live on `minidraft.app`, pending `git commit`/`git push` when requested.
+
+---
+
+## 📅 2026-11-18 11:43 (UTC+7) — Square Compact Board Pick Slots (`< lg`) & Mobile-First GlobalBan / DraftHistory Modals
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Square Compact Pick Slots for Non-Large Screens ([frontend/src/components/TeamColumn.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/TeamColumn.tsx#L218)):**
+  - Changed the `variant="compact"` 5-slot pick cards from fixed heights (`h-12 ... sm:h-16`) to `aspect-square w-full` so every pick slot renders as a `1:1` square on iPhone (`29.3px` on `375px`, `30.8px` on `390px`) and iPad (`65.2px` on `768px`) without clipping faces or distorting portraits (`lg+` still uses `variant="full"`).
+- **Mobile GlobalBanModal Overflow & Grid Visibility Fix ([frontend/src/components/GlobalBanModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/GlobalBanModal.tsx)):**
+  - Replaced five stacked `shrink-0` sections with a unified `overflow-y-auto sm:overflow-hidden` scroll body on `< sm` (keeping pinned top header + bottom footer) so the 130-hero grid never collapses to `24px` (`gridHeight` restored from `24px` to generous scrollable height with `206px` visible above footer on `375x667` and `368px` on `390x844`).
+  - Made header (`X` pinned top-right), team/swap/series/game controls, 3-column category tabs (`shortSide`/`shortLabel` on `< sm`), single-row horizontal role chips, and single-row footer (`whitespace-nowrap` on `เสร็จสิ้น`) compact and readable on `< sm`.
+- **Mobile DraftHistoryModal Chrome Compression ([frontend/src/components/DraftHistoryModal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftHistoryModal.tsx)):**
+  - Pinned close button `X` to the top-right on `< sm`, condensed header/action toolbar, converted group filter bar to single-row horizontal scroll on `< sm`, and tightened footer (`1/100` + `ปิดหน้าต่าง`), expanding the saved-games list height on iPhone SE (`375x667`) from `250px` to `443px`.
+
+### 📁 Modified Files
+- `frontend/src/components/TeamColumn.tsx`
+- `frontend/src/components/GlobalBanModal.tsx`
+- `frontend/src/components/DraftHistoryModal.tsx`
+- `frontend/dist/`, `frontend/dist-prod/`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- **Frontend Lint & Builds:** `cd frontend && npm run lint` (`oxlint`: `0 warnings, 0 errors`, 48 files); `npm run build` (`dist/assets/index-CXW_0OIM.js` 611.82 kB) & `VITE_DRAFT_ONLY=true VITE_OUT_DIR=dist-prod npm run build` (`dist-prod/assets/index-D7WbCnwq.js` 420.39 kB).
+- **E2E, Backend & Lint:** `python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py` `[PASS]`; `pytest -q --tb=short tests/test_api.py` (`36 passed`); `ruff check .` (`All checks passed!`); live `https://minidraft.app/` serving `index-D7WbCnwq` (`True`).
+- **Playwright Live Check (`http://127.0.0.1:8000`):** Verified `errors: []`, `overflowX: False`, `1:1` square pick slots (`diff: 0`) on `375x667` (`29.3px`), `390x844` (`30.8px`), `768x1024` (`65.2px`), clean History & GlobalBan modals on `375x667`, `390x844`, `768x1024`, and `1280x800`.
+
+### ⚠️ Open Issues / Important Notes
+- Local UI edits are built and live locally/`minidraft.app`, pending `git commit`/`git push` when requested.
+
+---
+
+## 📅 2026-11-18 11:32 (UTC+7) — Hide Truncated Hero Names on Mobile Compact Draft Board Slots (`< sm`)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Mobile Compact Draft Board Pick & Ghost Name Cleanup ([frontend/src/components/TeamColumn.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/TeamColumn.tsx#L228-L261)):**
+  - Hid picked hero names (`displayName(name)`), ghost prediction hero names (`displayName(ghost.hero_name)`), and the bottom dark gradient overlay inside the `variant="compact"` 5-slot pick deck on `< sm` (`hidden sm:block`) so narrow iPhone pick slots show crisp hero portraits + lane icons (`LaneIcon`) without truncated text clutter, while keeping full hero names visible on `sm+` viewports and inside the bottom 5-column `HeroGrid` selector.
+
+### 📁 Modified Files
+- `frontend/src/components/TeamColumn.tsx`
+- `frontend/dist/`, `frontend/dist-prod/`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- **Frontend Lint & Builds:** `cd frontend && npm run lint` (`oxlint`: `0 warnings, 0 errors`, 48 files); `npm run build` (`dist/assets/index-D_1YHRH7.js` 608.23 kB) & `VITE_DRAFT_ONLY=true VITE_OUT_DIR=dist-prod npm run build` (`dist-prod/assets/index-DpruOUYy.js` 416.80 kB).
+- **Playwright Live Check (`http://127.0.0.1:8000`):** Verified 4 bans + 3 picks (`Rouie`, `Toro`, `Fennik`): on `390x844` (iPhone 14), compact draft slot name elements computed `display: 'none'` (`visible: False`) while `HeroGrid` names remained `visible: True`; on `768x1024` (iPad), compact draft slot names remained `display: 'block'` (`visible: True`); `errors: []`.
+- **E2E, Backend & Lint:** `python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py` `[PASS]`; `pytest -q --tb=short tests/test_api.py` (`36 passed`); `ruff check .` (`All checks passed!`); `https://minidraft.app/` verified serving `index-DpruOUYy`.
+
+### ⚠️ Open Issues / Important Notes
+- Local UI edits (this change and previous uncommitted UI tweaks) are built and live locally/`minidraft.app` via `scripts/start_public_15d.ps1`, pending `git commit`/`git push` when requested.
+
+---
+
+## 📅 2026-11-18 11:22 (UTC+7) — Fix Mobile (iPhone) Series Bar Clipping & Rename Finish Game Button (`บันทึกผล`)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Mobile Series Bar Ergonomics & Direct 1-Tap Controls ([frontend/src/components/DraftBoardView.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftBoardView.tsx#L237-L445)):**
+  - Removed the oversized `จัดการซีรีส์ ▼` native `<select>` on `< sm` and bounded the mobile game-switch `<select>` (`w-[86px]`) so it no longer stretches across the iPhone viewport and pushes controls off-screen.
+  - Made **Swap Sides** (`⇄`) and **Series History** (`0/30` counter badge) direct 1-tap buttons across all viewports.
+  - Updated the Finish Game button to show checkmark icon only on `< sm` phones and **`บันทึกผล`** (`CheckCircle2` + text) on `sm+` viewports (replacing `จบ G1→G2`).
+  - Verified on headless Playwright at `375x667` (iPhone SE) and `390x844` (iPhone 14) with zero horizontal clipping, and rebuilt `frontend/dist` and `frontend/dist-prod` for live serving.
+
+### 📁 Modified Files
+- [frontend/src/components/DraftBoardView.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/DraftBoardView.tsx)
+- [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md)
+
+### 🧪 Verification
+- `cd frontend && npm run lint && npm run build` (+ `dist-prod`): passed cleanly.
+- Playwright iPhone (`375x667`, `390x844`), `inspect_frontend_e2e.py`, `pytest -q --tb=short tests/test_api.py`, and live `https://minidraft.app/`: verified green.
+
+---
+
+## 📅 2026-11-18 11:17 (UTC+7) — Replace Browser `confirm()` with Accessible `Confirm` / `Ignore` Guest-Draft Migration Modal
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Custom Guest Draft Migration Dialog ([frontend/src/App.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/App.tsx)):**
+  - Replaced native `window.confirm()` ("OK / Cancel") in `App.tsx` with an accessible [Modal.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/Modal.tsx) prompt using clear **`Confirm`** (import guest draft into account and sync) and **`Ignore`** (discard prompt and load the account's existing server draft) action buttons, plus a concise summary of pending picks/bans/games.
+  - Defers switching `Workspace` to `user:<username>` until the user chooses `Confirm` or `Ignore`, eliminating StrictMode double-prompts and premature sync races, and rebuilds both `frontend/dist` and `frontend/dist-prod` for live hosting.
+
+### 📁 Modified Files
+- [frontend/src/App.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/App.tsx)
+- [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md)
+
+### 🧪 Verification
+- `cd frontend && npm run lint && npm run build` (+ `dist-prod`): `oxlint` `0 warnings, 0 errors`, TS & Vite builds passed.
+- `inspect_frontend_e2e.py`, `pytest -q --tb=short tests/test_api.py`, and live `https://minidraft.app/`: verified green.
+
+---
+
+## 📅 2026-11-18 11:08 (UTC+7) — Mobile (iPhone) Draft Board Icon-Only Lane Indicators
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Mobile Draft UI Refinement (`< sm` Icon-Only Lane Badges):**
+  - Updated [frontend/src/components/TeamColumn.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/TeamColumn.tsx) (`L232-L246`, `L401-L405`), [frontend/src/components/HeroGrid.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/HeroGrid.tsx) (`L155-L165`), and [frontend/src/components/AiPanel.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/AiPanel.tsx) (`L242-L245`, `L459-L473`) so small/iPhone viewports (`< sm`) hide text lane labels (`DSL`, `JGL`, `MID`, `ADL`, `SUP`) and display crisp `<LaneIcon />` symbols instead, preventing portrait overlap and horizontal crowding while preserving full text on `>= sm` screens.
+  - Rebuilt both `frontend/dist` and production `frontend/dist-prod` (`VITE_DRAFT_ONLY=true`) for live hosting.
+
+### 📁 Modified Files
+- [frontend/src/components/TeamColumn.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/TeamColumn.tsx)
+- [frontend/src/components/HeroGrid.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/HeroGrid.tsx)
+- [frontend/src/components/AiPanel.tsx](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/AiPanel.tsx)
+- [CHANGELOG.md](file:///C:/Users/chaya/Documents/Program/Project/ROV/CHANGELOG.md)
+
+### 🧪 Verification
+- `cd frontend && npm run lint && npm run build` (+ `dist-prod`): `oxlint` `0 warnings, 0 errors`, TS & Vite build passed.
+- `inspect_frontend_e2e.py` & `pytest -q --tb=short tests/test_api.py`: verified green.
+
+---
+
 ## 📅 2026-11-18 10:07 (UTC+7) — Full-System Bug Audit & Multi-Layer Remediation (Combat, Frontend, Backend, ML/Data)
 **Agent:** Antigravity
 

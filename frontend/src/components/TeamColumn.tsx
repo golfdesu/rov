@@ -215,7 +215,7 @@ export function TeamColumn({
                       ? `คาดเดา: ${displayName(ghost.hero_name)} (${ghost.probability_pct.toFixed(0)}%)`
                       : `Pick ${i + 1}`
                 }
-                className={`relative h-12 min-w-0 overflow-hidden border bg-bg [direction:ltr] sm:h-16 ${
+                className={`relative aspect-square w-full min-w-0 overflow-hidden border bg-bg [direction:ltr] ${
                   isActive
                     ? "border-gold animate-slot-pulse"
                     : ghost
@@ -228,23 +228,23 @@ export function TeamColumn({
                 {name ? (
                   <>
                     <HeroPortrait name={name} hero={hero} />
-                    <div className="absolute inset-0 bg-gradient-to-t from-bg via-transparent to-transparent" />
+                    <div className="hidden sm:block absolute inset-0 bg-gradient-to-t from-bg via-transparent to-transparent" />
                     {hero && (
                       <span
-                        className={`absolute top-0.5 left-0.5 z-10 inline-flex max-w-[calc(100%-4px)] items-center gap-0.5 truncate px-0.5 font-mono text-[8px] font-bold sm:px-1 sm:text-[9px] ${
+                        className={`absolute top-0.5 left-0.5 z-10 inline-flex max-w-[calc(100%-4px)] items-center gap-0.5 truncate p-0.5 font-mono text-[8px] font-bold sm:px-1 sm:py-0 sm:text-[9px] ${
                           manualLane
                             ? "border border-gold/60 bg-bg/95 text-gold"
                             : `bg-bg/85 ${accent}`
                         }`}
                       >
                         <LaneIcon lane={effectiveLane} className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                        <span>
+                        <span className="hidden sm:inline">
                           {LANE_SHORT[effectiveLane]?.en ?? effectiveLane}
                           {manualLane ? "*" : ""}
                         </span>
                       </span>
                     )}
-                    <div className="absolute inset-x-0 bottom-0 truncate px-0.5 pb-0.5 text-center font-display text-[9px] font-bold leading-tight text-ink sm:px-1 sm:text-xs">
+                    <div className="hidden sm:block absolute inset-x-0 bottom-0 truncate px-0.5 pb-0.5 text-center font-display text-[9px] font-bold leading-tight text-ink sm:px-1 sm:text-xs">
                       {displayName(name)}
                     </div>
                   </>
@@ -254,7 +254,7 @@ export function TeamColumn({
                     <span className="absolute top-0.5 right-0.5 max-w-[calc(100%-4px)] truncate bg-bg/90 px-0.5 font-mono text-[8px] font-bold text-gold sm:text-[9px]">
                       {ghost.probability_pct.toFixed(0)}%
                     </span>
-                    <div className="absolute inset-x-0 bottom-0 truncate bg-bg/85 px-0.5 text-center font-display text-[8px] font-bold text-ink sm:text-[9px]">
+                    <div className="hidden sm:block absolute inset-x-0 bottom-0 truncate bg-bg/85 px-0.5 text-center font-display text-[8px] font-bold text-ink sm:text-[9px]">
                       {displayName(ghost.hero_name)}
                     </div>
                   </div>
@@ -399,7 +399,7 @@ export function TeamColumn({
                           }`}
                         >
                           <LaneIcon lane={effectiveLane} className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                          <span>
+                          <span className="hidden sm:inline">
                             {LANE_SHORT[effectiveLane]?.en ?? effectiveLane}
                             {manualLane ? "*" : ""}
                           </span>

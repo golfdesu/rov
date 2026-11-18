@@ -235,12 +235,12 @@ export function DraftBoardView({
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       {/* Sub-header series bar with compact global ban controls */}
-      <div className="shrink-0 border-b border-line bg-panel/60 px-2.5 py-1.5 sm:px-3 xl:px-4">
-        <div className="mx-auto flex max-w-[1920px] items-center justify-between gap-1.5 overflow-x-auto xl:gap-2">
-          {/* Left: Series Name */}
-          <div className="flex min-w-0 shrink-0 items-center gap-2">
+      <div className="shrink-0 border-b border-line bg-panel/60 px-2 py-1.5 sm:px-3 xl:px-4">
+        <div className="mx-auto flex max-w-[1920px] items-center justify-between gap-1.5 xl:gap-2">
+          {/* Left: Series Name (hidden on < sm so all 5 series controls stay comfortably visible on iPhone) */}
+          <div className="hidden min-w-0 shrink-0 items-center gap-2 sm:flex">
             <span
-              className="hidden max-w-[220px] truncate font-display text-xs font-bold tracking-wider text-muted sm:inline-block"
+              className="max-w-[220px] truncate font-display text-xs font-bold tracking-wider text-muted"
               title={globalBans.seriesName || `${bName} vs ${rName}`}
             >
               {globalBans.seriesName || `${bName} vs ${rName}`}
@@ -254,135 +254,119 @@ export function DraftBoardView({
           </div>
 
           {/* Right: Series & Global Ban Controls */}
-          <div aria-label="Series and Global Ban Controls" className="flex shrink-0 items-center gap-1 whitespace-nowrap xl:gap-1.5">
-            <button
-              type="button"
-              onClick={() => setIsNewSeriesModalOpen(true)}
-              title="เริ่มแมตช์ / ซีรีส์ใหม่ (แยกประวัติออกจากแมตช์เดิม)"
-              className="flex h-7 shrink-0 items-center gap-1.5 border border-gold bg-gold px-2 font-display text-xs font-bold tracking-wide whitespace-nowrap text-bg transition-colors hover:bg-gold/90"
-            >
-              <PlusCircle className="h-3.5 w-3.5 shrink-0" />
-              <span className="hidden sm:inline">+ แมตช์ใหม่</span>
-            </button>
-
-            {/* Mobile & iPad Compact Game Selector Dropdown (< lg) */}
-            <div className="relative inline-flex shrink-0 items-center lg:hidden">
-              <select
-                aria-label="Select Game Number"
-                value={globalBans.gameNumber}
-                onChange={(e) => {
-                  const g = Number(e.target.value);
-                  const unlockStatus = getGameUnlockStatus(g, globalBans, seriesGames);
-                  if (!unlockStatus.isUnlocked) {
-                    const missingStr = unlockStatus.missingGames.map((mg) => `Game ${mg}`).join(", ");
-                    const teamAName = globalBans.teamAName || "Team A";
-                    const teamBName = globalBans.teamBName || "Team B";
-                    const wantOpenModal = window.confirm(
-                      `Game ${g} ยังไม่ปลดล็อก!\n\nเงื่อนไขการลัดไป Game ${g}:\n- ต้องบันทึกผล ${missingStr} ให้เสร็จก่อน หรือ\n- ใส่ Global Ban ของทั้งสองทีมอย่างน้อยฝั่งละ ${unlockStatus.requiredCount} ตัวละคร\n\nสถานะปัจจุบัน:\n- ${teamAName}: ${unlockStatus.aCount}/${unlockStatus.requiredCount} ตัว\n- ${teamBName}: ${unlockStatus.bCount}/${unlockStatus.requiredCount} ตัว\n\nต้องการเปิดหน้าต่าง Global Ban เพื่อตั้งค่าฮีโร่ทันทีหรือไม่?`,
-                    );
-                    if (wantOpenModal) {
-                      setGlobalBanModalCat(blueCategoryKey);
-                    }
-                    return;
-                  }
-                  setIsFinishGameModalOpen(false);
-                  selectGameNumber(g);
-                }}
-                className="h-7 border border-line bg-panel px-2 font-mono text-xs font-bold text-gold cursor-pointer focus:border-gold/60 focus:outline-none"
+          <div
+            aria-label="Series and Global Ban Controls"
+            className="flex w-full shrink-0 items-center justify-between gap-1 whitespace-nowrap sm:w-auto sm:justify-end xl:gap-1.5"
+          >
+            <div className="flex shrink-0 items-center gap-1 xl:gap-1.5">
+              <button
+                type="button"
+                onClick={() => setIsNewSeriesModalOpen(true)}
+                aria-label="เริ่มแมตช์ / ซีรีส์ใหม่"
+                title="เริ่มแมตช์ / ซีรีส์ใหม่ (แยกประวัติออกจากแมตช์เดิม)"
+                className="flex h-7 shrink-0 items-center gap-1.5 border border-gold bg-gold px-2 font-display text-xs font-bold tracking-wide whitespace-nowrap text-bg transition-colors hover:bg-gold/90"
               >
+                <PlusCircle className="h-3.5 w-3.5 shrink-0" />
+                <span className="hidden sm:inline">+ แมตช์ใหม่</span>
+              </button>
+
+              {/* Mobile & iPad Compact Game Selector Dropdown (< lg) */}
+              <div className="relative inline-flex shrink-0 items-center lg:hidden">
+                <select
+                  aria-label="Select Game Number"
+                  value={globalBans.gameNumber}
+                  onChange={(e) => {
+                    const g = Number(e.target.value);
+                    const unlockStatus = getGameUnlockStatus(g, globalBans, seriesGames);
+                    if (!unlockStatus.isUnlocked) {
+                      const missingStr = unlockStatus.missingGames.map((mg) => `Game ${mg}`).join(", ");
+                      const teamAName = globalBans.teamAName || "Team A";
+                      const teamBName = globalBans.teamBName || "Team B";
+                      const wantOpenModal = window.confirm(
+                        `Game ${g} ยังไม่ปลดล็อก!\n\nเงื่อนไขการลัดไป Game ${g}:\n- ต้องบันทึกผล ${missingStr} ให้เสร็จก่อน หรือ\n- ใส่ Global Ban ของทั้งสองทีมอย่างน้อยฝั่งละ ${unlockStatus.requiredCount} ตัวละคร\n\nสถานะปัจจุบัน:\n- ${teamAName}: ${unlockStatus.aCount}/${unlockStatus.requiredCount} ตัว\n- ${teamBName}: ${unlockStatus.bCount}/${unlockStatus.requiredCount} ตัว\n\nต้องการเปิดหน้าต่าง Global Ban เพื่อตั้งค่าฮีโร่ทันทีหรือไม่?`,
+                      );
+                      if (wantOpenModal) {
+                        setGlobalBanModalCat(blueCategoryKey);
+                      }
+                      return;
+                    }
+                    setIsFinishGameModalOpen(false);
+                    selectGameNumber(g);
+                  }}
+                  className="h-7 w-[86px] max-w-[86px] truncate border border-line bg-panel px-1.5 font-mono text-xs font-bold text-gold cursor-pointer focus:border-gold/60 focus:outline-none sm:w-auto sm:max-w-none sm:px-2"
+                >
+                  {[1, 2, 3, 4, 5, 6, 7].map((g) => {
+                    const unlockStatus = getGameUnlockStatus(g, globalBans, seriesGames);
+                    return (
+                      <option key={g} value={g} className="bg-panel text-ink py-1">
+                        Game {g}
+                        {g === 7 ? " (Ult)" : ""}
+                        {!unlockStatus.isUnlocked && globalBans.gameNumber !== g ? " [ล็อก]" : ""}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              {/* Desktop Full 7-Button Game Selector (lg+) */}
+              <div className="hidden lg:inline-flex shrink-0 items-center border border-line bg-bg p-0.5">
                 {[1, 2, 3, 4, 5, 6, 7].map((g) => {
                   const unlockStatus = getGameUnlockStatus(g, globalBans, seriesGames);
+                  const isUnlocked = unlockStatus.isUnlocked;
+                  const isCurrent = globalBans.gameNumber === g;
+
+                  let buttonTitle = `Game ${g}`;
+                  if (!isUnlocked) {
+                    const missingStr = unlockStatus.missingGames.map((mg) => `G${mg}`).join(", ");
+                    buttonTitle = `Game ${g} ถูกล็อก: ต้องจบ ${missingStr} หรือใส่ Global Ban ฝั่งละอย่างน้อย ${unlockStatus.requiredCount} ตัว (Team A: ${unlockStatus.aCount}/${unlockStatus.requiredCount}, Team B: ${unlockStatus.bCount}/${unlockStatus.requiredCount})`;
+                  } else if (g === 7) {
+                    buttonTitle = "Game 7 Ultimate Battle — รีเซ็ต Global Ban ของทั้งสองทีม";
+                  } else {
+                    buttonTitle = `Game ${g} (ซิงค์ Global Ban จากเกมก่อนหน้าอัตโนมัติ)`;
+                  }
+
                   return (
-                    <option key={g} value={g} className="bg-panel text-ink py-1">
-                      Game {g}
-                      {g === 7 ? " (Ultimate)" : ""}
-                      {!unlockStatus.isUnlocked && globalBans.gameNumber !== g ? " [ล็อก]" : ""}
-                    </option>
+                    <button
+                      key={g}
+                      type="button"
+                      onClick={() => {
+                        if (!isUnlocked) {
+                          const missingStr = unlockStatus.missingGames.map((mg) => `Game ${mg}`).join(", ");
+                          const teamAName = globalBans.teamAName || "Team A";
+                          const teamBName = globalBans.teamBName || "Team B";
+                          const wantOpenModal = window.confirm(
+                            `Game ${g} ยังไม่ปลดล็อก!\n\nเงื่อนไขการลัดไป Game ${g}:\n- ต้องบันทึกผล ${missingStr} ให้เสร็จก่อน หรือ\n- ใส่ Global Ban ของทั้งสองทีมอย่างน้อยฝั่งละ ${unlockStatus.requiredCount} ตัวละคร\n\nสถานะปัจจุบัน:\n- ${teamAName}: ${unlockStatus.aCount}/${unlockStatus.requiredCount} ตัว\n- ${teamBName}: ${unlockStatus.bCount}/${unlockStatus.requiredCount} ตัว\n\nต้องการเปิดหน้าต่าง Global Ban เพื่อตั้งค่าฮีโร่ทันทีหรือไม่?`,
+                          );
+                          if (wantOpenModal) {
+                            setGlobalBanModalCat(blueCategoryKey);
+                          }
+                          return;
+                        }
+                        setIsFinishGameModalOpen(false);
+                        selectGameNumber(g);
+                      }}
+                      title={buttonTitle}
+                      className={`h-5.5 px-1.5 font-mono text-[11px] font-bold transition-colors ${
+                        isCurrent
+                          ? "bg-gold text-bg"
+                          : !isUnlocked
+                            ? "cursor-not-allowed text-dim/40 hover:bg-panel-2/40 hover:text-muted"
+                            : "text-muted hover:bg-panel-2 hover:text-ink"
+                      }`}
+                    >
+                      G{g}
+                    </button>
                   );
                 })}
-              </select>
+              </div>
             </div>
 
-            {/* Desktop Full 7-Button Game Selector (lg+) */}
-            <div className="hidden lg:inline-flex shrink-0 items-center border border-line bg-bg p-0.5">
-              {[1, 2, 3, 4, 5, 6, 7].map((g) => {
-                const unlockStatus = getGameUnlockStatus(g, globalBans, seriesGames);
-                const isUnlocked = unlockStatus.isUnlocked;
-                const isCurrent = globalBans.gameNumber === g;
-
-                let buttonTitle = `Game ${g}`;
-                if (!isUnlocked) {
-                  const missingStr = unlockStatus.missingGames.map((mg) => `G${mg}`).join(", ");
-                  buttonTitle = `Game ${g} ถูกล็อก: ต้องจบ ${missingStr} หรือใส่ Global Ban ฝั่งละอย่างน้อย ${unlockStatus.requiredCount} ตัว (Team A: ${unlockStatus.aCount}/${unlockStatus.requiredCount}, Team B: ${unlockStatus.bCount}/${unlockStatus.requiredCount})`;
-                } else if (g === 7) {
-                  buttonTitle = "Game 7 Ultimate Battle — รีเซ็ต Global Ban ของทั้งสองทีม";
-                } else {
-                  buttonTitle = `Game ${g} (ซิงค์ Global Ban จากเกมก่อนหน้าอัตโนมัติ)`;
-                }
-
-                return (
-                  <button
-                    key={g}
-                    type="button"
-                    onClick={() => {
-                      if (!isUnlocked) {
-                        const missingStr = unlockStatus.missingGames.map((mg) => `Game ${mg}`).join(", ");
-                        const teamAName = globalBans.teamAName || "Team A";
-                        const teamBName = globalBans.teamBName || "Team B";
-                        const wantOpenModal = window.confirm(
-                          `Game ${g} ยังไม่ปลดล็อก!\n\nเงื่อนไขการลัดไป Game ${g}:\n- ต้องบันทึกผล ${missingStr} ให้เสร็จก่อน หรือ\n- ใส่ Global Ban ของทั้งสองทีมอย่างน้อยฝั่งละ ${unlockStatus.requiredCount} ตัวละคร\n\nสถานะปัจจุบัน:\n- ${teamAName}: ${unlockStatus.aCount}/${unlockStatus.requiredCount} ตัว\n- ${teamBName}: ${unlockStatus.bCount}/${unlockStatus.requiredCount} ตัว\n\nต้องการเปิดหน้าต่าง Global Ban เพื่อตั้งค่าฮีโร่ทันทีหรือไม่?`,
-                        );
-                        if (wantOpenModal) {
-                          setGlobalBanModalCat(blueCategoryKey);
-                        }
-                        return;
-                      }
-                      setIsFinishGameModalOpen(false);
-                  selectGameNumber(g);
-                    }}
-                    title={buttonTitle}
-                    className={`h-5.5 px-1.5 font-mono text-[11px] font-bold transition-colors ${
-                      isCurrent
-                        ? "bg-gold text-bg"
-                        : !isUnlocked
-                          ? "cursor-not-allowed text-dim/40 hover:bg-panel-2/40 hover:text-muted"
-                          : "text-muted hover:bg-panel-2 hover:text-ink"
-                    }`}
-                  >
-                    G{g}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Mobile Actions Dropdown (< sm) */}
-            <div className="relative sm:hidden">
-              <select
-                aria-label="การจัดการซีรีส์"
-                value=""
-                onChange={(e) => {
-                  const act = e.target.value;
-                  if (act === "swap") handleSwapSides();
-                  else if (act === "history") setIsHistoryModalOpen(true);
-                  e.target.value = "";
-                }}
-                className="h-7 border border-line bg-panel px-1.5 font-display text-xs font-semibold text-muted cursor-pointer focus:border-gold/60 focus:outline-none"
-              >
-                <option value="" disabled>
-                  จัดการซีรีส์ ▼
-                </option>
-                <option value="swap">สลับฝั่งทีม ({bName} ⇄ {rName})</option>
-                <option value="history">
-                  ประวัติซีรีส์ ({seriesGames.length}/{MAX_SERIES_GAMES} เกม)
-                </option>
-              </select>
-            </div>
-
-            {/* Tablet & Desktop Actions Row (sm+) */}
-            <div className="hidden sm:flex shrink-0 items-center gap-1.5">
+            {/* Direct 1-Tap Swap, History & Record Result Actions (visible on all viewports) */}
+            <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
               <button
                 type="button"
                 onClick={handleSwapSides}
+                aria-label="สลับฝั่งทีม"
                 title={`สลับฝั่งทีม (${bName} ⇄ ${rName}) — ฮีโร่ที่แต่ละทีมเคยใช้จะย้ายฝั่งตามทีมไปอัตโนมัติ`}
                 className="flex h-7 shrink-0 items-center gap-1.5 border border-gold/60 bg-gold/10 px-2 font-display text-xs font-bold whitespace-nowrap text-gold transition-colors hover:bg-gold hover:text-bg"
               >
@@ -397,43 +381,41 @@ export function DraftBoardView({
               <button
                 type="button"
                 onClick={() => setIsHistoryModalOpen(true)}
+                aria-label="ประวัติซีรีส์"
                 title={`ดูประวัติการดราฟต์แยกตามกลุ่มซีรีส์ (บันทึกสูงสุด ${MAX_SERIES_GAMES} เกมล่าสุด)`}
                 className="flex h-7 shrink-0 items-center gap-1.5 border border-gold/45 bg-panel-2/80 px-2 font-display text-xs font-semibold whitespace-nowrap text-ink transition-colors hover:border-gold hover:bg-panel-2"
               >
                 <History className="h-3.5 w-3.5 shrink-0 text-gold" />
                 <span className="hidden md:inline">ประวัติ</span>
                 <span
-                  className={`px-1.5 py-0.5 font-mono text-[10px] font-bold leading-none ${
+                  className={`px-1 py-0.5 font-mono text-[10px] font-bold leading-none sm:px-1.5 ${
                     seriesGames.length > 0 ? "bg-gold text-bg" : "border border-line-strong bg-bg text-muted"
                   }`}
                 >
                   {seriesGames.length}/{MAX_SERIES_GAMES}
                 </span>
               </button>
-            </div>
 
-            <button
-              type="button"
-              disabled={!isDraftComplete}
-              onClick={() => setIsFinishGameModalOpen(true)}
-              title={
-                isDraftComplete
-                  ? "บันทึกผลการแข่งขัน + ฮีโร่ที่ทั้ง 2 ทีมเลือกเข้า Global Ban ของแต่ละทีม และเริ่มเกมถัดไป"
-                  : `ต้องดราฟต์ให้ครบทั้ง 10 ตัวก่อนจึงจะจบเกมได้ (ปัจจุบัน ${bluePicks.length + redPicks.length}/10)`
-              }
-              className={`flex h-7 shrink-0 items-center gap-1.5 border px-2 font-display text-xs font-bold whitespace-nowrap transition-colors disabled:pointer-events-none disabled:opacity-35 ${
-                isDraftComplete
-                  ? "border-gold bg-gold text-bg hover:bg-gold/90"
-                  : "border-good/60 bg-good/15 text-good hover:bg-good hover:text-bg"
-              }`}
-            >
-              <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-              <span>
-                {globalBans.gameNumber >= 7
-                  ? "จบ Game 7"
-                  : `จบ G${globalBans.gameNumber}→G${globalBans.gameNumber + 1}`}
-              </span>
-            </button>
+              <button
+                type="button"
+                disabled={!isDraftComplete}
+                onClick={() => setIsFinishGameModalOpen(true)}
+                aria-label="บันทึกผลเกม"
+                title={
+                  isDraftComplete
+                    ? "บันทึกผลการแข่งขัน + ฮีโร่ที่ทั้ง 2 ทีมเลือกเข้า Global Ban ของแต่ละทีม และเริ่มเกมถัดไป"
+                    : `ต้องดราฟต์ให้ครบทั้ง 10 ตัวก่อนจึงจะจบเกมได้ (ปัจจุบัน ${bluePicks.length + redPicks.length}/10)`
+                }
+                className={`flex h-7 shrink-0 items-center gap-1.5 border px-2 font-display text-xs font-bold whitespace-nowrap transition-colors disabled:pointer-events-none disabled:opacity-35 ${
+                  isDraftComplete
+                    ? "border-gold bg-gold text-bg hover:bg-gold/90"
+                    : "border-good/60 bg-good/15 text-good hover:bg-good hover:text-bg"
+                }`}
+              >
+                <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                <span className="hidden sm:inline">บันทึกผล</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

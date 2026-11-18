@@ -156,11 +156,12 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
               key={k}
               type="button"
               title={LANE_SHORT[k].th}
+              aria-label={LANE_SHORT[k].th}
               className={`${chip(lane === k)} inline-flex items-center gap-1`}
               onClick={() => setLane(lane === k ? null : k)}
             >
-              <LaneIcon lane={k} className="h-3 w-3" />
-              <span>{LANE_SHORT[k].en}</span>
+              <LaneIcon lane={k} className="h-3.5 w-3.5 sm:h-3 sm:w-3" />
+              <span className="hidden sm:inline">{LANE_SHORT[k].en}</span>
             </button>
           ))}
           {role && (
