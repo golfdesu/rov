@@ -34,7 +34,7 @@ Use this skill whenever preparing, launching, monitoring, or syncing SLURM jobs 
 ### Submit Jobs on ERAWAN
 ```bash
 git pull origin main
-# Option A: Fast GPU-resident Optuna HPO (40 trials) + safest-model training
+# Option A: Fast GPU-resident Optuna HPO (80 trials, 14 epochs/trial) + safest-model training
 sbatch run_hpo_rov_h100.sbatch
 
 # Option B: Direct SOTA training with the locked best_params

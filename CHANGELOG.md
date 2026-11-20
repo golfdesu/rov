@@ -27,6 +27,45 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-20 22:51 (UTC+7) — Document Draft History Limits and Free Cloud Sync
+**Agent:** Codex
+
+### ✅ Completed Work
+- Updated the subscription roadmap with draft history limits of 10 games in the Guest browser, 50 games per Free account, and 500 games per Pro account.
+- Kept cross-device sync available to all signed-in tiers and specified that reaching the limit blocks new saves until the user frees a slot.
+- Added JSON draft history export as a future feature.
+
+### 📁 Modified Files
+- `docs/SUBSCRIPTION_ROADMAP.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Reviewed the tier matrix and implementation notes for consistency and ran `git diff --check`.
+
+### ⚠️ Open Issues / Important Notes
+- The Team Pro history limit remains undecided. The roadmap changes describe future behavior.
+
+---
+
+## 📅 2026-11-20 22:19 (UTC+7) — Sync ERAWAN HPO Trial Count in Skill Docs
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Updated `.agents/skills/erawan-hpc-ops/SKILL.md` (and mirrored to `.claude/skills/erawan-hpc-ops/SKILL.md`) to reflect the actual `80 trials, 14 epochs/trial` configuration in `run_hpo_rov_h100.sbatch` instead of the outdated `40 trials` note.
+
+### 📁 Modified Files
+- `.agents/skills/erawan-hpc-ops/SKILL.md`
+- `.claude/skills/erawan-hpc-ops/SKILL.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `pytest -q tests/test_skills_sync.py`: 2 passed.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
 ## 📅 2026-11-20 20:58 (UTC+7) — Add Cloud & VPS Hosting Comparison Document
 **Agent:** Antigravity
 

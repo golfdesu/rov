@@ -4,7 +4,7 @@
 > **Status:** Planned for future release (after the initial free open-access phase).
 > Currently, `minidraft.app` remains free for all users to test and build traction.
 
-This document records the finalized product, business, and technical architecture agreed upon during the 2026-11-16 design review so it can be implemented cleanly when transitioning to a freemium subscription model.
+This roadmap records the freemium design from the 2026-11-16 review and subsequent product decisions.
 
 ---
 
@@ -17,7 +17,8 @@ Production remains focused on the **Draft Board** (`VITE_DRAFT_ONLY=true`; Meta 
 | **Manual Draft Board (Single Game)** | Allowed | Allowed | Allowed | Allowed |
 | **AI Predictions (`/predict`)** | Blocked (Prompt to Login) | **36 calls / day** (Full Top-K & Lookahead, resets 00:00 UTC+7) | **Unlimited** | **Unlimited** |
 | **Global Ban (Bo3 / Bo5 / Bo7)** | Locked | Locked | Unlocked | Unlocked |
-| **Cloud Sync (`/draft/session`)** | Local Storage only | Local Storage only | Synced across devices | Synced across devices |
+| **Saved Draft History** | **10 games per browser** | **50 games per account** | **500 games per account** | Limit to be decided |
+| **Cloud Sync (`/draft/session`)** | Browser storage only | Synced across devices | Synced across devices | Synced across devices |
 | **Concurrent Devices (FIFO Eviction)** | - | 2 sessions | 2 sessions | **5 sessions** |
 
 ---
@@ -29,6 +30,7 @@ Production remains focused on the **Draft Board** (`VITE_DRAFT_ONLY=true`; Meta 
 3. **Team Pro -> Pro Downgrade Guard:** Rejects 50 THB Pro top-ups while `team_pro` is still active so teams do not accidentally overwrite their 5-device access.
 4. **Concurrent Session Enforcement (FIFO):** On login, `create_session` trims older `auth_sessions` beyond the tier's `max_sessions` (`2` for Free/Pro, `5` for Team Pro), preventing multi-user account sharing without locking out legitimate users who switch devices.
 5. **Quota Reset Clock:** Free daily `/predict` quota (36 calls/day = 2 full 18-step drafts) resets at **00:00 Asia/Bangkok (UTC+7)**, tracked per `user_id` + `day_key` in SQLite.
+6. **Draft History Capacity:** Count saved games across all series. At capacity, block new saves until the user deletes enough games to free a slot. Preserve existing history if a plan change puts an account over its limit.
 
 ---
 
@@ -60,10 +62,20 @@ Production remains focused on the **Draft Board** (`VITE_DRAFT_ONLY=true`; Meta 
 3. **`src/billing.py`**: EMVCo PromptPay payload builder, pure-Python ISO 18004 QR encoder, Pillow image validator, and EasySlip/SlipOK adapter.
 4. **`src/schemas.py` & `src/api.py`**:
    - Extend `AuthUserSchema` with plan, expiry, and daily quota fields.
-   - Gate production `/predict` (login required + 36/day Free quota + Global Ban check) and `/draft/session` (paid-only cloud sync).
+   - Gate production `/predict` (login required + 36/day Free quota + Global Ban check).
+   - Keep `/draft/session` available to every signed-in tier. Support the Pro history limit of 500 games and enforce each account's history quota when saving.
    - Add `GET /billing/plans`, `GET /billing/qr`, `POST /billing/verify-slip`, and `GET /billing/transactions`.
 5. **`frontend/src/`**:
    - Navbar plan & remaining-quota badge + `BillingModal` (QR display & slip upload).
-   - Lock Global Ban (G2–G7, Global Ban modal, Finish Game, Series History) behind upgrade CTA for Free users and prompt Guest users to log in before AI `/predict`.
+   - Keep multi-game Global Ban drafting behind the paid upgrade. Allow Guest and Free users to save and view single-game drafts.
+   - Store Guest draft history in the current browser. Show history usage and block new saves at capacity so users can choose which games to delete.
+   - Prompt Guest users to log in before AI `/predict`.
 6. **Tests & Rollout**:
    - Add unit/integration tests for UTC+7 quota reset, FIFO session eviction, slip `trans_ref` replay protection, and Pro-to-Team Pro day conversion before deploying to `minidraft.app`.
+   - Verify the Guest browser limit, Free and Pro cross-device sync, and that saving at capacity preserves existing games.
+
+---
+
+## 5. Future Draft History Export
+
+Add an **Export** button to Draft History so users can download their saved games as a `.json` file before deleting entries to free up space.
