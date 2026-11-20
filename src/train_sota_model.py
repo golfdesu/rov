@@ -167,7 +167,7 @@ def compute_rolling_team_elo(
 def _compute_match_recency_weight(
     g: dict,
     ref_ordinal: int,
-    half_life_days: float = 150.0,
+    half_life_days: float = 90.0,
 ) -> float:
     """Continuous exponential time-decay weight (half-life in days) * league balance weight."""
     lg_id = encode_league_id(g.get("league", ""))
@@ -278,7 +278,7 @@ def _load_rich_hero_stat_features(hero_names: list[str], heroes_df: pd.DataFrame
     return out
 
 
-def load_sota_data_and_graphs(dataset_path: Path | str | None = None, recency_half_life: float = 150.0):
+def load_sota_data_and_graphs(dataset_path: Path | str | None = None, recency_half_life: float = 90.0):
     """Load 130 heroes, build multi-relational GNN adjacency matrices, and split train/val."""
     heroes_df = pd.read_csv(DATA_DIR / "heroes_130_summary.csv").sort_values("name").reset_index(drop=True)
     stats_df = pd.read_csv(DATA_DIR / "hero_draft_stats.csv").sort_values("name").reset_index(drop=True)
@@ -654,7 +654,7 @@ def build_tensor_dataset(
     priority_scores,
     augment_factor=1,
     team_elo_lookup: dict[tuple[str, int], tuple[float, float]] | None = None,
-    recency_half_life: float = 150.0,
+    recency_half_life: float = 90.0,
 ):
     """
     Pre-build contiguous PyTorch TensorDataset in memory.
@@ -1553,7 +1553,7 @@ def parse_args():
         "--recency-half-life",
         type=float,
         default=None,
-        help="Exponential recency decay half-life in days (default: 150.0 or study_config value; <=0 uses legacy year weights)",
+        help="Exponential recency decay half-life in days (default: 90.0 or study_config value; <=0 uses legacy year weights)",
     )
     parser.add_argument(
         "--top-rank",
@@ -1685,7 +1685,7 @@ def main():
     recency_half_life = (
         float(args.recency_half_life)
         if args.recency_half_life is not None
-        else float(study_cfg.get("recency_half_life", 150.0))
+        else float(study_cfg.get("recency_half_life", 90.0))
     )
     use_global_ban_ctx = bool(args.global_ban_context or study_cfg.get("use_global_ban_context", False))
 

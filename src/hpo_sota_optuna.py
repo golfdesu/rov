@@ -123,8 +123,8 @@ def parse_args():
     parser.add_argument(
         "--recency-half-life",
         type=float,
-        default=150.0,
-        help="Exponential recency decay half-life in days (default: 150.0)",
+        default=90.0,
+        help="Exponential recency decay half-life in days (default: 90.0)",
     )
     parser.add_argument(
         "--no-global-ban-context",

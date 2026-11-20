@@ -47,6 +47,25 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-20 22:58 (UTC+7) — Set Default Recency Decay Half-Life to 90 Days
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Updated default `recency_half_life` / `half_life_days` from `150.0` to `90.0` days in `src/hpo_sota_optuna.py` and `src/train_sota_model.py` to match the ~65–71 day pro league season cycle and adapt faster to the late-2026 sidelane Fighter meta shift.
+
+### 📁 Modified Files
+- `src/hpo_sota_optuna.py`
+- `src/train_sota_model.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check --fix .`, `ruff format .`, and `pytest -q tests/test_model_pipeline.py` passed.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
 ## 📅 2026-11-20 22:19 (UTC+7) — Sync ERAWAN HPO Trial Count in Skill Docs
 **Agent:** Antigravity
 
