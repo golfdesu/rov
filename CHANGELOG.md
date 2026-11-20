@@ -27,6 +27,28 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-20 22:10 (UTC+7) — Prepare the 3,535-Game Dataset for ERAWAN HPO
+**Agent:** Codex
+
+### ✅ Completed Work
+- Published the existing archive refresh for AIC 2026 Wildcard KOG vs ONE, including five new games and their screenshot-verified pick order.
+- Synchronized the 3,535-game training set, draft statistics, dataset metadata, and documentation. Regenerated the predictor golden fixture with the existing checkpoint against the refreshed data.
+
+### 📁 Modified Files
+- `data/matches_draft_full.json`, `data/matches_draft_flat.csv`, `data/matches_training.json`, `data/true_pick_order.json`
+- `data/hero_draft_stats.csv`, `data/synergy_matrix.csv`, `data/counter_matrix.csv`, `data/dataset_metadata.json`, `frontend/public/dataset_metadata.json`
+- `AGENTS.md`, `README.md`, `docs/ARCHITECTURE_MAP.md`, `docs/COMPETITORS.md`, and the mirrored data guardian and draft screenshot skill documentation
+- `tests/fixtures/predict_golden.json`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Data Guardian and metadata synchronization passed. Regression Guard passed all 72 draft states and three combat benchmarks.
+- Pytest passed 130 tests with `PYTHONUTF8=1` on Windows. Ruff lint, frontend lint, and the frontend build passed.
+
+### ⚠️ Open Issues / Important Notes
+- ERAWAN HPO and final model training are pending. This dataset preparation uses the existing checkpoint.
+
+---
+
 ## 📅 2026-11-18 19:18 (UTC+7) — Fix GitHub Actions CI Pytest Failure on Gitignored `item/` Media
 **Agent:** Antigravity
 
