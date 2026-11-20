@@ -61,10 +61,13 @@ function loadSaved(storageKey: string): {
   };
 }
 
+let cachedCombatCatalog: CombatCatalog | null = null;
+const globalDuelCache = new Map<string, DuelResult>();
+
 export function useCombatLab(options: UseCombatLabOptions = {}) {
   const { storageKey = DEFAULT_STORAGE_KEY, persistRemote = false } = options;
   const [initialState] = useState(() => loadSaved(storageKey));
-  const [catalog, setCatalog] = useState<CombatCatalog | null>(null);
+  const [catalog, setCatalog] = useState<CombatCatalog | null>(() => cachedCombatCatalog);
   const [builds, setBuilds] = useState<{ a: CombatBuild; b: CombatBuild }>({
     a: initialState.a,
     b: initialState.b,
@@ -81,6 +84,8 @@ export function useCombatLab(options: UseCombatLabOptions = {}) {
   const hasCompletedRemoteSyncRef = useRef<boolean>(!persistRemote);
   const hasDirtyRemoteBuildsRef = useRef<boolean>(false);
   const initialBuildSnapshotRef = useRef<string | null>(null);
+  const lastSyncedBuildSnapshotRef = useRef<string | null>(null);
+  const lastCatalogReloadKeyRef = useRef<number>(0);
   const [remoteSyncTick, setRemoteSyncTick] = useState(0);
 
   useEffect(() => {
@@ -135,9 +140,13 @@ export function useCombatLab(options: UseCombatLabOptions = {}) {
   }, [persistRemote, storageKey]);
 
   useEffect(() => {
+    const isManualReload = catalogReloadKey !== lastCatalogReloadKeyRef.current;
+    lastCatalogReloadKeyRef.current = catalogReloadKey;
+    if (!isManualReload && cachedCombatCatalog) return;
     const ctrl = new AbortController();
     getJson<CombatCatalog>("/combat/catalog", ctrl.signal)
       .then((cat) => {
+        cachedCombatCatalog = cat;
         setCatalog(cat);
         // Saved heroes may no longer exist; reset only invalid heroes without churn
         const known = new Set(cat.heroes.map((h) => h.name));
@@ -161,11 +170,13 @@ export function useCombatLab(options: UseCombatLabOptions = {}) {
     const snapshotKey = JSON.stringify({ a: builds.a, b: builds.b, enableKiting, enableActives });
     if (initialBuildSnapshotRef.current === null) {
       initialBuildSnapshotRef.current = snapshotKey;
+      lastSyncedBuildSnapshotRef.current = snapshotKey;
     }
     const wasHydrating = isHydratingRemoteRef.current;
     if (wasHydrating) {
       isHydratingRemoteRef.current = false;
       initialBuildSnapshotRef.current = snapshotKey;
+      lastSyncedBuildSnapshotRef.current = snapshotKey;
     }
 
     const isDirty = snapshotKey !== initialBuildSnapshotRef.current;
@@ -173,7 +184,11 @@ export function useCombatLab(options: UseCombatLabOptions = {}) {
     if (waitingForRemote && isDirty && !wasHydrating) {
       hasDirtyRemoteBuildsRef.current = true;
     }
-    const shouldPersistSync = !wasHydrating && !waitingForRemote && (isDirty || hasDirtyRemoteBuildsRef.current);
+    const shouldPersistSync =
+      !wasHydrating &&
+      !waitingForRemote &&
+      snapshotKey !== lastSyncedBuildSnapshotRef.current &&
+      (isDirty || hasDirtyRemoteBuildsRef.current);
     if (shouldPersistSync) {
       hasDirtyRemoteBuildsRef.current = false;
     }
@@ -197,22 +212,38 @@ export function useCombatLab(options: UseCombatLabOptions = {}) {
       }
     }
 
+    const duelPayload = {
+      a: { ...builds.a, enable_kiting: enableKiting, enable_actives: enableActives },
+      b: { ...builds.b, enable_kiting: enableKiting, enable_actives: enableActives },
+    };
+    const duelKey = JSON.stringify(duelPayload);
+    const cachedDuel = globalDuelCache.get(duelKey);
+
     const ctrl = new AbortController();
     const timer = setTimeout(async () => {
-      setIsLoading(true);
       let duelSucceeded = false;
-      try {
-        const duelPayload = {
-          a: { ...builds.a, enable_kiting: enableKiting, enable_actives: enableActives },
-          b: { ...builds.b, enable_kiting: enableKiting, enable_actives: enableActives },
-        };
-        setResult(await postJson<DuelResult>("/combat/duel", duelPayload, ctrl.signal));
+      if (cachedDuel) {
+        setResult(cachedDuel);
         setError(null);
+        setIsLoading(false);
         duelSucceeded = true;
-      } catch (e) {
-        if (!isAbortError(e)) setError(e instanceof Error ? e.message : String(e));
-      } finally {
-        if (!ctrl.signal.aborted) setIsLoading(false);
+      } else {
+        setIsLoading(true);
+        try {
+          const res = await postJson<DuelResult>("/combat/duel", duelPayload, ctrl.signal);
+          if (globalDuelCache.size >= 64) {
+            const oldest = globalDuelCache.keys().next().value;
+            if (oldest !== undefined) globalDuelCache.delete(oldest);
+          }
+          globalDuelCache.set(duelKey, res);
+          setResult(res);
+          setError(null);
+          duelSucceeded = true;
+        } catch (e) {
+          if (!isAbortError(e)) setError(e instanceof Error ? e.message : String(e));
+        } finally {
+          if (!ctrl.signal.aborted) setIsLoading(false);
+        }
       }
       if (duelSucceeded && persistRemote && shouldPersistSync && !ctrl.signal.aborted) {
         putJson(
@@ -225,11 +256,17 @@ export function useCombatLab(options: UseCombatLabOptions = {}) {
             updatedAt: now,
           },
           ctrl.signal,
-        ).catch(() => {
-          // non-fatal sync error
-        });
+        )
+          .then(() => {
+            if (!ctrl.signal.aborted) {
+              lastSyncedBuildSnapshotRef.current = snapshotKey;
+            }
+          })
+          .catch(() => {
+            // non-fatal sync error
+          });
       }
-    }, 200);
+    }, cachedDuel ? 0 : 200);
     return () => {
       clearTimeout(timer);
       ctrl.abort();

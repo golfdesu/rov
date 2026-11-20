@@ -1,7 +1,7 @@
 """Export Commercial RoV Pro Draft Intelligence 2026 Package (.xlsx + .csv + ZIP).
 
-Generates a commercial-grade analytics bundle from the 1,810 verified 2026 Tier-1
-pro games (RPL, AOG, GCS, APL) featuring:
+Generates a commercial-grade analytics bundle from the verified 2026 Tier-1
+pro games (RPL, AOG, GCS, APL, AIC) featuring:
   1. True Chronological Pick Order (B1..B5 / R1..R5 from broadcast HUD screenshots)
   2. Post-Swap In-Game 5-Lane Assignments (DS Lane, Jungle, Mid, Dragon Lane, Roam)
   3. Bradley-Terry Log-Odds Delta-2 & Empirical Bayes Shrinkage Synergy/Counter Engine
@@ -196,7 +196,8 @@ def build_dataframes():
     p3_tot = 0
     p1_months = {"January", "February", "March", "April", "May"}
     p2_months = {"June", "July", "August"}
-    p3_months = {"September", "October", "November"}
+    p3_months = {"September", "October", "November", "December"}
+    evita_first_idx = None
 
     duo_games = Counter()
     duo_wins = Counter()
@@ -281,6 +282,8 @@ def build_dataframes():
         for b in b_bans + r_bans:
             if b and b != "None":
                 game_pb.add(b)
+        if "Evita" in game_pb and evita_first_idx is None:
+            evita_first_idx = idx
 
         if m_name in p1_months:
             for h in game_pb:
@@ -450,6 +453,8 @@ def build_dataframes():
         )
 
     total_games = len(draft_rows)
+    evita_eligible = (total_games - evita_first_idx + 1) if evita_first_idx is not None else max(p3_tot, 1)
+    volkath_eligible = p1_tot + p2_tot
     df_drafts = pd.DataFrame(draft_rows)
 
     # Build Hero Tier List 2026 DataFrame + Bayesian Log-Odds Baseline
@@ -475,11 +480,11 @@ def build_dataframes():
         r3 = hero_p3_pb[hname] / p3_tot if p3_tot else 0.0
 
         if hname == "Evita":
-            recent_pres = 31 / 71
-            recent_wr = 0.3333
+            recent_pres = hero_p3_pb[hname] / evita_eligible if evita_eligible else 0.0
+            recent_wr = (hero_p3_wins[hname] / hero_p3_picks[hname]) if hero_p3_picks[hname] > 0 else 0.0
             trend = "▲ Rising"
             status = "Late-Season Release"
-            eligible_games = 71
+            eligible_games = evita_eligible
         elif hname == "Zanis":
             recent_pres = r3
             recent_wr = (hero_p3_wins[hname] / hero_p3_picks[hname]) if hero_p3_picks[hname] > 0 else 0.0
@@ -491,7 +496,7 @@ def build_dataframes():
             recent_wr = 0.0
             trend = "🔒 Disabled"
             status = "Tournament Disabled (Bug Ban)"
-            eligible_games = 1097  # Jan - Jul 2026 (816 P1 + 281 P2)
+            eligible_games = volkath_eligible  # Jan - Jul 2026 (P1 + P2)
         else:
             recent_pres = r3
             recent_wr = (hero_p3_wins[hname] / hero_p3_picks[hname]) if hero_p3_picks[hname] > 0 else 0.0
@@ -846,10 +851,11 @@ def build_dataframes():
         "RPL": "RoV Pro League (Thailand)",
         "GCS": "Garena Challenger Series (Taiwan)",
         "APL": "Arena of Valor Premier League (International)",
+        "AIC": "Arena of Valor International Championship (International)",
     }
     total_blue_w = sum(v["blue_wins"] for v in league_summary.values())
     total_red_w = sum(v["red_wins"] for v in league_summary.values())
-    for lcode in ["AOG", "RPL", "GCS", "APL"]:
+    for lcode in ["AOG", "RPL", "GCS", "APL", "AIC"]:
         if lcode not in league_summary:
             continue
         st = league_summary[lcode]
@@ -1205,6 +1211,57 @@ def style_worksheet(ws, pct_cols: list[str], color_scale_cols: list[str], hero_t
         ws.column_dimensions[col_letter].width = min(max(max_len + 4, 11), 38)
 
 
+def compute_draft_split_bounds(ws_drafts) -> dict[str, int]:
+    """Compute 1-based Excel row bounds and denominators for P1/P2/P3 splits and hero eligibility."""
+    max_draft_row = ws_drafts.max_row
+    p1_months = {"January", "February", "March", "April", "May"}
+    p2_months = {"June", "July", "August"}
+    p3_months = {"September", "October", "November", "December"}
+    p1_tot = 0
+    p2_tot = 0
+    p3_tot = 0
+    first_evita_row = None
+    pb_cols = list(range(16, 20)) + list(range(26, 30)) + list(range(34, 44))
+
+    for r in range(2, max_draft_row + 1):
+        d_val = str(ws_drafts.cell(row=r, column=9).value or "").strip()
+        mon = d_val.split()[0] if d_val else ""
+        if mon in p1_months:
+            p1_tot += 1
+        elif mon in p2_months:
+            p2_tot += 1
+        elif mon in p3_months:
+            p3_tot += 1
+        if first_evita_row is None:
+            for c in pb_cols:
+                if ws_drafts.cell(row=r, column=c).value == "Evita":
+                    first_evita_row = r
+                    break
+
+    p1_start = 2
+    p1_end = 1 + p1_tot
+    p2_start = p1_end + 1
+    p2_end = p1_end + p2_tot
+    p3_start = p2_end + 1
+    p3_end = max_draft_row
+    evita_eligible = (max_draft_row - first_evita_row + 1) if first_evita_row is not None else max(p3_tot, 1)
+    volkath_eligible = p1_tot + p2_tot
+    return {
+        "max_draft_row": max_draft_row,
+        "p1_start": p1_start,
+        "p1_end": p1_end,
+        "p1_tot": p1_tot,
+        "p2_start": p2_start,
+        "p2_end": p2_end,
+        "p2_tot": p2_tot,
+        "p3_start": p3_start,
+        "p3_end": p3_end,
+        "p3_tot": p3_tot,
+        "evita_eligible": evita_eligible,
+        "volkath_eligible": volkath_eligible,
+    }
+
+
 def inject_excel_formulas_and_watermark(wb: openpyxl.Workbook):
     """Inject native Excel formulas across all 6 worksheets and embed security watermarks."""
     # -------------------------------------------------------------
@@ -1212,10 +1269,13 @@ def inject_excel_formulas_and_watermark(wb: openpyxl.Workbook):
     # -------------------------------------------------------------
     ws_sum = wb["Executive_Summary"]
     ws_drafts = wb["True_Draft_Log_2026"]
-    max_draft_row = ws_drafts.max_row
+    bounds = compute_draft_split_bounds(ws_drafts)
+    max_draft_row = bounds["max_draft_row"]
+    total_summary_row = ws_sum.max_row
+    last_league_row = total_summary_row - 1
 
-    # Regional rows 2..5 (AOG, RPL, GCS, APL)
-    for r in range(2, 6):
+    # Regional rows (2..last_league_row: AOG, RPL, GCS, APL, AIC)
+    for r in range(2, total_summary_row):
         ws_sum.cell(row=r, column=3, value=f"=COUNTIF(True_Draft_Log_2026!$C$2:$C${max_draft_row}, A{r})")
         ws_sum.cell(
             row=r,
@@ -1227,30 +1287,37 @@ def inject_excel_formulas_and_watermark(wb: openpyxl.Workbook):
         ws_sum.cell(row=r, column=7, value=f"=E{r}/C{r}")
         ws_sum.cell(row=r, column=8, value=f"=COUNTIF(True_Draft_Log_2026!$C$2:$C${max_draft_row}, A{r})/C{r}")
 
-    # Combined summary row 6 (ALL TIER-1)
-    ws_sum.cell(row=6, column=3, value="=SUM(C2:C5)")
-    ws_sum.cell(row=6, column=4, value="=SUM(D2:D5)")
-    ws_sum.cell(row=6, column=5, value="=SUM(E2:E5)")
-    ws_sum.cell(row=6, column=6, value="=D6/C6")
-    ws_sum.cell(row=6, column=7, value="=E6/C6")
-    ws_sum.cell(row=6, column=8, value="=SUM(C2:C5)/C6")
+    # Combined summary row (ALL TIER-1)
+    ws_sum.cell(row=total_summary_row, column=3, value=f"=SUM(C2:C{last_league_row})")
+    ws_sum.cell(row=total_summary_row, column=4, value=f"=SUM(D2:D{last_league_row})")
+    ws_sum.cell(row=total_summary_row, column=5, value=f"=SUM(E2:E{last_league_row})")
+    ws_sum.cell(row=total_summary_row, column=6, value=f"=D{total_summary_row}/C{total_summary_row}")
+    ws_sum.cell(row=total_summary_row, column=7, value=f"=E{total_summary_row}/C{total_summary_row}")
+    ws_sum.cell(row=total_summary_row, column=8, value=f"=SUM(C2:C{last_league_row})/C{total_summary_row}")
 
-    # Add Executive Watermark / Security Notice Banner at Row 8
-    banner_cell = ws_sum.cell(row=8, column=1)
+    # Add Executive Watermark / Security Notice Banner
+    banner_row = total_summary_row + 2
+    banner_cell = ws_sum.cell(row=banner_row, column=1)
     banner_cell.value = (
         "CONFIDENTIAL & PROPRIETARY - RoV Pro Draft Intelligence 2026 | "
         "Licensed Single-User Copy | Unauthorized Distribution or Reselling Strictly Prohibited"
     )
-    ws_sum.merge_cells("A8:H8")
+    ws_sum.merge_cells(f"A{banner_row}:H{banner_row}")
     banner_cell.fill = PatternFill(start_color="0F172A", end_color="0F172A", fill_type="solid")
     banner_cell.font = Font(name="Calibri", size=10, bold=True, color="F5C451")
     banner_cell.alignment = Alignment(horizontal="center", vertical="center")
-    ws_sum.row_dimensions[8].height = 24
+    ws_sum.row_dimensions[banner_row].height = 24
 
     # -------------------------------------------------------------
     # 2. Hero_Tier_List_2026 Formulas
     # -------------------------------------------------------------
     ws_heroes = wb["Hero_Tier_List_2026"]
+    p1_start, p1_end, p1_tot = bounds["p1_start"], bounds["p1_end"], bounds["p1_tot"]
+    p2_start, p2_end, p2_tot = bounds["p2_start"], bounds["p2_end"], bounds["p2_tot"]
+    p3_start, p3_end, p3_tot = bounds["p3_start"], bounds["p3_end"], bounds["p3_tot"]
+    evita_eligible = bounds["evita_eligible"]
+    volkath_eligible = bounds["volkath_eligible"]
+
     for r in range(2, ws_heroes.max_row + 1):
         # Rank (Column A / 1)
         ws_heroes.cell(row=r, column=1, value="=ROW()-1")
@@ -1282,29 +1349,29 @@ def inject_excel_formulas_and_watermark(wb: openpyxl.Workbook):
             value=f'=IF(B{r}="Volkath", "🔒 Disabled", IF(I{r}-L{r}>=0.1, "▲ Rising", IF(I{r}-L{r}<=-0.1, "▼ Falling", "● Stable")))',
         )
 
-        # Recent_Patch_Presence (Column I / 9) = Winter Split (Rows 1099..1811)
+        # Recent_Patch_Presence (Column I / 9) = Winter Split
         ws_heroes.cell(
             row=r,
             column=9,
             value=(
                 f'=IF(B{r}="Volkath", 0, '
-                f"(COUNTIF(True_Draft_Log_2026!$AH$1099:$AQ$1811, B{r}) + "
-                f"COUNTIF(True_Draft_Log_2026!$P$1099:$S$1811, B{r}) + "
-                f"COUNTIF(True_Draft_Log_2026!$Z$1099:$AC$1811, B{r})) / "
-                f'IF(B{r}="Evita", 71, 713))'
+                f"(COUNTIF(True_Draft_Log_2026!$AH${p3_start}:$AQ${p3_end}, B{r}) + "
+                f"COUNTIF(True_Draft_Log_2026!$P${p3_start}:$S${p3_end}, B{r}) + "
+                f"COUNTIF(True_Draft_Log_2026!$Z${p3_start}:$AC${p3_end}, B{r})) / "
+                f'IF(B{r}="Evita", {evita_eligible}, {p3_tot}))'
             ),
         )
 
         # Recent_Patch_Win_Rate (Column J / 10) = Winter Split Wins / Picks
         blue_w_p3 = "+".join(
-            f"COUNTIFS(True_Draft_Log_2026!${col}$1099:${col}$1811, B{r}, True_Draft_Log_2026!$O$1099:$O$1811, 1)"
+            f"COUNTIFS(True_Draft_Log_2026!${col}${p3_start}:${col}${p3_end}, B{r}, True_Draft_Log_2026!$O${p3_start}:$O${p3_end}, 1)"
             for col in ["AH", "AI", "AJ", "AK", "AL"]
         )
         red_w_p3 = "+".join(
-            f"COUNTIFS(True_Draft_Log_2026!${col}$1099:${col}$1811, B{r}, True_Draft_Log_2026!$O$1099:$O$1811, 0)"
+            f"COUNTIFS(True_Draft_Log_2026!${col}${p3_start}:${col}${p3_end}, B{r}, True_Draft_Log_2026!$O${p3_start}:$O${p3_end}, 0)"
             for col in ["AM", "AN", "AO", "AP", "AQ"]
         )
-        picks_p3_expr = f"COUNTIF(True_Draft_Log_2026!$AH$1099:$AQ$1811, B{r})"
+        picks_p3_expr = f"COUNTIF(True_Draft_Log_2026!$AH${p3_start}:$AQ${p3_end}, B{r})"
         ws_heroes.cell(
             row=r,
             column=10,
@@ -1312,27 +1379,27 @@ def inject_excel_formulas_and_watermark(wb: openpyxl.Workbook):
         )
 
         # Annual_Presence (Column K / 11) = (Total_Picks + Total_Bans) / Total_Games
-        ws_heroes.cell(row=r, column=11, value=f"=(P{r}+Q{r})/Executive_Summary!$C$6")
+        ws_heroes.cell(row=r, column=11, value=f"=(P{r}+Q{r})/Executive_Summary!$C${total_summary_row}")
 
-        # Spring_Presence (Column L / 12) = Spring Split (Rows 2..817) / 816
+        # Spring_Presence (Column L / 12) = Spring Split
         ws_heroes.cell(
             row=r,
             column=12,
             value=(
-                f"=(COUNTIF(True_Draft_Log_2026!$AH$2:$AQ$817, B{r}) + "
-                f"COUNTIF(True_Draft_Log_2026!$P$2:$S$817, B{r}) + "
-                f"COUNTIF(True_Draft_Log_2026!$Z$2:$AC$817, B{r})) / 816"
+                f"=(COUNTIF(True_Draft_Log_2026!$AH${p1_start}:$AQ${p1_end}, B{r}) + "
+                f"COUNTIF(True_Draft_Log_2026!$P${p1_start}:$S${p1_end}, B{r}) + "
+                f"COUNTIF(True_Draft_Log_2026!$Z${p1_start}:$AC${p1_end}, B{r})) / {p1_tot}"
             ),
         )
 
-        # Summer_APL_Presence (Column M / 13) = Summer/APL Split (Rows 818..1098) / 281
+        # Summer_APL_Presence (Column M / 13) = Summer/APL Split
         ws_heroes.cell(
             row=r,
             column=13,
             value=(
-                f"=(COUNTIF(True_Draft_Log_2026!$AH$818:$AQ$1098, B{r}) + "
-                f"COUNTIF(True_Draft_Log_2026!$P$818:$S$1098, B{r}) + "
-                f"COUNTIF(True_Draft_Log_2026!$Z$818:$AC$1098, B{r})) / 281"
+                f"=(COUNTIF(True_Draft_Log_2026!$AH${p2_start}:$AQ${p2_end}, B{r}) + "
+                f"COUNTIF(True_Draft_Log_2026!$P${p2_start}:$S${p2_end}, B{r}) + "
+                f"COUNTIF(True_Draft_Log_2026!$Z${p2_start}:$AC${p2_end}, B{r})) / {p2_tot}"
             ),
         )
 
@@ -1340,14 +1407,14 @@ def inject_excel_formulas_and_watermark(wb: openpyxl.Workbook):
         ws_heroes.cell(
             row=r,
             column=14,
-            value=f'=IF(B{r}="Evita", P{r}/71, IF(B{r}="Volkath", P{r}/1097, P{r}/Executive_Summary!$C$6))',
+            value=f'=IF(B{r}="Evita", P{r}/{evita_eligible}, IF(B{r}="Volkath", P{r}/{volkath_eligible}, P{r}/Executive_Summary!$C${total_summary_row}))',
         )
 
         # Ban_Rate (Column O / 15)
         ws_heroes.cell(
             row=r,
             column=15,
-            value=f'=IF(B{r}="Evita", Q{r}/71, IF(B{r}="Volkath", Q{r}/1097, Q{r}/Executive_Summary!$C$6))',
+            value=f'=IF(B{r}="Evita", Q{r}/{evita_eligible}, IF(B{r}="Volkath", Q{r}/{volkath_eligible}, Q{r}/Executive_Summary!$C${total_summary_row}))',
         )
 
         # Total_Picks (Column P / 16) = COUNTIF across all 10 lane positions in True_Draft_Log_2026
@@ -1473,7 +1540,7 @@ def inject_excel_formulas_and_watermark(wb: openpyxl.Workbook):
             column=13,
             value=(
                 f"=E{r}/MAX(0.0001, (VLOOKUP(B{r}, Hero_Tier_List_2026!$B$2:$P$131, 15, FALSE)*"
-                f"VLOOKUP(C{r}, Hero_Tier_List_2026!$B$2:$P$131, 15, FALSE))/(2*Executive_Summary!$C$6))"
+                f"VLOOKUP(C{r}, Hero_Tier_List_2026!$B$2:$P$131, 15, FALSE))/(2*Executive_Summary!$C${total_summary_row}))"
             ),
         )
 

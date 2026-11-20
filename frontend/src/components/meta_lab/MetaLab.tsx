@@ -33,6 +33,8 @@ interface MetaLabProps {
 
 type MobileDraftView = "draft" | "ai" | "teams";
 
+let cachedDatasetTotalMatches: number | null = null;
+
 export function MetaLab({
   heroMap,
   mainBluePicks = [],
@@ -46,14 +48,16 @@ export function MetaLab({
   const [mobileView, setMobileView] = useState<MobileDraftView>("draft");
   const [globalBanModalCat, setGlobalBanModalCat] = useState<GlobalBanCategoryKey | null>(null);
   const [importNotification, setImportNotification] = useState<string | null>(null);
-  const [totalMatches, setTotalMatches] = useState<number | null>(null);
+  const [totalMatches, setTotalMatches] = useState<number | null>(() => cachedDatasetTotalMatches);
   const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    if (cachedDatasetTotalMatches !== null) return;
     fetch("/dataset_metadata.json")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data && typeof data.total_matches === "number") {
+          cachedDatasetTotalMatches = data.total_matches;
           setTotalMatches(data.total_matches);
         }
       })
@@ -86,6 +90,7 @@ export function MetaLab({
     isLoading,
     isHeroesLoading,
     error,
+    setPausePredict,
     heroesFallback,
     unavailableHeroes,
     lockHero,
@@ -99,6 +104,11 @@ export function MetaLab({
     persistSession: false,
     storageKey: "rov_matrix_draft_v1",
   });
+
+  useEffect(() => {
+    setPausePredict?.(globalBanModalCat !== null);
+    return () => setPausePredict?.(false);
+  }, [globalBanModalCat, setPausePredict]);
 
   const bName = blueTeamName(globalBans);
   const rName = redTeamName(globalBans);

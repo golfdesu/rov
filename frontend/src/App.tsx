@@ -1,16 +1,25 @@
-import { LogIn, LogOut, User } from "lucide-react";
+import { BarChart3, Coffee, LogIn, LogOut, Menu, MessageSquare, User } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { getJson, postJson, putJson, setExpectedAuthUser, setSessionMismatchHandler } from "./api/client";
+import { AdminStatsModal } from "./components/AdminStatsModal";
 import { AuthLanding, AuthModal } from "./components/AuthModal";
+import { DonateModal } from "./components/DonateModal";
 import { DraftBoardView } from "./components/DraftBoardView";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { MiniDraftLogo } from "./components/MiniDraftLogo";
+import { MobileNavDrawer } from "./components/MobileNavDrawer";
 import { Modal } from "./components/Modal";
+import { PricingSurveyModal } from "./components/PricingSurveyModal";
 import { CombatLab } from "./components/lab/CombatLab";
 import { MetaLab } from "./components/meta_lab/MetaLab";
 import { TierListView } from "./components/tierlist/TierListView";
 import { mergeGuestIntoAccountSession, normalizeSessionPayload, useDraft } from "./hooks/useDraft";
-import type { AuthStatusResponse, AuthUser } from "./types/auth";
+import type {
+  AuthStatusResponse,
+  AuthUser,
+  PricingSurveyChoice,
+  PricingSurveyResponse,
+} from "./types/auth";
 import type { DraftSessionPayload } from "./types/draft";
 
 export type Tab = "draft" | "tierlist" | "metalab" | "lab";
@@ -38,9 +47,15 @@ interface WorkspaceProps {
   tab: Tab;
   selectTab: (next: Tab) => void;
   authUser: AuthUser | null;
+  isAdmin: boolean;
   authLoading: boolean;
+  surveyAnswered: boolean;
   disableShortcuts: boolean;
   onOpenAuthModal: () => void;
+  onOpenDonateModal: () => void;
+  onOpenSurveyModal: () => void;
+  onOpenAdminStatsModal: () => void;
+  onOpenMobileDrawer: () => void;
   onLogout: () => void;
 }
 
@@ -48,13 +63,20 @@ function Workspace({
   tab,
   selectTab,
   authUser,
+  isAdmin,
   authLoading,
+  surveyAnswered,
   disableShortcuts,
   onOpenAuthModal,
+  onOpenDonateModal,
+  onOpenSurveyModal,
+  onOpenAdminStatsModal,
+  onOpenMobileDrawer,
   onLogout,
 }: WorkspaceProps) {
   const isAuthenticated = authUser !== null;
   const scope = isAuthenticated ? `user:${authUser.username}` : "guest";
+  const activeTabLabel = TABS.find((t) => t.key === tab)?.label ?? "Draft Board";
 
   // Unified Draft Machine isolated per user account (or local-only in Guest mode)
   const draft = useDraft({
@@ -67,22 +89,25 @@ function Workspace({
     <div className="flex h-dvh max-h-dvh flex-col overflow-hidden bg-bg">
       {/* Unified Top Navigation */}
       <nav className="shrink-0 border-b border-line bg-panel/90" aria-label="โหมด">
-        <div className="mx-auto flex max-w-[1920px] items-center justify-between gap-2 px-2.5 sm:px-4">
-          <div className="flex min-w-0 items-center gap-2 overflow-x-auto sm:gap-3">
-            <div className="flex shrink-0 items-center gap-1.5 border-r border-line pr-2.5 sm:pr-3">
+        <div className="mx-auto flex max-w-[1920px] items-center justify-between gap-2 px-2.5 py-1.5 sm:px-4 lg:py-0">
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+            <div className="flex shrink-0 items-center gap-1.5 lg:border-r lg:border-line lg:pr-3">
               <MiniDraftLogo className="h-6 w-6 shrink-0" />
               <span className="font-display text-xs font-extrabold tracking-widest text-ink sm:text-sm">
                 MINI<span className="text-gold">DRAFT</span>
               </span>
             </div>
-            <div className="flex min-w-0 items-center gap-0.5 sm:gap-1">
+            <span className="truncate border border-line bg-panel-2/70 px-2 py-0.5 font-display text-[11px] font-semibold text-gold lg:hidden">
+              {activeTabLabel}
+            </span>
+            <div className="hidden min-w-0 flex-1 items-center gap-1 overflow-x-auto lg:flex">
               {TABS.map((t) => (
                 <button
                   type="button"
                   key={t.key}
                   onClick={() => selectTab(t.key)}
                   aria-current={tab === t.key ? "page" : undefined}
-                  className={`border-b-2 px-2.5 py-2 font-display text-xs font-semibold tracking-wide whitespace-nowrap transition-colors sm:px-3 sm:text-sm ${
+                  className={`border-b-2 px-3 py-2 font-display text-sm font-semibold tracking-wide whitespace-nowrap transition-colors ${
                     tab === t.key ? "border-gold text-ink" : "border-transparent text-dim hover:text-muted"
                   }`}
                 >
@@ -93,6 +118,47 @@ function Workspace({
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5">
+            <span className="hidden h-7 items-center border border-gold/40 bg-gold/10 px-2.5 font-mono text-[11px] font-bold text-gold xl:inline-flex">
+              ให้บริการฟรีถึง 30/11/2026
+            </span>
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={onOpenAdminStatsModal}
+                title="ดูสถิติระบบ & ผลสำรวจ (Owner Only)"
+                aria-label="เปิดสถิติระบบ"
+                className="hidden h-7 items-center gap-1 border border-gold/60 bg-gold/10 px-2 font-display text-[11px] font-bold text-gold transition-colors hover:bg-gold hover:text-bg lg:inline-flex"
+              >
+                <BarChart3 className="h-3 w-3 shrink-0" />
+                <span>Stats</span>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onOpenSurveyModal}
+              title="แบบสอบถาม / Feedback ความคิดเห็นต่อ MiniDraft"
+              aria-label="เปิดแบบสอบถาม / Feedback"
+              className="relative hidden h-7 items-center gap-1 border border-line-strong bg-panel-2 px-2 font-display text-[11px] font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold lg:inline-flex"
+            >
+              <MessageSquare className="h-3 w-3 shrink-0 text-gold" />
+              <span>Feedback</span>
+              {!surveyAnswered && (
+                <span
+                  aria-hidden="true"
+                  className="h-1.5 w-1.5 rounded-full bg-gold"
+                />
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={onOpenDonateModal}
+              title="สนับสนุนผู้พัฒนา (PromptPay QR)"
+              aria-label="Donate สนับสนุนผู้พัฒนา"
+              className="hidden h-7 items-center gap-1 border border-line-strong bg-panel-2 px-2 font-display text-[11px] font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold lg:inline-flex"
+            >
+              <Coffee className="h-3 w-3 shrink-0 text-gold" />
+              <span>Donate</span>
+            </button>
             {authLoading ? null : isAuthenticated ? (
               <div className="flex items-center gap-1">
                 <span
@@ -100,17 +166,17 @@ function Workspace({
                   className="inline-flex h-7 items-center gap-1 border border-good/40 bg-good/10 px-2 font-mono text-[10.5px] font-bold text-good"
                 >
                   <User className="h-3 w-3 shrink-0" />
-                  <span className="max-w-[90px] truncate sm:max-w-[140px]">@{authUser.username}</span>
+                  <span className="max-w-[68px] truncate sm:max-w-[96px]">@{authUser.username}</span>
                 </span>
                 <button
                   type="button"
                   onClick={onLogout}
                   title="ออกจากระบบ (สลับกลับโหมด Guest เฉพาะเครื่อง)"
                   aria-label="ออกจากระบบ"
-                  className="inline-flex h-7 items-center gap-1 border border-line bg-bg px-2 font-display text-[11px] font-semibold text-muted transition-colors hover:border-red/60 hover:text-red"
+                  className="hidden h-7 items-center gap-1 border border-line bg-bg px-2 font-display text-[11px] font-semibold text-muted transition-colors hover:border-red/60 hover:text-red lg:inline-flex"
                 >
                   <LogOut className="h-3 w-3 shrink-0" />
-                  <span className="hidden sm:inline">ออก</span>
+                  <span>ออก</span>
                 </button>
               </div>
             ) : (
@@ -124,7 +190,25 @@ function Workspace({
                 <span>เข้าสู่ระบบ</span>
               </button>
             )}
+            <button
+              type="button"
+              onClick={onOpenMobileDrawer}
+              aria-label="เปิดเมนูเพิ่มเติม"
+              title="เมนูเพิ่มเติม"
+              className="relative inline-flex h-8 w-8 items-center justify-center border border-line-strong bg-panel-2 text-ink transition-colors hover:border-gold/60 hover:text-gold lg:hidden"
+            >
+              <Menu className="h-4 w-4" />
+              {!surveyAnswered && (
+                <span
+                  aria-hidden="true"
+                  className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-gold"
+                />
+              )}
+            </button>
           </div>
+        </div>
+        <div className="border-t border-line/70 bg-gold/10 px-3 py-0.5 text-center font-mono text-[11px] font-bold text-gold xl:hidden">
+          ให้บริการฟรีถึง 30/11/2026
         </div>
       </nav>
 
@@ -166,7 +250,93 @@ function Workspace({
 
 const GUEST_ENTERED_STORAGE_KEY = "minidraft_guest_entered_v1";
 const AUTH_SYNC_STORAGE_KEY = "minidraft_auth_user_sync_v1";
+const PRICING_SURVEY_STORAGE_KEY = "minidraft_pricing_survey_v1";
+const PRICING_SURVEY_CLIENT_ID_KEY = "minidraft_pricing_survey_client_id_v1";
 const DRAFT_STORAGE_PREFIX = "rov_draft_session_v1";
+
+interface PricingSurveyStorage {
+  clientId: string;
+  status: "pending" | "answered";
+  choice?: PricingSurveyChoice;
+  snoozedDate?: string;
+  answeredAt?: number;
+}
+
+function getLocalDateKey(now = new Date()): string {
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+function createSurveyClientId(): string {
+  try {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+      return crypto.randomUUID();
+    }
+  } catch {
+    // Fallback below
+  }
+  return `cid_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 12)}`;
+}
+
+function getOrCreateSurveyClientId(): string {
+  try {
+    const existing = window.localStorage.getItem(PRICING_SURVEY_CLIENT_ID_KEY);
+    if (existing && /^[a-zA-Z0-9_-]{8,64}$/.test(existing)) {
+      return existing;
+    }
+    const legacyRaw = window.localStorage.getItem(PRICING_SURVEY_STORAGE_KEY);
+    if (legacyRaw) {
+      const legacyParsed = JSON.parse(legacyRaw) as { clientId?: unknown };
+      if (typeof legacyParsed?.clientId === "string" && /^[a-zA-Z0-9_-]{8,64}$/.test(legacyParsed.clientId)) {
+        window.localStorage.setItem(PRICING_SURVEY_CLIENT_ID_KEY, legacyParsed.clientId);
+        return legacyParsed.clientId;
+      }
+    }
+    const generated = createSurveyClientId();
+    window.localStorage.setItem(PRICING_SURVEY_CLIENT_ID_KEY, generated);
+    return generated;
+  } catch {
+    return createSurveyClientId();
+  }
+}
+
+function loadPricingSurveyState(scope: string): PricingSurveyStorage {
+  const clientId = getOrCreateSurveyClientId();
+  try {
+    const scopedKey = `${PRICING_SURVEY_STORAGE_KEY}:${scope}`;
+    const raw =
+      window.localStorage.getItem(scopedKey) ??
+      (scope === "guest" ? window.localStorage.getItem(PRICING_SURVEY_STORAGE_KEY) : null);
+    if (raw) {
+      const parsed = JSON.parse(raw) as Partial<PricingSurveyStorage>;
+      if (parsed && typeof parsed === "object") {
+        return {
+          clientId,
+          status: parsed.status === "answered" ? "answered" : "pending",
+          choice: parsed.choice === "willing" || parsed.choice === "not_willing" ? parsed.choice : undefined,
+          snoozedDate: typeof parsed.snoozedDate === "string" ? parsed.snoozedDate : undefined,
+          answeredAt: typeof parsed.answeredAt === "number" ? parsed.answeredAt : undefined,
+        };
+      }
+    }
+  } catch {
+    // Ignore storage errors
+  }
+  return { clientId, status: "pending" };
+}
+
+function savePricingSurveyState(scope: string, next: PricingSurveyStorage): void {
+  try {
+    window.localStorage.setItem(`${PRICING_SURVEY_STORAGE_KEY}:${scope}`, JSON.stringify(next));
+    if (scope === "guest") {
+      window.localStorage.removeItem(PRICING_SURVEY_STORAGE_KEY);
+    }
+  } catch {
+    // Ignore storage quota/privacy restrictions
+  }
+}
 
 function loadGuestEntered(): boolean {
   try {
@@ -277,6 +447,8 @@ export function App() {
   const [tab, setTab] = useState<Tab>(initialTab);
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const authUserRef = useRef<AuthUser | null>(null);
+  const authRefreshInFlightRef = useRef(false);
+  const lastAuthCheckAtRef = useRef(0);
   const [authLoading, setAuthLoading] = useState(true);
   const [googleLoginEnabled, setGoogleLoginEnabled] = useState(false);
   const [discordLoginEnabled, setDiscordLoginEnabled] = useState(false);
@@ -286,10 +458,23 @@ export function App() {
   });
   const [guestEntered, setGuestEntered] = useState<boolean>(loadGuestEntered);
   const [authModalOpen, setAuthModalOpen] = useState<boolean>(() => Boolean(oauthError && loadGuestEntered()));
+  const [donateModalOpen, setDonateModalOpen] = useState(false);
+  const [adminStatsModalOpen, setAdminStatsModalOpen] = useState(false);
+  const [isAdminUser, setIsAdminUser] = useState(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [manualSurveyOpen, setManualSurveyOpen] = useState(false);
+  const [surveyStateByScope, setSurveyStateByScope] = useState<Record<string, PricingSurveyStorage>>({});
+  const [pricingSurveyAnsweredServer, setPricingSurveyAnsweredServer] = useState(false);
+  const [pricingSurveyChoiceServer, setPricingSurveyChoiceServer] = useState<PricingSurveyChoice | null>(null);
+  const [surveyBusy, setSurveyBusy] = useState(false);
+  const [surveyError, setSurveyError] = useState<string | null>(null);
   const [pendingMigration, setPendingMigration] = useState<{ user: AuthUser; draft: PendingGuestDraft } | null>(null);
   const [migrationBusy, setMigrationBusy] = useState(false);
   const [migrationError, setMigrationError] = useState<string | null>(null);
   const migrationTitleId = useId();
+
+  const surveyScope = authUser ? `user:${authUser.username.toLowerCase()}` : "guest";
+  const pricingSurveyState = surveyStateByScope[surveyScope] ?? loadPricingSurveyState(surveyScope);
 
   const updateGuestEntered = useCallback((enabled: boolean) => {
     saveGuestEntered(enabled);
@@ -298,6 +483,7 @@ export function App() {
 
   const finalizeAuthenticatedUser = useCallback(
     (user: AuthUser) => {
+      lastAuthCheckAtRef.current = Date.now();
       setExpectedAuthUser(user.username);
       setOauthError(null);
       setAuthUser(user);
@@ -309,7 +495,16 @@ export function App() {
   );
 
   const applyAuthenticatedUser = useCallback(
-    (user: AuthUser, fromGuestFlow: boolean) => {
+    (
+      user: AuthUser,
+      fromGuestFlow: boolean,
+      surveyAnswered = false,
+      surveyChoice: PricingSurveyChoice | null = null,
+      isAdmin = false,
+    ) => {
+      setPricingSurveyAnsweredServer(surveyAnswered || surveyChoice !== null);
+      setPricingSurveyChoiceServer(surveyChoice);
+      setIsAdminUser(isAdmin);
       if (fromGuestFlow) {
         const pending = readPendingGuestDraft();
         if (pending) {
@@ -339,12 +534,20 @@ export function App() {
   }, [authUser]);
 
   const refreshAuthSession = useCallback(
-    async (signal?: AbortSignal, allowGuestMigration = false) => {
+    async (signal?: AbortSignal, allowGuestMigration = false, force = false) => {
+      const now = Date.now();
+      if (authRefreshInFlightRef.current) return;
+      if (!force && now - lastAuthCheckAtRef.current < 30_000) return;
+      authRefreshInFlightRef.current = true;
+      lastAuthCheckAtRef.current = now;
       try {
         const res = await getJson<AuthStatusResponse>("/auth/me", signal);
         setGoogleLoginEnabled(Boolean(res.google_login_enabled));
         setDiscordLoginEnabled(Boolean(res.discord_login_enabled));
         if (res.authenticated && res.user) {
+          setPricingSurveyAnsweredServer(Boolean(res.pricing_survey_answered));
+          setPricingSurveyChoiceServer(res.pricing_survey_choice ?? null);
+          setIsAdminUser(Boolean(res.is_admin));
           if (allowGuestMigration && loadGuestEntered()) {
             const pending = readPendingGuestDraft();
             if (pending) {
@@ -358,6 +561,10 @@ export function App() {
           setAuthUser((prev) => (prev?.username === res.user?.username ? prev : res.user));
         } else {
           setExpectedAuthUser(null);
+          setPricingSurveyAnsweredServer(false);
+          setPricingSurveyChoiceServer(null);
+          setIsAdminUser(false);
+          setAdminStatsModalOpen(false);
           if (authUserRef.current !== null) {
             setOauthError("เซสชันหมดอายุหรือถูกออกจากระบบจากอุปกรณ์อื่น กรุณาเข้าสู่ระบบใหม่");
           }
@@ -365,6 +572,8 @@ export function App() {
         }
       } catch {
         // Keep current client state on transient offline checks during focus refresh
+      } finally {
+        authRefreshInFlightRef.current = false;
       }
     },
     [updateGuestEntered],
@@ -375,9 +584,13 @@ export function App() {
     getJson<AuthStatusResponse>("/auth/me", ctrl.signal)
       .then((res) => {
         if (ctrl.signal.aborted) return;
+        lastAuthCheckAtRef.current = Date.now();
         setGoogleLoginEnabled(Boolean(res.google_login_enabled));
         setDiscordLoginEnabled(Boolean(res.discord_login_enabled));
         if (res.authenticated && res.user) {
+          setPricingSurveyAnsweredServer(Boolean(res.pricing_survey_answered));
+          setPricingSurveyChoiceServer(res.pricing_survey_choice ?? null);
+          setIsAdminUser(Boolean(res.is_admin));
           if (loadGuestEntered()) {
             const pending = readPendingGuestDraft();
             if (pending) {
@@ -390,6 +603,9 @@ export function App() {
           setAuthUser(res.user);
         } else {
           setExpectedAuthUser(null);
+          setPricingSurveyAnsweredServer(false);
+          setPricingSurveyChoiceServer(null);
+          setIsAdminUser(false);
           setAuthUser(null);
         }
       })
@@ -403,11 +619,39 @@ export function App() {
     return () => ctrl.abort();
   }, [updateGuestEntered]);
 
+  // Lightweight first-party daily visit ping (at most once per UTC+7 day per browser/user)
+  useEffect(() => {
+    if (authLoading) return;
+    const todayTh = new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 10);
+    const scopeKey = `${todayTh}:${authUser?.username ?? "guest"}`;
+    try {
+      if (window.localStorage.getItem("minidraft_last_visit_ping_v1") === scopeKey) return;
+      const clientId = getOrCreateSurveyClientId();
+      postJson<{ recorded: boolean; visit_date: string }>("/telemetry/visit", { client_id: clientId })
+        .then(() => {
+          try {
+            window.localStorage.setItem("minidraft_last_visit_ping_v1", scopeKey);
+          } catch {
+            // ignore storage errors
+          }
+        })
+        .catch(() => {
+          // non-blocking telemetry
+        });
+    } catch {
+      // ignore localStorage access errors
+    }
+  }, [authLoading, authUser?.username]);
+
   // Detect expired/evicted sessions or cross-tab account switches immediately
   useEffect(() => {
     setSessionMismatchHandler((status) => {
       setExpectedAuthUser(null);
       setAuthUser(null);
+      setPricingSurveyAnsweredServer(false);
+      setPricingSurveyChoiceServer(null);
+      setIsAdminUser(false);
+      setAdminStatsModalOpen(false);
       setPendingMigration(null);
       setMigrationBusy(false);
       setMigrationError(null);
@@ -430,7 +674,7 @@ export function App() {
     };
     const onStorage = (e: StorageEvent) => {
       if (e.key === AUTH_SYNC_STORAGE_KEY) {
-        void refreshAuthSession();
+        void refreshAuthSession(undefined, false, true);
       }
     };
     window.addEventListener("focus", onFocusOrVisible);
@@ -456,6 +700,12 @@ export function App() {
     }
     setExpectedAuthUser(null);
     setAuthUser(null);
+    setMobileDrawerOpen(false);
+    setManualSurveyOpen(false);
+    setAdminStatsModalOpen(false);
+    setIsAdminUser(false);
+    setPricingSurveyAnsweredServer(false);
+    setPricingSurveyChoiceServer(null);
     updateGuestEntered(false);
     broadcastAuthChange(null);
   };
@@ -476,7 +726,9 @@ export function App() {
         googleLoginEnabled={googleLoginEnabled}
         discordLoginEnabled={discordLoginEnabled}
         initialError={oauthError}
-        onSuccess={(user) => applyAuthenticatedUser(user, false)}
+        onSuccess={(user, surveyAnswered, surveyChoice, isAdmin) =>
+          applyAuthenticatedUser(user, false, surveyAnswered, surveyChoice ?? null, Boolean(isAdmin))
+        }
         onContinueGuest={() => {
           setOauthError(null);
           updateGuestEntered(true);
@@ -524,6 +776,82 @@ export function App() {
     finalizeAuthenticatedUser(user);
   };
 
+  const handleSelectSurveyChoice = async (choice: PricingSurveyChoice): Promise<boolean> => {
+    if (surveyBusy) return false;
+    setSurveyBusy(true);
+    setSurveyError(null);
+    try {
+      await postJson<PricingSurveyResponse>("/survey/pricing", {
+        choice,
+        client_id: pricingSurveyState.clientId,
+      });
+      const next: PricingSurveyStorage = {
+        ...pricingSurveyState,
+        status: "answered",
+        choice,
+        answeredAt: Date.now(),
+      };
+      savePricingSurveyState(surveyScope, next);
+      return true;
+    } catch (err) {
+      setSurveyError(
+        `ไม่สามารถบันทึกคำตอบได้ในขณะนี้ (${err instanceof Error ? err.message : "Network error"}) กรุณาลองอีกครั้งหรือกด "ภายหลัง"`,
+      );
+      return false;
+    } finally {
+      setSurveyBusy(false);
+    }
+  };
+
+  const handleFinalizeSurveyChoice = (choice: PricingSurveyChoice) => {
+    const next: PricingSurveyStorage = {
+      ...pricingSurveyState,
+      status: "answered",
+      choice,
+      answeredAt: Date.now(),
+    };
+    savePricingSurveyState(surveyScope, next);
+    setSurveyStateByScope((prev) => ({ ...prev, [surveyScope]: next }));
+    if (authUser) {
+      setPricingSurveyAnsweredServer(true);
+      setPricingSurveyChoiceServer(choice);
+    }
+    setManualSurveyOpen(false);
+  };
+
+  const handleSnoozeSurvey = () => {
+    if (surveyBusy) return;
+    setSurveyError(null);
+    setManualSurveyOpen(false);
+    if (!surveyAnswered) {
+      const next: PricingSurveyStorage = {
+        ...pricingSurveyState,
+        snoozedDate: getLocalDateKey(),
+      };
+      savePricingSurveyState(surveyScope, next);
+      setSurveyStateByScope((prev) => ({ ...prev, [surveyScope]: next }));
+    }
+  };
+
+  const todayDateKey = getLocalDateKey();
+  const effectiveSurveyChoice: PricingSurveyChoice | null =
+    pricingSurveyChoiceServer ?? pricingSurveyState.choice ?? null;
+  const surveyAnswered =
+    pricingSurveyAnsweredServer ||
+    pricingSurveyChoiceServer !== null ||
+    pricingSurveyState.status === "answered";
+  const autoSurveyOpen =
+    tab === "draft" &&
+    !surveyAnswered &&
+    pricingSurveyState.snoozedDate !== todayDateKey;
+  const pricingSurveyOpen =
+    !authModalOpen &&
+    pendingMigration === null &&
+    !donateModalOpen &&
+    !adminStatsModalOpen &&
+    !mobileDrawerOpen &&
+    (manualSurveyOpen || autoSurveyOpen);
+
   const workspaceKey = authUser ? `user:${authUser.username}` : "guest";
 
   return (
@@ -533,17 +861,70 @@ export function App() {
         tab={tab}
         selectTab={selectTab}
         authUser={authUser}
+        isAdmin={isAdminUser}
         authLoading={authLoading}
-        disableShortcuts={authModalOpen || pendingMigration !== null}
+        surveyAnswered={surveyAnswered}
+        disableShortcuts={
+          authModalOpen ||
+          pendingMigration !== null ||
+          donateModalOpen ||
+          adminStatsModalOpen ||
+          mobileDrawerOpen ||
+          pricingSurveyOpen
+        }
         onOpenAuthModal={() => setAuthModalOpen(true)}
+        onOpenDonateModal={() => setDonateModalOpen(true)}
+        onOpenSurveyModal={() => {
+          setSurveyError(null);
+          setManualSurveyOpen(true);
+        }}
+        onOpenAdminStatsModal={() => setAdminStatsModalOpen(true)}
+        onOpenMobileDrawer={() => setMobileDrawerOpen(true)}
         onLogout={handleLogout}
       />
+      {mobileDrawerOpen && (
+        <MobileNavDrawer
+          tabs={TABS}
+          activeTab={tab}
+          authUser={authUser}
+          isAdmin={isAdminUser}
+          surveyAnswered={surveyAnswered}
+          surveyChoice={effectiveSurveyChoice}
+          onSelectTab={selectTab}
+          onOpenSurvey={() => {
+            setSurveyError(null);
+            setManualSurveyOpen(true);
+          }}
+          onOpenDonate={() => setDonateModalOpen(true)}
+          onOpenAdminStats={() => setAdminStatsModalOpen(true)}
+          onOpenAuth={() => setAuthModalOpen(true)}
+          onLogout={() => void handleLogout()}
+          onClose={() => setMobileDrawerOpen(false)}
+        />
+      )}
+      {adminStatsModalOpen && isAdminUser && (
+        <AdminStatsModal onClose={() => setAdminStatsModalOpen(false)} />
+      )}
+      {pricingSurveyOpen && (
+        <PricingSurveyModal
+          busy={surveyBusy}
+          error={surveyError}
+          answered={surveyAnswered}
+          currentChoice={effectiveSurveyChoice}
+          onSelect={handleSelectSurveyChoice}
+          onAfterSelect={handleFinalizeSurveyChoice}
+          onSnooze={handleSnoozeSurvey}
+        />
+      )}
+      {donateModalOpen && <DonateModal onClose={() => setDonateModalOpen(false)} />}
       {authModalOpen && (
         <AuthModal
           googleLoginEnabled={googleLoginEnabled}
           discordLoginEnabled={discordLoginEnabled}
           initialError={oauthError}
-          onSuccess={(user) => applyAuthenticatedUser(user, true)}
+          onSuccess={(user, surveyAnswered, surveyChoice, isAdmin) =>
+            applyAuthenticatedUser(user, true, surveyAnswered, surveyChoice ?? null, Boolean(isAdmin))
+          }
           onClose={() => {
             setOauthError(null);
             setAuthModalOpen(false);

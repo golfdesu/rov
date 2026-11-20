@@ -22,7 +22,7 @@ ROV/
 ├── run_hpo_heuristic_h100.sbatch    # SLURM job: 0% true pick order heuristic baseline HPO
 ├── .agents/
 │   └── skills/                      # Progressive-disclosure workspace skills (SOURCE OF TRUTH)
-│       ├── rov-data-guardian/       # Data integrity: 130 heroes, 4,347 matches, true_pick_order.json & tier overrides audit
+│       ├── rov-data-guardian/       # Data integrity: 130 heroes, 4,352 matches, true_pick_order.json & tier overrides audit
 │       ├── hpo-parsimony-selector/  # Top-5 HPO parsimony selector + served-checkpoint vs config check
 │       ├── erawan-hpc-ops/          # ERAWAN HPC H100 SLURM, MLflow & Git sync runbook
 │       ├── rov-draft-serving/       # CLI, FastAPI + web UI, golden test & pytest runbook
@@ -51,16 +51,16 @@ ROV/
 │   ├── dataset_metadata.json        # Auto-generated SSOT metrics (matches, heroes, skills, true order %)
 │   ├── heroes_130_full.json         # Full 130 RoV heroes + skills + capability flags
 │   ├── heroes_130_summary.csv       # Tabular summary of all 130 heroes
-│   ├── matches_training.json        # Curated training set: 3,530 games (2025–2026 only, 2024 excluded, 51.8% true order)
+│   ├── matches_training.json        # Curated training set: 3,535 games (2025–2026 only, 2024 excluded, 51.9% true order)
 │   ├── matches_training_heuristic.json # 0% true pick order experiment set (3,483 games, lane-heuristic order only)
-│   ├── matches_draft_full.json      # Full historical archive: 4,347 pro tournament draft games (2024–2026)
+│   ├── matches_draft_full.json      # Full historical archive: 4,352 pro tournament draft games (2024–2026)
 │   ├── matches_draft_flat.csv       # Flattened match draft table
-│   ├── true_pick_order.json         # 1,828 screenshot-verified chronological pick orders (draft-screenshot-reader)
+│   ├── true_pick_order.json         # 1,833 screenshot-verified chronological pick orders (draft-screenshot-reader)
 │   ├── screenshots_manifest.json    # Hero skill/status & item card screenshot manifest (scripts/build_screenshots_manifest.py)
 │   ├── hero_tier_overrides.json     # Hand-maintained tiers for low-sample/new/reworked heroes (src/api.py, moba-meta-intel)
 │   ├── hero_draft_stats.csv         # 5-lane distributions, pick/ban/win/presence rates
-│   ├── synergy_matrix.csv           # Pairwise ally synergy matrix (2,534 pairs)
-│   ├── counter_matrix.csv           # Pairwise enemy counter matrix (6,128 pairs)
+│   ├── synergy_matrix.csv           # Pairwise ally synergy matrix (2,538 pairs)
+│   ├── counter_matrix.csv           # Pairwise enemy counter matrix (6,140 pairs)
 │   ├── mechanical_matchups_130x130.csv # 16,770 directional 1v1 combat matchups across Lv.4, Lv.10, Lv.15
 │   ├── counter_item_flips.csv       # 235 Lv.15 single-item adaptation matchup reversals
 │   ├── mechanical_matchup_summary.json # Structured summary of same-lane, cross-lane, hidden gems & item flips
@@ -153,7 +153,7 @@ ROV/
 │   ├── simulate_draft_selfplay.py   # 18-step AI vs AI self-play draft simulation
 │   └── archive/                     # Archived one-off patch & migration scripts (21 scripts)
 └── tests/
-    ├── test_data_integrity.py       # Verifies 130 heroes, skills, 4,347 match mappings, and item catalog
+    ├── test_data_integrity.py       # Verifies 130 heroes, skills, 4,352 match mappings, and item catalog
     ├── test_model_pipeline.py       # Verifies SOTA checkpoint, masking, and predictor output
     ├── test_api.py                  # Verifies FastAPI endpoints and the served frontend build
     ├── test_combat_calculator.py    # Verifies mitigation formula, stat stacking, CDR cap, arcana/enchantment rules, duel

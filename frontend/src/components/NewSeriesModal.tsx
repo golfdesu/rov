@@ -24,7 +24,7 @@ const POPULAR_TEAMS = [
   "TEN",
   // AOG (Vietnam)
   "1S",
-  "FL",
+  "FPT",
   "FPL",
   "GAM",
   "BOX",
@@ -64,18 +64,20 @@ export function NewSeriesModal({
   const baseName = `${teamA.trim() || "TEAM A"} vs ${teamB.trim() || "TEAM B"}`;
   const currentPreview = customSeries.trim() || resolveUniqueSeriesName(baseName, allExisting);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const finalA = teamA.trim() || "TEAM A";
-    const finalB = teamB.trim() || "TEAM B";
-    const resolvedBase = `${finalA} vs ${finalB}`;
-    const finalSeries = customSeries.trim() || resolveUniqueSeriesName(resolvedBase, allExisting);
-    onConfirm(finalA, finalB, finalSeries);
-    onClose();
-  };
-
   return (
     <Modal labelledBy={titleId} className="max-w-lg" onClose={onClose}>
+      {(requestClose) => {
+        const handleSubmit = (e: React.FormEvent) => {
+          e.preventDefault();
+          const finalA = teamA.trim() || "TEAM A";
+          const finalB = teamB.trim() || "TEAM B";
+          const resolvedBase = `${finalA} vs ${finalB}`;
+          const finalSeries = customSeries.trim() || resolveUniqueSeriesName(resolvedBase, allExisting);
+          onConfirm(finalA, finalB, finalSeries);
+          requestClose();
+        };
+        return (
+          <>
       {/* Header */}
       <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
         <div className="flex items-center gap-2.5">
@@ -92,8 +94,8 @@ export function NewSeriesModal({
         </div>
         <button
           type="button"
-          onClick={onClose}
-          className="rounded p-1 text-dim transition-colors hover:bg-panel-2 hover:text-ink"
+          onClick={() => requestClose()}
+          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-dim transition-colors hover:bg-panel-2 hover:text-ink"
           aria-label="ปิด"
         >
           <X size={18} />
@@ -134,7 +136,7 @@ export function NewSeriesModal({
                   key={`a-${t}`}
                   type="button"
                   onClick={() => setTeamA(t)}
-                  className={`px-1.5 py-0.5 font-mono text-[10px] font-semibold transition-colors ${
+                  className={`inline-flex min-h-6 min-w-7 items-center justify-center px-1.5 py-0.5 font-mono text-[10px] font-semibold transition-colors ${
                     teamA === t
                       ? "bg-blue text-ink"
                       : "border border-line bg-panel text-muted hover:border-blue/60 hover:text-ink"
@@ -169,7 +171,7 @@ export function NewSeriesModal({
                   key={`b-${t}`}
                   type="button"
                   onClick={() => setTeamB(t)}
-                  className={`px-1.5 py-0.5 font-mono text-[10px] font-semibold transition-colors ${
+                  className={`inline-flex min-h-6 min-w-7 items-center justify-center px-1.5 py-0.5 font-mono text-[10px] font-semibold transition-colors ${
                     teamB === t
                       ? "bg-red text-ink"
                       : "border border-line bg-panel text-muted hover:border-red/60 hover:text-ink"
@@ -221,7 +223,7 @@ export function NewSeriesModal({
         <div className="flex items-center justify-end gap-2.5 pt-2">
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => requestClose()}
             className="h-9 px-3.5 font-display text-xs font-semibold text-muted transition-colors hover:text-ink"
           >
             ยกเลิก
@@ -235,6 +237,9 @@ export function NewSeriesModal({
           </button>
         </div>
       </form>
+          </>
+        );
+      }}
     </Modal>
   );
 }

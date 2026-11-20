@@ -7,8 +7,9 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MAX_SERIES_GAMES, type useDraft } from "../hooks/useDraft";
+import { useDraftTimer } from "../hooks/useDraftTimer";
 import type { LaneKey } from "../types/draft";
 import {
   blueTeamName,
@@ -93,6 +94,7 @@ export function DraftBoardView({
     error,
     syncError,
     retryPredict,
+    setPausePredict,
     heroesFallback,
     lockHero,
     undo,
@@ -104,7 +106,14 @@ export function DraftBoardView({
 
   const searchRef = useRef<HTMLInputElement>(null);
   const [mobileView, setMobileView] = useState<MobileDraftView>("draft");
-  const [globalBanModalCat, setGlobalBanModalCat] = useState<GlobalBanCategoryKey | null>(null);
+  const [globalBanModalCat, setGlobalBanModalCatState] = useState<GlobalBanCategoryKey | null>(null);
+  const setGlobalBanModalCat = useCallback(
+    (cat: GlobalBanCategoryKey | null) => {
+      setGlobalBanModalCatState(cat);
+      setPausePredict?.(cat !== null);
+    },
+    [setPausePredict],
+  );
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isNewSeriesModalOpen, setIsNewSeriesModalOpen] = useState(false);
   const [isFinishGameModalOpen, setIsFinishGameModalOpen] = useState(false);
@@ -118,6 +127,57 @@ export function DraftBoardView({
     onConfirm: () => void;
   } | null>(null);
   const [swapCount, setSwapCount] = useState(0);
+  const [lateHeroMap, setLateHeroMap] = useState<
+    Record<string, { gameKey: string; reason: "late" | "autolock" }>
+  >({});
+  const currentGameKey = `${resolveSeriesName(globalBans)}#${globalBans.gameNumber}`;
+
+  const fallbackTimerHero = useMemo(
+    () => recommendations.find((r) => !unavailableHeroes.has(r.hero_name))?.hero_name ?? null,
+    [recommendations, unavailableHeroes],
+  );
+
+  const handleAutoLockWithTimer = useCallback(
+    (heroName: string) => {
+      if (unavailableHeroes.has(heroName)) return;
+      setLateHeroMap((prev) => ({
+        ...prev,
+        [heroName]: { gameKey: currentGameKey, reason: "autolock" },
+      }));
+      lockHero(heroName);
+    },
+    [unavailableHeroes, currentGameKey, lockHero],
+  );
+
+  const timer = useDraftTimer({
+    currentStep,
+    currentStepIndex,
+    resetSignal: `${globalBans.gameNumber}:${resolveSeriesName(globalBans)}`,
+    isBusy: isLoading || isHeroesLoading,
+    fallbackHero: fallbackTimerHero,
+    onExpireAutoLock: handleAutoLockWithTimer,
+  });
+
+  const handleLockHeroWithTimer = useCallback(
+    (heroName: string) => {
+      if (unavailableHeroes.has(heroName)) return;
+      if (timer.enabled && timer.isExpired) {
+        setLateHeroMap((prev) => ({
+          ...prev,
+          [heroName]: { gameKey: currentGameKey, reason: "late" },
+        }));
+      } else {
+        setLateHeroMap((prev) => {
+          if (!prev[heroName]) return prev;
+          const next = { ...prev };
+          delete next[heroName];
+          return next;
+        });
+      }
+      lockHero(heroName);
+    },
+    [unavailableHeroes, timer.enabled, timer.isExpired, currentGameKey, lockHero],
+  );
 
   const handleSwapSides = () => {
     swapTeamSides();
@@ -196,12 +256,47 @@ export function DraftBoardView({
     () => new Set([...bluePicks, ...redPicks, ...blueBans, ...redBans]),
     [bluePicks, redPicks, blueBans, redBans],
   );
+  const timedOutHeroes = useMemo(() => {
+    const out: Record<string, "late" | "autolock"> = {};
+    for (const [hero, entry] of Object.entries(lateHeroMap)) {
+      if (entry.gameKey === currentGameKey && activeBoardHeroes.has(hero)) {
+        out[hero] = entry.reason;
+      }
+    }
+    return out;
+  }, [lateHeroMap, currentGameKey, activeBoardHeroes]);
   const existingSeriesNames = useMemo(
     () => Array.from(new Set(seriesGames.map(getGameSeriesGroup).filter(Boolean))),
     [seriesGames],
   );
+  const currentSeriesGroup = resolveSeriesName(globalBans);
+  const savedCurrentGame = useMemo(
+    () =>
+      seriesGames.find(
+        (g) => getGameSeriesGroup(g) === currentSeriesGroup && g.gameNumber === globalBans.gameNumber,
+      ) ?? null,
+    [seriesGames, currentSeriesGroup, globalBans.gameNumber],
+  );
+  const isCurrentGameSavedUnchanged = useMemo(() => {
+    if (!savedCurrentGame) return false;
+    const sameArr = (a: string[], b: string[]) => a.length === b.length && a.every((v, i) => v === b[i]);
+    return (
+      savedCurrentGame.blueSideTeam === globalBans.blueSideTeam &&
+      sameArr(savedCurrentGame.blueBans, blueBans) &&
+      sameArr(savedCurrentGame.redBans, redBans) &&
+      sameArr(savedCurrentGame.bluePicks, bluePicks) &&
+      sameArr(savedCurrentGame.redPicks, redPicks)
+    );
+  }, [savedCurrentGame, globalBans.blueSideTeam, blueBans, redBans, bluePicks, redPicks]);
   const blueWins = globalBans.blueSideTeam === "A" ? seriesScore.aWins : seriesScore.bWins;
   const redWins = globalBans.blueSideTeam === "A" ? seriesScore.bWins : seriesScore.aWins;
+
+  const handleUndoWithTimer = useCallback(() => {
+    if (timer.enabled && timer.isExpired) {
+      timer.resetTurnTimer();
+    }
+    undo();
+  }, [timer, undo]);
 
   // Keyboard shortcuts: "/" focus search, Enter lock top suggestion, Ctrl/Cmd+Z undo, Ctrl/Cmd+Shift+Z or Ctrl/Cmd+Y redo
   useEffect(() => {
@@ -218,6 +313,9 @@ export function DraftBoardView({
       return;
     }
     function onKey(e: KeyboardEvent) {
+      if (typeof document !== "undefined" && document.querySelector('[role="dialog"], [role="alertdialog"]')) {
+        return;
+      }
       const typing =
         e.target instanceof HTMLInputElement ||
         e.target instanceof HTMLTextAreaElement ||
@@ -229,7 +327,7 @@ export function DraftBoardView({
         if (e.shiftKey) {
           redo();
         } else {
-          undo();
+          handleUndoWithTimer();
         }
       } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {
         e.preventDefault();
@@ -244,7 +342,9 @@ export function DraftBoardView({
         !(e.target instanceof HTMLElement && e.target.getAttribute("role") === "button")
       ) {
         const top = recommendations[0];
-        if (top && currentStep && !isLoading && !unavailableHeroes.has(top.hero_name)) lockHero(top.hero_name);
+        if (top && currentStep && !isLoading && !unavailableHeroes.has(top.hero_name)) {
+          handleLockHeroWithTimer(top.hero_name);
+        }
       }
     }
     window.addEventListener("keydown", onKey);
@@ -258,24 +358,58 @@ export function DraftBoardView({
     isFinishGameModalOpen,
     editingPickLane,
     confirmState,
-    undo,
+    handleUndoWithTimer,
     redo,
-    lockHero,
+    handleLockHeroWithTimer,
     recommendations,
     currentStep,
     isLoading,
     unavailableHeroes,
   ]);
 
+  const makeTeamColumnProps = (side: "blue" | "red") => {
+    const isBlueSide = side === "blue";
+    const categoryKey = isBlueSide ? blueCategoryKey : redCategoryKey;
+    return {
+      side,
+      teamName: isBlueSide ? bName : rName,
+      picks: isBlueSide ? bluePicks : redPicks,
+      bans: isBlueSide ? blueBans : redBans,
+      pickLanes,
+      timedOutHeroes,
+      onEditPickLane: (heroName: string, editSide: "blue" | "red") =>
+        setEditingPickLane({ heroName, side: editSide }),
+      usedHeroes: isBlueSide ? bUsed : rUsed,
+      usedHeroOriginGames: isBlueSide ? blueOriginGames : redOriginGames,
+      rawUsedCount: isBlueSide
+        ? globalBans.blueSideTeam === "A"
+          ? globalBans.teamAUsed.length
+          : globalBans.teamBUsed.length
+        : globalBans.blueSideTeam === "A"
+          ? globalBans.teamBUsed.length
+          : globalBans.teamAUsed.length,
+      gameNumber: globalBans.gameNumber,
+      heroMap,
+      currentStep,
+      predictedNextPicks: isBlueSide ? blueNextPicks : redNextPicks,
+      predictedNextBans: isBlueSide ? blueNextBans : redNextBans,
+      onLockHero: handleLockHeroWithTimer,
+      onOpenGlobalBanForTeam: () => setGlobalBanModalCat(categoryKey),
+      onRemoveUsedHero: (heroName: string) => removeUsedHero(categoryKey, heroName),
+    };
+  };
+  const blueTeamColumnProps = makeTeamColumnProps("blue");
+  const redTeamColumnProps = makeTeamColumnProps("red");
+
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      {/* Sub-header series bar with compact global ban controls */}
+      {/* Sub-header mode & series bar */}
       <div className="shrink-0 border-b border-line bg-panel/60 px-2 py-1.5 sm:px-3 xl:px-4">
-        <div className="mx-auto flex max-w-[1920px] items-center justify-between gap-1.5 xl:gap-2">
-          {/* Left: Series Name (hidden on < sm so all 5 series controls stay comfortably visible on iPhone) */}
-          <div className="hidden min-w-0 shrink-0 items-center gap-2 sm:flex">
+        <div className="mx-auto flex max-w-[1920px] flex-wrap items-center justify-between gap-1.5 xl:gap-2">
+          {/* Left: Mode Switcher + Series Name */}
+          <div className="flex min-w-0 items-center gap-2">
             <span
-              className="max-w-[220px] truncate font-display text-xs font-bold tracking-wider text-muted"
+              className="hidden max-w-[200px] truncate font-display text-xs font-bold tracking-wider text-muted sm:inline"
               title={globalBans.seriesName || `${bName} vs ${rName}`}
             >
               {globalBans.seriesName || `${bName} vs ${rName}`}
@@ -288,97 +422,97 @@ export function DraftBoardView({
             </span>
           </div>
 
-          {/* Right: Series & Global Ban Controls */}
+          {/* Right: Series/Global Ban Controls */}
           <div
-            aria-label="Series and Global Ban Controls"
+            aria-label="Series and Draft Mode Controls"
             className="flex w-full shrink-0 items-center justify-between gap-1 whitespace-nowrap sm:w-auto sm:justify-end xl:gap-1.5"
           >
             <div className="flex shrink-0 items-center gap-1 xl:gap-1.5">
-              <button
-                type="button"
-                onClick={() => setIsNewSeriesModalOpen(true)}
-                aria-label="เริ่มแมตช์ / ซีรีส์ใหม่"
-                title="เริ่มแมตช์ / ซีรีส์ใหม่ (แยกประวัติออกจากแมตช์เดิม)"
-                className="flex h-8 shrink-0 items-center gap-1.5 border border-gold bg-gold px-2 font-display text-xs font-bold tracking-wide whitespace-nowrap text-bg transition-colors hover:bg-gold/90 sm:h-7"
-              >
-                <PlusCircle className="h-3.5 w-3.5 shrink-0" />
-                <span className="hidden sm:inline">+ แมตช์ใหม่</span>
-              </button>
-
-              {/* Mobile & iPad Compact Game Selector Dropdown (< lg) */}
-              <div className="relative inline-flex shrink-0 items-center lg:hidden">
-                <select
-                  aria-label="Select Game Number"
-                  value={globalBans.gameNumber}
-                  onChange={(e) => {
-                    const g = Number(e.target.value);
-                    const unlockStatus = getGameUnlockStatus(g, globalBans, seriesGames);
-                    if (!unlockStatus.isUnlocked) {
-                      promptLockedGame(g);
-                      return;
-                    }
-                    setIsFinishGameModalOpen(false);
-                    selectGameNumber(g);
-                  }}
-                  className="h-8 w-[86px] max-w-[86px] truncate border border-line bg-panel px-1.5 font-mono text-xs font-bold text-gold cursor-pointer focus:border-gold/60 focus:outline-none sm:h-7 sm:w-auto sm:max-w-none sm:px-2"
+                <button
+                  type="button"
+                  onClick={() => setIsNewSeriesModalOpen(true)}
+                  aria-label="เริ่มแมตช์ / ซีรีส์ใหม่"
+                  title="เริ่มแมตช์ / ซีรีส์ใหม่ (แยกประวัติออกจากแมตช์เดิม)"
+                  className="flex h-8 shrink-0 items-center gap-1.5 border border-gold bg-gold px-2 font-display text-xs font-bold tracking-wide whitespace-nowrap text-bg transition-colors hover:bg-gold/90 sm:h-7"
                 >
+                  <PlusCircle className="h-3.5 w-3.5 shrink-0" />
+                  <span className="hidden sm:inline">+ แมตช์ใหม่</span>
+                </button>
+
+                {/* Mobile & iPad Compact Game Selector Dropdown (< lg) */}
+                <div className="relative inline-flex shrink-0 items-center lg:hidden">
+                  <select
+                    aria-label="Select Game Number"
+                    value={globalBans.gameNumber}
+                    onChange={(e) => {
+                      const g = Number(e.target.value);
+                      const unlockStatus = getGameUnlockStatus(g, globalBans, seriesGames);
+                      if (!unlockStatus.isUnlocked) {
+                        promptLockedGame(g);
+                        return;
+                      }
+                      setIsFinishGameModalOpen(false);
+                      selectGameNumber(g);
+                    }}
+                    className="h-8 w-[86px] max-w-[86px] truncate border border-line bg-panel px-1.5 font-mono text-xs font-bold text-gold cursor-pointer focus:border-gold/60 focus:outline-none sm:h-7 sm:w-auto sm:max-w-none sm:px-2"
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7].map((g) => {
+                      const unlockStatus = getGameUnlockStatus(g, globalBans, seriesGames);
+                      return (
+                        <option key={g} value={g} className="bg-panel text-ink py-1">
+                          Game {g}
+                          {g === 7 ? " (Ult)" : ""}
+                          {!unlockStatus.isUnlocked && globalBans.gameNumber !== g ? " [ล็อก]" : ""}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+
+                {/* Desktop Full 7-Button Game Selector (lg+) */}
+                <div className="hidden lg:inline-flex shrink-0 items-center border border-line bg-bg p-0.5">
                   {[1, 2, 3, 4, 5, 6, 7].map((g) => {
                     const unlockStatus = getGameUnlockStatus(g, globalBans, seriesGames);
+                    const isUnlocked = unlockStatus.isUnlocked;
+                    const isCurrent = globalBans.gameNumber === g;
+
+                    let buttonTitle = `Game ${g}`;
+                    if (!isUnlocked) {
+                      const missingStr = unlockStatus.missingGames.map((mg) => `G${mg}`).join(", ");
+                      buttonTitle = `Game ${g} ถูกล็อก: ต้องจบ ${missingStr} หรือใส่ Global Ban ฝั่งละอย่างน้อย ${unlockStatus.requiredCount} ตัว (Team A: ${unlockStatus.aCount}/${unlockStatus.requiredCount}, Team B: ${unlockStatus.bCount}/${unlockStatus.requiredCount})`;
+                    } else if (g === 7) {
+                      buttonTitle = "Game 7 Ultimate Battle — รีเซ็ต Global Ban ของทั้งสองทีม";
+                    } else {
+                      buttonTitle = `Game ${g} (ซิงค์ Global Ban จากเกมก่อนหน้าอัตโนมัติ)`;
+                    }
+
                     return (
-                      <option key={g} value={g} className="bg-panel text-ink py-1">
-                        Game {g}
-                        {g === 7 ? " (Ult)" : ""}
-                        {!unlockStatus.isUnlocked && globalBans.gameNumber !== g ? " [ล็อก]" : ""}
-                      </option>
+                      <button
+                        key={g}
+                        type="button"
+                        onClick={() => {
+                          if (!isUnlocked) {
+                            promptLockedGame(g);
+                            return;
+                          }
+                          setIsFinishGameModalOpen(false);
+                          selectGameNumber(g);
+                        }}
+                        title={buttonTitle}
+                        className={`h-6 min-w-6.5 px-1.5 font-mono text-[11px] font-bold transition-colors ${
+                          isCurrent
+                            ? "bg-gold text-bg"
+                            : !isUnlocked
+                              ? "cursor-not-allowed text-dim hover:bg-panel-2/40 hover:text-muted"
+                              : "text-muted hover:bg-panel-2 hover:text-ink"
+                        }`}
+                      >
+                        G{g}
+                      </button>
                     );
                   })}
-                </select>
+                </div>
               </div>
-
-              {/* Desktop Full 7-Button Game Selector (lg+) */}
-              <div className="hidden lg:inline-flex shrink-0 items-center border border-line bg-bg p-0.5">
-                {[1, 2, 3, 4, 5, 6, 7].map((g) => {
-                  const unlockStatus = getGameUnlockStatus(g, globalBans, seriesGames);
-                  const isUnlocked = unlockStatus.isUnlocked;
-                  const isCurrent = globalBans.gameNumber === g;
-
-                  let buttonTitle = `Game ${g}`;
-                  if (!isUnlocked) {
-                    const missingStr = unlockStatus.missingGames.map((mg) => `G${mg}`).join(", ");
-                    buttonTitle = `Game ${g} ถูกล็อก: ต้องจบ ${missingStr} หรือใส่ Global Ban ฝั่งละอย่างน้อย ${unlockStatus.requiredCount} ตัว (Team A: ${unlockStatus.aCount}/${unlockStatus.requiredCount}, Team B: ${unlockStatus.bCount}/${unlockStatus.requiredCount})`;
-                  } else if (g === 7) {
-                    buttonTitle = "Game 7 Ultimate Battle — รีเซ็ต Global Ban ของทั้งสองทีม";
-                  } else {
-                    buttonTitle = `Game ${g} (ซิงค์ Global Ban จากเกมก่อนหน้าอัตโนมัติ)`;
-                  }
-
-                  return (
-                    <button
-                      key={g}
-                      type="button"
-                      onClick={() => {
-                        if (!isUnlocked) {
-                          promptLockedGame(g);
-                          return;
-                        }
-                        setIsFinishGameModalOpen(false);
-                        selectGameNumber(g);
-                      }}
-                      title={buttonTitle}
-                      className={`h-6 min-w-6.5 px-1.5 font-mono text-[11px] font-bold transition-colors ${
-                        isCurrent
-                          ? "bg-gold text-bg"
-                          : !isUnlocked
-                            ? "cursor-not-allowed text-dim hover:bg-panel-2/40 hover:text-muted"
-                            : "text-muted hover:bg-panel-2 hover:text-ink"
-                      }`}
-                    >
-                      G{g}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
 
             {/* Direct 1-Tap Swap, History & Record Result Actions (visible on all viewports) */}
             <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
@@ -417,22 +551,32 @@ export function DraftBoardView({
 
               <button
                 type="button"
-                disabled={!isDraftComplete}
+                disabled={!isDraftComplete || isCurrentGameSavedUnchanged}
                 onClick={() => setIsFinishGameModalOpen(true)}
                 aria-label="บันทึกผลเกม"
                 title={
-                  isDraftComplete
-                    ? "บันทึกผลการแข่งขัน + ฮีโร่ที่ทั้ง 2 ทีมเลือกเข้า Global Ban ของแต่ละทีม และเริ่มเกมถัดไป"
-                    : `ต้องดราฟต์ให้ครบทั้ง 10 ตัวก่อนจึงจะจบเกมได้ (ปัจจุบัน ${bluePicks.length + redPicks.length}/10)`
+                  isDraftComplete && isCurrentGameSavedUnchanged
+                    ? "เกมนี้ถูกบันทึกไว้ในประวัติซีรีส์เรียบร้อยแล้ว (หากแก้ไขตัวดราฟต์จะสามารถกดอัปเดตผลได้ หรือเปลี่ยนทีมที่ชนะได้ในหน้าต่างประวัติ)"
+                    : isDraftComplete
+                      ? "บันทึกผลการแข่งขัน + ฮีโร่ที่ทั้ง 2 ทีมเลือกเข้า Global Ban ของแต่ละทีม และเริ่มเกมถัดไป"
+                      : `ต้องดราฟต์ให้ครบทั้ง 10 ตัวก่อนจึงจะจบเกมได้ (ปัจจุบัน ${bluePicks.length + redPicks.length}/10)`
                 }
-                className={`flex h-8 shrink-0 items-center gap-1.5 border px-2 font-display text-xs font-bold whitespace-nowrap transition-colors disabled:pointer-events-none disabled:opacity-35 sm:h-7 ${
-                  isDraftComplete
-                    ? "border-gold bg-gold text-bg hover:bg-gold/90"
-                    : "border-good/60 bg-good/15 text-good hover:bg-good hover:text-bg"
+                className={`flex h-8 shrink-0 items-center gap-1.5 border px-2 font-display text-xs font-bold whitespace-nowrap transition-colors disabled:pointer-events-none sm:h-7 ${
+                  isDraftComplete && isCurrentGameSavedUnchanged
+                    ? "border-good/50 bg-good/15 text-good disabled:opacity-75"
+                    : isDraftComplete
+                      ? "border-gold bg-gold text-bg hover:bg-gold/90 disabled:opacity-35"
+                      : "border-good/60 bg-good/15 text-good hover:bg-good hover:text-bg disabled:opacity-35"
                 }`}
               >
                 <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-                <span className="hidden sm:inline">บันทึกผล</span>
+                <span className="hidden sm:inline">
+                  {isDraftComplete && isCurrentGameSavedUnchanged
+                    ? "บันทึกแล้ว"
+                    : savedCurrentGame
+                      ? "อัปเดตผล"
+                      : "บันทึกผล"}
+                </span>
               </button>
             </div>
           </div>
@@ -449,10 +593,37 @@ export function DraftBoardView({
         setLeague={setLeague}
         useLookahead={useLookahead}
         onToggleLookahead={() => setUseLookahead((prev) => !prev)}
-        onUndo={undo}
+        timer={{
+          enabled: timer.enabled,
+          preset: timer.preset,
+          soundEnabled: timer.soundEnabled,
+          autoLock: timer.autoLock,
+          paused: timer.paused,
+          secondsLeft: timer.secondsLeft,
+          totalSeconds: timer.totalSeconds,
+          isWarning: timer.isWarning,
+          isCritical: timer.isCritical,
+          isExpired: timer.isExpired,
+          onToggleEnabled: timer.toggleEnabled,
+          onSetEnabled: timer.setEnabled,
+          onTogglePaused: timer.togglePaused,
+          onResetTurn: timer.resetTurnTimer,
+          onSetPreset: timer.setPreset,
+          onToggleSound: timer.toggleSound,
+          onToggleAutoLock: timer.toggleAutoLock,
+        }}
+        onUndo={handleUndoWithTimer}
         onRedo={redo}
         onReset={() => {
           setIsFinishGameModalOpen(false);
+          setLateHeroMap((prev) => {
+            const next: typeof prev = {};
+            for (const [hero, entry] of Object.entries(prev)) {
+              if (entry.gameKey !== currentGameKey) next[hero] = entry;
+            }
+            return next;
+          });
+          timer.resetTurnTimer();
           reset();
         }}
         canUndo={canUndo}
@@ -480,7 +651,7 @@ export function DraftBoardView({
         <DraftHistoryModal
           games={seriesGames}
           heroMap={heroMap}
-          hasCurrentDraftActions={hasAnyAction}
+          hasCurrentDraftActions={hasAnyAction && !isCurrentGameSavedUnchanged}
           onSaveCurrentSnapshot={saveCurrentDraftSnapshot}
           onOpenNewSeries={() => setIsNewSeriesModalOpen(true)}
           onSwitchSeries={(...args) => {
@@ -609,52 +780,10 @@ export function DraftBoardView({
           }`}
         >
           <div key={`compact-blue-${swapCount}`} className={`min-w-0 ${swapCount > 0 ? "animate-side-swap-flash" : ""}`}>
-            <TeamColumn
-              variant="compact"
-              side="blue"
-              teamName={bName}
-              picks={bluePicks}
-              bans={blueBans}
-              pickLanes={pickLanes}
-              onEditPickLane={(heroName, side) => setEditingPickLane({ heroName, side })}
-              usedHeroes={bUsed}
-              usedHeroOriginGames={blueOriginGames}
-              rawUsedCount={
-                globalBans.blueSideTeam === "A" ? globalBans.teamAUsed.length : globalBans.teamBUsed.length
-              }
-              gameNumber={globalBans.gameNumber}
-              heroMap={heroMap}
-              currentStep={currentStep}
-              predictedNextPicks={blueNextPicks}
-              predictedNextBans={blueNextBans}
-              onLockHero={lockHero}
-              onOpenGlobalBanForTeam={() => setGlobalBanModalCat(blueCategoryKey)}
-              onRemoveUsedHero={(heroName) => removeUsedHero(blueCategoryKey, heroName)}
-            />
+            <TeamColumn variant="compact" {...blueTeamColumnProps} />
           </div>
           <div key={`compact-red-${swapCount}`} className={`min-w-0 ${swapCount > 0 ? "animate-side-swap-flash" : ""}`}>
-            <TeamColumn
-              variant="compact"
-              side="red"
-              teamName={rName}
-              picks={redPicks}
-              bans={redBans}
-              pickLanes={pickLanes}
-              onEditPickLane={(heroName, side) => setEditingPickLane({ heroName, side })}
-              usedHeroes={rUsed}
-              usedHeroOriginGames={redOriginGames}
-              rawUsedCount={
-                globalBans.blueSideTeam === "A" ? globalBans.teamBUsed.length : globalBans.teamAUsed.length
-              }
-              gameNumber={globalBans.gameNumber}
-              heroMap={heroMap}
-              currentStep={currentStep}
-              predictedNextPicks={redNextPicks}
-              predictedNextBans={redNextBans}
-              onLockHero={lockHero}
-              onOpenGlobalBanForTeam={() => setGlobalBanModalCat(redCategoryKey)}
-              onRemoveUsedHero={(heroName) => removeUsedHero(redCategoryKey, heroName)}
-            />
+            <TeamColumn variant="compact" {...redTeamColumnProps} />
           </div>
         </div>
 
@@ -665,55 +794,13 @@ export function DraftBoardView({
               key={`mobile-blue-${swapCount}`}
               className={`flex min-h-0 min-w-0 flex-col ${swapCount > 0 ? "animate-side-swap-flash" : ""}`}
             >
-              <TeamColumn
-                variant="full"
-                side="blue"
-                teamName={bName}
-                picks={bluePicks}
-                bans={blueBans}
-                pickLanes={pickLanes}
-                onEditPickLane={(heroName, side) => setEditingPickLane({ heroName, side })}
-                usedHeroes={bUsed}
-                usedHeroOriginGames={blueOriginGames}
-                rawUsedCount={
-                  globalBans.blueSideTeam === "A" ? globalBans.teamAUsed.length : globalBans.teamBUsed.length
-                }
-                gameNumber={globalBans.gameNumber}
-                heroMap={heroMap}
-                currentStep={currentStep}
-                predictedNextPicks={blueNextPicks}
-                predictedNextBans={blueNextBans}
-                onLockHero={lockHero}
-                onOpenGlobalBanForTeam={() => setGlobalBanModalCat(blueCategoryKey)}
-                onRemoveUsedHero={(heroName) => removeUsedHero(blueCategoryKey, heroName)}
-              />
+              <TeamColumn variant="full" {...blueTeamColumnProps} />
             </div>
             <div
               key={`mobile-red-${swapCount}`}
               className={`flex min-h-0 min-w-0 flex-col ${swapCount > 0 ? "animate-side-swap-flash" : ""}`}
             >
-              <TeamColumn
-                variant="full"
-                side="red"
-                teamName={rName}
-                picks={redPicks}
-                bans={redBans}
-                pickLanes={pickLanes}
-                onEditPickLane={(heroName, side) => setEditingPickLane({ heroName, side })}
-                usedHeroes={rUsed}
-                usedHeroOriginGames={redOriginGames}
-                rawUsedCount={
-                  globalBans.blueSideTeam === "A" ? globalBans.teamBUsed.length : globalBans.teamAUsed.length
-                }
-                gameNumber={globalBans.gameNumber}
-                heroMap={heroMap}
-                currentStep={currentStep}
-                predictedNextPicks={redNextPicks}
-                predictedNextBans={redNextBans}
-                onLockHero={lockHero}
-                onOpenGlobalBanForTeam={() => setGlobalBanModalCat(redCategoryKey)}
-                onRemoveUsedHero={(heroName) => removeUsedHero(redCategoryKey, heroName)}
-              />
+              <TeamColumn variant="full" {...redTeamColumnProps} />
             </div>
           </div>
         )}
@@ -729,28 +816,7 @@ export function DraftBoardView({
             key={`desktop-blue-${swapCount}`}
             className={`hidden min-h-0 flex-col lg:order-1 lg:flex ${swapCount > 0 ? "animate-side-swap-flash" : ""}`}
           >
-            <TeamColumn
-              variant="full"
-              side="blue"
-              teamName={bName}
-              picks={bluePicks}
-              bans={blueBans}
-              pickLanes={pickLanes}
-              onEditPickLane={(heroName, side) => setEditingPickLane({ heroName, side })}
-              usedHeroes={bUsed}
-              usedHeroOriginGames={blueOriginGames}
-              rawUsedCount={
-                globalBans.blueSideTeam === "A" ? globalBans.teamAUsed.length : globalBans.teamBUsed.length
-              }
-              gameNumber={globalBans.gameNumber}
-              heroMap={heroMap}
-              currentStep={currentStep}
-              predictedNextPicks={blueNextPicks}
-              predictedNextBans={blueNextBans}
-              onLockHero={lockHero}
-              onOpenGlobalBanForTeam={() => setGlobalBanModalCat(blueCategoryKey)}
-              onRemoveUsedHero={(heroName) => removeUsedHero(blueCategoryKey, heroName)}
-            />
+            <TeamColumn variant="full" {...blueTeamColumnProps} />
           </div>
 
           {/* Laptop / Desktop Right Column: Red Team Full Board */}
@@ -758,28 +824,7 @@ export function DraftBoardView({
             key={`desktop-red-${swapCount}`}
             className={`hidden min-h-0 flex-col lg:order-3 lg:flex ${swapCount > 0 ? "animate-side-swap-flash" : ""}`}
           >
-            <TeamColumn
-              variant="full"
-              side="red"
-              teamName={rName}
-              picks={redPicks}
-              bans={redBans}
-              pickLanes={pickLanes}
-              onEditPickLane={(heroName, side) => setEditingPickLane({ heroName, side })}
-              usedHeroes={rUsed}
-              usedHeroOriginGames={redOriginGames}
-              rawUsedCount={
-                globalBans.blueSideTeam === "A" ? globalBans.teamBUsed.length : globalBans.teamAUsed.length
-              }
-              gameNumber={globalBans.gameNumber}
-              heroMap={heroMap}
-              currentStep={currentStep}
-              predictedNextPicks={redNextPicks}
-              predictedNextBans={redNextBans}
-              onLockHero={lockHero}
-              onOpenGlobalBanForTeam={() => setGlobalBanModalCat(redCategoryKey)}
-              onRemoveUsedHero={(heroName) => removeUsedHero(redCategoryKey, heroName)}
-            />
+            <TeamColumn variant="full" {...redTeamColumnProps} />
           </div>
 
           {/* Center / Split-View Workspace: AI Suggestions + Hero Grid */}
@@ -797,7 +842,7 @@ export function DraftBoardView({
                   isLoading={isLoading}
                   blueWinRate={blueWinRate}
                   winHistory={winHistory}
-                  onLockHero={lockHero}
+                  onLockHero={handleLockHeroWithTimer}
                 />
               </div>
             )}
@@ -818,7 +863,7 @@ export function DraftBoardView({
                 isLoading={isLoading}
                 blueWinRate={blueWinRate}
                 winHistory={winHistory}
-                onLockHero={lockHero}
+                onLockHero={handleLockHeroWithTimer}
               />
             </div>
 
@@ -842,7 +887,7 @@ export function DraftBoardView({
                 currentStep={currentStep}
                 isLoading={isLoading}
                 isHeroesLoading={isHeroesLoading}
-                onLockHero={lockHero}
+                onLockHero={handleLockHeroWithTimer}
               />
             </div>
           </div>
@@ -892,7 +937,9 @@ export function DraftBoardView({
           }`}
         >
           <Users className="h-4 w-4 shrink-0 sm:h-4.5 sm:w-4.5" />
-          <span className="w-full truncate text-center">กระดาน & แบน ({bUsed.length + rUsed.length})</span>
+          <span className="w-full truncate text-center">
+            กระดาน & แบน ({bUsed.length + rUsed.length})
+          </span>
         </button>
       </footer>
     </div>

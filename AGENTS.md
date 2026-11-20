@@ -15,8 +15,8 @@ This repository follows Big Tech Machine Learning Engineering standards (modeled
 | Component | Status & Verified Metrics |
 | :--- | :--- |
 | **Hero & Skill Database** | **130 / 130 Heroes** (`data/heroes_130_full.json`, `data/heroes_130_summary.csv`, `data/hero_skills_full.json`) up to **Evita** (Oct 2026), **Tamyn** (Jul 2026), and **Flowborn (Marksman & Mage)**, each with `>= 4` skills, 100% numerical cooldowns/mana arrays, base damage, and AD/AP/HP scaling. |
-| **Pro Match Archive** | **4,347 Complete Pro Games** (`data/matches_draft_full.json`) from RPL, APL, AIC, AOG, and GCS (2024–2026) with Global Ban Pick tracking and **0 unmapped hero names**. |
-| **Curated Training Dataset** | **3,530 Games (2025–2026)** (`data/matches_training.json`). All 817 games from 2024 are strictly excluded to remove legacy meta noise; includes all 1,828 games from 2026 with 100% verified true pick order. **True Pick Order coverage = 51.8%** (1,828 / 3,530 games). |
+| **Pro Match Archive** | **4,352 Complete Pro Games** (`data/matches_draft_full.json`) from RPL, APL, AIC, AOG, and GCS (2024–2026) with Global Ban Pick tracking and **0 unmapped hero names**. |
+| **Curated Training Dataset** | **3,535 Games (2025–2026)** (`data/matches_training.json`). All 817 games from 2024 are strictly excluded to remove legacy meta noise; includes all 1,833 games from 2026 with 100% verified true pick order. **True Pick Order coverage = 51.9%** (1,833 / 3,535 games). |
 | **Draft Web UI** | React 19 + Vite + Tailwind 4 broadcast-style draft board (`frontend/`), served by FastAPI from `frontend/dist` (dev) or `frontend/dist-prod` (`VITE_DRAFT_ONLY=true` in production). 130 / 130 square hero icons (`frontend/public/avatars/`), Thai display names (Arthur -> Mortos, Brunhilda -> Celica, Richter -> Riktor), plus Guest/Account portal (Username/Password + Google & Discord OAuth 2.0 PKCE, `/privacy`, `logo.png`). |
 | **SOTA Architecture** | `RoVDraftGNNTransformer` (`src/train_sota_model.py`): Multi-Relational Hero GNN (`adj_copick`, `adj_synergy`, `adj_counter`, `adj_countered_by`) + Sequence Transformer + Bounded Neural Temperature Gate + Dual Policy & Win-Value Heads. |
 | **H100 Optuna HPO** | Completed 50 Policy-Focused Trials on ERAWAN HPC (`best_params/sota_rov_top5_trials.json`, `configs/selected_production_params.json`, 37-dim hero features, 150d recency decay, Global Ban context). |
@@ -57,10 +57,11 @@ Every AI agent (including fast models such as `3.8flash`) MUST strictly obey the
    - Only enchantments in `ENCHANTMENT_EFFECTS` affect numbers; values are parsed from descriptions and pending in-game verification. Never invent values for the rest.
    - `hero_level_stats.json` lacks attack speed/mana; base attack rate is assumed `BASE_ATTACKS_PER_SEC = 1.0`.
 
-9. **Cross-Session Changelog (`CHANGELOG.md`) & English Documentation Invariant**:
+9. **Cross-Session Changelog (`CHANGELOG.md`), Production Log (`docs/PRODUCTION_RELEASES.md`) & English Documentation Invariant**:
    - Before starting work, read the top entries of `CHANGELOG.md` to learn what previous agents already did.
+   - Before touching or deploying to production (`20.2.210.230` / `minidraft.app`), read `docs/PRODUCTION_RELEASES.md` to check the live base commit, active VM hotfixes, and dev-only exclusions; update it whenever a production release or hotfix is deployed.
    - Before finishing any task that modified files, add a new entry at the TOP (date, time, agent, what was done, files, verification, open issues) following the format in that file.
-   - **STRICT English Requirement**: All entries in `CHANGELOG.md`, skill documentation (`SKILL.md`), agent notes, and repository markdown files MUST be authored strictly in English to maximize token efficiency and prevent semantic loss across LLM context windows.
+   - **STRICT English Requirement**: All entries in `CHANGELOG.md`, `docs/PRODUCTION_RELEASES.md`, skill documentation (`SKILL.md`), agent notes, and repository markdown files MUST be authored strictly in English to maximize token efficiency and prevent semantic loss across LLM context windows.
 
 10. **Off-Limits Folder (`data/vod_analytics/`)**:
     - This is the owner's paused WIP (VOD minimap rotation tracking).
@@ -87,9 +88,9 @@ Every AI agent (including fast models such as `3.8flash`) MUST strictly obey the
     - Every skill ends with a **Related Skills** section. When adding or renaming a skill, update the Related Skills sections of its neighbors and the skill list in Section 2 below.
 
 13. **Curated Training Dataset & 2024 Exclusion Invariant (`data/matches_training.json`)**:
-    - `data/matches_draft_full.json` (4,347 games) is the historical archival repository (2024–2026).
+    - `data/matches_draft_full.json` (4,352 games) is the historical archival repository (2024–2026).
     - **STRICTLY FORBIDDEN to train the production model on 2024 data**. All 817 games from 2024 are excluded because legacy meta noise and obsolete hero priorities (e.g., pre-rework Wonder Woman, obsolete 2024 Erin dynamics) degrade model performance on the current meta.
-    - The active training dataset is `data/matches_training.json` containing **3,530 games strictly from 2025–2026** (1,702 from 2025 + 1,828 from 2026, through the AOG 2026 Winter Finals on Nov 7, 2026) with **51.8% True Pick Order coverage** (1,828 / 3,530 games = 100% of 2026 games, verified from broadcast screenshots).
+    - The active training dataset is `data/matches_training.json` containing **3,535 games strictly from 2025–2026** (1,702 from 2025 + 1,833 from 2026, through the AOG 2026 Winter Finals on Nov 7, 2026) with **51.9% True Pick Order coverage** (1,833 / 3,535 games = 100% of 2026 games, verified from broadcast screenshots).
     - `src/train_sota_model.py` automatically defaults to `data/matches_training.json` whenever it exists.
     - Regenerate the training set only with (reproduces the current file exactly; add `--max-date YYYY-MM-DD` only for a deliberate hold-out):
       `python src/build_training_dataset.py --min-year 2025`
@@ -113,6 +114,7 @@ Every AI agent (including fast models such as `3.8flash`) MUST strictly obey the
 | Path | Purpose |
 | :--- | :--- |
 | `AGENTS.md` / `CHANGELOG.md` / `DESIGN.md` | Master agent rules, cross-session work log (read top entries first, prepend on finish), and UI design system |
+| `docs/PRODUCTION_RELEASES.md` | Live production (`minidraft.app`) state, VM hotfix ledger, dev-only exclusions, and deploy history |
 | `docs/ARCHITECTURE_MAP.md` | Complete file-by-file repository & architecture map (read when locating files) |
 | `.agents/skills/` (mirrored to `.claude/skills/`) | 9 workspace skills: `rov-data-guardian`, `hpo-parsimony-selector`, `erawan-hpc-ops`, `rov-draft-serving`, `draft-screenshot-reader`, `security-audit`, `frontend-e2e-inspector`, `moba-meta-intel`, `regression-guard` |
 | `src/` | FastAPI (`api.py`), SQLite auth/state (`db.py`), Pydantic schemas (`schemas.py`), config (`config.py`), SOTA predictor (`predictor.py`, `search/draft_mcts.py`), Combat Engine (`combat_calculator.py`, `skill_mechanics.py`), SOTA trainer & HPO (`train_sota_model.py`, `hpo_sota_optuna.py`), data builders & scrapers |

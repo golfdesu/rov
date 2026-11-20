@@ -86,22 +86,28 @@ export function DraftHistoryModal({
   }, [groups, activeGroup]);
 
   return (
-    <Modal labelledBy={titleId} className="max-w-4xl overflow-hidden" onClose={onClose}>
+    <Modal
+      labelledBy={titleId}
+      className="max-w-4xl overflow-hidden lg:max-w-5xl"
+      onClose={onClose}
+    >
+      {(requestClose) => (
+        <>
       {/* Header */}
       <div className="flex shrink-0 flex-col gap-2 border-b border-line px-3 py-2 sm:flex-row sm:items-center sm:justify-between sm:px-4 sm:py-3">
         <div className="flex min-w-0 items-start justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2">
-            <History className="h-4 w-4 shrink-0 text-gold" />
+            <History className="h-4 w-4 shrink-0 text-gold lg:h-5 lg:w-5" />
             <div className="min-w-0">
-              <h2 id={titleId} className="flex flex-wrap items-center gap-1.5 font-display text-xs font-bold tracking-wider text-ink sm:gap-2 sm:text-sm">
+              <h2 id={titleId} className="flex flex-wrap items-center gap-1.5 font-display text-xs font-bold tracking-wider text-ink sm:gap-2 sm:text-sm lg:text-base">
                 <span>
                   DRAFT HISTORY<span className="hidden sm:inline"> &amp; SERIES · ประวัติการดราฟต์แยกตามกลุ่มซีรีส์</span>
                 </span>
-                <span className="border border-gold/60 bg-gold/15 px-1.5 py-0.5 font-mono text-[10px] font-bold text-gold sm:px-2 sm:text-xs">
+                <span className="border border-gold/60 bg-gold/15 px-1.5 py-0.5 font-mono text-[10px] font-bold text-gold sm:px-2 sm:text-xs lg:text-[13px]">
                   {games.length}/{MAX_SERIES_GAMES}
                 </span>
               </h2>
-              <p className="hidden text-[11px] text-dim sm:block">
+              <p className="hidden text-[11px] text-dim sm:block lg:text-xs">
                 ระบบจัดกลุ่มตามคู่แข่งขัน (เช่น BRU vs FS) อัตโนมัติ — บันทึกสูงสุด {MAX_SERIES_GAMES} เกมล่าสุด (หากเกินจะลบเกมเก่าสุดอัตโนมัติ)
               </p>
             </div>
@@ -109,8 +115,8 @@ export function DraftHistoryModal({
 
           <button
             type="button"
-            onClick={onClose}
-            className="shrink-0 rounded p-1 text-dim transition-colors hover:bg-panel-2 hover:text-ink sm:hidden"
+            onClick={() => requestClose()}
+            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-dim transition-colors hover:bg-panel-2 hover:text-ink sm:hidden"
             aria-label="ปิด"
           >
             <X size={18} />
@@ -121,12 +127,9 @@ export function DraftHistoryModal({
           {onOpenNewSeries && (
             <button
               type="button"
-              onClick={() => {
-                onClose();
-                onOpenNewSeries();
-              }}
+              onClick={() => requestClose(onOpenNewSeries)}
               title="เริ่มแมตช์ / ซีรีส์ใหม่ (แยกประวัติออกจากแมตช์เดิม)"
-              className="flex h-7 items-center gap-1 border border-gold bg-gold px-2 font-display text-[10px] font-bold tracking-wide whitespace-nowrap text-bg transition-colors hover:bg-gold/90 sm:h-8 sm:gap-1.5 sm:px-2.5 sm:text-[11px]"
+              className="flex h-7 items-center gap-1 border border-gold bg-gold px-2 font-display text-[10px] font-bold tracking-wide whitespace-nowrap text-bg transition-colors hover:bg-gold/90 sm:h-8 sm:gap-1.5 sm:px-2.5 sm:text-[11px] lg:px-3 lg:text-xs"
             >
               <PlusCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
               <span>+ แมตช์ใหม่</span>
@@ -137,7 +140,7 @@ export function DraftHistoryModal({
               type="button"
               onClick={onSaveCurrentSnapshot}
               title="บันทึกกระดานดราฟต์ปัจจุบันเก็บเข้าประวัติโดยไม่ล้างกระดาน"
-              className="flex h-7 items-center gap-1 border border-gold/60 bg-gold/10 px-2 font-display text-[10px] font-bold tracking-wide whitespace-nowrap text-gold transition-colors hover:bg-gold hover:text-bg sm:h-8 sm:gap-1.5 sm:px-2.5 sm:text-[11px]"
+              className="flex h-7 items-center gap-1 border border-gold/60 bg-gold/10 px-2 font-display text-[10px] font-bold tracking-wide whitespace-nowrap text-gold transition-colors hover:bg-gold hover:text-bg sm:h-8 sm:gap-1.5 sm:px-2.5 sm:text-[11px] lg:px-3 lg:text-xs"
             >
               <BookmarkPlus className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
               <span className="sm:hidden">บันทึกปัจจุบัน</span>
@@ -155,11 +158,11 @@ export function DraftHistoryModal({
                 onConfirm: () => {
                   setConfirmState(null);
                   onClearAllSeries();
-                  onClose();
+                  requestClose();
                 },
               })
             }
-            className="flex h-7 items-center gap-1 border border-red/40 bg-red/10 px-2 font-display text-[11px] font-semibold tracking-wide whitespace-nowrap text-red transition-colors hover:bg-red hover:text-ink disabled:pointer-events-none disabled:opacity-35 sm:h-8 sm:gap-1.5 sm:px-2.5"
+            className="flex h-7 items-center gap-1 border border-red/40 bg-red/10 px-2 font-display text-[11px] font-semibold tracking-wide whitespace-nowrap text-red transition-colors hover:bg-red hover:text-ink disabled:pointer-events-none disabled:opacity-35 sm:h-8 sm:gap-1.5 sm:px-2.5 lg:px-3 lg:text-xs"
           >
             <RotateCcw className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             <span className="sm:hidden">รีเซ็ตทั้งหมด</span>
@@ -167,8 +170,8 @@ export function DraftHistoryModal({
           </button>
           <button
             type="button"
-            onClick={onClose}
-            className="hidden shrink-0 rounded p-1 text-dim transition-colors hover:bg-panel-2 hover:text-ink sm:block"
+            onClick={() => requestClose()}
+            className="hidden h-8 w-8 shrink-0 items-center justify-center rounded text-dim transition-colors hover:bg-panel-2 hover:text-ink sm:inline-flex"
             aria-label="ปิด"
           >
             <X size={18} />
@@ -179,14 +182,14 @@ export function DraftHistoryModal({
       {/* Series Group Selector Bar */}
       {groups.length > 0 && (
         <div className="flex shrink-0 flex-nowrap items-center gap-1.5 overflow-x-auto border-b border-line bg-panel-2/60 px-3 py-1.5 sm:flex-wrap sm:overflow-visible sm:px-4 sm:py-2">
-          <span className="mr-0.5 flex shrink-0 items-center gap-1 font-mono text-[10px] font-bold text-muted sm:mr-1 sm:text-[11px]">
+          <span className="mr-0.5 flex shrink-0 items-center gap-1 font-mono text-[10px] font-bold text-muted sm:mr-1 sm:text-[11px] lg:text-xs">
             <Layers className="h-3 w-3 text-gold sm:h-3.5 sm:w-3.5" />
             <span className="hidden sm:inline">GROUP / แมตช์:</span>
           </span>
           <button
             type="button"
             onClick={() => setSelectedGroup("ALL")}
-            className={`flex h-6.5 shrink-0 items-center gap-1.5 border px-2 font-display text-[11px] font-bold whitespace-nowrap transition-colors sm:h-7 sm:px-2.5 sm:text-xs ${
+            className={`flex h-6.5 shrink-0 items-center gap-1.5 border px-2 font-display text-[11px] font-bold whitespace-nowrap transition-colors sm:h-7 sm:px-2.5 sm:text-xs lg:h-8 lg:px-3 lg:text-[13px] ${
               activeGroup === "ALL"
                 ? "border-gold bg-gold text-bg"
                 : "border-line bg-bg text-muted hover:border-line-strong hover:text-ink"
@@ -194,7 +197,7 @@ export function DraftHistoryModal({
           >
             <span>ทั้งหมด</span>
             <span
-              className={`px-1 font-mono text-[10px] ${
+              className={`px-1 font-mono text-[10px] lg:text-[11px] ${
                 activeGroup === "ALL" ? "bg-bg text-gold" : "bg-panel-2 text-dim"
               }`}
             >
@@ -209,7 +212,7 @@ export function DraftHistoryModal({
                 key={grp.name}
                 type="button"
                 onClick={() => setSelectedGroup(grp.name)}
-                className={`flex h-6.5 shrink-0 items-center gap-1.5 border px-2 font-display text-[11px] font-bold whitespace-nowrap transition-colors sm:h-7 sm:px-2.5 sm:text-xs ${
+                className={`flex h-6.5 shrink-0 items-center gap-1.5 border px-2 font-display text-[11px] font-bold whitespace-nowrap transition-colors sm:h-7 sm:px-2.5 sm:text-xs lg:h-8 lg:px-3 lg:text-[13px] ${
                   isSelected
                     ? "border-gold bg-gold text-bg"
                     : "border-line bg-bg text-muted hover:border-line-strong hover:text-ink"
@@ -217,7 +220,7 @@ export function DraftHistoryModal({
               >
                 <span>{grp.name}</span>
                 <span
-                  className={`px-1 font-mono text-[10px] ${
+                  className={`px-1 font-mono text-[10px] lg:text-[11px] ${
                     isSelected ? "bg-bg text-gold" : "bg-panel-2 text-dim"
                   }`}
                 >
@@ -233,9 +236,9 @@ export function DraftHistoryModal({
       <div className="min-h-0 flex-1 overflow-y-auto p-2.5 sm:p-4">
         {games.length === 0 ? (
           <div className="flex h-52 flex-col items-center justify-center gap-2 border border-dashed border-line bg-bg/40 p-6 text-center text-dim">
-            <History className="h-7 w-7 text-muted/60" />
-            <p className="font-display text-sm font-semibold text-muted">ยังไม่มีประวัติเกมที่บันทึกไว้ในระบบ</p>
-            <p className="max-w-md text-xs text-dim">
+            <History className="h-7 w-7 text-muted/60 lg:h-8 lg:w-8" />
+            <p className="font-display text-sm font-semibold text-muted lg:text-base">ยังไม่มีประวัติเกมที่บันทึกไว้ในระบบ</p>
+            <p className="max-w-md text-xs text-dim lg:max-w-lg lg:text-sm">
               เมื่อกดปุ่ม &ldquo;จบเกมนี้ → บันทึก Global Ban&rdquo; หรือกด &ldquo;บันทึกกระดานปัจจุบัน&rdquo;
               รายละเอียดการแบนและเลือกฮีโร่จะถูกจัดกลุ่มตามคู่แข่งขัน (เช่น BRU vs FS) และเก็บรักษาไว้อย่างถาวร
             </p>
@@ -247,15 +250,15 @@ export function DraftHistoryModal({
                 {/* Group Section Header */}
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-gold/70 pb-1.5">
                   <div className="flex items-center gap-2">
-                    <span className="border border-gold/60 bg-gold/15 px-2 py-0.5 font-display text-xs font-bold text-gold">
+                    <span className="border border-gold/60 bg-gold/15 px-2 py-0.5 font-display text-xs font-bold text-gold lg:text-sm">
                       {grp.name}
                     </span>
-                    <span className="font-mono text-xs text-muted">
+                    <span className="font-mono text-xs text-muted lg:text-[13px]">
                       ({grp.count} เกมในซีรีส์)
                     </span>
                     {grp.latestTimestamp && (
-                      <span className="hidden sm:flex items-center gap-1 font-mono text-[11px] text-dim">
-                        <Clock className="h-3 w-3" />
+                      <span className="hidden items-center gap-1 font-mono text-[11px] text-dim sm:flex lg:text-xs">
+                        <Clock className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
                         ล่าสุด {grp.latestTimestamp}
                       </span>
                     )}
@@ -267,12 +270,12 @@ export function DraftHistoryModal({
                         type="button"
                         onClick={() => {
                           onSwitchSeries(grp.name);
-                          onClose();
+                          requestClose();
                         }}
                         title={`สลับกระดานมาดราฟต์เกมถัดไปของซีรีส์ "${grp.name}"`}
-                        className="flex h-6 items-center gap-1 border border-gold/60 bg-gold/15 px-2 font-display text-[10px] font-bold text-gold transition-colors hover:bg-gold hover:text-bg"
+                        className="flex h-7 items-center gap-1 border border-gold/60 bg-gold/15 px-2 font-display text-[10px] font-bold text-gold transition-colors hover:bg-gold hover:text-bg lg:px-2.5 lg:text-xs"
                       >
-                        <Play className="h-3 w-3" />
+                        <Play className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
                         <span>ดราฟต์ซีรีส์นี้ต่อ</span>
                       </button>
                     )}
@@ -290,9 +293,9 @@ export function DraftHistoryModal({
                         })
                       }
                       title={`ลบประวัติเฉพาะกลุ่ม ${grp.name}`}
-                      className="flex h-7 items-center gap-1 border border-red/40 bg-red/10 px-2 font-display text-[11px] font-semibold text-red transition-colors hover:bg-red hover:text-ink"
+                      className="flex h-7 items-center gap-1 border border-red/40 bg-red/10 px-2 font-display text-[11px] font-semibold text-red transition-colors hover:bg-red hover:text-ink lg:px-2.5 lg:text-xs"
                     >
-                      <Trash2 className="h-3 w-3" />
+                      <Trash2 className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
                       <span>ลบเฉพาะกลุ่มนี้</span>
                     </button>
                   </div>
@@ -308,31 +311,31 @@ export function DraftHistoryModal({
                     return (
                       <div
                         key={g.id}
-                        className="flex flex-col gap-2.5 border border-line bg-panel-2/60 p-3 transition-colors hover:border-line-strong"
+                        className="flex flex-col gap-2.5 border border-line bg-panel-2/60 p-3 transition-colors hover:border-line-strong lg:p-3.5"
                       >
                         {/* Top Bar: Game Number, Teams, Win Rate, Actions */}
                         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-2">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="border border-gold/60 bg-gold/15 px-2 py-0.5 font-mono text-xs font-bold text-gold">
+                            <span className="border border-gold/60 bg-gold/15 px-2 py-0.5 font-mono text-xs font-bold text-gold lg:text-sm">
                               GAME {g.gameNumber}
                             </span>
-                            <span className="font-display text-xs font-bold text-blue">{g.blueTeamName} (BLUE)</span>
-                            <span className="font-mono text-[11px] text-dim">vs</span>
-                            <span className="font-display text-xs font-bold text-red">{g.redTeamName} (RED)</span>
-                            <span className="flex items-center gap-1 font-mono text-[11px] text-dim">
-                              <Clock className="h-3 w-3" />
+                            <span className="font-display text-xs font-bold text-blue lg:text-sm">{g.blueTeamName} (BLUE)</span>
+                            <span className="font-mono text-[11px] text-dim lg:text-xs">vs</span>
+                            <span className="font-display text-xs font-bold text-red lg:text-sm">{g.redTeamName} (RED)</span>
+                            <span className="flex items-center gap-1 font-mono text-[11px] text-dim lg:text-xs">
+                              <Clock className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
                               {g.timestamp}
                             </span>
                             {onSetGameWinner && (
-                              <div className="inline-flex items-center gap-1 border border-line bg-bg px-1.5 py-0.5">
-                                <Trophy className="h-3 w-3 text-gold" />
-                                <span className="font-mono text-[10px] text-dim">WINNER:</span>
+                              <div className="inline-flex items-center gap-1 border border-line bg-bg px-1.5 py-0.5 lg:px-2">
+                                <Trophy className="h-3 w-3 text-gold lg:h-3.5 lg:w-3.5" />
+                                <span className="font-mono text-[10px] text-dim lg:text-[11px]">WINNER:</span>
                                 <button
                                   type="button"
                                   onClick={() =>
                                     onSetGameWinner(g.id, g.winner === blueTeamId ? undefined : blueTeamId)
                                   }
-                                  className={`px-1.5 py-0.5 font-display text-[10px] font-bold transition-colors ${
+                                  className={`inline-flex min-h-6 min-w-7 items-center justify-center px-1.5 py-0.5 font-display text-[10px] font-bold transition-colors lg:px-2 lg:text-xs ${
                                     g.winner === blueTeamId
                                       ? "bg-blue text-bg"
                                       : "text-blue hover:bg-blue/15"
@@ -345,7 +348,7 @@ export function DraftHistoryModal({
                                   onClick={() =>
                                     onSetGameWinner(g.id, g.winner === redTeamId ? undefined : redTeamId)
                                   }
-                                  className={`px-1.5 py-0.5 font-display text-[10px] font-bold transition-colors ${
+                                  className={`inline-flex min-h-6 min-w-7 items-center justify-center px-1.5 py-0.5 font-display text-[10px] font-bold transition-colors lg:px-2 lg:text-xs ${
                                     g.winner === redTeamId
                                       ? "bg-red text-bg"
                                       : "text-red hover:bg-red/15"
@@ -358,7 +361,7 @@ export function DraftHistoryModal({
                           </div>
 
                           <div className="flex items-center gap-2">
-                            <span className="font-mono text-xs">
+                            <span className="font-mono text-xs lg:text-sm">
                               <span className="font-bold text-blue">{blueWin.toFixed(1)}%</span>
                               <span className="mx-1 text-dim">:</span>
                               <span className="font-bold text-red">{redWin.toFixed(1)}%</span>
@@ -367,11 +370,11 @@ export function DraftHistoryModal({
                               type="button"
                               onClick={() => {
                                 onLoadGame(g);
-                                onClose();
+                                requestClose();
                               }}
-                              className="flex h-7 items-center gap-1 border border-gold/60 bg-gold/15 px-2.5 font-display text-[11px] font-bold text-gold transition-colors hover:bg-gold hover:text-bg"
+                              className="flex h-7 items-center gap-1 border border-gold/60 bg-gold/15 px-2.5 font-display text-[11px] font-bold text-gold transition-colors hover:bg-gold hover:text-bg lg:h-8 lg:px-3 lg:text-xs"
                             >
-                              <FolderOpen className="h-3 w-3" />
+                              <FolderOpen className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
                               <span>โหลดขึ้นกระดาน</span>
                             </button>
                             <button
@@ -379,9 +382,9 @@ export function DraftHistoryModal({
                               onClick={() => onDeleteGame(g.id)}
                               title="ลบเกมนี้"
                               aria-label={`ลบเกมที่ ${g.gameNumber}`}
-                              className="flex h-7 w-7 items-center justify-center border border-line bg-bg text-dim transition-colors hover:border-red/50 hover:text-red"
+                              className="flex h-7 w-7 items-center justify-center border border-line bg-bg text-dim transition-colors hover:border-red/50 hover:text-red lg:h-8 lg:w-8"
                             >
-                              <Trash2 className="h-3.5 w-3.5" />
+                              <Trash2 className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
                             </button>
                           </div>
                         </div>
@@ -389,12 +392,12 @@ export function DraftHistoryModal({
                         {/* Blue vs Red Picks & Bans */}
                         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                           {/* Blue Side */}
-                          <div className="flex flex-col gap-1.5 border-l-2 border-blue bg-bg/50 p-2">
+                          <div className="flex flex-col gap-1.5 border-l-2 border-blue bg-bg/50 p-2 lg:p-2.5">
                             <div className="flex items-center justify-between">
-                              <span className="font-display text-[11px] font-bold text-blue">
+                              <span className="font-display text-[11px] font-bold text-blue lg:text-[13px]">
                                 BLUE · {g.blueTeamName}
                               </span>
-                              <span className="font-mono text-[10px] text-dim">
+                              <span className="font-mono text-[10px] text-dim lg:text-xs">
                                 PICKS ({g.bluePicks.length}/5) · BANS ({g.blueBans.length}/4)
                               </span>
                             </div>
@@ -403,28 +406,28 @@ export function DraftHistoryModal({
                                 <div
                                   key={`bp-${idx}-${name}`}
                                   title={`Pick ${idx + 1}: ${displayName(name)}`}
-                                  className="flex items-center gap-1 border border-blue/40 bg-panel pr-1.5"
+                                  className="flex items-center gap-1 border border-blue/40 bg-panel pr-1.5 lg:gap-1.5 lg:pr-2"
                                 >
-                                  <div className="h-7 w-7 shrink-0 overflow-hidden">
+                                  <div className="h-7 w-7 shrink-0 overflow-hidden lg:h-8 lg:w-8">
                                     <HeroPortrait name={name} hero={heroMap.get(name)} />
                                   </div>
-                                  <span className="max-w-[68px] truncate font-display text-[11px] font-bold text-ink">
+                                  <span className="max-w-[68px] truncate font-display text-[11px] font-bold text-ink lg:max-w-[112px] lg:text-[13px]">
                                     {displayName(name)}
                                   </span>
                                 </div>
                               ))}
                               {g.bluePicks.length === 0 && (
-                                <span className="text-[11px] text-dim">ไม่มีตัวที่เลือก</span>
+                                <span className="text-[11px] text-dim lg:text-xs">ไม่มีตัวที่เลือก</span>
                               )}
                             </div>
                             {g.blueBans.length > 0 && (
                               <div className="flex flex-wrap items-center gap-1 pt-0.5">
-                                <span className="mr-1 font-mono text-[9px] font-bold text-red">BANS:</span>
+                                <span className="mr-1 font-mono text-[9px] font-bold text-red lg:text-[11px]">BANS:</span>
                                 {g.blueBans.map((name, idx) => (
                                   <div
                                     key={`bb-${idx}-${name}`}
                                     title={`Ban ${idx + 1}: ${displayName(name)}`}
-                                    className="relative h-6 w-6 overflow-hidden border border-red/40"
+                                    className="relative h-6 w-6 overflow-hidden border border-red/40 lg:h-7 lg:w-7"
                                   >
                                     <HeroPortrait name={name} hero={heroMap.get(name)} className="grayscale opacity-65" />
                                     <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,transparent_45%,var(--color-red)_47%,var(--color-red)_53%,transparent_55%)] opacity-80" />
@@ -435,12 +438,12 @@ export function DraftHistoryModal({
                           </div>
 
                           {/* Red Side */}
-                          <div className="flex flex-col gap-1.5 border-l-2 border-red bg-bg/50 p-2">
+                          <div className="flex flex-col gap-1.5 border-l-2 border-red bg-bg/50 p-2 lg:p-2.5">
                             <div className="flex items-center justify-between">
-                              <span className="font-display text-[11px] font-bold text-red">
+                              <span className="font-display text-[11px] font-bold text-red lg:text-[13px]">
                                 RED · {g.redTeamName}
                               </span>
-                              <span className="font-mono text-[10px] text-dim">
+                              <span className="font-mono text-[10px] text-dim lg:text-xs">
                                 PICKS ({g.redPicks.length}/5) · BANS ({g.redBans.length}/4)
                               </span>
                             </div>
@@ -449,28 +452,28 @@ export function DraftHistoryModal({
                                 <div
                                   key={`rp-${idx}-${name}`}
                                   title={`Pick ${idx + 1}: ${displayName(name)}`}
-                                  className="flex items-center gap-1 border border-red/40 bg-panel pr-1.5"
+                                  className="flex items-center gap-1 border border-red/40 bg-panel pr-1.5 lg:gap-1.5 lg:pr-2"
                                 >
-                                  <div className="h-7 w-7 shrink-0 overflow-hidden">
+                                  <div className="h-7 w-7 shrink-0 overflow-hidden lg:h-8 lg:w-8">
                                     <HeroPortrait name={name} hero={heroMap.get(name)} />
                                   </div>
-                                  <span className="max-w-[68px] truncate font-display text-[11px] font-bold text-ink">
+                                  <span className="max-w-[68px] truncate font-display text-[11px] font-bold text-ink lg:max-w-[112px] lg:text-[13px]">
                                     {displayName(name)}
                                   </span>
                                 </div>
                               ))}
                               {g.redPicks.length === 0 && (
-                                <span className="text-[11px] text-dim">ไม่มีตัวที่เลือก</span>
+                                <span className="text-[11px] text-dim lg:text-xs">ไม่มีตัวที่เลือก</span>
                               )}
                             </div>
                             {g.redBans.length > 0 && (
                               <div className="flex flex-wrap items-center gap-1 pt-0.5">
-                                <span className="mr-1 font-mono text-[9px] font-bold text-red">BANS:</span>
+                                <span className="mr-1 font-mono text-[9px] font-bold text-red lg:text-[11px]">BANS:</span>
                                 {g.redBans.map((name, idx) => (
                                   <div
                                     key={`rb-${idx}-${name}`}
                                     title={`Ban ${idx + 1}: ${displayName(name)}`}
-                                    className="relative h-6 w-6 overflow-hidden border border-red/40"
+                                    className="relative h-6 w-6 overflow-hidden border border-red/40 lg:h-7 lg:w-7"
                                   >
                                     <HeroPortrait name={name} hero={heroMap.get(name)} className="grayscale opacity-65" />
                                     <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,transparent_45%,var(--color-red)_47%,var(--color-red)_53%,transparent_55%)] opacity-80" />
@@ -492,7 +495,7 @@ export function DraftHistoryModal({
 
       {/* Footer */}
       <div className="flex shrink-0 items-center justify-between gap-2 border-t border-line bg-bg px-3 py-2 sm:px-4 sm:py-2.5">
-        <span className="min-w-0 truncate font-mono text-[11px] text-muted sm:text-xs">
+        <span className="min-w-0 truncate font-mono text-[11px] text-muted sm:text-xs lg:text-[13px]">
           <span className="sm:hidden">บันทึกอัตโนมัติ · </span>
           <span className="hidden sm:inline">บันทึกอัตโนมัติ (สูงสุด {MAX_SERIES_GAMES} เกมล่าสุด · ปัจจุบัน </span>
           <strong className={games.length >= MAX_SERIES_GAMES - 10 ? "text-gold" : "text-ink"}>
@@ -504,8 +507,8 @@ export function DraftHistoryModal({
         </span>
         <button
           type="button"
-          onClick={onClose}
-          className="shrink-0 border border-gold bg-gold px-3 py-1.5 font-display text-xs font-bold tracking-wider whitespace-nowrap text-bg transition-colors hover:bg-gold/90 sm:px-4"
+          onClick={() => requestClose()}
+          className="shrink-0 border border-gold bg-gold px-3 py-1.5 font-display text-xs font-bold tracking-wider whitespace-nowrap text-bg transition-colors hover:bg-gold/90 sm:px-4 lg:text-sm"
         >
           ปิดหน้าต่าง
         </button>
@@ -521,6 +524,8 @@ export function DraftHistoryModal({
           onConfirm={confirmState.onConfirm}
           onCancel={() => setConfirmState(null)}
         />
+      )}
+        </>
       )}
     </Modal>
   );

@@ -1,0 +1,2178 @@
+diff --git a/frontend/src/components/AiPanel.tsx b/frontend/src/components/AiPanel.tsx
+--- a/frontend/src/components/AiPanel.tsx
++++ b/frontend/src/components/AiPanel.tsx
+@@ -25,6 +25,7 @@
+   blueWinRate: number;
+   winHistory: number[];
+   onLockHero: (name: string) => void;
++  rankedBanCount?: number;
+   variant?: "full" | "ribbon";
+ }
+ 
+@@ -59,6 +60,7 @@
+   blueWinRate,
+   winHistory,
+   onLockHero,
++  rankedBanCount = 0,
+   variant = "full",
+ }: AiPanelProps) {
+   const [laneFilterState, setLaneFilterState] = useState<{ step: number | undefined; lane: string }>({
+@@ -111,6 +113,7 @@
+   }
+ 
+   const isBan = currentStep.action === "ban";
++  const isRankedBatchBan = currentStep.step === -1;
+   const sideText = currentStep.side === "blue" ? "text-blue" : "text-red";
+   const missing = isBan ? new Set<string>() : missingLaneKeys(missingAllyLanes);
+   const filteredRecs =
+@@ -128,7 +131,13 @@
+         <div className="flex shrink-0 items-center gap-1 pr-1 border-r border-line">
+           <Sparkles className="h-3 w-3 text-gold" />
+           <span className="font-display text-[10.5px] font-bold tracking-wider">
+-            AI <span className={sideText}>{isBan ? "BAN" : "PICK"}</span>
++            {isRankedBatchBan ? (
++              <span className="text-gold">BAN {rankedBanCount}/10</span>
++            ) : (
++              <>
++                AI <span className={sideText}>{isBan ? "BAN" : "PICK"}</span>
++              </>
++            )}
+           </span>
+           {isLoading && <Loader2 className="h-3 w-3 animate-spin text-muted" />}
+         </div>
+@@ -209,8 +218,16 @@
+         <div className="flex min-w-0 items-center gap-2">
+           <Sparkles className="h-4 w-4 shrink-0 text-gold" />
+           <h2 className="truncate font-display text-xs font-bold tracking-wider sm:text-base">
+-            {isBan ? "BAN PRIORITY" : "PICK PRIORITY"}
+-            <span className={`ml-1.5 ${sideText}`}>· {currentStep.side.toUpperCase()}</span>
++            {isRankedBatchBan ? (
++              <>
++                RANKED BAN <span className="ml-1 font-mono text-gold">({rankedBanCount}/10)</span>
++              </>
++            ) : (
++              <>
++                {isBan ? "BAN PRIORITY" : "PICK PRIORITY"}
++                <span className={`ml-1.5 ${sideText}`}>· {currentStep.side.toUpperCase()}</span>
++              </>
++            )}
+           </h2>
+           {isLoading && <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-muted" />}
+         </div>
+diff --git a/frontend/src/components/DraftBoardView.tsx b/frontend/src/components/DraftBoardView.tsx
+--- a/frontend/src/components/DraftBoardView.tsx
++++ b/frontend/src/components/DraftBoardView.tsx
+@@ -1,16 +1,18 @@
+ import {
+   ArrowLeftRight,
++  Ban,
+   CheckCircle2,
+   History,
+   LayoutGrid,
+   PlusCircle,
+   Sparkles,
+   Users,
++  X,
+ } from "lucide-react";
+ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+ import { MAX_SERIES_GAMES, type useDraft } from "../hooks/useDraft";
+ import { useDraftTimer } from "../hooks/useDraftTimer";
+-import type { LaneKey } from "../types/draft";
++import type { DraftMode, LaneKey } from "../types/draft";
+ import {
+   blueTeamName,
+   blueUsedHeroes,
+@@ -31,6 +33,7 @@
+ import { FinishGameModal } from "./FinishGameModal";
+ import { type GlobalBanCategoryKey, GlobalBanModal } from "./GlobalBanModal";
+ import { HeroGrid } from "./HeroGrid";
++import { HeroPortrait } from "./HeroPortrait";
+ import { NewSeriesModal } from "./NewSeriesModal";
+ import { PickLaneModal } from "./PickLaneModal";
+ import { ScoreBar } from "./ScoreBar";
+@@ -52,6 +55,10 @@
+   const {
+     heroes,
+     heroMap,
++    draftMode,
++    setDraftMode,
++    rankedBanPhaseComplete,
++    removeRankedBan,
+     currentStepIndex,
+     currentStep,
+     totalSteps,
+@@ -152,7 +159,9 @@
+   const timer = useDraftTimer({
+     currentStep,
+     currentStepIndex,
+-    resetSignal: `${globalBans.gameNumber}:${resolveSeriesName(globalBans)}`,
++    draftMode,
++    rankedBanPhaseComplete,
++    resetSignal: `${draftMode}:${globalBans.gameNumber}:${resolveSeriesName(globalBans)}`,
+     isBusy: isLoading || isHeroesLoading,
+     fallbackHero: fallbackTimerHero,
+     onExpireAutoLock: handleAutoLockWithTimer,
+@@ -252,6 +261,33 @@
+ 
+   const hasAnyAction = bluePicks.length + redPicks.length + blueBans.length + redBans.length > 0;
+   const isDraftComplete = currentStep === null;
++  const isRanked = draftMode === "ranked";
++  const isRankedBanPhase = isRanked && !rankedBanPhaseComplete;
++  const rankedBansList = useMemo(() => [...blueBans, ...redBans], [blueBans, redBans]);
++  const totalRankedBans = rankedBansList.length;
++
++  const handleSwitchDraftMode = (nextMode: DraftMode) => {
++    if (nextMode === draftMode) return;
++    if (!hasAnyAction) {
++      setIsFinishGameModalOpen(false);
++      timer.resetTurnTimer();
++      setDraftMode(nextMode);
++      return;
++    }
++    setConfirmState({
++      title: nextMode === "ranked" ? "สลับเป็นโหมด Ranked (10 Ban)?" : "สลับเป็นโหมด Tournament (Global Ban)?",
++      message: "การสลับโหมดจะล้างกระดานดราฟต์ปัจจุบันเพื่อเริ่มรอบใหม่ตามกติกาของโหมดที่เลือก",
++      confirmLabel: "สลับโหมด",
++      cancelLabel: "ยกเลิก",
++      tone: "gold",
++      onConfirm: () => {
++        setConfirmState(null);
++        setIsFinishGameModalOpen(false);
++        timer.resetTurnTimer();
++        setDraftMode(nextMode);
++      },
++    });
++  };
+   const activeBoardHeroes = useMemo(
+     () => new Set([...bluePicks, ...redPicks, ...blueBans, ...redBans]),
+     [bluePicks, redPicks, blueBans, redBans],
+@@ -272,10 +308,12 @@
+   const currentSeriesGroup = resolveSeriesName(globalBans);
+   const savedCurrentGame = useMemo(
+     () =>
+-      seriesGames.find(
+-        (g) => getGameSeriesGroup(g) === currentSeriesGroup && g.gameNumber === globalBans.gameNumber,
+-      ) ?? null,
+-    [seriesGames, currentSeriesGroup, globalBans.gameNumber],
++      draftMode === "ranked"
++        ? null
++        : (seriesGames.find(
++            (g) => getGameSeriesGroup(g) === currentSeriesGroup && g.gameNumber === globalBans.gameNumber,
++          ) ?? null),
++    [draftMode, seriesGames, currentSeriesGroup, globalBans.gameNumber],
+   );
+   const isCurrentGameSavedUnchanged = useMemo(() => {
+     if (!savedCurrentGame) return false;
+@@ -372,6 +410,7 @@
+     const categoryKey = isBlueSide ? blueCategoryKey : redCategoryKey;
+     return {
+       side,
++      draftMode,
+       teamName: isBlueSide ? bName : rName,
+       picks: isBlueSide ? bluePicks : redPicks,
+       bans: isBlueSide ? blueBans : redBans,
+@@ -408,26 +447,62 @@
+         <div className="mx-auto flex max-w-[1920px] flex-wrap items-center justify-between gap-1.5 xl:gap-2">
+           {/* Left: Mode Switcher + Series Name */}
+           <div className="flex min-w-0 items-center gap-2">
+-            <span
+-              className="hidden max-w-[200px] truncate font-display text-xs font-bold tracking-wider text-muted sm:inline"
+-              title={globalBans.seriesName || `${bName} vs ${rName}`}
++            <div
++              role="group"
++              aria-label="Draft Ruleset Mode"
++              className="inline-flex shrink-0 items-center border border-line bg-bg p-0.5"
+             >
+-              {globalBans.seriesName || `${bName} vs ${rName}`}
+-              {seriesScore.aWins + seriesScore.bWins > 0 && (
+-                <span className="ml-1.5 font-mono text-[11px] text-ink">
+-                  ({globalBans.seriesName ? seriesScore.aWins : blueWins}-
+-                  {globalBans.seriesName ? seriesScore.bWins : redWins})
+-                </span>
+-              )}
+-            </span>
++              <button
++                type="button"
++                onClick={() => handleSwitchDraftMode("tournament")}
++                title="โหมดโปรลีก (Global Ban Bo1-Bo7 · แบน 4+4 ตัว 2 เฟส)"
++                className={`h-6 px-2 font-display text-[11px] font-bold tracking-wide transition-colors ${
++                  draftMode === "tournament" ? "bg-gold text-bg" : "text-muted hover:text-ink"
++                }`}
++              >
++                <span className="sm:hidden">PRO</span>
++                <span className="hidden sm:inline">PRO · GLOBAL BAN</span>
++              </button>
++              <button
++                type="button"
++                onClick={() => handleSwitchDraftMode("ranked")}
++                title="โหมดแรงค์ (แบนรวดเดียว 10 ตัว แล้ว Pick แบบ 1-2-2-2-2-1)"
++                className={`h-6 px-2 font-display text-[11px] font-bold tracking-wide transition-colors ${
++                  draftMode === "ranked" ? "bg-gold text-bg" : "text-muted hover:text-ink"
++                }`}
++              >
++                <span className="sm:hidden">RANK 10B</span>
++                <span className="hidden sm:inline">RANKED · 10 BAN</span>
++              </button>
++            </div>
++
++            {!isRanked && (
++              <span
++                className="hidden max-w-[200px] truncate font-display text-xs font-bold tracking-wider text-muted sm:inline"
++                title={globalBans.seriesName || `${bName} vs ${rName}`}
++              >
++                {globalBans.seriesName || `${bName} vs ${rName}`}
++                {seriesScore.aWins + seriesScore.bWins > 0 && (
++                  <span className="ml-1.5 font-mono text-[11px] text-ink">
++                    ({globalBans.seriesName ? seriesScore.aWins : blueWins}-
++                    {globalBans.seriesName ? seriesScore.bWins : redWins})
++                  </span>
++                )}
++              </span>
++            )}
+           </div>
+ 
+-          {/* Right: Series/Global Ban Controls */}
++          {/* Right: Series/Global Ban Controls (Tournament) OR Ranked Batch Ban Controls */}
+           <div
+             aria-label="Series and Draft Mode Controls"
+             className="flex w-full shrink-0 items-center justify-between gap-1 whitespace-nowrap sm:w-auto sm:justify-end xl:gap-1.5"
+           >
+-            <div className="flex shrink-0 items-center gap-1 xl:gap-1.5">
++            {isRanked ? (
++              <span className="hidden border border-line bg-bg px-2 py-0.5 font-mono text-[10px] font-bold text-muted sm:inline-block">
++                BAN {totalRankedBans}/10 · PICK 1-2-2-2-2-1
++              </span>
++            ) : (
++              <div className="flex shrink-0 items-center gap-1 xl:gap-1.5">
+                 <button
+                   type="button"
+                   onClick={() => setIsNewSeriesModalOpen(true)}
+@@ -513,6 +588,7 @@
+                   })}
+                 </div>
+               </div>
++            )}
+ 
+             {/* Direct 1-Tap Swap, History & Record Result Actions (visible on all viewports) */}
+             <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
+@@ -773,6 +849,76 @@
+           </div>
+         )}
+ 
++        {/* Unified 10-Ban Strip (Ranked Mode only) */}
++        {isRanked && (
++          <section
++            aria-label="Ranked 10 Bans"
++            className="flex shrink-0 flex-wrap items-center justify-between gap-2 border border-line bg-panel/90 px-2.5 py-1.5 sm:px-3"
++          >
++            <div className="flex items-center gap-1.5">
++              <Ban className="h-3.5 w-3.5 shrink-0 text-red" />
++              <span className="font-display text-[11px] font-bold tracking-wider text-ink sm:text-xs">
++                RANKED BANS
++              </span>
++              <span
++                className={`px-1.5 py-0.5 font-mono text-[10px] font-bold leading-none ${
++                  isRankedBanPhase ? "bg-gold text-bg" : "border border-line bg-bg text-muted"
++                }`}
++              >
++                {totalRankedBans}/10
++              </span>
++            </div>
++
++            <div className="grid grid-cols-5 gap-1 sm:flex sm:flex-wrap sm:items-center sm:gap-1.5">
++              {Array.from({ length: 10 }).map((_, i) => {
++                const heroName = rankedBansList[i];
++                const isActiveSlot = isRankedBanPhase && i === totalRankedBans;
++                const canRemove = Boolean(heroName && isRankedBanPhase);
++                return (
++                  <button
++                    key={i}
++                    type="button"
++                    disabled={!canRemove}
++                    onClick={canRemove && heroName ? () => removeRankedBan(heroName) : undefined}
++                    title={
++                      heroName
++                        ? `${displayName(heroName)}${canRemove ? " · คลิกเพื่อนำแบนออก" : ""}`
++                        : `Ban ${i + 1}`
++                    }
++                    className={`group relative aspect-square h-7.5 w-7.5 shrink-0 overflow-hidden border bg-bg sm:h-8.5 sm:w-8.5 ${
++                      isActiveSlot
++                        ? "border-gold animate-slot-pulse"
++                        : heroName
++                          ? "border-red/50"
++                          : "border-line"
++                    } ${canRemove ? "cursor-pointer hover:border-gold" : "cursor-default"}`}
++                  >
++                    {heroName ? (
++                      <>
++                        <HeroPortrait name={heroName} hero={heroMap.get(heroName)} className="grayscale opacity-65" />
++                        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,transparent_45%,var(--color-red)_46%,var(--color-red)_54%,transparent_55%)] opacity-85" />
++                        {canRemove && (
++                          <span className="pointer-events-none absolute top-0 right-0 z-10 grid h-3 w-3 place-items-center bg-bg/90 text-red opacity-85 group-hover:opacity-100">
++                            <X className="h-2.5 w-2.5" />
++                          </span>
++                        )}
++                      </>
++                    ) : (
++                      <span
++                        className={`grid h-full place-items-center font-mono text-[10px] font-bold ${
++                          isActiveSlot ? "text-gold" : "text-dim"
++                        }`}
++                      >
++                        {i + 1}
++                      </span>
++                    )}
++                  </button>
++                );
++              })}
++            </div>
++          </section>
++        )}
++
+         {/* Compact Top Matchup HUD — Pinned on Mobile (except in full teams view) & iPad (< lg) */}
+         <div
+           className={`shrink-0 grid-cols-2 gap-1.5 sm:gap-2 lg:hidden ${
+@@ -843,6 +989,7 @@
+                   blueWinRate={blueWinRate}
+                   winHistory={winHistory}
+                   onLockHero={handleLockHeroWithTimer}
++                  rankedBanCount={totalRankedBans}
+                 />
+               </div>
+             )}
+@@ -864,6 +1011,7 @@
+                 blueWinRate={blueWinRate}
+                 winHistory={winHistory}
+                 onLockHero={handleLockHeroWithTimer}
++                rankedBanCount={totalRankedBans}
+               />
+             </div>
+ 
+@@ -877,9 +1025,9 @@
+                 ref={searchRef}
+                 heroes={heroes}
+                 unavailableHeroes={unavailableHeroes}
+-                blueUsedHeroes={bUsed}
+-                redUsedHeroes={rUsed}
+-                universalBans={globalBans.universalBans}
++                blueUsedHeroes={isRanked ? [] : bUsed}
++                redUsedHeroes={isRanked ? [] : rUsed}
++                universalBans={isRanked ? [] : globalBans.universalBans}
+                 blueTeamName={bName}
+                 redTeamName={rName}
+                 recommendedRanks={recommendedRanks}
+@@ -938,7 +1086,7 @@
+         >
+           <Users className="h-4 w-4 shrink-0 sm:h-4.5 sm:w-4.5" />
+           <span className="w-full truncate text-center">
+-            กระดาน & แบน ({bUsed.length + rUsed.length})
++            กระดาน & แบน ({isRanked ? totalRankedBans : bUsed.length + rUsed.length})
+           </span>
+         </button>
+       </footer>
+diff --git a/frontend/src/components/DraftHistoryModal.tsx b/frontend/src/components/DraftHistoryModal.tsx
+--- a/frontend/src/components/DraftHistoryModal.tsx
++++ b/frontend/src/components/DraftHistoryModal.tsx
+@@ -390,6 +390,23 @@
+                         </div>
+ 
+                         {/* Blue vs Red Picks & Bans */}
++                        {g.draftMode === "ranked" && g.blueBans.length + g.redBans.length > 0 && (
++                          <div className="mb-2 flex flex-wrap items-center gap-1 border border-line bg-bg/50 px-2 py-1.5">
++                            <span className="mr-1 font-mono text-[9.5px] font-bold text-gold lg:text-[11px]">
++                              RANKED BANS ({g.blueBans.length + g.redBans.length}/10):
++                            </span>
++                            {[...g.blueBans, ...g.redBans].map((name, idx) => (
++                              <div
++                                key={`rkb-${idx}-${name}`}
++                                title={`Ban ${idx + 1}: ${displayName(name)}`}
++                                className="relative h-6 w-6 overflow-hidden border border-red/40 lg:h-7 lg:w-7"
++                              >
++                                <HeroPortrait name={name} hero={heroMap.get(name)} className="grayscale opacity-65" />
++                                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,transparent_45%,var(--color-red)_47%,var(--color-red)_53%,transparent_55%)] opacity-80" />
++                              </div>
++                            ))}
++                          </div>
++                        )}
+                         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                           {/* Blue Side */}
+                           <div className="flex flex-col gap-1.5 border-l-2 border-blue bg-bg/50 p-2 lg:p-2.5">
+@@ -398,7 +415,9 @@
+                                 BLUE · {g.blueTeamName}
+                               </span>
+                               <span className="font-mono text-[10px] text-dim lg:text-xs">
+-                                PICKS ({g.bluePicks.length}/5) · BANS ({g.blueBans.length}/4)
++                                {g.draftMode === "ranked"
++                                  ? `PICKS (${g.bluePicks.length}/5)`
++                                  : `PICKS (${g.bluePicks.length}/5) · BANS (${g.blueBans.length}/4)`}
+                               </span>
+                             </div>
+                             <div className="flex flex-wrap items-center gap-1.5">
+@@ -420,7 +439,7 @@
+                                 <span className="text-[11px] text-dim lg:text-xs">ไม่มีตัวที่เลือก</span>
+                               )}
+                             </div>
+-                            {g.blueBans.length > 0 && (
++                            {g.draftMode !== "ranked" && g.blueBans.length > 0 && (
+                               <div className="flex flex-wrap items-center gap-1 pt-0.5">
+                                 <span className="mr-1 font-mono text-[9px] font-bold text-red lg:text-[11px]">BANS:</span>
+                                 {g.blueBans.map((name, idx) => (
+@@ -444,7 +463,9 @@
+                                 RED · {g.redTeamName}
+                               </span>
+                               <span className="font-mono text-[10px] text-dim lg:text-xs">
+-                                PICKS ({g.redPicks.length}/5) · BANS ({g.redBans.length}/4)
++                                {g.draftMode === "ranked"
++                                  ? `PICKS (${g.redPicks.length}/5)`
++                                  : `PICKS (${g.redPicks.length}/5) · BANS (${g.redBans.length}/4)`}
+                               </span>
+                             </div>
+                             <div className="flex flex-wrap items-center gap-1.5">
+@@ -466,7 +487,7 @@
+                                 <span className="text-[11px] text-dim lg:text-xs">ไม่มีตัวที่เลือก</span>
+                               )}
+                             </div>
+-                            {g.redBans.length > 0 && (
++                            {g.draftMode !== "ranked" && g.redBans.length > 0 && (
+                               <div className="flex flex-wrap items-center gap-1 pt-0.5">
+                                 <span className="mr-1 font-mono text-[9px] font-bold text-red lg:text-[11px]">BANS:</span>
+                                 {g.redBans.map((name, idx) => (
+diff --git a/frontend/src/components/DraftTimeline.tsx b/frontend/src/components/DraftTimeline.tsx
+--- a/frontend/src/components/DraftTimeline.tsx
++++ b/frontend/src/components/DraftTimeline.tsx
+@@ -1,4 +1,5 @@
+-import { CANONICAL_DRAFT_STEPS, type Hero } from "../types/draft";
++import { type DraftMode, type Hero } from "../types/draft";
++import { getDraftSteps } from "../utils/draft";
+ import { displayName } from "../utils/heroNames";
+ import { HeroPortrait } from "./HeroPortrait";
+ 
+@@ -6,11 +7,17 @@
+   stepHeroes: (string | null)[];
+   currentStepIndex: number;
+   heroMap: Map<string, Hero>;
++  draftMode?: DraftMode;
+ }
+ 
+-export function DraftTimeline({ stepHeroes, currentStepIndex, heroMap }: DraftTimelineProps) {
+-  const steps = CANONICAL_DRAFT_STEPS;
+-  const phaseBreakIdx = 10;
++export function DraftTimeline({
++  stepHeroes,
++  currentStepIndex,
++  heroMap,
++  draftMode = "tournament",
++}: DraftTimelineProps) {
++  const steps = getDraftSteps(draftMode);
++  const phaseBreakIdx = draftMode === "ranked" ? 6 : 10;
+   return (
+     <div className="flex items-stretch gap-1 overflow-x-auto pb-1 xl:justify-center">
+       {steps.map((step, i) => {
+diff --git a/frontend/src/components/ScoreBar.tsx b/frontend/src/components/ScoreBar.tsx
+--- a/frontend/src/components/ScoreBar.tsx
++++ b/frontend/src/components/ScoreBar.tsx
+@@ -328,13 +328,19 @@
+           <div className="flex flex-col leading-tight">
+             <div className="flex items-center gap-1.5">
+               <span className="font-mono text-[9.5px] font-semibold text-dim sm:text-xs">
+-                STEP {Math.min(currentStepIndex + 1, totalSteps)}/{totalSteps}
++                {currentStep?.step === -1
++                  ? currentStep.label ?? "RANKED BAN"
++                  : `STEP ${Math.min(currentStepIndex + 1, totalSteps)}/${totalSteps}`}
+               </span>
+             </div>
+             {currentStep ? (
+               <span
+                 className={`font-display text-xs font-bold tracking-wide sm:text-base ${
+-                  currentStep.side === "blue" ? "text-blue" : "text-red"
++                  currentStep.step === -1
++                    ? "text-gold"
++                    : currentStep.side === "blue"
++                      ? "text-blue"
++                      : "text-red"
+                 }`}
+               >
+                 {currentStep.step === -1
+diff --git a/frontend/src/components/TeamColumn.tsx b/frontend/src/components/TeamColumn.tsx
+--- a/frontend/src/components/TeamColumn.tsx
++++ b/frontend/src/components/TeamColumn.tsx
+@@ -1,5 +1,5 @@
+ import { Ban, ClockAlert, Layers, Plus, X } from "lucide-react";
+-import type { DraftStep, Hero, HeroRecommendation, LaneKey } from "../types/draft";
++import type { DraftMode, DraftStep, Hero, HeroRecommendation, LaneKey } from "../types/draft";
+ import { LANE_SHORT, laneKey } from "../utils/draft";
+ import { displayName } from "../utils/heroNames";
+ import { HeroPortrait } from "./HeroPortrait";
+@@ -7,6 +7,7 @@
+ 
+ interface TeamColumnProps {
+   side: "blue" | "red";
++  draftMode?: DraftMode;
+   teamName: string;
+   picks: string[];
+   bans: string[];
+@@ -29,6 +30,7 @@
+ 
+ export function TeamColumn({
+   side,
++  draftMode = "tournament",
+   teamName,
+   picks,
+   bans,
+@@ -48,16 +50,20 @@
+   onRemoveUsedHero,
+   variant = "full",
+ }: TeamColumnProps) {
++  const isRanked = draftMode === "ranked";
+   const isBlue = side === "blue";
+-  const isMyTurn = currentStep?.side === side;
+-  const activePickSlot = currentStep?.side === side && currentStep?.action === "pick" ? picks.length : -1;
+-  const activeBanSlot = currentStep?.side === side && currentStep?.action === "ban" ? bans.length : -1;
++  const isUnifiedRankedBan = isRanked && currentStep?.step === -1;
++  const isMyTurn = !isUnifiedRankedBan && currentStep?.side === side;
++  const activePickSlot = !isUnifiedRankedBan && currentStep?.side === side && currentStep?.action === "pick" ? picks.length : -1;
++  const activeBanSlot = !isRanked && currentStep?.side === side && currentStep?.action === "ban" ? bans.length : -1;
+   const accent = isBlue ? "text-blue" : "text-red";
+   const heroPrimaryLane = (h: Hero) =>
+     laneKey(h.main_pro_lane && h.main_pro_lane !== "Unpicked" ? h.main_pro_lane : h.lane);
+ 
+   if (variant === "compact") {
+-    const renderCompactBanSlots = (extraClass = "") => (
++    const renderCompactBanSlots = (extraClass = "") => {
++      if (isRanked) return null;
++      return (
+       <div className={`flex items-center gap-1 ${isBlue ? "" : "flex-row-reverse"} ${extraClass}`}>
+         {Array.from({ length: 4 }).map((_, i) => {
+           const bName = bans[i];
+@@ -137,7 +143,8 @@
+           );
+         })}
+       </div>
+-    );
++      );
++    };
+ 
+     return (
+       <section
+@@ -164,27 +171,31 @@
+             {/* Tablet/iPad (>=sm): inline square ban slots */}
+             {renderCompactBanSlots("hidden sm:flex")}
+ 
+-            <button
+-              type="button"
+-              onClick={onOpenGlobalBanForTeam}
+-              title={`Global Ban ของ ${teamName} (${usedHeroes.length} ตัว)`}
+-              className={`flex h-7 shrink-0 items-center gap-1 border px-1.5 font-mono text-[10px] font-bold sm:h-9 sm:px-2.5 sm:text-xs ${
+-                isBlue
+-                  ? "border-blue/40 bg-blue/10 text-blue hover:bg-blue/20"
+-                  : "border-red/40 bg-red/10 text-red hover:bg-red/20"
+-              }`}
+-            >
+-              <Layers className="h-3 w-3 shrink-0 sm:h-4 sm:w-4" />
+-              <span>{gameNumber === 7 ? "ULT" : usedHeroes.length}</span>
+-            </button>
++            {!isRanked && (
++              <button
++                type="button"
++                onClick={onOpenGlobalBanForTeam}
++                title={`Global Ban ของ ${teamName} (${usedHeroes.length} ตัว)`}
++                className={`flex h-7 shrink-0 items-center gap-1 border px-1.5 font-mono text-[10px] font-bold sm:h-9 sm:px-2.5 sm:text-xs ${
++                  isBlue
++                    ? "border-blue/40 bg-blue/10 text-blue hover:bg-blue/20"
++                    : "border-red/40 bg-red/10 text-red hover:bg-red/20"
++                }`}
++              >
++                <Layers className="h-3 w-3 shrink-0 sm:h-4 sm:w-4" />
++                <span>{gameNumber === 7 ? "ULT" : usedHeroes.length}</span>
++              </button>
++            )}
+           </div>
+         </div>
+ 
+-        {/* Row 2 (Mobile <sm only): Dedicated 4 Square Ban Slots Row */}
+-        <div className={`flex items-center justify-between gap-1 sm:hidden ${isBlue ? "" : "flex-row-reverse"}`}>
+-          <span className="font-mono text-[9px] font-bold tracking-wider text-dim">BANS</span>
+-          {renderCompactBanSlots()}
+-        </div>
++        {/* Row 2 (Mobile <sm only, Tournament only): Dedicated 4 Square Ban Slots Row */}
++        {!isRanked && (
++          <div className={`flex items-center justify-between gap-1 sm:hidden ${isBlue ? "" : "flex-row-reverse"}`}>
++            <span className="font-mono text-[9px] font-bold tracking-wider text-dim">BANS</span>
++            {renderCompactBanSlots()}
++          </div>
++        )}
+ 
+         {/* 5 Horizontal Pick Slots */}
+         <div className={`grid grid-cols-5 gap-1 sm:gap-1.5 ${isBlue ? "" : "[direction:rtl]"}`}>
+@@ -560,8 +571,9 @@
+         })}
+       </div>
+ 
+-      {/* Ban slots */}
+-      <div className={`flex shrink-0 items-center gap-1 sm:gap-1.5 ${isBlue ? "" : "flex-row-reverse"}`}>
++      {/* Ban slots (Tournament Mode only; Ranked uses unified 10-ban bar) */}
++      {!isRanked && (
++        <div className={`flex shrink-0 items-center gap-1 sm:gap-1.5 ${isBlue ? "" : "flex-row-reverse"}`}>
+           <Ban className="hidden h-4 w-4 shrink-0 text-dim sm:block" aria-label="Bans" />
+           {Array.from({ length: 4 }).map((_, i) => {
+             const name = bans[i];
+@@ -659,13 +671,15 @@
+             );
+           })}
+         </div>
+-
+-      {/* On-Board Global Ban */}
+-      <div
+-        className={`flex shrink-0 flex-col overflow-hidden border bg-panel/90 p-1.5 sm:p-2 ${
+-          isBlue ? "border-blue/35" : "border-red/35"
+-        }`}
+-      >
++      )}
++
++      {/* On-Board Global Ban (Tournament Mode only) */}
++      {!isRanked && (
++        <div
++          className={`flex shrink-0 flex-col overflow-hidden border bg-panel/90 p-1.5 sm:p-2 ${
++            isBlue ? "border-blue/35" : "border-red/35"
++          }`}
++        >
+         <div className="mb-1.5 flex min-w-0 items-center justify-between gap-1.5">
+           <div className="flex min-w-0 flex-1 items-center gap-1 sm:gap-1.5">
+             <Layers className={`h-3.5 w-3.5 shrink-0 ${accent}`} />
+@@ -741,7 +755,8 @@
+             })}
+           </div>
+         )}
+-      </div>
++        </div>
++      )}
+     </section>
+   );
+ }
+diff --git a/frontend/src/hooks/useDraft.ts b/frontend/src/hooks/useDraft.ts
+--- a/frontend/src/hooks/useDraft.ts
++++ b/frontend/src/hooks/useDraft.ts
+@@ -1,6 +1,7 @@
+ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
+ import { ApiError, deleteJson, getJson, isAbortError, postJson, putJson } from "../api/client";
+ import {
++  type DraftMode,
+   type DraftPredictionResponse,
+   type DraftSessionPayload,
+   type GlobalBanState,
+@@ -20,6 +21,7 @@
+   EMPTY_GLOBAL_BANS,
+   EMPTY_PREDICTION,
+   getCurrentDraftStep,
++  getDraftSteps,
+   getGameSeriesGroup,
+   getGameUnlockStatus,
+   getMaxUnlockedGame,
+@@ -114,7 +116,10 @@
+       }))
+     : [];
+ 
++  const draftMode: DraftMode = parsed.draftMode === "ranked" ? "ranked" : "tournament";
+   return {
++    draftMode,
++    rankedBanPhaseComplete: Boolean(parsed.rankedBanPhaseComplete),
+     stepIndex: typeof parsed.stepIndex === "number" ? parsed.stepIndex : 0,
+     bluePicks: normalizeHeroList(parsed.bluePicks),
+     redPicks: normalizeHeroList(parsed.redPicks),
+@@ -200,20 +205,30 @@
+ 
+ function initMachineState(session: DraftSessionPayload | null): DraftMachineState {
+   if (!session) return INITIAL_DRAFT_STATE;
++  const draftMode: DraftMode = session.draftMode === "ranked" ? "ranked" : "tournament";
+   const reconstructed =
+     session.history.length > 0
+       ? {
+           stepIndex: session.stepIndex,
+           history: session.history,
++          rankedBanPhaseComplete:
++            session.rankedBanPhaseComplete ??
++            (session.bluePicks.length + session.redPicks.length > 0 ||
++              session.blueBans.length + session.redBans.length >= 10),
+         }
+-      : reconstructDraftHistory({
+-          bluePicks: session.bluePicks,
+-          redPicks: session.redPicks,
+-          blueBans: session.blueBans,
+-          redBans: session.redBans,
+-        });
++      : reconstructDraftHistory(
++          {
++            bluePicks: session.bluePicks,
++            redPicks: session.redPicks,
++            blueBans: session.blueBans,
++            redBans: session.redBans,
++          },
++          draftMode,
++        );
+   return {
+     ...INITIAL_DRAFT_STATE,
++    draftMode,
++    rankedBanPhaseComplete: reconstructed.rankedBanPhaseComplete,
+     stepIndex: reconstructed.stepIndex,
+     bluePicks: session.bluePicks,
+     redPicks: session.redPicks,
+@@ -351,6 +366,8 @@
+     Record<
+       string,
+       {
++        draftMode: DraftMode;
++        rankedBanPhaseComplete: boolean;
+         stepIndex: number;
+         bluePicks: string[];
+         redPicks: string[];
+@@ -374,8 +391,14 @@
+   const hasDirtyLocalChangesRef = useRef<boolean>(false);
+   const [initialSyncTick, setInitialSyncTick] = useState(0);
+ 
+-  const { stepIndex, bluePicks, redPicks, blueBans, redBans } = state;
+-  const currentStep = getCurrentDraftStep(stepIndex);
++  const { draftMode, rankedBanPhaseComplete, stepIndex, bluePicks, redPicks, blueBans, redBans } = state;
++  const currentStep = getCurrentDraftStep(
++    draftMode,
++    stepIndex,
++    rankedBanPhaseComplete,
++    blueBans.length,
++    redBans.length,
++  );
+ 
+   // On mount: synchronize with backend /draft/session so state survives browser cache clears or new windows
+   useEffect(() => {
+@@ -396,6 +419,8 @@
+           dispatch({
+             type: "hydrate",
+             payload: {
++              draftMode: hydrated.draftMode,
++              rankedBanPhaseComplete: hydrated.rankedBanPhaseComplete,
+               stepIndex: hydrated.stepIndex,
+               bluePicks: hydrated.bluePicks,
+               redPicks: hydrated.redPicks,
+@@ -442,8 +467,8 @@
+   const heroMap = useMemo(() => new Map(catalog.heroes.map((h) => [h.name, h])), [catalog.heroes]);
+ 
+   const unavailableHeroes = useMemo(
+-    () => unavailableSet({ bluePicks, redPicks, blueBans, redBans }, globalBans, stepIndex),
+-    [bluePicks, redPicks, blueBans, redBans, globalBans, stepIndex],
++    () => unavailableSet({ bluePicks, redPicks, blueBans, redBans }, globalBans, stepIndex, draftMode),
++    [bluePicks, redPicks, blueBans, redBans, globalBans, stepIndex, draftMode],
+   );
+ 
+   const rawSeriesWinningHeroes = getSeriesWinningHeroes(seriesGames, resolveSeriesName(globalBans), globalBans.gameNumber);
+@@ -475,6 +500,8 @@
+   // Persist every draft/series change to both localStorage (instant F5 reload) and backend disk (/draft/session)
+   useEffect(() => {
+     const syncIdentity = {
++      draftMode,
++      rankedBanPhaseComplete,
+       stepIndex,
+       bluePicks,
+       redPicks,
+@@ -554,6 +581,8 @@
+         league,
+         seriesWinningHeroes,
+         activePickLanes,
++        draftMode,
++        rankedBanPhaseComplete,
+       ),
+     );
+     const isPredictNetworkPending =
+@@ -602,6 +631,8 @@
+     persistSession,
+     storageKey,
+     initialSyncTick,
++    draftMode,
++    rankedBanPhaseComplete,
+     stepIndex,
+     bluePicks,
+     redPicks,
+@@ -625,7 +656,13 @@
+   useEffect(() => {
+     if (!enabled || pausePredict) return;
+     const draft = { bluePicks, redPicks, blueBans, redBans };
+-    const step = getCurrentDraftStep(stepIndex);
++    const step = getCurrentDraftStep(
++      draftMode,
++      stepIndex,
++      rankedBanPhaseComplete,
++      blueBans.length,
++      redBans.length,
++    );
+     const predictPayload = buildPredictPayload(
+       stepIndex,
+       draft,
+@@ -635,6 +672,8 @@
+       league,
+       seriesWinningHeroes,
+       activePickLanes,
++      draftMode,
++      rankedBanPhaseComplete,
+     );
+     const payloadKey = JSON.stringify(predictPayload);
+     const isRetry = predictRetryKey !== handledRetryKeyRef.current;
+@@ -727,6 +766,8 @@
+     enabled,
+     pausePredict,
+     engine,
++    draftMode,
++    rankedBanPhaseComplete,
+     stepIndex,
+     bluePicks,
+     redPicks,
+@@ -774,8 +815,14 @@
+   const redo = useCallback(() => {
+     const next = state.future?.at(-1);
+     if (!next) return;
+-    const step = getCurrentDraftStep(stepIndex);
+-    const restricted = new Set(activeGlobalBansForStep(globalBans, stepIndex));
++    const step = getCurrentDraftStep(
++      draftMode,
++      stepIndex,
++      rankedBanPhaseComplete,
++      blueBans.length,
++      redBans.length,
++    );
++    const restricted = new Set(activeGlobalBansForStep(globalBans, stepIndex, draftMode));
+     const newlyBluePicks = next.bluePicks.filter((h) => !bluePicks.includes(h));
+     const newlyRedPicks = next.redPicks.filter((h) => !redPicks.includes(h));
+     const newlyBlueBans = next.blueBans.filter((h) => !blueBans.includes(h));
+@@ -791,13 +838,27 @@
+     dispatch({ type: "redo" });
+   }, [
+     state.future,
++    draftMode,
+     stepIndex,
++    rankedBanPhaseComplete,
+     globalBans,
+     bluePicks,
+     redPicks,
+     blueBans,
+     redBans,
+   ]);
++
++  const setDraftMode = useCallback((nextMode: DraftMode) => {
++    lastPredictedKeyRef.current = "";
++    dispatch({ type: "setDraftMode", draftMode: nextMode });
++    setPickLanes({});
++    setPredictError(null);
++  }, []);
++
++  const removeRankedBan = useCallback((hero: string) => {
++    dispatch({ type: "removeRankedBan", hero });
++    setPredictError(null);
++  }, []);
+   const setPickLane = useCallback(
+     (heroName: string, lane?: LaneKey) => {
+       const teamPicks = bluePicks.includes(heroName)
+@@ -873,6 +934,7 @@
+                 second: "2-digit",
+               }),
+               seriesName: currentGroup,
++              draftMode,
+               blueTeamName: blueTeamName(globalBans),
+               redTeamName: redTeamName(globalBans),
+               blueSideTeam: globalBans.blueSideTeam,
+@@ -888,15 +950,21 @@
+           }
+         }
+       }
+-      const reconstructed = reconstructDraftHistory({
+-        bluePicks: game.bluePicks,
+-        redPicks: game.redPicks,
+-        blueBans: game.blueBans,
+-        redBans: game.redBans,
+-      });
++      const targetDraftMode: DraftMode = game.draftMode === "ranked" ? "ranked" : "tournament";
++      const reconstructed = reconstructDraftHistory(
++        {
++          bluePicks: game.bluePicks,
++          redPicks: game.redPicks,
++          blueBans: game.blueBans,
++          redBans: game.redBans,
++        },
++        targetDraftMode,
++      );
+       dispatch({
+         type: "hydrate",
+         payload: {
++          draftMode: targetDraftMode,
++          rankedBanPhaseComplete: reconstructed.rankedBanPhaseComplete,
+           stepIndex: reconstructed.stepIndex,
+           bluePicks: [...game.bluePicks],
+           redPicks: [...game.redPicks],
+@@ -935,7 +1003,7 @@
+       setPickLanes({});
+       setPredictError(null);
+     },
+-    [seriesGames, bluePicks, redPicks, blueBans, redBans, globalBans, state.blueWinRate],
++    [seriesGames, bluePicks, redPicks, blueBans, redBans, globalBans, state.blueWinRate, draftMode],
+   );
+ 
+   const recordGameToSeries = useCallback(
+@@ -958,6 +1026,7 @@
+           second: "2-digit",
+         }),
+         seriesName: currentGroup,
++        draftMode,
+         blueTeamName: blueTeamName(globalBans),
+         redTeamName: redTeamName(globalBans),
+         blueSideTeam: globalBans.blueSideTeam,
+@@ -968,6 +1037,14 @@
+         blueWinRate: state.blueWinRate,
+         winner: effectiveWinner,
+       };
++      if (draftMode === "ranked") {
++        setSeriesGames((prev) => [snapshot, ...prev].slice(0, MAX_SERIES_GAMES));
++        lastPredictedKeyRef.current = "";
++        dispatch({ type: "reset" });
++        setPickLanes({});
++        setPredictError(null);
++        return;
++      }
+       const nextSeriesGames = upsertSeriesGame(seriesGames, snapshot, currentGroup);
+       setSeriesGames(nextSeriesGames);
+ 
+@@ -1024,6 +1101,7 @@
+       seriesGames,
+       state.blueWinRate,
+       loadRecordedGame,
++      draftMode,
+     ],
+   );
+ 
+@@ -1061,6 +1139,7 @@
+           second: "2-digit",
+         }),
+         seriesName: currentGroup,
++        draftMode,
+         blueTeamName: blueTeamName(globalBans),
+         redTeamName: redTeamName(globalBans),
+         blueSideTeam: globalBans.blueSideTeam,
+@@ -1073,7 +1152,7 @@
+       };
+       return upsertSeriesGame(prev, snapshot, currentGroup);
+     });
+-  }, [bluePicks, redPicks, blueBans, redBans, globalBans, state.blueWinRate]);
++  }, [bluePicks, redPicks, blueBans, redBans, globalBans, state.blueWinRate, draftMode]);
+ 
+   const selectGameNumber = useCallback(
+     (nextGameNumber: number, globalBansOverride?: GlobalBanState, skipAutoSave = false) => {
+@@ -1111,6 +1190,8 @@
+         )
+       ) {
+         unsavedDraftsRef.current[currentDraftKey] = {
++          draftMode,
++          rankedBanPhaseComplete,
+           stepIndex,
+           bluePicks: [...bluePicks],
+           redPicks: [...redPicks],
+@@ -1136,6 +1217,8 @@
+         dispatch({
+           type: "hydrate",
+           payload: {
++            draftMode: unsavedTarget.draftMode,
++            rankedBanPhaseComplete: unsavedTarget.rankedBanPhaseComplete,
+             stepIndex: unsavedTarget.stepIndex,
+             bluePicks: [...unsavedTarget.bluePicks],
+             redPicks: [...unsavedTarget.redPicks],
+@@ -1179,6 +1262,8 @@
+     [
+       globalBans,
+       seriesGames,
++      draftMode,
++      rankedBanPhaseComplete,
+       stepIndex,
+       bluePicks,
+       redPicks,
+@@ -1458,9 +1543,13 @@
+   return {
+     heroes: catalog.heroes,
+     heroMap,
++    draftMode,
++    setDraftMode,
++    rankedBanPhaseComplete,
++    removeRankedBan,
+     currentStepIndex: stepIndex,
+     currentStep,
+-    totalSteps: 18,
++    totalSteps: getDraftSteps(draftMode).length,
+     bluePicks,
+     redPicks,
+     blueBans,
+diff --git a/frontend/src/hooks/useDraftTimer.ts b/frontend/src/hooks/useDraftTimer.ts
+--- a/frontend/src/hooks/useDraftTimer.ts
++++ b/frontend/src/hooks/useDraftTimer.ts
+@@ -1,13 +1,22 @@
+ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+-import { CANONICAL_DRAFT_STEPS, type DraftStep } from "../types/draft";
++import { type DraftMode, type DraftStep } from "../types/draft";
++import { getDraftSteps } from "../utils/draft";
+ 
+ /** Groups consecutive steps of the same side/action/phase (e.g., Red Pick 1-2, Blue Pick 2-3, Blue Pick 4-5) so double-pick turns share one clock. */
+-export function getTurnGroupStartStep(stepIndex: number): number {
+-  const step = CANONICAL_DRAFT_STEPS[stepIndex];
++export function getTurnGroupStartStep(
++  stepIndex: number,
++  draftMode: DraftMode = "tournament",
++  rankedBanPhaseComplete = false,
++): number {
++  if (draftMode === "ranked" && !rankedBanPhaseComplete) {
++    return -1;
++  }
++  const steps = getDraftSteps(draftMode);
++  const step = steps[stepIndex];
+   if (!step) return stepIndex;
+   let start = stepIndex;
+   while (start > 0) {
+-    const prev = CANONICAL_DRAFT_STEPS[start - 1];
++    const prev = steps[start - 1];
+     if (!prev || prev.side !== step.side || prev.action !== step.action || prev.phase !== step.phase) {
+       break;
+     }
+@@ -157,6 +166,8 @@
+ export interface UseDraftTimerOptions {
+   currentStep: DraftStep | null;
+   currentStepIndex: number;
++  draftMode?: DraftMode;
++  rankedBanPhaseComplete?: boolean;
+   resetSignal: string;
+   isBusy: boolean;
+   fallbackHero: string | null;
+@@ -166,6 +177,8 @@
+ export function useDraftTimer({
+   currentStep,
+   currentStepIndex,
++  draftMode = "tournament",
++  rankedBanPhaseComplete = false,
+   resetSignal,
+   isBusy,
+   fallbackHero,
+@@ -179,10 +192,10 @@
+     [prefs.preset, currentStep],
+   );
+   const turnGroupStart = useMemo(
+-    () => getTurnGroupStartStep(currentStepIndex),
+-    [currentStepIndex],
++    () => getTurnGroupStartStep(currentStepIndex, draftMode, rankedBanPhaseComplete),
++    [currentStepIndex, draftMode, rankedBanPhaseComplete],
+   );
+-  const stepSignature = `${turnGroupStart}:${resetSignal}:${prefs.preset}:${manualNonce}`;
++  const stepSignature = `${draftMode}:${turnGroupStart}:${resetSignal}:${prefs.preset}:${manualNonce}`;
+   const autoLockKey = `${currentStepIndex}:${resetSignal}:${manualNonce}`;
+ 
+   const [clock, setClock] = useState<{ sig: string; paused: boolean; secondsLeft: number }>(() => ({
+diff --git a/frontend/src/types/draft.ts b/frontend/src/types/draft.ts
+--- a/frontend/src/types/draft.ts
++++ b/frontend/src/types/draft.ts
+@@ -59,12 +59,15 @@
+   ban_unlocked_heroes?: HeroRecommendation[];
+ }
+ 
++export type DraftMode = "tournament" | "ranked";
++
+ export interface DraftHistoryItem {
+   stepIndex: number;
+   bluePicks: string[];
+   redPicks: string[];
+   blueBans: string[];
+   redBans: string[];
++  rankedBanPhaseComplete?: boolean;
+ }
+ 
+ export type TeamId = "A" | "B";
+@@ -85,6 +88,7 @@
+   gameNumber: number;
+   timestamp: string;
+   seriesName?: string;
++  draftMode?: DraftMode;
+   blueTeamName: string;
+   redTeamName: string;
+   blueSideTeam: TeamId;
+@@ -97,6 +101,8 @@
+ }
+ 
+ export interface DraftSessionPayload {
++  draftMode?: DraftMode;
++  rankedBanPhaseComplete?: boolean;
+   stepIndex: number;
+   bluePicks: string[];
+   redPicks: string[];
+@@ -143,6 +149,19 @@
+   { step: 17, phase: 2, action: "pick", side: "red", label: "Red Pick 5" },
+ ];
+ 
++export const RANKED_PICK_STEPS: DraftStep[] = [
++  { step: 0, phase: 1, action: "pick", side: "blue", label: "Blue Pick 1" },
++  { step: 1, phase: 1, action: "pick", side: "red", label: "Red Pick 1" },
++  { step: 2, phase: 1, action: "pick", side: "red", label: "Red Pick 2" },
++  { step: 3, phase: 1, action: "pick", side: "blue", label: "Blue Pick 2" },
++  { step: 4, phase: 1, action: "pick", side: "blue", label: "Blue Pick 3" },
++  { step: 5, phase: 1, action: "pick", side: "red", label: "Red Pick 3" },
++  { step: 6, phase: 2, action: "pick", side: "red", label: "Red Pick 4" },
++  { step: 7, phase: 2, action: "pick", side: "blue", label: "Blue Pick 4" },
++  { step: 8, phase: 2, action: "pick", side: "blue", label: "Blue Pick 5" },
++  { step: 9, phase: 2, action: "pick", side: "red", label: "Red Pick 5" },
++];
++
+ export type DraftEngineKey = "sota";
+ 
+ export interface DamageProfile {
+diff --git a/frontend/src/utils/draft.ts b/frontend/src/utils/draft.ts
+--- a/frontend/src/utils/draft.ts
++++ b/frontend/src/utils/draft.ts
+@@ -1,11 +1,13 @@
+ import {
+   CANONICAL_DRAFT_STEPS,
+   type DraftHistoryItem,
++  type DraftMode,
+   type DraftStep,
+   type GlobalBanState,
+   type HeroRecommendation,
+   type LaneKey,
+   type LeagueCode,
++  RANKED_PICK_STEPS,
+   type RecordedDraftGame,
+   type RoleType,
+ } from "../types/draft";
+@@ -17,13 +19,35 @@
+   redBans: string[];
+ }
+ 
+-export function getCurrentDraftStep(stepIndex: number): DraftStep | null {
++export function getDraftSteps(draftMode: DraftMode = "tournament"): DraftStep[] {
++  return draftMode === "ranked" ? RANKED_PICK_STEPS : CANONICAL_DRAFT_STEPS;
++}
++
++export function getCurrentDraftStep(
++  draftMode: DraftMode,
++  stepIndex: number,
++  rankedBanPhaseComplete: boolean,
++  blueBansLen = 0,
++  redBansLen = 0,
++): DraftStep | null {
++  if (draftMode === "ranked") {
++    if (!rankedBanPhaseComplete) {
++      return {
++        step: -1,
++        phase: 1,
++        action: "ban",
++        side: blueBansLen < 5 ? "blue" : "red",
++        label: `Ranked Ban (${blueBansLen + redBansLen}/10)`,
++      };
++    }
++    return RANKED_PICK_STEPS[stepIndex] ?? null;
++  }
+   return CANONICAL_DRAFT_STEPS[stepIndex] ?? null;
+ }
+ 
+ /** Maps each draft step to the hero locked at that step (or null if not reached yet). */
+-export function heroesByStep(state: DraftState): (string | null)[] {
+-  const steps = CANONICAL_DRAFT_STEPS;
++export function heroesByStep(state: DraftState, draftMode: DraftMode = "tournament"): (string | null)[] {
++  const steps = getDraftSteps(draftMode);
+   const counters = { "blue-pick": 0, "red-pick": 0, "blue-ban": 0, "red-ban": 0 };
+   const lists = {
+     "blue-pick": state.bluePicks,
+@@ -122,6 +146,8 @@
+ }
+ 
+ export interface DraftMachineState extends DraftState {
++  draftMode: DraftMode;
++  rankedBanPhaseComplete: boolean;
+   stepIndex: number;
+   history: DraftHistoryItem[];
+   future?: DraftHistoryItem[];
+@@ -133,12 +159,17 @@
+ 
+ export type DraftAction =
+   | { type: "lock"; hero: string }
++  | { type: "removeRankedBan"; hero: string }
++  | { type: "setRankedBanPhaseComplete"; complete: boolean }
++  | { type: "setDraftMode"; draftMode: DraftMode }
+   | { type: "undo" }
+   | { type: "redo" }
+   | { type: "reset" }
+   | {
+       type: "hydrate";
+       payload: {
++        draftMode?: DraftMode;
++        rankedBanPhaseComplete?: boolean;
+         stepIndex: number;
+         bluePicks: string[];
+         redPicks: string[];
+@@ -164,6 +195,8 @@
+ };
+ 
+ export const INITIAL_DRAFT_STATE: DraftMachineState = {
++  draftMode: "tournament",
++  rankedBanPhaseComplete: false,
+   stepIndex: 0,
+   bluePicks: [],
+   redPicks: [],
+@@ -429,7 +462,14 @@
+   };
+ }
+ 
+-export function activeGlobalBansForStep(globalBans: GlobalBanState, stepIndex?: number): string[] {
++export function activeGlobalBansForStep(
++  globalBans: GlobalBanState,
++  stepIndex?: number,
++  draftMode: DraftMode = "tournament",
++): string[] {
++  if (draftMode === "ranked") {
++    return [];
++  }
+   const bUsed = blueUsedHeroes(globalBans);
+   const rUsed = redUsedHeroes(globalBans);
+   if (stepIndex === undefined) {
+@@ -450,10 +490,14 @@
+   state: DraftState,
+   globalBans: readonly string[] | GlobalBanState = [],
+   stepIndex?: number,
++  draftMode: DraftMode = "tournament",
+ ): Set<string> {
++  if (draftMode === "ranked") {
++    return new Set([...state.bluePicks, ...state.redPicks, ...state.blueBans, ...state.redBans]);
++  }
+   const gbList = Array.isArray(globalBans)
+     ? globalBans
+-    : activeGlobalBansForStep(globalBans as GlobalBanState, stepIndex);
++    : activeGlobalBansForStep(globalBans as GlobalBanState, stepIndex, draftMode);
+   return new Set([...state.bluePicks, ...state.redPicks, ...state.blueBans, ...state.redBans, ...gbList]);
+ }
+ 
+@@ -464,6 +508,7 @@
+     redPicks: state.redPicks,
+     blueBans: state.blueBans,
+     redBans: state.redBans,
++    rankedBanPhaseComplete: state.rankedBanPhaseComplete,
+   };
+ }
+ 
+@@ -471,7 +516,24 @@
+   switch (action.type) {
+     case "lock": {
+       if (unavailableSet(state).has(action.hero)) return state;
+-      const step = CANONICAL_DRAFT_STEPS[state.stepIndex];
++      if (state.draftMode === "ranked" && !state.rankedBanPhaseComplete) {
++        const unified = [...state.blueBans, ...state.redBans];
++        if (unified.length >= 10) return state;
++        const nextUnified = [...unified, action.hero];
++        return {
++          ...state,
++          blueBans: nextUnified.slice(0, 5),
++          redBans: nextUnified.slice(5, 10),
++          rankedBanPhaseComplete: nextUnified.length >= 10,
++          stepIndex: 0,
++          history: [...state.history, makeSnapshot(state)],
++          future: [],
++          prediction: EMPTY_PREDICTION,
++        };
++      }
++
++      const steps = getDraftSteps(state.draftMode);
++      const step = steps[state.stepIndex];
+       if (!step) return state;
+       const key = `${step.side}${step.action === "pick" ? "Picks" : "Bans"}` as keyof DraftState;
+       return {
+@@ -484,12 +546,61 @@
+         winHistory: state.winHistory.slice(0, state.stepIndex + 1),
+       };
+     }
++    case "removeRankedBan": {
++      if (state.draftMode !== "ranked" || state.rankedBanPhaseComplete) return state;
++      const unified = [...state.blueBans, ...state.redBans];
++      if (!unified.includes(action.hero)) return state;
++      const nextUnified = unified.filter((h) => h !== action.hero);
++      return {
++        ...state,
++        blueBans: nextUnified.slice(0, 5),
++        redBans: nextUnified.slice(5, 10),
++        history: [...state.history, makeSnapshot(state)],
++        future: [],
++        prediction: EMPTY_PREDICTION,
++      };
++    }
++    case "setRankedBanPhaseComplete": {
++      if (state.draftMode !== "ranked") return state;
++      if (action.complete) {
++        if (state.rankedBanPhaseComplete) return state;
++        return {
++          ...state,
++          rankedBanPhaseComplete: true,
++          stepIndex: 0,
++          history: [...state.history, makeSnapshot(state)],
++          future: [],
++          prediction: EMPTY_PREDICTION,
++        };
++      }
++      if (!state.rankedBanPhaseComplete || state.bluePicks.length > 0 || state.redPicks.length > 0) {
++        return state;
++      }
++      return {
++        ...state,
++        rankedBanPhaseComplete: false,
++        stepIndex: 0,
++        history: [...state.history, makeSnapshot(state)],
++        future: [],
++        prediction: EMPTY_PREDICTION,
++      };
++    }
++    case "setDraftMode":
++      if (state.draftMode === action.draftMode) return state;
++      return {
++        ...INITIAL_DRAFT_STATE,
++        draftMode: action.draftMode,
++      };
+     case "undo": {
+       const last = state.history.at(-1);
+       if (!last) return state;
+       return {
+         ...state,
+         ...last,
++        rankedBanPhaseComplete:
++          last.rankedBanPhaseComplete !== undefined
++            ? last.rankedBanPhaseComplete
++            : state.rankedBanPhaseComplete,
+         history: state.history.slice(0, -1),
+         future: [...(state.future ?? []), makeSnapshot(state)],
+         // Drop stale derived state; useDraft refetches for the restored step
+@@ -503,6 +614,10 @@
+       return {
+         ...state,
+         ...next,
++        rankedBanPhaseComplete:
++          next.rankedBanPhaseComplete !== undefined
++            ? next.rankedBanPhaseComplete
++            : state.rankedBanPhaseComplete,
+         history: [...state.history, makeSnapshot(state)],
+         future: (state.future ?? []).slice(0, -1),
+         // Drop stale derived state; useDraft refetches for the advanced step
+@@ -511,11 +626,16 @@
+       };
+     }
+     case "reset":
+-      return INITIAL_DRAFT_STATE;
++      return {
++        ...INITIAL_DRAFT_STATE,
++        draftMode: state.draftMode,
++      };
+     case "hydrate":
+       return {
+         ...state,
+         ...action.payload,
++        draftMode: action.payload.draftMode ?? state.draftMode,
++        rankedBanPhaseComplete: action.payload.rankedBanPhaseComplete ?? state.rankedBanPhaseComplete,
+         future: [],
+         prediction: EMPTY_PREDICTION,
+       };
+@@ -531,10 +651,74 @@
+ }
+ 
+ /** Reconstructs step-by-step undo history and stepIndex from a saved DraftState. */
+-export function reconstructDraftHistory(draft: DraftState): {
++export function reconstructDraftHistory(
++  draft: DraftState,
++  draftMode: DraftMode = "tournament",
++): {
+   stepIndex: number;
+   history: DraftHistoryItem[];
++  rankedBanPhaseComplete: boolean;
+ } {
++  if (draftMode === "ranked") {
++    const history: DraftHistoryItem[] = [];
++    const cur: DraftState = { bluePicks: [], redPicks: [], blueBans: [], redBans: [] };
++    for (const h of draft.blueBans) {
++      history.push({
++        stepIndex: 0,
++        bluePicks: [],
++        redPicks: [],
++        blueBans: [...cur.blueBans],
++        redBans: [...cur.redBans],
++        rankedBanPhaseComplete: false,
++      });
++      cur.blueBans = [...cur.blueBans, h];
++    }
++    for (const h of draft.redBans) {
++      history.push({
++        stepIndex: 0,
++        bluePicks: [],
++        redPicks: [],
++        blueBans: [...cur.blueBans],
++        redBans: [...cur.redBans],
++        rankedBanPhaseComplete: false,
++      });
++      cur.redBans = [...cur.redBans, h];
++    }
++    const hasPicks = draft.bluePicks.length + draft.redPicks.length > 0;
++    const allTenBanned = draft.blueBans.length + draft.redBans.length >= 10;
++    const rankedBanPhaseComplete = hasPicks || allTenBanned;
++    if (hasPicks && !allTenBanned) {
++      history.push({
++        stepIndex: 0,
++        bluePicks: [],
++        redPicks: [],
++        blueBans: [...cur.blueBans],
++        redBans: [...cur.redBans],
++        rankedBanPhaseComplete: false,
++      });
++    }
++    const idx = { bluePicks: 0, redPicks: 0 };
++    let stepIndex = 0;
++    for (let i = 0; i < RANKED_PICK_STEPS.length; i++) {
++      const s = RANKED_PICK_STEPS[i];
++      const key = `${s.side}Picks` as "bluePicks" | "redPicks";
++      const hero = draft[key][idx[key]];
++      if (!hero) break;
++      history.push({
++        stepIndex: i,
++        bluePicks: [...cur.bluePicks],
++        redPicks: [...cur.redPicks],
++        blueBans: [...cur.blueBans],
++        redBans: [...cur.redBans],
++        rankedBanPhaseComplete: true,
++      });
++      cur[key] = [...cur[key], hero];
++      idx[key]++;
++      stepIndex = i + 1;
++    }
++    return { stepIndex, history, rankedBanPhaseComplete };
++  }
++
+   const history: DraftHistoryItem[] = [];
+   const cur: DraftState = { bluePicks: [], redPicks: [], blueBans: [], redBans: [] };
+   const idx = { bluePicks: 0, redPicks: 0, blueBans: 0, redBans: 0 };
+@@ -556,7 +740,7 @@
+     idx[key]++;
+     stepIndex = i + 1;
+   }
+-  return { stepIndex, history };
++  return { stepIndex, history, rankedBanPhaseComplete: false };
+ }
+ 
+ /** Builds the /predict request for a draft step; past the last step it asks for the final blue win rate. */
+@@ -569,16 +753,25 @@
+   league: LeagueCode = "GLOBAL",
+   seriesWinningHeroes: readonly string[] = [],
+   pickLanes: Record<string, LaneKey> = {},
++  draftMode: DraftMode = "tournament",
++  rankedBanPhaseComplete = false,
+ ) {
++  const isRanked = draftMode === "ranked";
+   const gbState: GlobalBanState = Array.isArray(globalBans)
+     ? { ...EMPTY_GLOBAL_BANS, universalBans: [...globalBans] }
+     : (globalBans as GlobalBanState);
+ 
+-  const bUsed = [...blueUsedHeroes(gbState)].sort();
+-  const rUsed = [...redUsedHeroes(gbState)].sort();
+-
+-  const step = getCurrentDraftStep(stepIndex);
+-  const actingUsedCount = !step
++  const bUsed = isRanked ? [] : [...blueUsedHeroes(gbState)].sort();
++  const rUsed = isRanked ? [] : [...redUsedHeroes(gbState)].sort();
++
++  const step = getCurrentDraftStep(
++    draftMode,
++    stepIndex,
++    rankedBanPhaseComplete,
++    state.blueBans.length,
++    state.redBans.length,
++  );
++  const actingUsedCount = isRanked || !step
+     ? Math.max(bUsed.length, rUsed.length)
+     : step.action === "ban"
+       ? step.side === "blue"
+@@ -588,15 +781,17 @@
+         ? bUsed.length
+         : rUsed.length;
+   const maxUniversal = Math.max(0, 40 - actingUsedCount);
+-  const rawCappedUniversal =
+-    gbState.universalBans.length > maxUniversal
++  const rawCappedUniversal = isRanked
++    ? []
++    : gbState.universalBans.length > maxUniversal
+       ? gbState.universalBans.slice(0, maxUniversal)
+       : gbState.universalBans;
+   const cappedUniversalBans = [...rawCappedUniversal].sort();
+-  const sortedWinningHeroes = [...seriesWinningHeroes].sort();
++  const sortedWinningHeroes = isRanked ? [] : [...seriesWinningHeroes].sort();
+ 
+   if (!step) {
+     return {
++      draft_mode: draftMode,
+       mode: "pick",
+       side: "blue",
+       phase: 2,
+@@ -619,6 +814,7 @@
+   const allyPicks = isBlue ? state.bluePicks : state.redPicks;
+   const enemyPicks = isBlue ? state.redPicks : state.bluePicks;
+   return {
++    draft_mode: draftMode,
+     mode: step.action,
+     side: step.side,
+     phase: step.phase,
+diff --git a/src/predictor.py b/src/predictor.py
+--- a/src/predictor.py
++++ b/src/predictor.py
+@@ -15,6 +15,7 @@
+     HeroRecommendation,
+ )
+ from src.search.draft_mcts import (
++    RANKED_PICK_MODEL_STEPS,
+     DraftMinimaxSearch,
+     DraftSearchState,
+     ModelInput,
+@@ -359,11 +360,20 @@
+         phase: int,
+         league: str = "GLOBAL",
+         step_idx: int | None = None,
++        draft_mode: str = "tournament",
+     ) -> ModelInput:
+         """Encodes one draft position from the acting team's point of view."""
+-        if step_idx is None:
+-            step_idx = len(ally_picks) + len(enemy_picks) + len(ally_bans) + len(enemy_bans)
+-        model_step = min(step_idx, 17)
++        if draft_mode == "ranked":
++            if is_pick:
++                pick_pos = len(ally_picks) + len(enemy_picks) if step_idx is None else step_idx
++                clamped = min(max(pick_pos, 0), len(RANKED_PICK_MODEL_STEPS) - 1)
++                model_step = RANKED_PICK_MODEL_STEPS[clamped]
++            else:
++                model_step = min(len(ally_bans) + len(enemy_bans), 7)
++        else:
++            if step_idx is None:
++                step_idx = len(ally_picks) + len(enemy_picks) + len(ally_bans) + len(enemy_bans)
++            model_step = min(step_idx, 17)
+         meta = (
+             model_step / 17.0,
+             float(phase == 2),
+@@ -384,6 +394,7 @@
+             meta,
+             int(is_pick),
+             phase,
++            draft_mode,
+         )
+ 
+     def _build_hero_recommendation(
+@@ -458,16 +469,21 @@
+     # ------------------------------------------------------------------
+ 
+     @staticmethod
+-    def _next_pick_slots(team: TeamDraft, max_slots: int) -> int:
++    def _next_pick_slots(team: TeamDraft, max_slots: int, draft_mode: str = "tournament") -> int:
+         """Picks to forecast; starts once the team has acted (Ban 1) and stops at 5 picks."""
+-        if len(team.picks) >= 5 or (not team.picks and not team.bans):
++        if len(team.picks) >= 5:
++            return 0
++        if draft_mode == "ranked":
++            if not team.picks and not team.bans and not team.opp_bans and not team.opp_picks:
++                return 0
++        elif not team.picks and not team.bans:
+             return 0
+         return min(max_slots, 5 - len(team.picks))
+ 
+     @staticmethod
+-    def _next_ban_slots(team: TeamDraft, max_slots: int) -> int:
++    def _next_ban_slots(team: TeamDraft, max_slots: int, draft_mode: str = "tournament") -> int:
+         """Bans to forecast; needs at least one pick to reason from and stops at 4 bans."""
+-        if not team.picks or len(team.bans) >= 4:
++        if draft_mode == "ranked" or not team.picks or len(team.bans) >= 4:
+             return 0
+         return min(max_slots, 4 - len(team.bans))
+ 
+@@ -477,7 +493,9 @@
+         sim_picks: list[str],
+         global_bans: list[str],
+         league: str = "GLOBAL",
++        draft_mode: str = "tournament",
+     ) -> ModelInput:
++        step_override = min(len(sim_picks) + len(team.opp_picks), 9) if draft_mode == "ranked" else None
+         return self._model_input(
+             sim_picks,
+             team.opp_picks,
+@@ -488,6 +506,8 @@
+             is_red=team.side == "red",
+             phase=1 if len(sim_picks) < 3 else 2,
+             league=league,
++            step_idx=step_override,
++            draft_mode=draft_mode,
+         )
+ 
+     def _next_ban_input(
+@@ -495,6 +515,7 @@
+         team: TeamDraft,
+         global_bans: list[str],
+         league: str = "GLOBAL",
++        draft_mode: str = "tournament",
+     ) -> ModelInput:
+         return self._model_input(
+             team.picks,
+@@ -506,6 +527,7 @@
+             is_red=team.side == "red",
+             phase=1 if len(team.bans) < 2 else 2,
+             league=league,
++            draft_mode=draft_mode,
+         )
+ 
+     def _resolve_pick_lanes(self, raw_lanes: dict[str, str], valid_picks: set[str]) -> dict[str, str]:
+@@ -804,6 +826,7 @@
+         league: str = "GLOBAL",
+         series_winning_heroes: list[str] | None = None,
+         pick_lanes_by_side: dict[str, dict[str, str]] | None = None,
++        draft_mode: str = "tournament",
+     ) -> tuple[tuple[np.ndarray, ...], np.ndarray, np.ndarray, dict[str, list[HeroRecommendation]]]:
+         """Runs the main position and every team's pick/ban forecasts in as few batched passes as possible.
+ 
+@@ -813,7 +836,7 @@
+         """
+         forecasts: dict[str, list[HeroRecommendation]] = {}
+         sim_picks = {t.side: list(t.picks) for t in teams}
+-        pick_slots = {t.side: self._next_pick_slots(t, max_slots) for t in teams}
++        pick_slots = {t.side: self._next_pick_slots(t, max_slots, draft_mode=draft_mode) for t in teams}
+         gb_by_side = global_bans if isinstance(global_bans, dict) else {t.side: global_bans for t in teams}
+         win_hero_ids = [
+             self.hero_to_id[h] for h in set(self.resolve_heroes(series_winning_heroes or [])) if h in self.hero_to_id
+@@ -823,9 +846,11 @@
+         jobs: list[tuple[str, TeamDraft]] = []
+         for t in teams:
+             forecasts[f"{t.side}_next_bans"] = []
+-            if self._next_ban_slots(t, max_slots):
++            if self._next_ban_slots(t, max_slots, draft_mode=draft_mode):
+                 opp_side = "red" if t.side == "blue" else "blue"
+-                inputs.append(self._next_ban_input(t, gb_by_side.get(opp_side, []), league=league))
++                inputs.append(
++                    self._next_ban_input(t, gb_by_side.get(opp_side, []), league=league, draft_mode=draft_mode)
++                )
+                 jobs.append(("ban", t))
+         main_arrays: tuple[np.ndarray, ...] | None = None
+         main_probs = main_win = np.empty(0)
+@@ -836,7 +861,9 @@
+                     forecasts[f"{t.side}_next_picks"] = []
+                 if pick_slots[t.side] >= rank:
+                     inputs.append(
+-                        self._next_pick_input(t, sim_picks[t.side], gb_by_side.get(t.side, []), league=league)
++                        self._next_pick_input(
++                            t, sim_picks[t.side], gb_by_side.get(t.side, []), league=league, draft_mode=draft_mode
++                        )
+                     )
+                     jobs.append(("pick", t))
+             if not inputs:
+@@ -868,7 +895,7 @@
+                 if kind == "ban":
+                     forecasts[f"{t.side}_next_bans"] = self._forecast_bans(
+                         t,
+-                        self._next_ban_slots(t, max_slots),
++                        self._next_ban_slots(t, max_slots, draft_mode=draft_mode),
+                         row_probs,
+                         win[row],
+                         ap[row],
+@@ -984,6 +1011,7 @@
+             len(red_picks),
+             len(blue_bans),
+             len(red_bans),
++            draft_mode=req.draft_mode,
+         )
+         main_input = self._model_input(
+             ally_picks,
+@@ -996,6 +1024,7 @@
+             phase=req.phase,
+             league=req.league,
+             step_idx=step_idx,
++            draft_mode=req.draft_mode,
+         )
+         arrays, probs, win_probs, forecasts = self._evaluate_with_forecasts(
+             main_input,
+@@ -1004,6 +1033,7 @@
+             league=req.league,
+             series_winning_heroes=req.series_winning_heroes,
+             pick_lanes_by_side=pick_lanes_by_side,
++            draft_mode=req.draft_mode,
+         )
+         ap_row, ep_row, unavail_row = arrays[0][0], arrays[1][0], arrays[4][0]
+ 
+@@ -1020,7 +1050,8 @@
+                 is_red=True,
+                 phase=2,
+                 league=req.league,
+-                step_idx=17,
++                step_idx=9 if req.draft_mode == "ranked" else 17,
++                draft_mode=req.draft_mode,
+             )
+             step17_arrays = encode_batch([step17_input], len(self.hero_names))
+             _, step17_win_t = run_model(self.model, step17_arrays, self.device)
+@@ -1090,6 +1121,7 @@
+                 len(r_p),
+                 len(b_b),
+                 len(r_b),
++                draft_mode=req.draft_mode,
+             )
+             root_state = DraftSearchState(
+                 blue_picks=b_p,
+@@ -1104,6 +1136,8 @@
+                 red_pick_lanes=tuple(sorted(pick_lanes_by_side["red"].items())),
+                 step_idx=step_idx,
+                 league=req.league,
++                draft_mode=req.draft_mode,
++                ranked_ban_side=side_val if (req.draft_mode == "ranked" and req.mode == "ban") else None,
+             )
+             search_pool = avail_sorted[: min(max(req.top_k * 2, 8), 60)]
+             lookahead_win_rates = self.search_engine.search_lookahead_win_rates(
+diff --git a/src/schemas.py b/src/schemas.py
+--- a/src/schemas.py
++++ b/src/schemas.py
+@@ -41,6 +41,10 @@
+ 
+ 
+ class DraftStateRequest(BaseModel):
++    draft_mode: Literal["tournament", "ranked"] = Field(
++        default="tournament",
++        description="Draft ruleset: 'tournament' (8 bans, 2 phases) or 'ranked' (10 upfront bans, 1-2-2-2-2-1 picks)",
++    )
+     mode: Literal["pick", "ban"] = Field(
+         default="pick",
+         description="Current draft action type: 'pick' or 'ban'",
+@@ -67,13 +71,13 @@
+     )
+     ally_bans: list[HeroStr] = Field(
+         default_factory=list,
+-        max_length=4,
+-        description="Heroes already banned by the acting team (0 to 4 heroes)",
++        max_length=5,
++        description="Heroes already banned by the acting team (0 to 4 in tournament, 0 to 5 in ranked)",
+     )
+     enemy_bans: list[HeroStr] = Field(
+         default_factory=list,
+-        max_length=4,
+-        description="Heroes already banned by the opposing team (0 to 4 heroes)",
++        max_length=5,
++        description="Heroes already banned by the opposing team (0 to 4 in tournament, 0 to 5 in ranked)",
+     )
+     global_bans: list[HeroStr] = Field(
+         default_factory=list,
+@@ -171,6 +175,9 @@
+         banned = ab | eb
+         if picked & banned:
+             raise ValueError(f"Heroes cannot be both picked and banned: {sorted(picked & banned)}")
++        max_bans = 5 if self.draft_mode == "ranked" else 4
++        if len(self.ally_bans) > max_bans or len(self.enemy_bans) > max_bans:
++            raise ValueError(f"{self.draft_mode} mode supports at most {max_bans} bans per side")
+         return self
+ 
+ 
+@@ -341,8 +348,9 @@
+     stepIndex: int = Field(default=0, ge=0, le=20)
+     bluePicks: list[ShortStr] = Field(default_factory=list, max_length=5)
+     redPicks: list[ShortStr] = Field(default_factory=list, max_length=5)
+-    blueBans: list[ShortStr] = Field(default_factory=list, max_length=4)
+-    redBans: list[ShortStr] = Field(default_factory=list, max_length=4)
++    blueBans: list[ShortStr] = Field(default_factory=list, max_length=5)
++    redBans: list[ShortStr] = Field(default_factory=list, max_length=5)
++    rankedBanPhaseComplete: bool | None = None
+ 
+ 
+ class GlobalBanStateSchema(BaseModel):
+@@ -363,11 +371,12 @@
+     gameNumber: int = Field(default=1, ge=1, le=7)
+     timestamp: str = Field(max_length=32)
+     seriesName: ShortStr = Field(default="", description="Group or series matchup name e.g. BRU vs FS")
++    draftMode: Literal["tournament", "ranked"] = "tournament"
+     blueTeamName: ShortStr
+     redTeamName: ShortStr
+     blueSideTeam: Literal["A", "B"] = "A"
+-    blueBans: list[ShortStr] = Field(default_factory=list, max_length=4)
+-    redBans: list[ShortStr] = Field(default_factory=list, max_length=4)
++    blueBans: list[ShortStr] = Field(default_factory=list, max_length=5)
++    redBans: list[ShortStr] = Field(default_factory=list, max_length=5)
+     bluePicks: list[ShortStr] = Field(default_factory=list, max_length=5)
+     redPicks: list[ShortStr] = Field(default_factory=list, max_length=5)
+     blueWinRate: FinitePct = 50.0
+@@ -375,11 +384,13 @@
+ 
+ 
+ class DraftSessionStateSchema(BaseModel):
++    draftMode: Literal["tournament", "ranked"] = "tournament"
++    rankedBanPhaseComplete: bool = False
+     stepIndex: int = Field(default=0, ge=0, le=20)
+     bluePicks: list[ShortStr] = Field(default_factory=list, max_length=5)
+     redPicks: list[ShortStr] = Field(default_factory=list, max_length=5)
+-    blueBans: list[ShortStr] = Field(default_factory=list, max_length=4)
+-    redBans: list[ShortStr] = Field(default_factory=list, max_length=4)
++    blueBans: list[ShortStr] = Field(default_factory=list, max_length=5)
++    redBans: list[ShortStr] = Field(default_factory=list, max_length=5)
+     pickLanes: dict[HeroStr, LaneKey] = Field(default_factory=dict, max_length=10)
+     history: list[DraftHistoryItemSchema] = Field(default_factory=list, max_length=25)
+     winHistory: list[FinitePct | None] = Field(default_factory=list, max_length=25)
+diff --git a/src/search/draft_mcts.py b/src/search/draft_mcts.py
+--- a/src/search/draft_mcts.py
++++ b/src/search/draft_mcts.py
+@@ -44,6 +44,36 @@
+     (17, 2, 1, 1),  # Red Pick 5
+ ]
+ 
++# 10 pick steps in Ranked mode (1-2-2-2-2-1) after upfront 10-ban phase:
++# (step_idx, phase, action_type, side)
++RANKED_PICK_STEPS = [
++    (0, 1, 1, 0),  # Blue Pick 1
++    (1, 1, 1, 1),  # Red Pick 1
++    (2, 1, 1, 1),  # Red Pick 2
++    (3, 1, 1, 0),  # Blue Pick 2
++    (4, 1, 1, 0),  # Blue Pick 3
++    (5, 1, 1, 1),  # Red Pick 3
++    (6, 2, 1, 1),  # Red Pick 4
++    (7, 2, 1, 0),  # Blue Pick 4
++    (8, 2, 1, 0),  # Blue Pick 5
++    (9, 2, 1, 1),  # Red Pick 5
++]
++
++# Positional grid mapping from RANKED_PICK_STEPS (0..9) onto the Transformer's 18-step embeddings
++RANKED_PICK_MODEL_STEPS = (4, 5, 6, 7, 8, 9, 14, 15, 16, 17)
++_RANKED_BAN_SLOTS = (
++    (0, 0),
++    (1, 1),
++    (2, 0),
++    (3, 1),
++    (10, 0),
++    (11, 1),
++    (12, 0),
++    (13, 1),
++    (13, 0),
++    (13, 1),
++)
++
+ MAX_HISTORY_LEN = 17
+ 
+ 
+@@ -78,6 +108,61 @@
+     meta: Sequence[float]
+     act_type: int
+     phase: int
++    draft_mode: str = "tournament"
++
++
++def _ranked_sequence_events(
++    b_picks: Sequence[int],
++    r_picks: Sequence[int],
++    b_bans: Sequence[int],
++    r_bans: Sequence[int],
++    acting_side: int,
++) -> list[tuple[int, int, int]]:
++    """Reconstruct tokens for Ranked mode (10 bans + 1-2-2-2-2-1 picks) within MAX_HISTORY_LEN."""
++    bp_i = rp_i = 0
++    pick_events: list[tuple[int, int, int]] = []
++    for idx, (_step, _phase, _act, side_ev) in enumerate(RANKED_PICK_STEPS):
++        h: int | None = None
++        if side_ev == 0 and bp_i < len(b_picks):
++            h = b_picks[bp_i]
++            bp_i += 1
++        elif side_ev == 1 and rp_i < len(r_picks):
++            h = r_picks[rp_i]
++            rp_i += 1
++        if h is not None and h != -1:
++            ttype = 1 if side_ev == acting_side else 2
++            pick_events.append((h, ttype, RANKED_PICK_MODEL_STEPS[idx]))
++
++    ban_budget = max(0, MAX_HISTORY_LEN - len(pick_events))
++    bb_i = rb_i = 0
++    ban_events: list[tuple[int, int, int]] = []
++    for slot_step, side_ev in _RANKED_BAN_SLOTS:
++        if len(ban_events) >= ban_budget:
++            break
++        h = None
++        if side_ev == 0 and bb_i < len(b_bans):
++            h = b_bans[bb_i]
++            bb_i += 1
++        elif side_ev == 1 and rb_i < len(r_bans):
++            h = r_bans[rb_i]
++            rb_i += 1
++        if h is not None and h != -1:
++            ttype = 3 if side_ev == acting_side else 4
++            ban_events.append((h, ttype, slot_step))
++    while len(ban_events) < ban_budget and bb_i < len(b_bans):
++        h = b_bans[bb_i]
++        bb_i += 1
++        if h is not None and h != -1:
++            ban_events.append((h, 3 if acting_side == 0 else 4, 13))
++    while len(ban_events) < ban_budget and rb_i < len(r_bans):
++        h = r_bans[rb_i]
++        rb_i += 1
++        if h is not None and h != -1:
++            ban_events.append((h, 4 if acting_side == 0 else 3, 13))
++
++    combined = ban_events + pick_events
++    combined.sort(key=lambda ev: ev[2])
++    return combined[:MAX_HISTORY_LEN]
+ 
+ 
+ def sequence_events(inp: ModelInput) -> list[tuple[int, int, int]]:
+@@ -89,6 +174,9 @@
+     else:
+         b_picks, r_picks = inp.enemy_picks, inp.ally_picks
+         b_bans, r_bans = inp.enemy_bans, inp.ally_bans
++
++    if inp.draft_mode == "ranked":
++        return _ranked_sequence_events(b_picks, r_picks, b_bans, r_bans, acting_side)
+ 
+     bp_i = rp_i = bb_i = rb_i = 0
+     events: list[tuple[int, int, int]] = []
+@@ -197,20 +285,32 @@
+     red_pick_lanes: tuple[tuple[str, str], ...] = ()
+     step_idx: int = 0
+     league: str = "GLOBAL"
++    draft_mode: str = "tournament"
++    ranked_ban_side: int | None = None
++
++    @property
++    def _steps(self) -> list[tuple[int, int, int, int]]:
++        return RANKED_PICK_STEPS if self.draft_mode == "ranked" else DRAFT_STEPS
+ 
+     @property
+     def is_terminal(self) -> bool:
+-        return self.step_idx >= len(DRAFT_STEPS)
++        if self.draft_mode == "ranked" and self.ranked_ban_side is not None:
++            return False
++        return self.step_idx >= len(self._steps)
+ 
+     @property
+     def is_last_step(self) -> bool:
+-        return self.step_idx >= len(DRAFT_STEPS) - 1
++        if self.draft_mode == "ranked" and self.ranked_ban_side is not None:
++            return False
++        return self.step_idx >= len(self._steps) - 1
+ 
+     @property
+     def current_step_info(self) -> tuple[int, int, int, int]:
++        if self.draft_mode == "ranked" and self.ranked_ban_side is not None:
++            return (0, 1, 0, self.ranked_ban_side)
+         if self.is_terminal:
+-            return (len(DRAFT_STEPS), 2, 1, 1)
+-        return DRAFT_STEPS[self.step_idx]
++            return (len(self._steps), 2, 1, 1)
++        return self._steps[self.step_idx]
+ 
+     @property
+     def phase(self) -> int:
+@@ -249,7 +349,29 @@
+         b_p, r_p = list(self.blue_picks), list(self.red_picks)
+         b_b, r_b = list(self.blue_bans), list(self.red_bans)
+ 
+-        _, _, action_type, side = DRAFT_STEPS[self.step_idx]
++        if self.draft_mode == "ranked" and self.ranked_ban_side is not None:
++            if self.ranked_ban_side == 0:
++                b_b.append(hero_idx)
++            else:
++                r_b.append(hero_idx)
++            return DraftSearchState(
++                blue_picks=tuple(b_p),
++                red_picks=tuple(r_p),
++                blue_bans=tuple(b_b),
++                red_bans=tuple(r_b),
++                global_bans=self.global_bans,
++                blue_global_bans=self.blue_global_bans,
++                red_global_bans=self.red_global_bans,
++                series_winning_heroes=self.series_winning_heroes,
++                blue_pick_lanes=self.blue_pick_lanes,
++                red_pick_lanes=self.red_pick_lanes,
++                step_idx=0,
++                league=self.league,
++                draft_mode=self.draft_mode,
++                ranked_ban_side=None,
++            )
++
++        _, _, action_type, side = self._steps[self.step_idx]
+ 
+         if side == 0:  # Blue
+             if action_type == 1:
+@@ -275,6 +397,8 @@
+             red_pick_lanes=self.red_pick_lanes,
+             step_idx=self.step_idx + 1,
+             league=self.league,
++            draft_mode=self.draft_mode,
++            ranked_ban_side=None,
+         )
+ 
+ 
+@@ -295,7 +419,14 @@
+             ally_picks, enemy_picks, ally_bans, enemy_bans = s.red_picks, s.blue_picks, s.red_bans, s.blue_bans
+             side_gb = s.blue_global_bans if s.action_type == 0 else s.red_global_bans
+         effective_gb = tuple(dict.fromkeys([*s.global_bans, *side_gb]))
+-        model_step = min(s.step_idx, 17)
++        if s.draft_mode == "ranked":
++            if s.ranked_ban_side is not None:
++                model_step = min(len(s.blue_bans) + len(s.red_bans), 7)
++            else:
++                clamped = min(max(s.step_idx, 0), len(RANKED_PICK_MODEL_STEPS) - 1)
++                model_step = RANKED_PICK_MODEL_STEPS[clamped]
++        else:
++            model_step = min(s.step_idx, 17)
+         meta = (
+             model_step / 17.0,
+             float(s.phase == 2),
+@@ -315,6 +446,7 @@
+             meta,
+             s.action_type,
+             s.phase,
++            s.draft_mode,
+         )
+ 
+     def evaluate_batch(self, states: list[DraftSearchState]) -> tuple[torch.Tensor, torch.Tensor]:
+@@ -339,6 +471,7 @@
+         r_picks_len: int,
+         b_bans_len: int,
+         r_bans_len: int,
++        draft_mode: str = "tournament",
+     ) -> int:
+         """Find the exact step index matching current draft configuration.
+ 
+@@ -346,6 +479,20 @@
+         phase, action_type, side_val, and pick counts first so pick queries never
+         collapse onto Ban steps 0/1.
+         """
++        if draft_mode == "ranked":
++            if act_type == 0:
++                return min(b_bans_len + r_bans_len, 7)
++            total_picks = b_picks_len + r_picks_len
++            if 0 <= total_picks < len(RANKED_PICK_STEPS) and RANKED_PICK_STEPS[total_picks][3] == side_val:
++                return total_picks
++            ranked_cands = [row for row in RANKED_PICK_STEPS if row[1] == phase and row[3] == side_val]
++            if not ranked_cands:
++                ranked_cands = [row for row in RANKED_PICK_STEPS if row[3] == side_val]
++            return min(
++                ranked_cands,
++                key=lambda row: (abs(row[0] - total_picks), row[0]),
++            )[0]
++
+         key = (phase, act_type, side_val, b_picks_len, r_picks_len, b_bans_len, r_bans_len)
+         if key in _STEP_LOOKUP:
+             return _STEP_LOOKUP[key]
+diff --git a/tests/test_api.py b/tests/test_api.py
+--- a/tests/test_api.py
++++ b/tests/test_api.py
+@@ -658,6 +658,70 @@
+             assert lane_recs[0]["probability_pct"] > 0.0
+ 
+ 
++def test_ranked_10_ban_mode_api_and_validation():
++    ten_bans_blue = ["Rouie", "Billow", "Dolia", "Toro", "Aoi"]
++    ten_bans_red = ["TeeMee", "Marja", "Heino", "Goverra", "Keera"]
++
++    # 1. Tournament mode still rejects >4 bans per side
++    bad_tourney = client.post(
++        "/predict",
++        json={
++            "draft_mode": "tournament",
++            "mode": "pick",
++            "side": "blue",
++            "phase": 1,
++            "ally_bans": ten_bans_blue,
++            "enemy_bans": ten_bans_red,
++        },
++    )
++    assert bad_tourney.status_code == 422
++
++    # 2. Ranked mode accepts 5+5=10 upfront bans and runs pick phase + lookahead cleanly
++    ranked_pick = client.post(
++        "/predict",
++        json={
++            "draft_mode": "ranked",
++            "mode": "pick",
++            "side": "blue",
++            "phase": 1,
++            "ally_picks": [],
++            "enemy_picks": [],
++            "ally_bans": ten_bans_blue,
++            "enemy_bans": ten_bans_red,
++            "top_k": 5,
++            "use_lookahead": True,
++            "lookahead_depth": 2,
++        },
++    )
++    assert ranked_pick.status_code == 200
++    data = ranked_pick.json()
++    assert len(data["recommendations"]) == 5
++    banned_set = set(ten_bans_blue + ten_bans_red)
++    for rec in data["recommendations"]:
++        assert rec["hero_name"] not in banned_set
++        assert rec["lookahead_win_rate_pct"] is not None
++    assert data["blue_next_bans"] == []
++    assert data["red_next_bans"] == []
++
++    # 3. Completed 5v5 ranked board (10 bans + 10 picks) evaluates cleanly
++    ranked_done = client.post(
++        "/predict",
++        json={
++            "draft_mode": "ranked",
++            "mode": "pick",
++            "side": "blue",
++            "phase": 2,
++            "ally_picks": ["Yena", "Nakroth", "Liliana", "Hayate", "Thane"],
++            "enemy_picks": ["Florentino", "Murad", "Krixi", "Capheny", "Lumburr"],
++            "ally_bans": ten_bans_blue,
++            "enemy_bans": ten_bans_red,
++            "top_k": 1,
++        },
++    )
++    assert ranked_done.status_code == 200
++    assert 0.0 <= ranked_done.json()["recommendations"][0]["predicted_win_rate_pct"] <= 100.0
++
++
+ def test_predict_matrix_forecasts_and_series_winner_parity():
+     from src.api import predictor
+     from src.schemas import DraftStateRequest
+diff --git a/tests/test_rl_search.py b/tests/test_rl_search.py
+--- a/tests/test_rl_search.py
++++ b/tests/test_rl_search.py
+@@ -121,3 +121,51 @@
+     for rec in data["recommendations"]:
+         assert rec["lookahead_win_rate_pct"] is not None
+         assert rec["hero_name"] != "Rouie"
++
++
++def test_ranked_10_ban_search_transitions_and_sequence():
++    from src.search.draft_mcts import MAX_HISTORY_LEN, RANKED_PICK_STEPS, ModelInput, sequence_events
++
++    assert len(RANKED_PICK_STEPS) == 10
++    # Verify 1-2-2-2-2-1 pick order: B, R, R, B, B, R, R, B, B, R
++    assert [row[3] for row in RANKED_PICK_STEPS] == [0, 1, 1, 0, 0, 1, 1, 0, 0, 1]
++
++    ban_state = DraftSearchState(
++        blue_bans=(1, 2, 3, 4),
++        red_bans=(5, 6, 7, 8, 9),
++        draft_mode="ranked",
++        ranked_ban_side=0,
++    )
++    assert ban_state.action_type == 0
++    assert not ban_state.is_terminal
++    after_ban = ban_state.transition(10)
++    assert after_ban.blue_bans == (1, 2, 3, 4, 10)
++    assert after_ban.ranked_ban_side is None
++    assert after_ban.step_idx == 0
++    assert after_ban.action_type == 1
++    assert after_ban.acting_side == 0  # Blue Pick 1
++
++    # Walk all 10 ranked picks and confirm sequence_events preserves all 9 prior picks within MAX_HISTORY_LEN=17
++    cur = after_ban
++    for h_id in range(20, 29):
++        cur = cur.transition(h_id)
++    assert cur.step_idx == 9
++    assert cur.is_last_step
++    assert cur.acting_side == 1  # Red Pick 5
++
++    inp = ModelInput(
++        ally_picks=cur.red_picks,
++        enemy_picks=cur.blue_picks,
++        ally_bans=cur.red_bans,
++        enemy_bans=cur.blue_bans,
++        global_bans=(),
++        meta=(1.0, 1.0, 1.0, 1.0, 1.0, 0.8, 1.0),
++        act_type=1,
++        phase=2,
++        draft_mode="ranked",
++    )
++    events = sequence_events(inp)
++    assert len(events) == MAX_HISTORY_LEN
++    assert all(0 <= step <= 17 for _, _, step in events)
++    pick_hero_ids = {h for h, t, _ in events if t in (1, 2)}
++    assert pick_hero_ids == set(range(20, 29))

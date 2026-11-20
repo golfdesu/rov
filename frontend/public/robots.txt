@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+Allow: /privacy
+Disallow: /auth/
+Disallow: /predict
+Disallow: /draft/
+Disallow: /combat/
+Disallow: /health
+Disallow: /docs
+Disallow: /redoc
+Disallow: /openapi.json
+Disallow: /heroes-media/
+Disallow: /items-media/
+
+Sitemap: https://minidraft.app/sitemap.xml

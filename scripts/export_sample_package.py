@@ -3,7 +3,7 @@
 Generates a customer-facing preview workbook (`RoV_Pro_Draft_Sample_2026.xlsx`) designed for:
 1. Direct Google Sheets viewing (shareable 'Anyone with link can view').
 2. Microsoft Excel evaluation with 100% live, interactive native Excel formulas.
-3. Selective disclosure: First 50 matches (out of 1,810), Top 20 heroes (out of 130),
+3. Selective disclosure: First 50 matches, Top 20 heroes (out of 130),
    Top 30 synergies & counters (out of 300) with premium lock banners directing to the full package (2,000 THB).
 """
 
@@ -40,6 +40,32 @@ def build_sample_workbook(
 
     # 1. Load full dataframes
     df_sum, df_heroes, df_drafts, df_syn, df_cnt, df_lane = build_dataframes()
+    total_games = len(df_drafts)
+    locked_games = max(total_games - 50, 0)
+    pb_cols = [
+        "Blue_Ban_1",
+        "Red_Ban_1",
+        "Blue_Ban_2",
+        "Red_Ban_2",
+        "B1_Pick",
+        "R1_Pick",
+        "R2_Pick",
+        "B2_Pick",
+        "B3_Pick",
+        "R3_Pick",
+        "Red_Ban_3",
+        "Blue_Ban_3",
+        "Red_Ban_4",
+        "Blue_Ban_4",
+        "R4_Pick",
+        "B4_Pick",
+        "B5_Pick",
+        "R5_Pick",
+    ]
+    evita_hits = df_drafts[pb_cols].eq("Evita").any(axis=1)
+    evita_eligible = int(total_games - evita_hits.idxmax()) if evita_hits.any() else total_games
+    p1_p2_months = {"January", "February", "March", "April", "May", "June", "July", "August"}
+    volkath_eligible = int(df_drafts["Date"].astype(str).str.split().str[0].isin(p1_p2_months).sum())
 
     # 2. Slice datasets for sample preview
     df_drafts_sample = df_drafts.iloc[:50].copy()
@@ -70,30 +96,34 @@ def build_sample_workbook(
     # Sheet 1: Executive_Summary
     # -------------------------------------------------------------
     ws_sum = wb["Executive_Summary"]
-    ws_sum.cell(row=6, column=3, value="=SUM(C2:C5)")
-    ws_sum.cell(row=6, column=4, value="=SUM(D2:D5)")
-    ws_sum.cell(row=6, column=5, value="=SUM(E2:E5)")
-    ws_sum.cell(row=6, column=6, value="=D6/C6")
-    ws_sum.cell(row=6, column=7, value="=E6/C6")
-    ws_sum.cell(row=6, column=8, value="=SUM(C2:C5)/C6")
+    total_summary_row = ws_sum.max_row
+    last_league_row = total_summary_row - 1
+    ws_sum.cell(row=total_summary_row, column=3, value=f"=SUM(C2:C{last_league_row})")
+    ws_sum.cell(row=total_summary_row, column=4, value=f"=SUM(D2:D{last_league_row})")
+    ws_sum.cell(row=total_summary_row, column=5, value=f"=SUM(E2:E{last_league_row})")
+    ws_sum.cell(row=total_summary_row, column=6, value=f"=D{total_summary_row}/C{total_summary_row}")
+    ws_sum.cell(row=total_summary_row, column=7, value=f"=E{total_summary_row}/C{total_summary_row}")
+    ws_sum.cell(row=total_summary_row, column=8, value=f"=SUM(C2:C{last_league_row})/C{total_summary_row}")
 
-    banner_cell = ws_sum.cell(row=8, column=1)
+    banner_row = total_summary_row + 2
+    banner_cell = ws_sum.cell(row=banner_row, column=1)
     banner_cell.value = (
         "SAMPLE PREVIEW - RoV Pro Draft Intelligence 2026 | "
-        "Full Master Package includes 1,810 Pro Matches, 130 Heroes, 600 Synergies/Counters | Price: 2,000 THB"
+        f"Full Master Package includes {total_games:,} Pro Matches, 130 Heroes, 600 Synergies/Counters | Price: 2,000 THB"
     )
-    ws_sum.merge_cells("A8:H8")
+    ws_sum.merge_cells(f"A{banner_row}:H{banner_row}")
     banner_cell.fill = banner_fill
     banner_cell.font = banner_font
     banner_cell.alignment = Alignment(horizontal="center", vertical="center")
-    ws_sum.row_dimensions[8].height = 24
+    ws_sum.row_dimensions[banner_row].height = 24
 
-    notice_cell = ws_sum.cell(row=10, column=1)
+    notice_row = total_summary_row + 4
+    notice_cell = ws_sum.cell(row=notice_row, column=1)
     notice_cell.value = (
         "Preview Edition: First 50 Pro Matches, Top 20 Heroes, Top 30 Synergies & Counters included with full dynamic formulas. "
         "Contact to unlock the complete master dataset."
     )
-    ws_sum.merge_cells("A10:H10")
+    ws_sum.merge_cells(f"A{notice_row}:H{notice_row}")
     notice_cell.font = Font(name="Calibri", size=10, italic=True, color="475569")
     notice_cell.alignment = Alignment(horizontal="center", vertical="center")
 
@@ -126,16 +156,16 @@ def build_sample_workbook(
             column=4,
             value=f'=IF(B{r}="Volkath", "🔒 Disabled", IF(I{r}-L{r}>=0.1, "▲ Rising", IF(I{r}-L{r}<=-0.1, "▼ Falling", "● Stable")))',
         )
-        ws_hero.cell(row=r, column=11, value=f"=(P{r}+Q{r})/Executive_Summary!$C$6")
+        ws_hero.cell(row=r, column=11, value=f"=(P{r}+Q{r})/Executive_Summary!$C${total_summary_row}")
         ws_hero.cell(
             row=r,
             column=14,
-            value=f'=IF(B{r}="Evita", P{r}/71, IF(B{r}="Volkath", P{r}/1097, P{r}/Executive_Summary!$C$6))',
+            value=f'=IF(B{r}="Evita", P{r}/{evita_eligible}, IF(B{r}="Volkath", P{r}/{volkath_eligible}, P{r}/Executive_Summary!$C${total_summary_row}))',
         )
         ws_hero.cell(
             row=r,
             column=15,
-            value=f'=IF(B{r}="Evita", Q{r}/71, IF(B{r}="Volkath", Q{r}/1097, Q{r}/Executive_Summary!$C$6))',
+            value=f'=IF(B{r}="Evita", Q{r}/{evita_eligible}, IF(B{r}="Volkath", Q{r}/{volkath_eligible}, Q{r}/Executive_Summary!$C${total_summary_row}))',
         )
         ws_hero.cell(row=r, column=17, value=f"=R{r}+S{r}")
         ws_hero.cell(row=r, column=21, value=f"=P{r}-T{r}")
@@ -199,7 +229,7 @@ def build_sample_workbook(
     ws_draft.cell(
         row=52,
         column=1,
-        value="🔒 SAMPLE PREVIEW: Matches 51 to 1,810 (1,760 Pro Matches) are locked. Purchase the Full Master Package (2,000 THB) for the complete 1,810-game true pick order dataset.",
+        value=f"🔒 SAMPLE PREVIEW: Matches 51 to {total_games:,} ({locked_games:,} Pro Matches) are locked. Purchase the Full Master Package (2,000 THB) for the complete {total_games:,}-game true pick order dataset.",
     )
     ws_draft.merge_cells("A52:AQ52")
     ws_draft.cell(row=52, column=1).fill = banner_fill
@@ -232,7 +262,7 @@ def build_sample_workbook(
             column=13,
             value=(
                 f"=E{r}/MAX(0.0001, (VLOOKUP(B{r}, Hero_Tier_List_2026!$B$2:$P$132, 15, FALSE)*"
-                f"VLOOKUP(C{r}, Hero_Tier_List_2026!$B$2:$P$132, 15, FALSE))/(2*Executive_Summary!$C$6))"
+                f"VLOOKUP(C{r}, Hero_Tier_List_2026!$B$2:$P$132, 15, FALSE))/(2*Executive_Summary!$C${total_summary_row}))"
             ),
         )
 

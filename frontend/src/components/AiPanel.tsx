@@ -35,7 +35,7 @@ function Sparkline({ values }: { values: number[] }) {
   if (pts.length < 2) return null;
   const w = 240;
   const h = 36;
-  const maxStep = Math.max(17, ...pts.map(([i]) => i));
+  const maxStep = Math.max(9, ...pts.map(([i]) => i));
   const x = (i: number) => (i / maxStep) * w;
   const y = (v: number) => h - ((v - 30) / 40) * h;
   const d = pts.map(([i, v], k) => `${k ? "L" : "M"}${x(i).toFixed(1)},${y(Math.min(Math.max(v, 30), 70)).toFixed(1)}`);

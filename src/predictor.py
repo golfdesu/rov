@@ -14,7 +14,13 @@ from src.schemas import (
     DraftStateRequest,
     HeroRecommendation,
 )
-from src.search.draft_mcts import DraftMinimaxSearch, DraftSearchState, ModelInput, encode_batch, run_model
+from src.search.draft_mcts import (
+    DraftMinimaxSearch,
+    DraftSearchState,
+    ModelInput,
+    encode_batch,
+    run_model,
+)
 from src.train_sota_model import RoVDraftGNNTransformer, get_league_vector
 
 LANE_LABELS = [
@@ -357,9 +363,9 @@ class RoVDraftPredictor:
         """Encodes one draft position from the acting team's point of view."""
         if step_idx is None:
             step_idx = len(ally_picks) + len(enemy_picks) + len(ally_bans) + len(enemy_bans)
-        step_idx = min(step_idx, 17)
+        model_step = min(step_idx, 17)
         meta = (
-            step_idx / 17.0,
+            model_step / 17.0,
             float(phase == 2),
             float(is_pick),
             float(is_red),
@@ -454,7 +460,7 @@ class RoVDraftPredictor:
     @staticmethod
     def _next_pick_slots(team: TeamDraft, max_slots: int) -> int:
         """Picks to forecast; starts once the team has acted (Ban 1) and stops at 5 picks."""
-        if (not team.picks and not team.bans) or len(team.picks) >= 5:
+        if len(team.picks) >= 5 or (not team.picks and not team.bans):
             return 0
         return min(max_slots, 5 - len(team.picks))
 
@@ -466,7 +472,11 @@ class RoVDraftPredictor:
         return min(max_slots, 4 - len(team.bans))
 
     def _next_pick_input(
-        self, team: TeamDraft, sim_picks: list[str], global_bans: list[str], league: str = "GLOBAL"
+        self,
+        team: TeamDraft,
+        sim_picks: list[str],
+        global_bans: list[str],
+        league: str = "GLOBAL",
     ) -> ModelInput:
         return self._model_input(
             sim_picks,
@@ -480,7 +490,12 @@ class RoVDraftPredictor:
             league=league,
         )
 
-    def _next_ban_input(self, team: TeamDraft, global_bans: list[str], league: str = "GLOBAL") -> ModelInput:
+    def _next_ban_input(
+        self,
+        team: TeamDraft,
+        global_bans: list[str],
+        league: str = "GLOBAL",
+    ) -> ModelInput:
         return self._model_input(
             team.picks,
             team.opp_picks,
@@ -962,7 +977,13 @@ class RoVDraftPredictor:
         ]
 
         step_idx = self.search_engine.find_matching_step(
-            side_val, act_type, req.phase, len(blue_picks), len(red_picks), len(blue_bans), len(red_bans)
+            side_val,
+            act_type,
+            req.phase,
+            len(blue_picks),
+            len(red_picks),
+            len(blue_bans),
+            len(red_bans),
         )
         main_input = self._model_input(
             ally_picks,
@@ -986,7 +1007,7 @@ class RoVDraftPredictor:
         )
         ap_row, ep_row, unavail_row = arrays[0][0], arrays[1][0], arrays[4][0]
 
-        # Completed 5v5 board (Step 18): evaluate exact 5v5 win rate at Step 17 (Red Pick 5)
+        # Completed 5v5 board: evaluate exact 5v5 win rate at the final Red Pick 5 turn
         # so the 10th picked hero is never truncated by MAX_HISTORY_LEN = 17.
         if len(blue_picks) == 5 and len(red_picks) == 5:
             step17_input = self._model_input(
@@ -1062,7 +1083,13 @@ class RoVDraftPredictor:
             r_b = tuple(ids[h] for h in red_bans)
 
             step_idx = self.search_engine.find_matching_step(
-                side_val, act_type, req.phase, len(b_p), len(r_p), len(b_b), len(r_b)
+                side_val,
+                act_type,
+                req.phase,
+                len(b_p),
+                len(r_p),
+                len(b_b),
+                len(r_b),
             )
             root_state = DraftSearchState(
                 blue_picks=b_p,

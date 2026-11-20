@@ -9,14 +9,16 @@ interface DraftTimelineProps {
 }
 
 export function DraftTimeline({ stepHeroes, currentStepIndex, heroMap }: DraftTimelineProps) {
+  const steps = CANONICAL_DRAFT_STEPS;
+  const phaseBreakIdx = 10;
   return (
     <div className="flex items-stretch gap-1 overflow-x-auto pb-1 xl:justify-center">
-      {CANONICAL_DRAFT_STEPS.map((step, i) => {
+      {steps.map((step, i) => {
         const hero = stepHeroes[i];
         const isCurrent = i === currentStepIndex;
         const isBan = step.action === "ban";
         const sideColor = step.side === "blue" ? "bg-blue" : "bg-red";
-        const phaseBreak = i === 10;
+        const phaseBreak = i === phaseBreakIdx;
 
         return (
           <div key={step.step} className={`flex items-stretch ${phaseBreak ? "ml-2 border-l border-line pl-3" : ""}`}>

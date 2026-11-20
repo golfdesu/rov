@@ -158,6 +158,8 @@ function formatScaling(scaling?: Record<string, ScalingValue>, skillLevel = 1): 
   return list;
 }
 
+const heroScreenshotsCache = new Map<string, HeroScreenshotsResponse>();
+
 export function HeroSkillsModal({
   hero,
   skills,
@@ -172,7 +174,9 @@ export function HeroSkillsModal({
   const [prevHero, setPrevHero] = useState<string>(hero);
   const [selectedSlot, setSelectedSlot] = useState<string>(skills[0]?.slot ?? "Passive");
   const [viewMode, setViewMode] = useState<ViewMode>("ingame");
-  const [screenshotsData, setScreenshotsData] = useState<HeroScreenshotsResponse | null>(null);
+  const [screenshotsData, setScreenshotsData] = useState<HeroScreenshotsResponse | null>(
+    () => heroScreenshotsCache.get(hero) ?? null,
+  );
   const [selectedScreenshotIdx, setSelectedScreenshotIdx] = useState<number>(0);
   const [failedIcons, setFailedIcons] = useState<Record<string, boolean>>({});
 
@@ -180,22 +184,27 @@ export function HeroSkillsModal({
     setPrevHero(hero);
     setSelectedSlot(skills[0]?.slot ?? "Passive");
     setSelectedScreenshotIdx(0);
+    setScreenshotsData(heroScreenshotsCache.get(hero) ?? null);
   }
 
   const titleId = useId();
 
-  // Load screenshots from API
+  // Load screenshots from API (cached in memory per hero)
   useEffect(() => {
-    let cancelled = false;
-    getJson<HeroScreenshotsResponse>(`/combat/hero-screenshots/${encodeURIComponent(hero)}`)
+    if (heroScreenshotsCache.has(hero)) return;
+    const ctrl = new AbortController();
+    getJson<HeroScreenshotsResponse>(`/combat/hero-screenshots/${encodeURIComponent(hero)}`, ctrl.signal)
       .then((data) => {
-        if (!cancelled) setScreenshotsData(data);
+        if (!ctrl.signal.aborted) {
+          heroScreenshotsCache.set(hero, data);
+          setScreenshotsData(data);
+        }
       })
       .catch(() => {
-        if (!cancelled) setScreenshotsData(null);
+        if (!ctrl.signal.aborted) setScreenshotsData(null);
       });
     return () => {
-      cancelled = true;
+      ctrl.abort();
     };
   }, [hero]);
 

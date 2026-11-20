@@ -137,7 +137,23 @@ def test_ban_pick_bidirectional_intelligence():
 def test_web_ui_served():
     response = client.get("/")
     assert response.status_code == 200
-    assert "<title>MiniDraft</title>" in response.text
+    assert "<title>MiniDraft" in response.text
+    assert 'property="og:title"' in response.text
+    assert 'rel="canonical"' in response.text
+
+
+def test_seo_robots_and_sitemap_served():
+    robots = client.get("/robots.txt")
+    assert robots.status_code == 200
+    assert "text/plain" in robots.headers["content-type"]
+    assert "Sitemap: https://minidraft.app/sitemap.xml" in robots.text
+    assert "Disallow: /auth/" in robots.text
+
+    sitemap = client.get("/sitemap.xml")
+    assert sitemap.status_code == 200
+    assert "xml" in sitemap.headers["content-type"]
+    assert "<loc>https://minidraft.app/</loc>" in sitemap.text
+    assert "<loc>https://minidraft.app/privacy</loc>" in sitemap.text
 
 
 def test_web_static_assets_served():
@@ -1524,3 +1540,133 @@ def test_discord_oauth_flow(tmp_path, monkeypatch):
     assert me2["user"]["id"] == google_user.id
     assert me2["user"]["auth_provider"] == "discord"
     assert state_1 != state_2
+
+
+def test_pricing_survey_endpoint_and_deduplication(tmp_path, monkeypatch):
+    import sqlite3
+
+    import src.api as api_mod
+    from src.config import config
+
+    db_file = tmp_path / "survey_test.db"
+    monkeypatch.setattr(config.paths, "app_db_path", db_file)
+    monkeypatch.setattr(api_mod._survey_rate_limiter, "max_attempts", 50)
+
+    guest = TestClient(app)
+    # Invalid choice or bad client_id rejected
+    assert guest.post("/survey/pricing", json={"choice": "maybe", "client_id": "cid_12345678"}).status_code == 422
+    assert guest.post("/survey/pricing", json={"choice": "willing", "client_id": "bad$id"}).status_code == 422
+
+    # Guest submission persists once per client_id
+    r_guest1 = guest.post("/survey/pricing", json={"choice": "not_willing", "client_id": "cid_guest_001"})
+    assert r_guest1.status_code == 200
+    assert r_guest1.json() == {"recorded": True, "choice": "not_willing"}
+    assert "no-store" in r_guest1.headers.get("cache-control", "").lower()
+
+    r_guest2 = guest.post("/survey/pricing", json={"choice": "willing", "client_id": "cid_guest_001"})
+    assert r_guest2.status_code == 200
+
+    # User A registers, sees pricing_survey_answered=False, then answers using same browser client_id
+    user_a = TestClient(app)
+    reg_a = user_a.post("/auth/register", json={"username": "survey_user_a", "password": "secret-pass-a"})
+    assert reg_a.status_code == 201
+    assert reg_a.json()["pricing_survey_answered"] is False
+    assert reg_a.json()["pricing_survey_choice"] is None
+
+    r_a = user_a.post("/survey/pricing", json={"choice": "willing", "client_id": "cid_guest_001"})
+    assert r_a.status_code == 200
+    me_a = user_a.get("/auth/me").json()
+    assert me_a["pricing_survey_answered"] is True
+    assert me_a["pricing_survey_choice"] == "willing"
+
+    # User B sharing the same browser client_id stores an independent row without IntegrityError
+    user_b = TestClient(app)
+    reg_b = user_b.post("/auth/register", json={"username": "survey_user_b", "password": "secret-pass-b"})
+    assert reg_b.status_code == 201
+    r_b = user_b.post("/survey/pricing", json={"choice": "not_willing", "client_id": "cid_guest_001"})
+    assert r_b.status_code == 200
+    me_b = user_b.get("/auth/me").json()
+    assert me_b["pricing_survey_answered"] is True
+    assert me_b["pricing_survey_choice"] == "not_willing"
+
+    with sqlite3.connect(db_file) as conn:
+        rows = conn.execute(
+            "SELECT user_id, client_id, choice, is_guest FROM pricing_survey_responses ORDER BY id ASC"
+        ).fetchall()
+    assert len(rows) == 2
+    assert rows[0][2] == "willing"
+    assert rows[0][3] == 0
+    assert rows[1][1] is None
+    assert rows[1][2] == "not_willing"
+    assert rows[1][3] == 0
+
+    # Non-admin and Guest receive 404 on /admin/stats and is_admin=False
+    assert guest.get("/admin/stats").status_code == 404
+    assert user_a.get("/admin/stats").status_code == 404
+    assert me_a["is_admin"] is False
+
+    # Owner account (@chayanin5392) receives is_admin=True and 200 on /admin/stats
+    owner = TestClient(app)
+    reg_owner = owner.post("/auth/register", json={"username": "chayanin5392", "password": "owner-secret-pass"})
+    assert reg_owner.status_code == 201
+    assert reg_owner.json()["is_admin"] is True
+    stats_res = owner.get("/admin/stats")
+    assert stats_res.status_code == 200
+    stats_body = stats_res.json()
+    assert stats_body["users"]["total"] == 3
+    assert stats_body["survey"]["total"] == 2
+    assert stats_body["survey"]["willing_total"] == 1
+    assert stats_body["survey"]["not_willing_total"] == 1
+    assert stats_body["survey"]["willing_pct"] == 50.0
+
+
+def test_daily_visit_telemetry_and_retention_stats(tmp_path, monkeypatch):
+    from datetime import datetime, timedelta, timezone
+
+    import src.api as api_mod
+    from src.config import config
+
+    db_file = tmp_path / "retention_test.db"
+    monkeypatch.setattr(config.paths, "app_db_path", db_file)
+    monkeypatch.setattr(api_mod._telemetry_rate_limiter, "max_attempts", 50)
+
+    guest = TestClient(app)
+    assert guest.post("/telemetry/visit", json={"client_id": "bad$id"}).status_code == 422
+
+    # Same client_id visiting twice today counts only once
+    r1 = guest.post("/telemetry/visit", json={"client_id": "cid_today_only"})
+    r2 = guest.post("/telemetry/visit", json={"client_id": "cid_today_only"})
+    assert r1.status_code == 200
+    assert r2.status_code == 200
+    assert r1.json()["recorded"] is True
+    today_str = r1.json()["visit_date"]
+
+    # Seed yesterday's visits: cid_returning came yesterday AND today; cid_one_day came only yesterday
+    tz_th = timezone(timedelta(hours=7))
+    yesterday_str = (datetime.now(tz_th) - timedelta(days=1)).strftime("%Y-%m-%d")
+    db = api_mod.get_user_db()
+    db.record_daily_visit(client_id="cid_returning", user_id=None, visit_date_override=yesterday_str)
+    db.record_daily_visit(client_id="cid_one_day", user_id=None, visit_date_override=yesterday_str)
+
+    owner = TestClient(app)
+    reg = owner.post("/auth/register", json={"username": "chayanin5392", "password": "owner-secret-pass"})
+    assert reg.status_code == 201
+    r_ret = owner.post("/telemetry/visit", json={"client_id": "cid_returning"})
+    assert r_ret.status_code == 200
+
+    stats = owner.get("/admin/stats")
+    assert stats.status_code == 200
+    ret = stats.json()["retention"]
+    assert ret["today_dau"] == 2
+    assert ret["today_new"] == 1
+    assert ret["today_returning"] == 1
+    assert ret["total_tracked_clients"] == 3
+    assert ret["returning_clients"] == 1
+    assert ret["returning_pct"] == 33.3
+    assert ret["d1_eligible"] == 2
+    assert ret["d1_retained"] == 1
+    assert ret["d1_pct"] == 50.0
+    assert len(ret["daily_breakdown"]) == 2
+    assert ret["daily_breakdown"][0]["date"] == today_str
+    assert ret["daily_breakdown"][0]["new"] == 1
+    assert ret["daily_breakdown"][0]["returning"] == 1

@@ -225,7 +225,7 @@ export function GlobalBanModal({
     if (!currentStatus.isUnlocked) {
       const maxUnlocked = getMaxUnlockedGame(normalized, seriesGames);
       if (onSelectGameNumber) {
-        onSelectGameNumber(maxUnlocked, normalized, true);
+        onSelectGameNumber(maxUnlocked, normalized, false);
       } else {
         onChange({ ...normalized, gameNumber: maxUnlocked });
       }
@@ -247,6 +247,8 @@ export function GlobalBanModal({
 
   return (
     <Modal labelledBy={titleId} className="max-w-4xl overflow-hidden" onClose={handleClose}>
+      {(requestClose) => (
+        <>
       {/* Header */}
       <div className="flex shrink-0 items-center justify-between gap-2 border-b border-line px-3 py-2 sm:px-4 sm:py-3">
         <div className="flex min-w-0 items-center gap-2">
@@ -275,7 +277,7 @@ export function GlobalBanModal({
           </button>
           <button
             type="button"
-            onClick={handleClose}
+            onClick={() => requestClose()}
             className="shrink-0 rounded p-1 text-dim transition-colors hover:bg-panel-2 hover:text-ink"
             aria-label="ปิด"
           >
@@ -438,6 +440,16 @@ export function GlobalBanModal({
 
         {/* Active Category Selected Heroes Bar */}
         <div className="shrink-0 border-b border-line bg-panel-2/40 px-3 py-1.5 sm:px-4 sm:py-2.5">
+          {(() => {
+            const unlockStatus = getGameUnlockStatus(globalBans.gameNumber, globalBans, seriesGames);
+            if (globalBans.gameNumber <= 1 || unlockStatus.isUnlocked) return null;
+            const targetGame = getMaxUnlockedGame(globalBans, seriesGames);
+            return (
+              <div className="mb-1.5 border border-gold/50 bg-gold/10 px-2.5 py-1 text-[11px] font-medium text-gold sm:mb-2">
+                จำนวนฮีโร่ไม่ถึงเกณฑ์ Game {globalBans.gameNumber} (ต้องการฝั่งละ {unlockStatus.requiredCount} ตัว) — เมื่อปิดหน้าต่างจะบันทึกกระดานปัจจุบันและย้อนกลับไป Game {targetGame}
+              </div>
+            );
+          })()}
           {limitNotice && (
             <div className="mb-1.5 border border-red/50 bg-red/10 px-2.5 py-1 text-[11px] font-medium text-red sm:mb-2">
               {limitNotice}
@@ -653,12 +665,14 @@ export function GlobalBanModal({
         </div>
         <button
           type="button"
-          onClick={handleClose}
+          onClick={() => requestClose()}
           className="shrink-0 border border-gold bg-gold px-3 py-1.5 font-display text-xs font-bold tracking-wider whitespace-nowrap text-bg transition-colors hover:bg-gold/90 sm:px-4"
         >
           เสร็จสิ้น
         </button>
       </div>
+        </>
+      )}
     </Modal>
   );
 }

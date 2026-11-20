@@ -62,6 +62,8 @@ function ItemIcon({
   );
 }
 
+const itemScreenshotsCache = new Map<string, ItemScreenshotsResponse>();
+
 export function ItemCardModal({
   itemName,
   catalogItems,
@@ -72,8 +74,10 @@ export function ItemCardModal({
   const [prevItem, setPrevItem] = useState(itemName);
   const [currentItem, setCurrentItem] = useState(itemName);
   const [pageIdx, setPageIdx] = useState(0);
-  const [data, setData] = useState<ItemScreenshotsResponse | null>(null);
-  const [fetchedItem, setFetchedItem] = useState<string | null>(null);
+  const [data, setData] = useState<ItemScreenshotsResponse | null>(() => itemScreenshotsCache.get(itemName) ?? null);
+  const [fetchedItem, setFetchedItem] = useState<string | null>(() =>
+    itemScreenshotsCache.has(itemName) ? itemName : null,
+  );
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [search, setSearch] = useState("");
   const [imageError, setImageError] = useState(false);
@@ -86,30 +90,42 @@ export function ItemCardModal({
     setPrevCurrent(itemName);
     setPageIdx(0);
     setImageError(false);
+    const cached = itemScreenshotsCache.get(itemName);
+    if (cached) {
+      setData(cached);
+      setFetchedItem(itemName);
+    }
   } else if (prevCurrent !== currentItem) {
     setPrevCurrent(currentItem);
     setPageIdx(0);
     setImageError(false);
+    const cached = itemScreenshotsCache.get(currentItem);
+    if (cached) {
+      setData(cached);
+      setFetchedItem(currentItem);
+    }
   }
 
-  // Fetch item screenshot and manifest data
+  // Fetch item screenshot and manifest data (cached in memory per item)
   useEffect(() => {
-    let cancelled = false;
-    getJson<ItemScreenshotsResponse>(`/combat/item-screenshots/${encodeURIComponent(currentItem)}`)
+    if (itemScreenshotsCache.has(currentItem)) return;
+    const ctrl = new AbortController();
+    getJson<ItemScreenshotsResponse>(`/combat/item-screenshots/${encodeURIComponent(currentItem)}`, ctrl.signal)
       .then((res) => {
-        if (!cancelled) {
+        if (!ctrl.signal.aborted) {
+          itemScreenshotsCache.set(currentItem, res);
           setData(res);
           setFetchedItem(currentItem);
         }
       })
       .catch(() => {
-        if (!cancelled) {
+        if (!ctrl.signal.aborted) {
           setData(null);
           setFetchedItem(currentItem);
         }
       });
     return () => {
-      cancelled = true;
+      ctrl.abort();
     };
   }, [currentItem]);
 

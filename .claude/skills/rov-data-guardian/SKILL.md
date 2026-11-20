@@ -1,7 +1,7 @@
 ---
 name: rov-data-guardian
 description: >-
-  Audits, validates, and updates the 130 RoV hero skill database, the 4,347 professional
+  Audits, validates, and updates the 130 RoV hero skill database, the 4,352 professional
   tournament draft records, and the screenshot-verified true pick order dataset. Use this
   skill whenever inspecting data integrity, adding a new RoV hero (131st+), scraping new
   tournament matches from Liquipedia, rebuilding synergy/counter graph matrices, or editing
@@ -42,11 +42,11 @@ It checks:
    - Normalize Liquipedia aliases (`"Richter" -> "Riktor"`, `"Arthur" -> "Mortos"`, `"Brunhilda" -> "Celica"`, `"Diaochan" -> "Diao Chan"`) so there are **0 unmapped hero names**.
    - Thai server names (`Mortos`, `Celica`, `Riktor`) are the canonical default across `data/`, the model checkpoint, and the web UI.
 4. **Training Dataset vs. Match Archive (2024 Exclusion)**:
-   - `data/matches_draft_full.json` (4,347 games) is the historical archival repository covering 2024–2026.
-   - `data/matches_training.json` is the **curated training dataset** containing **3,530 games strictly from 2025–2026**.
+   - `data/matches_draft_full.json` (4,352 games) is the historical archival repository covering 2024–2026.
+   - `data/matches_training.json` is the **curated training dataset** containing **3,535 games strictly from 2025–2026**.
    - All 817 games from 2024 are excluded to prevent legacy meta noise and obsolete pick habits from polluting the SOTA model.
    - Includes all 1,810 games from 2026 with 100% verified true pick order.
-   - True Pick Order coverage is 51.8% (1,828 / 3,530 games).
+   - True Pick Order coverage is 51.9% (1,833 / 3,535 games).
    - Rebuild tool: `python src/build_training_dataset.py --min-year 2025`.
 5. **In-Game Screenshot Provenance (Owner Ground Truth Hierarchy)**:
    - All numerical level-scaling attributes (Lv. 1 to Lv. 15 in `data/hero_level_stats.json`, `data/hero_status_lv1.json`, `data/hero_status_lv15.json`), 534 structured hero skills with cooldowns and scalings (`data/hero_skills_full.json`), and 114 item cards (`data/items.json`) derive their definitive ground truth directly from **the project owner's manual in-game screenshots** (`heroes/*/skill/` 566 images, `heroes/*/status/` 268 images, `item/*/` 159 images).

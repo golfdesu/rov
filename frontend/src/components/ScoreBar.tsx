@@ -1,5 +1,7 @@
-import { Globe, Redo2, RotateCcw, Sparkles, Undo2 } from "lucide-react";
-import { useState } from "react";
+import { Globe, Pause, Play, Redo2, RotateCcw, Sparkles, Timer, TimerReset, Undo2, Volume2, VolumeX, X, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { isLocalTestHost, TIMER_PRESETS, type TimerPresetId } from "../hooks/useDraftTimer";
 import { type DraftStep, type LeagueCode } from "../types/draft";
 import { ConfirmDialog } from "./ConfirmDialog";
 
@@ -31,6 +33,26 @@ const LEAGUE_OPTIONS: { code: LeagueCode; label: string; title: string }[] = [
   },
 ];
 
+export interface DraftTimerControlProps {
+  enabled: boolean;
+  preset: TimerPresetId;
+  soundEnabled: boolean;
+  autoLock: boolean;
+  paused: boolean;
+  secondsLeft: number;
+  totalSeconds: number;
+  isWarning: boolean;
+  isCritical: boolean;
+  isExpired: boolean;
+  onToggleEnabled: () => void;
+  onSetEnabled: (enabled: boolean) => void;
+  onTogglePaused: () => void;
+  onResetTurn: () => void;
+  onSetPreset: (preset: TimerPresetId) => void;
+  onToggleSound: () => void;
+  onToggleAutoLock: () => void;
+}
+
 interface ScoreBarProps {
   blueWinRate: number;
   isLoading: boolean;
@@ -41,11 +63,19 @@ interface ScoreBarProps {
   setLeague?: (v: LeagueCode) => void;
   useLookahead?: boolean;
   onToggleLookahead?: () => void;
+  timer?: DraftTimerControlProps;
   onUndo: () => void;
   onRedo?: () => void;
   onReset: () => void;
   canUndo: boolean;
   canRedo?: boolean;
+}
+
+function formatClock(totalSec: number): string {
+  const safe = Math.max(0, Math.floor(totalSec));
+  const m = Math.floor(safe / 60);
+  const s = safe % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
 }
 
 export function ScoreBar({
@@ -58,6 +88,7 @@ export function ScoreBar({
   setLeague,
   useLookahead = false,
   onToggleLookahead,
+  timer,
   onUndo,
   onRedo,
   onReset,
@@ -65,61 +96,232 @@ export function ScoreBar({
   canRedo = false,
 }: ScoreBarProps) {
   const [confirmResetOpen, setConfirmResetOpen] = useState(false);
+  const [timerSettingsOpen, setTimerSettingsOpen] = useState(false);
+
+  useEffect(() => {
+    if (!timerSettingsOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setTimerSettingsOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [timerSettingsOpen]);
+
   const safeBlue = Number.isFinite(blueWinRate) ? blueWinRate : 50.0;
   const blue = Math.min(Math.max(safeBlue, 0), 100);
   const red = 100 - blue;
   const blueAhead = blue >= 50;
 
-  const winBarComponent = (
-    <div className="flex min-w-0 flex-1 items-center gap-1.5 sm:gap-2.5">
-      <div className="shrink-0 text-right leading-none">
-        <span className="mr-1.5 hidden font-display text-[10px] font-semibold tracking-widest text-blue sm:inline">
-          BLUE
-        </span>
-        <span
-          className={`font-mono text-sm font-bold tabular-nums sm:text-lg lg:text-xl xl:text-2xl ${
-            blueAhead ? "text-blue" : "text-muted"
-          }`}
-        >
-          {blue.toFixed(1)}
-          <span className="text-[10px] text-dim sm:text-xs">%</span>
-        </span>
-      </div>
+  const showCenterTimer = Boolean(timer?.enabled);
+  const timerPct =
+    timer && timer.totalSeconds > 0
+      ? Math.max(0, Math.min(100, (timer.secondsLeft / timer.totalSeconds) * 100))
+      : 0;
 
-      <div className="relative h-2.5 min-w-[56px] flex-1 overflow-hidden bg-panel-2 sm:h-3">
-        <div
-          className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-deep to-blue transition-[width] duration-700 ease-out"
-          style={{ width: `${blue}%` }}
-        />
-        <div
-          className="absolute inset-y-0 right-0 bg-gradient-to-l from-red-deep to-red transition-[width] duration-700 ease-out"
-          style={{ width: `${red}%` }}
-        />
-        <div className="absolute inset-y-[-2px] left-1/2 w-px bg-ink/40" />
-        {isLoading && <div className="absolute inset-0 animate-pulse bg-ink/10" />}
-      </div>
+  const clockTextTone = !currentStep
+    ? "text-dim"
+    : timer?.isExpired
+      ? "text-red animate-pulse drop-shadow-[0_0_8px_rgba(255,77,94,0.65)]"
+      : timer?.isCritical
+        ? "text-red drop-shadow-[0_0_8px_rgba(255,77,94,0.55)]"
+        : timer?.isWarning
+          ? "text-gold drop-shadow-[0_0_8px_rgba(245,196,81,0.45)]"
+          : "text-ink group-hover:text-gold";
 
-      <div className="shrink-0 leading-none">
-        <span
-          className={`font-mono text-sm font-bold tabular-nums sm:text-lg lg:text-xl xl:text-2xl ${
-            !blueAhead ? "text-red" : "text-muted"
-          }`}
+  const progressTone = !currentStep
+    ? "bg-dim/30"
+    : timer?.isExpired || timer?.isCritical
+      ? "bg-red shadow-[0_0_6px_rgba(255,77,94,0.7)]"
+      : timer?.isWarning
+        ? "bg-gold shadow-[0_0_6px_rgba(245,196,81,0.6)]"
+        : currentStep.side === "blue"
+          ? "bg-blue shadow-[0_0_6px_rgba(59,158,255,0.6)]"
+          : "bg-red shadow-[0_0_6px_rgba(255,77,94,0.6)]";
+
+  const renderTimerControls = (mobileCompact: boolean) => {
+    if (!timer) return null;
+    const btnH = mobileCompact ? "h-7" : "h-8 sm:h-8.5";
+    const iconBtn = mobileCompact ? "h-7 w-7" : "h-8 w-8 sm:h-8.5 sm:w-8.5";
+
+    if (!timer.enabled) {
+      return (
+        <button
+          type="button"
+          onClick={() => timer.onSetEnabled(true)}
+          title="เปิดระบบจับเวลาต่อเทิร์น (Turn Timer)"
+          aria-label="เปิดจับเวลาดราฟต์"
+          className={`inline-flex ${btnH} min-w-7 shrink-0 items-center justify-center gap-1 border border-line-strong bg-panel px-2 font-mono text-[10.5px] font-bold text-muted transition-colors hover:border-gold/60 hover:text-gold sm:text-[11px]`}
         >
-          {red.toFixed(1)}
-          <span className="text-[10px] text-dim sm:text-xs">%</span>
-        </span>
-        <span className="ml-1.5 hidden font-display text-[10px] font-semibold tracking-widest text-red sm:inline">
-          RED
-        </span>
+          <Timer className="h-3.5 w-3.5 shrink-0 text-gold" />
+          <span>{mobileCompact ? "เวลา" : "จับเวลา"}</span>
+        </button>
+      );
+    }
+
+    return (
+      <div className="flex shrink-0 items-center gap-1">
+        {currentStep && !timer.isExpired && (
+          <button
+            type="button"
+            onClick={timer.onTogglePaused}
+            title={timer.paused ? "นับเวลาต่อ" : "หยุดเวลาชั่วคราว"}
+            aria-label={timer.paused ? "นับเวลาต่อ" : "หยุดเวลาชั่วคราว"}
+            className={`inline-flex ${iconBtn} shrink-0 items-center justify-center border border-line-strong bg-panel text-ink transition-colors hover:border-gold/60 hover:text-gold`}
+          >
+            {timer.paused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
+          </button>
+        )}
+
+        {!mobileCompact && currentStep && (
+          <button
+            type="button"
+            onClick={timer.onResetTurn}
+            title="รีเซ็ตเวลาของเทิร์นนี้ใหม่"
+            aria-label="รีเซ็ตเวลาเทิร์น"
+            className={`inline-flex ${iconBtn} shrink-0 items-center justify-center border border-line-strong bg-panel text-muted transition-colors hover:border-gold/60 hover:text-ink`}
+          >
+            <TimerReset className="h-3.5 w-3.5" />
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={() => timer.onSetEnabled(false)}
+          title="ปิดตัวจับเวลา"
+          aria-label="ปิดตัวจับเวลา"
+          className={`inline-flex ${iconBtn} shrink-0 items-center justify-center border border-line-strong bg-panel text-dim transition-colors hover:border-red/60 hover:text-red`}
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
       </div>
+    );
+  };
+
+  const continuousWinBar = (compactHeight: boolean) => (
+    <div
+      className={`relative w-full overflow-hidden bg-panel-2 ${
+        compactHeight ? "h-1.5 sm:h-2" : "h-2.5 min-w-[40px] flex-1 sm:h-3 sm:min-w-[56px]"
+      }`}
+    >
+      <div
+        className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-deep to-blue transition-[width] duration-700 ease-out"
+        style={{ width: `${blue}%` }}
+      />
+      <div
+        className="absolute inset-y-0 right-0 bg-gradient-to-l from-red-deep to-red transition-[width] duration-700 ease-out"
+        style={{ width: `${red}%` }}
+      />
+      {isLoading && <div className="absolute inset-0 animate-pulse bg-ink/10" />}
     </div>
   );
+
+  const winBarComponent =
+    showCenterTimer && timer ? (
+      <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
+          {/* Left: BLUE % */}
+          <div className="justify-self-start leading-none">
+            <span className="mr-1.5 hidden font-display text-[10px] font-semibold tracking-widest text-blue sm:inline">
+              BLUE
+            </span>
+            <span
+              className={`font-mono text-sm font-bold tabular-nums sm:text-lg lg:text-xl ${
+                blueAhead ? "text-blue" : "text-muted"
+              }`}
+            >
+              {blue.toFixed(1)}
+              <span className="text-[10px] text-dim sm:text-xs">%</span>
+            </span>
+          </div>
+
+          {/* Center: Borderless Turn Countdown + Symmetrical RoV Hairline */}
+          <button
+            type="button"
+            onClick={() => setTimerSettingsOpen(true)}
+            title="ตั้งค่าเวลาจับดราฟต์ / เสียง / Auto-Lock"
+            aria-label="ตั้งค่าตัวจับเวลา"
+            className="group flex min-h-7 min-w-[68px] shrink-0 cursor-pointer flex-col items-center justify-center justify-self-center px-1.5 transition-opacity sm:min-h-8 sm:min-w-[88px] sm:px-2.5"
+          >
+            <span
+              className={`font-mono text-xl font-black leading-none tracking-[0.12em] tabular-nums transition-colors sm:text-[26px] lg:text-[28px] ${clockTextTone}`}
+            >
+              {currentStep ? formatClock(timer.secondsLeft) : "--:--"}
+            </span>
+            {currentStep && timer.paused ? (
+              <span className="mt-0.5 font-display text-[9px] font-bold leading-none tracking-wider text-gold sm:text-[10px]">
+                PAUSE
+              </span>
+            ) : currentStep && timer.isExpired ? (
+              <span className="mt-0.5 font-display text-[9px] font-extrabold leading-none tracking-wide text-red sm:text-[10px]">
+                หมดเวลา
+              </span>
+            ) : (
+              <span aria-hidden="true" className="mt-1 block h-[2.5px] w-14 overflow-hidden bg-line/45 sm:w-20">
+                <span
+                  className={`mx-auto block h-full transition-[width] duration-200 ease-linear ${progressTone}`}
+                  style={{ width: `${currentStep ? timerPct : 0}%` }}
+                />
+              </span>
+            )}
+          </button>
+
+          {/* Right: RED % */}
+          <div className="justify-self-end text-right leading-none">
+            <span
+              className={`font-mono text-sm font-bold tabular-nums sm:text-lg lg:text-xl ${
+                !blueAhead ? "text-red" : "text-muted"
+              }`}
+            >
+              {red.toFixed(1)}
+              <span className="text-[10px] text-dim sm:text-xs">%</span>
+            </span>
+            <span className="ml-1.5 hidden font-display text-[10px] font-semibold tracking-widest text-red sm:inline">
+              RED
+            </span>
+          </div>
+        </div>
+
+        {continuousWinBar(true)}
+      </div>
+    ) : (
+      <div className="flex min-w-0 flex-1 items-center gap-1.5 sm:gap-2.5">
+        <div className="shrink-0 text-right leading-none">
+          <span className="mr-1.5 hidden font-display text-[10px] font-semibold tracking-widest text-blue sm:inline">
+            BLUE
+          </span>
+          <span
+            className={`font-mono text-sm font-bold tabular-nums sm:text-lg lg:text-xl xl:text-2xl ${
+              blueAhead ? "text-blue" : "text-muted"
+            }`}
+          >
+            {blue.toFixed(1)}
+            <span className="text-[10px] text-dim sm:text-xs">%</span>
+          </span>
+        </div>
+
+        {continuousWinBar(false)}
+
+        <div className="shrink-0 leading-none">
+          <span
+            className={`font-mono text-sm font-bold tabular-nums sm:text-lg lg:text-xl xl:text-2xl ${
+              !blueAhead ? "text-red" : "text-muted"
+            }`}
+          >
+            {red.toFixed(1)}
+            <span className="text-[10px] text-dim sm:text-xs">%</span>
+          </span>
+          <span className="ml-1.5 hidden font-display text-[10px] font-semibold tracking-widest text-red sm:inline">
+            RED
+          </span>
+        </div>
+      </div>
+    );
 
   return (
     <header className="shrink-0 border-b border-line bg-bg/95 backdrop-blur-md">
       <div className="mx-auto flex max-w-[1920px] items-center justify-between gap-2 px-2.5 py-1.5 sm:gap-4 sm:px-4 sm:py-2">
-        {/* Turn indicator */}
-        <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
+        {/* Turn indicator + Desktop/Tablet Timer */}
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <div className="hidden h-8 w-8 place-items-center bg-panel-2 clip-chamfer-sm sm:grid">
             <span className="font-display text-sm font-bold text-gold">R</span>
           </div>
@@ -135,12 +337,15 @@ export function ScoreBar({
                   currentStep.side === "blue" ? "text-blue" : "text-red"
                 }`}
               >
-                {currentStep.side.toUpperCase()} {currentStep.action === "ban" ? "BAN" : "PICK"}
+                {currentStep.step === -1
+                  ? "10-BAN PHASE"
+                  : `${currentStep.side.toUpperCase()} ${currentStep.action === "ban" ? "BAN" : "PICK"}`}
               </span>
             ) : (
               <span className="font-display text-xs font-bold tracking-wide text-gold sm:text-base">COMPLETE</span>
             )}
           </div>
+          <div className="hidden sm:flex">{renderTimerControls(false)}</div>
         </div>
 
         {/* Win probability bar — Desktop Center (lg+) */}
@@ -227,12 +432,177 @@ export function ScoreBar({
         </div>
       </div>
 
-      {/* Win probability bar — Dedicated Full-Width Row on Mobile/Tablet (< lg) */}
-      <div className="border-t border-line/60 bg-panel/60 px-3 py-1.5 sm:px-4 lg:hidden">
-        <div className="mx-auto flex max-w-[1920px] items-center">
+      {/* Win probability bar + Mobile Timer Strip — Dedicated Full-Width Row on Mobile/Tablet (< lg) */}
+      <div
+        className={`border-t border-line/60 bg-panel/60 px-2.5 sm:px-4 lg:hidden ${
+          showCenterTimer ? "py-2" : "py-1.5"
+        }`}
+      >
+        <div className="mx-auto flex max-w-[1920px] items-center gap-2">
           {winBarComponent}
+          <div className="flex shrink-0 items-center sm:hidden">{renderTimerControls(true)}</div>
         </div>
       </div>
+
+      {timerSettingsOpen &&
+        timer &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setTimerSettingsOpen(false);
+            }}
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label="ตั้งค่าตัวจับเวลาดราฟต์"
+              className="w-full max-w-sm border border-gold/40 bg-panel shadow-2xl clip-chamfer"
+            >
+              <div className="flex items-center justify-between border-b border-line px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <Timer className="h-4 w-4 text-gold" />
+                  <h2 className="font-display text-sm font-bold tracking-wide text-ink">
+                    ตั้งค่าตัวจับเวลา (TURN TIMER)
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setTimerSettingsOpen(false)}
+                  aria-label="ปิดตั้งค่าเวลา"
+                  className="inline-flex h-7 w-7 items-center justify-center text-dim transition-colors hover:bg-panel-2 hover:text-ink"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="space-y-4 p-4 text-xs">
+                {/* Enable toggle */}
+                <div className="flex items-center justify-between gap-2 border border-line bg-panel-2/60 px-3 py-2.5">
+                  <div>
+                    <div className="font-display font-bold text-ink">สถานะตัวจับเวลา</div>
+                    <div className="text-[11px] text-dim">รีเซ็ตเวลานับใหม่ทุกครั้งที่เปลี่ยนเทิร์น</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={timer.onToggleEnabled}
+                    className={`min-h-7 border px-3 py-1 font-mono text-[11px] font-bold transition-colors ${
+                      timer.enabled
+                        ? "border-good/60 bg-good/15 text-good"
+                        : "border-line-strong bg-panel text-muted hover:text-ink"
+                    }`}
+                  >
+                    {timer.enabled ? "เปิดอยู่" : "ปิดอยู่"}
+                  </button>
+                </div>
+
+                {/* Preset selection */}
+                <div className="space-y-1.5">
+                  <div className="font-display text-[11px] font-bold uppercase tracking-wider text-muted">
+                    เวลาต่อเทิร์น
+                  </div>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {TIMER_PRESETS.filter((p) => !p.devOnly || isLocalTestHost()).map((p) => {
+                      const active = timer.preset === p.id;
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => timer.onSetPreset(p.id)}
+                          className={`flex min-h-9 flex-col items-start justify-center border px-2.5 py-1.5 text-left transition-colors ${
+                            p.devOnly ? "col-span-2 border-dashed" : ""
+                          } ${
+                            active
+                              ? "border-gold bg-gold/15 text-gold"
+                              : "border-line bg-bg/60 text-muted hover:border-line-strong hover:text-ink"
+                          }`}
+                        >
+                          <span className="font-mono text-[11px] font-bold">{p.label}</span>
+                          <span className="text-[10px] text-dim">{p.description}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Sound + Auto-lock toggles */}
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={timer.onToggleSound}
+                    className="flex min-h-9 w-full items-center justify-between gap-2 border border-line bg-bg/60 px-3 py-2 text-left transition-colors hover:border-line-strong"
+                  >
+                    <span className="flex items-center gap-2 font-display font-semibold text-ink">
+                      {timer.soundEnabled ? (
+                        <Volume2 className="h-4 w-4 text-gold" />
+                      ) : (
+                        <VolumeX className="h-4 w-4 text-dim" />
+                      )}
+                      เสียงเตือน 5 วินาทีสุดท้าย & หมดเวลา
+                    </span>
+                    <span
+                      className={`border px-2 py-0.5 font-mono text-[10px] font-bold ${
+                        timer.soundEnabled
+                          ? "border-gold/50 bg-gold/15 text-gold"
+                          : "border-line bg-panel text-dim"
+                      }`}
+                    >
+                      {timer.soundEnabled ? "ON" : "OFF"}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={timer.onToggleAutoLock}
+                    className="flex min-h-9 w-full items-center justify-between gap-2 border border-line bg-bg/60 px-3 py-2 text-left transition-colors hover:border-line-strong"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5 font-display font-semibold text-ink">
+                        <Zap className="h-4 w-4 shrink-0 text-gold" />
+                        <span>Auto-Lock AI #1 เมื่อหมดเวลา</span>
+                      </div>
+                      <div className="text-[10px] text-dim">
+                        หากเปิด เมื่อนับถึง 0:00 จะเลือกฮีโร่แนะนำอันดับ 1 ให้อัตโนมัติ
+                      </div>
+                    </div>
+                    <span
+                      className={`shrink-0 border px-2 py-0.5 font-mono text-[10px] font-bold ${
+                        timer.autoLock
+                          ? "border-red/60 bg-red/15 text-red"
+                          : "border-line bg-panel text-dim"
+                      }`}
+                    >
+                      {timer.autoLock ? "ON" : "OFF"}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between gap-2 border-t border-line bg-panel-2/40 px-4 py-2.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    timer.onResetTurn();
+                    setTimerSettingsOpen(false);
+                  }}
+                  className="inline-flex min-h-7 items-center gap-1 border border-line-strong bg-panel px-3 py-1 font-display text-xs font-semibold text-muted transition-colors hover:text-ink"
+                >
+                  <TimerReset className="h-3.5 w-3.5" />
+                  <span>รีเซ็ตเวลาเทิร์น</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTimerSettingsOpen(false)}
+                  className="min-h-7 border border-gold bg-gold px-4 py-1 font-display text-xs font-bold text-bg transition-colors hover:bg-gold/90"
+                >
+                  เสร็จสิ้น
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
 
       {confirmResetOpen && (
         <ConfirmDialog

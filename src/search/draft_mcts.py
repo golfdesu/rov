@@ -203,9 +203,13 @@ class DraftSearchState:
         return self.step_idx >= len(DRAFT_STEPS)
 
     @property
+    def is_last_step(self) -> bool:
+        return self.step_idx >= len(DRAFT_STEPS) - 1
+
+    @property
     def current_step_info(self) -> tuple[int, int, int, int]:
         if self.is_terminal:
-            return (18, 2, 1, 1)
+            return (len(DRAFT_STEPS), 2, 1, 1)
         return DRAFT_STEPS[self.step_idx]
 
     @property
@@ -242,9 +246,10 @@ class DraftSearchState:
         if self.is_terminal:
             raise ValueError(f"Cannot transition from terminal draft step {self.step_idx}")
 
-        _, _, action_type, side = DRAFT_STEPS[self.step_idx]
         b_p, r_p = list(self.blue_picks), list(self.red_picks)
         b_b, r_b = list(self.blue_bans), list(self.red_bans)
+
+        _, _, action_type, side = DRAFT_STEPS[self.step_idx]
 
         if side == 0:  # Blue
             if action_type == 1:
@@ -290,8 +295,9 @@ class DraftMinimaxSearch:
             ally_picks, enemy_picks, ally_bans, enemy_bans = s.red_picks, s.blue_picks, s.red_bans, s.blue_bans
             side_gb = s.blue_global_bans if s.action_type == 0 else s.red_global_bans
         effective_gb = tuple(dict.fromkeys([*s.global_bans, *side_gb]))
+        model_step = min(s.step_idx, 17)
         meta = (
-            min(s.step_idx, 17) / 17.0,
+            model_step / 17.0,
             float(s.phase == 2),
             float(s.action_type == 1),
             float(s.acting_side == 1),
@@ -300,7 +306,16 @@ class DraftMinimaxSearch:
             len(enemy_picks) / 5.0,
             *get_league_vector(s.league),
         )
-        return ModelInput(ally_picks, enemy_picks, ally_bans, enemy_bans, effective_gb, meta, s.action_type, s.phase)
+        return ModelInput(
+            ally_picks,
+            enemy_picks,
+            ally_bans,
+            enemy_bans,
+            effective_gb,
+            meta,
+            s.action_type,
+            s.phase,
+        )
 
     def evaluate_batch(self, states: list[DraftSearchState]) -> tuple[torch.Tensor, torch.Tensor]:
         """Evaluate a batch of draft states through the neural network.
@@ -325,7 +340,7 @@ class DraftMinimaxSearch:
         b_bans_len: int,
         r_bans_len: int,
     ) -> int:
-        """Find the exact step index (0..17) matching current draft configuration.
+        """Find the exact step index matching current draft configuration.
 
         When bans are omitted or entered out-of-order (partial-ban query), match by
         phase, action_type, side_val, and pick counts first so pick queries never
@@ -436,7 +451,7 @@ class DraftMinimaxSearch:
             unavail = st.get_unavailable_set()
             expanded_actions: list[int] = []
             for a in actions:
-                if st.step_idx >= len(DRAFT_STEPS) - 1 or a in unavail:
+                if st.is_last_step or a in unavail:
                     q_val = float(win_np[idx, a])
                     leaf_fallback[(idx, a)] = q_val if st.acting_side == root_side else 1.0 - q_val
                 else:
@@ -501,7 +516,7 @@ class DraftMinimaxSearch:
         _root_probs, root_win = self.evaluate_batch([root_state])
         root_w_np = root_win[0].cpu().numpy()
 
-        if depth <= 1 or root_state.step_idx >= len(DRAFT_STEPS) - 1:
+        if depth <= 1 or root_state.is_last_step:
             for hid in candidate_hero_indices:
                 results[hid] = round(float(root_w_np[hid] * 100.0), 2)
             return results

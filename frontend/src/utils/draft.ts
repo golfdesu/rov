@@ -1,6 +1,7 @@
 import {
   CANONICAL_DRAFT_STEPS,
   type DraftHistoryItem,
+  type DraftStep,
   type GlobalBanState,
   type HeroRecommendation,
   type LaneKey,
@@ -16,8 +17,13 @@ export interface DraftState {
   redBans: string[];
 }
 
-/** Maps each of the 18 draft steps to the hero locked at that step (or null if not reached yet). */
+export function getCurrentDraftStep(stepIndex: number): DraftStep | null {
+  return CANONICAL_DRAFT_STEPS[stepIndex] ?? null;
+}
+
+/** Maps each draft step to the hero locked at that step (or null if not reached yet). */
 export function heroesByStep(state: DraftState): (string | null)[] {
+  const steps = CANONICAL_DRAFT_STEPS;
   const counters = { "blue-pick": 0, "red-pick": 0, "blue-ban": 0, "red-ban": 0 };
   const lists = {
     "blue-pick": state.bluePicks,
@@ -25,7 +31,7 @@ export function heroesByStep(state: DraftState): (string | null)[] {
     "blue-ban": state.blueBans,
     "red-ban": state.redBans,
   };
-  return CANONICAL_DRAFT_STEPS.map((s) => {
+  return steps.map((s) => {
     const key = `${s.side}-${s.action}` as keyof typeof counters;
     return lists[key][counters[key]++] ?? null;
   });
@@ -451,24 +457,28 @@ export function unavailableSet(
   return new Set([...state.bluePicks, ...state.redPicks, ...state.blueBans, ...state.redBans, ...gbList]);
 }
 
+function makeSnapshot(state: DraftMachineState): DraftHistoryItem {
+  return {
+    stepIndex: state.stepIndex,
+    bluePicks: state.bluePicks,
+    redPicks: state.redPicks,
+    blueBans: state.blueBans,
+    redBans: state.redBans,
+  };
+}
+
 export function draftReducer(state: DraftMachineState, action: DraftAction): DraftMachineState {
   switch (action.type) {
     case "lock": {
+      if (unavailableSet(state).has(action.hero)) return state;
       const step = CANONICAL_DRAFT_STEPS[state.stepIndex];
-      if (!step || unavailableSet(state).has(action.hero)) return state;
+      if (!step) return state;
       const key = `${step.side}${step.action === "pick" ? "Picks" : "Bans"}` as keyof DraftState;
-      const snapshot: DraftHistoryItem = {
-        stepIndex: state.stepIndex,
-        bluePicks: state.bluePicks,
-        redPicks: state.redPicks,
-        blueBans: state.blueBans,
-        redBans: state.redBans,
-      };
       return {
         ...state,
         [key]: [...state[key], action.hero],
         stepIndex: state.stepIndex + 1,
-        history: [...state.history, snapshot],
+        history: [...state.history, makeSnapshot(state)],
         future: [],
         prediction: EMPTY_PREDICTION,
         winHistory: state.winHistory.slice(0, state.stepIndex + 1),
@@ -477,18 +487,11 @@ export function draftReducer(state: DraftMachineState, action: DraftAction): Dra
     case "undo": {
       const last = state.history.at(-1);
       if (!last) return state;
-      const currentSnapshot: DraftHistoryItem = {
-        stepIndex: state.stepIndex,
-        bluePicks: state.bluePicks,
-        redPicks: state.redPicks,
-        blueBans: state.blueBans,
-        redBans: state.redBans,
-      };
       return {
         ...state,
         ...last,
         history: state.history.slice(0, -1),
-        future: [...(state.future ?? []), currentSnapshot],
+        future: [...(state.future ?? []), makeSnapshot(state)],
         // Drop stale derived state; useDraft refetches for the restored step
         prediction: EMPTY_PREDICTION,
         blueWinRate: state.winHistory[last.stepIndex] ?? DEFAULT_WIN_RATE,
@@ -497,17 +500,10 @@ export function draftReducer(state: DraftMachineState, action: DraftAction): Dra
     case "redo": {
       const next = state.future?.at(-1);
       if (!next) return state;
-      const currentSnapshot: DraftHistoryItem = {
-        stepIndex: state.stepIndex,
-        bluePicks: state.bluePicks,
-        redPicks: state.redPicks,
-        blueBans: state.blueBans,
-        redBans: state.redBans,
-      };
       return {
         ...state,
         ...next,
-        history: [...state.history, currentSnapshot],
+        history: [...state.history, makeSnapshot(state)],
         future: (state.future ?? []).slice(0, -1),
         // Drop stale derived state; useDraft refetches for the advanced step
         prediction: EMPTY_PREDICTION,
@@ -578,10 +574,10 @@ export function buildPredictPayload(
     ? { ...EMPTY_GLOBAL_BANS, universalBans: [...globalBans] }
     : (globalBans as GlobalBanState);
 
-  const bUsed = blueUsedHeroes(gbState);
-  const rUsed = redUsedHeroes(gbState);
+  const bUsed = [...blueUsedHeroes(gbState)].sort();
+  const rUsed = [...redUsedHeroes(gbState)].sort();
 
-  const step = CANONICAL_DRAFT_STEPS[stepIndex];
+  const step = getCurrentDraftStep(stepIndex);
   const actingUsedCount = !step
     ? Math.max(bUsed.length, rUsed.length)
     : step.action === "ban"
@@ -592,8 +588,12 @@ export function buildPredictPayload(
         ? bUsed.length
         : rUsed.length;
   const maxUniversal = Math.max(0, 40 - actingUsedCount);
-  const cappedUniversalBans =
-    gbState.universalBans.length > maxUniversal ? gbState.universalBans.slice(0, maxUniversal) : gbState.universalBans;
+  const rawCappedUniversal =
+    gbState.universalBans.length > maxUniversal
+      ? gbState.universalBans.slice(0, maxUniversal)
+      : gbState.universalBans;
+  const cappedUniversalBans = [...rawCappedUniversal].sort();
+  const sortedWinningHeroes = [...seriesWinningHeroes].sort();
 
   if (!step) {
     return {
@@ -610,7 +610,7 @@ export function buildPredictPayload(
       top_k: 1,
       use_lookahead: false,
       league,
-      series_winning_heroes: [...seriesWinningHeroes],
+      series_winning_heroes: sortedWinningHeroes,
       ally_pick_lanes: pickLaneOverridesFor(state.bluePicks, pickLanes),
       enemy_pick_lanes: pickLaneOverridesFor(state.redPicks, pickLanes),
     };
@@ -633,7 +633,7 @@ export function buildPredictPayload(
     use_lookahead: lookahead,
     lookahead_depth: 2,
     league,
-    series_winning_heroes: [...seriesWinningHeroes],
+    series_winning_heroes: sortedWinningHeroes,
     ally_pick_lanes: pickLaneOverridesFor(allyPicks, pickLanes),
     enemy_pick_lanes: pickLaneOverridesFor(enemyPicks, pickLanes),
   };

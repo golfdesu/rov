@@ -82,7 +82,10 @@ TEAM_CODES = {
     # AOG
     "RRQ VN": "rrq",
     "BOOM VN": "boom",
-    "FL": "fl",
+    "FL": "fpt",
+    "FPT": "fpt",
+    "FPT FLASH": "fpt",
+    "FPT X FLASH": "fpt",
     "FPL": "fpl",
     "GAM": "gam",
     "BOX": "box",

@@ -124,6 +124,15 @@ def main() -> None:
                 page.get_by_role("button", name="เข้าใช้งานแบบ Guest ทันที").click()
                 page.wait_for_timeout(300)
 
+                # If daily PricingSurveyModal auto-opened on first Guest Draft visit, verify its metrics then snooze it
+                survey_heading = page.get_by_role("heading", name="สำรวจความคิดเห็น MINIDRAFT")
+                if survey_heading.is_visible():
+                    overflow_x, undersized = _audit_viewport_metrics(page)
+                    assert not overflow_x, "PricingSurveyModal horizontal overflow"
+                    assert not undersized, f"PricingSurveyModal undersized (<24px) targets: {undersized}"
+                    page.get_by_role("button", name="ภายหลัง (ไว้ถามใหม่พรุ่งนี้)").click()
+                    survey_heading.wait_for(state="hidden", timeout=3000)
+
                 # 2. Draft Board layout & touch target audit across 4 breakpoints
                 print("[2/4] Auditing Draft Board layout (375x667, 390x844, 768x1024, 1280x800)...")
                 for w, h in [(375, 667), (390, 844), (768, 1024), (1280, 800)]:

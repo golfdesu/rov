@@ -25,7 +25,12 @@ const SHOWCASE_RED = [
 interface AuthFormProps {
   mode: "login" | "register";
   onModeChange: (next: "login" | "register") => void;
-  onSuccess: (user: AuthUser) => void;
+  onSuccess: (
+    user: AuthUser,
+    surveyAnswered?: boolean,
+    surveyChoice?: "willing" | "not_willing" | null,
+    isAdmin?: boolean,
+  ) => void;
   usernameRef?: RefObject<HTMLInputElement | null>;
   secondaryLabel: string;
   secondaryHint?: string;
@@ -136,7 +141,12 @@ function AuthForm({
           : { username: trimmedUser, password };
       const res = await postJson<AuthStatusResponse>(endpoint, body);
       if (res.authenticated && res.user) {
-        onSuccess(res.user);
+        onSuccess(
+          res.user,
+          Boolean(res.pricing_survey_answered),
+          res.pricing_survey_choice ?? null,
+          Boolean(res.is_admin),
+        );
       } else {
         setError("ไม่สามารถยืนยันตัวตนได้ กรุณาลองใหม่");
       }
@@ -148,7 +158,7 @@ function AuthForm({
   };
 
   const tabClass = (active: boolean) =>
-    `-mb-px border-b-2 py-3 font-display text-[13px] font-semibold transition-colors ${
+    `-mb-px border-b-2 py-3 font-display text-sm font-semibold transition-colors lg:text-[15px] ${
       active ? "border-gold text-ink" : "border-transparent text-muted hover:text-ink"
     }`;
 
@@ -191,7 +201,7 @@ function AuthForm({
             <button
               type="button"
               onClick={() => window.location.assign("/auth/google/login")}
-              className="flex h-10 w-full items-center justify-center gap-2.5 rounded-md border border-white/80 bg-white px-4 text-[13px] font-semibold text-slate-900 transition-colors hover:bg-slate-100"
+              className="flex h-10 w-full items-center justify-center gap-2.5 rounded-md border border-white/80 bg-white px-4 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-100 lg:h-11 lg:text-[15px]"
             >
               <GoogleIcon />
               <span>ดำเนินการต่อด้วย Google</span>
@@ -201,7 +211,7 @@ function AuthForm({
             <button
               type="button"
               onClick={() => window.location.assign("/auth/discord/login")}
-              className="flex h-10 w-full items-center justify-center gap-2.5 rounded-md border border-[#5865F2] bg-[#5865F2] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-[#4752C4]"
+              className="flex h-10 w-full items-center justify-center gap-2.5 rounded-md border border-[#5865F2] bg-[#5865F2] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#4752C4] lg:h-11 lg:text-[15px]"
             >
               <DiscordIcon />
               <span>ดำเนินการต่อด้วย Discord</span>
@@ -214,7 +224,7 @@ function AuthForm({
                 setShowCredentials(true);
                 requestAnimationFrame(() => usernameRef?.current?.focus());
               }}
-              className="flex h-10 w-full items-center justify-center gap-2.5 rounded-md border border-line-strong bg-bg px-4 text-[13px] font-semibold text-ink transition-colors hover:border-gold/70 hover:bg-panel-2"
+              className="flex h-10 w-full items-center justify-center gap-2.5 rounded-md border border-line-strong bg-bg px-4 text-sm font-semibold text-ink transition-colors hover:border-gold/70 hover:bg-panel-2 lg:h-11 lg:text-[15px]"
             >
               <User className="h-4 w-4 shrink-0 text-gold" />
               <span>{mode === "login" ? "เข้าสู่ระบบด้วย Username" : "สมัครสมาชิกด้วย Username"}</span>
@@ -226,7 +236,7 @@ function AuthForm({
           <div className="flex flex-col gap-3.5 rounded-md border border-line bg-bg/50 p-3.5">
             {hasOAuth && (
               <div className="flex items-center justify-between gap-2">
-                <span className="flex items-center gap-1.5 text-[11px] font-semibold text-gold">
+                <span className="flex items-center gap-1.5 text-xs font-semibold text-gold lg:text-[13px]">
                   <User className="h-3.5 w-3.5" />
                   <span>{mode === "login" ? "เข้าสู่ระบบด้วย Username" : "สมัครด้วย Username"}</span>
                 </span>
@@ -236,7 +246,7 @@ function AuthForm({
                     setShowCredentials(false);
                     setError(null);
                   }}
-                  className="text-[11px] text-dim underline underline-offset-2 hover:text-ink"
+                  className="inline-flex min-h-6 min-w-6 items-center justify-center px-1.5 text-xs text-dim underline underline-offset-2 hover:text-ink lg:text-[13px]"
                 >
                   ซ่อน
                 </button>
@@ -244,9 +254,9 @@ function AuthForm({
             )}
 
             <label className="flex flex-col gap-1.5">
-              <span className="flex items-center justify-between text-xs font-medium text-ink/90">
+              <span className="flex items-center justify-between text-xs font-medium text-ink/90 sm:text-sm">
                 <span>ชื่อผู้ใช้</span>
-                <span className="font-mono text-[10px] text-dim">a-z 0-9 _ - .</span>
+                <span className="font-mono text-[11px] text-dim sm:text-xs">a-z 0-9 _ - .</span>
               </span>
               <div className="relative flex items-center">
                 <User className="pointer-events-none absolute left-3 h-4 w-4 text-dim" />
@@ -257,7 +267,7 @@ function AuthForm({
                   required
                   minLength={3}
                   maxLength={32}
-                  pattern="^[a-zA-Z0-9_.-]+$"
+                  pattern="^[a-zA-Z0-9_.\-]+$"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="เช่น coach_pro"
@@ -268,7 +278,7 @@ function AuthForm({
 
             {mode === "register" && (
               <label className="flex flex-col gap-1.5">
-                <span className="text-xs font-medium text-ink/90">
+                <span className="text-xs font-medium text-ink/90 sm:text-sm">
                   ชื่อที่แสดง <span className="font-normal text-dim">(ไม่บังคับ)</span>
                 </span>
                 <div className="relative flex items-center">
@@ -286,9 +296,9 @@ function AuthForm({
             )}
 
             <label className="flex flex-col gap-1.5">
-              <span className="flex items-center justify-between text-xs font-medium text-ink/90">
+              <span className="flex items-center justify-between text-xs font-medium text-ink/90 sm:text-sm">
                 <span>รหัสผ่าน</span>
-                {mode === "register" && <span className="font-mono text-[10px] text-dim">อย่างน้อย 6 ตัวอักษร</span>}
+                {mode === "register" && <span className="font-mono text-[11px] text-dim sm:text-xs">อย่างน้อย 6 ตัวอักษร</span>}
               </span>
               <div className="relative flex items-center">
                 <Lock className="pointer-events-none absolute left-3 h-4 w-4 text-dim" />
@@ -327,7 +337,7 @@ function AuthForm({
 
         <div className="flex items-center gap-3">
           <div className="h-px flex-1 bg-line" />
-          <span className="text-[11px] text-dim">หรือ</span>
+          <span className="text-xs text-dim lg:text-[13px]">หรือ</span>
           <div className="h-px flex-1 bg-line" />
         </div>
 
@@ -341,16 +351,19 @@ function AuthForm({
               <UserCheck className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <div className="font-display text-[13px] font-semibold text-white">{secondaryLabel}</div>
-              {secondaryHint && <div className="truncate text-[11px] text-slate-300">{secondaryHint}</div>}
+              <div className="font-display text-sm font-semibold text-white lg:text-[15px]">{secondaryLabel}</div>
+              {secondaryHint && <div className="truncate text-xs text-slate-300 lg:text-[13px]">{secondaryHint}</div>}
             </div>
           </div>
           <ArrowRight className="h-4 w-4 shrink-0 text-slate-300 transition-all group-hover:translate-x-0.5 group-hover:text-white" />
         </button>
 
         {showPrivacyLink && (
-          <div className="text-center text-[11px] text-dim">
-            <a href="/privacy" className="underline decoration-line-strong underline-offset-2 hover:text-muted">
+          <div className="text-center text-xs text-dim lg:text-[13px]">
+            <a
+              href="/privacy"
+              className="inline-flex min-h-6 items-center underline decoration-line-strong underline-offset-2 hover:text-muted"
+            >
               นโยบายความเป็นส่วนตัว (Privacy Policy)
             </a>
           </div>
@@ -407,7 +420,12 @@ interface AuthLandingProps {
   googleLoginEnabled?: boolean;
   discordLoginEnabled?: boolean;
   initialError?: string | null;
-  onSuccess: (user: AuthUser) => void;
+  onSuccess: (
+    user: AuthUser,
+    surveyAnswered?: boolean,
+    surveyChoice?: "willing" | "not_willing" | null,
+    isAdmin?: boolean,
+  ) => void;
   onContinueGuest: () => void;
 }
 
@@ -454,11 +472,11 @@ export function AuthLanding({
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="rounded border border-line px-2.5 py-1 font-mono text-[10px] tracking-wider text-muted">
-              130 HEROES · 2026 META
+            <span className="rounded border border-gold/40 bg-gold/10 px-2.5 py-1 font-mono text-[10px] font-bold tracking-wider text-gold sm:text-[11px]">
+              ให้บริการฟรีถึง 30/11/2026
             </span>
             <span className="hidden rounded border border-line px-2.5 py-1 font-mono text-[10px] tracking-wider text-muted sm:inline-block">
-              {__DRAFT_ONLY__ ? "PRO DRAFT ENGINE" : "GNN-TRANSFORMER"}
+              130 HEROES · 2026 META
             </span>
           </div>
         </div>
@@ -594,7 +612,12 @@ interface AuthModalProps {
   googleLoginEnabled?: boolean;
   discordLoginEnabled?: boolean;
   initialError?: string | null;
-  onSuccess: (user: AuthUser) => void;
+  onSuccess: (
+    user: AuthUser,
+    surveyAnswered?: boolean,
+    surveyChoice?: "willing" | "not_willing" | null,
+    isAdmin?: boolean,
+  ) => void;
   onClose: () => void;
 }
 
@@ -614,26 +637,28 @@ export function AuthModal({
       labelledBy="auth-modal-title"
       initialFocusRef={usernameRef}
       onClose={onClose}
-      className="max-w-md overflow-hidden [clip-path:none]"
+      className="max-w-md overflow-hidden [clip-path:none] lg:max-w-lg"
     >
+      {(requestClose) => (
+        <>
       <div className="h-0.5 w-full bg-gold" />
       <div className="flex items-center justify-between gap-3 border-b border-line px-6 py-4">
         <div className="flex min-w-0 items-center gap-3">
           <MiniDraftLogo className="h-8 w-8 shrink-0" />
           <div className="min-w-0">
-            <h2 id="auth-modal-title" className="font-display text-sm font-bold text-ink">
+            <h2 id="auth-modal-title" className="font-display text-sm font-bold text-ink sm:text-base">
               {mode === "login" ? "ลงชื่อเข้าใช้ MiniDraft" : "สร้างบัญชีผู้ใช้ใหม่"}
             </h2>
-            <p className="truncate text-[11.5px] text-muted">ซิงก์ประวัติซีรีส์ข้ามอุปกรณ์อัตโนมัติ</p>
+            <p className="truncate text-xs text-muted sm:text-[13px]">ซิงก์ประวัติซีรีส์ข้ามอุปกรณ์อัตโนมัติ</p>
           </div>
         </div>
         <button
           type="button"
-          onClick={onClose}
+          onClick={() => requestClose()}
           aria-label="ปิดหน้าต่างบัญชีผู้ใช้"
-          className="rounded p-1 text-dim transition-colors hover:bg-panel-2 hover:text-ink"
+          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-dim transition-colors hover:bg-panel-2 hover:text-ink"
         >
-          <X className="h-4 w-4" />
+          <X className="h-4.5 w-4.5" />
         </button>
       </div>
 
@@ -644,11 +669,13 @@ export function AuthModal({
         usernameRef={usernameRef}
         secondaryLabel="ใช้งานต่อแบบ Guest"
         secondaryHint="บันทึกเฉพาะในเบราว์เซอร์นี้เท่านั้น"
-        onSecondaryAction={onClose}
+        onSecondaryAction={() => requestClose()}
         googleLoginEnabled={googleLoginEnabled}
         discordLoginEnabled={discordLoginEnabled}
         initialError={initialError}
       />
+        </>
+      )}
     </Modal>
   );
 }

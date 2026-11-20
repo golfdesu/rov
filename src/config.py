@@ -136,6 +136,17 @@ class Config:
         self.discord_client_secret: str = os.environ.get("ROV_DISCORD_CLIENT_SECRET", "").strip()
         self.discord_redirect_uri: str = os.environ.get("ROV_DISCORD_REDIRECT_URI", "").strip()
 
+        raw_admins = os.environ.get("ROV_ADMIN_USERNAMES", "chayanin5392").strip()
+        self.admin_usernames: tuple[str, ...] = tuple(
+            u.strip().lower() for u in raw_admins.split(",") if u.strip()
+        ) or ("chayanin5392",)
+        self.cf_api_token: str = os.environ.get("ROV_CF_API_TOKEN", "").strip()
+        self.cf_account_id: str = os.environ.get("ROV_CF_ACCOUNT_ID", "").strip()
+        self.cf_zone_id: str = os.environ.get("ROV_CF_ZONE_ID", "").strip()
+
+    def is_admin_username(self, username: str | None) -> bool:
+        return bool(username and username.strip().lower() in self.admin_usernames)
+
     @property
     def google_oauth_enabled(self) -> bool:
         return bool(self.google_client_id and self.google_client_secret)

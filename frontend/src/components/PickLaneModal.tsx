@@ -33,13 +33,15 @@ export function PickLaneModal({
   );
   const defaultShort = LANE_SHORT[defaultLane];
 
-  const handleSelect = (lane?: LaneKey) => {
-    onSelectLane(lane);
-    onClose();
-  };
-
   return (
     <Modal labelledBy="pick-lane-title" className="max-w-xs sm:max-w-sm" onClose={onClose}>
+      {(requestClose) => {
+        const handleSelect = (lane?: LaneKey) => {
+          onSelectLane(lane);
+          requestClose();
+        };
+        return (
+          <>
       <div className="flex items-center justify-between gap-2 border-b border-line px-4 py-3">
         <div className="flex min-w-0 items-center gap-3">
           <div className={`h-11 w-11 shrink-0 overflow-hidden border ${isBlue ? "border-blue/60" : "border-red/60"}`}>
@@ -59,7 +61,7 @@ export function PickLaneModal({
         </div>
         <button
           type="button"
-          onClick={onClose}
+          onClick={() => requestClose()}
           aria-label="ปิดหน้าต่างเลือกเลน"
           className="flex h-9 w-9 shrink-0 items-center justify-center border border-line text-muted transition-colors hover:border-line-strong hover:text-ink"
         >
@@ -146,6 +148,9 @@ export function PickLaneModal({
           })}
         </div>
       </div>
+          </>
+        );
+      }}
     </Modal>
   );
 }

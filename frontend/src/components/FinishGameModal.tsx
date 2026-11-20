@@ -40,6 +40,8 @@ export function FinishGameModal({
 
   return (
     <Modal labelledBy={titleId} className="max-w-lg" onClose={onClose}>
+      {(requestClose) => (
+        <>
       <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
         <div className="flex items-center gap-2.5">
           <Trophy className="h-5 w-5 shrink-0 text-gold" />
@@ -54,7 +56,7 @@ export function FinishGameModal({
         </div>
         <button
           type="button"
-          onClick={onClose}
+          onClick={() => requestClose()}
           aria-label="ปิดหน้าต่าง"
           className="p-1.5 text-muted transition-colors hover:bg-panel-2 hover:text-ink"
         >
@@ -139,12 +141,14 @@ export function FinishGameModal({
         </button>
         <button
           type="button"
-          onClick={onClose}
+          onClick={() => requestClose()}
           className="border border-line bg-panel-2 px-3.5 py-1.5 font-display text-xs font-semibold text-ink transition-colors hover:bg-panel"
         >
           ยกเลิก
         </button>
       </div>
+        </>
+      )}
     </Modal>
   );
 }

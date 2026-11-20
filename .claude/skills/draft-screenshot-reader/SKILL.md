@@ -75,7 +75,7 @@ For batch processing new screenshots rapidly with Global Hungarian Bipartite Mat
    - **Team codes (lowercase)**:
    - **Canonical Match Team Naming Invariant**: In all screenshot filenames for a given series/match, `<teamA>_vs_<teamB>` MUST remain constant across all games of that match (anchored on Game 1's team order, e.g. `bru_vs_fs` for all G1–G5). NEVER swap team order across games when sides swap (do not use `fs_vs_bru`).
      - RPL: `kog`, `bru`, `gjc`, `hd`, `ten`, `fs`, `bac`, `ea`, `slx`
-     - AOG: `rrq`, `boom`, `fl`, `fpl`, `gam`, `box`, `1s`, `secret`, `sgp`
+     - AOG: `rrq`, `boom`, `fpt`, `fpl`, `gam`, `box`, `1s`, `secret`, `sgp`
      - Saigon Phantom: strictly `sgp` (never `sp`), Supernova is `spn`
      - GCS & APL: `cfx`, `tl`, `one`, `hka`, `ank`, `bmg`, `dcg`, `fw`, `lit`
 7. **Record** in `data/true_pick_order.json` under `games`:
@@ -101,7 +101,7 @@ For batch processing new screenshots rapidly with Global Hungarian Bipartite Mat
 ## 4. Guardrails
 
 - Use canonical Thai server hero names (`Mortos`, `Celica`, `Riktor`), not legacy Global/Liquipedia names (`Arthur`, `Brunhilda`, `Richter`).
-- `Flowborn (Marksman)` and `Flowborn (Mage)` share one portrait, so the image cannot tell them apart. Take the role from the Liquipedia record for that game (Mage is rare: 9 of 4,347 games).
+- `Flowborn (Marksman)` and `Flowborn (Mage)` share one portrait, so the image cannot tell them apart. Take the role from the Liquipedia record for that game (Mage is rare: 9 of 4,352 games).
 - **Reworked Azzen'Ka vs Default Taara Trap**:
   - Azzen'Ka has a remodeled female appearance (dark hair with purple fringe, tiara, purple eyes as shown in `frontend/public/avatars/Azzen_Ka.jpg`), NOT the old classic sand wraith.
   - Taara's default appearance is the full heavy steel/blue armor with horned helmet and glowing blue eyes (`frontend/public/avatars/Taara.jpg`).

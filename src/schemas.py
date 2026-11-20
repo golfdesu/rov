@@ -338,7 +338,7 @@ class CombatRuneRecommendationResponse(BaseModel):
 
 
 class DraftHistoryItemSchema(BaseModel):
-    stepIndex: int = Field(default=0, ge=0, le=18)
+    stepIndex: int = Field(default=0, ge=0, le=20)
     bluePicks: list[ShortStr] = Field(default_factory=list, max_length=5)
     redPicks: list[ShortStr] = Field(default_factory=list, max_length=5)
     blueBans: list[ShortStr] = Field(default_factory=list, max_length=4)
@@ -375,7 +375,7 @@ class RecordedDraftGameSchema(BaseModel):
 
 
 class DraftSessionStateSchema(BaseModel):
-    stepIndex: int = Field(default=0, ge=0, le=18)
+    stepIndex: int = Field(default=0, ge=0, le=20)
     bluePicks: list[ShortStr] = Field(default_factory=list, max_length=5)
     redPicks: list[ShortStr] = Field(default_factory=list, max_length=5)
     blueBans: list[ShortStr] = Field(default_factory=list, max_length=4)
@@ -434,6 +434,37 @@ class AuthStatusResponse(BaseModel):
     user: AuthUserSchema | None = None
     google_login_enabled: bool = False
     discord_login_enabled: bool = False
+    pricing_survey_answered: bool = False
+    pricing_survey_choice: Literal["willing", "not_willing"] | None = None
+    is_admin: bool = False
+
+
+class AdminStatsResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    generated_at_th: str
+    users: dict[str, Any]
+    survey: dict[str, Any]
+    cloudflare: dict[str, Any] | None = None
+    retention: dict[str, Any] | None = None
+
+
+class DailyVisitRequest(BaseModel):
+    client_id: str = Field(..., min_length=8, max_length=64, pattern=r"^[a-zA-Z0-9_-]+$")
+
+
+class DailyVisitResponse(BaseModel):
+    recorded: bool
+    visit_date: str
+
+
+class PricingSurveyRequest(BaseModel):
+    choice: Literal["willing", "not_willing"]
+    client_id: str | None = Field(default=None, min_length=8, max_length=64, pattern=r"^[a-zA-Z0-9_-]+$")
+
+
+class PricingSurveyResponse(BaseModel):
+    recorded: bool
+    choice: Literal["willing", "not_willing"]
 
 
 class CombatBuildsSyncSchema(BaseModel):

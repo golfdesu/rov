@@ -1,4 +1,4 @@
-import { Ban, Layers, Plus, X } from "lucide-react";
+import { Ban, ClockAlert, Layers, Plus, X } from "lucide-react";
 import type { DraftStep, Hero, HeroRecommendation, LaneKey } from "../types/draft";
 import { LANE_SHORT, laneKey } from "../utils/draft";
 import { displayName } from "../utils/heroNames";
@@ -11,6 +11,7 @@ interface TeamColumnProps {
   picks: string[];
   bans: string[];
   pickLanes?: Record<string, LaneKey>;
+  timedOutHeroes?: Record<string, "late" | "autolock">;
   onEditPickLane?: (heroName: string, side: "blue" | "red") => void;
   usedHeroes: string[];
   usedHeroOriginGames?: Record<string, number>;
@@ -32,6 +33,7 @@ export function TeamColumn({
   picks,
   bans,
   pickLanes = {},
+  timedOutHeroes = {},
   onEditPickLane,
   usedHeroes,
   usedHeroOriginGames = {},
@@ -48,8 +50,8 @@ export function TeamColumn({
 }: TeamColumnProps) {
   const isBlue = side === "blue";
   const isMyTurn = currentStep?.side === side;
-  const activePickSlot = isMyTurn && currentStep?.action === "pick" ? picks.length : -1;
-  const activeBanSlot = isMyTurn && currentStep?.action === "ban" ? bans.length : -1;
+  const activePickSlot = currentStep?.side === side && currentStep?.action === "pick" ? picks.length : -1;
+  const activeBanSlot = currentStep?.side === side && currentStep?.action === "ban" ? bans.length : -1;
   const accent = isBlue ? "text-blue" : "text-red";
   const heroPrimaryLane = (h: Hero) =>
     laneKey(h.main_pro_lane && h.main_pro_lane !== "Unpicked" ? h.main_pro_lane : h.lane);
@@ -59,6 +61,7 @@ export function TeamColumn({
       <div className={`flex items-center gap-1 ${isBlue ? "" : "flex-row-reverse"} ${extraClass}`}>
         {Array.from({ length: 4 }).map((_, i) => {
           const bName = bans[i];
+          const banTimedOut = bName ? timedOutHeroes[bName] : undefined;
           const isBanActive = i === activeBanSlot;
           const ghostBanOffset = i - bans.length;
           const ghostBan =
@@ -83,7 +86,13 @@ export function TeamColumn({
               }
               title={
                 bName
-                  ? `Ban: ${displayName(bName)}`
+                  ? `Ban: ${displayName(bName)}${
+                      banTimedOut === "autolock"
+                        ? " · หมดเวลา (Auto-Lock)"
+                        : banTimedOut
+                          ? " · แบนไม่ทันเวลา (0:00)"
+                          : ""
+                    }`
                   : ghostBan
                     ? `AI คาดเดาแบน: ${displayName(ghostBan.hero_name)}`
                     : `Ban ${i + 1}`
@@ -91,15 +100,27 @@ export function TeamColumn({
               className={`relative aspect-square h-7.5 w-7.5 shrink-0 overflow-hidden border bg-bg min-[380px]:h-8 min-[380px]:w-8 sm:h-9 sm:w-9 ${
                 isBanActive
                   ? "border-gold animate-slot-pulse"
-                  : ghostBan
-                    ? "border-dashed border-red/50"
-                    : "border-line"
+                  : banTimedOut
+                    ? "border-red ring-1 ring-red/70"
+                    : ghostBan
+                      ? "border-dashed border-red/50"
+                      : "border-line"
               } ${i === 2 ? (isBlue ? "ml-1" : "mr-1") : ""} ${canClickGhostBan ? "cursor-pointer" : ""}`}
             >
               {bName ? (
                 <>
                   <HeroPortrait name={bName} hero={heroMap.get(bName)} className="grayscale opacity-65" />
                   <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,transparent_45%,var(--color-red)_46%,var(--color-red)_54%,transparent_55%)] opacity-85" />
+                  {banTimedOut && (
+                    <>
+                      <span className="pointer-events-none absolute top-0.5 right-0.5 z-10 grid h-3 w-3 place-items-center bg-red text-bg shadow sm:h-3.5 sm:w-3.5">
+                        <ClockAlert className="h-2 w-2 sm:h-2.5 sm:w-2.5" />
+                      </span>
+                      <span className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-red/95 py-[1px] text-center font-display text-[7px] font-extrabold leading-none text-bg sm:text-[8px]">
+                        ไม่ทัน
+                      </span>
+                    </>
+                  )}
                 </>
               ) : ghostBan ? (
                 <HeroPortrait
@@ -140,7 +161,7 @@ export function TeamColumn({
           </div>
 
           <div className={`flex shrink-0 items-center gap-1.5 ${isBlue ? "" : "flex-row-reverse"}`}>
-            {/* Tablet/iPad (>=sm): inline 4 square ban slots */}
+            {/* Tablet/iPad (>=sm): inline square ban slots */}
             {renderCompactBanSlots("hidden sm:flex")}
 
             <button
@@ -159,7 +180,7 @@ export function TeamColumn({
           </div>
         </div>
 
-        {/* Row 2 (Mobile <sm only): Dedicated 4 Square Ban Slots Row so it never crushes team name */}
+        {/* Row 2 (Mobile <sm only): Dedicated 4 Square Ban Slots Row */}
         <div className={`flex items-center justify-between gap-1 sm:hidden ${isBlue ? "" : "flex-row-reverse"}`}>
           <span className="font-mono text-[9px] font-bold tracking-wider text-dim">BANS</span>
           {renderCompactBanSlots()}
@@ -169,6 +190,7 @@ export function TeamColumn({
         <div className={`grid grid-cols-5 gap-1 sm:gap-1.5 ${isBlue ? "" : "[direction:rtl]"}`}>
           {Array.from({ length: 5 }).map((_, i) => {
             const name = picks[i];
+            const pickTimedOut = name ? timedOutHeroes[name] : undefined;
             const hero = name ? heroMap.get(name) : undefined;
             const defaultLane = hero ? heroPrimaryLane(hero) : "";
             const manualLane = name ? pickLanes[name] : undefined;
@@ -210,7 +232,13 @@ export function TeamColumn({
                 }
                 title={
                   name
-                    ? `${displayName(name)} (${LANE_SHORT[effectiveLane]?.en ?? effectiveLane}${manualLane ? " · กำหนดเอง" : ""}) · แตะเพื่อเปลี่ยนตำแหน่ง`
+                    ? `${displayName(name)} (${LANE_SHORT[effectiveLane]?.en ?? effectiveLane}${manualLane ? " · กำหนดเอง" : ""})${
+                        pickTimedOut === "autolock"
+                          ? " · หมดเวลา (Auto-Lock)"
+                          : pickTimedOut
+                            ? " · ดราฟไม่ทันเวลา (0:00)"
+                            : ""
+                      } · แตะเพื่อเปลี่ยนตำแหน่ง`
                     : ghost
                       ? `คาดเดา: ${displayName(ghost.hero_name)} (${ghost.probability_pct.toFixed(0)}%)`
                       : `Pick ${i + 1}`
@@ -218,11 +246,13 @@ export function TeamColumn({
                 className={`relative aspect-square w-full min-w-0 overflow-hidden border bg-bg [direction:ltr] ${
                   isActive
                     ? "border-gold animate-slot-pulse"
-                    : ghost
-                      ? "border-dashed border-line-strong"
-                      : canClickPicked
-                        ? "border-line transition-colors hover:border-gold/60"
-                        : "border-line"
+                    : pickTimedOut
+                      ? "border-red ring-1 ring-red/70 transition-colors hover:border-gold"
+                      : ghost
+                        ? "border-dashed border-line-strong"
+                        : canClickPicked
+                          ? "border-line transition-colors hover:border-gold/60"
+                          : "border-line"
                 } ${isInteractive ? "cursor-pointer" : ""}`}
               >
                 {name ? (
@@ -243,6 +273,18 @@ export function TeamColumn({
                           {manualLane ? "*" : ""}
                         </span>
                       </span>
+                    )}
+                    {pickTimedOut && (
+                      <>
+                        <span className="pointer-events-none absolute top-0.5 right-0.5 z-10 hidden items-center gap-0.5 bg-red/95 px-1 py-0.5 font-display text-[8px] font-extrabold leading-none text-bg shadow sm:inline-flex">
+                          <ClockAlert className="h-2.5 w-2.5 shrink-0" />
+                          <span>ดราฟไม่ทัน</span>
+                        </span>
+                        <span className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex items-center justify-center gap-0.5 bg-red/95 py-0.5 font-display text-[8px] font-extrabold leading-none text-bg sm:hidden">
+                          <ClockAlert className="h-2.5 w-2.5 shrink-0" />
+                          <span>ไม่ทัน</span>
+                        </span>
+                      </>
                     )}
                     <div className="hidden sm:block absolute inset-x-0 bottom-0 truncate px-0.5 pb-0.5 text-center font-display text-[9px] font-bold leading-tight text-ink sm:px-1 sm:text-xs">
                       {displayName(name)}
@@ -297,6 +339,7 @@ export function TeamColumn({
       <div className="flex min-h-0 flex-1 flex-col gap-2">
         {Array.from({ length: 5 }).map((_, i) => {
           const name = picks[i];
+          const pickTimedOut = name ? timedOutHeroes[name] : undefined;
           const hero = name ? heroMap.get(name) : undefined;
           const defaultLane = hero ? heroPrimaryLane(hero) : "";
           const manualLane = name ? pickLanes[name] : undefined;
@@ -352,7 +395,13 @@ export function TeamColumn({
               }
               title={
                 name
-                  ? `${displayName(name)} (${LANE_SHORT[effectiveLane]?.en ?? effectiveLane}${manualLane ? " · กำหนดเอง" : ""}) · คลิกเพื่อเลือกตำแหน่งจริง`
+                  ? `${displayName(name)} (${LANE_SHORT[effectiveLane]?.en ?? effectiveLane}${manualLane ? " · กำหนดเอง" : ""})${
+                      pickTimedOut === "autolock"
+                        ? " · หมดเวลา (Auto-Lock)"
+                        : pickTimedOut
+                          ? " · ดราฟไม่ทันเวลา (0:00)"
+                          : ""
+                    } · คลิกเพื่อเลือกตำแหน่งจริง`
                   : ghost
                     ? `AI คาดเดาตัวถัดไป #${ghostOffset + 1}: ${displayName(ghost.hero_name)} (${ghost.probability_pct.toFixed(1)}%)${
                         triggerList.length > 0 ? ` · ${triggerLabel}` : ""
@@ -362,11 +411,13 @@ export function TeamColumn({
               className={`relative min-h-[52px] flex-1 max-h-[96px] overflow-hidden border bg-panel clip-chamfer ${
                 isActive
                   ? "border-gold animate-slot-pulse"
-                  : ghost
-                    ? "border-dashed border-line-strong/80"
-                    : canClickPicked
-                      ? "border-line transition-colors hover:border-gold/60"
-                      : "border-line"
+                  : pickTimedOut
+                    ? "border-red/85 transition-colors hover:border-gold"
+                    : ghost
+                      ? "border-dashed border-line-strong/80"
+                      : canClickPicked
+                        ? "border-line transition-colors hover:border-gold/60"
+                        : "border-line"
               } ${isInteractive ? "cursor-pointer" : ""}`}
             >
               {name ? (
@@ -386,8 +437,23 @@ export function TeamColumn({
                       isBlue ? "" : "items-end text-right"
                     }`}
                   >
-                    <div className="max-w-full truncate font-display text-xs font-bold leading-tight tracking-wide sm:text-base xl:text-lg">
-                      {displayName(name)}
+                    <div
+                      className={`flex w-full min-w-0 items-center justify-between gap-1.5 ${
+                        isBlue ? "" : "flex-row-reverse"
+                      }`}
+                    >
+                      <span className="min-w-0 truncate font-display text-xs font-bold leading-tight tracking-wide sm:text-base xl:text-lg">
+                        {displayName(name)}
+                      </span>
+                      {pickTimedOut && (
+                        <span className="inline-flex shrink-0 items-center gap-1 border border-red/70 bg-red/20 px-1.5 py-0.5 font-display text-[9px] font-bold leading-none text-red sm:text-[10px]">
+                          <ClockAlert className="h-2.5 w-2.5 shrink-0 sm:h-3 sm:w-3" />
+                          <span className="xl:hidden">ไม่ทัน</span>
+                          <span className="hidden xl:inline">
+                            {pickTimedOut === "autolock" ? "ดราฟไม่ทัน (Auto)" : "ดราฟไม่ทัน"}
+                          </span>
+                        </span>
+                      )}
                     </div>
                     {hero && (
                       <div className="mt-0.5 flex max-w-full items-center gap-1.5 truncate text-[10px] text-muted sm:text-[11px]">
@@ -496,85 +562,105 @@ export function TeamColumn({
 
       {/* Ban slots */}
       <div className={`flex shrink-0 items-center gap-1 sm:gap-1.5 ${isBlue ? "" : "flex-row-reverse"}`}>
-        <Ban className="hidden h-4 w-4 shrink-0 text-dim sm:block" aria-label="Bans" />
-        {Array.from({ length: 4 }).map((_, i) => {
-          const name = bans[i];
-          const isActive = i === activeBanSlot;
-          const ghostBanOffset = i - bans.length;
-          const ghostBan =
-            !name && ghostBanOffset >= 0 && ghostBanOffset < 2 ? predictedNextBans[ghostBanOffset] : undefined;
-          const canClickGhostBan = Boolean(ghostBan && isActive && onLockHero);
-          const banTriggers = ghostBan?.triggered_by?.map(displayName) ?? [];
+          <Ban className="hidden h-4 w-4 shrink-0 text-dim sm:block" aria-label="Bans" />
+          {Array.from({ length: 4 }).map((_, i) => {
+            const name = bans[i];
+            const banTimedOut = name ? timedOutHeroes[name] : undefined;
+            const isActive = i === activeBanSlot;
+            const ghostBanOffset = i - bans.length;
+            const ghostBan =
+              !name && ghostBanOffset >= 0 && ghostBanOffset < 2 ? predictedNextBans[ghostBanOffset] : undefined;
+            const canClickGhostBan = Boolean(ghostBan && isActive && onLockHero);
+            const banTriggers = ghostBan?.triggered_by?.map(displayName) ?? [];
 
-          return (
-            <div
-              key={i}
-              role={canClickGhostBan ? "button" : undefined}
-              tabIndex={canClickGhostBan ? 0 : undefined}
-              onClick={canClickGhostBan && ghostBan ? () => onLockHero?.(ghostBan.hero_name) : undefined}
-              onKeyDown={
-                canClickGhostBan && ghostBan
-                  ? (e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        onLockHero?.(ghostBan.hero_name);
+            return (
+              <div
+                key={i}
+                role={canClickGhostBan ? "button" : undefined}
+                tabIndex={canClickGhostBan ? 0 : undefined}
+                onClick={canClickGhostBan && ghostBan ? () => onLockHero?.(ghostBan.hero_name) : undefined}
+                onKeyDown={
+                  canClickGhostBan && ghostBan
+                    ? (e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onLockHero?.(ghostBan.hero_name);
+                        }
                       }
-                    }
-                  : undefined
-              }
-              title={
-                name
-                  ? displayName(name)
-                  : ghostBan
-                    ? `AI คาดเดาแบน #${ghostBanOffset + 1}: ${displayName(ghostBan.hero_name)} (${ghostBan.probability_pct.toFixed(1)}%)${
-                        banTriggers.length > 0 ? ` · ป้องกัน ${banTriggers.join(", ")}` : ""
+                    : undefined
+                }
+                title={
+                  name
+                    ? `${displayName(name)}${
+                        banTimedOut === "autolock"
+                          ? " · หมดเวลา (Auto-Lock)"
+                          : banTimedOut
+                            ? " · แบนไม่ทันเวลา (0:00)"
+                            : ""
                       }`
-                    : `Ban ${i + 1}`
-              }
-              className={`relative aspect-square h-8.5 shrink-0 overflow-hidden border bg-panel sm:h-11 lg:h-11 xl:h-12 2xl:h-13 ${
-                isActive
-                  ? "border-gold animate-slot-pulse"
-                  : ghostBan
-                    ? "border-dashed border-red/50"
-                    : "border-line"
-              } ${i === 2 ? (isBlue ? "ml-1 sm:ml-2" : "mr-1 sm:mr-2") : ""} ${canClickGhostBan ? "cursor-pointer" : ""}`}
-            >
-              {name ? (
-                <>
-                  <HeroPortrait name={name} hero={heroMap.get(name)} className="grayscale opacity-60" />
-                  <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,transparent_46%,var(--color-red)_47%,var(--color-red)_53%,transparent_54%)] opacity-80" />
-                </>
-              ) : ghostBan ? (
-                <div
-                  className={`relative h-full w-full transition-opacity ${
-                    ghostBanOffset === 0 ? "opacity-45 hover:opacity-85" : "opacity-30 hover:opacity-75"
-                  }`}
-                >
-                  <HeroPortrait
-                    name={ghostBan.hero_name}
-                    hero={heroMap.get(ghostBan.hero_name)}
-                    className="saturate-50"
-                  />
-                  <div className="pointer-events-none absolute inset-x-0 bottom-0 truncate bg-bg/85 px-0.5 py-0.5 text-center font-mono text-[8px] font-bold text-red sm:text-[9px]">
-                    {displayName(ghostBan.hero_name)}
+                    : ghostBan
+                      ? `AI คาดเดาแบน #${ghostBanOffset + 1}: ${displayName(ghostBan.hero_name)} (${ghostBan.probability_pct.toFixed(1)}%)${
+                          banTriggers.length > 0 ? ` · ป้องกัน ${banTriggers.join(", ")}` : ""
+                        }`
+                      : `Ban ${i + 1}`
+                }
+                className={`relative aspect-square h-8.5 shrink-0 overflow-hidden border bg-panel sm:h-11 lg:h-11 xl:h-12 2xl:h-13 ${
+                  isActive
+                    ? "border-gold animate-slot-pulse"
+                    : banTimedOut
+                      ? "border-red ring-1 ring-red/75"
+                      : ghostBan
+                        ? "border-dashed border-red/50"
+                        : "border-line"
+                } ${i === 2 ? (isBlue ? "ml-1 sm:ml-2" : "mr-1 sm:mr-2") : ""} ${canClickGhostBan ? "cursor-pointer" : ""}`}
+              >
+                {name ? (
+                  <>
+                    <HeroPortrait name={name} hero={heroMap.get(name)} className="grayscale opacity-60" />
+                    <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,transparent_46%,var(--color-red)_47%,var(--color-red)_53%,transparent_54%)] opacity-80" />
+                    {banTimedOut && (
+                      <>
+                        <span className="pointer-events-none absolute top-0.5 right-0.5 z-10 grid h-3.5 w-3.5 place-items-center bg-red text-bg shadow sm:h-4 sm:w-4">
+                          <ClockAlert className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                        </span>
+                        <span className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-red/95 py-0.5 text-center font-display text-[7.5px] font-extrabold leading-none text-bg sm:text-[8.5px]">
+                          <span className="sm:hidden">ไม่ทัน</span>
+                          <span className="hidden sm:inline">แบนไม่ทัน</span>
+                        </span>
+                      </>
+                    )}
+                  </>
+                ) : ghostBan ? (
+                  <div
+                    className={`relative h-full w-full transition-opacity ${
+                      ghostBanOffset === 0 ? "opacity-45 hover:opacity-85" : "opacity-30 hover:opacity-75"
+                    }`}
+                  >
+                    <HeroPortrait
+                      name={ghostBan.hero_name}
+                      hero={heroMap.get(ghostBan.hero_name)}
+                      className="saturate-50"
+                    />
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 truncate bg-bg/85 px-0.5 py-0.5 text-center font-mono text-[8px] font-bold text-red sm:text-[9px]">
+                      {displayName(ghostBan.hero_name)}
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div
-                  className={`grid h-full place-items-center font-mono text-[10px] font-bold sm:text-xs ${
-                    isActive ? "text-gold" : "text-dim"
-                  }`}
-                >
-                  B{i + 1}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+                ) : (
+                  <div
+                    className={`grid h-full place-items-center font-mono text-[10px] font-bold sm:text-xs ${
+                      isActive ? "text-gold" : "text-dim"
+                    }`}
+                  >
+                    B{i + 1}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
 
-      {/* On-Board Global Ban (Used Heroes by this Team) */}
+      {/* On-Board Global Ban */}
       <div
         className={`flex shrink-0 flex-col overflow-hidden border bg-panel/90 p-1.5 sm:p-2 ${
           isBlue ? "border-blue/35" : "border-red/35"

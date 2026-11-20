@@ -1,4 +1,4 @@
-import { type ReactNode, type RefObject, useEffect, useRef } from "react";
+import { type ReactNode, type RefObject, useCallback, useEffect, useRef, useState } from "react";
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea, [tabindex]:not([tabindex="-1"])';
 
@@ -9,19 +9,56 @@ interface ModalProps {
   className?: string;
   /** Element to focus on open; defaults to the first focusable element */
   initialFocusRef?: RefObject<HTMLElement | null>;
+  /** When true, plays the smooth exit (fade + scale-down) transition before unmounting */
+  isClosing?: boolean;
   onClose: () => void;
-  children: ReactNode;
+  children: ReactNode | ((requestClose: (afterClose?: () => void) => void) => ReactNode);
 }
 
 /** Accessible dialog: Escape/backdrop close, focus trap, body scroll lock, focus restore on close. */
-export function Modal({ labelledBy, className = "", initialFocusRef, onClose, children }: ModalProps) {
+export function Modal({
+  labelledBy,
+  className = "",
+  initialFocusRef,
+  isClosing = false,
+  onClose,
+  children,
+}: ModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
   const mouseDownTargetRef = useRef<EventTarget | null>(null);
+  const [isEntered, setIsEntered] = useState(false);
+  const [internalClosing, setInternalClosing] = useState(false);
+  const [afterCloseCb, setAfterCloseCb] = useState<(() => void) | null>(null);
 
   useEffect(() => {
     onCloseRef.current = onClose;
   }, [onClose]);
+
+  const requestClose = useCallback((afterClose?: () => void) => {
+    setInternalClosing(true);
+    if (afterClose) {
+      setAfterCloseCb(() => afterClose);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!internalClosing) return;
+    const reducedMotion =
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reducedMotion) {
+      onCloseRef.current();
+      afterCloseCb?.();
+      return;
+    }
+    const timerId = window.setTimeout(() => {
+      onCloseRef.current();
+      afterCloseCb?.();
+    }, 180);
+    return () => window.clearTimeout(timerId);
+  }, [internalClosing, afterCloseCb]);
 
   useEffect(() => {
     const panel = panelRef.current;
@@ -29,11 +66,14 @@ export function Modal({ labelledBy, className = "", initialFocusRef, onClose, ch
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     (initialFocusRef?.current ?? panel?.querySelector<HTMLElement>(FOCUSABLE) ?? panel)?.focus();
+    const rafId = window.requestAnimationFrame(() => {
+      setIsEntered(true);
+    });
 
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
         e.stopPropagation();
-        onCloseRef.current();
+        requestClose();
         return;
       }
       if (e.key !== "Tab" || !panel) return;
@@ -52,21 +92,26 @@ export function Modal({ labelledBy, className = "", initialFocusRef, onClose, ch
 
     window.addEventListener("keydown", onKeyDown);
     return () => {
+      window.cancelAnimationFrame(rafId);
       window.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = prevOverflow;
       previouslyFocused?.focus();
     };
-  }, [initialFocusRef]);
+  }, [initialFocusRef, requestClose]);
+
+  const show = isEntered && !isClosing && !internalClosing;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3 backdrop-blur-sm"
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3 backdrop-blur-sm transition-opacity duration-200 ease-out motion-reduce:transition-none ${
+        show ? "opacity-100" : "opacity-0"
+      }`}
       onMouseDown={(e) => {
         mouseDownTargetRef.current = e.target;
       }}
       onClick={(e) => {
         if (e.target === e.currentTarget && mouseDownTargetRef.current === e.currentTarget) {
-          onClose();
+          requestClose();
         }
       }}
     >
@@ -76,10 +121,12 @@ export function Modal({ labelledBy, className = "", initialFocusRef, onClose, ch
         aria-modal="true"
         aria-labelledby={labelledBy}
         tabIndex={-1}
-        className={`flex max-h-[92dvh] w-full flex-col overflow-y-auto rounded-lg border border-line bg-panel shadow-2xl outline-none clip-chamfer ${className}`}
+        className={`flex max-h-[92dvh] w-full flex-col overflow-y-auto rounded-lg border border-line bg-panel shadow-2xl outline-none transition-all duration-200 ease-out motion-reduce:transition-none clip-chamfer ${
+          show ? "translate-y-0 scale-100 opacity-100" : "translate-y-2 scale-95 opacity-0"
+        } ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
-        {children}
+        {typeof children === "function" ? children(requestClose) : children}
       </div>
     </div>
   );

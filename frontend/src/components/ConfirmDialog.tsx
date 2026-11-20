@@ -27,7 +27,13 @@ export function ConfirmDialog({
   const isDanger = tone === "danger";
 
   return createPortal(
-    <Modal labelledBy={titleId} onClose={onCancel} className="max-w-md overflow-hidden [clip-path:none]">
+    <Modal
+      labelledBy={titleId}
+      onClose={onCancel}
+      className="max-w-md overflow-hidden [clip-path:none]"
+    >
+      {(requestClose) => (
+        <>
       <div className={`h-0.5 w-full ${isDanger ? "bg-red" : "bg-gold"}`} />
       <div className="flex items-start justify-between gap-3 border-b border-line px-5 py-3.5">
         <div className="flex min-w-0 items-center gap-2.5">
@@ -44,7 +50,7 @@ export function ConfirmDialog({
         </div>
         <button
           type="button"
-          onClick={onCancel}
+          onClick={() => requestClose()}
           aria-label="ปิด"
           className="min-h-7 min-w-7 rounded p-1 text-dim transition-colors hover:bg-panel-2 hover:text-ink"
         >
@@ -59,7 +65,7 @@ export function ConfirmDialog({
       <div className="flex items-center justify-end gap-2.5 border-t border-line bg-bg/70 px-5 py-3">
         <button
           type="button"
-          onClick={onCancel}
+          onClick={() => requestClose()}
           className="h-9 border border-line-strong bg-panel px-4 font-display text-xs font-semibold text-muted transition-colors hover:border-ink/40 hover:text-ink"
         >
           {cancelLabel}
@@ -76,6 +82,8 @@ export function ConfirmDialog({
           {confirmLabel}
         </button>
       </div>
+        </>
+      )}
     </Modal>,
     document.body,
   );

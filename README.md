@@ -1,17 +1,17 @@
 # RoV (Arena of Valor) Pro Draft Intelligence — SOTA GNN-Transformer
 
-Comprehensive hero database covering all **130 heroes (up to Evita)**, pro match dataset with **4,347 complete games (RPL, APL, AIC, AOG, GCS from 2024–2026)**, and State-of-the-Art architecture (**`RoVDraftGNNTransformer`**) for sequential draft recommendation (Next-Pick / Next-Ban) and win rate estimation (`PredWin%`) under **Global Ban Pick** rules.
+Comprehensive hero database covering all **130 heroes (up to Evita)**, pro match dataset with **4,352 complete games (RPL, APL, AIC, AOG, GCS from 2024–2026)**, and State-of-the-Art architecture (**`RoVDraftGNNTransformer`**) for sequential draft recommendation (Next-Pick / Next-Ban) and win rate estimation (`PredWin%`) under **Global Ban Pick** rules.
 
 ---
 
 ## Repository Structure
 
 * `data/heroes_130_full.json` & `data/heroes_130_summary.csv` — Full 130-hero dataset with detailed skill descriptions and 10 capability flags.
-* `data/matches_draft_full.json` & `data/matches_draft_flat.csv` — 4,347 pro match drafts with chronological ban/pick sequences and per-series Global Ban tracking.
-* `data/matches_training.json` — Curated training set: 3,530 games from 2025–2026 (2024 excluded), 51.8% with screenshot-verified true pick order. Rebuilt via `python src/build_training_dataset.py --min-year 2025`.
-* `data/true_pick_order.json` — 1,828 games with true chronological pick order read from broadcast draft screenshots.
+* `data/matches_draft_full.json` & `data/matches_draft_flat.csv` — 4,352 pro match drafts with chronological ban/pick sequences and per-series Global Ban tracking.
+* `data/matches_training.json` — Curated training set: 3,535 games from 2025–2026 (2024 excluded), 51.9% with screenshot-verified true pick order. Rebuilt via `python src/build_training_dataset.py --min-year 2025`.
+* `data/true_pick_order.json` — 1,833 games with true chronological pick order read from broadcast draft screenshots.
 * `data/hero_tier_overrides.json` — Hand-maintained tiers for new, reworked, or low-sample heroes (e.g. Evita, Zanis, Ata). Used by the `/heroes` API tier field and the `moba-meta-intel` tier list.
-* `data/hero_draft_stats.csv`, `data/synergy_matrix.csv`, `data/counter_matrix.csv` — Lane distribution stats across 5 main lanes, ally synergy matrix (2,534 pairs), and enemy counter matrix (6,128 pairs).
+* `data/hero_draft_stats.csv`, `data/synergy_matrix.csv`, `data/counter_matrix.csv` — Lane distribution stats across 5 main lanes, ally synergy matrix (2,538 pairs), and enemy counter matrix (6,140 pairs).
 * `src/train_sota_model.py` — SOTA **`RoVDraftGNNTransformer`** model (Multi-Relational Hero GNN + Multi-Head Draft Transformer + Bounded Neural Temperature Gate + Dual Policy & Win-Value Heads).
 * `src/predict_draft_cli.py` — CLI draft simulator and tournament scenario runner.
 * `src/db.py` — SQLite multi-user store (`users`, `auth_sessions`, `user_oauth_accounts`, isolated per-user `user_draft_states` and `user_combat_builds`, `RateLimiter`).

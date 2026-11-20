@@ -21,7 +21,7 @@ from fastapi import Cookie, Depends, FastAPI, Header, HTTPException, Query, Requ
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from google.auth.transport import requests as google_auth_requests
 from google.oauth2 import id_token as google_id_token
@@ -37,6 +37,7 @@ from src.db import (
 )
 from src.predictor import RoVDraftPredictor
 from src.schemas import (
+    AdminStatsResponse,
     AuthLoginRequest,
     AuthRegisterRequest,
     AuthStatusResponse,
@@ -48,10 +49,14 @@ from src.schemas import (
     CombatRuneRecommendationResponse,
     CombatStatsRequest,
     CombatStatsResponse,
+    DailyVisitRequest,
+    DailyVisitResponse,
     DraftPredictionResponse,
     DraftSessionStateSchema,
     DraftStateRequest,
     HealthResponse,
+    PricingSurveyRequest,
+    PricingSurveyResponse,
     _canon_hero_key,
 )
 from src.search.draft_mcts import DRAFT_STEPS
@@ -108,11 +113,11 @@ _SECURITY_HEADERS = {
     "Cross-Origin-Opener-Policy": "same-origin",
     "Content-Security-Policy": (
         "default-src 'self'; "
-        "script-src 'self'; "
+        "script-src 'self' https://static.cloudflareinsights.com; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
         "font-src 'self' https://fonts.gstatic.com data:; "
         "img-src 'self' data: blob:; "
-        "connect-src 'self'; "
+        "connect-src 'self' https://cloudflareinsights.com; "
         "object-src 'none'; "
         "base-uri 'self'; "
         "form-action 'self'; "
@@ -267,7 +272,9 @@ async def security_and_lockdown_middleware(request: Request, call_next):
         response.headers.setdefault(k, v)
     if config.is_production and _is_https_request(request):
         response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
-    if norm_path.startswith(("/health", "/heroes", "/auth/", "/draft/session", "/predict", "/combat/")):
+    if norm_path.startswith(
+        ("/health", "/heroes", "/auth/", "/draft/session", "/predict", "/combat/", "/survey/", "/admin/")
+    ):
         response.headers.setdefault("Cache-Control", "no-store")
     return response
 
@@ -496,7 +503,8 @@ _auth_rate_limiter = RateLimiter(max_attempts=20, window_seconds=60)
 _login_user_limiter = RateLimiter(max_attempts=10, window_seconds=300)
 _account_login_limiter = RateLimiter(max_attempts=20, window_seconds=300)
 _global_reg_limiter = RateLimiter(max_attempts=40, window_seconds=3600)
-_predict_rate_limiter = RateLimiter(max_attempts=60, window_seconds=60)
+_predict_rate_limiter = RateLimiter(max_attempts=120, window_seconds=60)
+_survey_rate_limiter = RateLimiter(max_attempts=10, window_seconds=60)
 _scrypt_semaphore = threading.BoundedSemaphore(4)
 
 
@@ -728,11 +736,15 @@ def _resolve_oauth_redirect_uri(request: Request, provider: str, explicit_uri: s
 
 
 def _auth_status_response(user: AuthUser | None) -> AuthStatusResponse:
+    survey_choice = get_user_db().get_pricing_survey_choice(user.id) if user is not None else None
     return AuthStatusResponse(
         authenticated=user is not None,
         user=_to_user_schema(user) if user is not None else None,
         google_login_enabled=config.google_oauth_enabled,
         discord_login_enabled=config.discord_oauth_enabled,
+        pricing_survey_answered=survey_choice is not None,
+        pricing_survey_choice=survey_choice,  # type: ignore[arg-type]
+        is_admin=config.is_admin_username(user.username) if user is not None else False,
     )
 
 
@@ -811,12 +823,36 @@ def _oauth_success_redirect(request: Request, provider: str, session_token: str)
     return resp
 
 
+def _read_public_text_asset(filename: str) -> str | None:
+    """Read a static public text file from built dist first, falling back to frontend/public."""
+    for candidate in (FRONTEND_DIST / filename, FRONTEND_DIR / "public" / filename):
+        if candidate.is_file():
+            return candidate.read_text(encoding="utf-8")
+    return None
+
+
 @app.get("/privacy", response_class=HTMLResponse)
 def privacy_policy():
-    for candidate in (FRONTEND_DIST / "privacy.html", FRONTEND_DIR / "public" / "privacy.html"):
-        if candidate.is_file():
-            return HTMLResponse(content=candidate.read_text(encoding="utf-8"), status_code=200)
+    content = _read_public_text_asset("privacy.html")
+    if content is not None:
+        return HTMLResponse(content=content, status_code=200)
     raise HTTPException(status_code=404, detail="Privacy policy page not found")
+
+
+@app.get("/robots.txt", response_class=PlainTextResponse)
+def robots_txt():
+    content = _read_public_text_asset("robots.txt")
+    if content is not None:
+        return PlainTextResponse(content=content, status_code=200)
+    raise HTTPException(status_code=404, detail="robots.txt not found")
+
+
+@app.get("/sitemap.xml")
+def sitemap_xml():
+    content = _read_public_text_asset("sitemap.xml")
+    if content is not None:
+        return Response(content=content, media_type="application/xml; charset=utf-8", status_code=200)
+    raise HTTPException(status_code=404, detail="sitemap.xml not found")
 
 
 @app.get("/auth/me", response_model=AuthStatusResponse)
@@ -1208,6 +1244,215 @@ def clear_combat_builds(
     _verify_expected_user(user, x_expected_user)
     get_user_db().clear_user_combat_builds(user.id)
     return CombatBuildsSyncSchema()
+
+
+_telemetry_rate_limiter = RateLimiter(max_attempts=30, window_seconds=60)
+
+
+@app.post("/telemetry/visit", response_model=DailyVisitResponse)
+def record_daily_visit(
+    payload: DailyVisitRequest,
+    request: Request,
+    user: AuthUser | None = Depends(get_optional_user),
+):
+    """Record at most one daily visit per browser client_id for returning-user retention analytics."""
+    client_ip = _client_ip(request)
+    if not _telemetry_rate_limiter.check_and_record(f"visit:{client_ip}"):
+        raise HTTPException(status_code=429, detail="Too many telemetry requests")
+    visit_date = get_user_db().record_daily_visit(
+        client_id=payload.client_id,
+        user_id=user.id if user is not None else None,
+    )
+    return DailyVisitResponse(recorded=True, visit_date=visit_date)
+
+
+@app.post("/survey/pricing", response_model=PricingSurveyResponse)
+def submit_pricing_survey(
+    payload: PricingSurveyRequest,
+    request: Request,
+    user: AuthUser | None = Depends(get_optional_user),
+):
+    """Record user or guest willingness-to-pay survey response."""
+    client_ip = _client_ip(request)
+    if not _survey_rate_limiter.check_and_record(f"survey:{client_ip}"):
+        raise HTTPException(status_code=429, detail="Too many survey submissions, please try again shortly")
+    get_user_db().record_pricing_survey(
+        user_id=user.id if user is not None else None,
+        client_id=payload.client_id,
+        choice=payload.choice,
+    )
+    return PricingSurveyResponse(recorded=True, choice=payload.choice)
+
+
+_cf_stats_lock = threading.Lock()
+_cf_stats_cache: dict[str, object] = {"at": 0.0, "data": None}
+
+
+def _normalize_referer_host(host: str) -> str:
+    """Group Cloudflare RUM refererHost subdomains into clean channel labels."""
+    clean = host.strip().lower()
+    if not clean:
+        return "Direct / แอปแชต"
+    if clean == "facebook.com" or clean.endswith(".facebook.com") or clean == "fb.com" or clean.endswith(".fb.com"):
+        return "Facebook"
+    if clean == "accounts.google.com":
+        return "Google OAuth"
+    if (
+        clean == "com.google.android.googlequicksearchbox"
+        or clean == "google.com"
+        or clean.endswith(".google.com")
+        or clean == "google.co.th"
+        or clean.endswith(".google.co.th")
+    ):
+        return "Google Search"
+    if clean == "instagram.com" or clean.endswith(".instagram.com"):
+        return "Instagram"
+    if clean in {"discord.com", "discordapp.com"} or clean.endswith(".discord.com"):
+        return "Discord"
+    if clean in {"bing.com", "www.bing.com"} or clean.endswith(".bing.com"):
+        return "Bing"
+    if clean in {"youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be"}:
+        return "YouTube"
+    if clean in {"t.co", "x.com", "twitter.com", "www.x.com", "mobile.twitter.com"}:
+        return "X (Twitter)"
+    if clean == "tiktok.com" or clean.endswith(".tiktok.com"):
+        return "TikTok"
+    if clean == "line.me" or clean.endswith(".line.me"):
+        return "LINE"
+    return clean.removeprefix("www.")
+
+
+def _aggregate_referers(rows: object) -> list[dict[str, object]]:
+    """Aggregate RUM refererHost rows by normalized channel, returning top 10."""
+    if not isinstance(rows, list):
+        return []
+    totals: dict[str, int] = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        dims = row.get("dimensions") or {}
+        sums = row.get("sum") or {}
+        if not isinstance(dims, dict) or not isinstance(sums, dict):
+            continue
+        visits = int(sums.get("visits") or 0)
+        if visits <= 0:
+            continue
+        label = _normalize_referer_host(str(dims.get("refererHost") or ""))
+        totals[label] = totals.get(label, 0) + visits
+    ranked = sorted(totals.items(), key=lambda item: item[1], reverse=True)[:10]
+    return [{"source": source, "visits": count} for source, count in ranked]
+
+
+def _fetch_cloudflare_stats() -> dict[str, object] | None:
+    if not (config.cf_api_token and config.cf_account_id and config.cf_zone_id):
+        return None
+    now_mono = time.monotonic()
+    with _cf_stats_lock:
+        cached_at = float(_cf_stats_cache.get("at") or 0.0)
+        cached_data = _cf_stats_cache.get("data")
+        if isinstance(cached_data, dict) and (now_mono - cached_at) < 60.0:
+            return cached_data
+
+    from datetime import datetime, timedelta, timezone
+
+    now_utc = datetime.now(timezone.utc)
+    tz_th = timezone(timedelta(hours=7))
+    now_th = now_utc.astimezone(tz_th)
+    today_start_utc = datetime(now_th.year, now_th.month, now_th.day, 0, 0, 0, tzinfo=tz_th).astimezone(timezone.utc)
+    today_start_str = today_start_utc.strftime("%Y-%m-%dT%H:%M:%SZ")
+    start_7d_str = (now_utc - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    end_dt_str = now_utc.strftime("%Y-%m-%dT%H:%M:%SZ")
+    end_date_str = now_utc.strftime("%Y-%m-%d")
+
+    query = f"""
+    {{
+      viewer {{
+        zones(filter: {{zoneTag: "{config.cf_zone_id}"}}) {{
+          all_time: httpRequests1dGroups(limit: 1, filter: {{date_geq: "2026-11-18", date_leq: "{end_date_str}"}}) {{
+            sum {{ requests pageViews }}
+            uniq {{ uniques }}
+          }}
+          today_th: httpRequests1hGroups(limit: 1, filter: {{datetime_geq: "{today_start_str}", datetime_leq: "{end_dt_str}"}}) {{
+            sum {{ requests pageViews }}
+            uniq {{ uniques }}
+          }}
+        }}
+        accounts(filter: {{accountTag: "{config.cf_account_id}"}}) {{
+          rum_today_th: rumPageloadEventsAdaptiveGroups(limit: 1, filter: {{datetime_geq: "{today_start_str}", datetime_leq: "{end_dt_str}"}}) {{
+            count
+            sum {{ visits }}
+          }}
+          rum_all: rumPageloadEventsAdaptiveGroups(limit: 1, filter: {{datetime_geq: "2026-11-18T00:00:00Z", datetime_leq: "{end_dt_str}"}}) {{
+            count
+            sum {{ visits }}
+          }}
+          rum_ref_today: rumPageloadEventsAdaptiveGroups(limit: 25, filter: {{datetime_geq: "{today_start_str}", datetime_leq: "{end_dt_str}"}}, orderBy: [sum_visits_DESC]) {{
+            dimensions {{ refererHost }}
+            sum {{ visits }}
+          }}
+          rum_ref_7d: rumPageloadEventsAdaptiveGroups(limit: 25, filter: {{datetime_geq: "{start_7d_str}", datetime_leq: "{end_dt_str}"}}, orderBy: [sum_visits_DESC]) {{
+            dimensions {{ refererHost }}
+            sum {{ visits }}
+          }}
+        }}
+      }}
+    }}
+    """
+    try:
+        resp = httpx.post(
+            "https://api.cloudflare.com/client/v4/graphql",
+            json={"query": query},
+            headers={
+                "Authorization": f"Bearer {config.cf_api_token}",
+                "Content-Type": "application/json",
+            },
+            timeout=6.0,
+        )
+        if resp.status_code != 200:
+            return None
+        viewer = (resp.json().get("data") or {}).get("viewer") or {}
+        zones = (viewer.get("zones") or [{}])[0]
+        accounts = (viewer.get("accounts") or [{}])[0]
+        all_z = (zones.get("all_time") or [{}])[0]
+        tod_z = (zones.get("today_th") or [{}])[0]
+        rum_t = (accounts.get("rum_today_th") or [{}])[0]
+        rum_a = (accounts.get("rum_all") or [{}])[0]
+        result: dict[str, object] = {
+            "today_uniques": int((tod_z.get("uniq") or {}).get("uniques") or 0),
+            "today_page_views": int((tod_z.get("sum") or {}).get("pageViews") or 0),
+            "today_requests": int((tod_z.get("sum") or {}).get("requests") or 0),
+            "today_rum_visits": int((rum_t.get("sum") or {}).get("visits") or 0),
+            "today_rum_pageloads": int(rum_t.get("count") or 0),
+            "total_uniques": int((all_z.get("uniq") or {}).get("uniques") or 0),
+            "total_page_views": int((all_z.get("sum") or {}).get("pageViews") or 0),
+            "total_requests": int((all_z.get("sum") or {}).get("requests") or 0),
+            "total_rum_visits": int((rum_a.get("sum") or {}).get("visits") or 0),
+            "total_rum_pageloads": int(rum_a.get("count") or 0),
+            "referers_today": _aggregate_referers(accounts.get("rum_ref_today")),
+            "referers_7d": _aggregate_referers(accounts.get("rum_ref_7d")),
+        }
+        with _cf_stats_lock:
+            _cf_stats_cache["at"] = now_mono
+            _cf_stats_cache["data"] = result
+        return result
+    except Exception:
+        return None
+
+
+@app.get("/admin/stats", response_model=AdminStatsResponse)
+def get_admin_stats(user: AuthUser | None = Depends(get_optional_user)):
+    """Owner-only live production & survey analytics endpoint (404 for non-admins)."""
+    if user is None or not config.is_admin_username(user.username):
+        raise HTTPException(status_code=404, detail="Not Found")
+    db_stats = get_user_db().get_admin_stats()
+    cf_stats = _fetch_cloudflare_stats()
+    return AdminStatsResponse(
+        generated_at_th=str(db_stats["generated_at_th"]),
+        users=db_stats["users"],
+        survey=db_stats["survey"],
+        cloudflare=cf_stats,
+        retention=db_stats.get("retention"),
+    )
 
 
 @app.post("/predict", response_model=DraftPredictionResponse)

@@ -10,11 +10,13 @@ import secrets
 import sqlite3
 import threading
 import time
-from collections import OrderedDict, deque
+from collections import Counter, OrderedDict, deque
 from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from typing import Any
 
 USERNAME_RE = re.compile(r"^[a-zA-Z0-9_.-]{3,32}$")
 SESSION_COOKIE_NAME = "rov_session"
@@ -230,6 +232,37 @@ class UserDatabase:
 
                     CREATE INDEX IF NOT EXISTS idx_user_oauth_user
                         ON user_oauth_accounts(user_id, created_at DESC);
+
+                    CREATE TABLE IF NOT EXISTS pricing_survey_responses (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                        client_id TEXT,
+                        choice TEXT NOT NULL CHECK(choice IN ('willing', 'not_willing')),
+                        is_guest INTEGER NOT NULL DEFAULT 0,
+                        created_at INTEGER NOT NULL,
+                        updated_at INTEGER NOT NULL
+                    );
+
+                    CREATE UNIQUE INDEX IF NOT EXISTS idx_pricing_survey_user
+                        ON pricing_survey_responses(user_id) WHERE user_id IS NOT NULL;
+
+                    CREATE UNIQUE INDEX IF NOT EXISTS idx_pricing_survey_client
+                        ON pricing_survey_responses(client_id) WHERE client_id IS NOT NULL;
+
+                    CREATE TABLE IF NOT EXISTS daily_visits (
+                        client_id TEXT NOT NULL,
+                        visit_date TEXT NOT NULL,
+                        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                        first_seen_date TEXT NOT NULL,
+                        created_at INTEGER NOT NULL,
+                        PRIMARY KEY (client_id, visit_date)
+                    );
+
+                    CREATE INDEX IF NOT EXISTS idx_daily_visits_date
+                        ON daily_visits(visit_date);
+
+                    CREATE INDEX IF NOT EXISTS idx_daily_visits_first_seen
+                        ON daily_visits(first_seen_date);
                     """
                 )
                 cols = {str(r["name"]) for r in conn.execute("PRAGMA table_info(users)").fetchall()}
@@ -579,3 +612,285 @@ class UserDatabase:
         # Store an empty tombstone with current timestamp so stale offline clients cannot resurrect cleared builds.
         tombstone_at = int(time.time() * 1000)
         self.save_user_combat_builds(user_id, {"updatedAt": tombstone_at}, tombstone_at)
+
+    def get_pricing_survey_choice(self, user_id: int) -> str | None:
+        self.ensure_schema()
+        with self._lock, self._connect() as conn:
+            row = conn.execute(
+                "SELECT choice FROM pricing_survey_responses WHERE user_id = ? LIMIT 1",
+                (user_id,),
+            ).fetchone()
+        if row is None:
+            return None
+        choice = str(row["choice"])
+        return choice if choice in {"willing", "not_willing"} else None
+
+    def has_answered_pricing_survey(self, user_id: int) -> bool:
+        return self.get_pricing_survey_choice(user_id) is not None
+
+    def record_pricing_survey(self, user_id: int | None, client_id: str | None, choice: str) -> None:
+        if choice not in {"willing", "not_willing"}:
+            raise ValueError("Invalid survey choice")
+        norm_client_id = client_id.strip()[:64] if client_id and client_id.strip() else None
+        now = int(time.time())
+        self.ensure_schema()
+        with self._lock, self._connect() as conn:
+            if user_id is not None:
+                existing_user = conn.execute(
+                    "SELECT id FROM pricing_survey_responses WHERE user_id = ?",
+                    (user_id,),
+                ).fetchone()
+                if existing_user is not None:
+                    conn.execute(
+                        "UPDATE pricing_survey_responses SET choice = ?, updated_at = ? WHERE id = ?",
+                        (choice, now, int(existing_user["id"])),
+                    )
+                    return
+                if norm_client_id is not None:
+                    existing_client = conn.execute(
+                        "SELECT id, user_id FROM pricing_survey_responses WHERE client_id = ?",
+                        (norm_client_id,),
+                    ).fetchone()
+                    if existing_client is not None:
+                        if existing_client["user_id"] is None:
+                            conn.execute(
+                                """
+                                UPDATE pricing_survey_responses
+                                SET user_id = ?, choice = ?, is_guest = 0, updated_at = ?
+                                WHERE id = ?
+                                """,
+                                (user_id, choice, now, int(existing_client["id"])),
+                            )
+                            return
+                        # Another account already claimed this browser client_id; store this user independently.
+                        norm_client_id = None
+                conn.execute(
+                    """
+                    INSERT INTO pricing_survey_responses
+                        (user_id, client_id, choice, is_guest, created_at, updated_at)
+                    VALUES (?, ?, ?, 0, ?, ?)
+                    """,
+                    (user_id, norm_client_id, choice, now, now),
+                )
+                return
+
+            if norm_client_id is not None:
+                existing_client = conn.execute(
+                    "SELECT id FROM pricing_survey_responses WHERE client_id = ?",
+                    (norm_client_id,),
+                ).fetchone()
+                if existing_client is not None:
+                    conn.execute(
+                        "UPDATE pricing_survey_responses SET choice = ?, updated_at = ? WHERE id = ?",
+                        (choice, now, int(existing_client["id"])),
+                    )
+                    return
+            conn.execute(
+                """
+                INSERT INTO pricing_survey_responses
+                    (user_id, client_id, choice, is_guest, created_at, updated_at)
+                VALUES (NULL, ?, ?, 1, ?, ?)
+                """,
+                (norm_client_id, choice, now, now),
+            )
+
+    def record_daily_visit(
+        self,
+        *,
+        client_id: str,
+        user_id: int | None,
+        visit_date_override: str | None = None,
+    ) -> str:
+        """Record at most one visit row per client_id per UTC+7 calendar day."""
+        self.ensure_schema()
+        now = int(time.time())
+        tz_th = timezone(timedelta(hours=7))
+        today_str = visit_date_override or datetime.fromtimestamp(now, tz_th).strftime("%Y-%m-%d")
+
+        with self._lock, self._connect() as conn:
+            row = conn.execute(
+                "SELECT MIN(visit_date) AS first_seen FROM daily_visits WHERE client_id = ?",
+                (client_id,),
+            ).fetchone()
+            existing_first = str(row["first_seen"]) if row and row["first_seen"] else None
+            first_seen = min(existing_first, today_str) if existing_first else today_str
+            conn.execute(
+                """
+                INSERT INTO daily_visits (client_id, visit_date, user_id, first_seen_date, created_at)
+                VALUES (?, ?, ?, ?, ?)
+                ON CONFLICT(client_id, visit_date) DO UPDATE SET
+                    user_id = COALESCE(daily_visits.user_id, excluded.user_id)
+                """,
+                (client_id, today_str, user_id, first_seen, now),
+            )
+            conn.commit()
+        return today_str
+
+    def get_admin_stats(self) -> dict[str, Any]:
+        self.ensure_schema()
+        now = int(time.time())
+        tz_th = timezone(timedelta(hours=7))
+        now_dt = datetime.fromtimestamp(now, tz_th)
+        today_start = int(datetime(now_dt.year, now_dt.month, now_dt.day, 0, 0, 0, tzinfo=tz_th).timestamp())
+
+        with self._lock, self._connect() as conn:
+            total_users = int(conn.execute("SELECT COUNT(*) FROM users").fetchone()[0])
+            new_users_today = int(
+                conn.execute("SELECT COUNT(*) FROM users WHERE created_at >= ?", (today_start,)).fetchone()[0]
+            )
+            active_sessions = int(
+                conn.execute("SELECT COUNT(*) FROM auth_sessions WHERE expires_at > ?", (now,)).fetchone()[0]
+            )
+            active_session_users = int(
+                conn.execute(
+                    "SELECT COUNT(DISTINCT user_id) FROM auth_sessions WHERE expires_at > ?",
+                    (now,),
+                ).fetchone()[0]
+            )
+            saved_draft_states = int(conn.execute("SELECT COUNT(*) FROM user_draft_states").fetchone()[0])
+
+            oauth_rows = conn.execute(
+                "SELECT provider, COUNT(*) AS cnt FROM user_oauth_accounts GROUP BY provider"
+            ).fetchall()
+            oauth_map = {str(r["provider"]): int(r["cnt"]) for r in oauth_rows}
+            password_only_users = int(
+                conn.execute(
+                    "SELECT COUNT(*) FROM users WHERE id NOT IN (SELECT DISTINCT user_id FROM user_oauth_accounts)"
+                ).fetchone()[0]
+            )
+
+            created_rows = conn.execute("SELECT created_at FROM users").fetchall()
+            by_day_counter = Counter(
+                datetime.fromtimestamp(int(r["created_at"]), tz_th).strftime("%Y-%m-%d") for r in created_rows
+            )
+            signups_by_day = [{"date": d, "count": cnt} for d, cnt in sorted(by_day_counter.items(), reverse=True)[:7]]
+
+            survey_rows = conn.execute(
+                "SELECT choice, is_guest, COUNT(*) AS cnt FROM pricing_survey_responses GROUP BY choice, is_guest"
+            ).fetchall()
+            willing_member = 0
+            willing_guest = 0
+            not_willing_member = 0
+            not_willing_guest = 0
+            for r in survey_rows:
+                ch = str(r["choice"])
+                guest_flag = int(r["cnt"])
+                if ch == "willing":
+                    if int(r["is_guest"]) == 1:
+                        willing_guest += guest_flag
+                    else:
+                        willing_member += guest_flag
+                elif ch == "not_willing":
+                    if int(r["is_guest"]) == 1:
+                        not_willing_guest += guest_flag
+                    else:
+                        not_willing_member += guest_flag
+
+            willing_total = willing_member + willing_guest
+            not_willing_total = not_willing_member + not_willing_guest
+            survey_total = willing_total + not_willing_total
+            willing_pct = round((willing_total / survey_total) * 100.0, 1) if survey_total > 0 else 0.0
+
+            recent_rows = conn.execute(
+                """
+                SELECT p.id, p.choice, p.is_guest, p.updated_at, u.username, u.display_name, u.email
+                FROM pricing_survey_responses p
+                LEFT JOIN users u ON u.id = p.user_id
+                ORDER BY p.updated_at DESC, p.id DESC
+                LIMIT 500
+                """
+            ).fetchall()
+            recent_votes = [
+                {
+                    "id": int(r["id"]),
+                    "choice": str(r["choice"]),
+                    "is_guest": bool(r["is_guest"]),
+                    "username": str(r["username"]) if r["username"] else None,
+                    "display_name": str(r["display_name"]) if r["display_name"] else None,
+                    "email": str(r["email"]) if r["email"] else None,
+                    "updated_at_th": datetime.fromtimestamp(int(r["updated_at"]), tz_th).strftime("%Y-%m-%d %H:%M:%S"),
+                }
+                for r in recent_rows
+            ]
+
+            today_str = now_dt.strftime("%Y-%m-%d")
+            visit_rows = conn.execute("SELECT client_id, visit_date FROM daily_visits").fetchall()
+            client_days: dict[str, set[str]] = {}
+            for r in visit_rows:
+                cid = str(r["client_id"])
+                vdate = str(r["visit_date"])
+                client_days.setdefault(cid, set()).add(vdate)
+
+            first_seen = {cid: min(days) for cid, days in client_days.items()}
+            total_tracked_clients = len(client_days)
+            returning_clients = sum(1 for days in client_days.values() if len(days) >= 2)
+            returning_pct = (
+                round((returning_clients / total_tracked_clients) * 100.0, 1) if total_tracked_clients > 0 else 0.0
+            )
+            today_new = sum(
+                1 for cid, days in client_days.items() if today_str in days and first_seen[cid] == today_str
+            )
+            today_returning = sum(
+                1 for cid, days in client_days.items() if today_str in days and first_seen[cid] < today_str
+            )
+            today_dau = today_new + today_returning
+            d1_eligible = sum(1 for fs in first_seen.values() if fs < today_str)
+            d1_retained = sum(
+                1
+                for cid, days in client_days.items()
+                if first_seen[cid] < today_str and any(d > first_seen[cid] for d in days)
+            )
+            d1_pct = round((d1_retained / d1_eligible) * 100.0, 1) if d1_eligible > 0 else 0.0
+
+            daily_map: dict[str, dict[str, int]] = {}
+            for cid, days in client_days.items():
+                fs = first_seen[cid]
+                for d in days:
+                    bucket = daily_map.setdefault(d, {"new": 0, "returning": 0, "total": 0})
+                    if d == fs:
+                        bucket["new"] += 1
+                    else:
+                        bucket["returning"] += 1
+                    bucket["total"] += 1
+            daily_breakdown = [
+                {"date": d, "new": counts["new"], "returning": counts["returning"], "total": counts["total"]}
+                for d, counts in sorted(daily_map.items(), reverse=True)[:7]
+            ]
+
+        return {
+            "generated_at_th": now_dt.strftime("%Y-%m-%d %H:%M:%S"),
+            "users": {
+                "total": total_users,
+                "new_today": new_users_today,
+                "google": oauth_map.get("google", 0),
+                "discord": oauth_map.get("discord", 0),
+                "password_only": password_only_users,
+                "saved_draft_states": saved_draft_states,
+                "active_sessions": active_sessions,
+                "active_session_users": active_session_users,
+                "signups_by_day": signups_by_day,
+            },
+            "survey": {
+                "total": survey_total,
+                "willing_total": willing_total,
+                "willing_member": willing_member,
+                "willing_guest": willing_guest,
+                "not_willing_total": not_willing_total,
+                "not_willing_member": not_willing_member,
+                "not_willing_guest": not_willing_guest,
+                "willing_pct": willing_pct,
+                "recent": recent_votes,
+            },
+            "retention": {
+                "today_dau": today_dau,
+                "today_new": today_new,
+                "today_returning": today_returning,
+                "total_tracked_clients": total_tracked_clients,
+                "returning_clients": returning_clients,
+                "returning_pct": returning_pct,
+                "d1_eligible": d1_eligible,
+                "d1_retained": d1_retained,
+                "d1_pct": d1_pct,
+                "daily_breakdown": daily_breakdown,
+            },
+        }

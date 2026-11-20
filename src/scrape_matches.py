@@ -175,6 +175,9 @@ TEAM_ALIASES = {
     "TEAM FLASH": "FL",
     "FLASH": "FL",
     "FL": "FL",
+    "FPT X FLASH": "FPT",
+    "FPT FLASH": "FPT",
+    "FPT": "FPT",
     "ONE STAR ESPORTS": "1S",
     "ONE STAR": "1S",
     "1S": "1S",
@@ -306,6 +309,12 @@ def parse_match_block(match_wt: str, tournament_page: str, series_idx: int, norm
     opp2_m = re.search(r"\|\s*opponent2\s*=\s*\{\{(?:TeamOpponent|LiteralOpponent)\|([^|\n}]+)", match_wt)
     team1 = normalize_team(opp1_m.group(1)) if opp1_m else "TEAM1"
     team2 = normalize_team(opp2_m.group(1)) if opp2_m else "TEAM2"
+    # Liquipedia still uses {{TeamOpponent|fl}} for FPT x Flash on 2025+ tournament pages.
+    if year.isdigit() and int(year) >= 2025:
+        if team1 == "FL":
+            team1 = "FPT"
+        if team2 == "FL":
+            team2 = "FPT"
 
     # Find all |mapX={{Map ... }} blocks in order
     map_entries = []
