@@ -27,6 +27,26 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-20 23:18 (UTC+7) — Document Team Pro Membership and Active Session Limits
+**Agent:** Codex
+
+### ✅ Completed Work
+- Documented Team Pro invitations by username and a five-account team limit including the owner.
+- Defined 500 personal saved games per member and 500 shared saved games per team, with a save destination picker and a copy action that preserves personal originals.
+- Replaced paid-tier sign-in eviction in the roadmap with two active Pro sessions per account. A third session can sign in and wait for a slot while the existing sessions continue.
+
+### 📁 Modified Files
+- `docs/SUBSCRIPTION_ROADMAP.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Checked the tier matrix against the membership, history, and session rules and ran `git diff --check`.
+
+### ⚠️ Open Issues / Important Notes
+- The five-minute inactivity timeout is a proposal for testing. The changes describe future behavior.
+
+---
+
 ## 📅 2026-11-20 22:51 (UTC+7) — Document Draft History Limits and Free Cloud Sync
 **Agent:** Codex
 
@@ -44,6 +64,29 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ### ⚠️ Open Issues / Important Notes
 - The Team Pro history limit remains undecided. The roadmap changes describe future behavior.
+
+---
+
+## 📅 2026-11-20 23:25 (UTC+7) — Sync 90-Day Half-Life Checkpoint (Trial #31) & Golden Snapshots in Dev
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Pulled `9ad5f98` from ERAWAN (`90d` recency half-life HPO + SOTA checkpoint: Trial #31 Rank #1 & Safest `Val=2.76992`, `Top-1=24.70%`, `Top-5=61.92%`, served `val_loss=2.81796`, `win_acc=51.69%`).
+- Updated `configs/selected_production_params.json` and `AGENTS.md` metrics table to match `select_parsimonious_params.py` output.
+- Regenerated golden predictor snapshots (`tests/fixtures/predict_golden.json`) for the new checkpoint and verified full test & regression suite locally (not deployed to production yet).
+
+### 📁 Modified Files
+- `configs/selected_production_params.json`
+- `AGENTS.md`
+- `tests/fixtures/predict_golden.json`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `python -c "from tests.test_predictor_golden import regenerate; regenerate()"`
+- `pytest -q --tb=short`, `audit_regression_guard.py`, `ruff check --fix .`, `ruff format .`
+
+### ⚠️ Open Issues / Important Notes
+- Production (`minidraft.app`) intentionally not deployed yet per user instruction.
 
 ---
 
