@@ -1192,7 +1192,7 @@
    {
     "rank": 1,
     "hero_name": "Taara",
-    "probability_pct": 4.43,
+    "probability_pct": 4.41,
     "predicted_win_rate_pct": 54.47,
     "lookahead_win_rate_pct": null,
     "primary_lane": "DS_Lane",
@@ -1230,7 +1230,7 @@
    {
     "rank": 3,
     "hero_name": "Edras",
-    "probability_pct": 3.85,
+    "probability_pct": 3.87,
     "predicted_win_rate_pct": 53.64,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -1249,7 +1249,7 @@
    {
     "rank": 4,
     "hero_name": "Gildur",
-    "probability_pct": 3.25,
+    "probability_pct": 3.26,
     "predicted_win_rate_pct": 68.54,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -1270,7 +1270,7 @@
    {
     "rank": 5,
     "hero_name": "Wisp",
-    "probability_pct": 3.14,
+    "probability_pct": 3.15,
     "predicted_win_rate_pct": 53.28,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -1731,7 +1731,7 @@
    {
     "rank": 1,
     "hero_name": "Taara",
-    "probability_pct": 4.43,
+    "probability_pct": 4.41,
     "predicted_win_rate_pct": 54.47,
     "lookahead_win_rate_pct": null,
     "primary_lane": "DS_Lane",
@@ -1769,7 +1769,7 @@
    {
     "rank": 3,
     "hero_name": "Edras",
-    "probability_pct": 3.85,
+    "probability_pct": 3.87,
     "predicted_win_rate_pct": 53.64,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -1788,7 +1788,7 @@
    {
     "rank": 4,
     "hero_name": "Gildur",
-    "probability_pct": 3.25,
+    "probability_pct": 3.26,
     "predicted_win_rate_pct": 68.54,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -1809,7 +1809,7 @@
    {
     "rank": 5,
     "hero_name": "Wisp",
-    "probability_pct": 3.14,
+    "probability_pct": 3.15,
     "predicted_win_rate_pct": 53.28,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -2286,7 +2286,7 @@
    {
     "rank": 1,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 11.21,
+    "probability_pct": 11.24,
     "predicted_win_rate_pct": 50.62,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -2332,7 +2332,7 @@
    {
     "rank": 1,
     "hero_name": "Taara",
-    "probability_pct": 3.8,
+    "probability_pct": 3.79,
     "predicted_win_rate_pct": 53.74,
     "lookahead_win_rate_pct": null,
     "primary_lane": "DS_Lane",
@@ -2351,7 +2351,7 @@
    {
     "rank": 2,
     "hero_name": "Yue",
-    "probability_pct": 3.42,
+    "probability_pct": 3.39,
     "predicted_win_rate_pct": 53.28,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -2370,7 +2370,7 @@
    {
     "rank": 3,
     "hero_name": "Edras",
-    "probability_pct": 3.38,
+    "probability_pct": 3.4,
     "predicted_win_rate_pct": 55.4,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -2903,7 +2903,7 @@
    {
     "rank": 1,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 11.21,
+    "probability_pct": 11.24,
     "predicted_win_rate_pct": 50.62,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -2949,7 +2949,7 @@
    {
     "rank": 1,
     "hero_name": "Taara",
-    "probability_pct": 3.8,
+    "probability_pct": 3.79,
     "predicted_win_rate_pct": 53.74,
     "lookahead_win_rate_pct": null,
     "primary_lane": "DS_Lane",
@@ -2968,7 +2968,7 @@
    {
     "rank": 2,
     "hero_name": "Yue",
-    "probability_pct": 3.42,
+    "probability_pct": 3.39,
     "predicted_win_rate_pct": 53.28,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -2987,7 +2987,7 @@
    {
     "rank": 3,
     "hero_name": "Edras",
-    "probability_pct": 3.38,
+    "probability_pct": 3.4,
     "predicted_win_rate_pct": 55.4,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -3539,7 +3539,7 @@
    {
     "rank": 1,
     "hero_name": "Y'bneth",
-    "probability_pct": 7.91,
+    "probability_pct": 7.92,
     "predicted_win_rate_pct": 50.18,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -3620,7 +3620,7 @@
    {
     "rank": 1,
     "hero_name": "Yue",
-    "probability_pct": 4.04,
+    "probability_pct": 4.0,
     "predicted_win_rate_pct": 50.1,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -3639,7 +3639,7 @@
    {
     "rank": 2,
     "hero_name": "Edras",
-    "probability_pct": 4.04,
+    "probability_pct": 4.06,
     "predicted_win_rate_pct": 49.86,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -4213,7 +4213,7 @@
    {
     "rank": 1,
     "hero_name": "Y'bneth",
-    "probability_pct": 7.91,
+    "probability_pct": 7.92,
     "predicted_win_rate_pct": 50.18,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -4294,7 +4294,7 @@
    {
     "rank": 1,
     "hero_name": "Yue",
-    "probability_pct": 4.04,
+    "probability_pct": 4.0,
     "predicted_win_rate_pct": 50.1,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -4313,7 +4313,7 @@
    {
     "rank": 2,
     "hero_name": "Edras",
-    "probability_pct": 4.04,
+    "probability_pct": 4.06,
     "predicted_win_rate_pct": 49.86,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -4892,7 +4892,7 @@
    {
     "rank": 1,
     "hero_name": "Maloch",
-    "probability_pct": 13.99,
+    "probability_pct": 13.96,
     "predicted_win_rate_pct": 55.77,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -4977,7 +4977,7 @@
    {
     "rank": 1,
     "hero_name": "Yue",
-    "probability_pct": 6.72,
+    "probability_pct": 6.67,
     "predicted_win_rate_pct": 45.47,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -5039,7 +5039,7 @@
    {
     "rank": 4,
     "hero_name": "Lorion",
-    "probability_pct": 4.08,
+    "probability_pct": 4.09,
     "predicted_win_rate_pct": 37.19,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -5059,7 +5059,7 @@
    {
     "rank": 5,
     "hero_name": "Annette",
-    "probability_pct": 9.84,
+    "probability_pct": 9.85,
     "predicted_win_rate_pct": 44.65,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -5571,7 +5571,7 @@
    {
     "rank": 1,
     "hero_name": "Maloch",
-    "probability_pct": 13.99,
+    "probability_pct": 13.96,
     "predicted_win_rate_pct": 55.77,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -5656,7 +5656,7 @@
    {
     "rank": 1,
     "hero_name": "Yue",
-    "probability_pct": 6.72,
+    "probability_pct": 6.67,
     "predicted_win_rate_pct": 45.47,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -5718,7 +5718,7 @@
    {
     "rank": 4,
     "hero_name": "Lorion",
-    "probability_pct": 4.08,
+    "probability_pct": 4.09,
     "predicted_win_rate_pct": 37.19,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -5738,7 +5738,7 @@
    {
     "rank": 5,
     "hero_name": "Annette",
-    "probability_pct": 9.84,
+    "probability_pct": 9.85,
     "predicted_win_rate_pct": 44.65,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -6247,7 +6247,7 @@
    {
     "rank": 1,
     "hero_name": "Maloch",
-    "probability_pct": 17.64,
+    "probability_pct": 17.61,
     "predicted_win_rate_pct": 54.45,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -6292,7 +6292,7 @@
    {
     "rank": 1,
     "hero_name": "Eland'orr",
-    "probability_pct": 17.86,
+    "probability_pct": 17.87,
     "predicted_win_rate_pct": 51.03,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -6333,7 +6333,7 @@
    {
     "rank": 1,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 10.44,
+    "probability_pct": 10.45,
     "predicted_win_rate_pct": 50.56,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -6376,7 +6376,7 @@
    {
     "rank": 3,
     "hero_name": "Violet",
-    "probability_pct": 6.26,
+    "probability_pct": 6.22,
     "predicted_win_rate_pct": 45.42,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -6415,7 +6415,7 @@
    {
     "rank": 5,
     "hero_name": "Wiro",
-    "probability_pct": 5.24,
+    "probability_pct": 5.26,
     "predicted_win_rate_pct": 46.94,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -6912,7 +6912,7 @@
    {
     "rank": 1,
     "hero_name": "Maloch",
-    "probability_pct": 17.64,
+    "probability_pct": 17.61,
     "predicted_win_rate_pct": 54.45,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -6957,7 +6957,7 @@
    {
     "rank": 1,
     "hero_name": "Eland'orr",
-    "probability_pct": 17.86,
+    "probability_pct": 17.87,
     "predicted_win_rate_pct": 51.03,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -6998,7 +6998,7 @@
    {
     "rank": 1,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 10.44,
+    "probability_pct": 10.45,
     "predicted_win_rate_pct": 50.56,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -7041,7 +7041,7 @@
    {
     "rank": 3,
     "hero_name": "Violet",
-    "probability_pct": 6.26,
+    "probability_pct": 6.22,
     "predicted_win_rate_pct": 45.42,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -7080,7 +7080,7 @@
    {
     "rank": 5,
     "hero_name": "Wiro",
-    "probability_pct": 5.24,
+    "probability_pct": 5.26,
     "predicted_win_rate_pct": 46.94,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -7603,7 +7603,7 @@
    {
     "rank": 1,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 9.56,
+    "probability_pct": 9.6,
     "predicted_win_rate_pct": 55.12,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -7624,7 +7624,7 @@
    {
     "rank": 2,
     "hero_name": "Cresht",
-    "probability_pct": 7.75,
+    "probability_pct": 7.78,
     "predicted_win_rate_pct": 59.46,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -7645,27 +7645,8 @@
    },
    {
     "rank": 3,
-    "hero_name": "Violet",
-    "probability_pct": 5.08,
-    "predicted_win_rate_pct": 53.04,
-    "lookahead_win_rate_pct": null,
-    "primary_lane": "Dragon_Lane",
-    "primary_role": "Carry",
-    "synergy_edge_pct": -0.75,
-    "counter_edge_pct": 14.6,
-    "capabilities": [
-     "Mobility"
-    ],
-    "triggered_by": [
-     "Tamyn",
-     "Rouie"
-    ],
-    "trigger_reason": "ban_unlock"
-   },
-   {
-    "rank": 4,
     "hero_name": "Wiro",
-    "probability_pct": 4.69,
+    "probability_pct": 4.73,
     "predicted_win_rate_pct": 58.68,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -7684,9 +7665,28 @@
     "trigger_reason": "ban_unlock"
    },
    {
+    "rank": 4,
+    "hero_name": "Violet",
+    "probability_pct": 5.07,
+    "predicted_win_rate_pct": 53.04,
+    "lookahead_win_rate_pct": null,
+    "primary_lane": "Dragon_Lane",
+    "primary_role": "Carry",
+    "synergy_edge_pct": -0.75,
+    "counter_edge_pct": 14.6,
+    "capabilities": [
+     "Mobility"
+    ],
+    "triggered_by": [
+     "Tamyn",
+     "Rouie"
+    ],
+    "trigger_reason": "ban_unlock"
+   },
+   {
     "rank": 5,
     "hero_name": "Y'bneth",
-    "probability_pct": 8.56,
+    "probability_pct": 8.54,
     "predicted_win_rate_pct": 53.69,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -8209,7 +8209,7 @@
    {
     "rank": 1,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 9.56,
+    "probability_pct": 9.6,
     "predicted_win_rate_pct": 55.12,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -8230,7 +8230,7 @@
    {
     "rank": 2,
     "hero_name": "Cresht",
-    "probability_pct": 7.75,
+    "probability_pct": 7.78,
     "predicted_win_rate_pct": 59.46,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -8251,27 +8251,8 @@
    },
    {
     "rank": 3,
-    "hero_name": "Violet",
-    "probability_pct": 5.08,
-    "predicted_win_rate_pct": 53.04,
-    "lookahead_win_rate_pct": null,
-    "primary_lane": "Dragon_Lane",
-    "primary_role": "Carry",
-    "synergy_edge_pct": -0.75,
-    "counter_edge_pct": 14.6,
-    "capabilities": [
-     "Mobility"
-    ],
-    "triggered_by": [
-     "Tamyn",
-     "Rouie"
-    ],
-    "trigger_reason": "ban_unlock"
-   },
-   {
-    "rank": 4,
     "hero_name": "Wiro",
-    "probability_pct": 4.69,
+    "probability_pct": 4.73,
     "predicted_win_rate_pct": 58.68,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -8290,9 +8271,28 @@
     "trigger_reason": "ban_unlock"
    },
    {
+    "rank": 4,
+    "hero_name": "Violet",
+    "probability_pct": 5.07,
+    "predicted_win_rate_pct": 53.04,
+    "lookahead_win_rate_pct": null,
+    "primary_lane": "Dragon_Lane",
+    "primary_role": "Carry",
+    "synergy_edge_pct": -0.75,
+    "counter_edge_pct": 14.6,
+    "capabilities": [
+     "Mobility"
+    ],
+    "triggered_by": [
+     "Tamyn",
+     "Rouie"
+    ],
+    "trigger_reason": "ban_unlock"
+   },
+   {
     "rank": 5,
     "hero_name": "Y'bneth",
-    "probability_pct": 8.56,
+    "probability_pct": 8.54,
     "predicted_win_rate_pct": 53.69,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -8796,7 +8796,7 @@
    {
     "rank": 1,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 8.63,
+    "probability_pct": 8.51,
     "predicted_win_rate_pct": 55.36,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -8817,7 +8817,7 @@
    {
     "rank": 2,
     "hero_name": "Cresht",
-    "probability_pct": 6.91,
+    "probability_pct": 6.79,
     "predicted_win_rate_pct": 46.17,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -8838,27 +8838,8 @@
    },
    {
     "rank": 3,
-    "hero_name": "Violet",
-    "probability_pct": 7.61,
-    "predicted_win_rate_pct": 62.31,
-    "lookahead_win_rate_pct": null,
-    "primary_lane": "Dragon_Lane",
-    "primary_role": "Carry",
-    "synergy_edge_pct": -0.75,
-    "counter_edge_pct": 16.32,
-    "capabilities": [
-     "Mobility"
-    ],
-    "triggered_by": [
-     "Tamyn",
-     "Rouie"
-    ],
-    "trigger_reason": "ban_unlock"
-   },
-   {
-    "rank": 4,
     "hero_name": "Wiro",
-    "probability_pct": 4.69,
+    "probability_pct": 4.62,
     "predicted_win_rate_pct": 57.79,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -8877,9 +8858,28 @@
     "trigger_reason": "ban_unlock"
    },
    {
+    "rank": 4,
+    "hero_name": "Violet",
+    "probability_pct": 7.49,
+    "predicted_win_rate_pct": 62.31,
+    "lookahead_win_rate_pct": null,
+    "primary_lane": "Dragon_Lane",
+    "primary_role": "Carry",
+    "synergy_edge_pct": -0.75,
+    "counter_edge_pct": 16.32,
+    "capabilities": [
+     "Mobility"
+    ],
+    "triggered_by": [
+     "Tamyn",
+     "Rouie"
+    ],
+    "trigger_reason": "ban_unlock"
+   },
+   {
     "rank": 5,
     "hero_name": "Y'bneth",
-    "probability_pct": 6.16,
+    "probability_pct": 6.04,
     "predicted_win_rate_pct": 59.16,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -9370,7 +9370,7 @@
    {
     "rank": 1,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 8.63,
+    "probability_pct": 8.51,
     "predicted_win_rate_pct": 55.36,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -9391,7 +9391,7 @@
    {
     "rank": 2,
     "hero_name": "Cresht",
-    "probability_pct": 6.91,
+    "probability_pct": 6.79,
     "predicted_win_rate_pct": 46.17,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -9412,27 +9412,8 @@
    },
    {
     "rank": 3,
-    "hero_name": "Violet",
-    "probability_pct": 7.61,
-    "predicted_win_rate_pct": 62.31,
-    "lookahead_win_rate_pct": null,
-    "primary_lane": "Dragon_Lane",
-    "primary_role": "Carry",
-    "synergy_edge_pct": -0.75,
-    "counter_edge_pct": 16.32,
-    "capabilities": [
-     "Mobility"
-    ],
-    "triggered_by": [
-     "Tamyn",
-     "Rouie"
-    ],
-    "trigger_reason": "ban_unlock"
-   },
-   {
-    "rank": 4,
     "hero_name": "Wiro",
-    "probability_pct": 4.69,
+    "probability_pct": 4.62,
     "predicted_win_rate_pct": 57.79,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -9451,9 +9432,28 @@
     "trigger_reason": "ban_unlock"
    },
    {
+    "rank": 4,
+    "hero_name": "Violet",
+    "probability_pct": 7.49,
+    "predicted_win_rate_pct": 62.31,
+    "lookahead_win_rate_pct": null,
+    "primary_lane": "Dragon_Lane",
+    "primary_role": "Carry",
+    "synergy_edge_pct": -0.75,
+    "counter_edge_pct": 16.32,
+    "capabilities": [
+     "Mobility"
+    ],
+    "triggered_by": [
+     "Tamyn",
+     "Rouie"
+    ],
+    "trigger_reason": "ban_unlock"
+   },
+   {
     "rank": 5,
     "hero_name": "Y'bneth",
-    "probability_pct": 6.16,
+    "probability_pct": 6.04,
     "predicted_win_rate_pct": 59.16,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -9915,7 +9915,7 @@
    {
     "rank": 1,
     "hero_name": "Wiro",
-    "probability_pct": 10.03,
+    "probability_pct": 9.77,
     "predicted_win_rate_pct": 42.54,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -9936,7 +9936,7 @@
    {
     "rank": 2,
     "hero_name": "Y'bneth",
-    "probability_pct": 20.32,
+    "probability_pct": 19.97,
     "predicted_win_rate_pct": 51.65,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -9958,7 +9958,7 @@
    {
     "rank": 3,
     "hero_name": "Dyadia",
-    "probability_pct": 8.08,
+    "probability_pct": 7.73,
     "predicted_win_rate_pct": 39.58,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -9979,7 +9979,7 @@
    {
     "rank": 4,
     "hero_name": "Chaugnar",
-    "probability_pct": 9.04,
+    "probability_pct": 8.8,
     "predicted_win_rate_pct": 50.4,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -9998,22 +9998,23 @@
    },
    {
     "rank": 5,
-    "hero_name": "Krizzix",
-    "probability_pct": 5.03,
-    "predicted_win_rate_pct": 53.59,
+    "hero_name": "Arduin",
+    "probability_pct": 6.45,
+    "predicted_win_rate_pct": 53.19,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
-    "primary_role": "Support",
-    "synergy_edge_pct": 5.33,
-    "counter_edge_pct": 5.53,
+    "primary_role": "Fighter",
+    "synergy_edge_pct": 1.08,
+    "counter_edge_pct": 11.08,
     "capabilities": [
      "Hard CC",
      "Mobility",
+     "True Dmg",
      "Sustain/Shield"
     ],
     "triggered_by": [
-     "Rouie",
-     "Toro"
+     "Maloch",
+     "Florentino"
     ],
     "trigger_reason": "ban_unlock"
    }
@@ -10453,7 +10454,7 @@
    {
     "rank": 1,
     "hero_name": "Wiro",
-    "probability_pct": 10.03,
+    "probability_pct": 9.77,
     "predicted_win_rate_pct": 42.54,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -10474,7 +10475,7 @@
    {
     "rank": 2,
     "hero_name": "Y'bneth",
-    "probability_pct": 20.32,
+    "probability_pct": 19.97,
     "predicted_win_rate_pct": 51.65,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -10496,7 +10497,7 @@
    {
     "rank": 3,
     "hero_name": "Dyadia",
-    "probability_pct": 8.08,
+    "probability_pct": 7.73,
     "predicted_win_rate_pct": 39.58,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -10517,7 +10518,7 @@
    {
     "rank": 4,
     "hero_name": "Chaugnar",
-    "probability_pct": 9.04,
+    "probability_pct": 8.8,
     "predicted_win_rate_pct": 50.4,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -10536,22 +10537,23 @@
    },
    {
     "rank": 5,
-    "hero_name": "Krizzix",
-    "probability_pct": 5.03,
-    "predicted_win_rate_pct": 53.59,
+    "hero_name": "Arduin",
+    "probability_pct": 6.45,
+    "predicted_win_rate_pct": 53.19,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
-    "primary_role": "Support",
-    "synergy_edge_pct": 5.33,
-    "counter_edge_pct": 5.53,
+    "primary_role": "Fighter",
+    "synergy_edge_pct": 1.08,
+    "counter_edge_pct": 11.08,
     "capabilities": [
      "Hard CC",
      "Mobility",
+     "True Dmg",
      "Sustain/Shield"
     ],
     "triggered_by": [
-     "Rouie",
-     "Toro"
+     "Maloch",
+     "Florentino"
     ],
     "trigger_reason": "ban_unlock"
    }
@@ -11804,7 +11806,7 @@
    {
     "rank": 4,
     "hero_name": "Y'bneth",
-    "probability_pct": 4.7,
+    "probability_pct": 4.66,
     "predicted_win_rate_pct": 47.78,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -12345,7 +12347,7 @@
    {
     "rank": 4,
     "hero_name": "Y'bneth",
-    "probability_pct": 4.7,
+    "probability_pct": 4.66,
     "predicted_win_rate_pct": 47.78,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -12914,7 +12916,7 @@
    {
     "rank": 3,
     "hero_name": "Rouie",
-    "probability_pct": 16.38,
+    "probability_pct": 16.39,
     "predicted_win_rate_pct": 53.6,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -12953,7 +12955,7 @@
    {
     "rank": 5,
     "hero_name": "Y'bneth",
-    "probability_pct": 2.99,
+    "probability_pct": 2.97,
     "predicted_win_rate_pct": 53.91,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -13505,7 +13507,7 @@
    {
     "rank": 3,
     "hero_name": "Rouie",
-    "probability_pct": 16.38,
+    "probability_pct": 16.39,
     "predicted_win_rate_pct": 53.6,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -13544,7 +13546,7 @@
    {
     "rank": 5,
     "hero_name": "Y'bneth",
-    "probability_pct": 2.99,
+    "probability_pct": 2.97,
     "predicted_win_rate_pct": 53.91,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -14110,7 +14112,7 @@
    {
     "rank": 2,
     "hero_name": "Hayate",
-    "probability_pct": 7.04,
+    "probability_pct": 7.0,
     "predicted_win_rate_pct": 46.27,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -14172,7 +14174,7 @@
    {
     "rank": 3,
     "hero_name": "Rouie",
-    "probability_pct": 7.54,
+    "probability_pct": 7.56,
     "predicted_win_rate_pct": 48.91,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -14211,7 +14213,7 @@
    {
     "rank": 5,
     "hero_name": "Y'bneth",
-    "probability_pct": 3.82,
+    "probability_pct": 3.79,
     "predicted_win_rate_pct": 49.9,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -14781,7 +14783,7 @@
    {
     "rank": 2,
     "hero_name": "Hayate",
-    "probability_pct": 7.04,
+    "probability_pct": 7.0,
     "predicted_win_rate_pct": 46.27,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -14843,7 +14845,7 @@
    {
     "rank": 3,
     "hero_name": "Rouie",
-    "probability_pct": 7.54,
+    "probability_pct": 7.56,
     "predicted_win_rate_pct": 48.91,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -14882,7 +14884,7 @@
    {
     "rank": 5,
     "hero_name": "Y'bneth",
-    "probability_pct": 3.82,
+    "probability_pct": 3.79,
     "predicted_win_rate_pct": 49.9,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -15439,7 +15441,7 @@
    {
     "rank": 1,
     "hero_name": "Hayate",
-    "probability_pct": 20.89,
+    "probability_pct": 20.84,
     "predicted_win_rate_pct": 47.44,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -15460,7 +15462,7 @@
    {
     "rank": 2,
     "hero_name": "Stuart",
-    "probability_pct": 11.76,
+    "probability_pct": 11.77,
     "predicted_win_rate_pct": 50.78,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -15522,7 +15524,7 @@
    {
     "rank": 3,
     "hero_name": "Rouie",
-    "probability_pct": 6.96,
+    "probability_pct": 6.98,
     "predicted_win_rate_pct": 47.34,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -15541,7 +15543,7 @@
    {
     "rank": 4,
     "hero_name": "Y'bneth",
-    "probability_pct": 4.71,
+    "probability_pct": 4.67,
     "predicted_win_rate_pct": 51.95,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -16117,7 +16119,7 @@
    {
     "rank": 1,
     "hero_name": "Hayate",
-    "probability_pct": 20.89,
+    "probability_pct": 20.84,
     "predicted_win_rate_pct": 47.44,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -16138,7 +16140,7 @@
    {
     "rank": 2,
     "hero_name": "Stuart",
-    "probability_pct": 11.76,
+    "probability_pct": 11.77,
     "predicted_win_rate_pct": 50.78,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -16200,7 +16202,7 @@
    {
     "rank": 3,
     "hero_name": "Rouie",
-    "probability_pct": 6.96,
+    "probability_pct": 6.98,
     "predicted_win_rate_pct": 47.34,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -16219,7 +16221,7 @@
    {
     "rank": 4,
     "hero_name": "Y'bneth",
-    "probability_pct": 4.71,
+    "probability_pct": 4.67,
     "predicted_win_rate_pct": 51.95,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -16785,7 +16787,7 @@
    {
     "rank": 1,
     "hero_name": "Hayate",
-    "probability_pct": 19.5,
+    "probability_pct": 19.47,
     "predicted_win_rate_pct": 49.55,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -16848,7 +16850,7 @@
    {
     "rank": 2,
     "hero_name": "Y'bneth",
-    "probability_pct": 7.5,
+    "probability_pct": 7.44,
     "predicted_win_rate_pct": 46.14,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -16870,7 +16872,7 @@
    {
     "rank": 3,
     "hero_name": "Capheny",
-    "probability_pct": 7.69,
+    "probability_pct": 7.7,
     "predicted_win_rate_pct": 45.42,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -16889,7 +16891,7 @@
    {
     "rank": 4,
     "hero_name": "Wiro",
-    "probability_pct": 5.99,
+    "probability_pct": 6.01,
     "predicted_win_rate_pct": 48.37,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -16910,7 +16912,7 @@
    {
     "rank": 5,
     "hero_name": "Moren",
-    "probability_pct": 5.81,
+    "probability_pct": 5.82,
     "predicted_win_rate_pct": 47.47,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -17446,7 +17448,7 @@
    {
     "rank": 1,
     "hero_name": "Hayate",
-    "probability_pct": 19.5,
+    "probability_pct": 19.47,
     "predicted_win_rate_pct": 49.55,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -17509,7 +17511,7 @@
    {
     "rank": 2,
     "hero_name": "Y'bneth",
-    "probability_pct": 7.5,
+    "probability_pct": 7.44,
     "predicted_win_rate_pct": 46.14,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -17531,7 +17533,7 @@
    {
     "rank": 3,
     "hero_name": "Capheny",
-    "probability_pct": 7.69,
+    "probability_pct": 7.7,
     "predicted_win_rate_pct": 45.42,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -17550,7 +17552,7 @@
    {
     "rank": 4,
     "hero_name": "Wiro",
-    "probability_pct": 5.99,
+    "probability_pct": 6.01,
     "predicted_win_rate_pct": 48.37,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -17571,7 +17573,7 @@
    {
     "rank": 5,
     "hero_name": "Moren",
-    "probability_pct": 5.81,
+    "probability_pct": 5.82,
     "predicted_win_rate_pct": 47.47,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -18107,7 +18109,7 @@
    {
     "rank": 2,
     "hero_name": "Y'bneth",
-    "probability_pct": 6.6,
+    "probability_pct": 6.56,
     "predicted_win_rate_pct": 54.83,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -18169,7 +18171,7 @@
    {
     "rank": 5,
     "hero_name": "Dyadia",
-    "probability_pct": 4.1,
+    "probability_pct": 4.16,
     "predicted_win_rate_pct": 51.72,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -18702,7 +18704,7 @@
    {
     "rank": 2,
     "hero_name": "Y'bneth",
-    "probability_pct": 6.6,
+    "probability_pct": 6.56,
     "predicted_win_rate_pct": 54.83,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -18764,7 +18766,7 @@
    {
     "rank": 5,
     "hero_name": "Dyadia",
-    "probability_pct": 4.1,
+    "probability_pct": 4.16,
     "predicted_win_rate_pct": 51.72,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -19327,18 +19329,17 @@
    },
    {
     "rank": 4,
-    "hero_name": "Y'bneth",
-    "probability_pct": 4.57,
-    "predicted_win_rate_pct": 51.88,
+    "hero_name": "Dyadia",
+    "probability_pct": 3.94,
+    "predicted_win_rate_pct": 45.71,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
-    "primary_role": "Tank",
-    "synergy_edge_pct": 2.13,
-    "counter_edge_pct": -11.51,
+    "primary_role": "Mage",
+    "synergy_edge_pct": -5.75,
+    "counter_edge_pct": -0.32,
     "capabilities": [
      "Hard CC",
      "Mobility",
-     "Iron Body/Immune",
      "Sustain/Shield"
     ],
     "triggered_by": [
@@ -19898,18 +19899,17 @@
    },
    {
     "rank": 4,
-    "hero_name": "Y'bneth",
-    "probability_pct": 4.57,
-    "predicted_win_rate_pct": 51.88,
+    "hero_name": "Dyadia",
+    "probability_pct": 3.94,
+    "predicted_win_rate_pct": 45.71,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
-    "primary_role": "Tank",
-    "synergy_edge_pct": 2.13,
-    "counter_edge_pct": -11.51,
+    "primary_role": "Mage",
+    "synergy_edge_pct": -5.75,
+    "counter_edge_pct": -0.32,
     "capabilities": [
      "Hard CC",
      "Mobility",
-     "Iron Body/Immune",
      "Sustain/Shield"
     ],
     "triggered_by": [
@@ -20390,18 +20390,17 @@
   "ban_unlocked_heroes": [
    {
     "rank": 1,
-    "hero_name": "Y'bneth",
-    "probability_pct": 12.22,
-    "predicted_win_rate_pct": 56.16,
+    "hero_name": "Dyadia",
+    "probability_pct": 6.89,
+    "predicted_win_rate_pct": 46.28,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
-    "primary_role": "Tank",
-    "synergy_edge_pct": 1.95,
-    "counter_edge_pct": 14.93,
+    "primary_role": "Mage",
+    "synergy_edge_pct": -0.29,
+    "counter_edge_pct": 8.79,
     "capabilities": [
      "Hard CC",
      "Mobility",
-     "Iron Body/Immune",
      "Sustain/Shield"
     ],
     "triggered_by": [
@@ -20412,17 +20411,18 @@
    },
    {
     "rank": 2,
-    "hero_name": "Dyadia",
-    "probability_pct": 6.8,
-    "predicted_win_rate_pct": 46.28,
+    "hero_name": "Y'bneth",
+    "probability_pct": 12.17,
+    "predicted_win_rate_pct": 56.16,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
-    "primary_role": "Mage",
-    "synergy_edge_pct": -0.29,
-    "counter_edge_pct": 8.79,
+    "primary_role": "Tank",
+    "synergy_edge_pct": 1.95,
+    "counter_edge_pct": 14.93,
     "capabilities": [
      "Hard CC",
      "Mobility",
+     "Iron Body/Immune",
      "Sustain/Shield"
     ],
     "triggered_by": [
@@ -20475,7 +20475,7 @@
    {
     "rank": 5,
     "hero_name": "Wiro",
-    "probability_pct": 6.65,
+    "probability_pct": 6.67,
     "predicted_win_rate_pct": 48.93,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -20934,18 +20934,17 @@
   "ban_unlocked_heroes": [
    {
     "rank": 1,
-    "hero_name": "Y'bneth",
-    "probability_pct": 12.22,
-    "predicted_win_rate_pct": 56.16,
+    "hero_name": "Dyadia",
+    "probability_pct": 6.89,
+    "predicted_win_rate_pct": 46.28,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
-    "primary_role": "Tank",
-    "synergy_edge_pct": 1.95,
-    "counter_edge_pct": 14.93,
+    "primary_role": "Mage",
+    "synergy_edge_pct": -0.29,
+    "counter_edge_pct": 8.79,
     "capabilities": [
      "Hard CC",
      "Mobility",
-     "Iron Body/Immune",
      "Sustain/Shield"
     ],
     "triggered_by": [
@@ -20956,17 +20955,18 @@
    },
    {
     "rank": 2,
-    "hero_name": "Dyadia",
-    "probability_pct": 6.8,
-    "predicted_win_rate_pct": 46.28,
+    "hero_name": "Y'bneth",
+    "probability_pct": 12.17,
+    "predicted_win_rate_pct": 56.16,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
-    "primary_role": "Mage",
-    "synergy_edge_pct": -0.29,
-    "counter_edge_pct": 8.79,
+    "primary_role": "Tank",
+    "synergy_edge_pct": 1.95,
+    "counter_edge_pct": 14.93,
     "capabilities": [
      "Hard CC",
      "Mobility",
+     "Iron Body/Immune",
      "Sustain/Shield"
     ],
     "triggered_by": [
@@ -21019,7 +21019,7 @@
    {
     "rank": 5,
     "hero_name": "Wiro",
-    "probability_pct": 6.65,
+    "probability_pct": 6.67,
     "predicted_win_rate_pct": 48.93,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -22232,7 +22232,7 @@
    {
     "rank": 1,
     "hero_name": "Astrid",
-    "probability_pct": 11.17,
+    "probability_pct": 11.18,
     "predicted_win_rate_pct": 46.97,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -22254,7 +22254,7 @@
    {
     "rank": 2,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 4.38,
+    "probability_pct": 4.39,
     "predicted_win_rate_pct": 48.41,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -22275,7 +22275,7 @@
    {
     "rank": 3,
     "hero_name": "Yue",
-    "probability_pct": 3.63,
+    "probability_pct": 3.59,
     "predicted_win_rate_pct": 48.77,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -22313,7 +22313,7 @@
    {
     "rank": 5,
     "hero_name": "Taara",
-    "probability_pct": 3.38,
+    "probability_pct": 3.39,
     "predicted_win_rate_pct": 48.5,
     "lookahead_win_rate_pct": null,
     "primary_lane": "DS_Lane",
@@ -22776,7 +22776,7 @@
    {
     "rank": 1,
     "hero_name": "Astrid",
-    "probability_pct": 11.17,
+    "probability_pct": 11.18,
     "predicted_win_rate_pct": 46.97,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -22798,7 +22798,7 @@
    {
     "rank": 2,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 4.38,
+    "probability_pct": 4.39,
     "predicted_win_rate_pct": 48.41,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -22819,7 +22819,7 @@
    {
     "rank": 3,
     "hero_name": "Yue",
-    "probability_pct": 3.63,
+    "probability_pct": 3.59,
     "predicted_win_rate_pct": 48.77,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -22857,7 +22857,7 @@
    {
     "rank": 5,
     "hero_name": "Taara",
-    "probability_pct": 3.38,
+    "probability_pct": 3.39,
     "predicted_win_rate_pct": 48.5,
     "lookahead_win_rate_pct": null,
     "primary_lane": "DS_Lane",
@@ -23332,7 +23332,7 @@
    {
     "rank": 1,
     "hero_name": "Astrid",
-    "probability_pct": 11.49,
+    "probability_pct": 11.52,
     "predicted_win_rate_pct": 51.69,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -23376,7 +23376,7 @@
    {
     "rank": 1,
     "hero_name": "Astrid",
-    "probability_pct": 19.83,
+    "probability_pct": 19.84,
     "predicted_win_rate_pct": 56.68,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -23398,7 +23398,7 @@
    {
     "rank": 2,
     "hero_name": "Yue",
-    "probability_pct": 4.03,
+    "probability_pct": 3.99,
     "predicted_win_rate_pct": 53.21,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -23436,7 +23436,7 @@
    {
     "rank": 4,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 4.01,
+    "probability_pct": 4.02,
     "predicted_win_rate_pct": 53.83,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -23945,7 +23945,7 @@
    {
     "rank": 1,
     "hero_name": "Astrid",
-    "probability_pct": 11.49,
+    "probability_pct": 11.52,
     "predicted_win_rate_pct": 51.69,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -23989,7 +23989,7 @@
    {
     "rank": 1,
     "hero_name": "Astrid",
-    "probability_pct": 19.83,
+    "probability_pct": 19.84,
     "predicted_win_rate_pct": 56.68,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -24011,7 +24011,7 @@
    {
     "rank": 2,
     "hero_name": "Yue",
-    "probability_pct": 4.03,
+    "probability_pct": 3.99,
     "predicted_win_rate_pct": 53.21,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -24049,7 +24049,7 @@
    {
     "rank": 4,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 4.01,
+    "probability_pct": 4.02,
     "predicted_win_rate_pct": 53.83,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -24576,7 +24576,7 @@
    {
     "rank": 1,
     "hero_name": "Zata",
-    "probability_pct": 12.81,
+    "probability_pct": 12.86,
     "predicted_win_rate_pct": 47.38,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -24595,7 +24595,7 @@
    {
     "rank": 2,
     "hero_name": "Alice",
-    "probability_pct": 7.82,
+    "probability_pct": 7.86,
     "predicted_win_rate_pct": 51.0,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -24658,7 +24658,7 @@
    {
     "rank": 1,
     "hero_name": "Astrid",
-    "probability_pct": 5.62,
+    "probability_pct": 5.63,
     "predicted_win_rate_pct": 57.27,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -24680,7 +24680,7 @@
    {
     "rank": 2,
     "hero_name": "Yue",
-    "probability_pct": 4.87,
+    "probability_pct": 4.82,
     "predicted_win_rate_pct": 50.3,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -24699,7 +24699,7 @@
    {
     "rank": 3,
     "hero_name": "Edras",
-    "probability_pct": 4.49,
+    "probability_pct": 4.5,
     "predicted_win_rate_pct": 55.39,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -24718,7 +24718,7 @@
    {
     "rank": 4,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 5.58,
+    "probability_pct": 5.59,
     "predicted_win_rate_pct": 57.72,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -24739,7 +24739,7 @@
    {
     "rank": 5,
     "hero_name": "Cresht",
-    "probability_pct": 4.18,
+    "probability_pct": 4.19,
     "predicted_win_rate_pct": 53.99,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -25257,7 +25257,7 @@
    {
     "rank": 1,
     "hero_name": "Zata",
-    "probability_pct": 12.81,
+    "probability_pct": 12.86,
     "predicted_win_rate_pct": 47.38,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -25276,7 +25276,7 @@
    {
     "rank": 2,
     "hero_name": "Alice",
-    "probability_pct": 7.82,
+    "probability_pct": 7.86,
     "predicted_win_rate_pct": 51.0,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -25339,7 +25339,7 @@
    {
     "rank": 1,
     "hero_name": "Astrid",
-    "probability_pct": 5.62,
+    "probability_pct": 5.63,
     "predicted_win_rate_pct": 57.27,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -25361,7 +25361,7 @@
    {
     "rank": 2,
     "hero_name": "Yue",
-    "probability_pct": 4.87,
+    "probability_pct": 4.82,
     "predicted_win_rate_pct": 50.3,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -25380,7 +25380,7 @@
    {
     "rank": 3,
     "hero_name": "Edras",
-    "probability_pct": 4.49,
+    "probability_pct": 4.5,
     "predicted_win_rate_pct": 55.39,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -25399,7 +25399,7 @@
    {
     "rank": 4,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 5.58,
+    "probability_pct": 5.59,
     "predicted_win_rate_pct": 57.72,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -25420,7 +25420,7 @@
    {
     "rank": 5,
     "hero_name": "Cresht",
-    "probability_pct": 4.18,
+    "probability_pct": 4.19,
     "predicted_win_rate_pct": 53.99,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -25930,7 +25930,7 @@
    {
     "rank": 1,
     "hero_name": "TeeMee",
-    "probability_pct": 9.89,
+    "probability_pct": 9.91,
     "predicted_win_rate_pct": 57.3,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -25950,7 +25950,7 @@
    {
     "rank": 2,
     "hero_name": "Maloch",
-    "probability_pct": 7.31,
+    "probability_pct": 7.32,
     "predicted_win_rate_pct": 61.46,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -26017,7 +26017,7 @@
    {
     "rank": 1,
     "hero_name": "Yue",
-    "probability_pct": 7.22,
+    "probability_pct": 7.16,
     "predicted_win_rate_pct": 46.98,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -26036,7 +26036,7 @@
    {
     "rank": 2,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 6.83,
+    "probability_pct": 6.85,
     "predicted_win_rate_pct": 51.62,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -26057,7 +26057,7 @@
    {
     "rank": 3,
     "hero_name": "Cresht",
-    "probability_pct": 5.44,
+    "probability_pct": 5.46,
     "predicted_win_rate_pct": 43.64,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -26079,7 +26079,7 @@
    {
     "rank": 4,
     "hero_name": "Zata",
-    "probability_pct": 6.63,
+    "probability_pct": 6.64,
     "predicted_win_rate_pct": 46.61,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -26098,20 +26098,22 @@
    },
    {
     "rank": 5,
-    "hero_name": "Violet",
-    "probability_pct": 10.57,
-    "predicted_win_rate_pct": 48.19,
+    "hero_name": "Wiro",
+    "probability_pct": 4.31,
+    "predicted_win_rate_pct": 54.12,
     "lookahead_win_rate_pct": null,
-    "primary_lane": "Dragon_Lane",
-    "primary_role": "Carry",
-    "synergy_edge_pct": -3.08,
-    "counter_edge_pct": 2.69,
+    "primary_lane": "Roam",
+    "primary_role": "Tank",
+    "synergy_edge_pct": 12.98,
+    "counter_edge_pct": 4.77,
     "capabilities": [
-     "Mobility"
+     "Hard CC",
+     "Mobility",
+     "Sustain/Shield"
     ],
     "triggered_by": [
      "Tamyn",
-     "Rouie"
+     "Sinestrea"
     ],
     "trigger_reason": "ban_unlock"
    }
@@ -26606,7 +26608,7 @@
    {
     "rank": 1,
     "hero_name": "TeeMee",
-    "probability_pct": 9.89,
+    "probability_pct": 9.91,
     "predicted_win_rate_pct": 57.3,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -26626,7 +26628,7 @@
    {
     "rank": 2,
     "hero_name": "Maloch",
-    "probability_pct": 7.31,
+    "probability_pct": 7.32,
     "predicted_win_rate_pct": 61.46,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -26693,7 +26695,7 @@
    {
     "rank": 1,
     "hero_name": "Yue",
-    "probability_pct": 7.22,
+    "probability_pct": 7.16,
     "predicted_win_rate_pct": 46.98,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -26712,7 +26714,7 @@
    {
     "rank": 2,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 6.83,
+    "probability_pct": 6.85,
     "predicted_win_rate_pct": 51.62,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -26733,7 +26735,7 @@
    {
     "rank": 3,
     "hero_name": "Cresht",
-    "probability_pct": 5.44,
+    "probability_pct": 5.46,
     "predicted_win_rate_pct": 43.64,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -26755,7 +26757,7 @@
    {
     "rank": 4,
     "hero_name": "Zata",
-    "probability_pct": 6.63,
+    "probability_pct": 6.64,
     "predicted_win_rate_pct": 46.61,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -26774,20 +26776,22 @@
    },
    {
     "rank": 5,
-    "hero_name": "Violet",
-    "probability_pct": 10.57,
-    "predicted_win_rate_pct": 48.19,
+    "hero_name": "Wiro",
+    "probability_pct": 4.31,
+    "predicted_win_rate_pct": 54.12,
     "lookahead_win_rate_pct": null,
-    "primary_lane": "Dragon_Lane",
-    "primary_role": "Carry",
-    "synergy_edge_pct": -3.08,
-    "counter_edge_pct": 2.69,
+    "primary_lane": "Roam",
+    "primary_role": "Tank",
+    "synergy_edge_pct": 12.98,
+    "counter_edge_pct": 4.77,
     "capabilities": [
-     "Mobility"
+     "Hard CC",
+     "Mobility",
+     "Sustain/Shield"
     ],
     "triggered_by": [
      "Tamyn",
-     "Rouie"
+     "Sinestrea"
     ],
     "trigger_reason": "ban_unlock"
    }
@@ -26856,7 +26860,7 @@
     ],
     "triggered_by": [
      "Ryoma",
-     "Alice"
+     "Zuka"
     ],
     "trigger_reason": "protect"
    },
@@ -27267,7 +27271,7 @@
    {
     "rank": 1,
     "hero_name": "TeeMee",
-    "probability_pct": 18.8,
+    "probability_pct": 18.86,
     "predicted_win_rate_pct": 51.86,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -27287,7 +27291,7 @@
    {
     "rank": 2,
     "hero_name": "Eland'orr",
-    "probability_pct": 11.41,
+    "probability_pct": 11.45,
     "predicted_win_rate_pct": 54.62,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -27307,7 +27311,7 @@
    {
     "rank": 1,
     "hero_name": "Y'bneth",
-    "probability_pct": 18.09,
+    "probability_pct": 18.12,
     "predicted_win_rate_pct": 45.25,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -27328,7 +27332,7 @@
    {
     "rank": 2,
     "hero_name": "Stuart",
-    "probability_pct": 11.56,
+    "probability_pct": 11.54,
     "predicted_win_rate_pct": 47.26,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -27342,7 +27346,7 @@
     ],
     "triggered_by": [
      "Ryoma",
-     "Alice"
+     "Zuka"
     ],
     "trigger_reason": "protect"
    }
@@ -27351,7 +27355,7 @@
    {
     "rank": 1,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 11.8,
+    "probability_pct": 11.85,
     "predicted_win_rate_pct": 48.7,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -27372,7 +27376,7 @@
    {
     "rank": 2,
     "hero_name": "Cresht",
-    "probability_pct": 10.57,
+    "probability_pct": 10.61,
     "predicted_win_rate_pct": 50.35,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -27393,27 +27397,8 @@
    },
    {
     "rank": 3,
-    "hero_name": "Violet",
-    "probability_pct": 7.59,
-    "predicted_win_rate_pct": 48.42,
-    "lookahead_win_rate_pct": null,
-    "primary_lane": "Dragon_Lane",
-    "primary_role": "Carry",
-    "synergy_edge_pct": 3.5,
-    "counter_edge_pct": 2.69,
-    "capabilities": [
-     "Mobility"
-    ],
-    "triggered_by": [
-     "Tamyn",
-     "Rouie"
-    ],
-    "trigger_reason": "ban_unlock"
-   },
-   {
-    "rank": 4,
     "hero_name": "Wiro",
-    "probability_pct": 7.19,
+    "probability_pct": 7.25,
     "predicted_win_rate_pct": 48.32,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -27432,9 +27417,28 @@
     "trigger_reason": "ban_unlock"
    },
    {
+    "rank": 4,
+    "hero_name": "Violet",
+    "probability_pct": 7.55,
+    "predicted_win_rate_pct": 48.42,
+    "lookahead_win_rate_pct": null,
+    "primary_lane": "Dragon_Lane",
+    "primary_role": "Carry",
+    "synergy_edge_pct": 3.5,
+    "counter_edge_pct": 2.69,
+    "capabilities": [
+     "Mobility"
+    ],
+    "triggered_by": [
+     "Tamyn",
+     "Rouie"
+    ],
+    "trigger_reason": "ban_unlock"
+   },
+   {
     "rank": 5,
     "hero_name": "Y'bneth",
-    "probability_pct": 12.53,
+    "probability_pct": 12.5,
     "predicted_win_rate_pct": 45.25,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -27501,7 +27505,7 @@
     ],
     "triggered_by": [
      "Ryoma",
-     "Alice"
+     "Zuka"
     ],
     "trigger_reason": "protect"
    },
@@ -27921,7 +27925,7 @@
    {
     "rank": 1,
     "hero_name": "TeeMee",
-    "probability_pct": 18.8,
+    "probability_pct": 18.86,
     "predicted_win_rate_pct": 51.86,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -27941,7 +27945,7 @@
    {
     "rank": 2,
     "hero_name": "Eland'orr",
-    "probability_pct": 11.41,
+    "probability_pct": 11.45,
     "predicted_win_rate_pct": 54.62,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -27961,7 +27965,7 @@
    {
     "rank": 1,
     "hero_name": "Y'bneth",
-    "probability_pct": 18.09,
+    "probability_pct": 18.12,
     "predicted_win_rate_pct": 45.25,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -27982,7 +27986,7 @@
    {
     "rank": 2,
     "hero_name": "Stuart",
-    "probability_pct": 11.56,
+    "probability_pct": 11.54,
     "predicted_win_rate_pct": 47.26,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -27996,7 +28000,7 @@
     ],
     "triggered_by": [
      "Ryoma",
-     "Alice"
+     "Zuka"
     ],
     "trigger_reason": "protect"
    }
@@ -28005,7 +28009,7 @@
    {
     "rank": 1,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 11.8,
+    "probability_pct": 11.85,
     "predicted_win_rate_pct": 48.7,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -28026,7 +28030,7 @@
    {
     "rank": 2,
     "hero_name": "Cresht",
-    "probability_pct": 10.57,
+    "probability_pct": 10.61,
     "predicted_win_rate_pct": 50.35,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -28047,27 +28051,8 @@
    },
    {
     "rank": 3,
-    "hero_name": "Violet",
-    "probability_pct": 7.59,
-    "predicted_win_rate_pct": 48.42,
-    "lookahead_win_rate_pct": null,
-    "primary_lane": "Dragon_Lane",
-    "primary_role": "Carry",
-    "synergy_edge_pct": 3.5,
-    "counter_edge_pct": 2.69,
-    "capabilities": [
-     "Mobility"
-    ],
-    "triggered_by": [
-     "Tamyn",
-     "Rouie"
-    ],
-    "trigger_reason": "ban_unlock"
-   },
-   {
-    "rank": 4,
     "hero_name": "Wiro",
-    "probability_pct": 7.19,
+    "probability_pct": 7.25,
     "predicted_win_rate_pct": 48.32,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -28086,9 +28071,28 @@
     "trigger_reason": "ban_unlock"
    },
    {
+    "rank": 4,
+    "hero_name": "Violet",
+    "probability_pct": 7.55,
+    "predicted_win_rate_pct": 48.42,
+    "lookahead_win_rate_pct": null,
+    "primary_lane": "Dragon_Lane",
+    "primary_role": "Carry",
+    "synergy_edge_pct": 3.5,
+    "counter_edge_pct": 2.69,
+    "capabilities": [
+     "Mobility"
+    ],
+    "triggered_by": [
+     "Tamyn",
+     "Rouie"
+    ],
+    "trigger_reason": "ban_unlock"
+   },
+   {
     "rank": 5,
     "hero_name": "Y'bneth",
-    "probability_pct": 12.53,
+    "probability_pct": 12.5,
     "predicted_win_rate_pct": 45.25,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -28230,10 +28234,8 @@
      "True Dmg",
      "Sustain/Shield"
     ],
-    "triggered_by": [
-     "Marja"
-    ],
-    "trigger_reason": "protect"
+    "triggered_by": [],
+    "trigger_reason": null
    },
    {
     "rank": 7,
@@ -28599,7 +28601,7 @@
    {
     "rank": 1,
     "hero_name": "TeeMee",
-    "probability_pct": 18.0,
+    "probability_pct": 18.06,
     "predicted_win_rate_pct": 48.67,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -28622,7 +28624,7 @@
    {
     "rank": 1,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 10.62,
+    "probability_pct": 10.68,
     "predicted_win_rate_pct": 48.56,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -28643,7 +28645,7 @@
    {
     "rank": 2,
     "hero_name": "Cresht",
-    "probability_pct": 8.0,
+    "probability_pct": 8.04,
     "predicted_win_rate_pct": 51.7,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -28665,7 +28667,7 @@
    {
     "rank": 3,
     "hero_name": "Y'bneth",
-    "probability_pct": 9.09,
+    "probability_pct": 9.06,
     "predicted_win_rate_pct": 45.9,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -28706,7 +28708,7 @@
    {
     "rank": 5,
     "hero_name": "Eland'orr",
-    "probability_pct": 9.79,
+    "probability_pct": 9.8,
     "predicted_win_rate_pct": 51.44,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -28845,10 +28847,8 @@
      "True Dmg",
      "Sustain/Shield"
     ],
-    "triggered_by": [
-     "Marja"
-    ],
-    "trigger_reason": "protect"
+    "triggered_by": [],
+    "trigger_reason": null
    },
    {
     "rank": 7,
@@ -29204,7 +29204,7 @@
    {
     "rank": 1,
     "hero_name": "TeeMee",
-    "probability_pct": 18.0,
+    "probability_pct": 18.06,
     "predicted_win_rate_pct": 48.67,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -29227,7 +29227,7 @@
    {
     "rank": 1,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 10.62,
+    "probability_pct": 10.68,
     "predicted_win_rate_pct": 48.56,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -29248,7 +29248,7 @@
    {
     "rank": 2,
     "hero_name": "Cresht",
-    "probability_pct": 8.0,
+    "probability_pct": 8.04,
     "predicted_win_rate_pct": 51.7,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -29270,7 +29270,7 @@
    {
     "rank": 3,
     "hero_name": "Y'bneth",
-    "probability_pct": 9.09,
+    "probability_pct": 9.06,
     "predicted_win_rate_pct": 45.9,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -29311,7 +29311,7 @@
    {
     "rank": 5,
     "hero_name": "Eland'orr",
-    "probability_pct": 9.79,
+    "probability_pct": 9.8,
     "predicted_win_rate_pct": 51.44,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -29811,7 +29811,7 @@
    {
     "rank": 1,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 11.29,
+    "probability_pct": 11.21,
     "predicted_win_rate_pct": 39.15,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -29832,7 +29832,7 @@
    {
     "rank": 2,
     "hero_name": "Cresht",
-    "probability_pct": 8.09,
+    "probability_pct": 8.02,
     "predicted_win_rate_pct": 45.39,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -29854,7 +29854,7 @@
    {
     "rank": 3,
     "hero_name": "Y'bneth",
-    "probability_pct": 9.66,
+    "probability_pct": 9.53,
     "predicted_win_rate_pct": 49.39,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -29876,7 +29876,7 @@
    {
     "rank": 4,
     "hero_name": "Violet",
-    "probability_pct": 8.48,
+    "probability_pct": 8.38,
     "predicted_win_rate_pct": 52.84,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -29895,7 +29895,7 @@
    {
     "rank": 5,
     "hero_name": "Toro",
-    "probability_pct": 6.73,
+    "probability_pct": 6.68,
     "predicted_win_rate_pct": 53.98,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -30388,7 +30388,7 @@
    {
     "rank": 1,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 11.29,
+    "probability_pct": 11.21,
     "predicted_win_rate_pct": 39.15,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -30409,7 +30409,7 @@
    {
     "rank": 2,
     "hero_name": "Cresht",
-    "probability_pct": 8.09,
+    "probability_pct": 8.02,
     "predicted_win_rate_pct": 45.39,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -30431,7 +30431,7 @@
    {
     "rank": 3,
     "hero_name": "Y'bneth",
-    "probability_pct": 9.66,
+    "probability_pct": 9.53,
     "predicted_win_rate_pct": 49.39,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -30453,7 +30453,7 @@
    {
     "rank": 4,
     "hero_name": "Violet",
-    "probability_pct": 8.48,
+    "probability_pct": 8.38,
     "predicted_win_rate_pct": 52.84,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -30472,7 +30472,7 @@
    {
     "rank": 5,
     "hero_name": "Toro",
-    "probability_pct": 6.73,
+    "probability_pct": 6.68,
     "predicted_win_rate_pct": 53.98,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -30938,7 +30938,7 @@
    {
     "rank": 1,
     "hero_name": "Cresht",
-    "probability_pct": 14.08,
+    "probability_pct": 13.84,
     "predicted_win_rate_pct": 46.73,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -30960,7 +30960,7 @@
    {
     "rank": 2,
     "hero_name": "Y'bneth",
-    "probability_pct": 19.64,
+    "probability_pct": 19.3,
     "predicted_win_rate_pct": 55.11,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -30982,7 +30982,7 @@
    {
     "rank": 3,
     "hero_name": "Toro",
-    "probability_pct": 15.09,
+    "probability_pct": 14.89,
     "predicted_win_rate_pct": 51.27,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -31003,7 +31003,7 @@
    {
     "rank": 4,
     "hero_name": "Dyadia",
-    "probability_pct": 6.85,
+    "probability_pct": 6.63,
     "predicted_win_rate_pct": 42.95,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -31024,7 +31024,7 @@
    {
     "rank": 5,
     "hero_name": "Baldum",
-    "probability_pct": 8.07,
+    "probability_pct": 7.87,
     "predicted_win_rate_pct": 52.18,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -31479,7 +31479,7 @@
    {
     "rank": 1,
     "hero_name": "Cresht",
-    "probability_pct": 14.08,
+    "probability_pct": 13.84,
     "predicted_win_rate_pct": 46.73,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -31501,7 +31501,7 @@
    {
     "rank": 2,
     "hero_name": "Y'bneth",
-    "probability_pct": 19.64,
+    "probability_pct": 19.3,
     "predicted_win_rate_pct": 55.11,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -31523,7 +31523,7 @@
    {
     "rank": 3,
     "hero_name": "Toro",
-    "probability_pct": 15.09,
+    "probability_pct": 14.89,
     "predicted_win_rate_pct": 51.27,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -31544,7 +31544,7 @@
    {
     "rank": 4,
     "hero_name": "Dyadia",
-    "probability_pct": 6.85,
+    "probability_pct": 6.63,
     "predicted_win_rate_pct": 42.95,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -31565,7 +31565,7 @@
    {
     "rank": 5,
     "hero_name": "Baldum",
-    "probability_pct": 8.07,
+    "probability_pct": 7.87,
     "predicted_win_rate_pct": 52.18,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -32701,7 +32701,7 @@
    {
     "rank": 1,
     "hero_name": "Hayate",
-    "probability_pct": 30.99,
+    "probability_pct": 31.12,
     "predicted_win_rate_pct": 53.01,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -32784,7 +32784,7 @@
    {
     "rank": 1,
     "hero_name": "Hayate",
-    "probability_pct": 8.78,
+    "probability_pct": 8.88,
     "predicted_win_rate_pct": 50.85,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -32805,7 +32805,7 @@
    {
     "rank": 2,
     "hero_name": "Rouie",
-    "probability_pct": 12.21,
+    "probability_pct": 12.27,
     "predicted_win_rate_pct": 50.44,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -32824,7 +32824,7 @@
    {
     "rank": 3,
     "hero_name": "Tachi",
-    "probability_pct": 5.2,
+    "probability_pct": 5.26,
     "predicted_win_rate_pct": 50.87,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -32846,7 +32846,7 @@
    {
     "rank": 4,
     "hero_name": "Keera",
-    "probability_pct": 3.8,
+    "probability_pct": 3.85,
     "predicted_win_rate_pct": 51.45,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -32868,7 +32868,7 @@
    {
     "rank": 5,
     "hero_name": "Marja",
-    "probability_pct": 5.15,
+    "probability_pct": 5.2,
     "predicted_win_rate_pct": 51.01,
     "lookahead_win_rate_pct": null,
     "primary_lane": "DS_Lane",
@@ -33262,7 +33262,7 @@
    {
     "rank": 1,
     "hero_name": "Hayate",
-    "probability_pct": 30.99,
+    "probability_pct": 31.12,
     "predicted_win_rate_pct": 53.01,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -33345,7 +33345,7 @@
    {
     "rank": 1,
     "hero_name": "Hayate",
-    "probability_pct": 8.78,
+    "probability_pct": 8.88,
     "predicted_win_rate_pct": 50.85,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -33366,7 +33366,7 @@
    {
     "rank": 2,
     "hero_name": "Rouie",
-    "probability_pct": 12.21,
+    "probability_pct": 12.27,
     "predicted_win_rate_pct": 50.44,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -33385,7 +33385,7 @@
    {
     "rank": 3,
     "hero_name": "Tachi",
-    "probability_pct": 5.2,
+    "probability_pct": 5.26,
     "predicted_win_rate_pct": 50.87,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -33407,7 +33407,7 @@
    {
     "rank": 4,
     "hero_name": "Keera",
-    "probability_pct": 3.8,
+    "probability_pct": 3.85,
     "predicted_win_rate_pct": 51.45,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -33429,7 +33429,7 @@
    {
     "rank": 5,
     "hero_name": "Marja",
-    "probability_pct": 5.15,
+    "probability_pct": 5.2,
     "predicted_win_rate_pct": 51.01,
     "lookahead_win_rate_pct": null,
     "primary_lane": "DS_Lane",
@@ -33855,7 +33855,7 @@
    {
     "rank": 1,
     "hero_name": "Hayate",
-    "probability_pct": 30.51,
+    "probability_pct": 30.63,
     "predicted_win_rate_pct": 52.23,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -33899,7 +33899,7 @@
    {
     "rank": 1,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 34.63,
+    "probability_pct": 34.64,
     "predicted_win_rate_pct": 46.32,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -33942,7 +33942,7 @@
    {
     "rank": 1,
     "hero_name": "Hayate",
-    "probability_pct": 4.31,
+    "probability_pct": 4.34,
     "predicted_win_rate_pct": 52.23,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -33963,7 +33963,7 @@
    {
     "rank": 2,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 4.25,
+    "probability_pct": 4.28,
     "predicted_win_rate_pct": 51.21,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -33984,7 +33984,7 @@
    {
     "rank": 3,
     "hero_name": "Astrid",
-    "probability_pct": 10.24,
+    "probability_pct": 10.26,
     "predicted_win_rate_pct": 54.09,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -34006,7 +34006,7 @@
    {
     "rank": 4,
     "hero_name": "Rouie",
-    "probability_pct": 16.65,
+    "probability_pct": 16.67,
     "predicted_win_rate_pct": 53.08,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -34025,7 +34025,7 @@
    {
     "rank": 5,
     "hero_name": "Tachi",
-    "probability_pct": 2.54,
+    "probability_pct": 2.56,
     "predicted_win_rate_pct": 52.19,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -34461,7 +34461,7 @@
    {
     "rank": 1,
     "hero_name": "Hayate",
-    "probability_pct": 30.51,
+    "probability_pct": 30.63,
     "predicted_win_rate_pct": 52.23,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -34505,7 +34505,7 @@
    {
     "rank": 1,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 34.63,
+    "probability_pct": 34.64,
     "predicted_win_rate_pct": 46.32,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -34548,7 +34548,7 @@
    {
     "rank": 1,
     "hero_name": "Hayate",
-    "probability_pct": 4.31,
+    "probability_pct": 4.34,
     "predicted_win_rate_pct": 52.23,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -34569,7 +34569,7 @@
    {
     "rank": 2,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 4.25,
+    "probability_pct": 4.28,
     "predicted_win_rate_pct": 51.21,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -34590,7 +34590,7 @@
    {
     "rank": 3,
     "hero_name": "Astrid",
-    "probability_pct": 10.24,
+    "probability_pct": 10.26,
     "predicted_win_rate_pct": 54.09,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -34612,7 +34612,7 @@
    {
     "rank": 4,
     "hero_name": "Rouie",
-    "probability_pct": 16.65,
+    "probability_pct": 16.67,
     "predicted_win_rate_pct": 53.08,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -34631,7 +34631,7 @@
    {
     "rank": 5,
     "hero_name": "Tachi",
-    "probability_pct": 2.54,
+    "probability_pct": 2.56,
     "predicted_win_rate_pct": 52.19,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -35184,7 +35184,7 @@
    {
     "rank": 1,
     "hero_name": "Sinestrea",
-    "probability_pct": 7.61,
+    "probability_pct": 7.62,
     "predicted_win_rate_pct": 45.74,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -35203,19 +35203,19 @@
    },
    {
     "rank": 2,
-    "hero_name": "Astrid",
+    "hero_name": "Maloch",
     "probability_pct": 5.81,
-    "predicted_win_rate_pct": 49.03,
+    "predicted_win_rate_pct": 50.88,
     "lookahead_win_rate_pct": null,
-    "primary_lane": "Jungle",
+    "primary_lane": "Roam",
     "primary_role": "Fighter",
-    "synergy_edge_pct": -4.77,
-    "counter_edge_pct": -3.65,
+    "synergy_edge_pct": -6.54,
+    "counter_edge_pct": -5.79,
     "capabilities": [
      "Hard CC",
      "Mobility",
      "True Dmg",
-     "Iron Body/Immune"
+     "Sustain/Shield"
     ],
     "triggered_by": [
      "Airi"
@@ -35227,7 +35227,7 @@
    {
     "rank": 1,
     "hero_name": "Hayate",
-    "probability_pct": 5.67,
+    "probability_pct": 5.71,
     "predicted_win_rate_pct": 52.09,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -35248,7 +35248,7 @@
    {
     "rank": 2,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 6.41,
+    "probability_pct": 6.45,
     "predicted_win_rate_pct": 46.61,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -35269,7 +35269,7 @@
    {
     "rank": 3,
     "hero_name": "Astrid",
-    "probability_pct": 6.62,
+    "probability_pct": 6.66,
     "predicted_win_rate_pct": 47.9,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -35291,7 +35291,7 @@
    {
     "rank": 4,
     "hero_name": "Rouie",
-    "probability_pct": 7.13,
+    "probability_pct": 7.16,
     "predicted_win_rate_pct": 49.01,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -35310,7 +35310,7 @@
    {
     "rank": 5,
     "hero_name": "Tachi",
-    "probability_pct": 3.44,
+    "probability_pct": 3.47,
     "predicted_win_rate_pct": 46.83,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -35860,7 +35860,7 @@
    {
     "rank": 1,
     "hero_name": "Sinestrea",
-    "probability_pct": 7.61,
+    "probability_pct": 7.62,
     "predicted_win_rate_pct": 45.74,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -35879,19 +35879,19 @@
    },
    {
     "rank": 2,
-    "hero_name": "Astrid",
+    "hero_name": "Maloch",
     "probability_pct": 5.81,
-    "predicted_win_rate_pct": 49.03,
+    "predicted_win_rate_pct": 50.88,
     "lookahead_win_rate_pct": null,
-    "primary_lane": "Jungle",
+    "primary_lane": "Roam",
     "primary_role": "Fighter",
-    "synergy_edge_pct": -4.77,
-    "counter_edge_pct": -3.65,
+    "synergy_edge_pct": -6.54,
+    "counter_edge_pct": -5.79,
     "capabilities": [
      "Hard CC",
      "Mobility",
      "True Dmg",
-     "Iron Body/Immune"
+     "Sustain/Shield"
     ],
     "triggered_by": [
      "Airi"
@@ -35903,7 +35903,7 @@
    {
     "rank": 1,
     "hero_name": "Hayate",
-    "probability_pct": 5.67,
+    "probability_pct": 5.71,
     "predicted_win_rate_pct": 52.09,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -35924,7 +35924,7 @@
    {
     "rank": 2,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 6.41,
+    "probability_pct": 6.45,
     "predicted_win_rate_pct": 46.61,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -35945,7 +35945,7 @@
    {
     "rank": 3,
     "hero_name": "Astrid",
-    "probability_pct": 6.62,
+    "probability_pct": 6.66,
     "predicted_win_rate_pct": 47.9,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -35967,7 +35967,7 @@
    {
     "rank": 4,
     "hero_name": "Rouie",
-    "probability_pct": 7.13,
+    "probability_pct": 7.16,
     "predicted_win_rate_pct": 49.01,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -35986,7 +35986,7 @@
    {
     "rank": 5,
     "hero_name": "Tachi",
-    "probability_pct": 3.44,
+    "probability_pct": 3.47,
     "predicted_win_rate_pct": 46.83,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Jungle",
@@ -36556,7 +36556,7 @@
    {
     "rank": 1,
     "hero_name": "Valhein",
-    "probability_pct": 12.19,
+    "probability_pct": 12.2,
     "predicted_win_rate_pct": 43.16,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -36575,7 +36575,7 @@
    {
     "rank": 2,
     "hero_name": "Stuart",
-    "probability_pct": 11.78,
+    "probability_pct": 11.79,
     "predicted_win_rate_pct": 47.61,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -36597,7 +36597,7 @@
    {
     "rank": 1,
     "hero_name": "Hayate",
-    "probability_pct": 14.07,
+    "probability_pct": 14.18,
     "predicted_win_rate_pct": 49.75,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -36618,7 +36618,7 @@
    {
     "rank": 2,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 10.07,
+    "probability_pct": 10.19,
     "predicted_win_rate_pct": 42.08,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -36639,7 +36639,7 @@
    {
     "rank": 3,
     "hero_name": "Enzo",
-    "probability_pct": 3.35,
+    "probability_pct": 3.4,
     "predicted_win_rate_pct": 40.92,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -36659,7 +36659,7 @@
    {
     "rank": 4,
     "hero_name": "Xeniel",
-    "probability_pct": 2.95,
+    "probability_pct": 2.97,
     "predicted_win_rate_pct": 44.59,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -36679,7 +36679,7 @@
    {
     "rank": 5,
     "hero_name": "Raz",
-    "probability_pct": 2.89,
+    "probability_pct": 2.94,
     "predicted_win_rate_pct": 44.2,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -37246,7 +37246,7 @@
    {
     "rank": 1,
     "hero_name": "Valhein",
-    "probability_pct": 12.19,
+    "probability_pct": 12.2,
     "predicted_win_rate_pct": 43.16,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -37265,7 +37265,7 @@
    {
     "rank": 2,
     "hero_name": "Stuart",
-    "probability_pct": 11.78,
+    "probability_pct": 11.79,
     "predicted_win_rate_pct": 47.61,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -37287,7 +37287,7 @@
    {
     "rank": 1,
     "hero_name": "Hayate",
-    "probability_pct": 14.07,
+    "probability_pct": 14.18,
     "predicted_win_rate_pct": 49.75,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -37308,7 +37308,7 @@
    {
     "rank": 2,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 10.07,
+    "probability_pct": 10.19,
     "predicted_win_rate_pct": 42.08,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -37329,7 +37329,7 @@
    {
     "rank": 3,
     "hero_name": "Enzo",
-    "probability_pct": 3.35,
+    "probability_pct": 3.4,
     "predicted_win_rate_pct": 40.92,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -37349,7 +37349,7 @@
    {
     "rank": 4,
     "hero_name": "Xeniel",
-    "probability_pct": 2.95,
+    "probability_pct": 2.97,
     "predicted_win_rate_pct": 44.59,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -37369,7 +37369,7 @@
    {
     "rank": 5,
     "hero_name": "Raz",
-    "probability_pct": 2.89,
+    "probability_pct": 2.94,
     "predicted_win_rate_pct": 44.2,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Mid",
@@ -37913,7 +37913,7 @@
    {
     "rank": 1,
     "hero_name": "Valhein",
-    "probability_pct": 11.73,
+    "probability_pct": 11.74,
     "predicted_win_rate_pct": 45.0,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -37932,7 +37932,7 @@
    {
     "rank": 2,
     "hero_name": "Stuart",
-    "probability_pct": 11.2,
+    "probability_pct": 11.21,
     "predicted_win_rate_pct": 49.48,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -37975,7 +37975,7 @@
    {
     "rank": 2,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 11.06,
+    "probability_pct": 11.08,
     "predicted_win_rate_pct": 47.19,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -37996,7 +37996,7 @@
    {
     "rank": 3,
     "hero_name": "Enzo",
-    "probability_pct": 6.36,
+    "probability_pct": 6.37,
     "predicted_win_rate_pct": 47.96,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -38016,7 +38016,7 @@
    {
     "rank": 4,
     "hero_name": "Xeniel",
-    "probability_pct": 4.08,
+    "probability_pct": 4.05,
     "predicted_win_rate_pct": 47.14,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -38573,7 +38573,7 @@
    {
     "rank": 1,
     "hero_name": "Valhein",
-    "probability_pct": 11.73,
+    "probability_pct": 11.74,
     "predicted_win_rate_pct": 45.0,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -38592,7 +38592,7 @@
    {
     "rank": 2,
     "hero_name": "Stuart",
-    "probability_pct": 11.2,
+    "probability_pct": 11.21,
     "predicted_win_rate_pct": 49.48,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -38635,7 +38635,7 @@
    {
     "rank": 2,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 11.06,
+    "probability_pct": 11.08,
     "predicted_win_rate_pct": 47.19,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -38656,7 +38656,7 @@
    {
     "rank": 3,
     "hero_name": "Enzo",
-    "probability_pct": 6.36,
+    "probability_pct": 6.37,
     "predicted_win_rate_pct": 47.96,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -38676,7 +38676,7 @@
    {
     "rank": 4,
     "hero_name": "Xeniel",
-    "probability_pct": 4.08,
+    "probability_pct": 4.05,
     "predicted_win_rate_pct": 47.14,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -39217,7 +39217,7 @@
    {
     "rank": 1,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 9.36,
+    "probability_pct": 9.37,
     "predicted_win_rate_pct": 60.91,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -39259,7 +39259,7 @@
    {
     "rank": 3,
     "hero_name": "Wiro",
-    "probability_pct": 4.68,
+    "probability_pct": 4.71,
     "predicted_win_rate_pct": 55.05,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -39280,7 +39280,7 @@
    {
     "rank": 4,
     "hero_name": "Cresht",
-    "probability_pct": 4.66,
+    "probability_pct": 4.67,
     "predicted_win_rate_pct": 55.95,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -39302,7 +39302,7 @@
    {
     "rank": 5,
     "hero_name": "Y'bneth",
-    "probability_pct": 6.15,
+    "probability_pct": 6.13,
     "predicted_win_rate_pct": 59.05,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -39823,7 +39823,7 @@
    {
     "rank": 1,
     "hero_name": "Flowborn (Marksman)",
-    "probability_pct": 9.36,
+    "probability_pct": 9.37,
     "predicted_win_rate_pct": 60.91,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Dragon_Lane",
@@ -39865,7 +39865,7 @@
    {
     "rank": 3,
     "hero_name": "Wiro",
-    "probability_pct": 4.68,
+    "probability_pct": 4.71,
     "predicted_win_rate_pct": 55.05,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -39886,7 +39886,7 @@
    {
     "rank": 4,
     "hero_name": "Cresht",
-    "probability_pct": 4.66,
+    "probability_pct": 4.67,
     "predicted_win_rate_pct": 55.95,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -39908,7 +39908,7 @@
    {
     "rank": 5,
     "hero_name": "Y'bneth",
-    "probability_pct": 6.15,
+    "probability_pct": 6.13,
     "predicted_win_rate_pct": 59.05,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -40439,7 +40439,7 @@
    {
     "rank": 2,
     "hero_name": "Y'bneth",
-    "probability_pct": 5.55,
+    "probability_pct": 5.54,
     "predicted_win_rate_pct": 56.94,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -40461,7 +40461,7 @@
    {
     "rank": 3,
     "hero_name": "Wiro",
-    "probability_pct": 4.93,
+    "probability_pct": 4.95,
     "predicted_win_rate_pct": 49.96,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -40504,7 +40504,7 @@
    {
     "rank": 5,
     "hero_name": "Maloch",
-    "probability_pct": 3.58,
+    "probability_pct": 3.57,
     "predicted_win_rate_pct": 56.5,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -41035,7 +41035,7 @@
    {
     "rank": 2,
     "hero_name": "Y'bneth",
-    "probability_pct": 5.55,
+    "probability_pct": 5.54,
     "predicted_win_rate_pct": 56.94,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -41057,7 +41057,7 @@
    {
     "rank": 3,
     "hero_name": "Wiro",
-    "probability_pct": 4.93,
+    "probability_pct": 4.95,
     "predicted_win_rate_pct": 49.96,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -41100,7 +41100,7 @@
    {
     "rank": 5,
     "hero_name": "Maloch",
-    "probability_pct": 3.58,
+    "probability_pct": 3.57,
     "predicted_win_rate_pct": 56.5,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -41568,7 +41568,7 @@
    {
     "rank": 1,
     "hero_name": "Y'bneth",
-    "probability_pct": 20.37,
+    "probability_pct": 20.35,
     "predicted_win_rate_pct": 55.7,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -41590,7 +41590,7 @@
    {
     "rank": 2,
     "hero_name": "Wiro",
-    "probability_pct": 8.52,
+    "probability_pct": 8.56,
     "predicted_win_rate_pct": 54.95,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -41611,7 +41611,7 @@
    {
     "rank": 3,
     "hero_name": "Cresht",
-    "probability_pct": 10.07,
+    "probability_pct": 10.08,
     "predicted_win_rate_pct": 57.75,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -41633,7 +41633,7 @@
    {
     "rank": 4,
     "hero_name": "Maloch",
-    "probability_pct": 7.46,
+    "probability_pct": 7.45,
     "predicted_win_rate_pct": 45.27,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -41655,7 +41655,7 @@
    {
     "rank": 5,
     "hero_name": "Chaugnar",
-    "probability_pct": 4.43,
+    "probability_pct": 4.44,
     "predicted_win_rate_pct": 54.42,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -42109,7 +42109,7 @@
    {
     "rank": 1,
     "hero_name": "Y'bneth",
-    "probability_pct": 20.37,
+    "probability_pct": 20.35,
     "predicted_win_rate_pct": 55.7,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -42131,7 +42131,7 @@
    {
     "rank": 2,
     "hero_name": "Wiro",
-    "probability_pct": 8.52,
+    "probability_pct": 8.56,
     "predicted_win_rate_pct": 54.95,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -42152,7 +42152,7 @@
    {
     "rank": 3,
     "hero_name": "Cresht",
-    "probability_pct": 10.07,
+    "probability_pct": 10.08,
     "predicted_win_rate_pct": 57.75,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -42174,7 +42174,7 @@
    {
     "rank": 4,
     "hero_name": "Maloch",
-    "probability_pct": 7.46,
+    "probability_pct": 7.45,
     "predicted_win_rate_pct": 45.27,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",
@@ -42196,7 +42196,7 @@
    {
     "rank": 5,
     "hero_name": "Chaugnar",
-    "probability_pct": 4.43,
+    "probability_pct": 4.44,
     "predicted_win_rate_pct": 54.42,
     "lookahead_win_rate_pct": null,
     "primary_lane": "Roam",

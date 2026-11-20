@@ -7,7 +7,7 @@
       "game_number": 1,
       "date": "February 28, 2026 - 14:30",
       "blue_team": "BOX",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Marja",
         "Capheny",
@@ -23,13 +23,13 @@
         "Biron"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week1/2026_w1_d1_m1_g1_spr_aog_box_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week1/2026_w1_d1_m1_g1_spr_aog_box_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S831",
       "game_number": 2,
       "date": "February 28, 2026 - 14:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "BOX",
       "blue_picks": [
         "Zata",
@@ -46,14 +46,14 @@
         "Airi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week1/2026_w1_d1_m1_g2_spr_aog_box_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week1/2026_w1_d1_m1_g2_spr_aog_box_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S831",
       "game_number": 3,
       "date": "February 28, 2026 - 14:30",
       "blue_team": "BOX",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Eland'orr",
         "Valhein",
@@ -69,13 +69,13 @@
         "Yena"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week1/2026_w1_d1_m1_g3_spr_aog_box_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week1/2026_w1_d1_m1_g3_spr_aog_box_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S831",
       "game_number": 4,
       "date": "February 28, 2026 - 14:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "BOX",
       "blue_picks": [
         "Enzo",
@@ -92,7 +92,7 @@
         "Aya"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week1/2026_w1_d1_m1_g4_spr_aog_box_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week1/2026_w1_d1_m1_g4_spr_aog_box_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S832",
@@ -352,7 +352,7 @@
       "game_number": 1,
       "date": "March 1, 2026 - 17:10",
       "blue_team": "FPL",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Enzo",
         "Capheny",
@@ -368,14 +368,14 @@
         "Zephys"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week1/2026_w1_d2_m5_g1_spr_aog_fpl_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week1/2026_w1_d2_m5_g1_spr_aog_fpl_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S835",
       "game_number": 2,
       "date": "March 1, 2026 - 17:10",
       "blue_team": "FPL",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Rouie",
         "Valhein",
@@ -391,13 +391,13 @@
         "Eland'orr"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week1/2026_w1_d2_m5_g2_spr_aog_fpl_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week1/2026_w1_d2_m5_g2_spr_aog_fpl_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S835",
       "game_number": 3,
       "date": "March 1, 2026 - 17:10",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "FPL",
       "blue_picks": [
         "Enzo",
@@ -414,13 +414,13 @@
         "Murad"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week1/2026_w1_d2_m5_g3_spr_aog_fpl_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week1/2026_w1_d2_m5_g3_spr_aog_fpl_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S835",
       "game_number": 4,
       "date": "March 1, 2026 - 17:10",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "FPL",
       "blue_picks": [
         "Sinestrea",
@@ -437,7 +437,7 @@
         "Yena"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week1/2026_w1_d2_m5_g4_spr_aog_fpl_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week1/2026_w1_d2_m5_g4_spr_aog_fpl_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S836",
@@ -857,7 +857,7 @@
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S841",
       "game_number": 1,
       "date": "March 6, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "SPN",
       "blue_picks": [
         "Marja",
@@ -874,13 +874,13 @@
         "Tachi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week2/2026_w2_d4_m11_g1_spr_aog_fpt_vs_spn.png"
+      "screenshot": "2026_aog_spring/week2/2026_w2_d4_m11_g1_spr_aog_fl_vs_spn.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S841",
       "game_number": 2,
       "date": "March 6, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "SPN",
       "blue_picks": [
         "Dolia",
@@ -897,14 +897,14 @@
         "Airi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week2/2026_w2_d4_m11_g2_spr_aog_fpt_vs_spn.png"
+      "screenshot": "2026_aog_spring/week2/2026_w2_d4_m11_g2_spr_aog_fl_vs_spn.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S841",
       "game_number": 3,
       "date": "March 6, 2026 - 19:30",
       "blue_team": "SPN",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Sinestrea",
         "Dolia",
@@ -920,7 +920,7 @@
         "Biron"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week2/2026_w2_d4_m11_g3_spr_aog_fpt_vs_spn.png"
+      "screenshot": "2026_aog_spring/week2/2026_w2_d4_m11_g3_spr_aog_fl_vs_spn.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S842",
@@ -1133,7 +1133,7 @@
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S844",
       "game_number": 1,
       "date": "March 7, 2026 - 20:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "1S",
       "blue_picks": [
         "Rouie",
@@ -1150,14 +1150,14 @@
         "Zephys"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week2/2026_w2_d5_m14_g1_spr_aog_fpt_vs_1s.png"
+      "screenshot": "2026_aog_spring/week2/2026_w2_d5_m14_g1_spr_aog_fl_vs_1s.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S844",
       "game_number": 2,
       "date": "March 7, 2026 - 20:00",
       "blue_team": "1S",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Fennik",
         "Aya",
@@ -1173,14 +1173,14 @@
         "Tachi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week2/2026_w2_d5_m14_g2_spr_aog_fpt_vs_1s.png"
+      "screenshot": "2026_aog_spring/week2/2026_w2_d5_m14_g2_spr_aog_fl_vs_1s.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S844",
       "game_number": 3,
       "date": "March 7, 2026 - 20:00",
       "blue_team": "1S",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Hayate",
         "Toro",
@@ -1196,7 +1196,7 @@
         "Yena"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week2/2026_w2_d5_m14_g3_spr_aog_fpt_vs_1s.png"
+      "screenshot": "2026_aog_spring/week2/2026_w2_d5_m14_g3_spr_aog_fl_vs_1s.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S845",
@@ -1364,7 +1364,7 @@
       "game_number": 1,
       "date": "March 8, 2026 - 19:30",
       "blue_team": "SGP",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Rouie",
         "Biron",
@@ -1380,13 +1380,13 @@
         "Tachi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week2/2026_w2_d6_m17_g1_spr_aog_sgp_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week2/2026_w2_d6_m17_g1_spr_aog_sgp_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S847",
       "game_number": 2,
       "date": "March 8, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "SGP",
       "blue_picks": [
         "Eland'orr",
@@ -1403,14 +1403,14 @@
         "Skud"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week2/2026_w2_d6_m17_g2_spr_aog_sgp_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week2/2026_w2_d6_m17_g2_spr_aog_sgp_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S847",
       "game_number": 3,
       "date": "March 8, 2026 - 19:30",
       "blue_team": "SGP",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Dolia",
         "Tachi",
@@ -1426,7 +1426,7 @@
         "Skud"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week2/2026_w2_d6_m17_g3_spr_aog_sgp_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week2/2026_w2_d6_m17_g3_spr_aog_sgp_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S848",
@@ -1754,7 +1754,7 @@
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S852",
       "game_number": 1,
       "date": "March 13, 2026 - 16:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "GAM",
       "blue_picks": [
         "Marja",
@@ -1771,14 +1771,14 @@
         "Qi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week3/2026_w3_d8_m22_g1_spr_aog_fpt_vs_gam.png"
+      "screenshot": "2026_aog_spring/week3/2026_w3_d8_m22_g1_spr_aog_fl_vs_gam.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S852",
       "game_number": 2,
       "date": "March 13, 2026 - 16:00",
       "blue_team": "GAM",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Toro",
         "Ryoma",
@@ -1794,13 +1794,13 @@
         "Skud"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week3/2026_w3_d8_m22_g2_spr_aog_fpt_vs_gam.png"
+      "screenshot": "2026_aog_spring/week3/2026_w3_d8_m22_g2_spr_aog_fl_vs_gam.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S852",
       "game_number": 3,
       "date": "March 13, 2026 - 16:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "GAM",
       "blue_picks": [
         "Zephys",
@@ -1817,14 +1817,14 @@
         "Skud"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week3/2026_w3_d8_m22_g3_spr_aog_fpt_vs_gam.png"
+      "screenshot": "2026_aog_spring/week3/2026_w3_d8_m22_g3_spr_aog_fl_vs_gam.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S852",
       "game_number": 4,
       "date": "March 13, 2026 - 16:00",
       "blue_team": "GAM",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Tachi",
         "Hayate",
@@ -1840,7 +1840,7 @@
         "Qi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week3/2026_w3_d8_m22_g4_spr_aog_fpt_vs_gam.png"
+      "screenshot": "2026_aog_spring/week3/2026_w3_d8_m22_g4_spr_aog_fl_vs_gam.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S853",
@@ -2076,7 +2076,7 @@
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S856",
       "game_number": 1,
       "date": "March 14, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "TS",
       "blue_picks": [
         "Tachi",
@@ -2093,13 +2093,13 @@
         "Omen"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week3/2026_w3_d9_m26_g1_spr_aog_fpt_vs_sec.png"
+      "screenshot": "2026_aog_spring/week3/2026_w3_d9_m26_g1_spr_aog_fl_vs_sec.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S856",
       "game_number": 2,
       "date": "March 14, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "TS",
       "blue_picks": [
         "Hayate",
@@ -2116,14 +2116,14 @@
         "Qi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week3/2026_w3_d9_m26_g2_spr_aog_fpt_vs_sec.png"
+      "screenshot": "2026_aog_spring/week3/2026_w3_d9_m26_g2_spr_aog_fl_vs_sec.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S856",
       "game_number": 3,
       "date": "March 14, 2026 - 19:30",
       "blue_team": "TS",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Marja",
         "Billow",
@@ -2139,7 +2139,7 @@
         "Annette"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week3/2026_w3_d9_m26_g3_spr_aog_fpt_vs_sec.png"
+      "screenshot": "2026_aog_spring/week3/2026_w3_d9_m26_g3_spr_aog_fl_vs_sec.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S857",
@@ -2398,7 +2398,7 @@
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S860",
       "game_number": 1,
       "date": "March 28, 2026 - 16:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "SPN",
       "blue_picks": [
         "Eland'orr",
@@ -2415,14 +2415,14 @@
         "Murad"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week4/2026_w4_d11_m30_g1_spr_aog_fpt_vs_spn.png"
+      "screenshot": "2026_aog_spring/week4/2026_w4_d11_m30_g1_spr_aog_fl_vs_spn.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S860",
       "game_number": 2,
       "date": "March 28, 2026 - 16:00",
       "blue_team": "SPN",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Rouie",
         "Hayate",
@@ -2438,13 +2438,13 @@
         "Airi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week4/2026_w4_d11_m30_g2_spr_aog_fpt_vs_spn.png"
+      "screenshot": "2026_aog_spring/week4/2026_w4_d11_m30_g2_spr_aog_fl_vs_spn.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S860",
       "game_number": 3,
       "date": "March 28, 2026 - 16:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "SPN",
       "blue_picks": [
         "Violet",
@@ -2461,14 +2461,14 @@
         "Airi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week4/2026_w4_d11_m30_g3_spr_aog_fpt_vs_spn.png"
+      "screenshot": "2026_aog_spring/week4/2026_w4_d11_m30_g3_spr_aog_fl_vs_spn.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S860",
       "game_number": 4,
       "date": "March 28, 2026 - 16:00",
       "blue_team": "SPN",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Wisp",
         "Zephys",
@@ -2484,13 +2484,13 @@
         "Ryoma"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week4/2026_w4_d11_m30_g4_spr_aog_fpt_vs_spn.png"
+      "screenshot": "2026_aog_spring/week4/2026_w4_d11_m30_g4_spr_aog_fl_vs_spn.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S860",
       "game_number": 5,
       "date": "March 28, 2026 - 16:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "SPN",
       "blue_picks": [
         "Sinestrea",
@@ -2507,7 +2507,7 @@
         "Skud"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week4/2026_w4_d11_m30_g5_spr_aog_fpt_vs_spn.png"
+      "screenshot": "2026_aog_spring/week4/2026_w4_d11_m30_g5_spr_aog_fl_vs_spn.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S861",
@@ -2697,7 +2697,7 @@
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S863",
       "game_number": 1,
       "date": "March 29, 2026 - 16:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "BOX",
       "blue_picks": [
         "Violet",
@@ -2714,14 +2714,14 @@
         "Skud"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week4/2026_w4_d12_m33_g1_spr_aog_fpt_vs_box.png"
+      "screenshot": "2026_aog_spring/week4/2026_w4_d12_m33_g1_spr_aog_fl_vs_box.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S863",
       "game_number": 2,
       "date": "March 29, 2026 - 16:00",
       "blue_team": "BOX",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Eland'orr",
         "Dolia",
@@ -2737,14 +2737,14 @@
         "Volkath"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week4/2026_w4_d12_m33_g2_spr_aog_fpt_vs_box.png"
+      "screenshot": "2026_aog_spring/week4/2026_w4_d12_m33_g2_spr_aog_fl_vs_box.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S863",
       "game_number": 3,
       "date": "March 29, 2026 - 16:00",
       "blue_team": "BOX",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Marja",
         "TeeMee",
@@ -2760,13 +2760,13 @@
         "Y'bneth"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week4/2026_w4_d12_m33_g3_spr_aog_fpt_vs_box.png"
+      "screenshot": "2026_aog_spring/week4/2026_w4_d12_m33_g3_spr_aog_fl_vs_box.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S863",
       "game_number": 4,
       "date": "March 29, 2026 - 16:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "BOX",
       "blue_picks": [
         "Stuart",
@@ -2783,13 +2783,13 @@
         "Airi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week4/2026_w4_d12_m33_g4_spr_aog_fpt_vs_box.png"
+      "screenshot": "2026_aog_spring/week4/2026_w4_d12_m33_g4_spr_aog_fl_vs_box.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S863",
       "game_number": 5,
       "date": "March 29, 2026 - 16:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "BOX",
       "blue_picks": [
         "Mganga",
@@ -2806,7 +2806,7 @@
         "Murad"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week4/2026_w4_d12_m33_g5_spr_aog_fpt_vs_box.png"
+      "screenshot": "2026_aog_spring/week4/2026_w4_d12_m33_g5_spr_aog_fl_vs_box.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S864",
@@ -3180,7 +3180,7 @@
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S868",
       "game_number": 1,
       "date": "April 3, 2026 - 16:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "FPL",
       "blue_picks": [
         "Marja",
@@ -3197,13 +3197,13 @@
         "Billow"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week5/2026_w5_d14_m38_g1_spr_aog_fpt_vs_fpl.png"
+      "screenshot": "2026_aog_spring/week5/2026_w5_d14_m38_g1_spr_aog_fl_vs_fpl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S868",
       "game_number": 2,
       "date": "April 3, 2026 - 16:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "FPL",
       "blue_picks": [
         "TeeMee",
@@ -3220,13 +3220,13 @@
         "Yena"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week5/2026_w5_d14_m38_g2_spr_aog_fpt_vs_fpl.png"
+      "screenshot": "2026_aog_spring/week5/2026_w5_d14_m38_g2_spr_aog_fl_vs_fpl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S868",
       "game_number": 3,
       "date": "April 3, 2026 - 16:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "FPL",
       "blue_picks": [
         "Wisp",
@@ -3243,7 +3243,7 @@
         "Cresht"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week5/2026_w5_d14_m38_g3_spr_aog_fpt_vs_fpl.png"
+      "screenshot": "2026_aog_spring/week5/2026_w5_d14_m38_g3_spr_aog_fl_vs_fpl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S869",
@@ -3480,7 +3480,7 @@
       "game_number": 1,
       "date": "April 4, 2026 - 19:30",
       "blue_team": "SGP",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Rouie",
         "Volkath",
@@ -3496,14 +3496,14 @@
         "Yena"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week5/2026_w5_d15_m42_g1_spr_aog_sgp_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week5/2026_w5_d15_m42_g1_spr_aog_sgp_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S872",
       "game_number": 2,
       "date": "April 4, 2026 - 19:30",
       "blue_team": "SGP",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Eland'orr",
         "Violet",
@@ -3519,14 +3519,14 @@
         "Mina"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week5/2026_w5_d15_m42_g2_spr_aog_sgp_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week5/2026_w5_d15_m42_g2_spr_aog_sgp_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S872",
       "game_number": 3,
       "date": "April 4, 2026 - 19:30",
       "blue_team": "SGP",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Toro",
         "Zephys",
@@ -3542,14 +3542,14 @@
         "Iggy"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week5/2026_w5_d15_m42_g3_spr_aog_sgp_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week5/2026_w5_d15_m42_g3_spr_aog_sgp_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S872",
       "game_number": 4,
       "date": "April 4, 2026 - 19:30",
       "blue_team": "SGP",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Tachi",
         "Dolia",
@@ -3565,13 +3565,13 @@
         "Krizzix"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week5/2026_w5_d15_m42_g4_spr_aog_sgp_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week5/2026_w5_d15_m42_g4_spr_aog_sgp_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S872",
       "game_number": 5,
       "date": "April 4, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "SGP",
       "blue_picks": [
         "Enzo",
@@ -3588,7 +3588,7 @@
         "Omen"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week5/2026_w5_d15_m42_g5_spr_aog_sgp_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week5/2026_w5_d15_m42_g5_spr_aog_sgp_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S873",
@@ -3779,7 +3779,7 @@
       "game_number": 1,
       "date": "April 5, 2026 - 19:30",
       "blue_team": "1S",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Rouie",
         "Zephys",
@@ -3795,13 +3795,13 @@
         "Yena"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week5/2026_w5_d16_m45_g1_spr_aog_1s_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week5/2026_w5_d16_m45_g1_spr_aog_1s_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S875",
       "game_number": 2,
       "date": "April 5, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "1S",
       "blue_picks": [
         "Toro",
@@ -3818,14 +3818,14 @@
         "Keera"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week5/2026_w5_d16_m45_g2_spr_aog_1s_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week5/2026_w5_d16_m45_g2_spr_aog_1s_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S875",
       "game_number": 3,
       "date": "April 5, 2026 - 19:30",
       "blue_team": "1S",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Wisp",
         "Billow",
@@ -3841,14 +3841,14 @@
         "Airi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week5/2026_w5_d16_m45_g3_spr_aog_1s_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week5/2026_w5_d16_m45_g3_spr_aog_1s_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S875",
       "game_number": 4,
       "date": "April 5, 2026 - 19:30",
       "blue_team": "1S",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Y'bneth",
         "Edras",
@@ -3864,7 +3864,7 @@
         "Riktor"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week5/2026_w5_d16_m45_g4_spr_aog_1s_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week5/2026_w5_d16_m45_g4_spr_aog_1s_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S876",
@@ -4147,7 +4147,7 @@
       "game_number": 1,
       "date": "April 10, 2026 - 16:00",
       "blue_team": "TS",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Toro",
         "Biron",
@@ -4163,13 +4163,13 @@
         "Wiro"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week6/2026_w6_d18_m49_g1_spr_aog_sec_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week6/2026_w6_d18_m49_g1_spr_aog_sec_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S879",
       "game_number": 2,
       "date": "April 10, 2026 - 16:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "TS",
       "blue_picks": [
         "Violet",
@@ -4186,14 +4186,14 @@
         "Skud"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week6/2026_w6_d18_m49_g2_spr_aog_sec_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week6/2026_w6_d18_m49_g2_spr_aog_sec_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S879",
       "game_number": 3,
       "date": "April 10, 2026 - 16:00",
       "blue_team": "TS",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Zata",
         "Maloch",
@@ -4209,14 +4209,14 @@
         "Riktor"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week6/2026_w6_d18_m49_g3_spr_aog_sec_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week6/2026_w6_d18_m49_g3_spr_aog_sec_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S879",
       "game_number": 4,
       "date": "April 10, 2026 - 16:00",
       "blue_team": "TS",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Lorion",
         "Violet",
@@ -4232,7 +4232,7 @@
         "Yena"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week6/2026_w6_d18_m49_g4_spr_aog_sec_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week6/2026_w6_d18_m49_g4_spr_aog_sec_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S880",
@@ -4515,7 +4515,7 @@
       "game_number": 1,
       "date": "April 11, 2026 - 19:30",
       "blue_team": "GAM",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Toro",
         "Eland'orr",
@@ -4531,14 +4531,14 @@
         "Qi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week6/2026_w6_d19_m53_g1_spr_aog_gam_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week6/2026_w6_d19_m53_g1_spr_aog_gam_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S883",
       "game_number": 2,
       "date": "April 11, 2026 - 19:30",
       "blue_team": "GAM",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Y'bneth",
         "Violet",
@@ -4554,13 +4554,13 @@
         "Keera"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week6/2026_w6_d19_m53_g2_spr_aog_gam_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week6/2026_w6_d19_m53_g2_spr_aog_gam_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S883",
       "game_number": 3,
       "date": "April 11, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "GAM",
       "blue_picks": [
         "Marja",
@@ -4577,14 +4577,14 @@
         "Skud"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week6/2026_w6_d19_m53_g3_spr_aog_gam_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week6/2026_w6_d19_m53_g3_spr_aog_gam_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S883",
       "game_number": 4,
       "date": "April 11, 2026 - 19:30",
       "blue_team": "GAM",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Tachi",
         "Cresht",
@@ -4600,7 +4600,7 @@
         "Tulen"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week6/2026_w6_d19_m53_g4_spr_aog_gam_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week6/2026_w6_d19_m53_g4_spr_aog_gam_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S884",
@@ -5136,7 +5136,7 @@
       "game_number": 1,
       "date": "April 20, 2026 - 20:00",
       "blue_team": "1S",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Rouie",
         "Airi",
@@ -5152,13 +5152,13 @@
         "Fennik"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week7/2026_w7_d21_m59_g1_spr_aog_1s_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week7/2026_w7_d21_m59_g1_spr_aog_1s_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S889",
       "game_number": 2,
       "date": "April 20, 2026 - 20:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "1S",
       "blue_picks": [
         "Toro",
@@ -5175,14 +5175,14 @@
         "Chaugnar"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week7/2026_w7_d21_m59_g2_spr_aog_1s_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week7/2026_w7_d21_m59_g2_spr_aog_1s_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S889",
       "game_number": 3,
       "date": "April 20, 2026 - 20:00",
       "blue_team": "1S",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Wisp",
         "Enzo",
@@ -5198,13 +5198,13 @@
         "Florentino"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week7/2026_w7_d21_m59_g3_spr_aog_1s_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week7/2026_w7_d21_m59_g3_spr_aog_1s_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S889",
       "game_number": 4,
       "date": "April 20, 2026 - 20:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "1S",
       "blue_picks": [
         "Zata",
@@ -5221,13 +5221,13 @@
         "Zuka"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week7/2026_w7_d21_m59_g4_spr_aog_1s_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week7/2026_w7_d21_m59_g4_spr_aog_1s_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S889",
       "game_number": 5,
       "date": "April 20, 2026 - 20:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "1S",
       "blue_picks": [
         "Rouie",
@@ -5244,7 +5244,7 @@
         "Omega"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week7/2026_w7_d21_m59_g5_spr_aog_1s_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week7/2026_w7_d21_m59_g5_spr_aog_1s_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S890",
@@ -5319,7 +5319,7 @@
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S891",
       "game_number": 1,
       "date": "April 21, 2026 - 17:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "FPL",
       "blue_picks": [
         "Marja",
@@ -5336,13 +5336,13 @@
         "Taara"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week7/2026_w7_d22_m61_g1_spr_aog_fpt_vs_fpl.png"
+      "screenshot": "2026_aog_spring/week7/2026_w7_d22_m61_g1_spr_aog_fl_vs_fpl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S891",
       "game_number": 2,
       "date": "April 21, 2026 - 17:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "FPL",
       "blue_picks": [
         "Rouie",
@@ -5359,13 +5359,13 @@
         "Maloch"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week7/2026_w7_d22_m61_g2_spr_aog_fpt_vs_fpl.png"
+      "screenshot": "2026_aog_spring/week7/2026_w7_d22_m61_g2_spr_aog_fl_vs_fpl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S891",
       "game_number": 3,
       "date": "April 21, 2026 - 17:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "FPL",
       "blue_picks": [
         "Hayate",
@@ -5382,7 +5382,7 @@
         "Zephys"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week7/2026_w7_d22_m61_g3_spr_aog_fpt_vs_fpl.png"
+      "screenshot": "2026_aog_spring/week7/2026_w7_d22_m61_g3_spr_aog_fl_vs_fpl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S892",
@@ -5664,7 +5664,7 @@
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S895",
       "game_number": 1,
       "date": "April 22, 2026 - 20:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "SGP",
       "blue_picks": [
         "Sinestrea",
@@ -5681,14 +5681,14 @@
         "Murad"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week7/2026_w7_d23_m65_g1_spr_aog_fpt_vs_sgp.png"
+      "screenshot": "2026_aog_spring/week7/2026_w7_d23_m65_g1_spr_aog_fl_vs_sgp.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S895",
       "game_number": 2,
       "date": "April 22, 2026 - 20:00",
       "blue_team": "SGP",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Rouie",
         "Volkath",
@@ -5704,13 +5704,13 @@
         "Yan"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week7/2026_w7_d23_m65_g2_spr_aog_fpt_vs_sgp.png"
+      "screenshot": "2026_aog_spring/week7/2026_w7_d23_m65_g2_spr_aog_fl_vs_sgp.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S895",
       "game_number": 3,
       "date": "April 22, 2026 - 20:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "SGP",
       "blue_picks": [
         "Wisp",
@@ -5727,14 +5727,14 @@
         "Lorion"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week7/2026_w7_d23_m65_g3_spr_aog_fpt_vs_sgp.png"
+      "screenshot": "2026_aog_spring/week7/2026_w7_d23_m65_g3_spr_aog_fl_vs_sgp.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S895",
       "game_number": 4,
       "date": "April 22, 2026 - 20:00",
       "blue_team": "SGP",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "TeeMee",
         "Zephys",
@@ -5750,13 +5750,13 @@
         "Ignis"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week7/2026_w7_d23_m65_g4_spr_aog_fpt_vs_sgp.png"
+      "screenshot": "2026_aog_spring/week7/2026_w7_d23_m65_g4_spr_aog_fl_vs_sgp.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S895",
       "game_number": 5,
       "date": "April 22, 2026 - 20:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "SGP",
       "blue_picks": [
         "Hayate",
@@ -5773,7 +5773,7 @@
         "Mortos"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week7/2026_w7_d23_m65_g5_spr_aog_fpt_vs_sgp.png"
+      "screenshot": "2026_aog_spring/week7/2026_w7_d23_m65_g5_spr_aog_fl_vs_sgp.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S896",
@@ -5964,7 +5964,7 @@
       "game_number": 1,
       "date": "April 23, 2026 - 20:00",
       "blue_team": "BOX",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Rouie",
         "Capheny",
@@ -5980,13 +5980,13 @@
         "Charlotte"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week7/2026_w7_d24_m68_g1_spr_aog_box_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week7/2026_w7_d24_m68_g1_spr_aog_box_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S898",
       "game_number": 2,
       "date": "April 23, 2026 - 20:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "BOX",
       "blue_picks": [
         "Marja",
@@ -6003,13 +6003,13 @@
         "Qi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week7/2026_w7_d24_m68_g2_spr_aog_box_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week7/2026_w7_d24_m68_g2_spr_aog_box_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S898",
       "game_number": 3,
       "date": "April 23, 2026 - 20:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "BOX",
       "blue_picks": [
         "Sinestrea",
@@ -6026,7 +6026,7 @@
         "Omen"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week7/2026_w7_d24_m68_g3_spr_aog_box_vs_fpt.png"
+      "screenshot": "2026_aog_spring/week7/2026_w7_d24_m68_g3_spr_aog_box_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S899",
@@ -6147,7 +6147,7 @@
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S900",
       "game_number": 1,
       "date": "April 24, 2026 - 17:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "GAM",
       "blue_picks": [
         "Rouie",
@@ -6164,13 +6164,13 @@
         "Yena"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week7/2026_w7_d25_m70_g1_spr_aog_fpt_vs_gam.png"
+      "screenshot": "2026_aog_spring/week7/2026_w7_d25_m70_g1_spr_aog_fl_vs_gam.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S900",
       "game_number": 2,
       "date": "April 24, 2026 - 17:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "GAM",
       "blue_picks": [
         "Y'bneth",
@@ -6187,13 +6187,13 @@
         "Iggy"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week7/2026_w7_d25_m70_g2_spr_aog_fpt_vs_gam.png"
+      "screenshot": "2026_aog_spring/week7/2026_w7_d25_m70_g2_spr_aog_fl_vs_gam.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S900",
       "game_number": 3,
       "date": "April 24, 2026 - 17:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "GAM",
       "blue_picks": [
         "Lorion",
@@ -6210,14 +6210,14 @@
         "Yan"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week7/2026_w7_d25_m70_g3_spr_aog_fpt_vs_gam.png"
+      "screenshot": "2026_aog_spring/week7/2026_w7_d25_m70_g3_spr_aog_fl_vs_gam.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S900",
       "game_number": 4,
       "date": "April 24, 2026 - 17:00",
       "blue_team": "GAM",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Marja",
         "Valhein",
@@ -6233,7 +6233,7 @@
         "Krizzix"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/week7/2026_w7_d25_m70_g4_spr_aog_fpt_vs_gam.png"
+      "screenshot": "2026_aog_spring/week7/2026_w7_d25_m70_g4_spr_aog_fl_vs_gam.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S901",
@@ -6516,7 +6516,7 @@
       "game_number": 1,
       "date": "April 26, 2026 - 19:15",
       "blue_team": "SGP",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Rouie",
         "Y'bneth",
@@ -6532,14 +6532,14 @@
         "Charlotte"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/playoffs/2026_playoffs_m1_g1_spr_aog_sgp_vs_fpt.png"
+      "screenshot": "2026_aog_spring/playoffs/2026_playoffs_m1_g1_spr_aog_sgp_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Playoffs_S903",
       "game_number": 2,
       "date": "April 26, 2026 - 19:15",
       "blue_team": "SGP",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Eland'orr",
         "Cresht",
@@ -6555,13 +6555,13 @@
         "Wonder Woman"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/playoffs/2026_playoffs_m1_g2_spr_aog_sgp_vs_fpt.png"
+      "screenshot": "2026_aog_spring/playoffs/2026_playoffs_m1_g2_spr_aog_sgp_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Playoffs_S903",
       "game_number": 3,
       "date": "April 26, 2026 - 19:15",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "SGP",
       "blue_picks": [
         "Billow",
@@ -6578,13 +6578,13 @@
         "Arduin"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/playoffs/2026_playoffs_m1_g3_spr_aog_sgp_vs_fpt.png"
+      "screenshot": "2026_aog_spring/playoffs/2026_playoffs_m1_g3_spr_aog_sgp_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Playoffs_S903",
       "game_number": 4,
       "date": "April 26, 2026 - 19:15",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "SGP",
       "blue_picks": [
         "Eland'orr",
@@ -6601,13 +6601,13 @@
         "Taara"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/playoffs/2026_playoffs_m1_g4_spr_aog_sgp_vs_fpt.png"
+      "screenshot": "2026_aog_spring/playoffs/2026_playoffs_m1_g4_spr_aog_sgp_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Playoffs_S903",
       "game_number": 5,
       "date": "April 26, 2026 - 19:15",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "SGP",
       "blue_picks": [
         "Ryoma",
@@ -6624,7 +6624,7 @@
         "Omen"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/playoffs/2026_playoffs_m1_g5_spr_aog_sgp_vs_fpt.png"
+      "screenshot": "2026_aog_spring/playoffs/2026_playoffs_m1_g5_spr_aog_sgp_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Playoffs_S904",
@@ -6745,7 +6745,7 @@
       "series_id": "Arena_of_Glory_2026_Spring/Playoffs_S905",
       "game_number": 1,
       "date": "May 10, 2026 - 17:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "SGP",
       "blue_picks": [
         "Zephys",
@@ -6762,14 +6762,14 @@
         "Taara"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/playoffs/2026_playoffs_m4_g1_spr_aog_fpt_vs_sgp.png"
+      "screenshot": "2026_aog_spring/playoffs/2026_playoffs_m4_g1_spr_aog_fl_vs_sgp.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Playoffs_S905",
       "game_number": 2,
       "date": "May 10, 2026 - 17:00",
       "blue_team": "SGP",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Mina",
         "Nakroth",
@@ -6785,13 +6785,13 @@
         "Qi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/playoffs/2026_playoffs_m4_g2_spr_aog_fpt_vs_sgp.png"
+      "screenshot": "2026_aog_spring/playoffs/2026_playoffs_m4_g2_spr_aog_fl_vs_sgp.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Playoffs_S905",
       "game_number": 3,
       "date": "May 10, 2026 - 17:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "SGP",
       "blue_picks": [
         "Wiro",
@@ -6808,14 +6808,14 @@
         "Qi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/playoffs/2026_playoffs_m4_g3_spr_aog_fpt_vs_sgp.png"
+      "screenshot": "2026_aog_spring/playoffs/2026_playoffs_m4_g3_spr_aog_fl_vs_sgp.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Playoffs_S905",
       "game_number": 4,
       "date": "May 10, 2026 - 17:00",
       "blue_team": "SGP",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Florentino",
         "Wisp",
@@ -6831,13 +6831,13 @@
         "Moren"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/playoffs/2026_playoffs_m4_g4_spr_aog_fpt_vs_sgp.png"
+      "screenshot": "2026_aog_spring/playoffs/2026_playoffs_m4_g4_spr_aog_fl_vs_sgp.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Playoffs_S905",
       "game_number": 5,
       "date": "May 10, 2026 - 17:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "SGP",
       "blue_picks": [
         "Ryoma",
@@ -6854,14 +6854,14 @@
         "Azzen'Ka"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/playoffs/2026_playoffs_m4_g5_spr_aog_fpt_vs_sgp.png"
+      "screenshot": "2026_aog_spring/playoffs/2026_playoffs_m4_g5_spr_aog_fl_vs_sgp.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Spring/Playoffs_S905",
       "game_number": 6,
       "date": "May 10, 2026 - 17:00",
       "blue_team": "SGP",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Yan",
         "TeeMee",
@@ -6877,7 +6877,7 @@
         "Taara"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_spring/playoffs/2026_playoffs_m4_g6_spr_aog_fpt_vs_sgp.png"
+      "screenshot": "2026_aog_spring/playoffs/2026_playoffs_m4_g6_spr_aog_fl_vs_sgp.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S1",
@@ -7067,7 +7067,7 @@
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S11",
       "game_number": 1,
       "date": "September 4, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "BOX",
       "blue_picks": [
         "Astrid",
@@ -7084,13 +7084,13 @@
         "Bolt Baron"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week2/2026_w2_d4_m11_g1_win_aog_fpt_vs_box.png"
+      "screenshot": "2026_aog_winter/week2/2026_w2_d4_m11_g1_win_aog_fl_vs_box.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S11",
       "game_number": 2,
       "date": "September 4, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "BOX",
       "blue_picks": [
         "Dolia",
@@ -7107,13 +7107,13 @@
         "Tamyn"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week2/2026_w2_d4_m11_g2_win_aog_fpt_vs_box.png"
+      "screenshot": "2026_aog_winter/week2/2026_w2_d4_m11_g2_win_aog_fl_vs_box.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S11",
       "game_number": 3,
       "date": "September 4, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "BOX",
       "blue_picks": [
         "Alice",
@@ -7130,7 +7130,7 @@
         "Enzo"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week2/2026_w2_d4_m11_g3_win_aog_fpt_vs_box.png"
+      "screenshot": "2026_aog_winter/week2/2026_w2_d4_m11_g3_win_aog_fl_vs_box.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S12",
@@ -7298,7 +7298,7 @@
       "game_number": 1,
       "date": "September 5, 2026 - 19:30",
       "blue_team": "1S",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Tamyn",
         "Cresht",
@@ -7314,14 +7314,14 @@
         "Yue"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week2/2026_w2_d5_m14_g1_win_aog_1s_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week2/2026_w2_d5_m14_g1_win_aog_1s_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S14",
       "game_number": 2,
       "date": "September 5, 2026 - 19:30",
       "blue_team": "1S",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Marja",
         "Enzo",
@@ -7337,14 +7337,14 @@
         "Biron"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week2/2026_w2_d5_m14_g2_win_aog_1s_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week2/2026_w2_d5_m14_g2_win_aog_1s_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S14",
       "game_number": 3,
       "date": "September 5, 2026 - 19:30",
       "blue_team": "1S",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Astrid",
         "Maloch",
@@ -7360,13 +7360,13 @@
         "Qi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week2/2026_w2_d5_m14_g3_win_aog_1s_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week2/2026_w2_d5_m14_g3_win_aog_1s_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S14",
       "game_number": 4,
       "date": "September 5, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "1S",
       "blue_picks": [
         "Rouie",
@@ -7383,13 +7383,13 @@
         "Yena"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week2/2026_w2_d5_m14_g4_win_aog_1s_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week2/2026_w2_d5_m14_g4_win_aog_1s_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S14",
       "game_number": 5,
       "date": "September 5, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "1S",
       "blue_picks": [
         "Toro",
@@ -7406,7 +7406,7 @@
         "Yue"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week2/2026_w2_d5_m14_g5_win_aog_1s_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week2/2026_w2_d5_m14_g5_win_aog_1s_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S15",
@@ -7780,7 +7780,7 @@
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S19",
       "game_number": 1,
       "date": "September 10, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "GAM",
       "blue_picks": [
         "Astrid",
@@ -7797,14 +7797,14 @@
         "Omen"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week3/2026_w3_d7_m19_g1_win_aog_fpt_vs_gam.png"
+      "screenshot": "2026_aog_winter/week3/2026_w3_d7_m19_g1_win_aog_fl_vs_gam.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S19",
       "game_number": 2,
       "date": "September 10, 2026 - 19:30",
       "blue_team": "GAM",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Y'bneth",
         "Edras",
@@ -7820,13 +7820,13 @@
         "Qi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week3/2026_w3_d7_m19_g2_win_aog_fpt_vs_gam.png"
+      "screenshot": "2026_aog_winter/week3/2026_w3_d7_m19_g2_win_aog_fl_vs_gam.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S19",
       "game_number": 3,
       "date": "September 10, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "GAM",
       "blue_picks": [
         "Tamyn",
@@ -7843,14 +7843,14 @@
         "Eland'orr"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week3/2026_w3_d7_m19_g3_win_aog_fpt_vs_gam.png"
+      "screenshot": "2026_aog_winter/week3/2026_w3_d7_m19_g3_win_aog_fl_vs_gam.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S19",
       "game_number": 4,
       "date": "September 10, 2026 - 19:30",
       "blue_team": "GAM",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Rouie",
         "Tamyn",
@@ -7866,13 +7866,13 @@
         "Errol"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week3/2026_w3_d7_m19_g4_win_aog_fpt_vs_gam.png"
+      "screenshot": "2026_aog_winter/week3/2026_w3_d7_m19_g4_win_aog_fl_vs_gam.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S19",
       "game_number": 5,
       "date": "September 10, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "GAM",
       "blue_picks": [
         "Billow",
@@ -7889,7 +7889,7 @@
         "Bolt Baron"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week3/2026_w3_d7_m19_g5_win_aog_fpt_vs_gam.png"
+      "screenshot": "2026_aog_winter/week3/2026_w3_d7_m19_g5_win_aog_fl_vs_gam.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S2",
@@ -8310,7 +8310,7 @@
       "game_number": 1,
       "date": "September 12, 2026 - 16:00",
       "blue_team": "RRQ",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Zata",
         "Cresht",
@@ -8326,13 +8326,13 @@
         "Biron"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week3/2026_w3_d9_m24_g1_win_aog_rrq_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week3/2026_w3_d9_m24_g1_win_aog_rrq_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S24",
       "game_number": 2,
       "date": "September 12, 2026 - 16:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "RRQ",
       "blue_picks": [
         "Tamyn",
@@ -8349,13 +8349,13 @@
         "Airi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week3/2026_w3_d9_m24_g2_win_aog_rrq_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week3/2026_w3_d9_m24_g2_win_aog_rrq_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S24",
       "game_number": 3,
       "date": "September 12, 2026 - 16:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "RRQ",
       "blue_picks": [
         "Dolia",
@@ -8372,7 +8372,7 @@
         "Bolt Baron"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week3/2026_w3_d9_m24_g3_win_aog_rrq_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week3/2026_w3_d9_m24_g3_win_aog_rrq_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S25",
@@ -8701,7 +8701,7 @@
       "game_number": 1,
       "date": "September 13, 2026 - 19:30",
       "blue_team": "SGP",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Tamyn",
         "Y'bneth",
@@ -8717,14 +8717,14 @@
         "Qi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week3/2026_w3_d10_m28_g1_win_aog_sgp_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week3/2026_w3_d10_m28_g1_win_aog_sgp_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S28",
       "game_number": 2,
       "date": "September 13, 2026 - 19:30",
       "blue_team": "SGP",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Rouie",
         "Butterfly",
@@ -8740,14 +8740,14 @@
         "Yena"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week3/2026_w3_d10_m28_g2_win_aog_sgp_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week3/2026_w3_d10_m28_g2_win_aog_sgp_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S28",
       "game_number": 3,
       "date": "September 13, 2026 - 19:30",
       "blue_team": "SGP",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Eland'orr",
         "Dolia",
@@ -8763,7 +8763,7 @@
         "Liliana"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week3/2026_w3_d10_m28_g3_win_aog_sgp_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week3/2026_w3_d10_m28_g3_win_aog_sgp_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S29",
@@ -9022,7 +9022,7 @@
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S31",
       "game_number": 1,
       "date": "September 18, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "BOOM",
       "blue_picks": [
         "Astrid",
@@ -9039,13 +9039,13 @@
         "Ryoma"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week4/2026_w4_d11_m31_g1_win_aog_fpt_vs_boom.png"
+      "screenshot": "2026_aog_winter/week4/2026_w4_d11_m31_g1_win_aog_fl_vs_boom.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S31",
       "game_number": 2,
       "date": "September 18, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "BOOM",
       "blue_picks": [
         "Sinestrea",
@@ -9062,14 +9062,14 @@
         "Airi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week4/2026_w4_d11_m31_g2_win_aog_fpt_vs_boom.png"
+      "screenshot": "2026_aog_winter/week4/2026_w4_d11_m31_g2_win_aog_fl_vs_boom.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S31",
       "game_number": 3,
       "date": "September 18, 2026 - 19:30",
       "blue_team": "BOOM",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Y'bneth",
         "Sinestrea",
@@ -9085,7 +9085,7 @@
         "Zata"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week4/2026_w4_d11_m31_g3_win_aog_fpt_vs_boom.png"
+      "screenshot": "2026_aog_winter/week4/2026_w4_d11_m31_g3_win_aog_fl_vs_boom.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S32",
@@ -9413,7 +9413,7 @@
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S36",
       "game_number": 1,
       "date": "September 20, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "FPL",
       "blue_picks": [
         "Astrid",
@@ -9430,13 +9430,13 @@
         "Qi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week4/2026_w4_d13_m36_g1_win_aog_fpt_vs_fpl.png"
+      "screenshot": "2026_aog_winter/week4/2026_w4_d13_m36_g1_win_aog_fl_vs_fpl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S36",
       "game_number": 2,
       "date": "September 20, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "FPL",
       "blue_picks": [
         "Rouie",
@@ -9453,13 +9453,13 @@
         "Thane"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week4/2026_w4_d13_m36_g2_win_aog_fpt_vs_fpl.png"
+      "screenshot": "2026_aog_winter/week4/2026_w4_d13_m36_g2_win_aog_fl_vs_fpl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S36",
       "game_number": 3,
       "date": "September 20, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "FPL",
       "blue_picks": [
         "Marja",
@@ -9476,14 +9476,14 @@
         "Butterfly"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week4/2026_w4_d13_m36_g3_win_aog_fpt_vs_fpl.png"
+      "screenshot": "2026_aog_winter/week4/2026_w4_d13_m36_g3_win_aog_fl_vs_fpl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S4",
       "game_number": 1,
       "date": "August 30, 2026 - 13:00",
       "blue_team": "TS",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Thane",
         "Astrid",
@@ -9499,14 +9499,14 @@
         "Airi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week1/2026_w1_d2_m4_g1_win_aog_secret_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week1/2026_w1_d2_m4_g1_win_aog_secret_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S4",
       "game_number": 2,
       "date": "August 30, 2026 - 13:00",
       "blue_team": "TS",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Tamyn",
         "Alice",
@@ -9522,13 +9522,13 @@
         "Ryoma"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week1/2026_w1_d2_m4_g2_win_aog_secret_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week1/2026_w1_d2_m4_g2_win_aog_secret_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S4",
       "game_number": 3,
       "date": "August 30, 2026 - 13:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "TS",
       "blue_picks": [
         "Marja",
@@ -9545,14 +9545,14 @@
         "Qi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week1/2026_w1_d2_m4_g3_win_aog_secret_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week1/2026_w1_d2_m4_g3_win_aog_secret_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S4",
       "game_number": 4,
       "date": "August 30, 2026 - 13:00",
       "blue_team": "TS",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Eland'orr",
         "Zephys",
@@ -9568,7 +9568,7 @@
         "Biron"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week1/2026_w1_d2_m4_g4_win_aog_secret_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week1/2026_w1_d2_m4_g4_win_aog_secret_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S5",
@@ -10103,7 +10103,7 @@
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S907",
       "game_number": 1,
       "date": "October 1, 2026 - 16:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "1S",
       "blue_picks": [
         "Thane",
@@ -10120,13 +10120,13 @@
         "TeeMee"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week5/2026_w5_d14_m907_g1_win_aog_fpt_vs_1s.png"
+      "screenshot": "2026_aog_winter/week5/2026_w5_d14_m907_g1_win_aog_fl_vs_1s.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S907",
       "game_number": 2,
       "date": "October 1, 2026 - 16:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "1S",
       "blue_picks": [
         "Sinestrea",
@@ -10143,13 +10143,13 @@
         "Airi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week5/2026_w5_d14_m907_g2_win_aog_fpt_vs_1s.png"
+      "screenshot": "2026_aog_winter/week5/2026_w5_d14_m907_g2_win_aog_fl_vs_1s.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S907",
       "game_number": 3,
       "date": "October 1, 2026 - 16:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "1S",
       "blue_picks": [
         "Toro",
@@ -10166,14 +10166,14 @@
         "Skud"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week5/2026_w5_d14_m907_g3_win_aog_fpt_vs_1s.png"
+      "screenshot": "2026_aog_winter/week5/2026_w5_d14_m907_g3_win_aog_fl_vs_1s.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S907",
       "game_number": 4,
       "date": "October 1, 2026 - 16:00",
       "blue_team": "1S",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Rouie",
         "Y'bneth",
@@ -10189,7 +10189,7 @@
         "Astrid"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week5/2026_w5_d14_m907_g4_win_aog_fpt_vs_1s.png"
+      "screenshot": "2026_aog_winter/week5/2026_w5_d14_m907_g4_win_aog_fl_vs_1s.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S908",
@@ -10449,7 +10449,7 @@
       "game_number": 1,
       "date": "October 2, 2026 - 19:30",
       "blue_team": "FPL",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Rouie",
         "Chaugnar",
@@ -10465,14 +10465,14 @@
         "Qi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week5/2026_w5_d14_m911_g1_win_aog_fpl_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week5/2026_w5_d14_m911_g1_win_aog_fpl_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S911",
       "game_number": 2,
       "date": "October 2, 2026 - 19:30",
       "blue_team": "FPL",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Astrid",
         "Flowborn (Marksman)",
@@ -10488,13 +10488,13 @@
         "Riktor"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week5/2026_w5_d14_m911_g2_win_aog_fpl_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week5/2026_w5_d14_m911_g2_win_aog_fpl_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S911",
       "game_number": 3,
       "date": "October 2, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "FPL",
       "blue_picks": [
         "Y'bneth",
@@ -10511,14 +10511,14 @@
         "Murad"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week5/2026_w5_d14_m911_g3_win_aog_fpl_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week5/2026_w5_d14_m911_g3_win_aog_fpl_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S911",
       "game_number": 4,
       "date": "October 2, 2026 - 19:30",
       "blue_team": "FPL",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Butterfly",
         "Dolia",
@@ -10534,14 +10534,14 @@
         "Wonder Woman"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week5/2026_w5_d14_m911_g4_win_aog_fpl_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week5/2026_w5_d14_m911_g4_win_aog_fpl_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S911",
       "game_number": 5,
       "date": "October 2, 2026 - 19:30",
       "blue_team": "FPL",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Billow",
         "Florentino",
@@ -10557,7 +10557,7 @@
         "Toro"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week5/2026_w5_d14_m911_g5_win_aog_fpl_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week5/2026_w5_d14_m911_g5_win_aog_fpl_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S912",
@@ -11001,7 +11001,7 @@
       "game_number": 1,
       "date": "October 4, 2026 - 19:30",
       "blue_team": "RRQ",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Dolia",
         "Eland'orr",
@@ -11017,13 +11017,13 @@
         "Krizzix"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week5/2026_w5_d17_m917_g1_win_aog_rrq_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week5/2026_w5_d17_m917_g1_win_aog_rrq_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S917",
       "game_number": 2,
       "date": "October 4, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "RRQ",
       "blue_picks": [
         "Marja",
@@ -11040,13 +11040,13 @@
         "Butterfly"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week5/2026_w5_d17_m917_g2_win_aog_rrq_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week5/2026_w5_d17_m917_g2_win_aog_rrq_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S917",
       "game_number": 3,
       "date": "October 4, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "RRQ",
       "blue_picks": [
         "Y'bneth",
@@ -11063,7 +11063,7 @@
         "Zata"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week5/2026_w5_d17_m917_g3_win_aog_rrq_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week5/2026_w5_d17_m917_g3_win_aog_rrq_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S918",
@@ -11691,7 +11691,7 @@
       "game_number": 1,
       "date": "October 10, 2026 - 16:00",
       "blue_team": "TS",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Zata",
         "Nakroth",
@@ -11707,14 +11707,14 @@
         "Violet"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week6/2026_w6_d20_m925_g1_win_aog_teamsecret_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week6/2026_w6_d20_m925_g1_win_aog_teamsecret_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S925",
       "game_number": 2,
       "date": "October 10, 2026 - 16:00",
       "blue_team": "TS",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Marja",
         "Violet",
@@ -11730,13 +11730,13 @@
         "Wonder Woman"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week6/2026_w6_d20_m925_g2_win_aog_teamsecret_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week6/2026_w6_d20_m925_g2_win_aog_teamsecret_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S925",
       "game_number": 3,
       "date": "October 10, 2026 - 16:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "TS",
       "blue_picks": [
         "Tamyn",
@@ -11753,14 +11753,14 @@
         "Florentino"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week6/2026_w6_d20_m925_g3_win_aog_teamsecret_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week6/2026_w6_d20_m925_g3_win_aog_teamsecret_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S925",
       "game_number": 4,
       "date": "October 10, 2026 - 16:00",
       "blue_team": "TS",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Valhein",
         "Zephys",
@@ -11776,13 +11776,13 @@
         "Yena"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week6/2026_w6_d20_m925_g4_win_aog_teamsecret_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week6/2026_w6_d20_m925_g4_win_aog_teamsecret_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S925",
       "game_number": 5,
       "date": "October 10, 2026 - 16:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "TS",
       "blue_picks": [
         "Sinestrea",
@@ -11799,7 +11799,7 @@
         "Airi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week6/2026_w6_d20_m925_g5_win_aog_teamsecret_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week6/2026_w6_d20_m925_g5_win_aog_teamsecret_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S926",
@@ -12082,7 +12082,7 @@
       "game_number": 1,
       "date": "October 11, 2026 - 19:30",
       "blue_team": "SGP",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Tamyn",
         "Baldum",
@@ -12098,13 +12098,13 @@
         "D'Arcy"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week6/2026_w6_d21_m929_g1_win_aog_sgp_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week6/2026_w6_d21_m929_g1_win_aog_sgp_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S929",
       "game_number": 2,
       "date": "October 11, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "SGP",
       "blue_picks": [
         "Billow",
@@ -12121,14 +12121,14 @@
         "Riktor"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week6/2026_w6_d21_m929_g2_win_aog_sgp_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week6/2026_w6_d21_m929_g2_win_aog_sgp_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S929",
       "game_number": 3,
       "date": "October 11, 2026 - 19:30",
       "blue_team": "SGP",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Zata",
         "Dolia",
@@ -12144,13 +12144,13 @@
         "Qi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week6/2026_w6_d21_m929_g3_win_aog_sgp_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week6/2026_w6_d21_m929_g3_win_aog_sgp_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S929",
       "game_number": 4,
       "date": "October 11, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "SGP",
       "blue_picks": [
         "Sinestrea",
@@ -12167,13 +12167,13 @@
         "Butterfly"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week6/2026_w6_d21_m929_g4_win_aog_sgp_vs_fpt.png"
+      "screenshot": "2026_aog_winter/week6/2026_w6_d21_m929_g4_win_aog_sgp_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S930",
       "game_number": 1,
       "date": "October 15, 2026 - 13:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "BOX",
       "blue_picks": [
         "Rouie",
@@ -12190,14 +12190,14 @@
         "Keera"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week7/2026_w7_d22_m930_g1_win_aog_fpt_vs_box.png"
+      "screenshot": "2026_aog_winter/week7/2026_w7_d22_m930_g1_win_aog_fl_vs_box.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S930",
       "game_number": 2,
       "date": "October 15, 2026 - 13:00",
       "blue_team": "BOX",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Eland'orr",
         "Billow",
@@ -12213,13 +12213,13 @@
         "Yena"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week7/2026_w7_d22_m930_g2_win_aog_fpt_vs_box.png"
+      "screenshot": "2026_aog_winter/week7/2026_w7_d22_m930_g2_win_aog_fl_vs_box.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S930",
       "game_number": 3,
       "date": "October 15, 2026 - 13:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "BOX",
       "blue_picks": [
         "Liliana",
@@ -12236,14 +12236,14 @@
         "Ata"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week7/2026_w7_d22_m930_g3_win_aog_fpt_vs_box.png"
+      "screenshot": "2026_aog_winter/week7/2026_w7_d22_m930_g3_win_aog_fl_vs_box.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S930",
       "game_number": 4,
       "date": "October 15, 2026 - 13:00",
       "blue_team": "BOX",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Violet",
         "Baldum",
@@ -12259,13 +12259,13 @@
         "Mganga"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week7/2026_w7_d22_m930_g4_win_aog_fpt_vs_box.png"
+      "screenshot": "2026_aog_winter/week7/2026_w7_d22_m930_g4_win_aog_fl_vs_box.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S930",
       "game_number": 5,
       "date": "October 15, 2026 - 13:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "BOX",
       "blue_picks": [
         "Lorion",
@@ -12282,7 +12282,7 @@
         "Biron"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week7/2026_w7_d22_m930_g5_win_aog_fpt_vs_box.png"
+      "screenshot": "2026_aog_winter/week7/2026_w7_d22_m930_g5_win_aog_fl_vs_box.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S931",
@@ -12518,7 +12518,7 @@
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S934",
       "game_number": 1,
       "date": "October 16, 2026 - 16:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "GAM",
       "blue_picks": [
         "Marja",
@@ -12535,14 +12535,14 @@
         "Preyta"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week7/2026_w7_d23_m934_g1_win_aog_fpt_vs_gam.png"
+      "screenshot": "2026_aog_winter/week7/2026_w7_d23_m934_g1_win_aog_fl_vs_gam.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S934",
       "game_number": 2,
       "date": "October 16, 2026 - 16:00",
       "blue_team": "GAM",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Zata",
         "Marja",
@@ -12558,14 +12558,14 @@
         "Zephys"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week7/2026_w7_d23_m934_g2_win_aog_fpt_vs_gam.png"
+      "screenshot": "2026_aog_winter/week7/2026_w7_d23_m934_g2_win_aog_fl_vs_gam.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S934",
       "game_number": 3,
       "date": "October 16, 2026 - 16:00",
       "blue_team": "GAM",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Rouie",
         "Astrid",
@@ -12581,7 +12581,7 @@
         "Yena"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week7/2026_w7_d23_m934_g3_win_aog_fpt_vs_gam.png"
+      "screenshot": "2026_aog_winter/week7/2026_w7_d23_m934_g3_win_aog_fl_vs_gam.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S935",
@@ -12863,7 +12863,7 @@
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S938",
       "game_number": 1,
       "date": "October 17, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "BOOM",
       "blue_picks": [
         "Astrid",
@@ -12880,13 +12880,13 @@
         "Florentino"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week8/2026_w8_d24_m938_g1_win_aog_fpt_vs_boom.png"
+      "screenshot": "2026_aog_winter/week8/2026_w8_d24_m938_g1_win_aog_fl_vs_boom.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S938",
       "game_number": 2,
       "date": "October 17, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "BOOM",
       "blue_picks": [
         "Zata",
@@ -12903,13 +12903,13 @@
         "Ryoma"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week8/2026_w8_d24_m938_g2_win_aog_fpt_vs_boom.png"
+      "screenshot": "2026_aog_winter/week8/2026_w8_d24_m938_g2_win_aog_fl_vs_boom.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S938",
       "game_number": 3,
       "date": "October 17, 2026 - 19:30",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "BOOM",
       "blue_picks": [
         "Flowborn (Marksman)",
@@ -12926,14 +12926,14 @@
         "Murad"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week8/2026_w8_d24_m938_g3_win_aog_fpt_vs_boom.png"
+      "screenshot": "2026_aog_winter/week8/2026_w8_d24_m938_g3_win_aog_fl_vs_boom.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S938",
       "game_number": 4,
       "date": "October 17, 2026 - 19:30",
       "blue_team": "BOOM",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Tamyn",
         "Lorion",
@@ -12949,14 +12949,14 @@
         "Ryoma"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week8/2026_w8_d24_m938_g4_win_aog_fpt_vs_boom.png"
+      "screenshot": "2026_aog_winter/week8/2026_w8_d24_m938_g4_win_aog_fl_vs_boom.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S938",
       "game_number": 5,
       "date": "October 17, 2026 - 19:30",
       "blue_team": "BOOM",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Marja",
         "Eland'orr",
@@ -12972,7 +12972,7 @@
         "Iggy"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/week8/2026_w8_d24_m938_g5_win_aog_fpt_vs_boom.png"
+      "screenshot": "2026_aog_winter/week8/2026_w8_d24_m938_g5_win_aog_fl_vs_boom.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S939",
@@ -13415,7 +13415,7 @@
       "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1114",
       "game_number": 1,
       "date": "October 23, 2026 - 14:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "FPL",
       "blue_picks": [
         "Evita",
@@ -13432,14 +13432,14 @@
         "Skud"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/playoffs/2026_po_m1114_g1_win_aog_fpt_vs_fpl.png"
+      "screenshot": "2026_aog_winter/playoffs/2026_po_m1114_g1_win_aog_fl_vs_fpl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1114",
       "game_number": 2,
       "date": "October 23, 2026 - 14:00",
       "blue_team": "FPL",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Tamyn",
         "Violet",
@@ -13455,14 +13455,14 @@
         "Qi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/playoffs/2026_po_m1114_g2_win_aog_fpt_vs_fpl.png"
+      "screenshot": "2026_aog_winter/playoffs/2026_po_m1114_g2_win_aog_fl_vs_fpl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1114",
       "game_number": 3,
       "date": "October 23, 2026 - 14:00",
       "blue_team": "FPL",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Dolia",
         "Astrid",
@@ -13478,14 +13478,14 @@
         "Flowborn (Marksman)"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/playoffs/2026_po_m1114_g3_win_aog_fpt_vs_fpl.png"
+      "screenshot": "2026_aog_winter/playoffs/2026_po_m1114_g3_win_aog_fl_vs_fpl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1114",
       "game_number": 4,
       "date": "October 23, 2026 - 14:00",
       "blue_team": "FPL",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Butterfly",
         "TeeMee",
@@ -13501,14 +13501,14 @@
         "Ryoma"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/playoffs/2026_po_m1114_g4_win_aog_fpt_vs_fpl.png"
+      "screenshot": "2026_aog_winter/playoffs/2026_po_m1114_g4_win_aog_fl_vs_fpl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1114",
       "game_number": 5,
       "date": "October 23, 2026 - 14:00",
       "blue_team": "FPL",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Liliana",
         "Edras",
@@ -13524,7 +13524,7 @@
         "Riktor"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/playoffs/2026_po_m1114_g5_win_aog_fpt_vs_fpl.png"
+      "screenshot": "2026_aog_winter/playoffs/2026_po_m1114_g5_win_aog_fl_vs_fpl.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1115",
@@ -13645,7 +13645,7 @@
       "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1116",
       "game_number": 1,
       "date": "October 24, 2026 - 14:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "BOX",
       "blue_picks": [
         "Dolia",
@@ -13662,14 +13662,14 @@
         "Marja"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g1_win_aog_fpt_vs_box.png"
+      "screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g1_win_aog_fl_vs_box.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1116",
       "game_number": 2,
       "date": "October 24, 2026 - 14:00",
       "blue_team": "BOX",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Zata",
         "Stuart",
@@ -13685,14 +13685,14 @@
         "Riktor"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g2_win_aog_fpt_vs_box.png"
+      "screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g2_win_aog_fl_vs_box.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1116",
       "game_number": 3,
       "date": "October 24, 2026 - 14:00",
       "blue_team": "BOX",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Flowborn (Marksman)",
         "Billow",
@@ -13708,14 +13708,14 @@
         "Yue"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g3_win_aog_fpt_vs_box.png"
+      "screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g3_win_aog_fl_vs_box.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1116",
       "game_number": 4,
       "date": "October 24, 2026 - 14:00",
       "blue_team": "BOX",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Rouie",
         "Thane",
@@ -13731,13 +13731,13 @@
         "Airi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g4_win_aog_fpt_vs_box.png"
+      "screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g4_win_aog_fl_vs_box.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1116",
       "game_number": 5,
       "date": "October 24, 2026 - 14:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "BOX",
       "blue_picks": [
         "TeeMee",
@@ -13754,14 +13754,14 @@
         "Bolt Baron"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g5_win_aog_fpt_vs_box.png"
+      "screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g5_win_aog_fl_vs_box.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1116",
       "game_number": 6,
       "date": "October 24, 2026 - 14:00",
       "blue_team": "BOX",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Toro",
         "Nakroth",
@@ -13777,14 +13777,14 @@
         "Yan"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g6_win_aog_fpt_vs_box.png"
+      "screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g6_win_aog_fl_vs_box.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1116",
       "game_number": 7,
       "date": "October 24, 2026 - 14:00",
       "blue_team": "BOX",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Dolia",
         "Astrid",
@@ -13800,7 +13800,7 @@
         "Biron"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g7_win_aog_fpt_vs_box.png"
+      "screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g7_win_aog_fl_vs_box.png"
     },
     {
       "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1117",
@@ -14543,7 +14543,7 @@
       "game_number": 1,
       "date": "November 16, 2026 - 16:00",
       "blue_team": "ONE",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Edras",
         "Thane",
@@ -14559,13 +14559,13 @@
         "Yena"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aic/wildcard/2026_wc_d1_m2_g1_aic_one_vs_fpt.png"
+      "screenshot": "2026_aic/wildcard/2026_wc_d1_m2_g1_aic_one_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1123",
       "game_number": 2,
       "date": "November 16, 2026 - 16:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "ONE",
       "blue_picks": [
         "Rouie",
@@ -14582,13 +14582,13 @@
         "Alice"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aic/wildcard/2026_wc_d1_m2_g2_aic_one_vs_fpt.png"
+      "screenshot": "2026_aic/wildcard/2026_wc_d1_m2_g2_aic_one_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1123",
       "game_number": 3,
       "date": "November 16, 2026 - 16:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "ONE",
       "blue_picks": [
         "Y'bneth",
@@ -14605,14 +14605,14 @@
         "Annette"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aic/wildcard/2026_wc_d1_m2_g3_aic_one_vs_fpt.png"
+      "screenshot": "2026_aic/wildcard/2026_wc_d1_m2_g3_aic_one_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1123",
       "game_number": 4,
       "date": "November 16, 2026 - 16:00",
       "blue_team": "ONE",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Sinestrea",
         "Baldum",
@@ -14628,14 +14628,14 @@
         "Thane"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aic/wildcard/2026_wc_d1_m2_g4_aic_one_vs_fpt.png"
+      "screenshot": "2026_aic/wildcard/2026_wc_d1_m2_g4_aic_one_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1123",
       "game_number": 5,
       "date": "November 16, 2026 - 16:00",
       "blue_team": "ONE",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Evita",
         "Eland'orr",
@@ -14651,7 +14651,7 @@
         "Ata"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aic/wildcard/2026_wc_d1_m2_g5_aic_one_vs_fpt.png"
+      "screenshot": "2026_aic/wildcard/2026_wc_d1_m2_g5_aic_one_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1124",
@@ -14749,7 +14749,7 @@
       "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1125",
       "game_number": 1,
       "date": "November 17, 2026 - 13:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "KOG",
       "blue_picks": [
         "Tamyn",
@@ -14766,14 +14766,14 @@
         "Skud"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aic/wildcard/2026_wc_d2_m1_g1_aic_fpt_vs_kog.png"
+      "screenshot": "2026_aic/wildcard/2026_wc_d2_m1_g1_aic_fl_vs_kog.png"
     },
     {
       "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1125",
       "game_number": 2,
       "date": "November 17, 2026 - 13:00",
       "blue_team": "KOG",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Dolia",
         "Tachi",
@@ -14789,14 +14789,14 @@
         "Liliana"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aic/wildcard/2026_wc_d2_m1_g2_aic_fpt_vs_kog.png"
+      "screenshot": "2026_aic/wildcard/2026_wc_d2_m1_g2_aic_fl_vs_kog.png"
     },
     {
       "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1125",
       "game_number": 3,
       "date": "November 17, 2026 - 13:00",
       "blue_team": "KOG",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Eland'orr",
         "Mina",
@@ -14812,122 +14812,7 @@
         "Marja"
       ],
       "source": "screenshot",
-      "screenshot": "2026_aic/wildcard/2026_wc_d2_m1_g3_aic_fpt_vs_kog.png"
-    },
-    {
-      "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1126",
-      "game_number": 1,
-      "date": "November 17, 2026 - 19:00",
-      "blue_team": "ONE",
-      "red_team": "KOG",
-      "blue_picks": [
-        "Bijan",
-        "Baldum",
-        "Alice",
-        "Edras",
-        "Omen"
-      ],
-      "red_picks": [
-        "Tamyn",
-        "Zata",
-        "Ryoma",
-        "Preyta",
-        "Taara"
-      ],
-      "source": "screenshot",
-      "screenshot": "2026_aic/wildcard/2026_wc_d2_m3_g1_aic_kog_vs_one.png"
-    },
-    {
-      "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1126",
-      "game_number": 2,
-      "date": "November 17, 2026 - 19:00",
-      "blue_team": "KOG",
-      "red_team": "ONE",
-      "blue_picks": [
-        "Nakroth",
-        "Florentino",
-        "Hayate",
-        "Sephera",
-        "Xeniel"
-      ],
-      "red_picks": [
-        "Tulen",
-        "Thane",
-        "Marja",
-        "Stuart",
-        "Liliana"
-      ],
-      "source": "screenshot",
-      "screenshot": "2026_aic/wildcard/2026_wc_d2_m3_g2_aic_kog_vs_one.png"
-    },
-    {
-      "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1126",
-      "game_number": 3,
-      "date": "November 17, 2026 - 19:00",
-      "blue_team": "KOG",
-      "red_team": "ONE",
-      "blue_picks": [
-        "Y'bneth",
-        "Iggy",
-        "Eland'orr",
-        "Skud",
-        "Murad"
-      ],
-      "red_picks": [
-        "Wiro",
-        "Sinestrea",
-        "Ryoma",
-        "Zata",
-        "Qi"
-      ],
-      "source": "screenshot",
-      "screenshot": "2026_aic/wildcard/2026_wc_d2_m3_g3_aic_kog_vs_one.png"
-    },
-    {
-      "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1126",
-      "game_number": 4,
-      "date": "November 17, 2026 - 19:00",
-      "blue_team": "KOG",
-      "red_team": "ONE",
-      "blue_picks": [
-        "Rouie",
-        "Billow",
-        "Marja",
-        "Airi",
-        "Arduin"
-      ],
-      "red_picks": [
-        "Lorion",
-        "Dyadia",
-        "Mina",
-        "Nakroth",
-        "Capheny"
-      ],
-      "source": "screenshot",
-      "screenshot": "2026_aic/wildcard/2026_wc_d2_m3_g4_aic_kog_vs_one.png"
-    },
-    {
-      "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1126",
-      "game_number": 5,
-      "date": "November 17, 2026 - 19:00",
-      "blue_team": "ONE",
-      "red_team": "KOG",
-      "blue_picks": [
-        "Evita",
-        "Eland'orr",
-        "Enzo",
-        "Airi",
-        "Yena"
-      ],
-      "red_picks": [
-        "Yue",
-        "Maloch",
-        "Violet",
-        "Kriknak",
-        "Krizzix"
-      ],
-      "source": "screenshot",
-      "screenshot": "2026_aic/wildcard/2026_wc_d2_m3_g5_aic_kog_vs_one.png"
+      "screenshot": "2026_aic/wildcard/2026_wc_d2_m1_g3_aic_fl_vs_kog.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S232",
@@ -15048,7 +14933,7 @@
       "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S233",
       "game_number": 1,
       "date": "July 4, 2026 - 16:50",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "BRU",
       "blue_picks": [
         "Flowborn (Marksman)",
@@ -15065,13 +14950,13 @@
         "Baldum"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/playoffs/2026_po_d1_m2_g1_apl_fpt_vs_bru.png"
+      "screenshot": "2026_apl/playoffs/2026_po_d1_m2_g1_apl_fl_vs_bru.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S233",
       "game_number": 2,
       "date": "July 4, 2026 - 16:50",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "BRU",
       "blue_picks": [
         "Toro",
@@ -15088,14 +14973,14 @@
         "Ryoma"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/playoffs/2026_po_d1_m2_g2_apl_fpt_vs_bru.png"
+      "screenshot": "2026_apl/playoffs/2026_po_d1_m2_g2_apl_fl_vs_bru.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S233",
       "game_number": 3,
       "date": "July 4, 2026 - 16:50",
       "blue_team": "BRU",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Y'bneth",
         "Flowborn (Marksman)",
@@ -15111,14 +14996,14 @@
         "TeeMee"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/playoffs/2026_po_d1_m2_g3_apl_fpt_vs_bru.png"
+      "screenshot": "2026_apl/playoffs/2026_po_d1_m2_g3_apl_fl_vs_bru.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S233",
       "game_number": 4,
       "date": "July 4, 2026 - 16:50",
       "blue_team": "BRU",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Zata",
         "Tachi",
@@ -15134,14 +15019,14 @@
         "Maloch"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/playoffs/2026_po_d1_m2_g4_apl_fpt_vs_bru.png"
+      "screenshot": "2026_apl/playoffs/2026_po_d1_m2_g4_apl_fl_vs_bru.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S233",
       "game_number": 5,
       "date": "July 4, 2026 - 16:50",
       "blue_team": "BRU",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Dolia",
         "Hayate",
@@ -15157,7 +15042,7 @@
         "Ryoma"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/playoffs/2026_po_d1_m2_g5_apl_fpt_vs_bru.png"
+      "screenshot": "2026_apl/playoffs/2026_po_d1_m2_g5_apl_fl_vs_bru.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S234",
@@ -15531,7 +15416,7 @@
       "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S238",
       "game_number": 1,
       "date": "July 9, 2026 - 13:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "BAC",
       "blue_picks": [
         "Rouie",
@@ -15548,13 +15433,13 @@
         "Airi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/playoffs/2026_po_d3_m1_g1_apl_fpt_vs_bac.png"
+      "screenshot": "2026_apl/playoffs/2026_po_d3_m1_g1_apl_fl_vs_bac.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S238",
       "game_number": 2,
       "date": "July 9, 2026 - 13:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "BAC",
       "blue_picks": [
         "Taara",
@@ -15571,14 +15456,14 @@
         "Zuka"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/playoffs/2026_po_d3_m1_g2_apl_fpt_vs_bac.png"
+      "screenshot": "2026_apl/playoffs/2026_po_d3_m1_g2_apl_fl_vs_bac.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S238",
       "game_number": 3,
       "date": "July 9, 2026 - 13:00",
       "blue_team": "BAC",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Y'bneth",
         "Eland'orr",
@@ -15594,14 +15479,14 @@
         "Mina"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/playoffs/2026_po_d3_m1_g3_apl_fpt_vs_bac.png"
+      "screenshot": "2026_apl/playoffs/2026_po_d3_m1_g3_apl_fl_vs_bac.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S238",
       "game_number": 4,
       "date": "July 9, 2026 - 13:00",
       "blue_team": "BAC",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Violet",
         "Tachi",
@@ -15617,13 +15502,13 @@
         "Biron"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/playoffs/2026_po_d3_m1_g4_apl_fpt_vs_bac.png"
+      "screenshot": "2026_apl/playoffs/2026_po_d3_m1_g4_apl_fl_vs_bac.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S238",
       "game_number": 5,
       "date": "July 9, 2026 - 13:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "BAC",
       "blue_picks": [
         "TeeMee",
@@ -15640,14 +15525,14 @@
         "Yue"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/playoffs/2026_po_d3_m1_g5_apl_fpt_vs_bac.png"
+      "screenshot": "2026_apl/playoffs/2026_po_d3_m1_g5_apl_fl_vs_bac.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S238",
       "game_number": 6,
       "date": "July 9, 2026 - 13:00",
       "blue_team": "BAC",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Nakroth",
         "Stuart",
@@ -15663,13 +15548,13 @@
         "Astrid"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/playoffs/2026_po_d3_m1_g6_apl_fpt_vs_bac.png"
+      "screenshot": "2026_apl/playoffs/2026_po_d3_m1_g6_apl_fl_vs_bac.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S238",
       "game_number": 7,
       "date": "July 9, 2026 - 13:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "BAC",
       "blue_picks": [
         "Toro",
@@ -15686,7 +15571,7 @@
         "Taara"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/playoffs/2026_po_d3_m1_g7_apl_fpt_vs_bac.png"
+      "screenshot": "2026_apl/playoffs/2026_po_d3_m1_g7_apl_fl_vs_bac.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S239",
@@ -15968,7 +15853,7 @@
       "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S241",
       "game_number": 1,
       "date": "July 10, 2026 - 13:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "FPL",
       "blue_picks": [
         "Marja",
@@ -15985,14 +15870,14 @@
         "Ryoma"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/playoffs/2026_po_d4_m1_g1_apl_fpt_vs_fpl.png"
+      "screenshot": "2026_apl/playoffs/2026_po_d4_m1_g1_apl_fl_vs_fpl.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S241",
       "game_number": 2,
       "date": "July 10, 2026 - 13:00",
       "blue_team": "FPL",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Flowborn (Marksman)",
         "TeeMee",
@@ -16008,14 +15893,14 @@
         "Tachi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/playoffs/2026_po_d4_m1_g2_apl_fpt_vs_fpl.png"
+      "screenshot": "2026_apl/playoffs/2026_po_d4_m1_g2_apl_fl_vs_fpl.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S241",
       "game_number": 3,
       "date": "July 10, 2026 - 13:00",
       "blue_team": "FPL",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Alice",
         "Tachi",
@@ -16031,14 +15916,14 @@
         "Yena"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/playoffs/2026_po_d4_m1_g3_apl_fpt_vs_fpl.png"
+      "screenshot": "2026_apl/playoffs/2026_po_d4_m1_g3_apl_fl_vs_fpl.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S241",
       "game_number": 4,
       "date": "July 10, 2026 - 13:00",
       "blue_team": "FPL",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Toro",
         "Violet",
@@ -16054,13 +15939,13 @@
         "Qi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/playoffs/2026_po_d4_m1_g4_apl_fpt_vs_fpl.png"
+      "screenshot": "2026_apl/playoffs/2026_po_d4_m1_g4_apl_fl_vs_fpl.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S241",
       "game_number": 5,
       "date": "July 10, 2026 - 13:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "FPL",
       "blue_picks": [
         "Billow",
@@ -16077,7 +15962,7 @@
         "Biron"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/playoffs/2026_po_d4_m1_g5_apl_fpt_vs_fpl.png"
+      "screenshot": "2026_apl/playoffs/2026_po_d4_m1_g5_apl_fl_vs_fpl.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S242",
@@ -16773,7 +16658,7 @@
       "series_id": "Arena_of_Valor_Premier_League_2026_Swiss_Stage_S249",
       "game_number": 1,
       "date": "June 18, 2026 - 19:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "1S",
       "blue_picks": [
         "Sinestrea",
@@ -16790,13 +16675,13 @@
         "Biron"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/swiss_stage/2026_ss_d1_m4_g1_apl_fpt_vs_1s.png"
+      "screenshot": "2026_apl/swiss_stage/2026_ss_d1_m4_g1_apl_fl_vs_1s.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Swiss_Stage_S249",
       "game_number": 2,
       "date": "June 18, 2026 - 19:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "1S",
       "blue_picks": [
         "Volkath",
@@ -16813,7 +16698,7 @@
         "Airi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/swiss_stage/2026_ss_d1_m4_g2_apl_fpt_vs_1s.png"
+      "screenshot": "2026_apl/swiss_stage/2026_ss_d1_m4_g2_apl_fl_vs_1s.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Swiss_Stage_S250",
@@ -17165,7 +17050,7 @@
       "game_number": 1,
       "date": "June 20, 2026 - 17:00",
       "blue_team": "ANK",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Zata",
         "Eland'orr",
@@ -17181,13 +17066,13 @@
         "Airi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/swiss_stage/2026_ss_d3_m3_g1_apl_ank_vs_fpt.png"
+      "screenshot": "2026_apl/swiss_stage/2026_ss_d3_m3_g1_apl_ank_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Swiss_Stage_S256",
       "game_number": 2,
       "date": "June 20, 2026 - 17:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "ANK",
       "blue_picks": [
         "Rouie",
@@ -17204,7 +17089,7 @@
         "Ryoma"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/swiss_stage/2026_ss_d3_m3_g2_apl_ank_vs_fpt.png"
+      "screenshot": "2026_apl/swiss_stage/2026_ss_d3_m3_g2_apl_ank_vs_fl.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Swiss_Stage_S257",
@@ -17808,7 +17693,7 @@
       "series_id": "Arena_of_Valor_Premier_League_2026_Swiss_Stage_S266",
       "game_number": 1,
       "date": "June 25, 2026 - 13:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "KOG",
       "blue_picks": [
         "Dolia",
@@ -17825,13 +17710,13 @@
         "Skud"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/swiss_stage/2026_ss_d6_m1_g1_apl_fpt_vs_kog.png"
+      "screenshot": "2026_apl/swiss_stage/2026_ss_d6_m1_g1_apl_fl_vs_kog.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Swiss_Stage_S266",
       "game_number": 2,
       "date": "June 25, 2026 - 13:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "KOG",
       "blue_picks": [
         "Y'bneth",
@@ -17848,7 +17733,7 @@
         "Ryoma"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/swiss_stage/2026_ss_d6_m1_g2_apl_fpt_vs_kog.png"
+      "screenshot": "2026_apl/swiss_stage/2026_ss_d6_m1_g2_apl_fl_vs_kog.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Swiss_Stage_S267",
@@ -18038,7 +17923,7 @@
       "series_id": "Arena_of_Valor_Premier_League_2026_Swiss_Stage_S270",
       "game_number": 1,
       "date": "June 26, 2026 - 13:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "SGP",
       "blue_picks": [
         "Taara",
@@ -18055,14 +17940,14 @@
         "Billow"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/swiss_stage/2026_ss_d7_m1_g1_apl_fpt_vs_sgp.png"
+      "screenshot": "2026_apl/swiss_stage/2026_ss_d7_m1_g1_apl_fl_vs_sgp.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Swiss_Stage_S270",
       "game_number": 2,
       "date": "June 26, 2026 - 13:00",
       "blue_team": "SGP",
-      "red_team": "FPT",
+      "red_team": "FL",
       "blue_picks": [
         "Rouie",
         "Baldum",
@@ -18078,13 +17963,13 @@
         "Yena"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/swiss_stage/2026_ss_d7_m1_g2_apl_fpt_vs_sgp.png"
+      "screenshot": "2026_apl/swiss_stage/2026_ss_d7_m1_g2_apl_fl_vs_sgp.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Swiss_Stage_S270",
       "game_number": 3,
       "date": "June 26, 2026 - 13:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "SGP",
       "blue_picks": [
         "Dolia",
@@ -18101,13 +17986,13 @@
         "Thane"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/swiss_stage/2026_ss_d7_m1_g3_apl_fpt_vs_sgp.png"
+      "screenshot": "2026_apl/swiss_stage/2026_ss_d7_m1_g3_apl_fl_vs_sgp.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Swiss_Stage_S270",
       "game_number": 4,
       "date": "June 26, 2026 - 13:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "SGP",
       "blue_picks": [
         "Enzo",
@@ -18124,13 +18009,13 @@
         "Qi"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/swiss_stage/2026_ss_d7_m1_g4_apl_fpt_vs_sgp.png"
+      "screenshot": "2026_apl/swiss_stage/2026_ss_d7_m1_g4_apl_fl_vs_sgp.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Swiss_Stage_S270",
       "game_number": 5,
       "date": "June 26, 2026 - 13:00",
-      "blue_team": "FPT",
+      "blue_team": "FL",
       "red_team": "SGP",
       "blue_picks": [
         "Toro",
@@ -18147,7 +18032,7 @@
         "Cresht"
       ],
       "source": "screenshot",
-      "screenshot": "2026_apl/swiss_stage/2026_ss_d7_m1_g5_apl_fpt_vs_sgp.png"
+      "screenshot": "2026_apl/swiss_stage/2026_ss_d7_m1_g5_apl_fl_vs_sgp.png"
     },
     {
       "series_id": "Arena_of_Valor_Premier_League_2026_Swiss_Stage_S271",

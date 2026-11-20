@@ -3417,7 +3417,7 @@
     "is_ultimate_battle": false,
     "length": "16:25",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Maloch",
@@ -3462,7 +3462,7 @@
     "is_ultimate_battle": false,
     "length": "12:53",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Maloch",
@@ -3518,7 +3518,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "11:57",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOX",
     "blue_win": 0,
     "blue_bans": [
@@ -3586,7 +3586,7 @@
     "is_ultimate_battle": false,
     "length": "27:17",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Valhein",
@@ -3663,7 +3663,7 @@
     "is_ultimate_battle": false,
     "length": "12:52",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Valhein",
@@ -5077,7 +5077,7 @@
     "is_ultimate_battle": false,
     "length": "29:00",
     "blue_team": "1S",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "TeeMee",
@@ -5122,7 +5122,7 @@
     "is_ultimate_battle": false,
     "length": "19:05",
     "blue_team": "1S",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Bolt Baron",
@@ -5178,7 +5178,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "13:42",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "1S",
     "blue_win": 0,
     "blue_bans": [
@@ -5246,7 +5246,7 @@
     "is_ultimate_battle": false,
     "length": "17:08",
     "blue_team": "1S",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Billow",
@@ -5323,7 +5323,7 @@
     "is_ultimate_battle": false,
     "length": "19:20",
     "blue_team": "1S",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Maloch",
@@ -5916,7 +5916,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "17:52",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FPL",
     "blue_win": 1,
     "blue_bans": [
@@ -5962,7 +5962,7 @@
     "is_ultimate_battle": false,
     "length": "11:22",
     "blue_team": "FPL",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Rouie",
@@ -6018,7 +6018,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "14:49",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FPL",
     "blue_win": 1,
     "blue_bans": [
@@ -8397,7 +8397,7 @@
     "is_ultimate_battle": false,
     "length": "12:19",
     "blue_team": "SPN",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Rouie",
@@ -8441,7 +8441,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "18:55",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SPN",
     "blue_win": 1,
     "blue_bans": [
@@ -8499,7 +8499,7 @@
     "is_ultimate_battle": false,
     "length": "17:57",
     "blue_team": "SPN",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Rouie",
@@ -10076,7 +10076,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "14:05",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "TDT",
     "blue_win": 1,
     "blue_bans": [
@@ -10122,7 +10122,7 @@
     "is_ultimate_battle": false,
     "length": "17:24",
     "blue_team": "TDT",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Maloch",
@@ -10179,7 +10179,7 @@
     "is_ultimate_battle": false,
     "length": "20:53",
     "blue_team": "TDT",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Bolt Baron",
@@ -10829,7 +10829,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "11:29",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BSS",
     "blue_win": 1,
     "blue_bans": [
@@ -10875,7 +10875,7 @@
     "is_ultimate_battle": false,
     "length": "11:00",
     "blue_team": "BSS",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Billow",
@@ -10932,7 +10932,7 @@
     "is_ultimate_battle": false,
     "length": "14:22",
     "blue_team": "BSS",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Billow",
@@ -15231,7 +15231,7 @@
     "is_ultimate_battle": false,
     "length": "22:45",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Rouie",
@@ -15275,7 +15275,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "21:48",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 0,
     "blue_bans": [
@@ -15333,7 +15333,7 @@
     "is_ultimate_battle": false,
     "length": "09:30",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Raz",
@@ -15400,7 +15400,7 @@
     "is_ultimate_battle": false,
     "length": "19:46",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Raz",
@@ -18560,7 +18560,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "16:47",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FPL",
     "blue_win": 1,
     "blue_bans": [
@@ -18606,7 +18606,7 @@
     "is_ultimate_battle": false,
     "length": "17:24",
     "blue_team": "FPL",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Eland'orr",
@@ -18662,7 +18662,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "26:29",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FPL",
     "blue_win": 1,
     "blue_bans": [
@@ -21383,7 +21383,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "16:07",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SPN",
     "blue_win": 1,
     "blue_bans": [
@@ -21428,7 +21428,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "11:24",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SPN",
     "blue_win": 0,
     "blue_bans": [
@@ -21486,7 +21486,7 @@
     "is_ultimate_battle": false,
     "length": "13:02",
     "blue_team": "SPN",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Maloch",
@@ -21552,7 +21552,7 @@
     "game_number": 4,
     "is_ultimate_battle": false,
     "length": "09:49",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SPN",
     "blue_win": 1,
     "blue_bans": [
@@ -23469,7 +23469,7 @@
     "is_ultimate_battle": false,
     "length": "20:12",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Maloch",
@@ -23514,7 +23514,7 @@
     "is_ultimate_battle": false,
     "length": "12:18",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Valhein",
@@ -23570,7 +23570,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "19:13",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOX",
     "blue_win": 1,
     "blue_bans": [
@@ -23637,7 +23637,7 @@
     "game_number": 4,
     "is_ultimate_battle": false,
     "length": "20:35",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOX",
     "blue_win": 1,
     "blue_bans": [
@@ -24052,7 +24052,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "14:20",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "TDT",
     "blue_win": 0,
     "blue_bans": [
@@ -24098,7 +24098,7 @@
     "is_ultimate_battle": false,
     "length": "11:23",
     "blue_team": "TDT",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Maloch",
@@ -24154,7 +24154,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "09:33",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "TDT",
     "blue_win": 1,
     "blue_bans": [
@@ -24221,7 +24221,7 @@
     "game_number": 4,
     "is_ultimate_battle": false,
     "length": "30:25",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "TDT",
     "blue_win": 0,
     "blue_bans": [
@@ -24299,7 +24299,7 @@
     "is_ultimate_battle": false,
     "length": "18:09",
     "blue_team": "TDT",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "TeeMee",
@@ -25717,7 +25717,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "17:04",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "1S",
     "blue_win": 0,
     "blue_bans": [
@@ -25763,7 +25763,7 @@
     "is_ultimate_battle": false,
     "length": "13:59",
     "blue_team": "1S",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Valhein",
@@ -25819,7 +25819,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "14:22",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "1S",
     "blue_win": 0,
     "blue_bans": [
@@ -25887,7 +25887,7 @@
     "is_ultimate_battle": false,
     "length": "15:38",
     "blue_team": "1S",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Valhein",
@@ -25963,7 +25963,7 @@
     "game_number": 5,
     "is_ultimate_battle": false,
     "length": "10:48",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "1S",
     "blue_win": 1,
     "blue_bans": [
@@ -28140,7 +28140,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "09:35",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BSS",
     "blue_win": 1,
     "blue_bans": [
@@ -28186,7 +28186,7 @@
     "is_ultimate_battle": false,
     "length": "10:17",
     "blue_team": "BSS",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Raz",
@@ -28243,7 +28243,7 @@
     "is_ultimate_battle": false,
     "length": "11:13",
     "blue_team": "BSS",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Raz",
@@ -28310,7 +28310,7 @@
     "is_ultimate_battle": false,
     "length": "13:45",
     "blue_team": "BSS",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Billow",
@@ -31450,7 +31450,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "16:19",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 0,
     "blue_bans": [
@@ -31496,7 +31496,7 @@
     "is_ultimate_battle": false,
     "length": "16:54",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Rouie",
@@ -31552,7 +31552,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "11:43",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 0,
     "blue_bans": [
@@ -31620,7 +31620,7 @@
     "is_ultimate_battle": false,
     "length": "13:09",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Raz",
@@ -31697,7 +31697,7 @@
     "is_ultimate_battle": false,
     "length": "09:53",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "TeeMee",
@@ -35277,7 +35277,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "16:55",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "TDT",
     "blue_win": 1,
     "blue_bans": [
@@ -35323,7 +35323,7 @@
     "is_ultimate_battle": false,
     "length": "16:25",
     "blue_team": "TDT",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Maloch",
@@ -35379,7 +35379,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "19:00",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "TDT",
     "blue_win": 1,
     "blue_bans": [
@@ -36359,7 +36359,7 @@
     "is_ultimate_battle": false,
     "length": "17:00",
     "blue_team": "SPN",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Raz",
@@ -36403,7 +36403,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "13:02",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SPN",
     "blue_win": 1,
     "blue_bans": [
@@ -36460,7 +36460,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "09:52",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SPN",
     "blue_win": 1,
     "blue_bans": [
@@ -36942,7 +36942,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "13:55",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "1S",
     "blue_win": 0,
     "blue_bans": [
@@ -36988,7 +36988,7 @@
     "is_ultimate_battle": false,
     "length": "17:40",
     "blue_team": "1S",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Maloch",
@@ -37045,7 +37045,7 @@
     "is_ultimate_battle": false,
     "length": "18:49",
     "blue_team": "1S",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Eland'orr",
@@ -37111,7 +37111,7 @@
     "game_number": 4,
     "is_ultimate_battle": false,
     "length": "13:22",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "1S",
     "blue_win": 1,
     "blue_bans": [
@@ -37188,7 +37188,7 @@
     "game_number": 5,
     "is_ultimate_battle": false,
     "length": "10:23",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "1S",
     "blue_win": 1,
     "blue_bans": [
@@ -37942,7 +37942,7 @@
     "is_ultimate_battle": false,
     "length": "17:13",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Maloch",
@@ -37987,7 +37987,7 @@
     "is_ultimate_battle": false,
     "length": "19:02",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Stuart",
@@ -38044,7 +38044,7 @@
     "is_ultimate_battle": false,
     "length": "13:55",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Maloch",
@@ -38110,7 +38110,7 @@
     "game_number": 4,
     "is_ultimate_battle": false,
     "length": "18:08",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOX",
     "blue_win": 1,
     "blue_bans": [
@@ -38188,7 +38188,7 @@
     "is_ultimate_battle": false,
     "length": "17:28",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Stuart",
@@ -39453,7 +39453,7 @@
     "is_ultimate_battle": false,
     "length": "16:24",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Marja",
@@ -39497,7 +39497,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "21:13",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 0,
     "blue_bans": [
@@ -39554,7 +39554,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "15:44",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 0,
     "blue_bans": [
@@ -39621,7 +39621,7 @@
     "game_number": 4,
     "is_ultimate_battle": false,
     "length": "17:57",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 1,
     "blue_bans": [
@@ -39698,7 +39698,7 @@
     "game_number": 5,
     "is_ultimate_battle": false,
     "length": "10:28",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 0,
     "blue_bans": [
@@ -41473,7 +41473,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "18:14",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 1,
     "blue_bans": [
@@ -41518,7 +41518,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "12:22",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 1,
     "blue_bans": [
@@ -41575,7 +41575,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "20:13",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 0,
     "blue_bans": [
@@ -41643,7 +41643,7 @@
     "is_ultimate_battle": false,
     "length": "11:22",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Rouie",
@@ -41720,7 +41720,7 @@
     "is_ultimate_battle": false,
     "length": "15:49",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Rouie",
@@ -41807,7 +41807,7 @@
     "is_ultimate_battle": false,
     "length": "10:45",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Rouie",
@@ -41903,7 +41903,7 @@
     "game_number": 7,
     "is_ultimate_battle": true,
     "length": "16:58",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 1,
     "blue_bans": [
@@ -43162,7 +43162,7 @@
     "is_ultimate_battle": false,
     "length": "12:43",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Hayate",
@@ -43206,7 +43206,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "12:54",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 1,
     "blue_bans": [
@@ -43263,7 +43263,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "21:03",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 0,
     "blue_bans": [
@@ -43331,7 +43331,7 @@
     "is_ultimate_battle": false,
     "length": "20:44",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Raz",
@@ -43408,7 +43408,7 @@
     "is_ultimate_battle": false,
     "length": "13:14",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Raz",
@@ -43495,7 +43495,7 @@
     "is_ultimate_battle": false,
     "length": "26:04",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Raz",
@@ -43592,7 +43592,7 @@
     "is_ultimate_battle": false,
     "length": "18:24",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Raz",
@@ -45766,7 +45766,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "20:53",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "HKA",
     "blue_win": 1,
     "blue_bans": [
@@ -45811,7 +45811,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "33:46",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "HKA",
     "blue_win": 1,
     "blue_bans": [
@@ -47055,7 +47055,7 @@
     "is_ultimate_battle": false,
     "length": "22:41",
     "blue_team": "FW",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Tachi",
@@ -47100,7 +47100,7 @@
     "is_ultimate_battle": false,
     "length": "14:23",
     "blue_team": "FW",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Tachi",
@@ -47156,7 +47156,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "20:38",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FW",
     "blue_win": 0,
     "blue_bans": [
@@ -48723,7 +48723,7 @@
     "is_ultimate_battle": false,
     "length": "31:16",
     "blue_team": "BMG",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Eland'orr",
@@ -48768,7 +48768,7 @@
     "is_ultimate_battle": false,
     "length": "08:50",
     "blue_team": "BMG",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Rouie",
@@ -49404,7 +49404,7 @@
     "is_ultimate_battle": false,
     "length": "16:57",
     "blue_team": "EA",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Eland'orr",
@@ -49448,7 +49448,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "26:21",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "EA",
     "blue_win": 0,
     "blue_bans": [
@@ -49506,7 +49506,7 @@
     "is_ultimate_battle": false,
     "length": "17:21",
     "blue_team": "EA",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Billow",
@@ -49572,7 +49572,7 @@
     "game_number": 4,
     "is_ultimate_battle": false,
     "length": "14:29",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "EA",
     "blue_win": 1,
     "blue_bans": [
@@ -52212,7 +52212,7 @@
     "is_ultimate_battle": false,
     "length": "21:48",
     "blue_team": "ANK",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Eland'orr",
@@ -52256,7 +52256,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "17:10",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "ANK",
     "blue_win": 0,
     "blue_bans": [
@@ -52314,7 +52314,7 @@
     "is_ultimate_battle": false,
     "length": "40:13",
     "blue_team": "ANK",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Rouie",
@@ -52381,7 +52381,7 @@
     "is_ultimate_battle": false,
     "length": "25:24",
     "blue_team": "ANK",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Rouie",
@@ -52458,7 +52458,7 @@
     "is_ultimate_battle": false,
     "length": "24:30",
     "blue_team": "EA",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Eland'orr",
@@ -52502,7 +52502,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "17:02",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "EA",
     "blue_win": 1,
     "blue_bans": [
@@ -52560,7 +52560,7 @@
     "is_ultimate_battle": false,
     "length": "33:49",
     "blue_team": "EA",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Valhein",
@@ -52627,7 +52627,7 @@
     "is_ultimate_battle": false,
     "length": "23:29",
     "blue_team": "EA",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Valhein",
@@ -52704,7 +52704,7 @@
     "is_ultimate_battle": false,
     "length": "16:26",
     "blue_team": "EA",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Valhein",
@@ -56002,7 +56002,7 @@
     "is_ultimate_battle": false,
     "length": "15:47",
     "blue_team": "FPL",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Eland'orr",
@@ -56047,7 +56047,7 @@
     "is_ultimate_battle": false,
     "length": "09:57",
     "blue_team": "FPL",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Keera",
@@ -56103,7 +56103,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "12:50",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FPL",
     "blue_win": 1,
     "blue_bans": [
@@ -57113,7 +57113,7 @@
     "is_ultimate_battle": false,
     "length": "17:41",
     "blue_team": "SPN",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Eland'orr",
@@ -57157,7 +57157,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "09:45",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SPN",
     "blue_win": 1,
     "blue_bans": [
@@ -57215,7 +57215,7 @@
     "is_ultimate_battle": false,
     "length": "09:35",
     "blue_team": "SPN",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Eland'orr",
@@ -57866,7 +57866,7 @@
     "is_ultimate_battle": false,
     "length": "18:41",
     "blue_team": "1S",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Billow",
@@ -57911,7 +57911,7 @@
     "is_ultimate_battle": false,
     "length": "22:07",
     "blue_team": "1S",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Eland'orr",
@@ -57967,7 +57967,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "19:15",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "1S",
     "blue_win": 1,
     "blue_bans": [
@@ -58034,7 +58034,7 @@
     "game_number": 4,
     "is_ultimate_battle": false,
     "length": "17:18",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "1S",
     "blue_win": 0,
     "blue_bans": [
@@ -58690,7 +58690,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "14:18",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "TDT",
     "blue_win": 1,
     "blue_bans": [
@@ -58735,7 +58735,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "10:58",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "TDT",
     "blue_win": 1,
     "blue_bans": [
@@ -58793,7 +58793,7 @@
     "is_ultimate_battle": false,
     "length": "12:28",
     "blue_team": "TDT",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Keera",
@@ -58859,7 +58859,7 @@
     "game_number": 4,
     "is_ultimate_battle": false,
     "length": "23:37",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "TDT",
     "blue_win": 0,
     "blue_bans": [
@@ -58937,7 +58937,7 @@
     "is_ultimate_battle": false,
     "length": "17:44",
     "blue_team": "TDT",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Tachi",
@@ -59516,7 +59516,7 @@
     "is_ultimate_battle": false,
     "length": "14:44",
     "blue_team": "TTVN",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Toro",
@@ -59560,7 +59560,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "08:49",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "TTVN",
     "blue_win": 1,
     "blue_bans": [
@@ -59617,7 +59617,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "09:53",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "TTVN",
     "blue_win": 1,
     "blue_bans": [
@@ -62026,7 +62026,7 @@
     "is_ultimate_battle": false,
     "length": "24:19",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Marja",
@@ -62070,7 +62070,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "22:28",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 0,
     "blue_bans": [
@@ -62128,7 +62128,7 @@
     "is_ultimate_battle": false,
     "length": "37:22",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Billow",
@@ -62195,7 +62195,7 @@
     "is_ultimate_battle": false,
     "length": "16:39",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Rouie",
@@ -62271,7 +62271,7 @@
     "game_number": 5,
     "is_ultimate_battle": false,
     "length": "18:15",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 1,
     "blue_bans": [
@@ -63193,7 +63193,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "14:07",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOX",
     "blue_win": 1,
     "blue_bans": [
@@ -63238,7 +63238,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "17:31",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOX",
     "blue_win": 1,
     "blue_bans": [
@@ -63296,7 +63296,7 @@
     "is_ultimate_battle": false,
     "length": "14:14",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Toro",
@@ -69428,7 +69428,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "09:53",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FPL",
     "blue_win": 1,
     "blue_bans": [
@@ -69473,7 +69473,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "08:23",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FPL",
     "blue_win": 1,
     "blue_bans": [
@@ -69530,7 +69530,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "09:07",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FPL",
     "blue_win": 1,
     "blue_bans": [
@@ -72338,7 +72338,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "29:19",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SPN",
     "blue_win": 0,
     "blue_bans": [
@@ -72384,7 +72384,7 @@
     "is_ultimate_battle": false,
     "length": "12:45",
     "blue_team": "SPN",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Eland'orr",
@@ -72440,7 +72440,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "10:15",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SPN",
     "blue_win": 1,
     "blue_bans": [
@@ -72507,7 +72507,7 @@
     "game_number": 4,
     "is_ultimate_battle": false,
     "length": "09:45",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SPN",
     "blue_win": 1,
     "blue_bans": [
@@ -74409,7 +74409,7 @@
     "is_ultimate_battle": false,
     "length": "11:57",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Lorion",
@@ -74454,7 +74454,7 @@
     "is_ultimate_battle": false,
     "length": "09:57",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Billow",
@@ -74510,7 +74510,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "17:09",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOX",
     "blue_win": 1,
     "blue_bans": [
@@ -74577,7 +74577,7 @@
     "game_number": 4,
     "is_ultimate_battle": false,
     "length": "16:59",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOX",
     "blue_win": 1,
     "blue_bans": [
@@ -75572,7 +75572,7 @@
     "is_ultimate_battle": false,
     "length": "20:12",
     "blue_team": "TDT",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Lorion",
@@ -75616,7 +75616,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "07:38",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "TDT",
     "blue_win": 1,
     "blue_bans": [
@@ -75673,7 +75673,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "17:09",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "TDT",
     "blue_win": 0,
     "blue_bans": [
@@ -75741,7 +75741,7 @@
     "is_ultimate_battle": false,
     "length": "14:54",
     "blue_team": "TDT",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Sinestrea",
@@ -78128,7 +78128,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "16:28",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "1S",
     "blue_win": 1,
     "blue_bans": [
@@ -78173,7 +78173,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "13:00",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "1S",
     "blue_win": 1,
     "blue_bans": [
@@ -78231,7 +78231,7 @@
     "is_ultimate_battle": false,
     "length": "27:52",
     "blue_team": "1S",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Eland'orr",
@@ -80121,7 +80121,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "17:17",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "TTVN",
     "blue_win": 1,
     "blue_bans": [
@@ -80166,7 +80166,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "11:30",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "TTVN",
     "blue_win": 1,
     "blue_bans": [
@@ -80224,7 +80224,7 @@
     "is_ultimate_battle": false,
     "length": "14:55",
     "blue_team": "TTVN",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Billow",
@@ -83046,7 +83046,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "27:31",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 0,
     "blue_bans": [
@@ -83092,7 +83092,7 @@
     "is_ultimate_battle": false,
     "length": "25:55",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Lorion",
@@ -83148,7 +83148,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "09:52",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 0,
     "blue_bans": [
@@ -83216,7 +83216,7 @@
     "is_ultimate_battle": false,
     "length": "38:32",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Rouie",
@@ -83292,7 +83292,7 @@
     "game_number": 5,
     "is_ultimate_battle": false,
     "length": "23:47",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 1,
     "blue_bans": [
@@ -86135,7 +86135,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "09:50",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SPN",
     "blue_win": 1,
     "blue_bans": [
@@ -86180,7 +86180,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "33:14",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SPN",
     "blue_win": 0,
     "blue_bans": [
@@ -86238,7 +86238,7 @@
     "is_ultimate_battle": false,
     "length": "25:41",
     "blue_team": "SPN",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Hayate",
@@ -86305,7 +86305,7 @@
     "is_ultimate_battle": false,
     "length": "12:20",
     "blue_team": "SPN",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Hayate",
@@ -86382,7 +86382,7 @@
     "is_ultimate_battle": false,
     "length": "16:18",
     "blue_team": "SPN",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Rouie",
@@ -86638,7 +86638,7 @@
     "is_ultimate_battle": false,
     "length": "12:51",
     "blue_team": "TDT",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Lorion",
@@ -86682,7 +86682,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "25:47",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "TDT",
     "blue_win": 1,
     "blue_bans": [
@@ -86740,7 +86740,7 @@
     "is_ultimate_battle": false,
     "length": "11:51",
     "blue_team": "TDT",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Rouie",
@@ -88379,7 +88379,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "13:21",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "1S",
     "blue_win": 1,
     "blue_bans": [
@@ -88424,7 +88424,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "14:25",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "1S",
     "blue_win": 1,
     "blue_bans": [
@@ -88481,7 +88481,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "17:10",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "1S",
     "blue_win": 1,
     "blue_bans": [
@@ -89630,7 +89630,7 @@
     "is_ultimate_battle": false,
     "length": "12:55",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Sinestrea",
@@ -89674,7 +89674,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "19:26",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOX",
     "blue_win": 1,
     "blue_bans": [
@@ -89731,7 +89731,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "13:12",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOX",
     "blue_win": 0,
     "blue_bans": [
@@ -89799,7 +89799,7 @@
     "is_ultimate_battle": false,
     "length": "12:48",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Eland'orr",
@@ -89876,7 +89876,7 @@
     "is_ultimate_battle": false,
     "length": "10:27",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Valhein",
@@ -92540,7 +92540,7 @@
     "is_ultimate_battle": false,
     "length": "40:28",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Lorion",
@@ -92585,7 +92585,7 @@
     "is_ultimate_battle": false,
     "length": "26:06",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Valhein",
@@ -92642,7 +92642,7 @@
     "is_ultimate_battle": false,
     "length": "28:29",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Rouie",
@@ -93138,7 +93138,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "12:15",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 1,
     "blue_bans": [
@@ -93184,7 +93184,7 @@
     "is_ultimate_battle": false,
     "length": "25:16",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Toro",
@@ -93241,7 +93241,7 @@
     "is_ultimate_battle": false,
     "length": "17:30",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Rouie",
@@ -93307,7 +93307,7 @@
     "game_number": 4,
     "is_ultimate_battle": false,
     "length": "18:43",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 1,
     "blue_bans": [
@@ -93385,7 +93385,7 @@
     "is_ultimate_battle": false,
     "length": "22:48",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Rouie",
@@ -93471,7 +93471,7 @@
     "game_number": 6,
     "is_ultimate_battle": false,
     "length": "10:20",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 0,
     "blue_bans": [
@@ -96194,7 +96194,7 @@
     "is_ultimate_battle": false,
     "length": "13:17",
     "blue_team": "1S",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Lorion",
@@ -96238,7 +96238,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "25:17",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "1S",
     "blue_win": 1,
     "blue_bans": [
@@ -96296,7 +96296,7 @@
     "is_ultimate_battle": false,
     "length": "15:12",
     "blue_team": "1S",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Rouie",
@@ -96363,7 +96363,7 @@
     "is_ultimate_battle": false,
     "length": "18:09",
     "blue_team": "1S",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Rouie",
@@ -96440,7 +96440,7 @@
     "is_ultimate_battle": false,
     "length": "35:40",
     "blue_team": "1S",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Sinestrea",
@@ -96860,7 +96860,7 @@
     "is_ultimate_battle": false,
     "length": "10:29",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Eland'orr",
@@ -96904,7 +96904,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "25:17",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 0,
     "blue_bans": [
@@ -96962,7 +96962,7 @@
     "is_ultimate_battle": false,
     "length": "19:20",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Marja",
@@ -97028,7 +97028,7 @@
     "game_number": 4,
     "is_ultimate_battle": false,
     "length": "11:50",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 0,
     "blue_bans": [
@@ -97106,7 +97106,7 @@
     "is_ultimate_battle": false,
     "length": "12:48",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Valhein",
@@ -97193,7 +97193,7 @@
     "is_ultimate_battle": false,
     "length": "21:52",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Valhein",
@@ -97662,7 +97662,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "18:29",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BRU",
     "blue_win": 0,
     "blue_bans": [
@@ -97708,7 +97708,7 @@
     "is_ultimate_battle": false,
     "length": "24:15",
     "blue_team": "BRU",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Lorion",
@@ -97764,7 +97764,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "20:52",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BRU",
     "blue_win": 1,
     "blue_bans": [
@@ -98137,7 +98137,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "16:43",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "ONE",
     "blue_win": 0,
     "blue_bans": [
@@ -98182,7 +98182,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "36:23",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "ONE",
     "blue_win": 0,
     "blue_bans": [
@@ -99154,7 +99154,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "11:28",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FS",
     "blue_win": 0,
     "blue_bans": [
@@ -99200,7 +99200,7 @@
     "is_ultimate_battle": false,
     "length": "12:48",
     "blue_team": "FS",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Florentino",
@@ -99256,7 +99256,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "26:47",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FS",
     "blue_win": 0,
     "blue_bans": [
@@ -100274,7 +100274,7 @@
     "is_ultimate_battle": false,
     "length": "20:50",
     "blue_team": "BAC",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Eland'orr",
@@ -100319,7 +100319,7 @@
     "is_ultimate_battle": false,
     "length": "14:12",
     "blue_team": "BAC",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Hayate",
@@ -100375,7 +100375,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "14:51",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BAC",
     "blue_win": 1,
     "blue_bans": [
@@ -100816,7 +100816,7 @@
     "is_ultimate_battle": false,
     "length": "18:10",
     "blue_team": "DCG",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Billow",
@@ -100860,7 +100860,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "17:54",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "DCG",
     "blue_win": 1,
     "blue_bans": [
@@ -101255,7 +101255,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "19:32",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "PSG",
     "blue_win": 0,
     "blue_bans": [
@@ -101301,7 +101301,7 @@
     "is_ultimate_battle": false,
     "length": "13:42",
     "blue_team": "PSG",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Heino",
@@ -101357,7 +101357,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "13:32",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "PSG",
     "blue_win": 1,
     "blue_bans": [
@@ -101425,7 +101425,7 @@
     "is_ultimate_battle": false,
     "length": "16:18",
     "blue_team": "PSG",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Marja",
@@ -101502,7 +101502,7 @@
     "is_ultimate_battle": false,
     "length": "09:54",
     "blue_team": "PSG",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Valhein",
@@ -102506,7 +102506,7 @@
     "is_ultimate_battle": false,
     "length": "28:32",
     "blue_team": "FS",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Taara",
@@ -102550,7 +102550,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "14:02",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FS",
     "blue_win": 0,
     "blue_bans": [
@@ -102608,7 +102608,7 @@
     "is_ultimate_battle": false,
     "length": "09:45",
     "blue_team": "FS",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Valhein",
@@ -102675,7 +102675,7 @@
     "is_ultimate_battle": false,
     "length": "15:50",
     "blue_team": "FS",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Valhein",
@@ -102752,7 +102752,7 @@
     "is_ultimate_battle": false,
     "length": "24:43",
     "blue_team": "FS",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Valhein",
@@ -103268,7 +103268,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "09:26",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FW",
     "blue_win": 1,
     "blue_bans": [
@@ -103314,7 +103314,7 @@
     "is_ultimate_battle": false,
     "length": "23:37",
     "blue_team": "FW",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Billow",
@@ -103370,7 +103370,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "09:30",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FW",
     "blue_win": 0,
     "blue_bans": [
@@ -103438,7 +103438,7 @@
     "is_ultimate_battle": false,
     "length": "11:45",
     "blue_team": "FW",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Eland'orr",
@@ -103515,7 +103515,7 @@
     "is_ultimate_battle": false,
     "length": "13:52",
     "blue_team": "FW",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Billow",
@@ -103602,7 +103602,7 @@
     "is_ultimate_battle": false,
     "length": "26:28",
     "blue_team": "FW",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Billow",
@@ -115079,7 +115079,7 @@
     "is_ultimate_battle": false,
     "length": "27:59",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Eland'orr",
@@ -115111,7 +115111,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week1/2026_w1_d1_m1_g1_spr_aog_box_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week1/2026_w1_d1_m1_g1_spr_aog_box_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S831",
@@ -115123,7 +115123,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "13:45",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOX",
     "blue_win": 0,
     "blue_bans": [
@@ -115168,7 +115168,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week1/2026_w1_d1_m1_g2_spr_aog_box_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week1/2026_w1_d1_m1_g2_spr_aog_box_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S831",
@@ -115181,7 +115181,7 @@
     "is_ultimate_battle": false,
     "length": "15:09",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Sinestrea",
@@ -115235,7 +115235,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week1/2026_w1_d1_m1_g3_spr_aog_box_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week1/2026_w1_d1_m1_g3_spr_aog_box_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S831",
@@ -115247,7 +115247,7 @@
     "game_number": 4,
     "is_ultimate_battle": false,
     "length": "12:50",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOX",
     "blue_win": 1,
     "blue_bans": [
@@ -115312,7 +115312,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week1/2026_w1_d1_m1_g4_spr_aog_box_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week1/2026_w1_d1_m1_g4_spr_aog_box_vs_fl.png"
   },
   {
     "series_id": "Garena_Challenger_Series_2026_Spring/Regular_Season_S1024",
@@ -117641,7 +117641,7 @@
     "is_ultimate_battle": false,
     "length": "12:45",
     "blue_team": "FPL",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Tachi",
@@ -117673,7 +117673,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week1/2026_w1_d2_m5_g1_spr_aog_fpl_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week1/2026_w1_d2_m5_g1_spr_aog_fpl_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S835",
@@ -117686,7 +117686,7 @@
     "is_ultimate_battle": false,
     "length": "16:10",
     "blue_team": "FPL",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Stuart",
@@ -117730,7 +117730,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week1/2026_w1_d2_m5_g2_spr_aog_fpl_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week1/2026_w1_d2_m5_g2_spr_aog_fpl_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S835",
@@ -117742,7 +117742,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "19:30",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FPL",
     "blue_win": 1,
     "blue_bans": [
@@ -117797,7 +117797,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week1/2026_w1_d2_m5_g3_spr_aog_fpl_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week1/2026_w1_d2_m5_g3_spr_aog_fpl_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S835",
@@ -117809,7 +117809,7 @@
     "game_number": 4,
     "is_ultimate_battle": false,
     "length": "23:03",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FPL",
     "blue_win": 1,
     "blue_bans": [
@@ -117874,7 +117874,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week1/2026_w1_d2_m5_g4_spr_aog_fpl_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week1/2026_w1_d2_m5_g4_spr_aog_fpl_vs_fl.png"
   },
   {
     "series_id": "RoV_Pro_League_2026_Summer/Group_Stage_S570",
@@ -120719,7 +120719,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "16:34",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SPN",
     "blue_win": 1,
     "blue_bans": [
@@ -120752,7 +120752,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week2/2026_w2_d4_m11_g1_spr_aog_fpt_vs_spn.png"
+    "true_screenshot": "2026_aog_spring/week2/2026_w2_d4_m11_g1_spr_aog_fl_vs_spn.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S841",
@@ -120764,7 +120764,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "09:22",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SPN",
     "blue_win": 1,
     "blue_bans": [
@@ -120809,7 +120809,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week2/2026_w2_d4_m11_g2_spr_aog_fpt_vs_spn.png"
+    "true_screenshot": "2026_aog_spring/week2/2026_w2_d4_m11_g2_spr_aog_fl_vs_spn.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S841",
@@ -120822,7 +120822,7 @@
     "is_ultimate_battle": false,
     "length": "10:22",
     "blue_team": "SPN",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Lorion",
@@ -120876,7 +120876,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week2/2026_w2_d4_m11_g3_spr_aog_fpt_vs_spn.png"
+    "true_screenshot": "2026_aog_spring/week2/2026_w2_d4_m11_g3_spr_aog_fl_vs_spn.png"
   },
   {
     "series_id": "RoV_Pro_League_2026_Summer/Group_Stage_S575",
@@ -122881,7 +122881,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "13:02",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "1S",
     "blue_win": 0,
     "blue_bans": [
@@ -122914,7 +122914,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week2/2026_w2_d5_m14_g1_spr_aog_fpt_vs_1s.png"
+    "true_screenshot": "2026_aog_spring/week2/2026_w2_d5_m14_g1_spr_aog_fl_vs_1s.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S844",
@@ -122927,7 +122927,7 @@
     "is_ultimate_battle": false,
     "length": "14:20",
     "blue_team": "1S",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Dolia",
@@ -122971,7 +122971,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week2/2026_w2_d5_m14_g2_spr_aog_fpt_vs_1s.png"
+    "true_screenshot": "2026_aog_spring/week2/2026_w2_d5_m14_g2_spr_aog_fl_vs_1s.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S844",
@@ -122984,7 +122984,7 @@
     "is_ultimate_battle": false,
     "length": "12:49",
     "blue_team": "1S",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Marja",
@@ -123038,7 +123038,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week2/2026_w2_d5_m14_g3_spr_aog_fpt_vs_1s.png"
+    "true_screenshot": "2026_aog_spring/week2/2026_w2_d5_m14_g3_spr_aog_fl_vs_1s.png"
   },
   {
     "series_id": "RoV_Pro_League_2026_Summer/Group_Stage_S578",
@@ -124629,7 +124629,7 @@
     "is_ultimate_battle": false,
     "length": "13:50",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Lorion",
@@ -124661,7 +124661,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week2/2026_w2_d6_m17_g1_spr_aog_sgp_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week2/2026_w2_d6_m17_g1_spr_aog_sgp_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S847",
@@ -124673,7 +124673,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "31:02",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 1,
     "blue_bans": [
@@ -124718,7 +124718,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week2/2026_w2_d6_m17_g2_spr_aog_sgp_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week2/2026_w2_d6_m17_g2_spr_aog_sgp_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S847",
@@ -124731,7 +124731,7 @@
     "is_ultimate_battle": false,
     "length": "10:03",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Enzo",
@@ -124785,7 +124785,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week2/2026_w2_d6_m17_g3_spr_aog_sgp_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week2/2026_w2_d6_m17_g3_spr_aog_sgp_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S848",
@@ -126365,7 +126365,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "18:54",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "GAM",
     "blue_win": 0,
     "blue_bans": [
@@ -126398,7 +126398,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week3/2026_w3_d8_m22_g1_spr_aog_fpt_vs_gam.png"
+    "true_screenshot": "2026_aog_spring/week3/2026_w3_d8_m22_g1_spr_aog_fl_vs_gam.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S852",
@@ -126411,7 +126411,7 @@
     "is_ultimate_battle": false,
     "length": "12:49",
     "blue_team": "GAM",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Lorion",
@@ -126455,7 +126455,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week3/2026_w3_d8_m22_g2_spr_aog_fpt_vs_gam.png"
+    "true_screenshot": "2026_aog_spring/week3/2026_w3_d8_m22_g2_spr_aog_fl_vs_gam.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S852",
@@ -126467,7 +126467,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "21:15",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "GAM",
     "blue_win": 0,
     "blue_bans": [
@@ -126522,7 +126522,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week3/2026_w3_d8_m22_g3_spr_aog_fpt_vs_gam.png"
+    "true_screenshot": "2026_aog_spring/week3/2026_w3_d8_m22_g3_spr_aog_fl_vs_gam.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S852",
@@ -126535,7 +126535,7 @@
     "is_ultimate_battle": false,
     "length": "13:18",
     "blue_team": "GAM",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Zata",
@@ -126599,7 +126599,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week3/2026_w3_d8_m22_g4_spr_aog_fpt_vs_gam.png"
+    "true_screenshot": "2026_aog_spring/week3/2026_w3_d8_m22_g4_spr_aog_fl_vs_gam.png"
   },
   {
     "series_id": "RoV_Pro_League_2026_Summer/Group_Stage_S583",
@@ -129106,7 +129106,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "12:50",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "TS",
     "blue_win": 1,
     "blue_bans": [
@@ -129139,7 +129139,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week3/2026_w3_d9_m26_g1_spr_aog_fpt_vs_sec.png"
+    "true_screenshot": "2026_aog_spring/week3/2026_w3_d9_m26_g1_spr_aog_fl_vs_sec.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S856",
@@ -129151,7 +129151,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "13:50",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "TS",
     "blue_win": 1,
     "blue_bans": [
@@ -129196,7 +129196,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week3/2026_w3_d9_m26_g2_spr_aog_fpt_vs_sec.png"
+    "true_screenshot": "2026_aog_spring/week3/2026_w3_d9_m26_g2_spr_aog_fl_vs_sec.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S856",
@@ -129209,7 +129209,7 @@
     "is_ultimate_battle": false,
     "length": "18:15",
     "blue_team": "TS",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Eland'orr",
@@ -129263,7 +129263,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week3/2026_w3_d9_m26_g3_spr_aog_fpt_vs_sec.png"
+    "true_screenshot": "2026_aog_spring/week3/2026_w3_d9_m26_g3_spr_aog_fl_vs_sec.png"
   },
   {
     "series_id": "RoV_Pro_League_2026_Summer/Group_Stage_S588",
@@ -135843,7 +135843,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "21:52",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SPN",
     "blue_win": 0,
     "blue_bans": [
@@ -135876,7 +135876,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week4/2026_w4_d11_m30_g1_spr_aog_fpt_vs_spn.png"
+    "true_screenshot": "2026_aog_spring/week4/2026_w4_d11_m30_g1_spr_aog_fl_vs_spn.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S860",
@@ -135889,7 +135889,7 @@
     "is_ultimate_battle": false,
     "length": "14:20",
     "blue_team": "SPN",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Lorion",
@@ -135933,7 +135933,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week4/2026_w4_d11_m30_g2_spr_aog_fpt_vs_spn.png"
+    "true_screenshot": "2026_aog_spring/week4/2026_w4_d11_m30_g2_spr_aog_fl_vs_spn.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S860",
@@ -135945,7 +135945,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "16:22",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SPN",
     "blue_win": 0,
     "blue_bans": [
@@ -136000,7 +136000,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week4/2026_w4_d11_m30_g3_spr_aog_fpt_vs_spn.png"
+    "true_screenshot": "2026_aog_spring/week4/2026_w4_d11_m30_g3_spr_aog_fl_vs_spn.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S860",
@@ -136013,7 +136013,7 @@
     "is_ultimate_battle": false,
     "length": "09:54",
     "blue_team": "SPN",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Rouie",
@@ -136077,7 +136077,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week4/2026_w4_d11_m30_g4_spr_aog_fpt_vs_spn.png"
+    "true_screenshot": "2026_aog_spring/week4/2026_w4_d11_m30_g4_spr_aog_fl_vs_spn.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S860",
@@ -136089,7 +136089,7 @@
     "game_number": 5,
     "is_ultimate_battle": false,
     "length": "18:57",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SPN",
     "blue_win": 1,
     "blue_bans": [
@@ -136164,7 +136164,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week4/2026_w4_d11_m30_g5_spr_aog_fpt_vs_spn.png"
+    "true_screenshot": "2026_aog_spring/week4/2026_w4_d11_m30_g5_spr_aog_fl_vs_spn.png"
   },
   {
     "series_id": "Garena_Challenger_Series_2026_Spring/Regular_Season_S1049",
@@ -137160,7 +137160,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "17:03",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOX",
     "blue_win": 0,
     "blue_bans": [
@@ -137193,7 +137193,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week4/2026_w4_d12_m33_g1_spr_aog_fpt_vs_box.png"
+    "true_screenshot": "2026_aog_spring/week4/2026_w4_d12_m33_g1_spr_aog_fl_vs_box.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S863",
@@ -137206,7 +137206,7 @@
     "is_ultimate_battle": false,
     "length": "16:53",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Rouie",
@@ -137250,7 +137250,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week4/2026_w4_d12_m33_g2_spr_aog_fpt_vs_box.png"
+    "true_screenshot": "2026_aog_spring/week4/2026_w4_d12_m33_g2_spr_aog_fl_vs_box.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S863",
@@ -137263,7 +137263,7 @@
     "is_ultimate_battle": false,
     "length": "18:40",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Rouie",
@@ -137317,7 +137317,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week4/2026_w4_d12_m33_g3_spr_aog_fpt_vs_box.png"
+    "true_screenshot": "2026_aog_spring/week4/2026_w4_d12_m33_g3_spr_aog_fl_vs_box.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S863",
@@ -137329,7 +137329,7 @@
     "game_number": 4,
     "is_ultimate_battle": false,
     "length": "14:11",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOX",
     "blue_win": 1,
     "blue_bans": [
@@ -137394,7 +137394,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week4/2026_w4_d12_m33_g4_spr_aog_fpt_vs_box.png"
+    "true_screenshot": "2026_aog_spring/week4/2026_w4_d12_m33_g4_spr_aog_fl_vs_box.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S863",
@@ -137406,7 +137406,7 @@
     "game_number": 5,
     "is_ultimate_battle": false,
     "length": "31:15",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOX",
     "blue_win": 0,
     "blue_bans": [
@@ -137481,7 +137481,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week4/2026_w4_d12_m33_g5_spr_aog_fpt_vs_box.png"
+    "true_screenshot": "2026_aog_spring/week4/2026_w4_d12_m33_g5_spr_aog_fl_vs_box.png"
   },
   {
     "series_id": "Garena_Challenger_Series_2026_Spring/Regular_Season_S1051",
@@ -138912,7 +138912,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "22:53",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FPL",
     "blue_win": 1,
     "blue_bans": [
@@ -138945,7 +138945,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week5/2026_w5_d14_m38_g1_spr_aog_fpt_vs_fpl.png"
+    "true_screenshot": "2026_aog_spring/week5/2026_w5_d14_m38_g1_spr_aog_fl_vs_fpl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S868",
@@ -138957,7 +138957,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "12:55",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FPL",
     "blue_win": 1,
     "blue_bans": [
@@ -139002,7 +139002,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week5/2026_w5_d14_m38_g2_spr_aog_fpt_vs_fpl.png"
+    "true_screenshot": "2026_aog_spring/week5/2026_w5_d14_m38_g2_spr_aog_fl_vs_fpl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S868",
@@ -139014,7 +139014,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "16:58",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FPL",
     "blue_win": 1,
     "blue_bans": [
@@ -139069,7 +139069,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week5/2026_w5_d14_m38_g3_spr_aog_fpt_vs_fpl.png"
+    "true_screenshot": "2026_aog_spring/week5/2026_w5_d14_m38_g3_spr_aog_fl_vs_fpl.png"
   },
   {
     "series_id": "Garena_Challenger_Series_2026_Spring/Regular_Season_S1053",
@@ -141080,7 +141080,7 @@
     "is_ultimate_battle": false,
     "length": "20:55",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Toro",
@@ -141112,7 +141112,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week5/2026_w5_d15_m42_g1_spr_aog_sgp_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week5/2026_w5_d15_m42_g1_spr_aog_sgp_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S872",
@@ -141125,7 +141125,7 @@
     "is_ultimate_battle": false,
     "length": "33:28",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Rouie",
@@ -141169,7 +141169,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week5/2026_w5_d15_m42_g2_spr_aog_sgp_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week5/2026_w5_d15_m42_g2_spr_aog_sgp_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S872",
@@ -141182,7 +141182,7 @@
     "is_ultimate_battle": false,
     "length": "13:25",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Rouie",
@@ -141236,7 +141236,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week5/2026_w5_d15_m42_g3_spr_aog_sgp_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week5/2026_w5_d15_m42_g3_spr_aog_sgp_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S872",
@@ -141249,7 +141249,7 @@
     "is_ultimate_battle": false,
     "length": "06:59",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Rouie",
@@ -141313,7 +141313,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week5/2026_w5_d15_m42_g4_spr_aog_sgp_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week5/2026_w5_d15_m42_g4_spr_aog_sgp_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S872",
@@ -141325,7 +141325,7 @@
     "game_number": 5,
     "is_ultimate_battle": false,
     "length": "19:28",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 0,
     "blue_bans": [
@@ -141400,7 +141400,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week5/2026_w5_d15_m42_g5_spr_aog_sgp_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week5/2026_w5_d15_m42_g5_spr_aog_sgp_vs_fl.png"
   },
   {
     "series_id": "RoV_Pro_League_2026_Summer/Playoffs_S603",
@@ -143160,7 +143160,7 @@
     "is_ultimate_battle": false,
     "length": "20:50",
     "blue_team": "1S",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Y'bneth",
@@ -143192,7 +143192,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week5/2026_w5_d16_m45_g1_spr_aog_1s_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week5/2026_w5_d16_m45_g1_spr_aog_1s_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S875",
@@ -143204,7 +143204,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "12:18",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "1S",
     "blue_win": 1,
     "blue_bans": [
@@ -143249,7 +143249,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week5/2026_w5_d16_m45_g2_spr_aog_1s_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week5/2026_w5_d16_m45_g2_spr_aog_1s_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S875",
@@ -143262,7 +143262,7 @@
     "is_ultimate_battle": false,
     "length": "16:55",
     "blue_team": "1S",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Eland'orr",
@@ -143316,7 +143316,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week5/2026_w5_d16_m45_g3_spr_aog_1s_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week5/2026_w5_d16_m45_g3_spr_aog_1s_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S875",
@@ -143329,7 +143329,7 @@
     "is_ultimate_battle": false,
     "length": "10:18",
     "blue_team": "1S",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Eland'orr",
@@ -143393,7 +143393,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week5/2026_w5_d16_m45_g4_spr_aog_1s_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week5/2026_w5_d16_m45_g4_spr_aog_1s_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S876",
@@ -144400,7 +144400,7 @@
     "is_ultimate_battle": false,
     "length": "11:19",
     "blue_team": "TS",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Eland'orr",
@@ -144432,7 +144432,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week6/2026_w6_d18_m49_g1_spr_aog_sec_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week6/2026_w6_d18_m49_g1_spr_aog_sec_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S879",
@@ -144444,7 +144444,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "11:34",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "TS",
     "blue_win": 1,
     "blue_bans": [
@@ -144489,7 +144489,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week6/2026_w6_d18_m49_g2_spr_aog_sec_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week6/2026_w6_d18_m49_g2_spr_aog_sec_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S879",
@@ -144502,7 +144502,7 @@
     "is_ultimate_battle": false,
     "length": "18:55",
     "blue_team": "TS",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Grakk",
@@ -144556,7 +144556,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week6/2026_w6_d18_m49_g3_spr_aog_sec_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week6/2026_w6_d18_m49_g3_spr_aog_sec_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S879",
@@ -144569,7 +144569,7 @@
     "is_ultimate_battle": false,
     "length": "18:20",
     "blue_team": "TS",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Eland'orr",
@@ -144633,7 +144633,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week6/2026_w6_d18_m49_g4_spr_aog_sec_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week6/2026_w6_d18_m49_g4_spr_aog_sec_vs_fl.png"
   },
   {
     "series_id": "Garena_Challenger_Series_2026_Spring/Regular_Season_S1059",
@@ -146219,7 +146219,7 @@
     "is_ultimate_battle": false,
     "length": "23:03",
     "blue_team": "GAM",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "TeeMee",
@@ -146251,7 +146251,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week6/2026_w6_d19_m53_g1_spr_aog_gam_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week6/2026_w6_d19_m53_g1_spr_aog_gam_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S883",
@@ -146264,7 +146264,7 @@
     "is_ultimate_battle": false,
     "length": "17:43",
     "blue_team": "GAM",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Toro",
@@ -146308,7 +146308,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week6/2026_w6_d19_m53_g2_spr_aog_gam_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week6/2026_w6_d19_m53_g2_spr_aog_gam_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S883",
@@ -146320,7 +146320,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "13:59",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "GAM",
     "blue_win": 1,
     "blue_bans": [
@@ -146375,7 +146375,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week6/2026_w6_d19_m53_g3_spr_aog_gam_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week6/2026_w6_d19_m53_g3_spr_aog_gam_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S883",
@@ -146388,7 +146388,7 @@
     "is_ultimate_battle": false,
     "length": "16:00",
     "blue_team": "GAM",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Rouie",
@@ -146452,7 +146452,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week6/2026_w6_d19_m53_g4_spr_aog_gam_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week6/2026_w6_d19_m53_g4_spr_aog_gam_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_1_S884",
@@ -149134,7 +149134,7 @@
     "is_ultimate_battle": false,
     "length": "11:20",
     "blue_team": "1S",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Eland'orr",
@@ -149166,7 +149166,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week7/2026_w7_d21_m59_g1_spr_aog_1s_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week7/2026_w7_d21_m59_g1_spr_aog_1s_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S889",
@@ -149178,7 +149178,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "24:47",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "1S",
     "blue_win": 1,
     "blue_bans": [
@@ -149223,7 +149223,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week7/2026_w7_d21_m59_g2_spr_aog_1s_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week7/2026_w7_d21_m59_g2_spr_aog_1s_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S889",
@@ -149236,7 +149236,7 @@
     "is_ultimate_battle": false,
     "length": "10:22",
     "blue_team": "1S",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Rouie",
@@ -149290,7 +149290,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week7/2026_w7_d21_m59_g3_spr_aog_1s_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week7/2026_w7_d21_m59_g3_spr_aog_1s_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S889",
@@ -149302,7 +149302,7 @@
     "game_number": 4,
     "is_ultimate_battle": false,
     "length": "23:43",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "1S",
     "blue_win": 0,
     "blue_bans": [
@@ -149367,7 +149367,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week7/2026_w7_d21_m59_g4_spr_aog_1s_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week7/2026_w7_d21_m59_g4_spr_aog_1s_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S889",
@@ -149379,7 +149379,7 @@
     "game_number": 5,
     "is_ultimate_battle": false,
     "length": "12:53",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "1S",
     "blue_win": 1,
     "blue_bans": [
@@ -149454,7 +149454,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week7/2026_w7_d21_m59_g5_spr_aog_1s_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week7/2026_w7_d21_m59_g5_spr_aog_1s_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S890",
@@ -149635,7 +149635,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "14:15",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FPL",
     "blue_win": 1,
     "blue_bans": [
@@ -149668,7 +149668,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week7/2026_w7_d22_m61_g1_spr_aog_fpt_vs_fpl.png"
+    "true_screenshot": "2026_aog_spring/week7/2026_w7_d22_m61_g1_spr_aog_fl_vs_fpl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S891",
@@ -149680,7 +149680,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "26:30",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FPL",
     "blue_win": 1,
     "blue_bans": [
@@ -149725,7 +149725,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week7/2026_w7_d22_m61_g2_spr_aog_fpt_vs_fpl.png"
+    "true_screenshot": "2026_aog_spring/week7/2026_w7_d22_m61_g2_spr_aog_fl_vs_fpl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S891",
@@ -149737,7 +149737,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "28:44",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FPL",
     "blue_win": 1,
     "blue_bans": [
@@ -149792,7 +149792,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week7/2026_w7_d22_m61_g3_spr_aog_fpt_vs_fpl.png"
+    "true_screenshot": "2026_aog_spring/week7/2026_w7_d22_m61_g3_spr_aog_fl_vs_fpl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S892",
@@ -150552,7 +150552,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "12:19",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 0,
     "blue_bans": [
@@ -150585,7 +150585,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week7/2026_w7_d23_m65_g1_spr_aog_fpt_vs_sgp.png"
+    "true_screenshot": "2026_aog_spring/week7/2026_w7_d23_m65_g1_spr_aog_fl_vs_sgp.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S895",
@@ -150598,7 +150598,7 @@
     "is_ultimate_battle": false,
     "length": "17:45",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Toro",
@@ -150642,7 +150642,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week7/2026_w7_d23_m65_g2_spr_aog_fpt_vs_sgp.png"
+    "true_screenshot": "2026_aog_spring/week7/2026_w7_d23_m65_g2_spr_aog_fl_vs_sgp.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S895",
@@ -150654,7 +150654,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "09:55",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 0,
     "blue_bans": [
@@ -150709,7 +150709,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week7/2026_w7_d23_m65_g3_spr_aog_fpt_vs_sgp.png"
+    "true_screenshot": "2026_aog_spring/week7/2026_w7_d23_m65_g3_spr_aog_fl_vs_sgp.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S895",
@@ -150722,7 +150722,7 @@
     "is_ultimate_battle": false,
     "length": "21:59",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Rouie",
@@ -150786,7 +150786,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week7/2026_w7_d23_m65_g4_spr_aog_fpt_vs_sgp.png"
+    "true_screenshot": "2026_aog_spring/week7/2026_w7_d23_m65_g4_spr_aog_fl_vs_sgp.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S895",
@@ -150798,7 +150798,7 @@
     "game_number": 5,
     "is_ultimate_battle": false,
     "length": "17:18",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 1,
     "blue_bans": [
@@ -150873,7 +150873,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week7/2026_w7_d23_m65_g5_spr_aog_fpt_vs_sgp.png"
+    "true_screenshot": "2026_aog_spring/week7/2026_w7_d23_m65_g5_spr_aog_fl_vs_sgp.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S896",
@@ -151388,7 +151388,7 @@
     "is_ultimate_battle": false,
     "length": "12:48",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Eland'orr",
@@ -151420,7 +151420,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week7/2026_w7_d24_m68_g1_spr_aog_box_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week7/2026_w7_d24_m68_g1_spr_aog_box_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S898",
@@ -151432,7 +151432,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "13:13",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOX",
     "blue_win": 1,
     "blue_bans": [
@@ -151477,7 +151477,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week7/2026_w7_d24_m68_g2_spr_aog_box_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week7/2026_w7_d24_m68_g2_spr_aog_box_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S898",
@@ -151489,7 +151489,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "20:47",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOX",
     "blue_win": 1,
     "blue_bans": [
@@ -151544,7 +151544,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week7/2026_w7_d24_m68_g3_spr_aog_box_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/week7/2026_w7_d24_m68_g3_spr_aog_box_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S899",
@@ -151889,7 +151889,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "43:15",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "GAM",
     "blue_win": 1,
     "blue_bans": [
@@ -151922,7 +151922,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week7/2026_w7_d25_m70_g1_spr_aog_fpt_vs_gam.png"
+    "true_screenshot": "2026_aog_spring/week7/2026_w7_d25_m70_g1_spr_aog_fl_vs_gam.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S900",
@@ -151934,7 +151934,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "22:57",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "GAM",
     "blue_win": 1,
     "blue_bans": [
@@ -151979,7 +151979,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week7/2026_w7_d25_m70_g2_spr_aog_fpt_vs_gam.png"
+    "true_screenshot": "2026_aog_spring/week7/2026_w7_d25_m70_g2_spr_aog_fl_vs_gam.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S900",
@@ -151991,7 +151991,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "18:48",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "GAM",
     "blue_win": 0,
     "blue_bans": [
@@ -152046,7 +152046,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week7/2026_w7_d25_m70_g3_spr_aog_fpt_vs_gam.png"
+    "true_screenshot": "2026_aog_spring/week7/2026_w7_d25_m70_g3_spr_aog_fl_vs_gam.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S900",
@@ -152059,7 +152059,7 @@
     "is_ultimate_battle": false,
     "length": "22:59",
     "blue_team": "GAM",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Eland'orr",
@@ -152123,7 +152123,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/week7/2026_w7_d25_m70_g4_spr_aog_fpt_vs_gam.png"
+    "true_screenshot": "2026_aog_spring/week7/2026_w7_d25_m70_g4_spr_aog_fl_vs_gam.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Group_Stage_2_S901",
@@ -152944,7 +152944,7 @@
     "is_ultimate_battle": false,
     "length": "47:07",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "TeeMee",
@@ -152976,7 +152976,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/playoffs/2026_playoffs_m1_g1_spr_aog_sgp_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/playoffs/2026_playoffs_m1_g1_spr_aog_sgp_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Playoffs_S903",
@@ -152989,7 +152989,7 @@
     "is_ultimate_battle": false,
     "length": "22:20",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Rouie",
@@ -153033,7 +153033,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/playoffs/2026_playoffs_m1_g2_spr_aog_sgp_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/playoffs/2026_playoffs_m1_g2_spr_aog_sgp_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Playoffs_S903",
@@ -153045,7 +153045,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "16:45",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 1,
     "blue_bans": [
@@ -153100,7 +153100,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/playoffs/2026_playoffs_m1_g3_spr_aog_sgp_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/playoffs/2026_playoffs_m1_g3_spr_aog_sgp_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Playoffs_S903",
@@ -153112,7 +153112,7 @@
     "game_number": 4,
     "is_ultimate_battle": false,
     "length": "25:48",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 1,
     "blue_bans": [
@@ -153177,7 +153177,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/playoffs/2026_playoffs_m1_g4_spr_aog_sgp_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/playoffs/2026_playoffs_m1_g4_spr_aog_sgp_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Playoffs_S903",
@@ -153189,7 +153189,7 @@
     "game_number": 5,
     "is_ultimate_battle": false,
     "length": "14:42",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 1,
     "blue_bans": [
@@ -153264,7 +153264,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/playoffs/2026_playoffs_m1_g5_spr_aog_sgp_vs_fpt.png"
+    "true_screenshot": "2026_aog_spring/playoffs/2026_playoffs_m1_g5_spr_aog_sgp_vs_fl.png"
   },
   {
     "series_id": "Garena_Challenger_Series_2026_Spring/Playoffs_S1020",
@@ -154469,7 +154469,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "19:30",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 0,
     "blue_bans": [
@@ -154502,7 +154502,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/playoffs/2026_playoffs_m4_g1_spr_aog_fpt_vs_sgp.png"
+    "true_screenshot": "2026_aog_spring/playoffs/2026_playoffs_m4_g1_spr_aog_fl_vs_sgp.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Playoffs_S905",
@@ -154515,7 +154515,7 @@
     "is_ultimate_battle": false,
     "length": "30:54",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Lorion",
@@ -154559,7 +154559,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/playoffs/2026_playoffs_m4_g2_spr_aog_fpt_vs_sgp.png"
+    "true_screenshot": "2026_aog_spring/playoffs/2026_playoffs_m4_g2_spr_aog_fl_vs_sgp.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Playoffs_S905",
@@ -154571,7 +154571,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "19:15",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 1,
     "blue_bans": [
@@ -154626,7 +154626,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/playoffs/2026_playoffs_m4_g3_spr_aog_fpt_vs_sgp.png"
+    "true_screenshot": "2026_aog_spring/playoffs/2026_playoffs_m4_g3_spr_aog_fl_vs_sgp.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Playoffs_S905",
@@ -154639,7 +154639,7 @@
     "is_ultimate_battle": false,
     "length": "10:50",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Y'bneth",
@@ -154703,7 +154703,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/playoffs/2026_playoffs_m4_g4_spr_aog_fpt_vs_sgp.png"
+    "true_screenshot": "2026_aog_spring/playoffs/2026_playoffs_m4_g4_spr_aog_fl_vs_sgp.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Playoffs_S905",
@@ -154715,7 +154715,7 @@
     "game_number": 5,
     "is_ultimate_battle": false,
     "length": "21:22",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 1,
     "blue_bans": [
@@ -154790,7 +154790,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/playoffs/2026_playoffs_m4_g5_spr_aog_fpt_vs_sgp.png"
+    "true_screenshot": "2026_aog_spring/playoffs/2026_playoffs_m4_g5_spr_aog_fl_vs_sgp.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Spring/Playoffs_S905",
@@ -154803,7 +154803,7 @@
     "is_ultimate_battle": false,
     "length": "10:35",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Toro",
@@ -154887,7 +154887,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_spring/playoffs/2026_playoffs_m4_g6_spr_aog_fpt_vs_sgp.png"
+    "true_screenshot": "2026_aog_spring/playoffs/2026_playoffs_m4_g6_spr_aog_fl_vs_sgp.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Wildcard_S279",
@@ -156982,7 +156982,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "14:14",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "1S",
     "blue_win": 1,
     "blue_bans": [
@@ -157015,7 +157015,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/swiss_stage/2026_ss_d1_m4_g1_apl_fpt_vs_1s.png"
+    "true_screenshot": "2026_apl/swiss_stage/2026_ss_d1_m4_g1_apl_fl_vs_1s.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Swiss_Stage_S249",
@@ -157027,7 +157027,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "22:55",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "1S",
     "blue_win": 1,
     "blue_bans": [
@@ -157072,7 +157072,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/swiss_stage/2026_ss_d1_m4_g2_apl_fpt_vs_1s.png"
+    "true_screenshot": "2026_apl/swiss_stage/2026_ss_d1_m4_g2_apl_fl_vs_1s.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Swiss_Stage_S250",
@@ -157898,7 +157898,7 @@
     "is_ultimate_battle": false,
     "length": "10:22",
     "blue_team": "ANK",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Taara",
@@ -157930,7 +157930,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/swiss_stage/2026_ss_d3_m3_g1_apl_ank_vs_fpt.png"
+    "true_screenshot": "2026_apl/swiss_stage/2026_ss_d3_m3_g1_apl_ank_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Swiss_Stage_S256",
@@ -157942,7 +157942,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "13:19",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "ANK",
     "blue_win": 0,
     "blue_bans": [
@@ -157987,7 +157987,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/swiss_stage/2026_ss_d3_m3_g2_apl_ank_vs_fpt.png"
+    "true_screenshot": "2026_apl/swiss_stage/2026_ss_d3_m3_g2_apl_ank_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Swiss_Stage_S257",
@@ -159463,7 +159463,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "12:12",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "KOG",
     "blue_win": 1,
     "blue_bans": [
@@ -159496,7 +159496,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/swiss_stage/2026_ss_d6_m1_g1_apl_fpt_vs_kog.png"
+    "true_screenshot": "2026_apl/swiss_stage/2026_ss_d6_m1_g1_apl_fl_vs_kog.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Swiss_Stage_S266",
@@ -159508,7 +159508,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "11:24",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "KOG",
     "blue_win": 1,
     "blue_bans": [
@@ -159553,7 +159553,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/swiss_stage/2026_ss_d6_m1_g2_apl_fpt_vs_kog.png"
+    "true_screenshot": "2026_apl/swiss_stage/2026_ss_d6_m1_g2_apl_fl_vs_kog.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Swiss_Stage_S267",
@@ -160005,7 +160005,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "13:13",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 0,
     "blue_bans": [
@@ -160038,7 +160038,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/swiss_stage/2026_ss_d7_m1_g1_apl_fpt_vs_sgp.png"
+    "true_screenshot": "2026_apl/swiss_stage/2026_ss_d7_m1_g1_apl_fl_vs_sgp.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Swiss_Stage_S270",
@@ -160051,7 +160051,7 @@
     "is_ultimate_battle": false,
     "length": "14:35",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Y'bneth",
@@ -160095,7 +160095,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/swiss_stage/2026_ss_d7_m1_g2_apl_fpt_vs_sgp.png"
+    "true_screenshot": "2026_apl/swiss_stage/2026_ss_d7_m1_g2_apl_fl_vs_sgp.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Swiss_Stage_S270",
@@ -160107,7 +160107,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "20:07",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 1,
     "blue_bans": [
@@ -160162,7 +160162,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/swiss_stage/2026_ss_d7_m1_g3_apl_fpt_vs_sgp.png"
+    "true_screenshot": "2026_apl/swiss_stage/2026_ss_d7_m1_g3_apl_fl_vs_sgp.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Swiss_Stage_S270",
@@ -160174,7 +160174,7 @@
     "game_number": 4,
     "is_ultimate_battle": false,
     "length": "18:45",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 1,
     "blue_bans": [
@@ -160239,7 +160239,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/swiss_stage/2026_ss_d7_m1_g4_apl_fpt_vs_sgp.png"
+    "true_screenshot": "2026_apl/swiss_stage/2026_ss_d7_m1_g4_apl_fl_vs_sgp.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Swiss_Stage_S270",
@@ -160251,7 +160251,7 @@
     "game_number": 5,
     "is_ultimate_battle": false,
     "length": "25:59",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 1,
     "blue_bans": [
@@ -160326,7 +160326,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/swiss_stage/2026_ss_d7_m1_g5_apl_fpt_vs_sgp.png"
+    "true_screenshot": "2026_apl/swiss_stage/2026_ss_d7_m1_g5_apl_fl_vs_sgp.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Swiss_Stage_S271",
@@ -162669,7 +162669,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "13:50",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BRU",
     "blue_win": 1,
     "blue_bans": [
@@ -162702,7 +162702,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/playoffs/2026_po_d1_m2_g1_apl_fpt_vs_bru.png"
+    "true_screenshot": "2026_apl/playoffs/2026_po_d1_m2_g1_apl_fl_vs_bru.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S233",
@@ -162714,7 +162714,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "16:24",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BRU",
     "blue_win": 0,
     "blue_bans": [
@@ -162759,7 +162759,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/playoffs/2026_po_d1_m2_g2_apl_fpt_vs_bru.png"
+    "true_screenshot": "2026_apl/playoffs/2026_po_d1_m2_g2_apl_fl_vs_bru.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S233",
@@ -162772,7 +162772,7 @@
     "is_ultimate_battle": false,
     "length": "19:59",
     "blue_team": "BRU",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Eland'orr",
@@ -162826,7 +162826,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/playoffs/2026_po_d1_m2_g3_apl_fpt_vs_bru.png"
+    "true_screenshot": "2026_apl/playoffs/2026_po_d1_m2_g3_apl_fl_vs_bru.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S233",
@@ -162839,7 +162839,7 @@
     "is_ultimate_battle": false,
     "length": "17:37",
     "blue_team": "BRU",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Alice",
@@ -162903,7 +162903,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/playoffs/2026_po_d1_m2_g4_apl_fpt_vs_bru.png"
+    "true_screenshot": "2026_apl/playoffs/2026_po_d1_m2_g4_apl_fl_vs_bru.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S233",
@@ -162916,7 +162916,7 @@
     "is_ultimate_battle": false,
     "length": "22:44",
     "blue_team": "BRU",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Alice",
@@ -162990,7 +162990,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/playoffs/2026_po_d1_m2_g5_apl_fpt_vs_bru.png"
+    "true_screenshot": "2026_apl/playoffs/2026_po_d1_m2_g5_apl_fl_vs_bru.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S236",
@@ -164006,7 +164006,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "29:33",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BAC",
     "blue_win": 1,
     "blue_bans": [
@@ -164039,7 +164039,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/playoffs/2026_po_d3_m1_g1_apl_fpt_vs_bac.png"
+    "true_screenshot": "2026_apl/playoffs/2026_po_d3_m1_g1_apl_fl_vs_bac.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S238",
@@ -164051,7 +164051,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "16:55",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BAC",
     "blue_win": 0,
     "blue_bans": [
@@ -164096,7 +164096,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/playoffs/2026_po_d3_m1_g2_apl_fpt_vs_bac.png"
+    "true_screenshot": "2026_apl/playoffs/2026_po_d3_m1_g2_apl_fl_vs_bac.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S238",
@@ -164109,7 +164109,7 @@
     "is_ultimate_battle": false,
     "length": "17:20",
     "blue_team": "BAC",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Dolia",
@@ -164163,7 +164163,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/playoffs/2026_po_d3_m1_g3_apl_fpt_vs_bac.png"
+    "true_screenshot": "2026_apl/playoffs/2026_po_d3_m1_g3_apl_fl_vs_bac.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S238",
@@ -164176,7 +164176,7 @@
     "is_ultimate_battle": false,
     "length": "18:21",
     "blue_team": "BAC",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Y'bneth",
@@ -164240,7 +164240,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/playoffs/2026_po_d3_m1_g4_apl_fpt_vs_bac.png"
+    "true_screenshot": "2026_apl/playoffs/2026_po_d3_m1_g4_apl_fl_vs_bac.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S238",
@@ -164252,7 +164252,7 @@
     "game_number": 5,
     "is_ultimate_battle": false,
     "length": "18:24",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BAC",
     "blue_win": 0,
     "blue_bans": [
@@ -164327,7 +164327,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/playoffs/2026_po_d3_m1_g5_apl_fpt_vs_bac.png"
+    "true_screenshot": "2026_apl/playoffs/2026_po_d3_m1_g5_apl_fl_vs_bac.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S238",
@@ -164340,7 +164340,7 @@
     "is_ultimate_battle": false,
     "length": "14:26",
     "blue_team": "BAC",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Dolia",
@@ -164424,7 +164424,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/playoffs/2026_po_d3_m1_g6_apl_fpt_vs_bac.png"
+    "true_screenshot": "2026_apl/playoffs/2026_po_d3_m1_g6_apl_fl_vs_bac.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S238",
@@ -164436,7 +164436,7 @@
     "game_number": 7,
     "is_ultimate_battle": true,
     "length": "13:23",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BAC",
     "blue_win": 0,
     "blue_bans": [
@@ -164469,7 +164469,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/playoffs/2026_po_d3_m1_g7_apl_fpt_vs_bac.png"
+    "true_screenshot": "2026_apl/playoffs/2026_po_d3_m1_g7_apl_fl_vs_bac.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S239",
@@ -164911,7 +164911,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "11:18",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FPL",
     "blue_win": 0,
     "blue_bans": [
@@ -164944,7 +164944,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/playoffs/2026_po_d4_m1_g1_apl_fpt_vs_fpl.png"
+    "true_screenshot": "2026_apl/playoffs/2026_po_d4_m1_g1_apl_fl_vs_fpl.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S241",
@@ -164957,7 +164957,7 @@
     "is_ultimate_battle": false,
     "length": "19:45",
     "blue_team": "FPL",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Rouie",
@@ -165001,7 +165001,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/playoffs/2026_po_d4_m1_g2_apl_fpt_vs_fpl.png"
+    "true_screenshot": "2026_apl/playoffs/2026_po_d4_m1_g2_apl_fl_vs_fpl.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S241",
@@ -165014,7 +165014,7 @@
     "is_ultimate_battle": false,
     "length": "13:15",
     "blue_team": "FPL",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Rouie",
@@ -165068,7 +165068,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/playoffs/2026_po_d4_m1_g3_apl_fpt_vs_fpl.png"
+    "true_screenshot": "2026_apl/playoffs/2026_po_d4_m1_g3_apl_fl_vs_fpl.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S241",
@@ -165081,7 +165081,7 @@
     "is_ultimate_battle": false,
     "length": "21:13",
     "blue_team": "FPL",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Rouie",
@@ -165145,7 +165145,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/playoffs/2026_po_d4_m1_g4_apl_fpt_vs_fpl.png"
+    "true_screenshot": "2026_apl/playoffs/2026_po_d4_m1_g4_apl_fl_vs_fpl.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S241",
@@ -165157,7 +165157,7 @@
     "game_number": 5,
     "is_ultimate_battle": false,
     "length": "23:51",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FPL",
     "blue_win": 0,
     "blue_bans": [
@@ -165232,7 +165232,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_apl/playoffs/2026_po_d4_m1_g5_apl_fpt_vs_fpl.png"
+    "true_screenshot": "2026_apl/playoffs/2026_po_d4_m1_g5_apl_fl_vs_fpl.png"
   },
   {
     "series_id": "Arena_of_Valor_Premier_League_2026_Playoffs_S240",
@@ -172370,7 +172370,7 @@
     "is_ultimate_battle": false,
     "length": "33:15",
     "blue_team": "TS",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Billow",
@@ -172402,7 +172402,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week1/2026_w1_d2_m4_g1_win_aog_secret_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week1/2026_w1_d2_m4_g1_win_aog_secret_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S4",
@@ -172415,7 +172415,7 @@
     "is_ultimate_battle": false,
     "length": "13:16",
     "blue_team": "TS",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Annette",
@@ -172459,7 +172459,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week1/2026_w1_d2_m4_g2_win_aog_secret_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week1/2026_w1_d2_m4_g2_win_aog_secret_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S4",
@@ -172471,7 +172471,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "24:32",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "TS",
     "blue_win": 0,
     "blue_bans": [
@@ -172526,7 +172526,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week1/2026_w1_d2_m4_g3_win_aog_secret_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week1/2026_w1_d2_m4_g3_win_aog_secret_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S4",
@@ -172539,7 +172539,7 @@
     "is_ultimate_battle": false,
     "length": "11:58",
     "blue_team": "TS",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Tamyn",
@@ -172603,7 +172603,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week1/2026_w1_d2_m4_g4_win_aog_secret_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week1/2026_w1_d2_m4_g4_win_aog_secret_vs_fl.png"
   },
   {
     "series_id": "Garena_Challenger_Series_2026_Summer/Regular_Season_S1072",
@@ -176109,7 +176109,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "13:29",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOX",
     "blue_win": 1,
     "blue_bans": [
@@ -176142,7 +176142,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week2/2026_w2_d4_m11_g1_win_aog_fpt_vs_box.png"
+    "true_screenshot": "2026_aog_winter/week2/2026_w2_d4_m11_g1_win_aog_fl_vs_box.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S11",
@@ -176154,7 +176154,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "10:53",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOX",
     "blue_win": 1,
     "blue_bans": [
@@ -176199,7 +176199,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week2/2026_w2_d4_m11_g2_win_aog_fpt_vs_box.png"
+    "true_screenshot": "2026_aog_winter/week2/2026_w2_d4_m11_g2_win_aog_fl_vs_box.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S11",
@@ -176211,7 +176211,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "11:50",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOX",
     "blue_win": 1,
     "blue_bans": [
@@ -176266,7 +176266,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week2/2026_w2_d4_m11_g3_win_aog_fpt_vs_box.png"
+    "true_screenshot": "2026_aog_winter/week2/2026_w2_d4_m11_g3_win_aog_fl_vs_box.png"
   },
   {
     "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S625",
@@ -178185,7 +178185,7 @@
     "is_ultimate_battle": false,
     "length": "22:42",
     "blue_team": "1S",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Astrid",
@@ -178217,7 +178217,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week2/2026_w2_d5_m14_g1_win_aog_1s_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week2/2026_w2_d5_m14_g1_win_aog_1s_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S14",
@@ -178230,7 +178230,7 @@
     "is_ultimate_battle": false,
     "length": "10:33",
     "blue_team": "1S",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Astrid",
@@ -178274,7 +178274,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week2/2026_w2_d5_m14_g2_win_aog_1s_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week2/2026_w2_d5_m14_g2_win_aog_1s_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S14",
@@ -178287,7 +178287,7 @@
     "is_ultimate_battle": false,
     "length": "12:53",
     "blue_team": "1S",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Tamyn",
@@ -178341,7 +178341,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week2/2026_w2_d5_m14_g3_win_aog_1s_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week2/2026_w2_d5_m14_g3_win_aog_1s_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S14",
@@ -178353,7 +178353,7 @@
     "game_number": 4,
     "is_ultimate_battle": false,
     "length": "18:35",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "1S",
     "blue_win": 1,
     "blue_bans": [
@@ -178418,7 +178418,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week2/2026_w2_d5_m14_g4_win_aog_1s_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week2/2026_w2_d5_m14_g4_win_aog_1s_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S14",
@@ -178430,7 +178430,7 @@
     "game_number": 5,
     "is_ultimate_battle": false,
     "length": "18:21",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "1S",
     "blue_win": 0,
     "blue_bans": [
@@ -178505,7 +178505,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week2/2026_w2_d5_m14_g5_win_aog_1s_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week2/2026_w2_d5_m14_g5_win_aog_1s_vs_fl.png"
   },
   {
     "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S628",
@@ -181186,7 +181186,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "23:35",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "GAM",
     "blue_win": 0,
     "blue_bans": [
@@ -181219,7 +181219,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week3/2026_w3_d7_m19_g1_win_aog_fpt_vs_gam.png"
+    "true_screenshot": "2026_aog_winter/week3/2026_w3_d7_m19_g1_win_aog_fl_vs_gam.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S19",
@@ -181232,7 +181232,7 @@
     "is_ultimate_battle": false,
     "length": "20:59",
     "blue_team": "GAM",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Dolia",
@@ -181276,7 +181276,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week3/2026_w3_d7_m19_g2_win_aog_fpt_vs_gam.png"
+    "true_screenshot": "2026_aog_winter/week3/2026_w3_d7_m19_g2_win_aog_fl_vs_gam.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S19",
@@ -181288,7 +181288,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "16:50",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "GAM",
     "blue_win": 1,
     "blue_bans": [
@@ -181343,7 +181343,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week3/2026_w3_d7_m19_g3_win_aog_fpt_vs_gam.png"
+    "true_screenshot": "2026_aog_winter/week3/2026_w3_d7_m19_g3_win_aog_fl_vs_gam.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S19",
@@ -181356,7 +181356,7 @@
     "is_ultimate_battle": false,
     "length": "16:00",
     "blue_team": "GAM",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Y'bneth",
@@ -181420,7 +181420,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week3/2026_w3_d7_m19_g4_win_aog_fpt_vs_gam.png"
+    "true_screenshot": "2026_aog_winter/week3/2026_w3_d7_m19_g4_win_aog_fl_vs_gam.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S19",
@@ -181432,7 +181432,7 @@
     "game_number": 5,
     "is_ultimate_battle": false,
     "length": "12:50",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "GAM",
     "blue_win": 1,
     "blue_bans": [
@@ -181507,7 +181507,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week3/2026_w3_d7_m19_g5_win_aog_fpt_vs_gam.png"
+    "true_screenshot": "2026_aog_winter/week3/2026_w3_d7_m19_g5_win_aog_fl_vs_gam.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S20",
@@ -184276,7 +184276,7 @@
     "is_ultimate_battle": false,
     "length": "16:02",
     "blue_team": "RRQ",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Billow",
@@ -184308,7 +184308,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week3/2026_w3_d9_m24_g1_win_aog_rrq_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week3/2026_w3_d9_m24_g1_win_aog_rrq_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S24",
@@ -184320,7 +184320,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "18:23",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "RRQ",
     "blue_win": 1,
     "blue_bans": [
@@ -184365,7 +184365,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week3/2026_w3_d9_m24_g2_win_aog_rrq_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week3/2026_w3_d9_m24_g2_win_aog_rrq_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S24",
@@ -184377,7 +184377,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "13:54",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "RRQ",
     "blue_win": 1,
     "blue_bans": [
@@ -184432,7 +184432,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week3/2026_w3_d9_m24_g3_win_aog_rrq_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week3/2026_w3_d9_m24_g3_win_aog_rrq_vs_fl.png"
   },
   {
     "series_id": "Garena_Challenger_Series_2026_Summer/Regular_Season_S1083",
@@ -187186,7 +187186,7 @@
     "is_ultimate_battle": false,
     "length": "09:26",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Stuart",
@@ -187218,7 +187218,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week3/2026_w3_d10_m28_g1_win_aog_sgp_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week3/2026_w3_d10_m28_g1_win_aog_sgp_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S28",
@@ -187231,7 +187231,7 @@
     "is_ultimate_battle": false,
     "length": "13:49",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Tamyn",
@@ -187275,7 +187275,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week3/2026_w3_d10_m28_g2_win_aog_sgp_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week3/2026_w3_d10_m28_g2_win_aog_sgp_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S28",
@@ -187288,7 +187288,7 @@
     "is_ultimate_battle": false,
     "length": "10:18",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Tamyn",
@@ -187342,7 +187342,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week3/2026_w3_d10_m28_g3_win_aog_sgp_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week3/2026_w3_d10_m28_g3_win_aog_sgp_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S29",
@@ -188261,7 +188261,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "09:01",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOOM",
     "blue_win": 1,
     "blue_bans": [
@@ -188294,7 +188294,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week4/2026_w4_d11_m31_g1_win_aog_fpt_vs_boom.png"
+    "true_screenshot": "2026_aog_winter/week4/2026_w4_d11_m31_g1_win_aog_fl_vs_boom.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S31",
@@ -188306,7 +188306,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "10:51",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOOM",
     "blue_win": 1,
     "blue_bans": [
@@ -188351,7 +188351,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week4/2026_w4_d11_m31_g2_win_aog_fpt_vs_boom.png"
+    "true_screenshot": "2026_aog_winter/week4/2026_w4_d11_m31_g2_win_aog_fl_vs_boom.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S31",
@@ -188364,7 +188364,7 @@
     "is_ultimate_battle": false,
     "length": "19:37",
     "blue_team": "BOOM",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Billow",
@@ -188418,7 +188418,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week4/2026_w4_d11_m31_g3_win_aog_fpt_vs_boom.png"
+    "true_screenshot": "2026_aog_winter/week4/2026_w4_d11_m31_g3_win_aog_fl_vs_boom.png"
   },
   {
     "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S641",
@@ -191596,7 +191596,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "14:30",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FPL",
     "blue_win": 0,
     "blue_bans": [
@@ -191629,7 +191629,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week4/2026_w4_d13_m36_g1_win_aog_fpt_vs_fpl.png"
+    "true_screenshot": "2026_aog_winter/week4/2026_w4_d13_m36_g1_win_aog_fl_vs_fpl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S36",
@@ -191641,7 +191641,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "13:50",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FPL",
     "blue_win": 0,
     "blue_bans": [
@@ -191686,7 +191686,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week4/2026_w4_d13_m36_g2_win_aog_fpt_vs_fpl.png"
+    "true_screenshot": "2026_aog_winter/week4/2026_w4_d13_m36_g2_win_aog_fl_vs_fpl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/First_Leg_S36",
@@ -191698,7 +191698,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "12:33",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FPL",
     "blue_win": 0,
     "blue_bans": [
@@ -191753,7 +191753,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week4/2026_w4_d13_m36_g3_win_aog_fpt_vs_fpl.png"
+    "true_screenshot": "2026_aog_winter/week4/2026_w4_d13_m36_g3_win_aog_fl_vs_fpl.png"
   },
   {
     "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S647",
@@ -196181,7 +196181,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "18:54",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "1S",
     "blue_win": 0,
     "blue_bans": [
@@ -196214,7 +196214,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week5/2026_w5_d14_m907_g1_win_aog_fpt_vs_1s.png"
+    "true_screenshot": "2026_aog_winter/week5/2026_w5_d14_m907_g1_win_aog_fl_vs_1s.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S907",
@@ -196226,7 +196226,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "17:27",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "1S",
     "blue_win": 0,
     "blue_bans": [
@@ -196271,7 +196271,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week5/2026_w5_d14_m907_g2_win_aog_fpt_vs_1s.png"
+    "true_screenshot": "2026_aog_winter/week5/2026_w5_d14_m907_g2_win_aog_fl_vs_1s.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S907",
@@ -196283,7 +196283,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "14:13",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "1S",
     "blue_win": 1,
     "blue_bans": [
@@ -196338,7 +196338,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week5/2026_w5_d14_m907_g3_win_aog_fpt_vs_1s.png"
+    "true_screenshot": "2026_aog_winter/week5/2026_w5_d14_m907_g3_win_aog_fl_vs_1s.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S907",
@@ -196351,7 +196351,7 @@
     "is_ultimate_battle": false,
     "length": "17:37",
     "blue_team": "1S",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Dolia",
@@ -196415,7 +196415,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week5/2026_w5_d14_m907_g4_win_aog_fpt_vs_1s.png"
+    "true_screenshot": "2026_aog_winter/week5/2026_w5_d14_m907_g4_win_aog_fl_vs_1s.png"
   },
   {
     "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S657",
@@ -198672,7 +198672,7 @@
     "is_ultimate_battle": false,
     "length": "13:16",
     "blue_team": "FPL",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Sinestrea",
@@ -198704,7 +198704,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week5/2026_w5_d14_m911_g1_win_aog_fpl_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week5/2026_w5_d14_m911_g1_win_aog_fpl_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S911",
@@ -198717,7 +198717,7 @@
     "is_ultimate_battle": false,
     "length": "15:38",
     "blue_team": "FPL",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Sinestrea",
@@ -198761,7 +198761,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week5/2026_w5_d14_m911_g2_win_aog_fpl_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week5/2026_w5_d14_m911_g2_win_aog_fpl_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S911",
@@ -198773,7 +198773,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "16:00",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FPL",
     "blue_win": 0,
     "blue_bans": [
@@ -198828,7 +198828,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week5/2026_w5_d14_m911_g3_win_aog_fpl_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week5/2026_w5_d14_m911_g3_win_aog_fpl_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S911",
@@ -198841,7 +198841,7 @@
     "is_ultimate_battle": false,
     "length": "16:47",
     "blue_team": "FPL",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Rouie",
@@ -198905,7 +198905,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week5/2026_w5_d14_m911_g4_win_aog_fpl_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week5/2026_w5_d14_m911_g4_win_aog_fpl_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S911",
@@ -198918,7 +198918,7 @@
     "is_ultimate_battle": false,
     "length": "19:34",
     "blue_team": "FPL",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Rouie",
@@ -198992,7 +198992,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week5/2026_w5_d14_m911_g5_win_aog_fpl_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week5/2026_w5_d14_m911_g5_win_aog_fpl_vs_fl.png"
   },
   {
     "series_id": "RoV_Pro_League_2026_Winter/Group_Stage_S661",
@@ -202581,7 +202581,7 @@
     "is_ultimate_battle": false,
     "length": "11:26",
     "blue_team": "RRQ",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Marja",
@@ -202613,7 +202613,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week5/2026_w5_d17_m917_g1_win_aog_rrq_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week5/2026_w5_d17_m917_g1_win_aog_rrq_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S917",
@@ -202625,7 +202625,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "16:26",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "RRQ",
     "blue_win": 1,
     "blue_bans": [
@@ -202670,7 +202670,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week5/2026_w5_d17_m917_g2_win_aog_rrq_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week5/2026_w5_d17_m917_g2_win_aog_rrq_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S917",
@@ -202682,7 +202682,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "15:00",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "RRQ",
     "blue_win": 1,
     "blue_bans": [
@@ -202737,7 +202737,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week5/2026_w5_d17_m917_g3_win_aog_rrq_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week5/2026_w5_d17_m917_g3_win_aog_rrq_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S918",
@@ -206495,7 +206495,7 @@
     "is_ultimate_battle": false,
     "length": "21:50",
     "blue_team": "TS",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Eland'orr",
@@ -206527,7 +206527,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week6/2026_w6_d20_m925_g1_win_aog_teamsecret_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week6/2026_w6_d20_m925_g1_win_aog_teamsecret_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S925",
@@ -206540,7 +206540,7 @@
     "is_ultimate_battle": false,
     "length": "13:22",
     "blue_team": "TS",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Zata",
@@ -206584,7 +206584,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week6/2026_w6_d20_m925_g2_win_aog_teamsecret_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week6/2026_w6_d20_m925_g2_win_aog_teamsecret_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S925",
@@ -206596,7 +206596,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "16:26",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "TS",
     "blue_win": 1,
     "blue_bans": [
@@ -206651,7 +206651,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week6/2026_w6_d20_m925_g3_win_aog_teamsecret_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week6/2026_w6_d20_m925_g3_win_aog_teamsecret_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S925",
@@ -206664,7 +206664,7 @@
     "is_ultimate_battle": false,
     "length": "18:21",
     "blue_team": "TS",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Sinestrea",
@@ -206728,7 +206728,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week6/2026_w6_d20_m925_g4_win_aog_teamsecret_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week6/2026_w6_d20_m925_g4_win_aog_teamsecret_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S925",
@@ -206740,7 +206740,7 @@
     "game_number": 5,
     "is_ultimate_battle": false,
     "length": "19:04",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "TS",
     "blue_win": 0,
     "blue_bans": [
@@ -206815,7 +206815,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week6/2026_w6_d20_m925_g5_win_aog_teamsecret_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week6/2026_w6_d20_m925_g5_win_aog_teamsecret_vs_fl.png"
   },
   {
     "series_id": "Garena_Challenger_Series_2026_Summer/Regular_Season_S1107",
@@ -209241,7 +209241,7 @@
     "is_ultimate_battle": false,
     "length": "23:51",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Valhein",
@@ -209273,7 +209273,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week6/2026_w6_d21_m929_g1_win_aog_sgp_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week6/2026_w6_d21_m929_g1_win_aog_sgp_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S929",
@@ -209285,7 +209285,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "21:33",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 0,
     "blue_bans": [
@@ -209330,7 +209330,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week6/2026_w6_d21_m929_g2_win_aog_sgp_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week6/2026_w6_d21_m929_g2_win_aog_sgp_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S929",
@@ -209343,7 +209343,7 @@
     "is_ultimate_battle": false,
     "length": "15:56",
     "blue_team": "SGP",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Eland'orr",
@@ -209397,7 +209397,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week6/2026_w6_d21_m929_g3_win_aog_sgp_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week6/2026_w6_d21_m929_g3_win_aog_sgp_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S929",
@@ -209409,7 +209409,7 @@
     "game_number": 4,
     "is_ultimate_battle": false,
     "length": "15:49",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "SGP",
     "blue_win": 0,
     "blue_bans": [
@@ -209474,7 +209474,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week6/2026_w6_d21_m929_g4_win_aog_sgp_vs_fpt.png"
+    "true_screenshot": "2026_aog_winter/week6/2026_w6_d21_m929_g4_win_aog_sgp_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S930",
@@ -209486,7 +209486,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "14:17",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOX",
     "blue_win": 0,
     "blue_bans": [
@@ -209519,7 +209519,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week7/2026_w7_d22_m930_g1_win_aog_fpt_vs_box.png"
+    "true_screenshot": "2026_aog_winter/week7/2026_w7_d22_m930_g1_win_aog_fl_vs_box.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S930",
@@ -209532,7 +209532,7 @@
     "is_ultimate_battle": false,
     "length": "09:46",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Sinestrea",
@@ -209576,7 +209576,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week7/2026_w7_d22_m930_g2_win_aog_fpt_vs_box.png"
+    "true_screenshot": "2026_aog_winter/week7/2026_w7_d22_m930_g2_win_aog_fl_vs_box.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S930",
@@ -209588,7 +209588,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "13:07",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOX",
     "blue_win": 0,
     "blue_bans": [
@@ -209643,7 +209643,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week7/2026_w7_d22_m930_g3_win_aog_fpt_vs_box.png"
+    "true_screenshot": "2026_aog_winter/week7/2026_w7_d22_m930_g3_win_aog_fl_vs_box.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S930",
@@ -209656,7 +209656,7 @@
     "is_ultimate_battle": false,
     "length": "16:17",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Y'bneth",
@@ -209720,7 +209720,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week7/2026_w7_d22_m930_g4_win_aog_fpt_vs_box.png"
+    "true_screenshot": "2026_aog_winter/week7/2026_w7_d22_m930_g4_win_aog_fl_vs_box.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S930",
@@ -209732,7 +209732,7 @@
     "game_number": 5,
     "is_ultimate_battle": false,
     "length": "17:00",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOX",
     "blue_win": 1,
     "blue_bans": [
@@ -209807,7 +209807,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week7/2026_w7_d22_m930_g5_win_aog_fpt_vs_box.png"
+    "true_screenshot": "2026_aog_winter/week7/2026_w7_d22_m930_g5_win_aog_fl_vs_box.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S931",
@@ -210403,7 +210403,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "22:17",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "GAM",
     "blue_win": 0,
     "blue_bans": [
@@ -210436,7 +210436,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week7/2026_w7_d23_m934_g1_win_aog_fpt_vs_gam.png"
+    "true_screenshot": "2026_aog_winter/week7/2026_w7_d23_m934_g1_win_aog_fl_vs_gam.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S934",
@@ -210449,7 +210449,7 @@
     "is_ultimate_battle": false,
     "length": "17:01",
     "blue_team": "GAM",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Y'bneth",
@@ -210493,7 +210493,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week7/2026_w7_d23_m934_g2_win_aog_fpt_vs_gam.png"
+    "true_screenshot": "2026_aog_winter/week7/2026_w7_d23_m934_g2_win_aog_fl_vs_gam.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S934",
@@ -210506,7 +210506,7 @@
     "is_ultimate_battle": false,
     "length": "13:55",
     "blue_team": "GAM",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Mina",
@@ -210560,7 +210560,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week7/2026_w7_d23_m934_g3_win_aog_fpt_vs_gam.png"
+    "true_screenshot": "2026_aog_winter/week7/2026_w7_d23_m934_g3_win_aog_fl_vs_gam.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S935",
@@ -212128,7 +212128,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "14:28",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOOM",
     "blue_win": 1,
     "blue_bans": [
@@ -212161,7 +212161,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week8/2026_w8_d24_m938_g1_win_aog_fpt_vs_boom.png"
+    "true_screenshot": "2026_aog_winter/week8/2026_w8_d24_m938_g1_win_aog_fl_vs_boom.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S938",
@@ -212173,7 +212173,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "11:51",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOOM",
     "blue_win": 1,
     "blue_bans": [
@@ -212218,7 +212218,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week8/2026_w8_d24_m938_g2_win_aog_fpt_vs_boom.png"
+    "true_screenshot": "2026_aog_winter/week8/2026_w8_d24_m938_g2_win_aog_fl_vs_boom.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S938",
@@ -212230,7 +212230,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "21:15",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOOM",
     "blue_win": 0,
     "blue_bans": [
@@ -212285,7 +212285,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week8/2026_w8_d24_m938_g3_win_aog_fpt_vs_boom.png"
+    "true_screenshot": "2026_aog_winter/week8/2026_w8_d24_m938_g3_win_aog_fl_vs_boom.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S938",
@@ -212298,7 +212298,7 @@
     "is_ultimate_battle": false,
     "length": "19:29",
     "blue_team": "BOOM",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Mina",
@@ -212362,7 +212362,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week8/2026_w8_d24_m938_g4_win_aog_fpt_vs_boom.png"
+    "true_screenshot": "2026_aog_winter/week8/2026_w8_d24_m938_g4_win_aog_fl_vs_boom.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S938",
@@ -212375,7 +212375,7 @@
     "is_ultimate_battle": false,
     "length": "17:02",
     "blue_team": "BOOM",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Tamyn",
@@ -212449,7 +212449,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/week8/2026_w8_d24_m938_g5_win_aog_fpt_vs_boom.png"
+    "true_screenshot": "2026_aog_winter/week8/2026_w8_d24_m938_g5_win_aog_fl_vs_boom.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Group_Stage/Second_Leg_S939",
@@ -213532,7 +213532,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "16:26",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "FPL",
     "blue_win": 1,
     "blue_bans": [
@@ -213565,7 +213565,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/playoffs/2026_po_m1114_g1_win_aog_fpt_vs_fpl.png"
+    "true_screenshot": "2026_aog_winter/playoffs/2026_po_m1114_g1_win_aog_fl_vs_fpl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1114",
@@ -213578,7 +213578,7 @@
     "is_ultimate_battle": false,
     "length": "24:33",
     "blue_team": "FPL",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Sinestrea",
@@ -213622,7 +213622,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/playoffs/2026_po_m1114_g2_win_aog_fpt_vs_fpl.png"
+    "true_screenshot": "2026_aog_winter/playoffs/2026_po_m1114_g2_win_aog_fl_vs_fpl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1114",
@@ -213635,7 +213635,7 @@
     "is_ultimate_battle": false,
     "length": "10:56",
     "blue_team": "FPL",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Eland'orr",
@@ -213689,7 +213689,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/playoffs/2026_po_m1114_g3_win_aog_fpt_vs_fpl.png"
+    "true_screenshot": "2026_aog_winter/playoffs/2026_po_m1114_g3_win_aog_fl_vs_fpl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1114",
@@ -213702,7 +213702,7 @@
     "is_ultimate_battle": false,
     "length": "21:50",
     "blue_team": "FPL",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Dolia",
@@ -213766,7 +213766,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/playoffs/2026_po_m1114_g4_win_aog_fpt_vs_fpl.png"
+    "true_screenshot": "2026_aog_winter/playoffs/2026_po_m1114_g4_win_aog_fl_vs_fpl.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1114",
@@ -213779,7 +213779,7 @@
     "is_ultimate_battle": false,
     "length": "16:49",
     "blue_team": "FPL",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Tamyn",
@@ -213853,7 +213853,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/playoffs/2026_po_m1114_g5_win_aog_fpt_vs_fpl.png"
+    "true_screenshot": "2026_aog_winter/playoffs/2026_po_m1114_g5_win_aog_fl_vs_fpl.png"
   },
   {
     "series_id": "RoV_Pro_League_2026_Winter/Playoffs_S1110",
@@ -214971,7 +214971,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "12:15",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOX",
     "blue_win": 1,
     "blue_bans": [
@@ -215004,7 +215004,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g1_win_aog_fpt_vs_box.png"
+    "true_screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g1_win_aog_fl_vs_box.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1116",
@@ -215017,7 +215017,7 @@
     "is_ultimate_battle": false,
     "length": "12:41",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Evita",
@@ -215061,7 +215061,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g2_win_aog_fpt_vs_box.png"
+    "true_screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g2_win_aog_fl_vs_box.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1116",
@@ -215074,7 +215074,7 @@
     "is_ultimate_battle": false,
     "length": "17:07",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Evita",
@@ -215128,7 +215128,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g3_win_aog_fpt_vs_box.png"
+    "true_screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g3_win_aog_fl_vs_box.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1116",
@@ -215141,7 +215141,7 @@
     "is_ultimate_battle": false,
     "length": "09:21",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Evita",
@@ -215205,7 +215205,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g4_win_aog_fpt_vs_box.png"
+    "true_screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g4_win_aog_fl_vs_box.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1116",
@@ -215217,7 +215217,7 @@
     "game_number": 5,
     "is_ultimate_battle": false,
     "length": "09:20",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "BOX",
     "blue_win": 0,
     "blue_bans": [
@@ -215292,7 +215292,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g5_win_aog_fpt_vs_box.png"
+    "true_screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g5_win_aog_fl_vs_box.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1116",
@@ -215305,7 +215305,7 @@
     "is_ultimate_battle": false,
     "length": "11:25",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 0,
     "blue_bans": [
       "Rouie",
@@ -215389,7 +215389,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g6_win_aog_fpt_vs_box.png"
+    "true_screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g6_win_aog_fl_vs_box.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1116",
@@ -215402,7 +215402,7 @@
     "is_ultimate_battle": true,
     "length": "19:13",
     "blue_team": "BOX",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Y'bneth",
@@ -215434,7 +215434,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g7_win_aog_fpt_vs_box.png"
+    "true_screenshot": "2026_aog_winter/playoffs/2026_po_m1116_g7_win_aog_fl_vs_box.png"
   },
   {
     "series_id": "Arena_of_Glory_2026_Winter/Playoffs_S1115",
@@ -219049,7 +219049,7 @@
     "is_ultimate_battle": false,
     "length": "14:05",
     "blue_team": "ONE",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Eland'orr",
@@ -219081,7 +219081,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aic/wildcard/2026_wc_d1_m2_g1_aic_one_vs_fpt.png"
+    "true_screenshot": "2026_aic/wildcard/2026_wc_d1_m2_g1_aic_one_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1123",
@@ -219093,7 +219093,7 @@
     "game_number": 2,
     "is_ultimate_battle": false,
     "length": "13:53",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "ONE",
     "blue_win": 1,
     "blue_bans": [
@@ -219138,7 +219138,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aic/wildcard/2026_wc_d1_m2_g2_aic_one_vs_fpt.png"
+    "true_screenshot": "2026_aic/wildcard/2026_wc_d1_m2_g2_aic_one_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1123",
@@ -219150,7 +219150,7 @@
     "game_number": 3,
     "is_ultimate_battle": false,
     "length": "09:57",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "ONE",
     "blue_win": 1,
     "blue_bans": [
@@ -219205,7 +219205,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aic/wildcard/2026_wc_d1_m2_g3_aic_one_vs_fpt.png"
+    "true_screenshot": "2026_aic/wildcard/2026_wc_d1_m2_g3_aic_one_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1123",
@@ -219218,7 +219218,7 @@
     "is_ultimate_battle": false,
     "length": "21:36",
     "blue_team": "ONE",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Zata",
@@ -219282,7 +219282,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aic/wildcard/2026_wc_d1_m2_g4_aic_one_vs_fpt.png"
+    "true_screenshot": "2026_aic/wildcard/2026_wc_d1_m2_g4_aic_one_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1123",
@@ -219295,7 +219295,7 @@
     "is_ultimate_battle": false,
     "length": "13:22",
     "blue_team": "ONE",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Sinestrea",
@@ -219369,7 +219369,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aic/wildcard/2026_wc_d1_m2_g5_aic_one_vs_fpt.png"
+    "true_screenshot": "2026_aic/wildcard/2026_wc_d1_m2_g5_aic_one_vs_fl.png"
   },
   {
     "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1122",
@@ -219550,7 +219550,7 @@
     "game_number": 1,
     "is_ultimate_battle": false,
     "length": "14:11",
-    "blue_team": "FPT",
+    "blue_team": "FL",
     "red_team": "KOG",
     "blue_win": 0,
     "blue_bans": [
@@ -219583,7 +219583,7 @@
     "red_global_bans": [],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aic/wildcard/2026_wc_d2_m1_g1_aic_fpt_vs_kog.png"
+    "true_screenshot": "2026_aic/wildcard/2026_wc_d2_m1_g1_aic_fl_vs_kog.png"
   },
   {
     "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1125",
@@ -219596,7 +219596,7 @@
     "is_ultimate_battle": false,
     "length": "10:50",
     "blue_team": "KOG",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Rouie",
@@ -219640,7 +219640,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aic/wildcard/2026_wc_d2_m1_g2_aic_fpt_vs_kog.png"
+    "true_screenshot": "2026_aic/wildcard/2026_wc_d2_m1_g2_aic_fl_vs_kog.png"
   },
   {
     "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1125",
@@ -219653,7 +219653,7 @@
     "is_ultimate_battle": false,
     "length": "13:54",
     "blue_team": "KOG",
-    "red_team": "FPT",
+    "red_team": "FL",
     "blue_win": 1,
     "blue_bans": [
       "Rouie",
@@ -219707,7 +219707,7 @@
     ],
     "is_true_order": true,
     "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aic/wildcard/2026_wc_d2_m1_g3_aic_fpt_vs_kog.png"
+    "true_screenshot": "2026_aic/wildcard/2026_wc_d2_m1_g3_aic_fl_vs_kog.png"
   },
   {
     "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1124",
@@ -219954,338 +219954,5 @@
     "is_true_order": true,
     "true_pick_source": "screenshot",
     "true_screenshot": "2026_aic/wildcard/2026_wc_d2_m2_g4_aic_bmg_vs_slx.png"
-  },
-  {
-    "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1126",
-    "league": "Arena of Valor International Championship",
-    "year": "2026",
-    "stage": "Wildcard",
-    "date": "November 17, 2026 - 19:00",
-    "bestof": 5,
-    "game_number": 1,
-    "is_ultimate_battle": false,
-    "length": "14:06",
-    "blue_team": "ONE",
-    "red_team": "KOG",
-    "blue_win": 0,
-    "blue_bans": [
-      "Eland'orr",
-      "Dolia",
-      "Flowborn (Marksman)",
-      "Stuart"
-    ],
-    "red_bans": [
-      "Rouie",
-      "Annette",
-      "Sinestrea",
-      "Valhein"
-    ],
-    "blue_picks": [
-      "Bijan",
-      "Baldum",
-      "Alice",
-      "Edras",
-      "Omen"
-    ],
-    "red_picks": [
-      "Tamyn",
-      "Zata",
-      "Ryoma",
-      "Preyta",
-      "Taara"
-    ],
-    "blue_global_bans": [],
-    "red_global_bans": [],
-    "is_true_order": true,
-    "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aic/wildcard/2026_wc_d2_m3_g1_aic_kog_vs_one.png"
-  },
-  {
-    "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1126",
-    "league": "Arena of Valor International Championship",
-    "year": "2026",
-    "stage": "Wildcard",
-    "date": "November 17, 2026 - 19:00",
-    "bestof": 5,
-    "game_number": 2,
-    "is_ultimate_battle": false,
-    "length": "06:54",
-    "blue_team": "KOG",
-    "red_team": "ONE",
-    "blue_win": 0,
-    "blue_bans": [
-      "Eland'orr",
-      "Rouie",
-      "Sinestrea",
-      "Billow"
-    ],
-    "red_bans": [
-      "Dolia",
-      "Edras",
-      "Y'bneth",
-      "Wiro"
-    ],
-    "blue_picks": [
-      "Nakroth",
-      "Florentino",
-      "Hayate",
-      "Sephera",
-      "Xeniel"
-    ],
-    "red_picks": [
-      "Tulen",
-      "Thane",
-      "Marja",
-      "Stuart",
-      "Liliana"
-    ],
-    "blue_global_bans": [
-      "Taara",
-      "Tamyn",
-      "Preyta",
-      "Ryoma",
-      "Zata"
-    ],
-    "red_global_bans": [
-      "Omen",
-      "Bijan",
-      "Alice",
-      "Edras",
-      "Baldum"
-    ],
-    "is_true_order": true,
-    "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aic/wildcard/2026_wc_d2_m3_g2_aic_kog_vs_one.png"
-  },
-  {
-    "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1126",
-    "league": "Arena of Valor International Championship",
-    "year": "2026",
-    "stage": "Wildcard",
-    "date": "November 17, 2026 - 19:00",
-    "bestof": 5,
-    "game_number": 3,
-    "is_ultimate_battle": false,
-    "length": "17:17",
-    "blue_team": "KOG",
-    "red_team": "ONE",
-    "blue_win": 0,
-    "blue_bans": [
-      "Dolia",
-      "Lorion",
-      "Florentino",
-      "Mina"
-    ],
-    "red_bans": [
-      "Edras",
-      "Rouie",
-      "Billow",
-      "Zephys"
-    ],
-    "blue_picks": [
-      "Y'bneth",
-      "Iggy",
-      "Eland'orr",
-      "Skud",
-      "Murad"
-    ],
-    "red_picks": [
-      "Wiro",
-      "Sinestrea",
-      "Ryoma",
-      "Zata",
-      "Qi"
-    ],
-    "blue_global_bans": [
-      "Taara",
-      "Tamyn",
-      "Preyta",
-      "Ryoma",
-      "Zata",
-      "Hayate",
-      "Nakroth",
-      "Sephera",
-      "Florentino",
-      "Xeniel"
-    ],
-    "red_global_bans": [
-      "Omen",
-      "Bijan",
-      "Alice",
-      "Edras",
-      "Baldum",
-      "Marja",
-      "Tulen",
-      "Liliana",
-      "Stuart",
-      "Thane"
-    ],
-    "is_true_order": true,
-    "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aic/wildcard/2026_wc_d2_m3_g3_aic_kog_vs_one.png"
-  },
-  {
-    "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1126",
-    "league": "Arena of Valor International Championship",
-    "year": "2026",
-    "stage": "Wildcard",
-    "date": "November 17, 2026 - 19:00",
-    "bestof": 5,
-    "game_number": 4,
-    "is_ultimate_battle": false,
-    "length": "16:55",
-    "blue_team": "KOG",
-    "red_team": "ONE",
-    "blue_win": 1,
-    "blue_bans": [
-      "Y'bneth",
-      "Eland'orr",
-      "Taara",
-      "Hayate"
-    ],
-    "red_bans": [
-      "Dolia",
-      "Edras",
-      "Maloch",
-      "Krizzix"
-    ],
-    "blue_picks": [
-      "Rouie",
-      "Billow",
-      "Marja",
-      "Airi",
-      "Arduin"
-    ],
-    "red_picks": [
-      "Lorion",
-      "Dyadia",
-      "Mina",
-      "Nakroth",
-      "Capheny"
-    ],
-    "blue_global_bans": [
-      "Taara",
-      "Tamyn",
-      "Preyta",
-      "Ryoma",
-      "Zata",
-      "Hayate",
-      "Nakroth",
-      "Sephera",
-      "Florentino",
-      "Xeniel",
-      "Skud",
-      "Eland'orr",
-      "Iggy",
-      "Murad",
-      "Y'bneth"
-    ],
-    "red_global_bans": [
-      "Omen",
-      "Bijan",
-      "Alice",
-      "Edras",
-      "Baldum",
-      "Marja",
-      "Tulen",
-      "Liliana",
-      "Stuart",
-      "Thane",
-      "Qi",
-      "Sinestrea",
-      "Zata",
-      "Ryoma",
-      "Wiro"
-    ],
-    "is_true_order": true,
-    "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aic/wildcard/2026_wc_d2_m3_g4_aic_kog_vs_one.png"
-  },
-  {
-    "series_id": "Arena_of_Valor_International_Championship_2026_Wildcard_S1126",
-    "league": "Arena of Valor International Championship",
-    "year": "2026",
-    "stage": "Wildcard",
-    "date": "November 17, 2026 - 19:00",
-    "bestof": 5,
-    "game_number": 5,
-    "is_ultimate_battle": false,
-    "length": "14:12",
-    "blue_team": "ONE",
-    "red_team": "KOG",
-    "blue_win": 1,
-    "blue_bans": [
-      "Sinestrea",
-      "Edras",
-      "Astrid",
-      "Butterfly"
-    ],
-    "red_bans": [
-      "Rouie",
-      "Dolia",
-      "Florentino",
-      "Tamyn"
-    ],
-    "blue_picks": [
-      "Evita",
-      "Eland'orr",
-      "Enzo",
-      "Airi",
-      "Yena"
-    ],
-    "red_picks": [
-      "Yue",
-      "Maloch",
-      "Violet",
-      "Kriknak",
-      "Krizzix"
-    ],
-    "blue_global_bans": [
-      "Omen",
-      "Bijan",
-      "Alice",
-      "Edras",
-      "Baldum",
-      "Marja",
-      "Tulen",
-      "Liliana",
-      "Stuart",
-      "Thane",
-      "Qi",
-      "Sinestrea",
-      "Zata",
-      "Ryoma",
-      "Wiro",
-      "Mina",
-      "Nakroth",
-      "Lorion",
-      "Capheny",
-      "Dyadia"
-    ],
-    "red_global_bans": [
-      "Taara",
-      "Tamyn",
-      "Preyta",
-      "Ryoma",
-      "Zata",
-      "Hayate",
-      "Nakroth",
-      "Sephera",
-      "Florentino",
-      "Xeniel",
-      "Skud",
-      "Eland'orr",
-      "Iggy",
-      "Murad",
-      "Y'bneth",
-      "Marja",
-      "Billow",
-      "Rouie",
-      "Airi",
-      "Arduin"
-    ],
-    "is_true_order": true,
-    "true_pick_source": "screenshot",
-    "true_screenshot": "2026_aic/wildcard/2026_wc_d2_m3_g5_aic_kog_vs_one.png"
   }
 ]
