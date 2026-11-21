@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov`) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `6253177` (`main`: responsive Spotlight Replace Mode + Focus Lock + single-row mobile Practice bar) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-C2grrDgg.js` (`664.41 kB`) + `dist-prod/assets/index-sNaMQu7-.css` (`128.19 kB`), `dist-prod/index.html` (`2.96 kB`) |
+| **Git Base Commit on VM** | `a248e7c` (`main`: auto-stop Draft Turn Timer on completion, reset, & game transition) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-CXX5ped2.js` (`664.60 kB`) + `dist-prod/assets/index-sNaMQu7-.css` (`128.19 kB`), `dist-prod/index.html` (`2.96 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-21 22:18 (UTC+7)` |
+| **Last Updated** | `2026-11-21 22:47 (UTC+7)` |
 
 ---
 
@@ -38,6 +38,19 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-21 22:47 (UTC+7) — Auto-Stop Draft Turn Timer on Draft Completion, Reset, & Game Transition (`a248e7c`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `f34fc15` to `a248e7c` (`main`).
+- **Delta:**
+  - `frontend/src/hooks/useDraftTimer.ts`: Disabled `enabled` persistence across page reloads (`localStorage` retains only `preset`, `soundEnabled`, and `autoLock`), and auto-disabled `enabled` whenever `currentStep === null` (`18/18 COMPLETE`) or `resetSignal` (`gameNumber` / `seriesName`) changes.
+  - `frontend/src/components/ScoreBar.tsx` & `frontend/src/components/DraftBoardView.tsx`: Hid timer entry/countdown controls when `currentStep === null` (`COMPLETE`) and called `timer.setEnabled(false)` on draft `Reset` and `FinishGameModal` `onConfirmWinner`.
+- **Bundle Built:** `dist-prod/index.html` (`2.96 kB`), `dist-prod/assets/index-CXX5ped2.js` (`664.60 kB`), `dist-prod/assets/index-sNaMQu7-.css` (`128.19 kB`).
+- **Deploy Method:** `cd ~/rov/deploy && sudo docker compose up -d --build app` (`deploy_rov_db_data`, `deploy-caddy-1`, `rov-cloudflared`, and `deploy/.env` untouched).
+- **Verification:**
+  - `oxlint`: `0` warnings / `0` errors across 64 files; `vite build`: `1.35s`; `ruff`: clean (`119` files unchanged).
+  - `https://minidraft.app/health` -> `200` (`{"status":"healthy","model_loaded":true}`).
+  - Live Playwright E2E (`verify_timer_autostop.py` on `https://minidraft.app/`): verified timer enables on Step 1, auto-stops and hides controls/clock at `18/18 COMPLETE`, stays OFF when advancing to `Game 2`, turns OFF on `Reset draft`, and emitted `0` console/page errors.
+  - `/app/db/rov_app.db` intact (`users: 869`, `user_oauth_accounts: 826`, `user_draft_states: 828`, `user_practice_histories: 1`, `auth_sessions: 911`, `pricing_survey_responses: 313`, `daily_visits: 599`).
 
 ### 📅 2026-11-21 22:18 (UTC+7) — Deploy Responsive Spotlight Hero Replace (Focus Lock) & Single-Row Practice Mobile Bar (`6253177`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `10600a8` to `6253177` (`main`).
