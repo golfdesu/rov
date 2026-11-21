@@ -24,6 +24,7 @@ export interface PracticeRoundMeta {
   gameCount: PracticeGameCount;
   showHints: boolean;
   previousEstimates: Record<number, number | null>;
+  recordedSignatures: string[];
 }
 
 export interface PracticeHistoryEntry {
@@ -52,7 +53,7 @@ function practiceMetaStorageKey(scope: string): string {
   return `rov_practice_meta:v1:${scope}`;
 }
 
-function practiceHistoryStorageKey(scope: string): string {
+export function practiceHistoryStorageKey(scope: string): string {
   return `rov_practice_history:v1:${scope}`;
 }
 
@@ -122,7 +123,13 @@ export function defaultPracticeMeta(): PracticeRoundMeta {
     gameCount: 1,
     showHints: true,
     previousEstimates: {},
+    recordedSignatures: [],
   };
+}
+
+function sanitizeRecordedSignatures(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((v): v is string => typeof v === "string" && v.length > 0).slice(-20);
 }
 
 export function loadPracticeMeta(scope: string): PracticeRoundMeta {
@@ -142,6 +149,7 @@ export function loadPracticeMeta(scope: string): PracticeRoundMeta {
       gameCount: sanitizeGameCount(parsed.gameCount),
       showHints: parsed.showHints === undefined ? true : Boolean(parsed.showHints),
       previousEstimates: sanitizePreviousEstimates(parsed.previousEstimates),
+      recordedSignatures: sanitizeRecordedSignatures(parsed.recordedSignatures),
     };
     if (!hasSessionId) savePracticeMeta(scope, resolved);
     return resolved;
@@ -180,72 +188,113 @@ export function clearPracticeActiveRound(
     gameCount,
     showHints,
     previousEstimates: {},
+    recordedSignatures: [],
   };
   savePracticeMeta(scope, fresh);
   return fresh;
 }
 
-export function loadPracticeHistory(scope: string): PracticeHistoryEntry[] {
-  if (typeof window === "undefined") return [];
+export interface PracticeHistorySyncPayload {
+  entries: PracticeHistoryEntry[];
+  updatedAt: number;
+}
+
+export function sanitizePracticeHistoryEntries(raw: unknown): PracticeHistoryEntry[] {
+  if (!Array.isArray(raw)) return [];
+  const entries: PracticeHistoryEntry[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+    const obj = item as Partial<PracticeHistoryEntry>;
+    const bluePicks = sanitizeHeroList(obj.bluePicks);
+    const redPicks = sanitizeHeroList(obj.redPicks);
+    if (bluePicks.length !== 5 || redPicks.length !== 5) continue;
+    const playerEstimate =
+      typeof obj.playerEstimate === "number" && Number.isFinite(obj.playerEstimate) ? obj.playerEstimate : 50;
+    const startingSide = sanitizeSide(obj.startingSide);
+    const playerSide = sanitizeSide(obj.playerSide);
+    const gameCount = sanitizeGameCount(obj.gameCount);
+    const gameNumber =
+      typeof obj.gameNumber === "number" && obj.gameNumber >= 1 && obj.gameNumber <= 7 ? obj.gameNumber : 1;
+    const blueBans = sanitizeHeroList(obj.blueBans);
+    const redBans = sanitizeHeroList(obj.redBans);
+    const signature =
+      typeof obj.signature === "string" && obj.signature
+        ? obj.signature
+        : buildPracticeSignature(createPracticeSessionId(), gameNumber, playerSide, {
+            bluePicks,
+            redPicks,
+            blueBans,
+            redBans,
+          });
+    entries.push({
+      id: typeof obj.id === "string" && obj.id ? obj.id : createPracticeSessionId(),
+      signature,
+      recordedAt: typeof obj.recordedAt === "string" && obj.recordedAt ? obj.recordedAt : new Date().toISOString(),
+      gameNumber,
+      gameCount,
+      startingSide,
+      playerSide,
+      bluePicks,
+      redPicks,
+      blueBans,
+      redBans,
+      playerEstimate,
+      previousEstimates: obj.previousEstimates ? sanitizePreviousEstimates(obj.previousEstimates) : undefined,
+      globalBans: sanitizeGlobalBans(obj.globalBans),
+      seriesGames: Array.isArray(obj.seriesGames) ? obj.seriesGames.slice(0, 7) : undefined,
+    });
+  }
+  return entries.slice(0, MAX_PRACTICE_HISTORY);
+}
+
+export function loadPracticeHistoryState(scope: string): PracticeHistorySyncPayload {
+  if (typeof window === "undefined") return { entries: [], updatedAt: 0 };
   try {
     const raw = window.localStorage.getItem(practiceHistoryStorageKey(scope));
-    if (!raw) return [];
+    if (!raw) return { entries: [], updatedAt: 0 };
     const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    const entries: PracticeHistoryEntry[] = [];
-    for (const item of parsed) {
-      if (!item || typeof item !== "object") continue;
-      const obj = item as Partial<PracticeHistoryEntry>;
-      const bluePicks = sanitizeHeroList(obj.bluePicks);
-      const redPicks = sanitizeHeroList(obj.redPicks);
-      if (bluePicks.length !== 5 || redPicks.length !== 5) continue;
-      const playerEstimate = typeof obj.playerEstimate === "number" && Number.isFinite(obj.playerEstimate) ? obj.playerEstimate : 50;
-      const startingSide = sanitizeSide(obj.startingSide);
-      const playerSide = sanitizeSide(obj.playerSide);
-      const gameCount = sanitizeGameCount(obj.gameCount);
-      const gameNumber = typeof obj.gameNumber === "number" && obj.gameNumber >= 1 && obj.gameNumber <= 7 ? obj.gameNumber : 1;
-      const blueBans = sanitizeHeroList(obj.blueBans);
-      const redBans = sanitizeHeroList(obj.redBans);
-      const signature =
-        typeof obj.signature === "string" && obj.signature
-          ? obj.signature
-          : buildPracticeSignature(createPracticeSessionId(), gameNumber, playerSide, {
-              bluePicks,
-              redPicks,
-              blueBans,
-              redBans,
-            });
-      entries.push({
-        id: typeof obj.id === "string" && obj.id ? obj.id : createPracticeSessionId(),
-        signature,
-        recordedAt: typeof obj.recordedAt === "string" && obj.recordedAt ? obj.recordedAt : new Date().toISOString(),
-        gameNumber,
-        gameCount,
-        startingSide,
-        playerSide,
-        bluePicks,
-        redPicks,
-        blueBans,
-        redBans,
-        playerEstimate,
-        previousEstimates: obj.previousEstimates ? sanitizePreviousEstimates(obj.previousEstimates) : undefined,
-        globalBans: sanitizeGlobalBans(obj.globalBans),
-        seriesGames: Array.isArray(obj.seriesGames) ? obj.seriesGames : undefined,
-      });
+    if (Array.isArray(parsed)) {
+      const entries = sanitizePracticeHistoryEntries(parsed);
+      return { entries, updatedAt: entries.length > 0 ? 1 : 0 };
     }
-    return entries.slice(0, MAX_PRACTICE_HISTORY);
+    if (parsed && typeof parsed === "object") {
+      const obj = parsed as Partial<PracticeHistorySyncPayload>;
+      const entries = sanitizePracticeHistoryEntries(obj.entries);
+      const updatedAt =
+        typeof obj.updatedAt === "number" && Number.isFinite(obj.updatedAt) && obj.updatedAt >= 0
+          ? obj.updatedAt
+          : entries.length > 0
+            ? 1
+            : 0;
+      return { entries, updatedAt };
+    }
+    return { entries: [], updatedAt: 0 };
   } catch {
-    return [];
+    return { entries: [], updatedAt: 0 };
   }
 }
 
-export function savePracticeHistory(scope: string, entries: PracticeHistoryEntry[]): void {
+export function savePracticeHistoryState(scope: string, state: PracticeHistorySyncPayload): void {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(practiceHistoryStorageKey(scope), JSON.stringify(entries.slice(0, MAX_PRACTICE_HISTORY)));
+    window.localStorage.setItem(
+      practiceHistoryStorageKey(scope),
+      JSON.stringify({
+        entries: state.entries.slice(0, MAX_PRACTICE_HISTORY),
+        updatedAt: state.updatedAt,
+      }),
+    );
   } catch {
     // Ignore storage quota or private browsing write errors.
   }
+}
+
+export function loadPracticeHistory(scope: string): PracticeHistoryEntry[] {
+  return loadPracticeHistoryState(scope).entries;
+}
+
+export function savePracticeHistory(scope: string, entries: PracticeHistoryEntry[], updatedAt = Date.now()): void {
+  savePracticeHistoryState(scope, { entries, updatedAt });
 }
 
 export function buildPracticeSignature(
@@ -265,13 +314,11 @@ export function buildPracticeSignature(
   ].join("|");
 }
 
-export function recordPracticeHistoryEntry(
-  scope: string,
+export function appendPracticeHistoryEntry(
   current: PracticeHistoryEntry[],
   entryInput: Omit<PracticeHistoryEntry, "id" | "recordedAt">,
 ): PracticeHistoryEntry[] {
-  const existing = current.find((item) => item.signature === entryInput.signature);
-  if (existing) {
+  if (current.some((item) => item.signature === entryInput.signature)) {
     return current;
   }
   const entry: PracticeHistoryEntry = {
@@ -279,7 +326,16 @@ export function recordPracticeHistoryEntry(
     id: createPracticeSessionId(),
     recordedAt: new Date().toISOString(),
   };
-  const next = [entry, ...current].slice(0, MAX_PRACTICE_HISTORY);
+  return [entry, ...current].slice(0, MAX_PRACTICE_HISTORY);
+}
+
+export function recordPracticeHistoryEntry(
+  scope: string,
+  current: PracticeHistoryEntry[],
+  entryInput: Omit<PracticeHistoryEntry, "id" | "recordedAt">,
+): PracticeHistoryEntry[] {
+  const next = appendPracticeHistoryEntry(current, entryInput);
+  if (next === current) return current;
   savePracticeHistory(scope, next);
   return next;
 }

@@ -27,6 +27,40 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-21 21:11 (UTC+7) — Cross-Device Sync for Draft vs AI History (`/draft/practice-history`) & Bug Audit
+**Agent:** Antigravity / Claude Sonnet
+
+### ✅ Completed Work
+- **Backend Sync Storage & API (`src/db.py`, `src/schemas.py`, `src/api.py`):**
+  - Added isolated SQLite table `user_practice_histories` (`user_id`, `payload_json`, `updated_at`), allowlisted `_get/_save/_clear_user_json_state` helpers (eliminating duplicated CRUD SQL across `user_draft_states`, `user_combat_builds`, `user_practice_histories`), and guarded stale-account pruning against deleting users with saved Practice history.
+  - Added bounded `PracticeHistoryEntrySchema` and `PracticeHistorySyncSchema` (`max 100` entries, `gameNumber 1..7`, `FinitePct`, `previousEstimates` key validator).
+  - Added `GET /draft/practice-history`, `PUT /draft/practice-history`, and `DELETE /draft/practice-history` (protected by `get_required_user` + `_verify_expected_user`, `Cache-Control: no-store`, and `WHERE excluded.updated_at >= ...` timestamp guard).
+- **Frontend Sync & Bug Fixes (`frontend/src/api/client.ts`, `frontend/src/utils/practiceHistory.ts`, `frontend/src/components/PracticeDraftView.tsx`, `frontend/src/App.tsx`):**
+  - Passed `persistSession={isAuthenticated}` from `App.tsx` into `PracticeDraftView` and attached `X-Expected-User` header for `/draft/practice-history`.
+  - Synced signed-in user Practice history with `/draft/practice-history` on mount, `focus`/`visibilitychange` (15s cooldown), and on record/delete/clear mutations, plus same-browser multi-tab `storage` event sync.
+  - **Bugs Found & Fixed During Scan:** Eliminated 2 React Compiler `oxlint` warnings (`refs` render mutation & synchronous effect state warning) and added persistent `meta.recordedSignatures` so deleting a synced entry on another device never resurrects on subsequent page reloads of the finished 18-step draft.
+- **API Isolation Tests (`tests/test_api.py`):** Added `/draft/practice-history` coverage for unauthenticated `401`, cross-account `409`, per-user isolation, stale timestamp rejection, and delete tombstones.
+
+### 📁 Modified Files
+- `src/db.py`
+- `src/schemas.py`
+- `src/api.py`
+- `frontend/src/api/client.ts`
+- `frontend/src/utils/practiceHistory.ts`
+- `frontend/src/components/PracticeDraftView.tsx`
+- `frontend/src/App.tsx`
+- `tests/test_api.py`
+- `docs/PRODUCTION_RELEASES.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `oxlint`: `0 warnings, 0 errors` (64 files); `vite build` clean for dev (`dist/`) and prod (`dist-prod/`, `index-CKQbz309.js` `655.20 kB`, `index-BKHs1Fu2.css` `125.16 kB`).
+- `inspect_frontend_e2e.py` `[PASS]`, `audit_security.py` `[PASS]`, `audit_ux_ui.py` `[PASS]`, `ruff check/format` `All checks passed!`, full `pytest` `135 passed`.
+- 2-Device Playwright E2E sync test: verified Device A game completion (`PUT 200`) -> Device B auto-hydration (`ประวัติ 1`) & Draft Board non-pollution (`0/100`) -> Device B delete -> Device A double-reload non-resurrection (`ประวัติ 0` on both reloads), `0` horizontal overflow (Desktop & Mobile), `0` console/page errors.
+
+### ⚠️ Open Issues / Important Notes
+- Guest mode continues storing Practice history locally per browser; authenticated accounts sync across devices independently from main Draft Board `user_draft_states`.
+
 ---
 
 ## 📅 2026-11-21 20:54 (UTC+7) — Unified Slide-Out Menu Drawer Across All Viewports

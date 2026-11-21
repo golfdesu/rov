@@ -175,7 +175,7 @@ function Workspace({
         {tab === "profile" && authUser ? (
           <ProfileView user={authUser} onSaveDisplayName={onSaveDisplayName} />
         ) : tab === "practice" ? (
-          <PracticeDraftView key={scope} scope={scope} />
+          <PracticeDraftView key={scope} scope={scope} persistSession={isAuthenticated} />
         ) : !DRAFT_ONLY && tab === "tierlist" ? (
           <TierListView heroes={draft.heroes} disableShortcuts={disableShortcuts} />
         ) : !DRAFT_ONLY && tab === "metalab" ? (

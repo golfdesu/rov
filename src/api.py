@@ -57,6 +57,7 @@ from src.schemas import (
     DraftSessionStateSchema,
     DraftStateRequest,
     HealthResponse,
+    PracticeHistorySyncSchema,
     PricingSurveyRequest,
     PricingSurveyResponse,
     _canon_hero_key,
@@ -275,7 +276,17 @@ async def security_and_lockdown_middleware(request: Request, call_next):
     if config.is_production and _is_https_request(request):
         response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
     if norm_path.startswith(
-        ("/health", "/heroes", "/auth/", "/draft/session", "/predict", "/combat/", "/survey/", "/admin/")
+        (
+            "/health",
+            "/heroes",
+            "/auth/",
+            "/draft/session",
+            "/draft/practice-history",
+            "/predict",
+            "/combat/",
+            "/survey/",
+            "/admin/",
+        )
     ):
         response.headers.setdefault("Cache-Control", "no-store")
     return response
@@ -1232,6 +1243,44 @@ def clear_draft_session(
         if session_path.exists():
             session_path.unlink(missing_ok=True)
     return DraftSessionStateSchema()
+
+
+@app.get("/draft/practice-history", response_model=PracticeHistorySyncSchema)
+def get_practice_history(
+    user: AuthUser = Depends(get_required_user),
+    x_expected_user: str | None = Header(default=None, alias="X-Expected-User"),
+):
+    _verify_expected_user(user, x_expected_user)
+    raw = get_user_db().get_user_practice_history(user.id)
+    if not raw:
+        return PracticeHistorySyncSchema()
+    try:
+        return PracticeHistorySyncSchema.model_validate(raw)
+    except Exception:
+        return PracticeHistorySyncSchema()
+
+
+@app.put("/draft/practice-history", response_model=PracticeHistorySyncSchema)
+def save_practice_history(
+    payload: PracticeHistorySyncSchema,
+    user: AuthUser = Depends(get_required_user),
+    x_expected_user: str | None = Header(default=None, alias="X-Expected-User"),
+):
+    _verify_expected_user(user, x_expected_user)
+    dumped = payload.model_dump()
+    get_user_db().save_user_practice_history(user.id, dumped, int(payload.updatedAt or 0))
+    return payload
+
+
+@app.delete("/draft/practice-history", response_model=PracticeHistorySyncSchema)
+def clear_practice_history_remote(
+    user: AuthUser = Depends(get_required_user),
+    x_expected_user: str | None = Header(default=None, alias="X-Expected-User"),
+):
+    _verify_expected_user(user, x_expected_user)
+    get_user_db().clear_user_practice_history(user.id)
+    raw = get_user_db().get_user_practice_history(user.id)
+    return PracticeHistorySyncSchema(entries=[], updatedAt=int((raw or {}).get("updatedAt", 0)))
 
 
 @app.get("/combat/builds", response_model=CombatBuildsSyncSchema)

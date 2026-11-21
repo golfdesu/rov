@@ -1,5 +1,6 @@
 import { ArrowRight, Bot, History, RotateCcw, Shuffle, Sparkles, Trophy, Undo2 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { deleteJson, getJson, isAbortError, putJson } from "../api/client";
 import { useDraft } from "../hooks/useDraft";
 import { type Message, translateMessage, useLanguage } from "../i18n/language";
 import { CANONICAL_DRAFT_STEPS, type DraftStep } from "../types/draft";
@@ -15,20 +16,22 @@ import {
 } from "../utils/draft";
 import { displayName } from "../utils/heroNames";
 import {
+  appendPracticeHistoryEntry,
   buildPracticeSignature,
   clearPracticeActiveRound,
-  clearPracticeHistory,
   createPracticeSessionId,
   DEFAULT_PRACTICE_GLOBAL_BANS,
-  deletePracticeHistoryEntry,
-  loadPracticeHistory,
+  loadPracticeHistoryState,
   loadPracticeMeta,
   PRACTICE_GAME_COUNTS,
   type PracticeGameCount,
   type PracticeHistoryEntry,
+  type PracticeHistorySyncPayload,
   type PracticeRoundMeta,
   practiceDraftStorageKey,
-  recordPracticeHistoryEntry,
+  practiceHistoryStorageKey,
+  sanitizePracticeHistoryEntries,
+  savePracticeHistoryState,
   savePracticeMeta,
 } from "../utils/practiceHistory";
 import { AiPanel } from "./AiPanel";
@@ -42,6 +45,7 @@ import { TeamColumn } from "./TeamColumn";
 
 type Side = DraftStep["side"];
 const AI_MIN_THINK_MS = 1000;
+const HISTORY_REFRESH_COOLDOWN_MS = 15_000;
 const SIDES = [
   { value: "blue", label: "ฝั่งน้ำเงิน", color: "text-blue" },
   { value: "red", label: "ฝั่งแดง", color: "text-red" },
@@ -52,12 +56,170 @@ const BUTTON_CLASS =
 
 interface PracticeDraftViewProps {
   scope: string;
+  persistSession?: boolean;
 }
 
-export function PracticeDraftView({ scope }: PracticeDraftViewProps) {
+export function PracticeDraftView({ scope, persistSession = false }: PracticeDraftViewProps) {
   const [meta, setMeta] = useState<PracticeRoundMeta>(() => loadPracticeMeta(scope));
-  const [historyEntries, setHistoryEntries] = useState<PracticeHistoryEntry[]>(() => loadPracticeHistory(scope));
+  const [historyState, setHistoryState] = useState<PracticeHistorySyncPayload>(() => loadPracticeHistoryState(scope));
   const [roundId, setRoundId] = useState(0);
+
+  const historyRef = useRef(historyState);
+  const lastSavedAtRef = useRef(historyState.updatedAt);
+  const hasDirtyLocalRef = useRef(false);
+  const lastRemoteFetchAtRef = useRef(0);
+
+  useEffect(() => {
+    historyRef.current = historyState;
+  }, [historyState]);
+
+  const pushToServer = useCallback(
+    async (payload: PracticeHistorySyncPayload) => {
+      if (!persistSession) return;
+      try {
+        const res = await putJson<PracticeHistorySyncPayload>("/draft/practice-history", payload);
+        if (typeof res?.updatedAt === "number" && res.updatedAt > lastSavedAtRef.current) {
+          lastSavedAtRef.current = res.updatedAt;
+        }
+        hasDirtyLocalRef.current = false;
+      } catch (err) {
+        if (!isAbortError(err)) {
+          console.warn("Could not sync practice history to server:", err);
+        }
+      }
+    },
+    [persistSession],
+  );
+
+  useEffect(() => {
+    const expectedKey = practiceHistoryStorageKey(scope);
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== expectedKey) return;
+      const reloaded = loadPracticeHistoryState(scope);
+      lastSavedAtRef.current = reloaded.updatedAt;
+      historyRef.current = reloaded;
+      setHistoryState(reloaded);
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [scope]);
+
+  useEffect(() => {
+    if (!persistSession) return;
+    const ctrl = new AbortController();
+
+    async function syncFromServer(signal?: AbortSignal, force = false) {
+      const now = Date.now();
+      if (!force && now - lastRemoteFetchAtRef.current < HISTORY_REFRESH_COOLDOWN_MS) return;
+      lastRemoteFetchAtRef.current = now;
+      try {
+        const remote = await getJson<PracticeHistorySyncPayload>("/draft/practice-history", signal);
+        const remoteUpdatedAt = typeof remote?.updatedAt === "number" ? remote.updatedAt : 0;
+        const remoteEntries = sanitizePracticeHistoryEntries(remote?.entries);
+        if (remoteUpdatedAt > lastSavedAtRef.current && !hasDirtyLocalRef.current) {
+          lastSavedAtRef.current = remoteUpdatedAt;
+          const nextState: PracticeHistorySyncPayload = {
+            entries: remoteEntries,
+            updatedAt: remoteUpdatedAt,
+          };
+          historyRef.current = nextState;
+          savePracticeHistoryState(scope, nextState);
+          setHistoryState(nextState);
+        } else if (
+          lastSavedAtRef.current > remoteUpdatedAt &&
+          (historyRef.current.entries.length > 0 || hasDirtyLocalRef.current)
+        ) {
+          await pushToServer({
+            entries: historyRef.current.entries,
+            updatedAt: lastSavedAtRef.current,
+          });
+        }
+      } catch (err) {
+        if (!isAbortError(err)) {
+          console.warn("Could not fetch practice history from server:", err);
+        }
+      }
+    }
+
+    void syncFromServer(ctrl.signal, true);
+
+    const onFocusOrVisible = () => {
+      if (document.visibilityState === "visible") {
+        void syncFromServer(undefined, false);
+      }
+    };
+    window.addEventListener("focus", onFocusOrVisible);
+    document.addEventListener("visibilitychange", onFocusOrVisible);
+    return () => {
+      ctrl.abort();
+      window.removeEventListener("focus", onFocusOrVisible);
+      document.removeEventListener("visibilitychange", onFocusOrVisible);
+    };
+  }, [persistSession, pushToServer, scope]);
+
+  const commitHistoryEntries = useCallback(
+    (nextEntries: PracticeHistoryEntry[]) => {
+      const nextUpdatedAt = Math.max(Date.now(), lastSavedAtRef.current + 1);
+      lastSavedAtRef.current = nextUpdatedAt;
+      hasDirtyLocalRef.current = true;
+      const nextState: PracticeHistorySyncPayload = {
+        entries: nextEntries,
+        updatedAt: nextUpdatedAt,
+      };
+      historyRef.current = nextState;
+      savePracticeHistoryState(scope, nextState);
+      setHistoryState(nextState);
+      if (persistSession) {
+        void pushToServer(nextState);
+      }
+    },
+    [persistSession, pushToServer, scope],
+  );
+
+  const handleRecordHistoryEntry = useCallback(
+    (entryInput: Omit<PracticeHistoryEntry, "id" | "recordedAt">) => {
+      const next = appendPracticeHistoryEntry(historyRef.current.entries, entryInput);
+      if (next === historyRef.current.entries) return;
+      commitHistoryEntries(next);
+    },
+    [commitHistoryEntries],
+  );
+
+  const handleDeleteHistoryEntry = useCallback(
+    (id: string) => {
+      const next = historyRef.current.entries.filter((item) => item.id !== id);
+      commitHistoryEntries(next);
+    },
+    [commitHistoryEntries],
+  );
+
+  const handleClearHistory = useCallback(() => {
+    const nextUpdatedAt = Math.max(Date.now(), lastSavedAtRef.current + 1);
+    lastSavedAtRef.current = nextUpdatedAt;
+    hasDirtyLocalRef.current = true;
+    const cleared: PracticeHistorySyncPayload = { entries: [], updatedAt: nextUpdatedAt };
+    historyRef.current = cleared;
+    savePracticeHistoryState(scope, cleared);
+    setHistoryState(cleared);
+    if (persistSession) {
+      void (async () => {
+        try {
+          const res = await deleteJson<PracticeHistorySyncPayload>("/draft/practice-history");
+          if (typeof res?.updatedAt === "number" && res.updatedAt > lastSavedAtRef.current) {
+            lastSavedAtRef.current = res.updatedAt;
+            const synced = { entries: [], updatedAt: res.updatedAt };
+            historyRef.current = synced;
+            savePracticeHistoryState(scope, synced);
+          }
+          hasDirtyLocalRef.current = false;
+        } catch (err) {
+          if (!isAbortError(err)) {
+            console.warn("Could not clear remote practice history:", err);
+          }
+        }
+      })();
+    }
+  }, [persistSession, scope]);
 
   function updateMeta(updater: (prev: PracticeRoundMeta) => PracticeRoundMeta) {
     setMeta((prev) => {
@@ -78,9 +240,11 @@ export function PracticeDraftView({ scope }: PracticeDraftViewProps) {
       key={roundId}
       scope={scope}
       meta={meta}
-      historyEntries={historyEntries}
+      historyEntries={historyState.entries}
       onUpdateMeta={updateMeta}
-      onSetHistoryEntries={setHistoryEntries}
+      onRecordHistoryEntry={handleRecordHistoryEntry}
+      onDeleteHistoryEntry={handleDeleteHistoryEntry}
+      onClearHistory={handleClearHistory}
       onSwitchSide={startNewRound}
       onRestart={() => startNewRound(meta.startingSide)}
     />
@@ -92,7 +256,9 @@ interface PracticeRoundProps {
   meta: PracticeRoundMeta;
   historyEntries: PracticeHistoryEntry[];
   onUpdateMeta: (updater: (prev: PracticeRoundMeta) => PracticeRoundMeta) => void;
-  onSetHistoryEntries: React.Dispatch<React.SetStateAction<PracticeHistoryEntry[]>>;
+  onRecordHistoryEntry: (entryInput: Omit<PracticeHistoryEntry, "id" | "recordedAt">) => void;
+  onDeleteHistoryEntry: (id: string) => void;
+  onClearHistory: () => void;
   onSwitchSide: (nextSide: Side) => void;
   onRestart: () => void;
 }
@@ -102,7 +268,9 @@ function PracticeRound({
   meta,
   historyEntries,
   onUpdateMeta,
-  onSetHistoryEntries,
+  onRecordHistoryEntry,
+  onDeleteHistoryEntry,
+  onClearHistory,
   onSwitchSide,
   onRestart,
 }: PracticeRoundProps) {
@@ -155,6 +323,13 @@ function PracticeRound({
     return () => window.clearTimeout(timer);
   }, [aiCandidates, aiTurn, currentStepIndex, draft.heroMap.size, gameNumber, isLoading, lockHero]);
 
+  // Record synced remote signatures so hydrated history entries are never re-recorded as duplicates
+  useEffect(() => {
+    for (const item of historyEntries) {
+      handledSignaturesRef.current.add(item.signature);
+    }
+  }, [historyEntries]);
+
   // Auto-save completed 18-step AI draft once model win evaluation is ready
   useEffect(() => {
     if (
@@ -172,31 +347,34 @@ function PracticeRound({
       blueBans: draft.blueBans,
       redBans: draft.redBans,
     });
-    if (handledSignaturesRef.current.has(signature)) return;
+    if (meta.recordedSignatures.includes(signature) || handledSignaturesRef.current.has(signature)) return;
     handledSignaturesRef.current.add(signature);
-
-    onSetHistoryEntries((prev) =>
-      recordPracticeHistoryEntry(scope, prev, {
-        signature,
-        gameNumber,
-        gameCount,
-        startingSide,
-        playerSide,
-        bluePicks: [...draft.bluePicks],
-        redPicks: [...draft.redPicks],
-        blueBans: [...draft.blueBans],
-        redBans: [...draft.redBans],
-        playerEstimate,
-        previousEstimates: { ...previousEstimates },
-        globalBans: {
-          ...draft.globalBans,
-          teamAUsed: [...draft.globalBans.teamAUsed],
-          teamBUsed: [...draft.globalBans.teamBUsed],
-          universalBans: [...draft.globalBans.universalBans],
-        },
-        seriesGames: [...draft.seriesGames],
-      }),
+    onUpdateMeta((prev) =>
+      prev.recordedSignatures.includes(signature)
+        ? prev
+        : { ...prev, recordedSignatures: [...prev.recordedSignatures.slice(-19), signature] },
     );
+
+    onRecordHistoryEntry({
+      signature,
+      gameNumber,
+      gameCount,
+      startingSide,
+      playerSide,
+      bluePicks: [...draft.bluePicks],
+      redPicks: [...draft.redPicks],
+      blueBans: [...draft.blueBans],
+      redBans: [...draft.redBans],
+      playerEstimate,
+      previousEstimates: { ...previousEstimates },
+      globalBans: {
+        ...draft.globalBans,
+        teamAUsed: [...draft.globalBans.teamAUsed],
+        teamBUsed: [...draft.globalBans.teamBUsed],
+        universalBans: [...draft.globalBans.universalBans],
+      },
+      seriesGames: [...draft.seriesGames],
+    });
   }, [
     currentStep,
     draft.blueBans,
@@ -208,12 +386,13 @@ function PracticeRound({
     gameCount,
     gameNumber,
     isLoading,
+    meta.recordedSignatures,
     meta.sessionId,
-    onSetHistoryEntries,
+    onRecordHistoryEntry,
+    onUpdateMeta,
     playerEstimate,
     playerSide,
     previousEstimates,
-    scope,
     startingSide,
   ]);
 
@@ -277,6 +456,9 @@ function PracticeRound({
       startingSide: entry.startingSide,
       gameCount: entry.gameCount,
       previousEstimates: entry.previousEstimates ?? {},
+      recordedSignatures: prev.recordedSignatures.includes(entry.signature)
+        ? prev.recordedSignatures
+        : [...prev.recordedSignatures.slice(-19), entry.signature],
     }));
     draft.importDraft({
       bluePicks: entry.bluePicks,
@@ -723,8 +905,8 @@ function PracticeRound({
           entries={historyEntries}
           heroMap={draft.heroMap}
           onLoadEntry={handleLoadHistoryEntry}
-          onDeleteEntry={(id) => onSetHistoryEntries((prev) => deletePracticeHistoryEntry(scope, prev, id))}
-          onClearAll={() => onSetHistoryEntries(clearPracticeHistory(scope))}
+          onDeleteEntry={onDeleteHistoryEntry}
+          onClearAll={onClearHistory}
           onClose={() => setIsHistoryOpen(false)}
         />
       )}

@@ -495,3 +495,36 @@ class CombatBuildsSyncSchema(BaseModel):
     enable_kiting: bool = True
     enable_actives: bool = True
     updatedAt: int = Field(default=0, ge=0, le=9223372036854775807)
+
+
+class PracticeHistoryEntrySchema(BaseModel):
+    id: ShortStr
+    signature: str = Field(min_length=1, max_length=512)
+    recordedAt: str = Field(min_length=1, max_length=64)
+    gameNumber: int = Field(default=1, ge=1, le=7)
+    gameCount: Literal[1, 3, 5, 7] = 1
+    startingSide: Literal["blue", "red"] = "blue"
+    playerSide: Literal["blue", "red"] = "blue"
+    bluePicks: list[ShortStr] = Field(min_length=5, max_length=5)
+    redPicks: list[ShortStr] = Field(min_length=5, max_length=5)
+    blueBans: list[ShortStr] = Field(default_factory=list, max_length=4)
+    redBans: list[ShortStr] = Field(default_factory=list, max_length=4)
+    playerEstimate: FinitePct = 50.0
+    previousEstimates: dict[int, FinitePct | None] | None = Field(default=None, max_length=7)
+    globalBans: GlobalBanStateSchema | None = None
+    seriesGames: list[RecordedDraftGameSchema] | None = Field(default=None, max_length=7)
+
+    @field_validator("previousEstimates")
+    @classmethod
+    def validate_previous_estimate_keys(cls, value: dict[int, float | None] | None) -> dict[int, float | None] | None:
+        if value is None:
+            return None
+        for key in value:
+            if key < 1 or key > 7:
+                raise ValueError("Game number in previousEstimates must be between 1 and 7")
+        return value
+
+
+class PracticeHistorySyncSchema(BaseModel):
+    entries: list[PracticeHistoryEntrySchema] = Field(default_factory=list, max_length=100)
+    updatedAt: int = Field(default=0, ge=0, le=9223372036854775807)

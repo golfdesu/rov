@@ -24,7 +24,12 @@ export function setSessionMismatchHandler(handler: ((status: 401 | 409) => void)
 
 function buildSyncHeaders(url: string, extra?: Record<string, string>): Record<string, string> {
   const headers: Record<string, string> = { ...(extra ?? {}) };
-  if (expectedAuthUser && (url.startsWith("/draft/session") || url.startsWith("/combat/builds"))) {
+  if (
+    expectedAuthUser &&
+    (url.startsWith("/draft/session") ||
+      url.startsWith("/draft/practice-history") ||
+      url.startsWith("/combat/builds"))
+  ) {
     headers["X-Expected-User"] = expectedAuthUser;
   }
   return headers;

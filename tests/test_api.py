@@ -1128,6 +1128,55 @@ def test_multi_user_auth_and_database_isolation(tmp_path, monkeypatch):
     assert cleared["seriesGames"] == []
     assert cleared["updatedAt"] > 0
 
+    # Practice history cross-device sync is isolated from main Draft Board & protected by X-Expected-User
+    assert client_b.get("/draft/practice-history").json() == {"entries": [], "updatedAt": 0}
+    practice_entry = {
+        "id": "p-1",
+        "signature": "sess1|G1|blue|Valhein,Hayate,Toro,Krixi,Zuka|Tel'Annas,Yorn,Thane,Tulen,Butterfly|Murad|Florentino",
+        "recordedAt": "2026-11-21T13:00:00Z",
+        "gameNumber": 1,
+        "gameCount": 3,
+        "startingSide": "blue",
+        "playerSide": "blue",
+        "bluePicks": ["Valhein", "Hayate", "Toro", "Krixi", "Zuka"],
+        "redPicks": ["Tel'Annas", "Yorn", "Thane", "Tulen", "Butterfly"],
+        "blueBans": ["Murad"],
+        "redBans": ["Florentino"],
+        "playerEstimate": 54.2,
+    }
+    assert (
+        client_a.put(
+            "/draft/practice-history",
+            json={"entries": [practice_entry], "updatedAt": 1761650005000},
+            headers={"X-Expected-User": "user_alpha"},
+        ).status_code
+        == 200
+    )
+    # Stale timestamp must not overwrite newer Practice history
+    assert (
+        client_a.put(
+            "/draft/practice-history",
+            json={"entries": [], "updatedAt": 1761650004000},
+            headers={"X-Expected-User": "user_alpha"},
+        ).status_code
+        == 200
+    )
+    res_p_a = client_a.get("/draft/practice-history", headers={"X-Expected-User": "user_alpha"})
+    assert res_p_a.status_code == 200
+    assert len(res_p_a.json()["entries"]) == 1
+    assert client_b.get("/draft/practice-history").json()["entries"] == []
+    assert (
+        client_b.put(
+            "/draft/practice-history",
+            json={"entries": [], "updatedAt": 1},
+            headers={"X-Expected-User": "user_alpha"},
+        ).status_code
+        == 409
+    )
+    assert client_a.delete("/draft/practice-history", headers={"X-Expected-User": "user_alpha"}).status_code == 200
+    assert client_a.get("/draft/practice-history").json()["entries"] == []
+    assert client_a.get("/draft/practice-history").json()["updatedAt"] > 0
+
 
 def test_sota_only_locked_endpoints_and_engine_normalization(tmp_path, monkeypatch):
     from src.config import config

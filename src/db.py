@@ -256,6 +256,12 @@ class UserDatabase:
                         updated_at INTEGER NOT NULL
                     );
 
+                    CREATE TABLE IF NOT EXISTS user_practice_histories (
+                        user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+                        payload_json TEXT NOT NULL,
+                        updated_at INTEGER NOT NULL
+                    );
+
                     CREATE TABLE IF NOT EXISTS user_oauth_accounts (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -340,6 +346,7 @@ class UserDatabase:
                       )
                       AND NOT EXISTS (SELECT 1 FROM user_draft_states d WHERE d.user_id = u.id)
                       AND NOT EXISTS (SELECT 1 FROM user_combat_builds c WHERE c.user_id = u.id)
+                      AND NOT EXISTS (SELECT 1 FROM user_practice_histories p WHERE p.user_id = u.id)
                     ORDER BY u.created_at ASC
                     LIMIT 100
                 )
@@ -650,69 +657,70 @@ class UserDatabase:
         with self._lock, self._connect() as conn:
             conn.execute("DELETE FROM auth_sessions WHERE token_hash = ?", (token_hash,))
 
-    def get_user_draft_state(self, user_id: int) -> dict | None:
+    _USER_STATE_TABLES = ("user_draft_states", "user_combat_builds", "user_practice_histories")
+
+    def _get_user_json_state(self, table: str, user_id: int) -> dict | None:
+        if table not in self._USER_STATE_TABLES:
+            raise ValueError(f"Unsupported user state table: {table}")
         self.ensure_schema()
         with self._lock, self._connect() as conn:
             row = conn.execute(
-                "SELECT payload_json FROM user_draft_states WHERE user_id = ?",
+                f"SELECT payload_json FROM {table} WHERE user_id = ?",
                 (user_id,),
             ).fetchone()
         if row is None:
             return None
         return _safe_json_loads(str(row["payload_json"]))
 
-    def save_user_draft_state(self, user_id: int, payload: dict, updated_at: int) -> None:
+    def _save_user_json_state(self, table: str, user_id: int, payload: dict, updated_at: int) -> None:
+        if table not in self._USER_STATE_TABLES:
+            raise ValueError(f"Unsupported user state table: {table}")
         encoded = json.dumps(payload, ensure_ascii=False, allow_nan=False)
         self.ensure_schema()
         with self._lock, self._connect() as conn:
             conn.execute(
-                """
-                INSERT INTO user_draft_states (user_id, payload_json, updated_at)
+                f"""
+                INSERT INTO {table} (user_id, payload_json, updated_at)
                 VALUES (?, ?, ?)
                 ON CONFLICT(user_id) DO UPDATE SET
                     payload_json = excluded.payload_json,
                     updated_at = excluded.updated_at
-                WHERE excluded.updated_at >= user_draft_states.updated_at
+                WHERE excluded.updated_at >= {table}.updated_at
                 """,
                 (user_id, encoded, updated_at),
             )
 
-    def clear_user_draft_state(self, user_id: int) -> None:
+    def _clear_user_json_state(self, table: str, user_id: int) -> None:
         # Store an empty tombstone with current timestamp so stale offline clients cannot resurrect cleared state.
         tombstone_at = int(time.time() * 1000)
-        self.save_user_draft_state(user_id, {"updatedAt": tombstone_at}, tombstone_at)
+        self._save_user_json_state(table, user_id, {"updatedAt": tombstone_at}, tombstone_at)
+
+    def get_user_draft_state(self, user_id: int) -> dict | None:
+        return self._get_user_json_state("user_draft_states", user_id)
+
+    def save_user_draft_state(self, user_id: int, payload: dict, updated_at: int) -> None:
+        self._save_user_json_state("user_draft_states", user_id, payload, updated_at)
+
+    def clear_user_draft_state(self, user_id: int) -> None:
+        self._clear_user_json_state("user_draft_states", user_id)
 
     def get_user_combat_builds(self, user_id: int) -> dict | None:
-        self.ensure_schema()
-        with self._lock, self._connect() as conn:
-            row = conn.execute(
-                "SELECT payload_json FROM user_combat_builds WHERE user_id = ?",
-                (user_id,),
-            ).fetchone()
-        if row is None:
-            return None
-        return _safe_json_loads(str(row["payload_json"]))
+        return self._get_user_json_state("user_combat_builds", user_id)
 
     def save_user_combat_builds(self, user_id: int, payload: dict, updated_at: int) -> None:
-        encoded = json.dumps(payload, ensure_ascii=False, allow_nan=False)
-        self.ensure_schema()
-        with self._lock, self._connect() as conn:
-            conn.execute(
-                """
-                INSERT INTO user_combat_builds (user_id, payload_json, updated_at)
-                VALUES (?, ?, ?)
-                ON CONFLICT(user_id) DO UPDATE SET
-                    payload_json = excluded.payload_json,
-                    updated_at = excluded.updated_at
-                WHERE excluded.updated_at >= user_combat_builds.updated_at
-                """,
-                (user_id, encoded, updated_at),
-            )
+        self._save_user_json_state("user_combat_builds", user_id, payload, updated_at)
 
     def clear_user_combat_builds(self, user_id: int) -> None:
-        # Store an empty tombstone with current timestamp so stale offline clients cannot resurrect cleared builds.
-        tombstone_at = int(time.time() * 1000)
-        self.save_user_combat_builds(user_id, {"updatedAt": tombstone_at}, tombstone_at)
+        self._clear_user_json_state("user_combat_builds", user_id)
+
+    def get_user_practice_history(self, user_id: int) -> dict | None:
+        return self._get_user_json_state("user_practice_histories", user_id)
+
+    def save_user_practice_history(self, user_id: int, payload: dict, updated_at: int) -> None:
+        self._save_user_json_state("user_practice_histories", user_id, payload, updated_at)
+
+    def clear_user_practice_history(self, user_id: int) -> None:
+        self._clear_user_json_state("user_practice_histories", user_id)
 
     def get_pricing_survey_choice(self, user_id: int) -> str | None:
         self.ensure_schema()
