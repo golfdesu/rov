@@ -27,6 +27,60 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-21 22:14 (UTC+7) — Single-Row Mobile Practice Sub-Header & Distinct New Round Icon (Dev)
+**Agent:** Antigravity / Claude Sonnet
+
+### ✅ Completed Work
+- **Compact Mobile Sub-Header (`frontend/src/components/PracticeDraftView.tsx`):**
+  - Compressed the Practice vs AI controls bar on `< sm` (`< 640px`) into a single `39px` row (eliminating 3–4 wrapped lines on mobile while keeping the full Desktop/iPad bar untouched): hidden redundant `"ฝึกดราฟต์ vs AI"` header, replaced the 4-button `Bo1..Bo7` radiogroup with a compact mobile `<select>` + `G1/7` badge, abbreviated side toggles to `BLUE` / `RED`, and switched `"ตัวช่วย"`, `"ประวัติ"`, and `"เริ่มรอบใหม่"` to icon-first `>= 28px` touch targets with accessible `aria-label` / `title` attributes (`HEADER_ACTION_CLASS`).
+- **Visual Differentiation (`PlusCircle` vs `RotateCcw`):**
+  - Replaced `RotateCcw` on the **"เริ่มรอบใหม่"** (new series) button with solid gold `PlusCircle` (`border-gold bg-gold font-bold text-bg`), distinguishing it from the red **`RESET`** (`RotateCcw`) current-game reset button.
+
+### 📁 Modified Files
+- `frontend/src/components/PracticeDraftView.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm run lint` (`oxlint`): `0` warnings, `0` errors across 64 files.
+- `npm run build` (`tsc -b && vite build`): succeeded (`dist/` rebuilt cleanly in `1.32s`).
+- `ruff check --fix .` & `ruff format .`: passed cleanly (`119` Python files unchanged).
+- Playwright E2E check on `http://localhost:3000/#practice` across `360x800`, `390x844`, and `1440x900`: confirmed single-row sub-header heights (`39px` at `360px` and `390px`, `43px` at `1440px`), zero horizontal overflow (`scrollWidth <= clientWidth`), distinct `lucide-circle-plus` vs `lucide-rotate-ccw` icons, working mobile `Bo5` select (`G1/5`), and `0` console/page errors.
+
+### ⚠️ Open Issues / Important Notes
+- Running on local dev (`http://localhost:3000` / `http://127.0.0.1:8000`) only; awaiting user review before deploying to production (`minidraft.app`).
+
+---
+
+## 📅 2026-11-21 22:06 (UTC+7) — Full-Screen Focus Lock During Desktop/iPad Hero Replacement (Dev)
+**Agent:** Antigravity / Claude Sonnet
+
+### ✅ Completed Work
+- **Focus Lock & Scrim (`frontend/src/components/DraftBoardView.tsx`, `frontend/src/components/TeamColumn.tsx`):**
+  - Added full-screen focus-lock backdrop (`data-replace-backdrop`, `fixed inset-0 z-30 bg-black/65 backdrop-blur-[1px]`) while Desktop/iPad (`>= 768px`) is in Spotlight Replace Mode (`editingSlot`), absorbing clicks over the top navbar, series controls, `ScoreBar`, `AiPanel`, and opposite `TeamColumn`.
+  - Elevated only `HeroGrid` (`relative z-40` with `heroGridSpotlightRef`) and the edited side's `TeamColumn` (`relative z-40 pointer-events-none`) above the scrim.
+  - Locked `TeamColumn` (`isReplaceLocked = Boolean(editingSlot)`) by disabling slot edit clicks, ghost lock clicks, and compact/full Global Ban buttons, and dimming non-edited slots (`opacity-45`) in the same team column so only **`กำลังแก้`** remains bright.
+  - Trapped `Tab` / `Shift+Tab` focus strictly inside `heroGridSpotlightRef` (before the `typing` early-return guard) and disabled board Undo/Redo (`Ctrl/Cmd+Z/Y`) until the user picks a hero, switches to `"เปลี่ยนเลน"`, clicks `"ยกเลิก"`, or presses `Esc`.
+
+### 📁 Modified Files
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/components/HeroGrid.tsx`
+- `frontend/src/components/TeamColumn.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm run lint` (`oxlint`): `0` warnings, `0` errors across 64 files.
+- `npm run build` (`tsc -b && vite build`): succeeded (`dist/` rebuilt cleanly in `1.61s`).
+- `ruff check --fix .` & `ruff format .`: passed cleanly (`119` Python files unchanged).
+- Playwright E2E check against local Vite dev (`http://localhost:3000`) across 3 viewports (`1440x900` Desktop, `820x1180` iPad, `390x844` Phone):
+  - **Desktop (`1440x900`) & iPad (`820x1180`):** Verified `[data-replace-backdrop]` intercepts clicks on Navbar, `+ แมตช์ใหม่`, Undo (`button[aria-label="ย้อนกลับ"]`), `AiPanel`, and opposite `TeamColumn`; non-edited slots in the same team dim (`opacity-45`) and ignore clicks; `Ctrl+Z` does not undo; `Tab` / `Shift+Tab` stay trapped inside `HeroGrid`; two-step `Esc` clears search then exits; `HeroGrid` keeps zero height shift (`472.75px -> 472.75px`); Ban, Pick, and 18/18-complete replacements unlock the full UI cleanly.
+  - **Phone (`390x844`):** Verified `<HeroPickerModal mobileSheet />` opens for both Ban 1 and Pick 1 -> `"เปลี่ยนฮีโร่"` while remaining on the `"กระดาน & แบน"` tab, with `0` console/page errors across all 3 viewports.
+
+### ⚠️ Open Issues / Important Notes
+- Running on local dev (`http://localhost:3000` / `http://127.0.0.1:8000`) only; awaiting user confirmation before deploying to production (`minidraft.app`).
+
+---
+
 ## 📅 2026-11-21 21:11 (UTC+7) — Cross-Device Sync for Draft vs AI History (`/draft/practice-history`) & Bug Audit
 **Agent:** Antigravity / Claude Sonnet
 

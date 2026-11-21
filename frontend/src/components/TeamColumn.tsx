@@ -16,6 +16,8 @@ interface TeamColumnProps {
   pickLanes?: Record<string, LaneKey>;
   timedOutHeroes?: Record<string, "late" | "autolock">;
   conflictingSlots?: readonly DraftSlot[];
+  editingSlot?: DraftSlot | null;
+  banOpensDialog?: boolean;
   onEditSlot?: (slot: DraftSlot) => void;
   usedHeroes?: string[];
   usedHeroOriginGames?: Record<string, number>;
@@ -31,12 +33,16 @@ interface TeamColumnProps {
   variant?: "full" | "compact";
 }
 
-function slotControls(activate?: () => void, edit?: { label: string; id: string }) {
+function slotControls(
+  activate?: () => void,
+  edit?: { label: string; id: string; hasPopup?: boolean; isEditing?: boolean },
+) {
   return {
     role: activate ? "button" : undefined,
     tabIndex: activate ? 0 : undefined,
     "aria-label": edit?.label,
-    "aria-haspopup": edit ? "dialog" as const : undefined,
+    "aria-haspopup": edit?.hasPopup ? ("dialog" as const) : undefined,
+    "aria-current": edit?.isEditing ? ("true" as const) : undefined,
     "data-draft-slot": edit?.id,
     onClick: activate,
     onKeyDown: activate ? (event: KeyboardEvent<HTMLDivElement>) => {
@@ -66,6 +72,8 @@ export function TeamColumn({
   pickLanes = {},
   timedOutHeroes = {},
   conflictingSlots = [],
+  editingSlot = null,
+  banOpensDialog = false,
   onEditSlot,
   usedHeroes = [],
   usedHeroOriginGames = {},
@@ -82,9 +90,9 @@ export function TeamColumn({
 }: TeamColumnProps) {
   const { t } = useLanguage();
   const isBlue = side === "blue";
-  const isMyTurn = currentStep?.side === side;
-  const activePickSlot = currentStep?.side === side && currentStep?.action === "pick" ? picks.length : -1;
-  const activeBanSlot = currentStep?.side === side && currentStep?.action === "ban" ? bans.length : -1;
+  const isMyTurn = !editingSlot && currentStep?.side === side;
+  const activePickSlot = !editingSlot && currentStep?.side === side && currentStep?.action === "pick" ? picks.length : -1;
+  const activeBanSlot = !editingSlot && currentStep?.side === side && currentStep?.action === "ban" ? bans.length : -1;
   const accent = isBlue ? "text-blue" : "text-red";
   const heroPrimaryLane = (h: Hero) =>
     laneKey(h.main_pro_lane && h.main_pro_lane !== "Unpicked" ? h.main_pro_lane : h.lane);
@@ -97,9 +105,14 @@ export function TeamColumn({
     if (Object.hasOwn(LANE_SHORT, lane)) laneCounts.set(lane, (laneCounts.get(lane) ?? 0) + 1);
   }
 
+  const isReplaceLocked = Boolean(editingSlot);
+
   const getEdit = (action: DraftSlot["action"], index: number, hero?: string) => {
     if (!hero || !onEditSlot) return undefined;
     const conflict = conflictingSlots.some((slot) => slot.side === side && slot.action === action && slot.index === index);
+    const isEditing = Boolean(
+      editingSlot && editingSlot.side === side && editingSlot.action === action && editingSlot.index === index,
+    );
     const lane = action === "pick" ? displayedPickLanes[index] : "";
     const overlappingLane = (laneCounts.get(lane) ?? 0) > 1;
     const label = t(action === "pick" ? "แก้ Pick {0} ({1})" : "แก้ Ban {0} ({1})", index + 1, displayName(hero));
@@ -112,7 +125,9 @@ export function TeamColumn({
       ].filter(Boolean).join(" · "),
       conflict,
       overlappingLane,
-      activate: () => onEditSlot({ side, action, index }),
+      isEditing,
+      hasPopup: action === "pick" ? !isEditing : banOpensDialog,
+      activate: isReplaceLocked ? undefined : () => onEditSlot({ side, action, index }),
     };
   };
 
@@ -126,7 +141,7 @@ export function TeamColumn({
           const ghostBanOffset = i - bans.length;
           const ghostBan =
             !bName && ghostBanOffset >= 0 && ghostBanOffset < 2 ? predictedNextBans[ghostBanOffset] : undefined;
-          const canClickGhostBan = Boolean(ghostBan && isBanActive && onLockHero);
+          const canClickGhostBan = Boolean(ghostBan && isBanActive && onLockHero && !isReplaceLocked);
           const edit = getEdit("ban", i, bName);
           const activate = edit?.activate ?? (canClickGhostBan && ghostBan ? () => onLockHero?.(ghostBan.hero_name) : undefined);
           return (
@@ -149,12 +164,14 @@ export function TeamColumn({
               className={`relative aspect-square h-7.5 w-7.5 shrink-0 overflow-hidden border bg-bg max-[374px]:size-6 min-[380px]:h-8 min-[380px]:w-8 sm:h-9 sm:w-9 ${
                 isBanActive
                   ? "border-gold animate-slot-pulse"
-                  : banTimedOut || edit?.conflict
-                    ? "border-red ring-1 ring-red/70"
+                  : edit?.isEditing
+                    ? "border-gold ring-2 ring-gold/80 animate-slot-pulse"
+                    : banTimedOut || edit?.conflict
+                      ? "border-red ring-1 ring-red/70"
                     : ghostBan
                       ? "border-dashed border-red/50"
                       : "border-line"
-              } ${i === 2 ? (isBlue ? "ml-1" : "mr-1") : ""} ${activate ? "cursor-pointer hover:border-gold/60 focus-visible:border-gold" : ""}`}
+              } ${isReplaceLocked && !edit?.isEditing ? "opacity-45" : ""} ${i === 2 ? (isBlue ? "ml-1" : "mr-1") : ""} ${activate ? "cursor-pointer hover:border-gold/60 focus-visible:border-gold" : ""}`}
             >
               {edit?.conflict && <ConflictOutline />}
               {bName ? (
@@ -170,6 +187,11 @@ export function TeamColumn({
                         {t("ไม่ทัน")}
                       </span>
                     </>
+                  )}
+                  {edit?.isEditing && (
+                    <span className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gold py-[1px] text-center font-display text-[7px] font-extrabold leading-none text-bg sm:text-[8px]">
+                      {t("แก้")}
+                    </span>
                   )}
                 </>
               ) : ghostBan ? (
@@ -217,9 +239,10 @@ export function TeamColumn({
             {onOpenGlobalBanForTeam ? (
               <button
                 type="button"
+                disabled={isReplaceLocked}
                 onClick={onOpenGlobalBanForTeam}
                 title={t("Global Ban ของ {0} ({1} ตัว)", teamName, usedHeroes.length)}
-                className={`flex h-7 shrink-0 items-center gap-1 border px-1.5 font-mono text-[10px] font-bold sm:h-9 sm:px-2.5 sm:text-xs ${
+                className={`flex h-7 shrink-0 items-center gap-1 border px-1.5 font-mono text-[10px] font-bold disabled:cursor-not-allowed disabled:opacity-45 sm:h-9 sm:px-2.5 sm:text-xs ${
                   isBlue
                     ? "border-blue/40 bg-blue/10 text-blue hover:bg-blue/20"
                     : "border-red/40 bg-red/10 text-red hover:bg-red/20"
@@ -262,7 +285,7 @@ export function TeamColumn({
             const ghostOffset = i - picks.length;
             const ghost = !name && ghostOffset >= 0 && ghostOffset < 2 ? predictedNextPicks[ghostOffset] : undefined;
             const ghostHero = ghost ? heroMap.get(ghost.hero_name) : undefined;
-            const canClickGhost = Boolean(ghost && isActive && onLockHero);
+            const canClickGhost = Boolean(ghost && isActive && onLockHero && !isReplaceLocked);
             const edit = getEdit("pick", i, name);
             const activate = edit?.activate ?? (canClickGhost && ghost ? () => onLockHero?.(ghost.hero_name) : undefined);
 
@@ -284,14 +307,16 @@ export function TeamColumn({
                 className={`relative aspect-square w-full min-w-0 overflow-hidden border bg-bg [direction:ltr] ${
                   isActive
                     ? "border-gold animate-slot-pulse"
-                    : pickTimedOut || edit?.conflict || edit?.overlappingLane
-                      ? "border-red ring-1 ring-red/70 transition-colors hover:border-gold"
+                    : edit?.isEditing
+                      ? "border-gold ring-2 ring-gold/80 animate-slot-pulse"
+                      : pickTimedOut || edit?.conflict || edit?.overlappingLane
+                        ? "border-red ring-1 ring-red/70 transition-colors hover:border-gold"
                       : ghost
                         ? "border-dashed border-line-strong"
                         : edit
                           ? "border-line transition-colors hover:border-gold/60"
                           : "border-line"
-                } ${activate ? "cursor-pointer focus-visible:border-gold" : ""}`}
+                } ${isReplaceLocked && !edit?.isEditing ? "opacity-45" : ""} ${activate ? "cursor-pointer focus-visible:border-gold" : ""}`}
               >
                 {edit?.conflict && <ConflictOutline />}
                 {name ? (
@@ -324,6 +349,11 @@ export function TeamColumn({
                           <span>{t("ไม่ทัน")}</span>
                         </span>
                       </>
+                    )}
+                    {edit?.isEditing && (
+                      <span className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gold py-0.5 text-center font-display text-[8px] font-extrabold leading-none text-bg">
+                        {t("กำลังแก้")}
+                      </span>
                     )}
                     <div className="hidden sm:block absolute inset-x-0 bottom-0 truncate px-0.5 pb-0.5 text-center font-display text-[9px] font-bold leading-tight text-ink sm:px-1 sm:text-xs">
                       {displayName(name)}
@@ -386,7 +416,7 @@ export function TeamColumn({
           const ghostOffset = i - picks.length;
           const ghost = !name && ghostOffset >= 0 && ghostOffset < 2 ? predictedNextPicks[ghostOffset] : undefined;
           const ghostHero = ghost ? heroMap.get(ghost.hero_name) : undefined;
-          const canClickGhost = Boolean(ghost && isActive && onLockHero);
+          const canClickGhost = Boolean(ghost && isActive && onLockHero && !isReplaceLocked);
           const edit = getEdit("pick", i, name);
           const activate = edit?.activate ?? (canClickGhost && ghost ? () => onLockHero?.(ghost.hero_name) : undefined);
           const triggerList = ghost?.triggered_by?.map(displayName) ?? [];
@@ -422,14 +452,16 @@ export function TeamColumn({
               className={`relative min-h-[52px] flex-1 max-h-[96px] overflow-hidden border bg-panel clip-chamfer ${
                 isActive
                   ? "border-gold animate-slot-pulse"
-                  : pickTimedOut || edit?.conflict || edit?.overlappingLane
-                    ? "border-red/85 transition-colors hover:border-gold"
+                  : edit?.isEditing
+                    ? "border-gold ring-2 ring-gold/80 animate-slot-pulse"
+                    : pickTimedOut || edit?.conflict || edit?.overlappingLane
+                      ? "border-red/85 transition-colors hover:border-gold"
                     : ghost
                       ? "border-dashed border-line-strong/80"
                       : edit
                         ? "border-line transition-colors hover:border-gold/60"
                         : "border-line"
-              } ${activate ? "cursor-pointer focus-visible:border-gold" : ""}`}
+              } ${isReplaceLocked && !edit?.isEditing ? "opacity-45" : ""} ${activate ? "cursor-pointer focus-visible:border-gold" : ""}`}
             >
               {edit?.conflict && <ConflictOutline />}
               {name ? (
@@ -457,6 +489,11 @@ export function TeamColumn({
                       <span className="min-w-0 truncate font-display text-xs font-bold leading-tight tracking-wide sm:text-base xl:text-lg">
                         {displayName(name)}
                       </span>
+                      {edit?.isEditing && (
+                        <span className="inline-flex shrink-0 items-center bg-gold px-1.5 py-0.5 font-display text-[9px] font-extrabold leading-none tracking-wide text-bg sm:text-[10px]">
+                          {t("กำลังแก้")}
+                        </span>
+                      )}
                       {pickTimedOut && (
                         <span className="inline-flex shrink-0 items-center gap-1 border border-red/70 bg-red/20 px-1.5 py-0.5 font-display text-[9px] font-bold leading-none text-red sm:text-[10px]">
                           <ClockAlert className="h-2.5 w-2.5 shrink-0 sm:h-3 sm:w-3" />
@@ -582,7 +619,7 @@ export function TeamColumn({
             const ghostBanOffset = i - bans.length;
             const ghostBan =
               !name && ghostBanOffset >= 0 && ghostBanOffset < 2 ? predictedNextBans[ghostBanOffset] : undefined;
-            const canClickGhostBan = Boolean(ghostBan && isActive && onLockHero);
+            const canClickGhostBan = Boolean(ghostBan && isActive && onLockHero && !isReplaceLocked);
             const edit = getEdit("ban", i, name);
             const activate = edit?.activate ?? (canClickGhostBan && ghostBan ? () => onLockHero?.(ghostBan.hero_name) : undefined);
             const banTriggers = ghostBan?.triggered_by?.map(displayName) ?? [];
@@ -607,12 +644,14 @@ export function TeamColumn({
                 className={`relative aspect-square h-8.5 shrink-0 overflow-hidden border bg-panel sm:h-11 lg:h-11 xl:h-12 2xl:h-13 ${
                   isActive
                     ? "border-gold animate-slot-pulse"
-                    : banTimedOut || edit?.conflict
-                      ? "border-red ring-1 ring-red/75"
+                    : edit?.isEditing
+                      ? "border-gold ring-2 ring-gold/80 animate-slot-pulse"
+                      : banTimedOut || edit?.conflict
+                        ? "border-red ring-1 ring-red/75"
                       : ghostBan
                         ? "border-dashed border-red/50"
                         : "border-line"
-                } ${i === 2 ? (isBlue ? "ml-1 sm:ml-2" : "mr-1 sm:mr-2") : ""} ${activate ? "cursor-pointer hover:border-gold/60 focus-visible:border-gold" : ""}`}
+                } ${isReplaceLocked && !edit?.isEditing ? "opacity-45" : ""} ${i === 2 ? (isBlue ? "ml-1 sm:ml-2" : "mr-1 sm:mr-2") : ""} ${activate ? "cursor-pointer hover:border-gold/60 focus-visible:border-gold" : ""}`}
               >
                 {edit?.conflict && <ConflictOutline />}
                 {name ? (
@@ -629,6 +668,11 @@ export function TeamColumn({
                           <span className="hidden sm:inline">{t("แบนไม่ทัน")}</span>
                         </span>
                       </>
+                    )}
+                    {edit?.isEditing && (
+                      <span className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gold py-[1px] text-center font-display text-[8px] font-extrabold leading-none text-bg">
+                        {t("กำลังแก้")}
+                      </span>
                     )}
                   </>
                 ) : ghostBan ? (
@@ -689,8 +733,9 @@ export function TeamColumn({
           {onOpenGlobalBanForTeam && (
             <button
               type="button"
+              disabled={isReplaceLocked}
               onClick={onOpenGlobalBanForTeam}
-              className={`flex min-h-6 shrink-0 items-center gap-1 border px-1.5 py-0.5 font-display text-[10px] font-bold tracking-wide transition-colors sm:px-2 ${
+              className={`flex min-h-6 shrink-0 items-center gap-1 border px-1.5 py-0.5 font-display text-[10px] font-bold tracking-wide transition-colors disabled:cursor-not-allowed disabled:opacity-45 sm:px-2 ${
                 isBlue
                   ? "border-blue/50 bg-blue/10 text-blue hover:bg-blue hover:text-ink"
                   : "border-red/50 bg-red/10 text-red hover:bg-red hover:text-ink"
@@ -712,8 +757,9 @@ export function TeamColumn({
           onOpenGlobalBanForTeam ? (
             <button
               type="button"
+              disabled={isReplaceLocked}
               onClick={onOpenGlobalBanForTeam}
-              className="flex w-full min-w-0 items-center justify-center gap-1 border border-dashed border-line px-1.5 py-1.5 text-[10px] text-dim transition-colors hover:border-line-strong hover:bg-panel-2/50 hover:text-ink sm:text-[11px]"
+              className="flex w-full min-w-0 items-center justify-center gap-1 border border-dashed border-line px-1.5 py-1.5 text-[10px] text-dim transition-colors hover:border-line-strong hover:bg-panel-2/50 hover:text-ink disabled:cursor-not-allowed disabled:opacity-45 sm:text-[11px]"
             >
               <Plus className="h-3 w-3 shrink-0" />
               <span className="truncate"><StableButtonLabel message="เลือกฮีโร่ที่" /> {teamName} <StableButtonLabel message="ใช้แล้ว" /></span>
@@ -749,9 +795,10 @@ export function TeamColumn({
                 <button
                   key={name}
                   type="button"
+                  disabled={isReplaceLocked}
                   onClick={() => onRemoveUsedHero(name)}
                   title={t("{0} ({1} ใช้แล้ว{2} — คลิกเพื่อนำออก)", displayName(name), teamName, originGame ? t("ใน Game {0}", originGame) : "")}
-                  className="group flex max-w-full items-center gap-1 border border-line-strong bg-bg py-0.5 pr-1.5 pl-0.5 text-[10px] text-muted transition-colors hover:border-red/60 hover:bg-red/10 hover:text-ink sm:text-[11px]"
+                  className="group flex max-w-full items-center gap-1 border border-line-strong bg-bg py-0.5 pr-1.5 pl-0.5 text-[10px] text-muted transition-colors hover:border-red/60 hover:bg-red/10 hover:text-ink disabled:cursor-not-allowed disabled:opacity-45 sm:text-[11px]"
                 >
                   <div className="h-4.5 w-4.5 shrink-0 overflow-hidden sm:h-5 sm:w-5">
                     <HeroPortrait name={name} hero={hero} className="grayscale group-hover:grayscale-0" />

@@ -1,14 +1,16 @@
 import { type Message, translateMessage, useLanguage } from "../i18n/language";
 import {
   ArrowLeftRight,
+  ArrowRight,
   CheckCircle2,
   History,
   LayoutGrid,
   PlusCircle,
   Sparkles,
   Users,
+  X,
 } from "lucide-react";
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { MAX_SERIES_GAMES, type useDraft } from "../hooks/useDraft";
 import { useDraftTimer } from "../hooks/useDraftTimer";
 import type { LaneKey } from "../types/draft";
@@ -17,6 +19,7 @@ import {
   blueUsedHeroes,
   type DraftSlot,
   draftSlotKey,
+  getDraftSlotStep,
   getGameSeriesGroup,
   getGameUnlockStatus,
   getMaxUnlockedGame,
@@ -36,6 +39,7 @@ import { DraftPickActions } from "./DraftPickActions";
 import { FinishGameModal } from "./FinishGameModal";
 import { type GlobalBanCategoryKey, GlobalBanModal } from "./GlobalBanModal";
 import { HeroGrid } from "./HeroGrid";
+import { HeroPortrait } from "./HeroPortrait";
 import { NewSeriesModal } from "./NewSeriesModal";
 import { PickLaneModal } from "./PickLaneModal";
 import { ScoreBar } from "./ScoreBar";
@@ -44,6 +48,18 @@ import { TeamColumn } from "./TeamColumn";
 import { HeroPickerModal } from "./lab/HeroPickerModal";
 
 const RESULT_MESSAGES = { save: "บันทึกผล", saved: "บันทึกแล้ว", update: "อัปเดตผล" };
+const MOBILE_MEDIA_QUERY = "(max-width: 767px)";
+
+function subscribeMobileViewport(onStoreChange: () => void) {
+  if (typeof window === "undefined") return () => {};
+  const mq = window.matchMedia(MOBILE_MEDIA_QUERY);
+  mq.addEventListener("change", onStoreChange);
+  return () => mq.removeEventListener("change", onStoreChange);
+}
+
+function getIsMobileViewport() {
+  return typeof window !== "undefined" && window.matchMedia(MOBILE_MEDIA_QUERY).matches;
+}
 
 export type MobileDraftView = "draft" | "ai" | "teams";
 
@@ -125,6 +141,7 @@ export function DraftBoardView({
   } = draft;
 
   const searchRef = useRef<HTMLInputElement>(null);
+  const heroGridSpotlightRef = useRef<HTMLDivElement>(null);
   const conflictAnimationRef = useRef<Animation | null>(null);
   const conflictMessageId = useId();
   const [mobileView, setMobileView] = useState<MobileDraftView>("draft");
@@ -155,9 +172,13 @@ export function DraftBoardView({
   const currentGameKey = `${resolveSeriesName(globalBans)}#${globalBans.gameNumber}`;
   const [globalBanConflict] = globalBanConflicts;
   const conflictingHero = globalBanConflict?.hero;
+  const isMobileViewport = useSyncExternalStore(subscribeMobileViewport, getIsMobileViewport, () => false);
   const editingHero = slotEditor
     ? { bluePicks, redPicks, blueBans, redBans }[draftSlotKey(slotEditor.slot)][slotEditor.slot.index]
     : undefined;
+  const editingSlot = !isMobileViewport && slotEditor?.view === "hero" && editingHero ? slotEditor.slot : null;
+  const editingSlotStep = editingSlot ? (getDraftSlotStep(editingSlot) ?? currentStep) : currentStep;
+  const activeUnavailableHeroes = editingSlot ? getUnavailableHeroesForSlot(editingSlot) : unavailableHeroes;
 
   useEffect(() => () => conflictAnimationRef.current?.cancel(), [globalBanConflict]);
 
@@ -181,7 +202,7 @@ export function DraftBoardView({
         );
   }, [globalBanConflict]);
 
-  function closeSlotEditor() {
+  const closeSlotEditor = useCallback(() => {
     if (!slotEditor) return;
     const { slot } = slotEditor;
     setSlotEditor(null);
@@ -189,7 +210,18 @@ export function DraftBoardView({
       if (document.activeElement !== document.body) return;
       getVisibleDraftSlot(slot)?.focus({ preventScroll: true });
     });
-  }
+  }, [slotEditor]);
+
+  const openHeroReplace = useCallback((slot: DraftSlot) => {
+    setSlotEditor({ slot, view: "hero" });
+  }, []);
+
+  useEffect(() => {
+    if (!editingSlot) return;
+    window.requestAnimationFrame(() => {
+      searchRef.current?.focus({ preventScroll: true });
+    });
+  }, [editingSlot]);
 
   const fallbackTimerHero = useMemo(
     () =>
@@ -244,6 +276,24 @@ export function DraftBoardView({
       lockHero(heroName);
     },
     [globalBanConflict, emphasizeGlobalBanConflict, unavailableHeroes, timer.enabled, timer.isExpired, currentGameKey, lockHero],
+  );
+
+  const handleSelectOrLockHero = useCallback(
+    (heroName: string) => {
+      if (editingSlot && editingHero) {
+        if (!replaceHero(editingSlot, heroName)) return false;
+        setLateHeroMap((prev) => {
+          if (!prev[editingHero]) return prev;
+          const next = { ...prev };
+          delete next[editingHero];
+          return next;
+        });
+        setSlotEditor(null);
+        return true;
+      }
+      return handleLockHeroWithTimer(heroName);
+    },
+    [editingSlot, editingHero, replaceHero, handleLockHeroWithTimer],
   );
 
   const handleSwapSides = () => {
@@ -381,7 +431,9 @@ export function DraftBoardView({
       isHistoryModalOpen ||
       isNewSeriesModalOpen ||
       isFinishGameModalOpen ||
-      slotEditor !== null ||
+      slotEditor?.view === "actions" ||
+      slotEditor?.view === "lane" ||
+      (slotEditor?.view === "hero" && isMobileViewport) ||
       confirmState !== null
     ) {
       return;
@@ -390,20 +442,54 @@ export function DraftBoardView({
       if (typeof document !== "undefined" && document.querySelector('[role="dialog"], [role="alertdialog"]')) {
         return;
       }
+      if (e.key === "Escape" && editingSlot) {
+        e.preventDefault();
+        closeSlotEditor();
+        return;
+      }
+      if (e.key === "Tab" && editingSlot) {
+        const container = heroGridSpotlightRef.current;
+        if (!container) return;
+        const focusables = Array.from(
+          container.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), input:not([disabled]), select:not([disabled]), [href], [tabindex]:not([tabindex="-1"])',
+          ),
+        ).filter((el) => el.getClientRects().length > 0);
+        if (focusables.length === 0) {
+          e.preventDefault();
+          return;
+        }
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        const activeEl = document.activeElement as HTMLElement | null;
+        if (!activeEl || !container.contains(activeEl)) {
+          e.preventDefault();
+          (e.shiftKey ? last : first).focus();
+          return;
+        }
+        if (e.shiftKey && activeEl === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && activeEl === last) {
+          e.preventDefault();
+          first.focus();
+        }
+        return;
+      }
       const typing =
         e.target instanceof HTMLInputElement ||
         e.target instanceof HTMLTextAreaElement ||
         e.target instanceof HTMLSelectElement;
       if (typing) return;
 
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
+      if (!editingSlot && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
         e.preventDefault();
         if (e.shiftKey) {
           redo();
         } else {
           handleUndoWithTimer();
         }
-      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {
+      } else if (!editingSlot && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {
         e.preventDefault();
         redo();
       } else if (e.key === "/") {
@@ -411,6 +497,7 @@ export function DraftBoardView({
         searchRef.current?.focus();
       } else if (
         e.key === "Enter" &&
+        !editingSlot &&
         !(e.target instanceof HTMLButtonElement) &&
         !(e.target instanceof HTMLAnchorElement) &&
         !(e.target instanceof HTMLElement && e.target.getAttribute("role") === "button")
@@ -436,6 +523,9 @@ export function DraftBoardView({
     isNewSeriesModalOpen,
     isFinishGameModalOpen,
     slotEditor,
+    editingSlot,
+    isMobileViewport,
+    closeSlotEditor,
     confirmState,
     handleUndoWithTimer,
     redo,
@@ -459,7 +549,24 @@ export function DraftBoardView({
       pickLanes,
       timedOutHeroes,
       conflictingSlots: globalBanConflicts.map(({ slot }) => slot),
-      onEditSlot: (slot: DraftSlot) => setSlotEditor({ slot, view: slot.action === "pick" ? "actions" : "hero" }),
+      editingSlot,
+      banOpensDialog: isMobileViewport,
+      onEditSlot: (slot: DraftSlot) => {
+        if (
+          editingSlot &&
+          editingSlot.side === slot.side &&
+          editingSlot.action === slot.action &&
+          editingSlot.index === slot.index
+        ) {
+          closeSlotEditor();
+          return;
+        }
+        if (slot.action === "pick") {
+          setSlotEditor({ slot, view: "actions" });
+        } else {
+          openHeroReplace(slot);
+        }
+      },
       usedHeroes: isBlueSide ? bUsed : rUsed,
       usedHeroOriginGames: isBlueSide ? blueOriginGames : redOriginGames,
       rawUsedCount: isBlueSide
@@ -792,18 +899,27 @@ export function DraftBoardView({
           heroName={editingHero}
           hero={heroMap.get(editingHero)}
           pickNumber={slotEditor.slot.index + 1}
-          onChoose={(view) => setSlotEditor({ ...slotEditor, view })}
+          onChoose={(view) => {
+            if (view === "hero") {
+              openHeroReplace(slotEditor.slot);
+            } else {
+              setSlotEditor({ ...slotEditor, view });
+            }
+          }}
           onClose={closeSlotEditor}
         />
       )}
 
-      {slotEditor?.view === "hero" && editingHero && (
+      {isMobileViewport && slotEditor?.view === "hero" && editingHero && (
         <HeroPickerModal
           heroes={heroes}
           currentHero={editingHero}
           heroMap={heroMap}
-          title={t(slotEditor.slot.action === "pick" ? "แก้ Pick {0} ({1})" : "แก้ Ban {0} ({1})",
-            slotEditor.slot.index + 1, displayName(editingHero))}
+          title={t(
+            slotEditor.slot.action === "pick" ? "แก้ Pick {0} ({1})" : "แก้ Ban {0} ({1})",
+            slotEditor.slot.index + 1,
+            displayName(editingHero),
+          )}
           mobileSheet
           unavailableHeroes={getUnavailableHeroesForSlot(slotEditor.slot)}
           onSelect={(hero) => {
@@ -869,6 +985,14 @@ export function DraftBoardView({
         />
       )}
 
+      {editingSlot && (
+        <div
+          aria-hidden="true"
+          data-replace-backdrop
+          className="fixed inset-0 z-30 bg-black/65 backdrop-blur-[1px]"
+        />
+      )}
+
       <main className="mx-auto flex min-h-0 w-full max-w-[1920px] flex-1 flex-col gap-1.5 overflow-hidden px-2 py-1.5 sm:px-3 sm:py-2">
         {conflictMessage && globalBanConflict && (
           <div className="shrink-0">
@@ -888,8 +1012,8 @@ export function DraftBoardView({
                 <button
                   type="button"
                   aria-label={t("แก้เทิร์นนี้")}
-                  aria-haspopup="dialog"
-                  onClick={() => setSlotEditor({ slot: globalBanConflict.slot, view: "hero" })}
+                  aria-haspopup={isMobileViewport ? "dialog" : undefined}
+                  onClick={() => openHeroReplace(globalBanConflict.slot)}
                   className="min-h-7 min-w-12 shrink-0 border border-yellow-500/50 bg-yellow-500/10 px-2 font-bold hover:bg-yellow-500/20 sm:min-h-6"
                 >
                   <StableButtonLabel message="แก้" className="sm:hidden" />
@@ -934,10 +1058,28 @@ export function DraftBoardView({
             mobileView === "teams" ? "hidden md:grid" : "grid"
           }`}
         >
-          <div key={`compact-blue-${swapCount}`} className={`min-w-0 ${swapCount > 0 ? "animate-side-swap-flash" : ""}`}>
+          <div
+            key={`compact-blue-${swapCount}`}
+            className={`min-w-0 transition-opacity ${
+              editingSlot
+                ? editingSlot.side === "blue"
+                  ? "relative z-40 pointer-events-none"
+                  : "opacity-45 pointer-events-none"
+                : ""
+            } ${!editingSlot && swapCount > 0 ? "animate-side-swap-flash" : ""}`}
+          >
             <TeamColumn variant="compact" {...blueTeamColumnProps} />
           </div>
-          <div key={`compact-red-${swapCount}`} className={`min-w-0 ${swapCount > 0 ? "animate-side-swap-flash" : ""}`}>
+          <div
+            key={`compact-red-${swapCount}`}
+            className={`min-w-0 transition-opacity ${
+              editingSlot
+                ? editingSlot.side === "red"
+                  ? "relative z-40 pointer-events-none"
+                  : "opacity-45 pointer-events-none"
+                : ""
+            } ${!editingSlot && swapCount > 0 ? "animate-side-swap-flash" : ""}`}
+          >
             <TeamColumn variant="compact" {...redTeamColumnProps} />
           </div>
         </div>
@@ -969,7 +1111,13 @@ export function DraftBoardView({
           {/* Laptop / Desktop Left Column: Blue Team Full Board */}
           <div
             key={`desktop-blue-${swapCount}`}
-            className={`hidden min-h-0 flex-col lg:order-1 lg:flex ${swapCount > 0 ? "animate-side-swap-flash" : ""}`}
+            className={`hidden min-h-0 flex-col transition-opacity lg:order-1 lg:flex ${
+              editingSlot
+                ? editingSlot.side === "blue"
+                  ? "relative z-40 pointer-events-none"
+                  : "opacity-45 pointer-events-none"
+                : ""
+            } ${!editingSlot && swapCount > 0 ? "animate-side-swap-flash" : ""}`}
           >
             <TeamColumn variant="full" {...blueTeamColumnProps} />
           </div>
@@ -977,7 +1125,13 @@ export function DraftBoardView({
           {/* Laptop / Desktop Right Column: Red Team Full Board */}
           <div
             key={`desktop-red-${swapCount}`}
-            className={`hidden min-h-0 flex-col lg:order-3 lg:flex ${swapCount > 0 ? "animate-side-swap-flash" : ""}`}
+            className={`hidden min-h-0 flex-col transition-opacity lg:order-3 lg:flex ${
+              editingSlot
+                ? editingSlot.side === "red"
+                  ? "relative z-40 pointer-events-none"
+                  : "opacity-45 pointer-events-none"
+                : ""
+            } ${!editingSlot && swapCount > 0 ? "animate-side-swap-flash" : ""}`}
           >
             <TeamColumn variant="full" {...redTeamColumnProps} />
           </div>
@@ -986,7 +1140,12 @@ export function DraftBoardView({
           <div className="flex min-h-0 flex-1 flex-col gap-1.5 md:col-span-12 md:grid md:grid-cols-12 md:gap-2.5 lg:order-2 lg:col-span-1 lg:flex lg:flex-col lg:gap-2">
             {/* Mobile Quick AI Ribbon (Only on Mobile 'draft' view when Assistant is enabled) */}
             {mobileView === "draft" && assistantEnabled && (
-              <div className="shrink-0 md:hidden">
+              <div
+                aria-hidden={Boolean(editingSlot)}
+                className={`shrink-0 transition-opacity md:hidden ${
+                  editingSlot ? "pointer-events-none select-none opacity-30" : ""
+                }`}
+              >
                 <AiPanel
                   variant="ribbon"
                   recommendations={recommendations}
@@ -997,7 +1156,8 @@ export function DraftBoardView({
                   isLoading={isLoading}
                   blueWinRate={blueWinRate}
                   winHistory={winHistory}
-                  onLockHero={handleLockHeroWithTimer}
+                  allowLock={!editingSlot}
+                  onLockHero={handleSelectOrLockHero}
                 />
               </div>
             )}
@@ -1005,9 +1165,10 @@ export function DraftBoardView({
             {/* Full AI Panel: Shown on Mobile 'ai' view, iPad left pane (5 cols), and Laptop top deck */}
             {assistantEnabled ? (
               <div
-                className={`min-h-0 flex-col md:col-span-5 md:flex lg:shrink-0 ${
+                aria-hidden={Boolean(editingSlot)}
+                className={`min-h-0 flex-col transition-opacity md:col-span-5 md:flex lg:shrink-0 ${
                   mobileView === "ai" ? "flex flex-1" : "hidden"
-                }`}
+                } ${editingSlot ? "pointer-events-none select-none opacity-30" : ""}`}
               >
                 <AiPanel
                   variant="full"
@@ -1019,7 +1180,8 @@ export function DraftBoardView({
                   isLoading={isLoading}
                   blueWinRate={blueWinRate}
                   winHistory={winHistory}
-                  onLockHero={handleLockHeroWithTimer}
+                  allowLock={!editingSlot}
+                  onLockHero={handleSelectOrLockHero}
                 />
               </div>
             ) : (
@@ -1046,25 +1208,90 @@ export function DraftBoardView({
 
             {/* Hero Grid: Shown on Mobile 'draft' view, iPad right pane (7/12 cols), and Laptop bottom pane */}
             <div
+              ref={heroGridSpotlightRef}
               className={`min-h-0 flex-1 flex-col md:flex ${assistantEnabled ? "md:col-span-7" : "md:col-span-12"} ${
                 mobileView === "draft" ? "flex" : "hidden"
-              }`}
+              } ${editingSlot ? "relative z-40" : ""}`}
             >
               <HeroGrid
                 ref={searchRef}
                 heroes={heroes}
-                unavailableHeroes={unavailableHeroes}
+                unavailableHeroes={activeUnavailableHeroes}
                 blueUsedHeroes={bUsed}
                 redUsedHeroes={rUsed}
                 universalBans={globalBans.universalBans}
                 blueTeamName={bName}
                 redTeamName={rName}
-                recommendedRanks={recommendedRanks}
-                missingAllyLanes={assistantEnabled ? missingAllyLanes : []}
-                currentStep={currentStep}
+                recommendedRanks={editingSlot ? new Map() : recommendedRanks}
+                missingAllyLanes={editingSlot ? [] : assistantEnabled ? missingAllyLanes : []}
+                currentStep={editingSlotStep}
                 isLoading={assistantEnabled && isLoading}
                 isHeroesLoading={isHeroesLoading}
-                onLockHero={handleLockHeroWithTimer}
+                replacingHero={editingSlot ? (editingHero ?? null) : null}
+                replaceHeader={
+                  editingSlot && editingHero ? (
+                    <div
+                      role="status"
+                      aria-live="polite"
+                      className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-gold/50 bg-gold/12 px-2.5 py-2 sm:px-3"
+                    >
+                      <div className="flex min-w-0 items-center gap-2">
+                        <div className="flex shrink-0 items-center gap-1.5">
+                          <div className="size-8 overflow-hidden border border-gold bg-bg sm:size-9">
+                            <HeroPortrait name={editingHero} hero={heroMap.get(editingHero)} />
+                          </div>
+                          <ArrowRight className="size-3.5 shrink-0 text-gold" aria-hidden="true" />
+                          <div className="grid size-8 place-items-center border border-dashed border-gold bg-gold/15 font-mono text-sm font-bold text-gold animate-pulse sm:size-9">
+                            ?
+                          </div>
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span
+                              className={`shrink-0 border px-1 py-0.2 font-mono text-[9px] font-bold tracking-wider ${
+                                editingSlot.side === "blue"
+                                  ? "border-blue/50 bg-blue/15 text-blue"
+                                  : "border-red/50 bg-red/15 text-red"
+                              }`}
+                            >
+                              {editingSlot.side === "blue" ? "BLUE" : "RED"}
+                            </span>
+                            <span className="truncate font-display text-xs font-bold text-gold sm:text-sm">
+                              {t(
+                                editingSlot.action === "pick" ? "แก้ Pick {0} ({1})" : "แก้ Ban {0} ({1})",
+                                editingSlot.index + 1,
+                                displayName(editingHero),
+                              )}
+                            </span>
+                          </div>
+                          <div className="truncate text-[11px] text-ink/85">
+                            {t("เลือกฮีโร่ใหม่จากตารางด้านล่าง หรือกด Esc เพื่อยกเลิก")}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-1.5">
+                        {editingSlot.action === "pick" && (
+                          <button
+                            type="button"
+                            onClick={() => setSlotEditor({ slot: editingSlot, view: "lane" })}
+                            className="min-h-7 border border-line-strong bg-panel px-2.5 font-display text-[11px] font-bold text-ink transition-colors hover:border-gold/60 hover:text-gold"
+                          >
+                            <StableButtonLabel message="เปลี่ยนเลน" />
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={closeSlotEditor}
+                          className="inline-flex min-h-7 items-center gap-1 border border-gold/60 bg-panel px-2.5 font-display text-[11px] font-bold text-gold transition-colors hover:bg-gold hover:text-bg"
+                        >
+                          <X className="size-3.5 shrink-0" aria-hidden="true" />
+                          <StableButtonLabel message="ยกเลิก" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : null
+                }
+                onLockHero={handleSelectOrLockHero}
               />
             </div>
           </div>

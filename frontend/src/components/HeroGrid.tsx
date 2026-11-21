@@ -1,6 +1,6 @@
 import { useLanguage } from "../i18n/language";
 import { Search, X } from "lucide-react";
-import { forwardRef, useMemo, useRef, useState } from "react";
+import { forwardRef, type ReactNode, useMemo, useRef, useState } from "react";
 import type { DraftStep, Hero, RoleType } from "../types/draft";
 import { LANE_SHORT, ROLES, TIER_STYLE, heroLanes, laneKey, missingLaneKeys } from "../utils/draft";
 import { displayName, matchesHeroQuery } from "../utils/heroNames";
@@ -21,6 +21,8 @@ interface HeroGridProps {
   allowLock?: boolean;
   isLoading?: boolean;
   isHeroesLoading: boolean;
+  replacingHero?: string | null;
+  replaceHeader?: ReactNode;
   onLockHero: (name: string) => void | boolean;
 }
 
@@ -41,6 +43,8 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
     allowLock = true,
     isLoading = false,
     isHeroesLoading,
+    replacingHero = null,
+    replaceHeader = null,
     onLockHero,
   },
   searchRef,
@@ -86,7 +90,14 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
     }`;
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col border border-line bg-panel clip-chamfer">
+    <section
+      className={`flex min-h-0 flex-1 flex-col border bg-panel clip-chamfer transition-shadow ${
+        replacingHero
+          ? "border-gold ring-2 ring-gold/35 shadow-[0_0_24px_rgba(200,155,60,0.2)]"
+          : "border-line"
+      }`}
+    >
+      {replaceHeader}
       {/* Filters */}
       <div className="flex shrink-0 flex-col gap-1.5 border-b border-line p-2 sm:p-2.5">
         <div className="flex items-center gap-1.5 sm:gap-2">
@@ -98,19 +109,27 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Escape") {
-                  setQuery("");
+                  if (query) {
+                    e.stopPropagation();
+                    setQuery("");
+                    return;
+                  }
                   e.currentTarget.blur();
                 }
                 if (e.key === "Enter") {
                   e.stopPropagation();
-                  if (isLoading || !allowLock) return;
+                  if ((!replacingHero && isLoading) || !allowLock) return;
                   const first = filtered.find((h) => !unavailableHeroes.has(h.name));
                   if (first && currentStep && onLockHero(first.name) !== false) {
                     setQuery("");
                   }
                 }
               }}
-              placeholder={t("ค้นหาฮีโร่…")}
+              placeholder={
+                replacingHero
+                  ? t("ค้นหาฮีโร่ใหม่แทน {0}…", displayName(replacingHero))
+                  : t("ค้นหาฮีโร่…")
+              }
               aria-label={t("ค้นหาฮีโร่")}
               className="h-8 w-full border border-line bg-bg pr-7 pl-8 text-xs text-ink placeholder:text-dim focus:border-gold/60 focus:outline-none sm:pr-12 sm:text-sm"
             />
@@ -219,6 +238,7 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
             const primaryLane = heroPrimaryLane(hero);
             const fillsLane = !taken && (heroLanes(hero.lane).some((l) => missing.has(l)) || missing.has(primaryLane));
             const disabled = taken || !currentStep || !allowLock;
+            const isReplacingCurrent = Boolean(replacingHero && hero.name === replacingHero);
             return (
               <button
                 key={hero.name}
@@ -235,17 +255,21 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
                         : ""
                 }`}
                 className={`group relative aspect-square overflow-hidden border text-left transition-all ${
-                  lockedByGlobalBan
-                    ? "border-red/40 opacity-45 grayscale"
-                    : taken
-                      ? "border-line opacity-25 grayscale"
-                      : rank
-                        ? "border-gold/70 ring-1 ring-gold/40 hover:border-gold"
-                        : fillsLane
-                          ? "border-good/40 hover:border-good"
-                          : canBanToDeny
-                            ? "border-blue/50 hover:border-blue"
-                            : "border-line hover:border-muted"
+                  isReplacingCurrent
+                    ? "border-gold bg-gold/10 ring-1 ring-gold/60 opacity-85"
+                    : lockedByGlobalBan
+                      ? "border-red/40 opacity-45 grayscale"
+                      : taken
+                        ? "border-line opacity-25 grayscale"
+                        : rank
+                          ? "border-gold/70 ring-1 ring-gold/40 hover:border-gold"
+                          : fillsLane
+                            ? "border-good/40 hover:border-good"
+                            : canBanToDeny
+                              ? "border-blue/50 hover:border-blue"
+                              : replacingHero
+                                ? "border-gold/30 hover:border-gold hover:ring-1 hover:ring-gold/50"
+                                : "border-line hover:border-muted"
                 } ${disabled ? "cursor-not-allowed" : "hover:-translate-y-0.5"}`}
               >
                 <HeroPortrait
@@ -306,13 +330,18 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
                     </div>
                   </div>
                 )}
+                {isReplacingCurrent && (
+                  <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 border-y border-gold bg-bg/90 py-0.5 text-center">
+                    <div className="font-mono text-[9px] font-bold tracking-wider text-gold">{t("ตัวเดิม")}</div>
+                  </div>
+                )}
                 {!disabled && (
                   <span
                     className={`absolute inset-0 grid place-items-center font-display text-sm font-bold tracking-[0.2em] opacity-0 transition-opacity group-hover:opacity-100 ${
-                      isBan ? "bg-red/30 text-ink" : "bg-blue/20 text-ink"
+                      replacingHero ? "bg-gold/35 text-ink" : isBan ? "bg-red/30 text-ink" : "bg-blue/20 text-ink"
                     }`}
                   >
-                    {isBan ? "BAN" : "LOCK"}
+                    {replacingHero ? t("เปลี่ยน") : isBan ? "BAN" : "LOCK"}
                   </span>
                 )}
               </button>

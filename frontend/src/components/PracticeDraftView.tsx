@@ -1,4 +1,4 @@
-import { ArrowRight, Bot, History, RotateCcw, Shuffle, Sparkles, Trophy, Undo2 } from "lucide-react";
+import { ArrowRight, Bot, History, PlusCircle, RotateCcw, Shuffle, Sparkles, Trophy, Undo2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { deleteJson, getJson, isAbortError, putJson } from "../api/client";
 import { useDraft } from "../hooks/useDraft";
@@ -53,6 +53,8 @@ const SIDES = [
 
 const BUTTON_CLASS =
   "inline-flex min-h-7 items-center justify-center gap-1.5 border px-2 font-display text-xs font-semibold whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-gold sm:px-2.5";
+const HEADER_ACTION_CLASS =
+  "inline-flex min-h-7 min-w-7 items-center justify-center gap-1 border px-1.5 font-display text-xs font-semibold whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-gold sm:gap-1.5 sm:px-2.5";
 
 interface PracticeDraftViewProps {
   scope: string;
@@ -602,22 +604,35 @@ function PracticeRound({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      {/* Sub-Header Controls Bar (Matches DraftBoardView sub-header rhythm) */}
-      <div className="shrink-0 border-b border-line bg-panel/60 px-2 py-1.5 sm:px-3 xl:px-4">
-        <div className="mx-auto flex max-w-[1920px] flex-wrap items-center justify-between gap-1.5">
+      {/* Sub-Header Controls Bar (Single compact row on mobile, full bar on >= sm) */}
+      <div className="shrink-0 border-b border-line bg-panel/60 px-2 py-1 sm:px-3 sm:py-1.5 xl:px-4">
+        <div className="mx-auto flex max-w-[1920px] items-center justify-between gap-1 sm:flex-wrap sm:gap-1.5">
           {/* Left: Mode badge + Series BoX selector + Game Status */}
-          <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
-            <div className="flex items-center gap-1.5">
+          <div className="flex min-w-0 items-center gap-1 sm:flex-wrap sm:gap-2">
+            <div className="hidden items-center gap-1.5 sm:flex">
               <Bot className="size-4 shrink-0 text-gold" aria-hidden="true" />
               <span className="font-display text-xs font-bold tracking-wider text-ink sm:text-sm">
                 {t("ฝึกดราฟต์ vs AI")}
               </span>
             </div>
 
+            <select
+              aria-label={t("จำนวนเกม")}
+              value={gameCount}
+              onChange={(e) => onUpdateMeta((prev) => ({ ...prev, gameCount: Number(e.target.value) as PracticeGameCount }))}
+              className="h-7 shrink-0 border border-line bg-bg px-1 font-mono text-[11px] font-bold text-gold focus:border-gold/60 focus:outline-none sm:hidden"
+            >
+              {PRACTICE_GAME_COUNTS.map((count) => (
+                <option key={count} value={count} disabled={count < gameNumber} className="bg-panel text-ink">
+                  Bo{count}
+                </option>
+              ))}
+            </select>
+
             <div
               role="radiogroup"
               aria-label={t("จำนวนเกม")}
-              className="inline-flex shrink-0 items-center border border-line bg-bg p-0.5"
+              className="hidden shrink-0 items-center border border-line bg-bg p-0.5 sm:inline-flex"
             >
               {PRACTICE_GAME_COUNTS.map((count) => {
                 const lockedBelowCurrent = count < gameNumber;
@@ -640,8 +655,9 @@ function PracticeRound({
               })}
             </div>
 
-            <span className="border border-gold/40 bg-gold/10 px-2 py-0.5 font-mono text-[11px] font-bold text-gold">
-              {t("เกม {0}/{1}", gameNumber, gameCount)}
+            <span className="shrink-0 border border-gold/40 bg-gold/10 px-1.5 py-0.5 font-mono text-[11px] font-bold text-gold sm:px-2">
+              <span className="sm:hidden">G{gameNumber}/{gameCount}</span>
+              <span className="hidden sm:inline">{t("เกม {0}/{1}", gameNumber, gameCount)}</span>
             </span>
 
             {gameNumber > 1 && (
@@ -651,39 +667,45 @@ function PracticeRound({
             )}
           </div>
 
-          {/* Right: Side switcher + AI Hints + Restart */}
-          <div className="flex flex-wrap items-center gap-1 sm:gap-1.5">
+          {/* Right: Side switcher + AI Hints + History + New Round */}
+          <div className="flex shrink-0 items-center gap-1 sm:flex-wrap sm:gap-1.5">
             <div className="inline-flex shrink-0 items-center border border-line bg-bg p-0.5">
               <button
                 type="button"
                 aria-pressed={startingSide === "blue" && gameNumber === 1}
+                aria-label={t("ฝั่งน้ำเงิน")}
+                title={t("ฝั่งน้ำเงิน")}
                 onClick={() => onSwitchSide("blue")}
-                className={`h-6 px-2 font-display text-[11px] font-bold transition-colors ${
+                className={`h-6 px-1.5 font-display text-[11px] font-bold transition-colors sm:px-2 ${
                   playerSide === "blue"
                     ? "bg-blue/20 text-blue"
                     : "text-muted hover:text-blue"
                 }`}
               >
-                <StableButtonLabel message="ฝั่งน้ำเงิน" />
+                <span className="sm:hidden">BLUE</span>
+                <span className="hidden sm:inline"><StableButtonLabel message="ฝั่งน้ำเงิน" /></span>
               </button>
               <button
                 type="button"
                 aria-pressed={startingSide === "red" && gameNumber === 1}
+                aria-label={t("ฝั่งแดง")}
+                title={t("ฝั่งแดง")}
                 onClick={() => onSwitchSide("red")}
-                className={`h-6 px-2 font-display text-[11px] font-bold transition-colors ${
+                className={`h-6 px-1.5 font-display text-[11px] font-bold transition-colors sm:px-2 ${
                   playerSide === "red"
                     ? "bg-red/20 text-red"
                     : "text-muted hover:text-red"
                 }`}
               >
-                <StableButtonLabel message="ฝั่งแดง" />
+                <span className="sm:hidden">RED</span>
+                <span className="hidden sm:inline"><StableButtonLabel message="ฝั่งแดง" /></span>
               </button>
               <button
                 type="button"
                 title={t("สุ่มฝั่ง")}
                 aria-label={t("สุ่มฝั่ง")}
                 onClick={() => onSwitchSide(Math.random() < 0.5 ? "blue" : "red")}
-                className="inline-flex h-6 items-center gap-1 border-l border-line px-2 font-display text-[11px] font-semibold text-muted transition-colors hover:text-gold"
+                className="inline-flex h-6 items-center gap-1 border-l border-line px-1.5 font-display text-[11px] font-semibold text-muted transition-colors hover:text-gold sm:px-2"
               >
                 <Shuffle className="size-3 shrink-0" aria-hidden="true" />
                 <span className="hidden md:inline"><StableButtonLabel message="สุ่มฝั่ง" /></span>
@@ -694,30 +716,33 @@ function PracticeRound({
               <button
                 type="button"
                 aria-pressed={showHints}
+                aria-label={t("ตัวช่วย")}
+                title={t("ตัวช่วย")}
                 onClick={() => onUpdateMeta((prev) => ({ ...prev, showHints: !prev.showHints }))}
-                className={`${BUTTON_CLASS} ${
+                className={`${HEADER_ACTION_CLASS} ${
                   showHints
                     ? "border-gold bg-gold/15 text-gold shadow-sm"
                     : "border-line-strong bg-panel text-muted hover:border-gold/50 hover:text-ink"
                 }`}
               >
                 <Sparkles className="size-3.5 shrink-0" aria-hidden="true" />
-                <StableButtonLabel message="ตัวช่วย" />
+                <span className="hidden sm:inline"><StableButtonLabel message="ตัวช่วย" /></span>
               </button>
             )}
 
             <button
               type="button"
               onClick={() => setIsHistoryOpen(true)}
+              aria-label={t("ประวัติการดราฟต์แข่งกับ AI")}
               title={t("ประวัติการดราฟต์แข่งกับ AI")}
-              className={`${BUTTON_CLASS} ${
+              className={`${HEADER_ACTION_CLASS} ${
                 historyEntries.length > 0
                   ? "border-gold/50 bg-gold/10 text-gold hover:bg-gold hover:text-bg"
                   : "border-line-strong bg-panel text-muted hover:border-gold/50 hover:text-ink"
               }`}
             >
               <History className="size-3.5 shrink-0" aria-hidden="true" />
-              <StableButtonLabel message="ประวัติ" />
+              <span className="hidden sm:inline"><StableButtonLabel message="ประวัติ" /></span>
               <span className="border border-current/25 bg-bg/50 px-1 font-mono text-[10px] leading-tight">
                 {historyEntries.length}
               </span>
@@ -726,10 +751,12 @@ function PracticeRound({
             <button
               type="button"
               onClick={onRestart}
-              className={`${BUTTON_CLASS} border-line-strong bg-panel-2 text-muted hover:border-gold/60 hover:text-ink`}
+              aria-label={t("เริ่มรอบใหม่")}
+              title={t("เริ่มรอบใหม่")}
+              className={`${HEADER_ACTION_CLASS} border-gold bg-gold font-bold text-bg hover:bg-gold/90`}
             >
-              <RotateCcw className="size-3.5 shrink-0" aria-hidden="true" />
-              <StableButtonLabel message="เริ่มรอบใหม่" />
+              <PlusCircle className="size-3.5 shrink-0" aria-hidden="true" />
+              <span className="hidden sm:inline"><StableButtonLabel message="เริ่มรอบใหม่" /></span>
             </button>
           </div>
         </div>
