@@ -27,6 +27,31 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-21 22:45 (UTC+7) — Auto-Stop Draft Timer on Completion, Reset, & Game Transition
+**Agent:** Antigravity / Gemini 4 Argon
+
+### ✅ Completed Work
+- **Timer Auto-Stop Lifecycle (`frontend/src/hooks/useDraftTimer.ts`):**
+  - Automatically turns off the Draft Turn Timer (`enabled = false`) whenever `currentStep === null` (`18/18 COMPLETE`) or whenever `resetSignal` (`gameNumber` / `seriesName`) changes so the clock never sits idle at `--:--` or auto-starts counting down on a new game.
+  - Stopped persisting `enabled: true` across reloads in `localStorage` (`loadTimerPrefs` / `saveTimerPrefs` only persist `preset`, `soundEnabled`, and `autoLock`).
+- **UI Synchronization (`frontend/src/components/ScoreBar.tsx`, `frontend/src/components/DraftBoardView.tsx`):**
+  - Hid timer entry controls and center countdown clock whenever `currentStep === null` (`COMPLETE`).
+  - Stopped the timer cleanly (`timer.setEnabled(false)`) when resetting the draft (`ScoreBar` `onReset`) or finishing a game (`FinishGameModal` `onConfirmWinner`).
+
+### 📁 Modified Files
+- `frontend/src/hooks/useDraftTimer.ts`
+- `frontend/src/components/ScoreBar.tsx`
+- `frontend/src/components/DraftBoardView.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm run lint` (`oxlint`): `0` warnings, `0` errors across 64 files.
+- `npm run build` (`tsc -b && vite build`): succeeded (`dist/` rebuilt cleanly in `1.35s`).
+- `ruff check --fix .` & `ruff format .`: passed cleanly (`119` Python files unchanged).
+- Playwright E2E check (`verify_timer_autostop.py` on `http://localhost:3000`): verified timer starts at Step 1, auto-stops and hides clock/controls at 18/18 `COMPLETE`, stays OFF when advancing to `Game 2` via `FinishGameModal`, turns OFF after `Reset draft`, and had `0` console/page errors (`TIMER_AUTOSTOP_OK`).
+
+---
+
 ## 📅 2026-11-21 22:14 (UTC+7) — Single-Row Mobile Practice Sub-Header & Distinct New Round Icon (Dev)
 **Agent:** Antigravity / Claude Sonnet
 

@@ -823,7 +823,7 @@ export function DraftBoardView({
             }
             return next;
           });
-          timer.resetTurnTimer();
+          timer.setEnabled(false);
           reset();
         }}
         canUndo={canUndo}
@@ -966,6 +966,7 @@ export function DraftBoardView({
           redPickCount={redPicks.length}
           isDraftComplete={isDraftComplete}
           onConfirmWinner={(winner) => {
+            timer.setEnabled(false);
             recordGameToSeries(false, winner);
             setIsFinishGameModalOpen(false);
           }}

@@ -97,7 +97,7 @@ function loadTimerPrefs(): TimerPrefs {
         ? parsed.preset
         : DEFAULT_PREFS.preset;
     return {
-      enabled: Boolean(parsed.enabled),
+      enabled: false,
       preset: validPreset,
       soundEnabled: parsed.soundEnabled !== undefined ? Boolean(parsed.soundEnabled) : DEFAULT_PREFS.soundEnabled,
       autoLock: Boolean(parsed.autoLock),
@@ -109,7 +109,14 @@ function loadTimerPrefs(): TimerPrefs {
 
 function saveTimerPrefs(prefs: TimerPrefs): void {
   try {
-    window.localStorage.setItem(TIMER_PREFS_STORAGE_KEY, JSON.stringify(prefs));
+    window.localStorage.setItem(
+      TIMER_PREFS_STORAGE_KEY,
+      JSON.stringify({
+        preset: prefs.preset,
+        soundEnabled: prefs.soundEnabled,
+        autoLock: prefs.autoLock,
+      }),
+    );
   } catch {
     // Ignore storage restrictions
   }
@@ -175,6 +182,17 @@ export function useDraftTimer({
 }: UseDraftTimerOptions) {
   const [prefs, setPrefs] = useState<TimerPrefs>(loadTimerPrefs);
   const [manualNonce, setManualNonce] = useState(0);
+  const [activeResetSig, setActiveResetSig] = useState(resetSignal);
+
+  if (activeResetSig !== resetSignal) {
+    setActiveResetSig(resetSignal);
+    if (prefs.enabled) {
+      setPrefs((prev) => ({ ...prev, enabled: false }));
+    }
+  }
+  if (!currentStep && prefs.enabled) {
+    setPrefs((prev) => ({ ...prev, enabled: false }));
+  }
 
   const totalSeconds = useMemo(
     () => getDurationForStep(prefs.preset, currentStep),

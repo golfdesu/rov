@@ -125,7 +125,7 @@ export function ScoreBar({
   const red = 100 - blue;
   const blueAhead = blue >= 50;
 
-  const showCenterTimer = Boolean(timer?.enabled);
+  const showCenterTimer = Boolean(timer?.enabled && currentStep);
   const timerPct =
     timer && timer.totalSeconds > 0
       ? Math.max(0, Math.min(100, (timer.secondsLeft / timer.totalSeconds) * 100))
@@ -152,7 +152,7 @@ export function ScoreBar({
           : "bg-red shadow-[0_0_6px_rgba(255,77,94,0.6)]";
 
   const renderTimerControls = (mobileCompact: boolean) => {
-    if (!timer) return null;
+    if (!timer || !currentStep) return null;
     const btnH = mobileCompact ? "h-7" : "h-8 sm:h-8.5";
     const iconBtn = mobileCompact ? "h-7 w-7" : "h-8 w-8 sm:h-8.5 sm:w-8.5";
 
