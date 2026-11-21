@@ -32,7 +32,7 @@ interface MobileNavDrawerProps<T extends string> {
   onClose: () => void;
 }
 
-/** Accessible right-side slide-out drawer for mobile & tablet (< 1024px) navigation & actions. */
+/** Accessible right-side slide-out drawer for utility controls and mobile navigation. */
 export function MobileNavDrawer<T extends string>({
   tabs,
   activeTab,
@@ -84,12 +84,6 @@ export function MobileNavDrawer<T extends string>({
   }, []);
 
   useEffect(() => {
-    const mql = window.matchMedia("(min-width: 1024px)");
-    if (mql.matches) {
-      onCloseRef.current();
-      return;
-    }
-
     const panel = panelRef.current;
     const previouslyFocused = document.activeElement as HTMLElement | null;
     const prevOverflow = document.body.style.overflow;
@@ -98,16 +92,6 @@ export function MobileNavDrawer<T extends string>({
     const rafId = window.requestAnimationFrame(() => {
       setIsVisible(true);
     });
-
-    function onMediaChange(e: MediaQueryListEvent) {
-      if (e.matches) {
-        if (closeTimerRef.current !== null) {
-          window.clearTimeout(closeTimerRef.current);
-          closeTimerRef.current = null;
-        }
-        onCloseRef.current();
-      }
-    }
 
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
@@ -129,7 +113,6 @@ export function MobileNavDrawer<T extends string>({
       }
     }
 
-    mql.addEventListener("change", onMediaChange);
     window.addEventListener("keydown", onKeyDown);
     return () => {
       window.cancelAnimationFrame(rafId);
@@ -137,7 +120,6 @@ export function MobileNavDrawer<T extends string>({
         window.clearTimeout(closeTimerRef.current);
         closeTimerRef.current = null;
       }
-      mql.removeEventListener("change", onMediaChange);
       window.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = prevOverflow;
       previouslyFocused?.focus();
@@ -154,7 +136,7 @@ export function MobileNavDrawer<T extends string>({
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex justify-end bg-black/70 backdrop-blur-[2px] transition-opacity duration-200 ease-out motion-reduce:transition-none lg:hidden ${
+      className={`fixed inset-0 z-50 flex justify-end bg-black/70 backdrop-blur-[2px] transition-opacity duration-200 ease-out motion-reduce:transition-none ${
         isVisible ? "opacity-100" : "opacity-0"
       }`}
       onClick={(e) => {
@@ -228,8 +210,8 @@ export function MobileNavDrawer<T extends string>({
             )}
           </div>
 
-          {/* Mode Navigation */}
-          <div className="flex flex-col gap-1.5">
+          {/* Mode Navigation (hidden on lg+ because desktop navbar already lists tabs) */}
+          <div className="flex flex-col gap-1.5 lg:hidden">
             <span className="font-mono text-[10px] font-semibold tracking-wider text-dim uppercase">{t("โหมดใช้งาน")}</span>
             {tabs.map((item) => {
               const active = activeTab === item.key;

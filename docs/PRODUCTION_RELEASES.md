@@ -15,10 +15,10 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov`) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
 | **Git Base Commit on VM** | `main` (rebased cleanly with bilingual UI, Draft vs AI, Assistant toggle, and Draft Turn Timer) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-DfrnWxNW.js` (`654.75 kB`) + `dist-prod/assets/index-CdOMJcVs.css` (`125.17 kB`), `dist-prod/index.html` (`3.01 kB`) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-BHFXkT_p.js` (`652.03 kB`) + `dist-prod/assets/index-BKHs1Fu2.css` (`125.16 kB`), `dist-prod/index.html` (`3.01 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-21 20:47 (UTC+7)` |
+| **Last Updated** | `2026-11-21 20:56 (UTC+7)` |
 
 ---
 
@@ -38,6 +38,11 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-21 20:56 (UTC+7) — Unified Slide-Out Menu Drawer Across All Viewports (`minidraft.app`)
+- **Delta:** Updated `frontend/src/App.tsx` and `frontend/src/components/MobileNavDrawer.tsx` so the `≡` menu trigger renders across all screen sizes, moving secondary desktop actions (`LanguageSwitch`, `Stats`, `Feedback`, `Donate`, `Logout`) into the slide-out drawer and removing `min-width: 1024px` auto-close (keeping Mode Navigation `lg:hidden` in the drawer).
+- **Bundle Built:** `dist-prod/index.html` (`3.01 kB`), `dist-prod/assets/index-BHFXkT_p.js` (`652.03 kB`), `dist-prod/assets/index-BKHs1Fu2.css` (`125.16 kB`).
+- **Deploy Method:** `cd ~/rov/deploy && sudo docker compose up -d --build app` (`deploy_rov_db_data` untouched).
 
 ### 📅 2026-11-21 20:47 (UTC+7) — Enable Bilingual Language Switch (`ไทย` / `EN`) on Production (`minidraft.app`)
 - **Delta:** Updated `frontend/src/i18n/language.ts` (`languageSwitchEnabled = true`) so the smooth sliding `ไทย` / `EN` language switch renders in production (`VITE_DRAFT_ONLY=true`) across `AuthLanding`, Desktop Navbar, and `MobileNavDrawer` with full 966-key English localization (`englishMessages.ts`).

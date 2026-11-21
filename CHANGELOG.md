@@ -29,6 +29,25 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-21 20:54 (UTC+7) — Unified Slide-Out Menu Drawer Across All Viewports
+**Agent:** Antigravity / Claude Sonnet
+
+### ✅ Completed Work
+- **Decluttered Desktop Navbar (`frontend/src/App.tsx`, `frontend/src/components/MobileNavDrawer.tsx`):**
+  - Enabled the `เปิดเมนูเพิ่มเติม` (`≡`) drawer trigger across all viewports (removed `lg:hidden`) so the top bar cleanly retains only brand, mode tabs, account/sign-in badge, promotional notice (`xl+`), and menu trigger.
+  - Moved secondary actions (`LanguageSwitch`, `Stats`, `Feedback`, `Donate`, `ออกจากระบบ`) cleanly into `MobileNavDrawer` on desktop as well.
+  - Updated `MobileNavDrawer` to work at `>= 1024px` (removed `lg:hidden` backdrop and `min-width: 1024px` auto-close) and hid the redundant Mode Navigation group on `lg+` where tabs already appear on the top bar.
+
+### 📁 Modified Files
+- `frontend/src/App.tsx`
+- `frontend/src/components/MobileNavDrawer.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified via `oxlint` (`0 warnings, 0 errors`), `vite build` (dev `dist/` + prod `dist-prod/`), `inspect_frontend_e2e.py`, `ruff check/format`, `pytest tests/test_api.py` (`41 passed`), and live Chromium Playwright E2E across both Desktop (`1440x900`) and Mobile (`390x844`).
+
+---
+
 ## 📅 2026-11-21 20:47 (UTC+7) — Enable Bilingual Language Switch (TH / EN) in Production
 **Agent:** Antigravity / Claude Sonnet
 

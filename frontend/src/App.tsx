@@ -1,7 +1,6 @@
 import { StableButtonLabel } from "./components/StableButtonLabel";
 import { type Message, translateMessage, useLanguage } from "./i18n/language";
-import { LanguageSwitch } from "./i18n/LanguageProvider";
-import { BarChart3, Coffee, LogIn, LogOut, Menu, MessageSquare, User } from "lucide-react";
+import { LogIn, Menu, User } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { ApiError, getJson, postJson, putJson, setExpectedAuthUser, setSessionMismatchHandler } from "./api/client";
 import { AdminStatsModal } from "./components/AdminStatsModal";
@@ -59,16 +58,11 @@ interface WorkspaceProps {
   tab: Tab;
   selectTab: (next: Tab) => void;
   authUser: AuthUser | null;
-  isAdmin: boolean;
   authLoading: boolean;
   surveyAnswered: boolean;
   disableShortcuts: boolean;
   onOpenAuthModal: () => void;
-  onOpenDonateModal: () => void;
-  onOpenSurveyModal: () => void;
-  onOpenAdminStatsModal: () => void;
   onOpenMobileDrawer: () => void;
-  onLogout: () => void;
   onSaveDisplayName: (displayName: string) => Promise<void>;
 }
 
@@ -76,16 +70,11 @@ function Workspace({
   tab,
   selectTab,
   authUser,
-  isAdmin,
   authLoading,
   surveyAnswered,
   disableShortcuts,
   onOpenAuthModal,
-  onOpenDonateModal,
-  onOpenSurveyModal,
-  onOpenAdminStatsModal,
   onOpenMobileDrawer,
-  onLogout,
   onSaveDisplayName,
 }: WorkspaceProps) {
   const { t } = useLanguage();
@@ -135,79 +124,28 @@ function Workspace({
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5">
-            <LanguageSwitch className="hidden lg:inline-flex lg:self-center" />
             <span className="hidden h-7 items-center border border-gold/40 bg-gold/10 px-2.5 font-mono text-[11px] font-bold text-gold xl:inline-flex">
               <StableButtonLabel message="ให้บริการฟรีถึง 30/11/2026" />
             </span>
-            {isAdmin && (
-              <button
-                type="button"
-                onClick={onOpenAdminStatsModal}
-                title={t("ดูสถิติระบบ & ผลสำรวจ (Owner Only)")}
-                aria-label={t("เปิดสถิติระบบ")}
-                className="hidden h-7 items-center gap-1 border border-gold/60 bg-gold/10 px-2 font-display text-[11px] font-bold text-gold transition-colors hover:bg-gold hover:text-bg lg:inline-flex"
-              >
-                <BarChart3 className="h-3 w-3 shrink-0" />
-                <span>Stats</span>
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={onOpenSurveyModal}
-              title={t("แบบสอบถาม / Feedback ความคิดเห็นต่อ MiniDraft")}
-              aria-label={t("เปิดแบบสอบถาม / Feedback")}
-              className="relative hidden h-7 items-center gap-1 border border-line-strong bg-panel-2 px-2 font-display text-[11px] font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold lg:inline-flex"
-            >
-              <MessageSquare className="h-3 w-3 shrink-0 text-gold" />
-              <span>Feedback</span>
-              {!surveyAnswered && (
-                <span
-                  aria-hidden="true"
-                  className="h-1.5 w-1.5 rounded-full bg-gold"
-                />
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={onOpenDonateModal}
-              title={t("สนับสนุนผู้พัฒนา (PromptPay QR)")}
-              aria-label={t("Donate สนับสนุนผู้พัฒนา")}
-              className="hidden h-7 items-center gap-1 border border-line-strong bg-panel-2 px-2 font-display text-[11px] font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold lg:inline-flex"
-            >
-              <Coffee className="h-3 w-3 shrink-0 text-gold" />
-              <span>Donate</span>
-            </button>
             {authLoading ? null : isAuthenticated ? (
-              <div className="flex items-center gap-1">
-                <a
-                  href="#profile"
-                  aria-label={t("เปิดโปรไฟล์ของ {0}", accountName)}
-                  aria-current={tab === "profile" ? "page" : undefined}
-                  title={t("เปิดโปรไฟล์ของ {0}", accountName)}
-                  className="inline-flex h-7 items-center gap-1 border border-good/40 bg-good/10 px-2 font-mono text-[10.5px] font-bold text-good transition-colors hover:border-good hover:bg-good/20 focus-visible:outline-2 focus-visible:outline-good"
-                >
-                  <User className="h-3 w-3 shrink-0" />
-                  <span className="max-w-[68px] truncate sm:max-w-[96px]">{accountName}</span>
-                </a>
-                <button
-                  type="button"
-                  onClick={onLogout}
-                  title={t("ออกจากระบบ (สลับกลับโหมด Guest เฉพาะเครื่อง)")}
-                  aria-label={t("ออกจากระบบ")}
-                  className="hidden h-7 items-center gap-1 border border-line bg-bg px-2 font-display text-[11px] font-semibold text-muted transition-colors hover:border-red/60 hover:text-red lg:inline-flex"
-                >
-                  <LogOut className="h-3 w-3 shrink-0" />
-                  <span><StableButtonLabel message="ออก" /></span>
-                </button>
-              </div>
+              <a
+                href="#profile"
+                aria-label={t("เปิดโปรไฟล์ของ {0}", accountName)}
+                aria-current={tab === "profile" ? "page" : undefined}
+                title={t("เปิดโปรไฟล์ของ {0}", accountName)}
+                className="inline-flex h-8 items-center gap-1.5 border border-good/40 bg-good/10 px-2.5 font-mono text-[11px] font-bold text-good transition-colors hover:border-good hover:bg-good/20 focus-visible:outline-2 focus-visible:outline-good"
+              >
+                <User className="h-3.5 w-3.5 shrink-0" />
+                <span className="max-w-[76px] truncate sm:max-w-[120px]">{accountName}</span>
+              </a>
             ) : (
               <button
                 type="button"
                 onClick={onOpenAuthModal}
                 title={t("เข้าสู่ระบบหรือสมัครสมาชิก เพื่อแยกฐานข้อมูลส่วนตัวและซิงก์ข้าม PC / iPad / มือถือ")}
-                className="inline-flex h-7 items-center gap-1 border border-gold/50 bg-gold/10 px-2 font-display text-[11px] font-bold text-gold transition-colors hover:bg-gold hover:text-bg"
+                className="inline-flex h-8 items-center gap-1.5 border border-gold/50 bg-gold/10 px-2.5 font-display text-xs font-bold text-gold transition-colors hover:bg-gold hover:text-bg"
               >
-                <LogIn className="h-3 w-3 shrink-0" />
+                <LogIn className="h-3.5 w-3.5 shrink-0" />
                 <span><StableButtonLabel message="เข้าสู่ระบบ" /></span>
               </button>
             )}
@@ -216,7 +154,7 @@ function Workspace({
               onClick={onOpenMobileDrawer}
               aria-label={t("เปิดเมนูเพิ่มเติม")}
               title={t("เมนูเพิ่มเติม")}
-              className="relative inline-flex h-8 w-8 items-center justify-center border border-line-strong bg-panel-2 text-ink transition-colors hover:border-gold/60 hover:text-gold lg:hidden"
+              className="relative inline-flex h-8 w-8 items-center justify-center border border-line-strong bg-panel-2 text-ink transition-colors hover:border-gold/60 hover:text-gold"
             >
               <Menu className="h-4 w-4" />
               {!surveyAnswered && (
@@ -929,7 +867,6 @@ export function App() {
         tab={tab}
         selectTab={selectTab}
         authUser={authUser}
-        isAdmin={isAdminUser}
         authLoading={authLoading}
         surveyAnswered={surveyAnswered}
         disableShortcuts={
@@ -941,14 +878,7 @@ export function App() {
           pricingSurveyOpen
         }
         onOpenAuthModal={() => setAuthModalOpen(true)}
-        onOpenDonateModal={() => setDonateModalOpen(true)}
-        onOpenSurveyModal={() => {
-          setSurveyError(null);
-          setManualSurveyOpen(true);
-        }}
-        onOpenAdminStatsModal={() => setAdminStatsModalOpen(true)}
         onOpenMobileDrawer={() => setMobileDrawerOpen(true)}
-        onLogout={handleLogout}
         onSaveDisplayName={handleSaveDisplayName}
       />
       {mobileDrawerOpen && (
