@@ -17,8 +17,8 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Git Base Commit on VM** | `4dbc614` (`fix(draft): disable auto side-swap and add UX/UI Playwright audit gate`) |
 | **Active Frontend Bundle** | `dist-prod/assets/index-Cq1516Ka.js` (`473.72 kB`) + `dist-prod/assets/index-koghUP00.css` (`113.81 kB`), `dist-prod/index.html` (`2.96 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
-| **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.76695`) |
-| **Last Updated** | `2026-11-20 20:02 (UTC+7)` |
+| **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
+| **Last Updated** | `2026-11-20 23:43 (UTC+7)` |
 
 ---
 
@@ -59,6 +59,15 @@ These features exist in the local workspace (`main` + uncommitted local edits) a
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-20 23:43 (UTC+7) — Deploy 90-Day Half-Life SOTA Checkpoint (Trial #31) & Updated 4,352-Game Dataset
+- **Base + Delta:** `4dbc614` + existing hotfixes + synced `models/sota_draft_gnn_transformer.pt` (`90d` half-life Trial #31, `val_loss = 2.81796`, `win_acc = 51.69%`), `configs/selected_production_params.json`, `best_params/sota_rov_best_params.json`, `best_params/sota_rov_top5_trials.json`, `data/` (`4,352` total matches, `3,535` training games, `1,833` true pick order, rebuilt synergy/counter/draft stats CSVs), and `frontend/public/dataset_metadata.json` (`frontend/dist-prod/dataset_metadata.json`). Dev-only features (Draft Turn Timer, Ranked 10-Ban) remain excluded.
+- **Bundle Built:** `dist-prod/index.html` (`2.96 kB`), `dist-prod/assets/index-Cq1516Ka.js` (`473.72 kB`), `dist-prod/assets/index-koghUP00.css` (`113.81 kB`).
+- **Deploy Method:** `cd ~/rov/deploy && sudo docker compose up -d --build app` (`deploy_rov_db_data` untouched).
+- **Verification:**
+  - `https://minidraft.app/health` -> `200` (`{"status":"healthy","model_loaded":true}`).
+  - `https://minidraft.app/predict` -> `200` returning live recommendations.
+  - Inside `deploy-app-1`: verified `ckpt['val_loss'] = 2.81796`, `win_acc = 51.69%`, `total_matches = 4352`, `training_matches = 3535`, and `/app/db/rov_app.db` intact (`803` users).
 
 ### 📅 2026-11-20 20:02 (UTC+7) — Add First-Party Returning Users & D1+ Retention Tracking (`daily_visits` & `POST /telemetry/visit`)
 - **Base + Delta:** `4dbc614` + existing hotfixes + updated `src/db.py` (`daily_visits` table, `record_daily_visit`, `retention` metrics in `get_admin_stats`), `src/schemas.py` (`DailyVisitRequest`, `DailyVisitResponse`, `retention`), `src/api.py` (`POST /telemetry/visit`), `frontend/src/types/auth.ts`, `frontend/src/App.tsx` (once-per-day UTC+7 telemetry ping), and `frontend/src/components/AdminStatsModal.tsx` (Retention & Returning Users section).

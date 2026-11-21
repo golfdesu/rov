@@ -160,7 +160,7 @@ export interface DraftMachineState extends DraftState {
 }
 
 export type DraftAction =
-  | { type: "lock"; hero: string }
+  | { type: "lock"; hero: string; expectedStepIndex?: number }
   | { type: "replace"; slot: DraftSlot; hero: string; globalBans: GlobalBanState }
   | { type: "undo" }
   | { type: "redo" }
@@ -499,6 +499,7 @@ function makeSnapshot(state: DraftMachineState): DraftHistoryItem {
 export function draftReducer(state: DraftMachineState, action: DraftAction): DraftMachineState {
   switch (action.type) {
     case "lock": {
+      if (action.expectedStepIndex !== undefined && action.expectedStepIndex !== state.stepIndex) return state;
       if (unavailableSet(state).has(action.hero)) return state;
       const step = CANONICAL_DRAFT_STEPS[state.stepIndex];
       if (!step) return state;

@@ -15,7 +15,7 @@ Production remains focused on the **Draft Board** (`VITE_DRAFT_ONLY=true`; Meta 
 | Capability | Guest (Not Logged In) | Free (Registered) | Pro (50 THB / 30d) | Team Pro (149 THB / 30d) |
 | :--- | :--- | :--- | :--- | :--- |
 | **Manual Draft Board (Single Game)** | Allowed | Allowed | Allowed | Allowed |
-| **AI Predictions (`/predict`)** | Blocked (Prompt to Login) | **36 calls / day** (full Top-K and optional standard Lookahead, resets 00:00 UTC+7) | **Unlimited** | **Unlimited** |
+| **Assistant Predictions (`/predict`)** | Sign-in required | **36 calls / day** (full Top-K, resets 00:00 UTC+7) | **Unlimited** | **Unlimited** |
 | **Interactive Draft Comparison (Planned)** | — | — | Included | Included |
 | **Global Ban (Bo3 / Bo5 / Bo7)** | Locked | Locked | Unlocked | Unlocked |
 | **Saved Draft History** | **10 games per browser** | **50 games per account** | **500 games per account** | **500 personal games per member + 500 shared games per team** |
@@ -31,7 +31,7 @@ Production remains focused on the **Draft Board** (`VITE_DRAFT_ONLY=true`; Meta 
 1. **Same-Tier Early Renewal:** Extends `plan_expires_at` by +30 days from `max(now, current_expires_at)`.
 2. **Pro -> Team Pro Upgrade:** Converts remaining full Pro days at a 1/3 ratio (`remaining_days // 3`) and adds +30 days on top of `now` as `team_pro`.
 3. **Team Pro -> Pro Downgrade Guard:** Rejects 50 THB Pro top-ups while `team_pro` is still active so the owner can retain the team's access through the end of the paid term.
-4. **Quota Reset Clock:** Free daily `/predict` quota (36 calls/day = 2 full 18-step drafts) resets at **00:00 Asia/Bangkok (UTC+7)**, tracked per `user_id` + `day_key` in SQLite.
+4. **Quota Reset Clock:** The Free quota of 36 `/predict` calls per day resets at **00:00 Asia/Bangkok (UTC+7)** and is tracked per `user_id` + `day_key` in SQLite.
 5. **Draft History Capacity:** Count saved games across all series within each history. At capacity, block new saves to that history until the user frees a slot by deleting games. Preserve existing history if a plan change puts an account over its limit.
 
 ---
@@ -92,12 +92,13 @@ Production remains focused on the **Draft Board** (`VITE_DRAFT_ONLY=true`; Meta 
    - Keep multi-game Global Ban drafting behind the paid upgrade. Allow Guest and Free users to save and view single-game drafts.
    - Store Guest draft history in the current browser. Show history usage and block new saves at capacity so users can choose which games to delete.
    - Add team invitation and membership controls, a save destination picker, and a copy action in Personal History. Show the usage of each history and the message for a third active session.
-   - Prompt Guest users to log in before AI `/predict`.
+   - Replace the Draft Board Lookahead button with the Assistant toggle described in Section 8. Prompt Guest users to sign in when they select Assistant.
 6. **Tests & Rollout**:
    - Add unit/integration tests for UTC+7 quota reset, slip `trans_ref` replay protection, and Pro-to-Team Pro day conversion before deploying to `minidraft.app`.
    - Verify the Guest browser limit, Free and Pro cross-device sync, and that saving at capacity preserves existing games.
    - Verify team invitations and member limits, independent history quotas, copy behavior at capacity, and loss of shared access when a member leaves or is removed.
    - Verify that idle sign-ins leave Pro usage slots available, a third active session leaves the first two running, and an expired slot allows a retry.
+   - Verify that Assistant starts on for signed-in users and that turning it off hides its suggestions and estimates. Manual drafting with Assistant off should leave the Free prediction quota available.
 
 ---
 
@@ -107,13 +108,23 @@ Add an **Export** button to Draft History so users can download their saved game
 
 ---
 
-## 8. Planned Lookahead Improvements
+## 8. Draft Board Assistant
 
-Free, Pro, and Team Pro use the same draft recommendation model. The planned Pro and Team Pro feature lets players compare two candidate picks side by side when they need help making a decision.
+Replace the standalone Lookahead button on the Draft Board with the **Assistant** toggle from Draft vs AI. Reuse its localized label and toggle design.
+
+- Start with Assistant on for signed-in users. Guests can start a manual draft and are prompted to sign in when they select Assistant.
+- When Assistant is on, show ranked Pick/Ban suggestions, lane highlights, and the live estimated win chance.
+- When Assistant is off, show draft progress, hide its recommendations and estimates, and skip background `/predict` calls for Assistant. Manual Pick/Ban actions leave the prediction quota available.
+
+---
+
+## 9. Interactive Draft Comparison
+
+Free, Pro, and Team Pro use the same draft recommendation model. Pro and Team Pro are planned to get a separate, on-demand tool for comparing two candidate picks side by side.
 
 ### First Release
 
-1. Let the player select two legal picks from the current draft and run Lookahead for those candidates on demand.
+1. Let the player select two legal picks from the current draft and evaluate the possible responses to each on demand.
 2. Follow the actual draft order through the opponent's next pick turn and the player's reply. For example, after a candidate blue first pick (B1), evaluate both red picks (R1–R2) and both blue replies (B2–B3).
 3. For each candidate, show a likely opponent response, the most threatening response among the branches searched, and a legal reply the player can use. Explain the practical difference between the candidates, such as whether the opponent can take the preferred initiator and which roam pick remains available.
 

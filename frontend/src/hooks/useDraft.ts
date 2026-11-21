@@ -339,8 +339,9 @@ function useHeroCatalog() {
 
 export interface UseDraftOptions {
   persistSession?: boolean;
-  storageKey?: string;
+  storageKey?: string | null;
   enabled?: boolean;
+  predictionTeam?: TeamId;
 }
 
 export function useDraft(options: UseDraftOptions = {}) {
@@ -348,10 +349,11 @@ export function useDraft(options: UseDraftOptions = {}) {
     persistSession = true,
     storageKey = SESSION_STORAGE_KEY,
     enabled = true,
+    predictionTeam,
   } = options;
 
   const catalog = useHeroCatalog();
-  const [initialSession] = useState(() => loadLocalSession(storageKey));
+  const [initialSession] = useState(() => storageKey === null ? null : loadLocalSession(storageKey));
   const engine = "sota" as const;
   const [state, dispatch] = useReducer(draftReducer, initialSession, initMachineState);
   const [globalBans, setGlobalBans] = useState<GlobalBanState>(
@@ -386,6 +388,8 @@ export function useDraft(options: UseDraftOptions = {}) {
 
   const { stepIndex, bluePicks, redPicks, blueBans, redBans } = state;
   const currentStep = getCurrentDraftStep(stepIndex);
+  const predictionSide = predictionTeam === undefined ? undefined : predictionTeam === globalBans.blueSideTeam ? "blue" : "red";
+  const canPredict = enabled && (!predictionSide || !currentStep || currentStep.side === predictionSide);
   useEffect(() => {
     if (!state.future?.length) redoPickLanesRef.current.clear();
   }, [state.future]);
@@ -430,7 +434,7 @@ export function useDraft(options: UseDraftOptions = {}) {
           setLeague(sanitizeLeague(remote.league));
           setPickLanes(remote.pickLanes ?? {});
           setSeriesGames(remote.seriesGames);
-          saveLocalSession({ ...remote, parkedDrafts: unsavedDraftsRef.current }, storageKey);
+          if (storageKey !== null) saveLocalSession({ ...remote, parkedDrafts: unsavedDraftsRef.current }, storageKey);
         }
       } catch (err) {
         if (!isAbortError(err)) {
@@ -493,6 +497,7 @@ export function useDraft(options: UseDraftOptions = {}) {
 
   // Persist every draft/series change to both localStorage (instant F5 reload) and backend disk (/draft/session)
   useEffect(() => {
+    if (storageKey === null && !persistSession) return;
     const syncIdentity = {
       stepIndex,
       bluePicks,
@@ -539,13 +544,7 @@ export function useDraft(options: UseDraftOptions = {}) {
       lastLocalSnapshotKeyRef.current = fullSnapshotKey;
       const now = Date.now();
       lastSavedAtRef.current = now;
-      saveLocalSession(
-        {
-          ...localSnapshot,
-          updatedAt: now,
-        },
-        storageKey,
-      );
+      if (storageKey !== null) saveLocalSession({ ...localSnapshot, updatedAt: now }, storageKey);
     }
 
     if (!persistSession) return;
@@ -577,7 +576,7 @@ export function useDraft(options: UseDraftOptions = {}) {
       ),
     );
     const isPredictNetworkPending =
-      enabled &&
+      canPredict &&
       !pausePredict &&
       !conflictingHero &&
       !predictError &&
@@ -616,7 +615,7 @@ export function useDraft(options: UseDraftOptions = {}) {
       ctrl.abort();
     };
   }, [
-    enabled,
+    canPredict,
     pausePredict,
     isLoading,
     predictError,
@@ -645,7 +644,12 @@ export function useDraft(options: UseDraftOptions = {}) {
   // Fetch AI recommendations whenever the draft or lookahead setting changes.
   // Reuses exact payload cache (0 requests on no-op swaps/undo) and debounces rapid bursts.
   useEffect(() => {
-    if (!enabled || pausePredict) return;
+    if (pausePredict) return;
+    if (!canPredict) {
+      setIsLoading(false);
+      setPredictError(null);
+      return;
+    }
     if (conflictingHero) {
       setIsLoading(false);
       return;
@@ -656,7 +660,7 @@ export function useDraft(options: UseDraftOptions = {}) {
       stepIndex,
       draft,
       predictGlobalBans,
-      useLookahead,
+      false,
       CANDIDATE_POOL,
       league,
       seriesWinningHeroes,
@@ -675,6 +679,7 @@ export function useDraft(options: UseDraftOptions = {}) {
       if (!step) {
         // Draft is complete: only the final matchup win rate matters
         const finalWin = data.recommendations[0]?.predicted_win_rate_pct ?? null;
+        if (finalWin === null) setPredictError("ยังประเมินดราฟต์ไม่ได้");
         dispatch({ type: "predicted", stepIndex, prediction: EMPTY_PREDICTION, blueWinRate: finalWin });
         return;
       }
@@ -752,7 +757,7 @@ export function useDraft(options: UseDraftOptions = {}) {
       ctrl.abort();
     };
   }, [
-    enabled,
+    canPredict,
     pausePredict,
     conflictingHero,
     engine,
@@ -775,9 +780,9 @@ export function useDraft(options: UseDraftOptions = {}) {
   }, []);
 
   const lockHero = useCallback(
-    (hero: string) => {
+    (hero: string, expectedStepIndex?: number) => {
       if (conflictingHero || unavailableHeroes.has(hero)) return;
-      dispatch({ type: "lock", hero });
+      dispatch({ type: "lock", hero, expectedStepIndex });
     },
     [conflictingHero, unavailableHeroes],
   );
@@ -1412,7 +1417,7 @@ export function useDraft(options: UseDraftOptions = {}) {
     setPredictError(null);
     lastSavedAtRef.current = Date.now();
     try {
-      window.localStorage.removeItem(storageKey);
+      if (storageKey !== null) window.localStorage.removeItem(storageKey);
     } catch {
       // ignore
     }
@@ -1502,6 +1507,7 @@ export function useDraft(options: UseDraftOptions = {}) {
     league,
     setLeague,
     ...state.prediction,
+    hasPrediction: state.prediction !== EMPTY_PREDICTION,
     blueWinRate: state.blueWinRate,
     winHistory: state.winHistory,
     isLoading,

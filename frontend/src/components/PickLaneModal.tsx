@@ -145,7 +145,7 @@ export function PickLaneModal({
                     </div>
                   </div>
                 </div>
-                {isSelected && <span className="shrink-0 font-mono text-[10px] font-bold text-gold">{t("เลือก")}</span>}
+                {isSelected && <span className="shrink-0 font-mono text-[10px] font-bold text-gold"><StableButtonLabel message="เลือกอยู่" /></span>}
               </button>
             );
           })}

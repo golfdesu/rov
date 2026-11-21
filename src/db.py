@@ -13,7 +13,7 @@ import time
 from collections import Counter, OrderedDict, deque
 from collections.abc import Iterator
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
@@ -22,6 +22,8 @@ USERNAME_RE = re.compile(r"^[a-zA-Z0-9_.-]{3,32}$")
 SESSION_COOKIE_NAME = "rov_session"
 SESSION_TTL_SECONDS = 30 * 24 * 60 * 60  # 30 days (> 15-day open window)
 MAX_USERS_DEFAULT = 2000
+DISPLAY_NAME_FREE_CHANGES = 3
+DISPLAY_NAME_COOLDOWN_SECONDS = 14 * 24 * 60 * 60
 
 
 def normalize_username(username: str) -> str:
@@ -75,6 +77,37 @@ class AuthUser:
     created_at: int
     email: str | None = None
     auth_provider: str = "password"
+    display_name_is_custom: bool = False
+    display_name_change_count: int = 0
+    display_name_changed_at: int = 0
+
+    @property
+    def display_label(self) -> str:
+        name = self.display_name.strip()
+        if self.display_name_is_custom and name:
+            return name
+        if self.auth_provider == "google" and name:
+            first_name = name.split(maxsplit=1)[0]
+            if "@" not in first_name:
+                return first_name
+        return f"@{self.username}"
+
+    @property
+    def display_name_changes_remaining(self) -> int:
+        return max(0, DISPLAY_NAME_FREE_CHANGES - self.display_name_change_count)
+
+    @property
+    def display_name_next_change_at(self) -> int | None:
+        if self.display_name_changes_remaining:
+            return None
+        return self.display_name_changed_at + DISPLAY_NAME_COOLDOWN_SECONDS
+
+
+class DisplayNameCooldownError(ValueError):
+    def __init__(self, available_at: int, retry_after: int):
+        super().__init__("Display name is on cooldown")
+        self.available_at = available_at
+        self.retry_after = retry_after
 
 
 class RateLimiter:
@@ -195,7 +228,10 @@ class UserDatabase:
                         password_hash TEXT NOT NULL,
                         created_at INTEGER NOT NULL,
                         google_sub TEXT,
-                        email TEXT
+                        email TEXT,
+                        display_name_is_custom INTEGER NOT NULL DEFAULT 0,
+                        display_name_change_count INTEGER NOT NULL DEFAULT 0,
+                        display_name_changed_at INTEGER NOT NULL DEFAULT 0
                     );
 
                     CREATE TABLE IF NOT EXISTS auth_sessions (
@@ -265,11 +301,15 @@ class UserDatabase:
                         ON daily_visits(first_seen_date);
                     """
                 )
+                conn.execute("BEGIN IMMEDIATE")
                 cols = {str(r["name"]) for r in conn.execute("PRAGMA table_info(users)").fetchall()}
                 if "google_sub" not in cols:
                     conn.execute("ALTER TABLE users ADD COLUMN google_sub TEXT")
                 if "email" not in cols:
                     conn.execute("ALTER TABLE users ADD COLUMN email TEXT")
+                for column in ("display_name_is_custom", "display_name_change_count", "display_name_changed_at"):
+                    if column not in cols:
+                        conn.execute(f"ALTER TABLE users ADD COLUMN {column} INTEGER NOT NULL DEFAULT 0")
                 conn.execute(
                     "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_sub ON users(google_sub) WHERE google_sub IS NOT NULL"
                 )
@@ -334,6 +374,50 @@ class UserDatabase:
                 raise ValueError("Username is already taken") from exc
             return AuthUser(id=int(cur.lastrowid), username=norm, display_name=disp, created_at=now)
 
+    def update_display_name(self, user: AuthUser, display_name: str) -> AuthUser | None:
+        self.ensure_schema()
+        with self._lock, self._connect() as conn:
+            # Serialize the quota check and update across concurrent sessions and server processes.
+            conn.execute("BEGIN IMMEDIATE")
+            row = conn.execute(
+                """
+                SELECT display_name, display_name_is_custom, display_name_change_count, display_name_changed_at
+                FROM users WHERE id = ?
+                """,
+                (user.id,),
+            ).fetchone()
+            if row is None:
+                return None
+            current = replace(
+                user,
+                display_name=str(row["display_name"]),
+                display_name_is_custom=bool(row["display_name_is_custom"]),
+                display_name_change_count=int(row["display_name_change_count"]),
+                display_name_changed_at=int(row["display_name_changed_at"]),
+            )
+            if display_name == current.display_label:
+                return current
+            now = int(time.time())
+            available_at = current.display_name_next_change_at
+            if available_at is not None and now < available_at:
+                raise DisplayNameCooldownError(available_at, available_at - now)
+            updated = replace(
+                current,
+                display_name=display_name,
+                display_name_is_custom=True,
+                display_name_change_count=current.display_name_change_count + 1,
+                display_name_changed_at=now,
+            )
+            conn.execute(
+                """
+                UPDATE users SET display_name = ?, display_name_is_custom = 1,
+                    display_name_change_count = ?, display_name_changed_at = ?
+                WHERE id = ?
+                """,
+                (updated.display_name, updated.display_name_change_count, updated.display_name_changed_at, updated.id),
+            )
+            return updated
+
     def upsert_oauth_user(
         self,
         provider: str,
@@ -358,7 +442,8 @@ class UserDatabase:
         with self._lock, self._connect() as conn:
             row = conn.execute(
                 """
-                SELECT u.id, u.username, u.display_name, u.created_at, u.email
+                SELECT u.id, u.username, u.display_name, u.created_at, u.email, u.display_name_is_custom,
+                       u.display_name_change_count, u.display_name_changed_at
                 FROM user_oauth_accounts a
                 JOIN users u ON u.id = a.user_id
                 WHERE a.provider = ? AND a.provider_user_id = ?
@@ -380,11 +465,16 @@ class UserDatabase:
                     created_at=int(row["created_at"]),
                     email=effective_email,
                     auth_provider=prov,
+                    display_name_is_custom=bool(row["display_name_is_custom"]),
+                    display_name_change_count=int(row["display_name_change_count"]),
+                    display_name_changed_at=int(row["display_name_changed_at"]),
                 )
 
             if verified_email:
                 email_row = conn.execute(
-                    "SELECT id, username, display_name, created_at, email FROM users WHERE email = ?",
+                    "SELECT id, username, display_name, created_at, email, display_name_is_custom, "
+                    "display_name_change_count, display_name_changed_at "
+                    "FROM users WHERE email = ?",
                     (verified_email,),
                 ).fetchone()
                 if email_row is not None:
@@ -403,6 +493,9 @@ class UserDatabase:
                         created_at=int(email_row["created_at"]),
                         email=verified_email,
                         auth_provider=prov,
+                        display_name_is_custom=bool(email_row["display_name_is_custom"]),
+                        display_name_change_count=int(email_row["display_name_change_count"]),
+                        display_name_changed_at=int(email_row["display_name_changed_at"]),
                     )
 
             self._prune_stale_if_full(conn, now)
@@ -462,7 +555,8 @@ class UserDatabase:
         self.ensure_schema()
         with self._lock, self._connect() as conn:
             row = conn.execute(
-                "SELECT id, username, display_name, password_hash, created_at, google_sub, email "
+                "SELECT id, username, display_name, password_hash, created_at, google_sub, email, "
+                "display_name_is_custom, display_name_change_count, display_name_changed_at "
                 "FROM users WHERE username = ?",
                 (norm,),
             ).fetchone()
@@ -478,6 +572,9 @@ class UserDatabase:
             created_at=int(row["created_at"]),
             email=str(row["email"]) if row["email"] else None,
             auth_provider="google" if row["google_sub"] else "password",
+            display_name_is_custom=bool(row["display_name_is_custom"]),
+            display_name_change_count=int(row["display_name_change_count"]),
+            display_name_changed_at=int(row["display_name_changed_at"]),
         )
 
     def create_session(self, user_id: int, ttl_seconds: int = SESSION_TTL_SECONDS) -> str:
@@ -512,7 +609,8 @@ class UserDatabase:
         with self._lock, self._connect() as conn:
             row = conn.execute(
                 """
-                SELECT u.id, u.username, u.display_name, u.created_at, u.google_sub, u.email, s.expires_at,
+                SELECT u.id, u.username, u.display_name, u.created_at, u.google_sub, u.email,
+                       u.display_name_is_custom, u.display_name_change_count, u.display_name_changed_at, s.expires_at,
                        (
                            SELECT a.provider FROM user_oauth_accounts a
                            WHERE a.user_id = u.id
@@ -539,6 +637,9 @@ class UserDatabase:
                 created_at=int(row["created_at"]),
                 email=str(row["email"]) if row["email"] else None,
                 auth_provider=provider,
+                display_name_is_custom=bool(row["display_name_is_custom"]),
+                display_name_change_count=int(row["display_name_change_count"]),
+                display_name_changed_at=int(row["display_name_changed_at"]),
             )
 
     def delete_session(self, token: str | None) -> None:

@@ -17,17 +17,17 @@ interface TeamColumnProps {
   timedOutHeroes?: Record<string, "late" | "autolock">;
   conflictingSlots?: readonly DraftSlot[];
   onEditSlot?: (slot: DraftSlot) => void;
-  usedHeroes: string[];
+  usedHeroes?: string[];
   usedHeroOriginGames?: Record<string, number>;
-  rawUsedCount: number;
-  gameNumber: number;
+  rawUsedCount?: number;
+  gameNumber?: number;
   heroMap: Map<string, Hero>;
   currentStep: DraftStep | null;
   predictedNextPicks?: HeroRecommendation[];
   predictedNextBans?: HeroRecommendation[];
   onLockHero?: (heroName: string) => void;
-  onOpenGlobalBanForTeam: () => void;
-  onRemoveUsedHero: (heroName: string) => void;
+  onOpenGlobalBanForTeam?: () => void;
+  onRemoveUsedHero?: (heroName: string) => void;
   variant?: "full" | "compact";
 }
 
@@ -67,10 +67,10 @@ export function TeamColumn({
   timedOutHeroes = {},
   conflictingSlots = [],
   onEditSlot,
-  usedHeroes,
+  usedHeroes = [],
   usedHeroOriginGames = {},
-  rawUsedCount,
-  gameNumber,
+  rawUsedCount = 0,
+  gameNumber = 1,
   heroMap,
   currentStep,
   predictedNextPicks = [],
@@ -118,7 +118,7 @@ export function TeamColumn({
 
   if (variant === "compact") {
     const renderCompactBanSlots = (extraClass = "") => (
-      <div className={`flex items-center gap-1 ${isBlue ? "" : "flex-row-reverse"} ${extraClass}`}>
+      <div className={`flex items-center gap-1 max-[374px]:gap-0.75 ${isBlue ? "" : "flex-row-reverse"} ${extraClass}`}>
         {Array.from({ length: 4 }).map((_, i) => {
           const bName = bans[i];
           const banTimedOut = bName ? timedOutHeroes[bName] : undefined;
@@ -146,7 +146,7 @@ export function TeamColumn({
                     ? t("AI คาดเดาแบน: {0}", displayName(ghostBan.hero_name))
                     : `Ban ${i + 1}`
               )}
-              className={`relative aspect-square h-7.5 w-7.5 shrink-0 overflow-hidden border bg-bg min-[380px]:h-8 min-[380px]:w-8 sm:h-9 sm:w-9 ${
+              className={`relative aspect-square h-7.5 w-7.5 shrink-0 overflow-hidden border bg-bg max-[374px]:size-6 min-[380px]:h-8 min-[380px]:w-8 sm:h-9 sm:w-9 ${
                 isBanActive
                   ? "border-gold animate-slot-pulse"
                   : banTimedOut || edit?.conflict
@@ -214,19 +214,33 @@ export function TeamColumn({
             {/* Tablet/iPad (>=sm): inline square ban slots */}
             {renderCompactBanSlots("hidden sm:flex")}
 
-            <button
-              type="button"
-              onClick={onOpenGlobalBanForTeam}
-              title={t("Global Ban ของ {0} ({1} ตัว)", teamName, usedHeroes.length)}
-              className={`flex h-7 shrink-0 items-center gap-1 border px-1.5 font-mono text-[10px] font-bold sm:h-9 sm:px-2.5 sm:text-xs ${
-                isBlue
-                  ? "border-blue/40 bg-blue/10 text-blue hover:bg-blue/20"
-                  : "border-red/40 bg-red/10 text-red hover:bg-red/20"
-              }`}
-            >
-              <Layers className="h-3 w-3 shrink-0 sm:h-4 sm:w-4" />
-              <span>{gameNumber === 7 ? "ULT" : usedHeroes.length}</span>
-            </button>
+            {onOpenGlobalBanForTeam ? (
+              <button
+                type="button"
+                onClick={onOpenGlobalBanForTeam}
+                title={t("Global Ban ของ {0} ({1} ตัว)", teamName, usedHeroes.length)}
+                className={`flex h-7 shrink-0 items-center gap-1 border px-1.5 font-mono text-[10px] font-bold sm:h-9 sm:px-2.5 sm:text-xs ${
+                  isBlue
+                    ? "border-blue/40 bg-blue/10 text-blue hover:bg-blue/20"
+                    : "border-red/40 bg-red/10 text-red hover:bg-red/20"
+                }`}
+              >
+                <Layers className="h-3 w-3 shrink-0 sm:h-4 sm:w-4" />
+                <span>{gameNumber === 7 ? "ULT" : usedHeroes.length}</span>
+              </button>
+            ) : (gameNumber > 1 || usedHeroes.length > 0) ? (
+              <span
+                title={t("Global Ban ของ {0} ({1} ตัว)", teamName, usedHeroes.length)}
+                className={`flex h-7 shrink-0 items-center gap-1 border px-1.5 font-mono text-[10px] font-bold sm:h-9 sm:px-2.5 sm:text-xs ${
+                  isBlue
+                    ? "border-blue/40 bg-blue/10 text-blue"
+                    : "border-red/40 bg-red/10 text-red"
+                }`}
+              >
+                <Layers className="h-3 w-3 shrink-0 sm:h-4 sm:w-4" />
+                <span>{gameNumber === 7 ? "ULT" : usedHeroes.length}</span>
+              </span>
+            ) : null}
           </div>
         </div>
 
@@ -258,7 +272,7 @@ export function TeamColumn({
                 {...slotControls(activate, edit)}
                 title={edit?.label ?? (
                   name
-                    ? t("{0} ({1}{2}){3} · แตะเพื่อเปลี่ยนตำแหน่ง", displayName(name), LANE_SHORT[effectiveLane]?.en ?? effectiveLane, manualLane ? t(" · กำหนดเอง") : "", pickTimedOut === "autolock"
+                    ? t("{0} ({1}{2}){3}", displayName(name), LANE_SHORT[effectiveLane]?.en ?? effectiveLane, manualLane ? t(" · กำหนดเอง") : "", pickTimedOut === "autolock"
                           ? t(" · หมดเวลา (Auto-Lock)")
                           : pickTimedOut
                             ? t(" · ดราฟไม่ทันเวลา (0:00)")
@@ -396,7 +410,7 @@ export function TeamColumn({
               {...slotControls(activate, edit)}
               title={edit?.label ?? (
                 name
-                  ? t("{0} ({1}{2}){3} · คลิกเพื่อเลือกตำแหน่งจริง", displayName(name), LANE_SHORT[effectiveLane]?.en ?? effectiveLane, manualLane ? t(" · กำหนดเอง") : "", pickTimedOut === "autolock"
+                  ? t("{0} ({1}{2}){3}", displayName(name), LANE_SHORT[effectiveLane]?.en ?? effectiveLane, manualLane ? t(" · กำหนดเอง") : "", pickTimedOut === "autolock"
                         ? t(" · หมดเวลา (Auto-Lock)")
                         : pickTimedOut
                           ? t(" · ดราฟไม่ทันเวลา (0:00)")
@@ -647,7 +661,7 @@ export function TeamColumn({
         </div>
 
       {/* On-Board Global Ban */}
-      <div
+      {(onOpenGlobalBanForTeam || gameNumber > 1 || usedHeroes.length > 0) && <div
         className={`flex shrink-0 flex-col overflow-hidden border bg-panel/90 p-1.5 sm:p-2 ${
           isBlue ? "border-blue/35" : "border-red/35"
         }`}
@@ -672,19 +686,21 @@ export function TeamColumn({
             </span>
           </div>
 
-          <button
-            type="button"
-            onClick={onOpenGlobalBanForTeam}
-            className={`flex min-h-6 shrink-0 items-center gap-1 border px-1.5 py-0.5 font-display text-[10px] font-bold tracking-wide transition-colors sm:px-2 ${
-              isBlue
-                ? "border-blue/50 bg-blue/10 text-blue hover:bg-blue hover:text-ink"
-                : "border-red/50 bg-red/10 text-red hover:bg-red hover:text-ink"
-            }`}
-          >
-            <Plus className="h-3 w-3 shrink-0" />
-            <span className="hidden xl:inline"><StableButtonLabel message="เลือกตัวที่เคยใช้" /></span>
-            <span className="xl:hidden"><StableButtonLabel message="เลือก" /></span>
-          </button>
+          {onOpenGlobalBanForTeam && (
+            <button
+              type="button"
+              onClick={onOpenGlobalBanForTeam}
+              className={`flex min-h-6 shrink-0 items-center gap-1 border px-1.5 py-0.5 font-display text-[10px] font-bold tracking-wide transition-colors sm:px-2 ${
+                isBlue
+                  ? "border-blue/50 bg-blue/10 text-blue hover:bg-blue hover:text-ink"
+                  : "border-red/50 bg-red/10 text-red hover:bg-red hover:text-ink"
+              }`}
+            >
+              <Plus className="h-3 w-3 shrink-0" />
+              <span className="hidden xl:inline"><StableButtonLabel message="เลือกตัวที่เคยใช้" /></span>
+              <span className="xl:hidden"><StableButtonLabel message="เลือก" /></span>
+            </button>
+          )}
         </div>
 
         {gameNumber === 7 ? (
@@ -693,19 +709,42 @@ export function TeamColumn({
             <span className="hidden xl:inline">{t("GAME 7 ULTIMATE BATTLE · ปลดล็อก (")}{rawUsedCount})</span>
           </div>
         ) : usedHeroes.length === 0 ? (
-          <button
-            type="button"
-            onClick={onOpenGlobalBanForTeam}
-            className="flex w-full min-w-0 items-center justify-center gap-1 border border-dashed border-line px-1.5 py-1.5 text-[10px] text-dim transition-colors hover:border-line-strong hover:bg-panel-2/50 hover:text-ink sm:text-[11px]"
-          >
-            <Plus className="h-3 w-3 shrink-0" />
-            <span className="truncate"><StableButtonLabel message="เลือกฮีโร่ที่" /> {teamName} <StableButtonLabel message="ใช้แล้ว" /></span>
-          </button>
+          onOpenGlobalBanForTeam ? (
+            <button
+              type="button"
+              onClick={onOpenGlobalBanForTeam}
+              className="flex w-full min-w-0 items-center justify-center gap-1 border border-dashed border-line px-1.5 py-1.5 text-[10px] text-dim transition-colors hover:border-line-strong hover:bg-panel-2/50 hover:text-ink sm:text-[11px]"
+            >
+              <Plus className="h-3 w-3 shrink-0" />
+              <span className="truncate"><StableButtonLabel message="เลือกฮีโร่ที่" /> {teamName} <StableButtonLabel message="ใช้แล้ว" /></span>
+            </button>
+          ) : (
+            <div className="flex w-full min-w-0 items-center justify-center border border-dashed border-line px-1.5 py-1.5 text-[10px] text-dim sm:text-[11px]">
+              <span className="truncate">{t("ไม่มีตัวที่เลือก")}</span>
+            </div>
+          )
         ) : (
           <div className="flex max-h-[76px] flex-wrap gap-1 overflow-y-auto pr-0.5">
             {usedHeroes.map((name) => {
               const hero = heroMap.get(name);
               const originGame = usedHeroOriginGames[name];
+              if (!onRemoveUsedHero) {
+                return (
+                  <div
+                    key={name}
+                    title={`${displayName(name)} (${teamName}${originGame ? ` · Game ${originGame}` : ""})`}
+                    className="flex max-w-full items-center gap-1 border border-line-strong bg-bg py-0.5 pr-1.5 pl-0.5 text-[10px] text-muted sm:text-[11px]"
+                  >
+                    <div className="h-4.5 w-4.5 shrink-0 overflow-hidden sm:h-5 sm:w-5">
+                      <HeroPortrait name={name} hero={hero} className="grayscale" />
+                    </div>
+                    <span className="max-w-[56px] truncate font-medium sm:max-w-[68px]">{displayName(name)}</span>
+                    {originGame !== undefined && (
+                      <span className="shrink-0 font-mono text-[9px] font-bold text-gold/80">G{originGame}</span>
+                    )}
+                  </div>
+                );
+              }
               return (
                 <button
                   key={name}
@@ -727,7 +766,7 @@ export function TeamColumn({
             })}
           </div>
         )}
-      </div>
+      </div>}
     </section>
   );
 }

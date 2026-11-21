@@ -64,8 +64,8 @@ interface ScoreBarProps {
   totalSteps: number;
   league?: LeagueCode;
   setLeague?: (v: LeagueCode) => void;
-  useLookahead?: boolean;
-  onToggleLookahead?: () => void;
+  assistantEnabled?: boolean;
+  onToggleAssistant?: () => void;
   timer?: DraftTimerControlProps;
   onUndo: () => void;
   onRedo?: () => void;
@@ -89,8 +89,8 @@ export function ScoreBar({
   totalSteps,
   league,
   setLeague,
-  useLookahead = false,
-  onToggleLookahead,
+  assistantEnabled = true,
+  onToggleAssistant,
   timer,
   onUndo,
   onRedo,
@@ -211,23 +211,45 @@ export function ScoreBar({
     );
   };
 
-  const continuousWinBar = (compactHeight: boolean) => (
-    <div
-      className={`relative w-full overflow-hidden bg-panel-2 ${
-        compactHeight ? "h-1.5 sm:h-2" : "h-2.5 min-w-[40px] flex-1 sm:h-3 sm:min-w-[56px]"
-      }`}
-    >
+  const progressPct = totalSteps > 0 ? Math.min(100, Math.round((currentStepIndex / totalSteps) * 100)) : 0;
+
+  const continuousBar = (compactHeight: boolean) =>
+    assistantEnabled ? (
       <div
-        className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-deep to-blue transition-[width] duration-700 ease-out"
-        style={{ width: `${blue}%` }}
-      />
+        className={`relative w-full overflow-hidden bg-panel-2 ${
+          compactHeight ? "h-1.5 sm:h-2" : "h-2.5 min-w-[40px] flex-1 sm:h-3 sm:min-w-[56px]"
+        }`}
+      >
+        <div
+          className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-deep to-blue transition-[width] duration-700 ease-out"
+          style={{ width: `${blue}%` }}
+        />
+        <div
+          className="absolute inset-y-0 right-0 bg-gradient-to-l from-red-deep to-red transition-[width] duration-700 ease-out"
+          style={{ width: `${red}%` }}
+        />
+        {isLoading && <div className="absolute inset-0 animate-pulse bg-ink/10" />}
+      </div>
+    ) : (
       <div
-        className="absolute inset-y-0 right-0 bg-gradient-to-l from-red-deep to-red transition-[width] duration-700 ease-out"
-        style={{ width: `${red}%` }}
-      />
-      {isLoading && <div className="absolute inset-0 animate-pulse bg-ink/10" />}
-    </div>
-  );
+        role="progressbar"
+        aria-label={t("ความคืบหน้าดราฟต์")}
+        aria-valuenow={currentStepIndex}
+        aria-valuemin={0}
+        aria-valuemax={totalSteps}
+        title={t("เปิดตัวช่วยเพื่อดูโอกาสชนะระหว่างดราฟต์")}
+        className={`relative w-full overflow-hidden bg-panel-2 ${
+          compactHeight ? "h-1.5 sm:h-2" : "h-2.5 min-w-[40px] flex-1 sm:h-3 sm:min-w-[56px]"
+        }`}
+      >
+        <div
+          className={`h-full transition-[width] duration-300 ease-out ${
+            !currentStep ? "bg-gold" : currentStep.side === "blue" ? "bg-blue/80" : "bg-red/80"
+          }`}
+          style={{ width: `${progressPct}%` }}
+        />
+      </div>
+    );
 
   const winBarComponent =
     showCenterTimer && timer ? (
@@ -235,17 +257,23 @@ export function ScoreBar({
         <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
           {/* Left: BLUE % */}
           <div className="justify-self-start leading-none">
-            <span className="mr-1.5 hidden font-display text-[10px] font-semibold tracking-widest text-blue sm:inline">
-              BLUE
-            </span>
-            <span
-              className={`font-mono text-sm font-bold tabular-nums sm:text-lg lg:text-xl ${
-                blueAhead ? "text-blue" : "text-muted"
-              }`}
-            >
-              {blue.toFixed(1)}
-              <span className="text-[10px] text-dim sm:text-xs">%</span>
-            </span>
+            {assistantEnabled ? (
+              <>
+                <span className="mr-1.5 hidden font-display text-[10px] font-semibold tracking-widest text-blue sm:inline">
+                  BLUE
+                </span>
+                <span
+                  className={`font-mono text-sm font-bold tabular-nums sm:text-lg lg:text-xl ${
+                    blueAhead ? "text-blue" : "text-muted"
+                  }`}
+                >
+                  {blue.toFixed(1)}
+                  <span className="text-[10px] text-dim sm:text-xs">%</span>
+                </span>
+              </>
+            ) : (
+              <span className="font-mono text-xs font-bold text-blue">BLUE</span>
+            )}
           </div>
 
           {/* Center: Borderless Turn Countdown + Symmetrical RoV Hairline */}
@@ -282,52 +310,70 @@ export function ScoreBar({
 
           {/* Right: RED % */}
           <div className="justify-self-end text-right leading-none">
-            <span
-              className={`font-mono text-sm font-bold tabular-nums sm:text-lg lg:text-xl ${
-                !blueAhead ? "text-red" : "text-muted"
-              }`}
-            >
-              {red.toFixed(1)}
-              <span className="text-[10px] text-dim sm:text-xs">%</span>
-            </span>
-            <span className="ml-1.5 hidden font-display text-[10px] font-semibold tracking-widest text-red sm:inline">
-              RED
-            </span>
+            {assistantEnabled ? (
+              <>
+                <span
+                  className={`font-mono text-sm font-bold tabular-nums sm:text-lg lg:text-xl ${
+                    !blueAhead ? "text-red" : "text-muted"
+                  }`}
+                >
+                  {red.toFixed(1)}
+                  <span className="text-[10px] text-dim sm:text-xs">%</span>
+                </span>
+                <span className="ml-1.5 hidden font-display text-[10px] font-semibold tracking-widest text-red sm:inline">
+                  RED
+                </span>
+              </>
+            ) : (
+              <span className="font-mono text-xs font-bold text-red">RED</span>
+            )}
           </div>
         </div>
 
-        {continuousWinBar(true)}
+        {continuousBar(true)}
       </div>
     ) : (
       <div className="flex min-w-0 flex-1 items-center gap-1.5 sm:gap-2.5">
         <div className="shrink-0 text-right leading-none">
-          <span className="mr-1.5 hidden font-display text-[10px] font-semibold tracking-widest text-blue sm:inline">
-            BLUE
-          </span>
-          <span
-            className={`font-mono text-sm font-bold tabular-nums sm:text-lg lg:text-xl xl:text-2xl ${
-              blueAhead ? "text-blue" : "text-muted"
-            }`}
-          >
-            {blue.toFixed(1)}
-            <span className="text-[10px] text-dim sm:text-xs">%</span>
-          </span>
+          {assistantEnabled ? (
+            <>
+              <span className="mr-1.5 hidden font-display text-[10px] font-semibold tracking-widest text-blue sm:inline">
+                BLUE
+              </span>
+              <span
+                className={`font-mono text-sm font-bold tabular-nums sm:text-lg lg:text-xl xl:text-2xl ${
+                  blueAhead ? "text-blue" : "text-muted"
+                }`}
+              >
+                {blue.toFixed(1)}
+                <span className="text-[10px] text-dim sm:text-xs">%</span>
+              </span>
+            </>
+          ) : (
+            <span className="font-mono text-xs font-bold text-blue">BLUE</span>
+          )}
         </div>
 
-        {continuousWinBar(false)}
+        {continuousBar(false)}
 
         <div className="shrink-0 leading-none">
-          <span
-            className={`font-mono text-sm font-bold tabular-nums sm:text-lg lg:text-xl xl:text-2xl ${
-              !blueAhead ? "text-red" : "text-muted"
-            }`}
-          >
-            {red.toFixed(1)}
-            <span className="text-[10px] text-dim sm:text-xs">%</span>
-          </span>
-          <span className="ml-1.5 hidden font-display text-[10px] font-semibold tracking-widest text-red sm:inline">
-            RED
-          </span>
+          {assistantEnabled ? (
+            <>
+              <span
+                className={`font-mono text-sm font-bold tabular-nums sm:text-lg lg:text-xl xl:text-2xl ${
+                  !blueAhead ? "text-red" : "text-muted"
+                }`}
+              >
+                {red.toFixed(1)}
+                <span className="text-[10px] text-dim sm:text-xs">%</span>
+              </span>
+              <span className="ml-1.5 hidden font-display text-[10px] font-semibold tracking-widest text-red sm:inline">
+                RED
+              </span>
+            </>
+          ) : (
+            <span className="font-mono text-xs font-bold text-red">RED</span>
+          )}
         </div>
       </div>
     );
@@ -393,21 +439,21 @@ export function ScoreBar({
               </select>
             </label>
           )}
-          {onToggleLookahead && (
+          {onToggleAssistant && (
             <button
               type="button"
-              onClick={onToggleLookahead}
-              aria-label={t("ดูจังหวะถัดไป")}
-              aria-pressed={useLookahead}
-              title={t("ประเมินการเลือกหรือแบนตอนนี้และจังหวะถัดไปอีก 1 ครั้ง")}
-              className={`inline-flex h-8 min-w-8 items-center justify-center gap-1 border px-1.5 font-mono text-[11px] font-bold transition-colors sm:h-8.5 sm:px-2 ${
-                useLookahead
+              onClick={onToggleAssistant}
+              aria-label={t("ตัวช่วย")}
+              aria-pressed={assistantEnabled}
+              title={t("เปิดตัวช่วยเพื่อดูโอกาสชนะระหว่างดราฟต์")}
+              className={`inline-flex h-8 min-w-8 items-center justify-center gap-1 border px-1.5 font-display text-xs font-semibold whitespace-nowrap transition-colors sm:h-8.5 sm:px-2.5 ${
+                assistantEnabled
                   ? "border-gold bg-gold/15 text-gold shadow-sm"
                   : "border-line-strong bg-panel text-muted hover:border-gold/50 hover:text-ink"
               }`}
             >
-              <Sparkles className="h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5" />
-              <StableButtonLabel message="ดูจังหวะถัดไป" className="hidden xl:inline-grid" />
+              <Sparkles className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <StableButtonLabel message="ตัวช่วย" className="hidden sm:inline-grid" />
             </button>
           )}
           <button

@@ -3,7 +3,7 @@ import { type Message, translateMessage, useLanguage } from "./i18n/language";
 import { LanguageSwitch } from "./i18n/LanguageProvider";
 import { BarChart3, Coffee, LogIn, LogOut, Menu, MessageSquare, User } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { getJson, postJson, putJson, setExpectedAuthUser, setSessionMismatchHandler } from "./api/client";
+import { ApiError, getJson, postJson, putJson, setExpectedAuthUser, setSessionMismatchHandler } from "./api/client";
 import { AdminStatsModal } from "./components/AdminStatsModal";
 import { AuthLanding, AuthModal } from "./components/AuthModal";
 import { DonateModal } from "./components/DonateModal";
@@ -13,6 +13,8 @@ import { MiniDraftLogo } from "./components/MiniDraftLogo";
 import { MobileNavDrawer } from "./components/MobileNavDrawer";
 import { Modal } from "./components/Modal";
 import { PricingSurveyModal } from "./components/PricingSurveyModal";
+import { PracticeDraftView } from "./components/PracticeDraftView";
+import { ProfileView } from "./components/ProfileView";
 import { CombatLab } from "./components/lab/CombatLab";
 import { MetaLab } from "./components/meta_lab/MetaLab";
 import { TierListView } from "./components/tierlist/TierListView";
@@ -24,21 +26,28 @@ import type {
   PricingSurveyResponse,
 } from "./types/auth";
 import type { DraftSessionPayload } from "./types/draft";
+import { accountLabel, restorePreviewAccountStorage } from "./utils/auth";
 
-export type Tab = "draft" | "tierlist" | "metalab" | "lab";
+export type Tab = "draft" | "practice" | "tierlist" | "metalab" | "lab" | "profile";
 
 const DRAFT_ONLY = import.meta.env.VITE_DRAFT_ONLY === "true";
 
 const TABS: { key: Tab; label: string }[] = DRAFT_ONLY
-  ? [{ key: "draft", label: "Draft Board" }]
+  ? [
+      { key: "draft", label: "Draft Board" },
+      { key: "practice", label: "ฝึกดราฟต์ vs AI" },
+    ]
   : [
       { key: "draft", label: "Draft Board" },
+      { key: "practice", label: "ฝึกดราฟต์ vs AI" },
       { key: "tierlist", label: "Meta Tier List" },
       { key: "metalab", label: "MetaLab" },
       { key: "lab", label: "Combat Lab" },
     ];
 
 function initialTab(): Tab {
+  if (window.location.hash === "#profile") return "profile";
+  if (window.location.hash === "#practice") return "practice";
   if (DRAFT_ONLY) return "draft";
   if (window.location.hash === "#tierlist") return "tierlist";
   if (window.location.hash === "#metalab") return "metalab";
@@ -60,6 +69,7 @@ interface WorkspaceProps {
   onOpenAdminStatsModal: () => void;
   onOpenMobileDrawer: () => void;
   onLogout: () => void;
+  onSaveDisplayName: (displayName: string) => Promise<void>;
 }
 
 function Workspace({
@@ -76,17 +86,20 @@ function Workspace({
   onOpenAdminStatsModal,
   onOpenMobileDrawer,
   onLogout,
+  onSaveDisplayName,
 }: WorkspaceProps) {
   const { t } = useLanguage();
   const isAuthenticated = authUser !== null;
+  const accountName = isAuthenticated ? accountLabel(authUser) : "";
   const scope = isAuthenticated ? `user:${authUser.username}` : "guest";
-  const activeTabLabel = TABS.find((t) => t.key === tab)?.label ?? "Draft Board";
+  const activeTabLabel = t(tab === "profile" ? "โปรไฟล์" : TABS.find((item) => item.key === tab)?.label ?? "Draft Board");
 
   // Unified Draft Machine isolated per user account (or local-only in Guest mode)
+  const [assistantEnabled, setAssistantEnabled] = useState(true);
   const draft = useDraft({
-    storageKey: `rov_draft_session_v1:${scope}`,
+    storageKey: `${DRAFT_STORAGE_PREFIX}:${scope}`,
     persistSession: isAuthenticated,
-    enabled: tab === "draft",
+    enabled: tab === "draft" && assistantEnabled,
   });
 
   return (
@@ -105,17 +118,17 @@ function Workspace({
               {activeTabLabel}
             </span>
             <div className="hidden min-w-0 flex-1 items-center gap-1 overflow-x-auto lg:flex">
-              {TABS.map((t) => (
+              {TABS.map((item) => (
                 <button
                   type="button"
-                  key={t.key}
-                  onClick={() => selectTab(t.key)}
-                  aria-current={tab === t.key ? "page" : undefined}
+                  key={item.key}
+                  onClick={() => selectTab(item.key)}
+                  aria-current={tab === item.key ? "page" : undefined}
                   className={`border-b-2 px-3 py-2 font-display text-sm font-semibold tracking-wide whitespace-nowrap transition-colors ${
-                    tab === t.key ? "border-gold text-ink" : "border-transparent text-dim hover:text-muted"
+                    tab === item.key ? "border-gold text-ink" : "border-transparent text-dim hover:text-muted"
                   }`}
                 >
-                  {t.label}
+                  {t(item.label)}
                 </button>
               ))}
             </div>
@@ -166,13 +179,16 @@ function Workspace({
             </button>
             {authLoading ? null : isAuthenticated ? (
               <div className="flex items-center gap-1">
-                <span
-                  title={t("กำลังซิงก์ข้อมูลข้ามอุปกรณ์ด้วยบัญชี @{0}", authUser.username)}
-                  className="inline-flex h-7 items-center gap-1 border border-good/40 bg-good/10 px-2 font-mono text-[10.5px] font-bold text-good"
+                <a
+                  href="#profile"
+                  aria-label={t("เปิดโปรไฟล์ของ {0}", accountName)}
+                  aria-current={tab === "profile" ? "page" : undefined}
+                  title={t("เปิดโปรไฟล์ของ {0}", accountName)}
+                  className="inline-flex h-7 items-center gap-1 border border-good/40 bg-good/10 px-2 font-mono text-[10.5px] font-bold text-good transition-colors hover:border-good hover:bg-good/20 focus-visible:outline-2 focus-visible:outline-good"
                 >
                   <User className="h-3 w-3 shrink-0" />
-                  <span className="max-w-[68px] truncate sm:max-w-[96px]">@{authUser.username}</span>
-                </span>
+                  <span className="max-w-[68px] truncate sm:max-w-[96px]">{accountName}</span>
+                </a>
                 <button
                   type="button"
                   onClick={onLogout}
@@ -218,7 +234,11 @@ function Workspace({
       </nav>
 
       <ErrorBoundary resetKey={`${tab}:${scope}`}>
-        {!DRAFT_ONLY && tab === "tierlist" ? (
+        {tab === "profile" && authUser ? (
+          <ProfileView user={authUser} onSaveDisplayName={onSaveDisplayName} />
+        ) : tab === "practice" ? (
+          <PracticeDraftView key={scope} scope={scope} />
+        ) : !DRAFT_ONLY && tab === "tierlist" ? (
           <TierListView heroes={draft.heroes} disableShortcuts={disableShortcuts} />
         ) : !DRAFT_ONLY && tab === "metalab" ? (
           <MetaLab
@@ -236,7 +256,7 @@ function Workspace({
             <CombatLab
               key={scope}
               heroMap={draft.heroMap}
-              storageKey={`rov-combat-lab-v1:${scope}`}
+              storageKey={`${COMBAT_STORAGE_PREFIX}:${scope}`}
               persistRemote={isAuthenticated}
             />
           </main>
@@ -246,6 +266,8 @@ function Workspace({
             draft={draft}
             isActiveTab={tab === "draft"}
             disableShortcuts={disableShortcuts}
+            assistantEnabled={assistantEnabled}
+            onToggleAssistant={() => setAssistantEnabled((prev) => !prev)}
           />
         )}
       </ErrorBoundary>
@@ -258,6 +280,13 @@ const AUTH_SYNC_STORAGE_KEY = "minidraft_auth_user_sync_v1";
 const PRICING_SURVEY_STORAGE_KEY = "minidraft_pricing_survey_v1";
 const PRICING_SURVEY_CLIENT_ID_KEY = "minidraft_pricing_survey_client_id_v1";
 const DRAFT_STORAGE_PREFIX = "rov_draft_session_v1";
+const COMBAT_STORAGE_PREFIX = "rov-combat-lab-v1";
+const ACCOUNT_STORAGE_PREFIXES = [DRAFT_STORAGE_PREFIX, COMBAT_STORAGE_PREFIX, PRICING_SURVEY_STORAGE_KEY];
+
+function prepareAuthenticatedUser(user: AuthUser): void {
+  restorePreviewAccountStorage(user, ACCOUNT_STORAGE_PREFIXES);
+  setExpectedAuthUser(user.username);
+}
 
 interface PricingSurveyStorage {
   clientId: string;
@@ -450,8 +479,9 @@ function formatOAuthError(code: string | null): string | null {
 
 export function App() {
   const { t } = useLanguage();
-  const [tab, setTab] = useState<Tab>(initialTab);
+  const [requestedTab, setTab] = useState<Tab>(initialTab);
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const tab = requestedTab === "profile" && !authUser ? "draft" : requestedTab;
   const authUserRef = useRef<AuthUser | null>(null);
   const authRefreshInFlightRef = useRef(false);
   const lastAuthCheckAtRef = useRef(0);
@@ -490,7 +520,7 @@ export function App() {
   const finalizeAuthenticatedUser = useCallback(
     (user: AuthUser) => {
       lastAuthCheckAtRef.current = Date.now();
-      setExpectedAuthUser(user.username);
+      prepareAuthenticatedUser(user);
       setOauthError(null);
       setAuthUser(user);
       updateGuestEntered(false);
@@ -539,6 +569,12 @@ export function App() {
     setExpectedAuthUser(authUser?.username ?? null);
   }, [authUser]);
 
+  useEffect(() => {
+    const syncTab = () => setTab(initialTab());
+    window.addEventListener("hashchange", syncTab);
+    return () => window.removeEventListener("hashchange", syncTab);
+  }, []);
+
   const refreshAuthSession = useCallback(
     async (signal?: AbortSignal, allowGuestMigration = false, force = false) => {
       const now = Date.now();
@@ -563,8 +599,19 @@ export function App() {
             }
             updateGuestEntered(false);
           }
-          setExpectedAuthUser(res.user.username);
-          setAuthUser((prev) => (prev?.username === res.user?.username ? prev : res.user));
+          const user = res.user;
+          prepareAuthenticatedUser(user);
+          setAuthUser((prev) => (
+            prev?.id === user.id &&
+            prev.username === user.username &&
+            prev.display_name === user.display_name &&
+            prev.display_name_is_custom === user.display_name_is_custom &&
+            prev.display_label === user.display_label &&
+            prev.display_name_changes_remaining === user.display_name_changes_remaining &&
+            prev.display_name_next_change_at === user.display_name_next_change_at &&
+            prev.auth_provider === user.auth_provider
+              ? prev : user
+          ));
         } else {
           setExpectedAuthUser(null);
           setPricingSurveyAnsweredServer(false);
@@ -605,7 +652,7 @@ export function App() {
             }
             updateGuestEntered(false);
           }
-          setExpectedAuthUser(res.user.username);
+          prepareAuthenticatedUser(res.user);
           setAuthUser(res.user);
         } else {
           setExpectedAuthUser(null);
@@ -698,11 +745,26 @@ export function App() {
     window.history.replaceState(null, "", next === "draft" ? "#" : `#${next}`);
   };
 
+  const handleSaveDisplayName = async (displayName: string) => {
+    if (!authUser) throw new ApiError(401, "Session expired or logged out");
+    const { user } = await putJson<AuthStatusResponse>("/auth/profile", {
+      user_id: authUser.id,
+      display_name: displayName,
+    });
+    if (!user) throw new ApiError(401, "Session expired or logged out");
+    setAuthUser((prev) => (prev?.id === user.id ? user : prev));
+    broadcastAuthChange(user.username);
+  };
+
   const handleLogout = async () => {
     try {
       await postJson<AuthStatusResponse>("/auth/logout", {});
     } catch {
       // clear client state regardless
+    }
+    if (requestedTab === "profile" || window.location.hash === "#profile") {
+      setTab("draft");
+      window.history.replaceState(null, "", "#");
     }
     setExpectedAuthUser(null);
     setAuthUser(null);
@@ -748,7 +810,7 @@ export function App() {
     const { user, draft } = pendingMigration;
     setMigrationBusy(true);
     setMigrationError(null);
-    setExpectedAuthUser(user.username);
+    prepareAuthenticatedUser(user);
     try {
       const remoteRaw = await getJson<Partial<DraftSessionPayload>>("/draft/session");
       const remoteNormalized = normalizeSessionPayload(remoteRaw ?? {});
@@ -887,6 +949,7 @@ export function App() {
         onOpenAdminStatsModal={() => setAdminStatsModalOpen(true)}
         onOpenMobileDrawer={() => setMobileDrawerOpen(true)}
         onLogout={handleLogout}
+        onSaveDisplayName={handleSaveDisplayName}
       />
       {mobileDrawerOpen && (
         <MobileNavDrawer
@@ -904,6 +967,7 @@ export function App() {
           onOpenDonate={() => setDonateModalOpen(true)}
           onOpenAdminStats={() => setAdminStatsModalOpen(true)}
           onOpenAuth={() => setAuthModalOpen(true)}
+          onOpenProfile={() => { window.location.hash = "profile"; }}
           onLogout={() => void handleLogout()}
           onClose={() => setMobileDrawerOpen(false)}
         />
@@ -961,7 +1025,7 @@ export function App() {
                 .filter(Boolean)
                 .join(" · ")}
               {t(") ต้องการย้ายมาใช้ต่อในบัญชี")}{" "}
-              <span className="font-mono font-bold text-gold">@{pendingMigration.user.username}</span> {t("หรือไม่?")}
+              <span className="font-mono font-bold text-gold">{accountLabel(pendingMigration.user)}</span> {t("หรือไม่?")}
             </p>
             <p className="text-[11px] text-dim sm:text-xs">
               <strong className="text-ink">Confirm</strong> {t("= นำเข้าสู่บัญชีและรวมกับประวัติเดิม (ไม่ลบประวัติเก่า) ·")}{" "}

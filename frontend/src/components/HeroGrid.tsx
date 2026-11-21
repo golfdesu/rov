@@ -18,6 +18,7 @@ interface HeroGridProps {
   recommendedRanks: Map<string, number>;
   missingAllyLanes: string[];
   currentStep: DraftStep | null;
+  allowLock?: boolean;
   isLoading?: boolean;
   isHeroesLoading: boolean;
   onLockHero: (name: string) => void | boolean;
@@ -37,6 +38,7 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
     recommendedRanks,
     missingAllyLanes,
     currentStep,
+    allowLock = true,
     isLoading = false,
     isHeroesLoading,
     onLockHero,
@@ -101,7 +103,7 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
                 }
                 if (e.key === "Enter") {
                   e.stopPropagation();
-                  if (isLoading) return;
+                  if (isLoading || !allowLock) return;
                   const first = filtered.find((h) => !unavailableHeroes.has(h.name));
                   if (first && currentStep && onLockHero(first.name) !== false) {
                     setQuery("");
@@ -216,7 +218,7 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
             const rank = recommendedRanks.get(hero.name);
             const primaryLane = heroPrimaryLane(hero);
             const fillsLane = !taken && (heroLanes(hero.lane).some((l) => missing.has(l)) || missing.has(primaryLane));
-            const disabled = taken || !currentStep;
+            const disabled = taken || !currentStep || !allowLock;
             return (
               <button
                 key={hero.name}

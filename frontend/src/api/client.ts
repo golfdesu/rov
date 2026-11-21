@@ -1,11 +1,13 @@
 /** Error thrown for non-2xx responses, carrying the server's `detail` message when present. */
 export class ApiError extends Error {
   readonly status: number;
+  readonly detail: unknown;
 
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, detail?: unknown) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.detail = detail;
   }
 }
 
@@ -42,7 +44,7 @@ async function parseResponse<T>(res: Response, checkedSyncAuth: boolean): Promis
     }
     const detail = (body as { detail?: unknown } | null)?.detail;
     const message = typeof detail === "string" ? detail : detail ? JSON.stringify(detail) : text || res.statusText;
-    throw new ApiError(res.status, `Server returned ${res.status}: ${message}`);
+    throw new ApiError(res.status, `Server returned ${res.status}: ${message}`, detail);
   }
   return body as T;
 }

@@ -27,6 +27,305 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-21 19:00 (UTC+7) — Replace Lookahead with Assistant Toggle & Default Practice Assistant ON
+**Agent:** Antigravity / Claude Sonnet
+
+### ✅ Completed Work
+- **Replaced Draft Board Lookahead Toggle with Assistant Toggle (`frontend/src/App.tsx`, `frontend/src/components/ScoreBar.tsx`, `frontend/src/components/DraftBoardView.tsx`, `frontend/src/hooks/useDraft.ts`):**
+  - Replaced the standalone Lookahead button in `ScoreBar` with the `"ตัวช่วย"` (`Assistant`) toggle matching `PracticeDraftView` (without tier/Guest restrictions while the platform remains free open-access).
+  - Controlled `useDraft({ enabled: tab === "draft" && assistantEnabled })` and always sent `use_lookahead: false` in `/api/predict` payloads.
+  - When Assistant is OFF, skipped background `/predict` calls, hid `AiPanel`, hero rank badges, missing ally lane highlights, opponent ghost previews, and Win% estimates, switching `ScoreBar`'s center bar to Draft Progress (`STEP`) and expanding `HeroGrid` to full width (`md:col-span-12`).
+- **Defaulted Draft vs AI Assistant to ON (`frontend/src/utils/practiceHistory.ts`):**
+  - Updated `defaultPracticeMeta()` and unset `loadPracticeMeta()` records so `showHints` defaults to `true` on Draft vs AI.
+- **Translations (`frontend/src/i18n/englishMessages.ts`):**
+  - Added English copy for mobile Assistant-off prompts (`"ปิดตัวช่วยอยู่"`, `"เปิดตัวช่วย"`, `"ปิดตัวช่วยอยู่ · กดปุ่มตัวช่วยเพื่อดูคำแนะนำ AI"`).
+
+### 📁 Modified Files
+- `frontend/src/App.tsx`
+- `frontend/src/components/ScoreBar.tsx`
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/utils/practiceHistory.ts`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified via i18n check (`0` duplicate/missing keys), `oxlint`, `tsc -b && vite build`, `inspect_frontend_e2e.py`, `ruff check/format`, `pytest tests/test_api.py`, and live Chromium Playwright E2E across both Draft Board and Draft vs AI (`#practice`) on Desktop & Mobile.
+
+### ⚠️ Open Issues / Important Notes
+- User-tier gating from `docs/SUBSCRIPTION_ROADMAP.md` intentionally left unimplemented per open free launch policy.
+
+---
+
+## 📅 2026-11-21 18:51 (UTC+7) — Default the Draft Board Assistant to On
+**Agent:** Codex
+
+### ✅ Completed Work
+- Updated the roadmap to start with Assistant on for signed-in users and prompt guests to sign in only when they select Assistant.
+
+### 📁 Modified Files
+- `docs/SUBSCRIPTION_ROADMAP.md` and `CHANGELOG.md`
+
+### 🧪 Verification
+- Checked the roadmap instructions and planned test coverage for a consistent default. Git whitespace checks passed.
+
+### ⚠️ Open Issues / Important Notes
+- Roadmap update only. Implementation is planned.
+
+---
+
+## 📅 2026-11-21 18:50 (UTC+7) — Plan the Draft Board Assistant Toggle
+**Agent:** Codex
+
+### ✅ Completed Work
+- Updated the subscription roadmap to replace the standalone Draft Board Lookahead button with the Assistant toggle used in Draft vs AI.
+- Documented the off-by-default state, prediction quota behavior, and the separate on-demand draft comparison planned for Pro and Team Pro.
+
+### 📁 Modified Files
+- `docs/SUBSCRIPTION_ROADMAP.md` and `CHANGELOG.md`
+
+### 🧪 Verification
+- Checked the roadmap matrix, implementation notes, and Assistant section for consistency. Git whitespace checks passed.
+
+### ⚠️ Open Issues / Important Notes
+- Roadmap update only. Implementation is planned.
+
+---
+
+## 📅 2026-11-21 18:50 (UTC+7) — Isolated Persistent History for Draft vs AI Practice Mode
+**Agent:** Antigravity / Claude Sonnet
+
+### ✅ Completed Work
+- **Added Scoped Practice History & Active Round Persistence (`frontend/src/utils/practiceHistory.ts`, `frontend/src/components/PracticeDraftView.tsx`, `frontend/src/App.tsx`):**
+  - Passed user/guest `scope` into `<PracticeDraftView key={scope} scope={scope} />` and stored practice active drafts (`rov_practice_draft:v1:<scope>`), round metadata (`rov_practice_meta:v1:<scope>`), and completed game history (`rov_practice_history:v1:<scope>`, up to 100 entries) strictly isolated from main Draft Board `seriesGames` and backend `/draft/session`.
+  - Auto-recorded completed 18-step AI drafts once model win estimation settles (deduplicated per session signature so refreshing or reviewing does not duplicate entries, while replaying a Pick into a different completion records as a new entry).
+  - Updated `Start New Round` / side switch to clear only the active round draft/meta while keeping saved AI draft history intact.
+- **Built Practice History Modal (`frontend/src/components/PracticeHistoryModal.tsx`, `frontend/src/i18n/englishMessages.ts`):**
+  - Added a History trigger button with entry count badge in the Practice sub-header.
+  - Added summary stats (total games, favoured >= 50% count/rate, average player Win%), 5v5 hero portrait cards with ban summaries, one-click **"Open review"** replay loading (`PracticeReview` + Pick 1–5 replay), and single/all delete confirmations using `ConfirmDialog`.
+
+### 📁 Modified Files
+- `frontend/src/utils/practiceHistory.ts` (new)
+- `frontend/src/components/PracticeHistoryModal.tsx` (new)
+- `frontend/src/components/PracticeDraftView.tsx`
+- `frontend/src/App.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified via `oxlint`, `tsc -b && vite build`, i18n key check, `inspect_frontend_e2e.py`, `ruff check/format`, `pytest tests/test_api.py`, and live Chromium Playwright E2E across auto-save, refresh persistence, review reload, delete/clear, and desktop/mobile responsive layout.
+
+### ⚠️ Open Issues / Important Notes
+- Practice history is persisted locally per user/guest scope in `localStorage` so team/pro series on the main Draft Board and `/draft/session` backend remain unaffected.
+
+---
+
+## 📅 2026-11-21 17:57 (UTC+7) — Rename the Practice Assistant Toggle
+**Agent:** Codex
+
+### ✅ Completed Work
+- Renamed the Draft vs AI toggle to Assistant in English and shortened the Thai label. Updated the win-chance tooltip to match.
+
+### 📁 Modified Files
+- `frontend/src/components/PracticeDraftView.tsx`, `frontend/src/i18n/englishMessages.ts`, and `CHANGELOG.md`
+
+### 🧪 Verification
+- Chromium verified both labels, both tooltips, the toggle state, and equal button width at 320 px. Frontend build and lint and Ruff checks passed.
+
+### ⚠️ Open Issues / Important Notes
+- Verified on local Dev.
+
+---
+
+## 📅 2026-11-21 17:35 (UTC+7) — Broadcast 3-Column UI Redesign for AI Practice Mode & Frontend Bugfixes
+**Agent:** Antigravity / Orchestrator
+
+### ✅ Completed Work
+- **Broadcast 3-Column Redesign (`frontend/src/components/PracticeDraftView.tsx`, `frontend/src/components/AiPanel.tsx`)**:
+  - Replaced the centered pre-game Setup Lobby card with immediate entry into the full 3-column broadcast draft workspace (`max-w-[1920px]`), matching `DraftBoardView` sizing (`240px / 300px / 340px`).
+  - Added a broadcast sub-header with Bo1/Bo3/Bo5/Bo7 series selector pills, game indicator, Blue/Red/Random side switcher, `AI hints` / `Assist` toggle, and `New round` reset.
+  - Added a broadcast turn/score header displaying live Blue vs Red Win Probability Bar when Assist mode is enabled (or Draft Progress bar when hidden), plus one-click player-turn `Undo` (`Undo2`) and `Reset`.
+  - Kept `AiPanel`, `#1..#10` grid badges, lane highlights, and ghost forecasts steadily mounted across both player and AI turns when Assist mode is enabled (with `allowLock={playerTurn}` preventing accidental locks on AI turns), eliminating layout flicker during AI's turn.
+  - Redesigned `PracticeReview` into a Broadcast Scorecard with team Win Probability Bar, top Next-Game selector CTA, Bo3/Bo5/Bo7 series summary grid, and all 5 pick replay cards with `HeroPortrait`, `LaneIcon`, and AI counter-reply preview icons.
+- **Read-Only Global Ban Tray Support (`frontend/src/components/TeamColumn.tsx`)**: Enabled `TeamColumn` compact Global Ban counter and full On-Board Global Ban hero list to render in read-only mode during Practice Bo3/Bo5/Bo7 series when `onOpenGlobalBanForTeam` / `onRemoveUsedHero` are omitted.
+- **8 Frontend Bug Fixes (`c236e8c` follow-up)**:
+  - **NewSeriesModal English i18n shift** (`frontend/src/i18n/englishMessages.ts`): Corrected `"เช่น FS, TLN"` (`"e.g. FS, TLN"`) and `"ชื่อกลุ่ม / ชื่อซีรีส์ (ไม่บังคับ)"` (`"Series Name (optional)"`), resolving duplicate `"Default:"` labels.
+  - **DuelSummary toggle English labels** (`frontend/src/components/lab/DuelSummary.tsx`): Switched Kiting and Active Items buttons from `"เปิด"` / `"ปิด"` (`"Close"`) to `"เปิดอยู่"` / `"ปิดอยู่"` (`"On"` / `"Off"`).
+  - **Skill tag & label truncation** (`frontend/src/utils/skillEffects.ts`, `frontend/src/components/lab/HeroSkillsModal.tsx`, `frontend/src/i18n/englishMessages.ts`): Wrapped `"ลดความเสียหาย"` in `t(...)` inside `getInGameTagCapsules()`, and updated `HeroSkillsModal` table label cleanup to strip only English gloss suffixes rather than truncating meaningful stack/scaling parentheticals like `(3สแต็ก)` or `(+25%AD)`.
+  - **PickLaneModal selected badge** (`frontend/src/components/PickLaneModal.tsx`, `frontend/src/i18n/englishMessages.ts`): Replaced `{t("เลือก")}` (`"Pick"`) with `<StableButtonLabel message="เลือกอยู่" />` (`"Selected"`).
+  - **Profile hash after logout** (`frontend/src/App.tsx`): Cleared `requestedTab` and `#profile` URL hash inside `handleLogout` so signing back in stays on the active workspace instead of jumping to Profile.
+  - **Pick Slot Editor focus & view switching** (`frontend/src/components/DraftBoardView.tsx`, `frontend/src/components/DraftPickActions.tsx`): Passed `closeSlotEditor` to `DraftPickActions` and switched `onChoose("hero" | "lane")` directly without the 180ms `requestClose` close-and-reopen race.
+
+### 📁 Modified Files
+- `frontend/src/components/PracticeDraftView.tsx`
+- `frontend/src/components/TeamColumn.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `frontend/src/components/lab/DuelSummary.tsx`
+- `frontend/src/utils/skillEffects.ts`
+- `frontend/src/components/lab/HeroSkillsModal.tsx`
+- `frontend/src/App.tsx`
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/components/DraftPickActions.tsx`
+- `frontend/src/components/PickLaneModal.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `Set-Location frontend; npm run lint; npm run build; Set-Location ..; python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py; pytest -q --tb=short tests/test_api.py`
+
+### ⚠️ Open Issues / Important Notes
+- Local dev updates remain uncommitted on `main` (production VM still runs pinned `4dbc614` + `90d` Trial #31 checkpoint until user approves release).
+
+---
+
+## 📅 2026-11-21 17:06 (UTC+7) — Choose Sides Between AI Practice Games
+**Agent:** Codex
+
+### ✅ Completed Work
+- Added a blue or red side choice before each subsequent practice game. The current side is selected by default.
+- Used the existing series side-swap logic so the player's and AI's Global Ban lists follow their teams.
+- Kept AI turn ownership and the player's estimate aligned with the side used in each game.
+
+### 📁 Modified Files
+- `frontend/src/{components/PracticeDraftView.tsx,hooks/useDraft.ts,i18n/englishMessages.ts}` and `CHANGELOG.md`
+
+### 🧪 Verification
+- Completed a live-model mobile series switching Blue to Red and back to Blue. Verified turn ownership, both teams' Global Bans, and all three player-side estimates.
+- Frontend build and lint, Ruff lint and format, and the UX/UI audit passed.
+
+### ⚠️ Open Issues / Important Notes
+- Verified on the local Dev stack.
+
+---
+
+## 📅 2026-11-21 17:01 (UTC+7) — Add Practice Series and AI Turn Pacing
+**Agent:** Codex
+
+### ✅ Completed Work
+- Added 1, 3, 5, and 7 game practice formats. The selected side stays fixed across games.
+- Carried the latest completed draft into the existing Global Ban flow, including the G7 exception. Kept replay available before advancing and showed each game's estimate in the final review.
+- Set a one-second minimum for each AI pick and ban, including consecutive turns. Prediction time counts toward the minimum.
+
+### 📁 Modified Files
+- `frontend/src/{components/HeroGrid.tsx,components/PracticeDraftView.tsx,hooks/useDraft.ts,i18n/englishMessages.ts}` and `CHANGELOG.md`
+
+### 🧪 Verification
+- Completed seven games against the running model. Verified G1 replay before G2, Global Ban through G6, reuse of an earlier pick in G7, and all seven estimates.
+- Measured 70 AI turns, including consecutive picks, with a minimum observed duration of 1,024 ms. Verified the response time counts toward the pause using a delayed prediction.
+- Verified the 1, 3, and 5 game stopping points, the 320 px layout, frontend build and lint, Ruff lint and format, and the UX/UI audit.
+
+### ⚠️ Open Issues / Important Notes
+- Verified on the local Dev stack.
+
+---
+
+## 📅 2026-11-21 16:42 (UTC+7) — Add Draft vs AI Practice
+**Agent:** Codex
+
+### ✅ Completed Work
+- Added a Dev practice mode for a single 18-turn draft, with blue, red, and random side selection.
+- Used the existing predictor to pick and ban for the AI side. Kept hints off by default and offered a retry when an AI turn fails.
+- Added a final model estimate and two replay points that retain earlier choices and rerun the remaining turns.
+- Isolated practice from the normal draft and account history. Adjusted compact ban slots to keep the fourth ban visible on narrow phones.
+
+### 📁 Modified Files
+- `frontend/src/{App.tsx,components/MobileNavDrawer.tsx,components/PracticeDraftView.tsx,components/TeamColumn.tsx,hooks/useDraft.ts,i18n/englishMessages.ts,utils/draft.ts}` and `CHANGELOG.md`
+
+### 🧪 Verification
+- Chromium completed all 18 turns against the running model on blue desktop and red mobile, verified optional hints, and confirmed replay generated a new AI response from the changed draft.
+- Verified mobile navigation, retry after a temporary AI error, random side selection, the 320 px layout, and preservation of the normal draft.
+- Frontend build and lint, Ruff lint and format, and the UX/UI audit passed.
+
+### ⚠️ Open Issues / Important Notes
+- The prototype runs one game per round with no turn timer. The Draft-only production build excludes the practice tab.
+
+---
+
+## 📅 2026-11-21 16:12 (UTC+7) — Limit Display Name Changes
+**Agent:** Codex
+
+### ✅ Completed Work
+- Allowed three immediate display name changes per account, followed by one change every 14 days. The third successful change starts the first cooldown.
+- Enforced the quota in a SQLite transaction across sessions. Submitting the current name or an invalid name does not consume a change.
+- Showed the remaining immediate changes or the next eligible date and time in Profile. The editor becomes available when the cooldown expires.
+
+### 📁 Modified Files
+- `src/{api.py,db.py,schemas.py}` and `tests/test_api.py`
+- `frontend/src/{App.tsx,api/client.ts,components/ProfileView.tsx,i18n/englishMessages.ts,types/auth.ts,utils/auth.ts}` and `CHANGELOG.md`
+
+### 🧪 Verification
+- All 52 API and security tests passed, including concurrent sessions, a same-name save, and attempts one second before and at expiry.
+- Chromium verified the quota on Dev, a stale mobile session, and automatic unlocking with a simulated expiry.
+- Verified migration of an existing app database, frontend build and lint, Ruff lint and format, and the UX/UI audit.
+
+### ⚠️ Open Issues / Important Notes
+- Existing accounts start with three immediate changes. Edits made before this feature are not counted.
+- Verified on the local Dev stack.
+
+---
+
+## 📅 2026-11-21 16:03 (UTC+7) — Edit the Display Name in Profile
+**Agent:** Codex
+
+### ✅ Completed Work
+- Replaced the Dev username editor with a display name editor and kept the login username read-only in Profile.
+- Displayed the saved name in the account badge and mobile menu. Google accounts continue to show the first name from their profile until a custom name is saved.
+- Removed the preview username endpoint and handle reservation logic. Restored the original browser storage scope while preserving snapshots created in the Dev preview.
+
+### 📁 Modified Files
+- `frontend/src/{App.tsx,components/ProfileView.tsx,i18n/englishMessages.ts,types/auth.ts,utils/auth.ts}`
+- `src/{api.py,db.py,schemas.py}`, `tests/test_api.py`, and `CHANGELOG.md`
+
+### 🧪 Verification
+- Chromium verified display name editing, immediate updates across tabs, and name and history restoration in a fresh browser using the original login username.
+- Verified the Google default and custom names, password and Google sign-in, local parked draft recovery, and all 51 API and security tests.
+- Frontend build and lint, Ruff lint and format, and the UX/UI audit passed.
+
+### ⚠️ Open Issues / Important Notes
+- Verified on the local Dev stack. No production deployment was performed.
+
+---
+
+## 📅 2026-11-21 15:54 (UTC+7) — Add Profile and Username Editing
+**Agent:** Codex
+
+### ✅ Completed Work
+- Linked the account badge and mobile account menu to a dedicated profile page with a localized username editor.
+- Updated usernames in place while retaining the account ID, OAuth links, sessions, and existing admin permissions.
+- Moved per-account browser storage and sync checks to the stable account ID. Recovered legacy snapshots, including parked drafts, through the current or previous username.
+
+### 📁 Modified Files
+- `frontend/src/{App.tsx,api/client.ts,components/MobileNavDrawer.tsx,components/ProfileView.tsx,i18n/englishMessages.ts,types/auth.ts,utils/auth.ts}`
+- `src/{api.py,db.py,schemas.py}`, `tests/test_api.py`, and `CHANGELOG.md`
+
+### 🧪 Verification
+- Chromium verified desktop and phone navigation, validation, rename, cross-tab refresh, synced history in a fresh browser, and restoration of a parked G2 draft from a legacy browser snapshot.
+- The 40 API tests covered password and Google sign-in after renaming, duplicate and reserved usernames, and retained admin access. All 11 security tests passed.
+- Frontend build and lint, Ruff lint and format, and the UX/UI audit passed.
+
+### ⚠️ Open Issues / Important Notes
+- This Dev preview was superseded by display name editing in the entry above.
+
+---
+
+## 📅 2026-11-21 15:40 (UTC+7) — Show the Google Profile First Name
+**Agent:** Codex
+
+### ✅ Completed Work
+- Displayed the first word of the stored Google profile name in the account badge, mobile menu, and Guest draft import confirmation.
+- Used the username as the display fallback and kept the login and draft sync identity tied to the existing username.
+
+### 📁 Modified Files
+- `frontend/src/{App.tsx,components/MobileNavDrawer.tsx,i18n/englishMessages.ts,utils/auth.ts}` and `CHANGELOG.md`
+
+### 🧪 Verification
+- Chromium verified the Google name on desktop and mobile, the username fallback, and the unchanged draft sync identity with mocked account responses.
+- Verified the Guest draft import confirmation, frontend build and lint, and Ruff lint and format.
+
+### ⚠️ Open Issues / Important Notes
+- This change is in the local dev workspace.
+
+---
+
 ## 📅 2026-11-21 13:10 (UTC+7) — Highlight Overlapping Draft Lanes
 **Agent:** Codex
 
@@ -441,6 +740,28 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ### ⚠️ Open Issues / Important Notes
 - The Team Pro history limit remains undecided. The roadmap changes describe future behavior.
+
+---
+
+## 📅 2026-11-20 23:43 (UTC+7) — Deploy 90-Day Half-Life Model Checkpoint & 4,352-Game Dataset to Production (`minidraft.app`)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Uploaded `models/sota_draft_gnn_transformer.pt` (`90d` half-life Trial #31, `val_loss=2.81796`, `win_acc=51.69%`), `configs/selected_production_params.json`, `best_params/*.json`, and updated `data/` (`4,352` total / `3,535` training games) to `20.2.210.230:~/rov` while preserving all active VM hotfixes and excluding Dev-only features.
+- Rebuilt and restarted `deploy-app-1` (`sudo docker compose up -d --build app`), leaving `deploy_rov_db_data` untouched (`803` users intact).
+- Updated `docs/PRODUCTION_RELEASES.md` and `CHANGELOG.md`.
+
+### 📁 Modified Files
+- `docs/PRODUCTION_RELEASES.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `https://minidraft.app/health` -> `200` (`{"status":"healthy","model_loaded":true}`).
+- `https://minidraft.app/predict` -> `200` live inference verified.
+- `deploy-app-1` container check confirmed `val_loss=2.81796`, `win_acc=51.69%`, `total_matches=4352`, `training_matches=3535`, `DB users=803`.
+
+### ⚠️ Open Issues / Important Notes
+- None.
 
 ---
 

@@ -1246,7 +1246,7 @@ export function getInGameTagCapsules(t: Translate, skill: SkillLike): Array<{ la
 
   // Effect pills based on in-game screenshots
   if (stype.includes("damage reduction") || desc.includes("ลดความเสียหาย") || desc.includes("ทนความเสียหาย")) {
-    list.push({ label: "ลดความเสียหาย", bg: "bg-[#115e59]/80", text: "text-[#5eead4]", border: "border-[#14b8a6]/50" });
+    list.push({ label: t("ลดความเสียหาย"), bg: "bg-[#115e59]/80", text: "text-[#5eead4]", border: "border-[#14b8a6]/50" });
   }
   if (stype.includes("speed") || desc.includes("ความเร็วเคลื่อนที่") || desc.includes("วิ่งเร็ว")) {
     list.push({ label: t("เพิ่มความเร็ว"), bg: "bg-[#1e3a8a]/80", text: "text-[#93c5fd]", border: "border-[#3b82f6]/50" });

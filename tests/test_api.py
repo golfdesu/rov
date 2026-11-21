@@ -1325,6 +1325,99 @@ def test_production_mode_lockdown_and_anti_scraping(tmp_path, monkeypatch):
         )
 
 
+def test_update_profile_only_changes_display_name(tmp_path, monkeypatch):
+    from src.config import config
+
+    monkeypatch.setattr(config.paths, "app_db_path", tmp_path / "profile.db")
+    owner, other, fresh = TestClient(app), TestClient(app), TestClient(app)
+    username = "profile_owner"
+    password = "test-profile-password"
+    credentials = {"username": username, "password": password}
+    account = owner.post("/auth/register", json=credentials).json()["user"]
+    other.post("/auth/register", json={"username": "profile_other", "password": password})
+    assert owner.put("/draft/session", json={"bluePicks": ["Hayate"]}).status_code == 200
+
+    profile = {"user_id": account["id"], "display_name": "  ชื่อใหม่ Mini Draft  "}
+    assert fresh.put("/auth/profile", json=profile).status_code == 401
+    assert other.put("/auth/profile", json=profile).status_code == 409
+    assert owner.put("/auth/profile", json={**profile, "display_name": "   "}).status_code == 422
+    assert owner.put("/auth/profile", json={**profile, "display_name": "x" * 41}).status_code == 422
+    assert owner.put("/auth/profile", json={**profile, "username": "new_username"}).status_code == 422
+
+    response = owner.put("/auth/profile", json=profile)
+    assert response.status_code == 200
+    updated = response.json()["user"]
+    assert updated == {
+        **account,
+        "display_name": "ชื่อใหม่ Mini Draft",
+        "display_name_is_custom": True,
+        "display_label": "ชื่อใหม่ Mini Draft",
+        "display_name_changes_remaining": 2,
+    }
+    assert owner.get("/auth/me").json()["user"] == updated
+    assert fresh.post("/auth/login", json=credentials).json()["user"] == updated
+    assert fresh.get("/draft/session", headers={"X-Expected-User": username}).json()["bluePicks"] == ["Hayate"]
+    assert other.get("/auth/me").json()["user"]["display_name"] == "profile_other"
+    assert owner.put("/auth/username", json={"username": "new_username"}).status_code in {404, 405}
+
+
+def test_display_name_quota_and_cooldown_are_shared_across_sessions(tmp_path, monkeypatch):
+    import time
+    from concurrent.futures import ThreadPoolExecutor
+    from types import SimpleNamespace
+
+    from src import db as db_mod
+    from src.config import config
+
+    clock = int(time.time())
+    cooldown = 14 * 24 * 60 * 60
+    monkeypatch.setattr(db_mod, "time", SimpleNamespace(time=lambda: clock, monotonic=time.monotonic))
+    monkeypatch.setattr(config.paths, "app_db_path", tmp_path / "profile_cooldown.db")
+    first, second = TestClient(app), TestClient(app)
+    credentials = {"username": "profile_cooldown", "password": "cooldown-test-password"}
+    account = first.post("/auth/register", json=credentials).json()["user"]
+    assert account["display_name_changes_remaining"] == 3
+    assert account["display_name_next_change_at"] is None
+    assert second.post("/auth/login", json=credentials).status_code == 200
+
+    def change(client, name):
+        return client.put("/auth/profile", json={"user_id": account["id"], "display_name": name})
+
+    assert change(first, " @profile_cooldown ").json()["user"] == account
+    assert change(first, "   ").status_code == 422
+    assert change(first, "First name").json()["user"]["display_name_changes_remaining"] == 2
+    assert change(second, "Second name").json()["user"]["display_name_changes_remaining"] == 1
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = [
+            pool.submit(change, first, "Third name from first session"),
+            pool.submit(change, second, "Third name from second session"),
+        ]
+        responses = [result.result() for result in results]
+
+    assert sorted(response.status_code for response in responses) == [200, 429]
+    changed = next(response.json()["user"] for response in responses if response.status_code == 200)
+    blocked = next(response for response in responses if response.status_code == 429)
+    first_unlock = clock + cooldown
+    assert changed["display_name_changes_remaining"] == 0
+    assert changed["display_name_next_change_at"] == first_unlock
+    assert blocked.json()["detail"] == {"code": "display_name_cooldown", "available_at": first_unlock}
+    assert blocked.headers["Retry-After"] == str(cooldown)
+    assert second.get("/auth/me").json()["user"] == changed
+    assert change(first, changed["display_name"]).json()["user"] == changed
+
+    clock = first_unlock - 1
+    remaining = change(second, "Too early")
+    assert remaining.status_code == 429
+    assert remaining.headers["Retry-After"] == "1"
+
+    clock = first_unlock
+    afterward = change(second, "New name after two weeks")
+    assert afterward.status_code == 200
+    assert afterward.json()["user"]["display_name_next_change_at"] == clock + cooldown
+    assert change(first, "Another immediate change").status_code == 429
+
+
 def test_privacy_policy_and_google_oauth_flow(tmp_path, monkeypatch):
     from urllib.parse import parse_qs, urlparse
 
@@ -1418,9 +1511,29 @@ def test_privacy_policy_and_google_oauth_flow(tmp_path, monkeypatch):
     assert me["user"]["display_name"] == "Coach Alpha"
     assert me["user"]["email"] == "coach.alpha@gmail.com"
     assert me["user"]["auth_provider"] == "google"
+    assert me["user"]["display_label"] == "Coach"
 
     # Password login must never work against a Google-only account
     assert client.post("/auth/login", json={"username": "coach.alpha", "password": "!google-oauth"}).status_code == 401
+
+    profile = {"user_id": me["user"]["id"], "display_name": "Coach"}
+    assert client.put("/auth/profile", json=profile).json()["user"] == me["user"]
+    profile["display_name"] = "Coach Mini Draft"
+    assert client.put("/auth/profile", json=profile).status_code == 200
+    client.post("/auth/logout")
+    login_again = client.get("/auth/google/login", follow_redirects=False)
+    state_again = parse_qs(urlparse(login_again.headers["location"]).query)["state"][0]
+    assert (
+        client.get(f"/auth/google/callback?code=again&state={state_again}", follow_redirects=False).status_code == 302
+    )
+    signed_in_again = client.get("/auth/me").json()["user"]
+    assert signed_in_again == {
+        **me["user"],
+        "display_name": profile["display_name"],
+        "display_name_is_custom": True,
+        "display_label": profile["display_name"],
+        "display_name_changes_remaining": 2,
+    }
 
     # Unverified email must be rejected
     monkeypatch.setattr(

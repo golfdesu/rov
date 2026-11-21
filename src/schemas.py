@@ -1,7 +1,16 @@
 import re
 from typing import Annotated, Any, Literal
 
-from pydantic import AfterValidator, BaseModel, ConfigDict, Field, StrictInt, field_validator, model_validator
+from pydantic import (
+    AfterValidator,
+    BaseModel,
+    ConfigDict,
+    Field,
+    StrictInt,
+    StringConstraints,
+    field_validator,
+    model_validator,
+)
 
 HeroStr = Annotated[str, Field(min_length=1, max_length=64)]
 ShortStr = Annotated[str, Field(max_length=64)]
@@ -423,12 +432,23 @@ class AuthLoginRequest(BaseModel):
     password: str = Field(min_length=1, max_length=128)
 
 
+class AuthProfileRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    user_id: int = Field(gt=0)
+    display_name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=40)]
+
+
 class AuthUserSchema(BaseModel):
     id: int
     username: str
     display_name: str
     email: str | None = None
     auth_provider: Literal["password", "google", "discord"] = "password"
+    display_name_is_custom: bool = False
+    display_label: str
+    display_name_changes_remaining: int
+    display_name_next_change_at: int | None = None
 
 
 class AuthStatusResponse(BaseModel):

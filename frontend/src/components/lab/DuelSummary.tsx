@@ -165,7 +165,7 @@ export function DuelSummary({
                   : "border-line text-muted hover:text-ink"
               }`}
             >
-              Kiting: <StableButtonLabel message={enableKiting ? "เปิด" : "ปิด"} alternatives={["เปิด", "ปิด"]} />
+              Kiting: <StableButtonLabel message={enableKiting ? "เปิดอยู่" : "ปิดอยู่"} alternatives={["เปิดอยู่", "ปิดอยู่"]} />
             </button>
           )}
           {onToggleActives && (
@@ -180,7 +180,7 @@ export function DuelSummary({
                   : "border-line text-muted hover:text-ink"
               }`}
             >
-              <StableButtonLabel message="Active ไอเทม:" /> <StableButtonLabel message={enableActives ? "เปิด" : "ปิด"} alternatives={["เปิด", "ปิด"]} />
+              <StableButtonLabel message="Active ไอเทม:" /> <StableButtonLabel message={enableActives ? "เปิดอยู่" : "ปิดอยู่"} alternatives={["เปิดอยู่", "ปิดอยู่"]} />
             </button>
           )}
           <button

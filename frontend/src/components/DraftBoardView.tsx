@@ -51,6 +51,8 @@ export interface DraftBoardViewProps {
   draft: ReturnType<typeof useDraft>;
   isActiveTab: boolean;
   disableShortcuts?: boolean;
+  assistantEnabled?: boolean;
+  onToggleAssistant?: () => void;
 }
 
 function getVisibleDraftSlot({ side, action, index }: DraftSlot) {
@@ -62,6 +64,8 @@ export function DraftBoardView({
   draft,
   isActiveTab,
   disableShortcuts = false,
+  assistantEnabled = true,
+  onToggleAssistant,
 }: DraftBoardViewProps) {
   const { language, t } = useLanguage();
   const {
@@ -94,8 +98,6 @@ export function DraftBoardView({
     unavailableHeroes,
     league,
     setLeague,
-    useLookahead,
-    setUseLookahead,
     recommendations,
     blueNextPicks,
     redNextPicks,
@@ -190,8 +192,11 @@ export function DraftBoardView({
   }
 
   const fallbackTimerHero = useMemo(
-    () => recommendations.find((r) => !unavailableHeroes.has(r.hero_name))?.hero_name ?? null,
-    [recommendations, unavailableHeroes],
+    () =>
+      (assistantEnabled ? recommendations.find((r) => !unavailableHeroes.has(r.hero_name))?.hero_name : undefined) ??
+      heroes.find((h) => !unavailableHeroes.has(h.name))?.name ??
+      null,
+    [assistantEnabled, heroes, recommendations, unavailableHeroes],
   );
 
   const handleAutoLockWithTimer = useCallback(
@@ -308,8 +313,8 @@ export function DraftBoardView({
   };
 
   const recommendedRanks = useMemo(
-    () => new Map(recommendations.slice(0, 10).map((r) => [r.hero_name, r.rank])),
-    [recommendations],
+    () => new Map(assistantEnabled ? recommendations.slice(0, 10).map((r) => [r.hero_name, r.rank]) : []),
+    [assistantEnabled, recommendations],
   );
 
   const hasAnyAction = bluePicks.length + redPicks.length + blueBans.length + redBans.length > 0;
@@ -414,7 +419,7 @@ export function DraftBoardView({
           emphasizeGlobalBanConflict();
           return;
         }
-        const top = recommendations[0];
+        const top = assistantEnabled ? recommendations[0] : undefined;
         if (top && currentStep && !isLoading && !unavailableHeroes.has(top.hero_name)) {
           handleLockHeroWithTimer(top.hero_name);
         }
@@ -425,6 +430,7 @@ export function DraftBoardView({
   }, [
     isActiveTab,
     disableShortcuts,
+    assistantEnabled,
     globalBanModalCat,
     isHistoryModalOpen,
     isNewSeriesModalOpen,
@@ -466,8 +472,8 @@ export function DraftBoardView({
       gameNumber: globalBans.gameNumber,
       heroMap,
       currentStep,
-      predictedNextPicks: isBlueSide ? blueNextPicks : redNextPicks,
-      predictedNextBans: isBlueSide ? blueNextBans : redNextBans,
+      predictedNextPicks: assistantEnabled ? (isBlueSide ? blueNextPicks : redNextPicks) : [],
+      predictedNextBans: assistantEnabled ? (isBlueSide ? blueNextBans : redNextBans) : [],
       onLockHero: handleLockHeroWithTimer,
       onOpenGlobalBanForTeam: () => setGlobalBanModalCat(categoryKey),
       onRemoveUsedHero: (heroName: string) => removeUsedHero(categoryKey, heroName),
@@ -678,8 +684,8 @@ export function DraftBoardView({
         totalSteps={totalSteps}
         league={league}
         setLeague={setLeague}
-        useLookahead={useLookahead}
-        onToggleLookahead={() => setUseLookahead((prev) => !prev)}
+        assistantEnabled={assistantEnabled}
+        onToggleAssistant={onToggleAssistant}
         timer={{
           enabled: timer.enabled,
           preset: timer.preset,
@@ -787,7 +793,7 @@ export function DraftBoardView({
           hero={heroMap.get(editingHero)}
           pickNumber={slotEditor.slot.index + 1}
           onChoose={(view) => setSlotEditor({ ...slotEditor, view })}
-          onClose={() => setSlotEditor(null)}
+          onClose={closeSlotEditor}
         />
       )}
 
@@ -978,8 +984,8 @@ export function DraftBoardView({
 
           {/* Center / Split-View Workspace: AI Suggestions + Hero Grid */}
           <div className="flex min-h-0 flex-1 flex-col gap-1.5 md:col-span-12 md:grid md:grid-cols-12 md:gap-2.5 lg:order-2 lg:col-span-1 lg:flex lg:flex-col lg:gap-2">
-            {/* Mobile Quick AI Ribbon (Only on Mobile 'draft' view) */}
-            {mobileView === "draft" && (
+            {/* Mobile Quick AI Ribbon (Only on Mobile 'draft' view when Assistant is enabled) */}
+            {mobileView === "draft" && assistantEnabled && (
               <div className="shrink-0 md:hidden">
                 <AiPanel
                   variant="ribbon"
@@ -997,28 +1003,50 @@ export function DraftBoardView({
             )}
 
             {/* Full AI Panel: Shown on Mobile 'ai' view, iPad left pane (5 cols), and Laptop top deck */}
-            <div
-              className={`min-h-0 flex-col md:col-span-5 md:flex lg:shrink-0 ${
-                mobileView === "ai" ? "flex flex-1" : "hidden"
-              }`}
-            >
-              <AiPanel
-                variant="full"
-                recommendations={recommendations}
-                banUnlockedHeroes={banUnlockedHeroes}
-                missingAllyLanes={missingAllyLanes}
-                currentStep={currentStep}
-                heroMap={heroMap}
-                isLoading={isLoading}
-                blueWinRate={blueWinRate}
-                winHistory={winHistory}
-                onLockHero={handleLockHeroWithTimer}
-              />
-            </div>
+            {assistantEnabled ? (
+              <div
+                className={`min-h-0 flex-col md:col-span-5 md:flex lg:shrink-0 ${
+                  mobileView === "ai" ? "flex flex-1" : "hidden"
+                }`}
+              >
+                <AiPanel
+                  variant="full"
+                  recommendations={recommendations}
+                  banUnlockedHeroes={banUnlockedHeroes}
+                  missingAllyLanes={missingAllyLanes}
+                  currentStep={currentStep}
+                  heroMap={heroMap}
+                  isLoading={isLoading}
+                  blueWinRate={blueWinRate}
+                  winHistory={winHistory}
+                  onLockHero={handleLockHeroWithTimer}
+                />
+              </div>
+            ) : (
+              mobileView === "ai" && (
+                <div className="flex flex-1 flex-col items-center justify-center gap-3 border border-line bg-panel px-4 py-8 text-center md:hidden">
+                  <Sparkles className="size-7 text-dim" aria-hidden="true" />
+                  <p className="font-display text-sm font-bold text-ink">{t("ปิดตัวช่วยอยู่")}</p>
+                  <p className="max-w-xs text-xs text-muted">
+                    {t("ปิดตัวช่วยอยู่ · กดปุ่มตัวช่วยเพื่อดูคำแนะนำ AI")}
+                  </p>
+                  {onToggleAssistant && (
+                    <button
+                      type="button"
+                      onClick={onToggleAssistant}
+                      className="inline-flex min-h-8 items-center gap-1.5 border border-gold bg-gold px-3 font-display text-xs font-bold text-bg"
+                    >
+                      <Sparkles className="size-3.5 shrink-0" aria-hidden="true" />
+                      <StableButtonLabel message="เปิดตัวช่วย" />
+                    </button>
+                  )}
+                </div>
+              )
+            )}
 
-            {/* Hero Grid: Shown on Mobile 'draft' view, iPad right pane (7 cols), and Laptop bottom pane */}
+            {/* Hero Grid: Shown on Mobile 'draft' view, iPad right pane (7/12 cols), and Laptop bottom pane */}
             <div
-              className={`min-h-0 flex-1 flex-col md:col-span-7 md:flex ${
+              className={`min-h-0 flex-1 flex-col md:flex ${assistantEnabled ? "md:col-span-7" : "md:col-span-12"} ${
                 mobileView === "draft" ? "flex" : "hidden"
               }`}
             >
@@ -1032,9 +1060,9 @@ export function DraftBoardView({
                 blueTeamName={bName}
                 redTeamName={rName}
                 recommendedRanks={recommendedRanks}
-                missingAllyLanes={missingAllyLanes}
+                missingAllyLanes={assistantEnabled ? missingAllyLanes : []}
                 currentStep={currentStep}
-                isLoading={isLoading}
+                isLoading={assistantEnabled && isLoading}
                 isHeroesLoading={isHeroesLoading}
                 onLockHero={handleLockHeroWithTimer}
               />
@@ -1072,7 +1100,11 @@ export function DraftBoardView({
         >
           <Sparkles className="h-4 w-4 shrink-0 sm:h-4.5 sm:w-4.5" />
           <span className="w-full truncate text-center">
-            {recommendations[0] ? `AI #1: ${displayName(recommendations[0].hero_name)}` : t("วิเคราะห์ AI")}
+            {!assistantEnabled
+              ? t("ปิดตัวช่วยอยู่")
+              : recommendations[0]
+                ? `AI #1: ${displayName(recommendations[0].hero_name)}`
+                : t("วิเคราะห์ AI")}
           </span>
         </button>
 

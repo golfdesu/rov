@@ -879,7 +879,7 @@ export function HeroSkillsModal({
                                 {row.code}
                               </span>
                               <span className="text-[11px] font-sans font-medium text-ink">
-                                {row.label.split(" (")[0]}
+                                {row.label.replace(/ \((?:Shield|Heal|Base DMG|DEF Up|DEF Down|SLOW|Duration|SPD Down|SPD Up|ATK SPD|CD|MANA|Base Lifesteal|Anti-Heal|Pierce|Melee Bonus)\)$/, "")}
                               </span>
                             </td>
                             {Array.from({ length: isHeroLevelScaling ? 6 : maxLevels }, (_, i) => {

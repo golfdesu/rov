@@ -4,6 +4,10 @@ export interface AuthUser {
   display_name: string;
   email?: string | null;
   auth_provider?: "password" | "google" | "discord";
+  display_name_is_custom?: boolean;
+  display_label?: string;
+  display_name_changes_remaining?: number;
+  display_name_next_change_at?: number | null;
 }
 
 export interface AuthStatusResponse {

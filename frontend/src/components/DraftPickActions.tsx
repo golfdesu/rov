@@ -41,11 +41,11 @@ export function DraftPickActions({ heroName, hero, pickNumber, onChoose, onClose
             </button>
           </div>
           <div className="grid gap-2 p-4">
-            <button type="button" onClick={() => requestClose(() => onChoose("hero"))} className={actionClass}>
+            <button type="button" onClick={() => onChoose("hero")} className={actionClass}>
               <ArrowLeftRight className="size-4 shrink-0 text-gold" />
               <StableButtonLabel message="เปลี่ยนฮีโร่" />
             </button>
-            <button type="button" onClick={() => requestClose(() => onChoose("lane"))} className={actionClass}>
+            <button type="button" onClick={() => onChoose("lane")} className={actionClass}>
               <MapPin className="size-4 shrink-0 text-gold" />
               <StableButtonLabel message="เปลี่ยนเลน" />
             </button>

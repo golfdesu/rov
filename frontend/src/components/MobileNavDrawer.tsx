@@ -4,6 +4,7 @@ import { LanguageSwitch } from "../i18n/LanguageProvider";
 import { BarChart3, Coffee, LogIn, LogOut, MessageSquare, User, X } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { AuthUser, PricingSurveyChoice } from "../types/auth";
+import { accountLabel } from "../utils/auth";
 import { MiniDraftLogo } from "./MiniDraftLogo";
 
 const FOCUSABLE =
@@ -26,6 +27,7 @@ interface MobileNavDrawerProps<T extends string> {
   onOpenDonate: () => void;
   onOpenAdminStats?: () => void;
   onOpenAuth: () => void;
+  onOpenProfile: () => void;
   onLogout: () => void;
   onClose: () => void;
 }
@@ -43,10 +45,12 @@ export function MobileNavDrawer<T extends string>({
   onOpenDonate,
   onOpenAdminStats,
   onOpenAuth,
+  onOpenProfile,
   onLogout,
   onClose,
 }: MobileNavDrawerProps<T>) {
   const { t } = useLanguage();
+  const accountName = authUser ? accountLabel(authUser) : "";
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
@@ -190,13 +194,16 @@ export function MobileNavDrawer<T extends string>({
           <div className="border border-line bg-bg/60 p-3">
             {authUser ? (
               <div className="flex flex-col gap-2.5">
-                <div
-                  title={`@${authUser.username}`}
-                  className="flex min-w-0 items-center gap-2 text-xs text-good"
+                <button
+                  type="button"
+                  aria-label={t("เปิดโปรไฟล์ของ {0}", accountName)}
+                  onClick={() => requestClose(onOpenProfile)}
+                  className="flex min-h-8 min-w-0 items-center gap-2 text-left text-xs text-good transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-good"
                 >
                   <User className="h-4 w-4 shrink-0" />
-                  <span className="max-w-[200px] truncate font-mono font-bold">@{authUser.username}</span>
-                </div>
+                  <span className="max-w-[200px] truncate font-mono font-bold">{accountName}</span>
+                  <span className="ml-auto text-muted">{t("โปรไฟล์")}</span>
+                </button>
                 <button
                   type="button"
                   onClick={() => requestClose(onLogout)}
@@ -224,15 +231,15 @@ export function MobileNavDrawer<T extends string>({
           {/* Mode Navigation */}
           <div className="flex flex-col gap-1.5">
             <span className="font-mono text-[10px] font-semibold tracking-wider text-dim uppercase">{t("โหมดใช้งาน")}</span>
-            {tabs.map((t) => {
-              const active = activeTab === t.key;
+            {tabs.map((item) => {
+              const active = activeTab === item.key;
               return (
                 <button
-                  key={t.key}
+                  key={item.key}
                   type="button"
                   aria-current={active ? "page" : undefined}
                   onClick={() => {
-                    onSelectTab(t.key);
+                    onSelectTab(item.key);
                     requestClose();
                   }}
                   className={`flex h-10 w-full items-center justify-between border px-3 font-display text-xs font-semibold transition-colors ${
@@ -241,7 +248,7 @@ export function MobileNavDrawer<T extends string>({
                       : "border-line bg-panel-2/60 text-ink hover:border-line-strong"
                   }`}
                 >
-                  <span>{t.label}</span>
+                  <span>{t(item.label)}</span>
                   {active && <span className="font-mono text-[10px]">ACTIVE</span>}
                 </button>
               );

@@ -26,6 +26,7 @@ interface AiPanelProps {
   isLoading: boolean;
   blueWinRate: number;
   winHistory: number[];
+  allowLock?: boolean;
   onLockHero: (name: string) => void;
   variant?: "full" | "ribbon";
 }
@@ -60,6 +61,7 @@ export function AiPanel({
   isLoading,
   blueWinRate,
   winHistory,
+  allowLock = true,
   onLockHero,
   variant = "full",
 }: AiPanelProps) {
@@ -158,12 +160,13 @@ export function AiPanel({
                   <button
                     type="button"
                     key={rec.hero_name}
+                    disabled={!allowLock}
                     onClick={() => onLockHero(rec.hero_name)}
                     title={`#${rec.rank} ${displayName(rec.hero_name)} (${LANE_SHORT[lane]?.en ?? lane} · ${win.toFixed(1)}%)`}
-                    className={`flex h-7 shrink-0 items-center gap-1 border px-1.5 transition-colors ${
+                    className={`flex h-7 shrink-0 items-center gap-1 border px-1.5 transition-colors disabled:cursor-not-allowed ${
                       idx === 0
-                        ? "border-gold/70 bg-gold/10 hover:bg-gold/20"
-                        : "border-line bg-bg hover:border-line-strong hover:bg-panel-2"
+                        ? "border-gold/70 bg-gold/10 enabled:hover:bg-gold/20"
+                        : "border-line bg-bg enabled:hover:border-line-strong enabled:hover:bg-panel-2"
                     }`}
                   >
                     <span
@@ -191,8 +194,9 @@ export function AiPanel({
                 <button
                   type="button"
                   key={`unlock-${u.hero_name}`}
+                  disabled={!allowLock}
                   onClick={() => onLockHero(u.hero_name)}
-                  className="flex h-7 shrink-0 items-center gap-1 border border-gold/50 bg-gold/10 px-1.5 font-display text-[10px] font-bold text-gold"
+                  className="flex h-7 shrink-0 items-center gap-1 border border-gold/50 bg-gold/10 px-1.5 font-display text-[10px] font-bold text-gold disabled:cursor-not-allowed"
                 >
                   <Flame className="h-3 w-3 shrink-0" />
                   <span>{displayName(u.hero_name)}</span>
@@ -271,9 +275,10 @@ export function AiPanel({
               <button
                 type="button"
                 key={u.hero_name}
+                disabled={!allowLock}
                 onClick={() => onLockHero(u.hero_name)}
                 title={triggers ? t("เก่งขึ้นเพราะแบน {0}", triggers) : undefined}
-                className="flex shrink-0 items-center gap-1.5 border border-gold/40 bg-panel px-1.5 py-0.5 text-left transition-colors hover:border-gold hover:bg-panel-2 xl:px-2"
+                className="flex shrink-0 items-center gap-1.5 border border-gold/40 bg-panel px-1.5 py-0.5 text-left transition-colors enabled:hover:border-gold enabled:hover:bg-panel-2 disabled:cursor-not-allowed xl:px-2"
               >
                 <div className="h-4 w-4 shrink-0 overflow-hidden xl:h-4.5 xl:w-4.5">
                   <HeroPortrait name={u.hero_name} hero={heroMap.get(u.hero_name)} />
@@ -341,8 +346,9 @@ export function AiPanel({
             <li key={rec.hero_name} className="min-w-0 overflow-hidden">
               <button
                 type="button"
+                disabled={!allowLock}
                 onClick={() => onLockHero(rec.hero_name)}
-                className={`group flex h-full w-full min-w-0 items-center gap-2.5 overflow-hidden px-3 py-2 text-left transition-colors hover:bg-panel-2 sm:px-3.5 sm:py-2.5 lg:flex-col lg:items-stretch lg:justify-between lg:gap-1 lg:p-1.5 xl:gap-1.5 xl:p-2.5 ${
+                className={`group flex h-full w-full min-w-0 items-center gap-2.5 overflow-hidden px-3 py-2 text-left transition-colors enabled:hover:bg-panel-2 disabled:cursor-not-allowed sm:px-3.5 sm:py-2.5 lg:flex-col lg:items-stretch lg:justify-between lg:gap-1 lg:p-1.5 xl:gap-1.5 xl:p-2.5 ${
                   idx === 0 ? "bg-gold/[0.04]" : ""
                 }`}
               >

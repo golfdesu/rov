@@ -32,6 +32,7 @@ from src.db import (
     SESSION_COOKIE_NAME,
     SESSION_TTL_SECONDS,
     AuthUser,
+    DisplayNameCooldownError,
     RateLimiter,
     UserDatabase,
 )
@@ -39,6 +40,7 @@ from src.predictor import RoVDraftPredictor
 from src.schemas import (
     AdminStatsResponse,
     AuthLoginRequest,
+    AuthProfileRequest,
     AuthRegisterRequest,
     AuthStatusResponse,
     AuthUserSchema,
@@ -621,6 +623,10 @@ def _to_user_schema(user: AuthUser) -> AuthUserSchema:
         display_name=user.display_name,
         email=user.email,
         auth_provider=user.auth_provider,  # type: ignore[arg-type]
+        display_name_is_custom=user.display_name_is_custom,
+        display_label=user.display_label,
+        display_name_changes_remaining=user.display_name_changes_remaining,
+        display_name_next_change_at=user.display_name_next_change_at,
     )
 
 
@@ -858,6 +864,28 @@ def sitemap_xml():
 @app.get("/auth/me", response_model=AuthStatusResponse)
 def auth_me(user: AuthUser | None = Depends(get_optional_user)):
     return _auth_status_response(user)
+
+
+@app.put("/auth/profile", response_model=AuthStatusResponse)
+def auth_update_profile(
+    payload: AuthProfileRequest,
+    user: AuthUser | None = Depends(get_optional_user),
+) -> AuthStatusResponse:
+    if user is None:
+        raise HTTPException(status_code=401, detail="Session expired or logged out")
+    if user.id != payload.user_id:
+        raise HTTPException(status_code=409, detail="Active account changed in another session")
+    try:
+        updated = get_user_db().update_display_name(user, payload.display_name)
+    except DisplayNameCooldownError as exc:
+        raise HTTPException(
+            status_code=429,
+            detail={"code": "display_name_cooldown", "available_at": exc.available_at},
+            headers={"Retry-After": str(exc.retry_after)},
+        ) from exc
+    if updated is None:
+        raise HTTPException(status_code=401, detail="Account no longer exists")
+    return _auth_status_response(updated)
 
 
 @app.post("/auth/register", response_model=AuthStatusResponse, status_code=201)
