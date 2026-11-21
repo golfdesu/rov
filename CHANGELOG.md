@@ -27,6 +27,29 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-21 20:28 (UTC+7) — Deploy Draft Board + Draft vs AI, Practice History, Assistant Toggle & Draft Turn Timer to Production
+**Agent:** Antigravity / Claude Sonnet
+
+### ✅ Completed Work
+- **Exposed Draft vs AI (`practice`) in Production Build (`frontend/src/App.tsx`):**
+  - Updated `TABS`, `initialTab()`, and tab routing so both `Draft Board` (`draft`) and `ฝึกดราฟต์ vs AI` (`practice`) are enabled when `VITE_DRAFT_ONLY=true`, while keeping `Meta Tier List`, `MetaLab`, and `Combat Lab` dev-only.
+- **Deployed Dev -> Prod Cutover (`981b773`, `minidraft.app`):**
+  - Backed up `/app/db/rov_app.db` (`rov_db_data`) online to `/app/db/rov_app.db.bak_20261121` (`856` users), fast-forwarded `20.2.210.230:~/rov` from `4dbc614` to `981b773`, and rebuilt `deploy-app-1` cleanly (`dist-prod/assets/index-CP_XwVbT.js`, `index-DO23SNI6.css`).
+
+### 📁 Modified Files
+- `frontend/src/App.tsx`
+- `docs/PRODUCTION_RELEASES.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Local pre-deploy: `oxlint` (`0 warnings, 0 errors`), `vite build` (dev `dist/` + prod `dist-prod/` `VITE_DRAFT_ONLY=true`), `ruff check/format`, and full `pytest -q --tb=short` (`135 passed`).
+- Live production (`https://minidraft.app/`): `/health` -> `200`, Playwright E2E verified Draft Board + Draft vs AI tabs visible (`DevOnlyHidden: True`), Draft Turn Timer (`0:40`), Assistant toggle OFF -> `0` `/predict` calls, Practice Assistant ON + History button visible, `0` horizontal overflow (Desktop & Mobile), `0` console/CSP/page errors, and SQLite DB intact (`users: 856`).
+
+### ⚠️ Open Issues / Important Notes
+- Language switch (`TH` / `EN`) remains gated off under `VITE_DRAFT_ONLY=true` in `frontend/src/i18n/language.ts`.
+
+---
+
 ## 📅 2026-11-21 19:00 (UTC+7) — Replace Lookahead with Assistant Toggle & Default Practice Assistant ON
 **Agent:** Antigravity / Claude Sonnet
 

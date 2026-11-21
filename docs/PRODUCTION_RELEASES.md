@@ -13,52 +13,47 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | :--- | :--- |
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov`) |
-| **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true`, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `4dbc614` (`fix(draft): disable auto side-swap and add UX/UI Playwright audit gate`) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-Cq1516Ka.js` (`473.72 kB`) + `dist-prod/assets/index-koghUP00.css` (`113.81 kB`), `dist-prod/index.html` (`2.96 kB`) |
+| **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
+| **Git Base Commit on VM** | `981b773` (`feat(draft,practice): enable Draft vs AI, Practice History, Assistant toggle, and Draft Turn Timer for production`) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-CP_XwVbT.js` (`565.26 kB`) + `dist-prod/assets/index-DO23SNI6.css` (`125.16 kB`), `dist-prod/index.html` (`2.96 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-20 23:43 (UTC+7)` |
+| **Last Updated** | `2026-11-21 20:28 (UTC+7)` |
 
 ---
 
-## Active Uncommitted Hotfixes on Production VM (`~/rov` over `4dbc614`)
+## Active Uncommitted Hotfixes on Production VM (`~/rov`)
 
-> [!WARNING]
-> Do **NOT** run `git checkout -- .`, `git reset --hard`, or `git pull` on `20.2.210.230:~/rov` without reconciling these hotfixes first. All of these fixes already exist on local Dev as well.
-
-1. **`src/api.py`, `src/db.py`, `src/schemas.py`, `src/config.py`, `deploy/docker-compose.yml`:**
-   - Raised `_predict_rate_limiter` from `60` to `120` requests / `60s` per client IP.
-   - Updated `_SECURITY_HEADERS["Content-Security-Policy"]` to allow Cloudflare Web Analytics (`script-src 'self' https://static.cloudflareinsights.com;`, `connect-src 'self' https://cloudflareinsights.com;`) while keeping `'unsafe-inline'` and `'unsafe-eval'` strictly absent from `script-src`.
-   - Added `pricing_survey_responses` SQLite table (`UserDatabase.record_pricing_survey()`, `get_pricing_survey_choice()`, `get_admin_stats()`), `POST /survey/pricing` (`_survey_rate_limiter = 10` req/`60s` per IP, `Cache-Control: no-store`), `pricing_survey_answered` / `pricing_survey_choice` / `is_admin` on `AuthStatusResponse`, and owner-only `GET /admin/stats` (`404` for non-owners; aggregates live SQLite user/survey stats + 60s-cached Cloudflare GraphQL Analytics for `@chayanin5392`).
-2. **`frontend/src/utils/draft.ts`:**
-   - Canonicalized unordered hero sets (`blue_global_bans`, `red_global_bans`, `global_bans`, `series_winning_heroes`, and `pickLaneOverridesFor` keys) via `.sort()` in `buildPredictPayload()`.
-3. **`frontend/src/hooks/useDraft.ts` & `frontend/src/components/DraftBoardView.tsx`:**
-   - Added module-level `cachedHeroesCatalog` + `inflightHeroesPromise` in `useHeroCatalog()`.
-   - Added `predictCacheRef` (LRU 64), `lastPredictedKeyRef`, `100ms` debounce, `429` Thai retry copy, and `pausePredict` while `GlobalBanModal` is open.
-   - Added `lastLocalSnapshotKeyRef`, `lastSyncedSnapshotKeyRef`, and `isPredictNetworkPending` guard to coalesce `PUT /draft/session` to `1` call per draft turn and `0` calls on no-op swaps/undo-redo.
-   - Added `isSameRecordedDraft()` and `isCurrentGameSavedUnchanged` check so returning to an already-saved game disables the finish button with `"บันทึกแล้ว"` (re-enabling as `"อัปเดตผล"` only if picks/bans/sides are modified) and avoids overwriting the saved game's timestamp on no-op game tab switches.
-4. **`frontend/src/App.tsx`, `frontend/src/types/auth.ts`, `frontend/src/components/MobileNavDrawer.tsx`, `frontend/src/components/PricingSurveyModal.tsx`:**
-   - Added `authRefreshInFlightRef` and `30_000ms` cooldown on `focus`/`visibilitychange` for `GET /auth/me` (`force = true` preserved for cross-tab `storage` events).
-   - Added navbar `Feedback` button (`>= lg`) + `< lg` 3-bar Hamburger button (`32x32px`) opening `MobileNavDrawer` (`200ms` smooth slide-in / `180ms` slide-out, `matchMedia("(min-width: 1024px)")` auto-close), compact `@username` truncation (`max-w-[68px] sm:max-w-[96px]`), `Donate` button, `ให้บริการฟรีถึง 30/11/2026` badge (`>= xl`) + slim strip (`< xl`), and daily `PricingSurveyModal` (scoped in `localStorage` per `guest` vs `user:<username>` with cross-device `pricing_survey_choice` sync).
-5. **`frontend/index.html`, `frontend/public/robots.txt`, `frontend/public/sitemap.xml`:**
-   - Deployed SEO & Open Graph / Twitter Card metadata (`og:title`, `og:description`, `og:image = https://minidraft.app/logo.png`, `canonical`, Thai `<title>`/`description`) plus `robots.txt` and `sitemap.xml` served directly from `dist-prod/` via `_FrontendStaticFiles`.
-6. **`frontend/public/donate-qr.jpg`, `frontend/src/components/DonateModal.tsx`, `AuthModal.tsx`, `DraftHistoryModal.tsx`, `NewSeriesModal.tsx`:**
-   - Deployed PromptPay QR donation modal (`590x685` cropped QR, `บันทึก QR` download link, non-refundable / no-uptime-guarantee disclaimer) plus desktop typography scaling and WCAG 2.2 AA (`>= 24x24px`) touch targets across `AuthModal`, `DraftHistoryModal` (without `draftMode === "ranked"`), and `NewSeriesModal` (`"FPT"` team code).
+None — all previous hotfixes over `4dbc614` were reconciled into `main` (`981b773`) during the Dev -> Prod cutover on `2026-11-21`.
 
 ---
 
 ## Dev-Only Features (Not Yet Deployed to Production)
 
-These features exist in the local workspace (`main` + uncommitted local edits) and are intentionally **excluded** from `minidraft.app` until full Dev -> Prod cutover:
+These features exist in the local workspace (`main`) and remain **excluded** from `minidraft.app` while `VITE_DRAFT_ONLY=true`:
 
-- **Draft Turn Timer (`frontend/src/hooks/useDraftTimer.ts`, `ScoreBar.tsx`, `TeamColumn.tsx`):** Optional pro countdown clock, Web Audio ticks, `0:00` timeout/Auto-Lock AI #1, and `ดราฟไม่ทัน` / `แบนไม่ทัน` badges.
-- **Ranked 10-Ban Mode (`src/schemas.py`, `src/predictor.py`, `src/search/draft_mcts.py`, `frontend/`):** Type A batch 10-ban + `1-2-2-2-2-1` pick order mode switcher.
-- **Combat Lab & MetaLab Caching (`useCombatLab.ts`, `HeroSkillsModal.tsx`, `ItemCardModal.tsx`, `MetaLab.tsx`):** Not active on `minidraft.app` while `VITE_DRAFT_ONLY=true`.
+- **Meta Tier List, MetaLab & Combat Lab (`TierListView.tsx`, `MetaLab.tsx`, `CombatLab.tsx`):** Hidden in production while `VITE_DRAFT_ONLY=true`.
+- **Language Switch (`TH` / `EN` in `frontend/src/i18n/language.ts`):** Still gated off when `VITE_DRAFT_ONLY=true`.
+- **Ranked 10-Ban Mode (`docs/archive/ranked_10_ban_mode/`):** Archived patch; not active in main Draft Board.
 
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-21 20:28 (UTC+7) — Dev-to-Prod Cutover: Deploy Draft Board + Draft vs AI, Assistant Toggle, Practice History & Draft Turn Timer (`981b773`)
+- **Database Backup:** Created online SQLite backup `/app/db/rov_app.db.bak_20261121` inside `deploy_rov_db_data` prior to container rebuild (`users: 856`, `user_oauth_accounts: 813`, `user_draft_states: 816`, `auth_sessions: 896`, `pricing_survey_responses: 290`, `daily_visits: 519`).
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `4dbc614` to `981b773` (`main`) after reconciling VM hotfixes (`deploy/.env` untouched).
+- **Key Features Shipped:**
+  - Enabled **Draft vs AI** (`#practice`, `PracticeDraftView.tsx`) alongside **Draft Board** under `VITE_DRAFT_ONLY=true`, keeping `Meta Tier List`, `MetaLab`, and `Combat Lab` hidden.
+  - Added isolated local **Practice History** (`PracticeHistoryModal.tsx`, `practiceHistory.ts`) with Review/Pick replay loading and summary stats.
+  - Replaced the standalone Lookahead button on `DraftBoardView`/`ScoreBar` with the **`ตัวช่วย` (`Assistant`)** toggle (defaults ON on both Draft Board and Draft vs AI; turning OFF skips `/predict` calls and switches the center bar to Draft Progress).
+  - Shipped **Draft Turn Timer** (`useDraftTimer.ts` with `0:40`/`0:60` official RoV clock, pause/reset, audio cues, auto-lock; `3s` test preset hidden off localhost), bilingual i18n copy, individual slot editing (`DraftPickActions`), and `ProfileView` (`/auth/profile`).
+- **Bundle Built:** `dist-prod/index.html` (`2.96 kB`), `dist-prod/assets/index-CP_XwVbT.js` (`565.26 kB`), `dist-prod/assets/index-DO23SNI6.css` (`125.16 kB`).
+- **Deploy Method:** `cd ~/rov/deploy && sudo docker compose up -d --build app` (`deploy-caddy-1`, `rov-cloudflared`, and `deploy_rov_db_data` untouched).
+- **Verification:**
+  - `https://minidraft.app/health` -> `200` (`{"status":"healthy","model_loaded":true}`).
+  - Live Playwright E2E on `https://minidraft.app/`: verified `Draft Board` + `ฝึกดราฟต์ vs AI` tabs visible (`Meta Tier List` / `MetaLab` / `Combat Lab` hidden), Draft Turn Timer (`0:40`), Assistant toggle OFF -> `0` `/predict` calls, `#practice` Assistant ON + History button visible, `0` overflow on Desktop (`1440x900`) & Mobile (`390x844`), and `0` console/CSP/page errors.
+  - `/app/db/rov_app.db` intact (`users: 856`, `user_oauth_accounts: 813`, `user_draft_states: 816`, `auth_sessions: 896`, `pricing_survey_responses: 292`, `daily_visits: 523`).
 
 ### 📅 2026-11-20 23:43 (UTC+7) — Deploy 90-Day Half-Life SOTA Checkpoint (Trial #31) & Updated 4,352-Game Dataset
 - **Base + Delta:** `4dbc614` + existing hotfixes + synced `models/sota_draft_gnn_transformer.pt` (`90d` half-life Trial #31, `val_loss = 2.81796`, `win_acc = 51.69%`), `configs/selected_production_params.json`, `best_params/sota_rov_best_params.json`, `best_params/sota_rov_top5_trials.json`, `data/` (`4,352` total matches, `3,535` training games, `1,833` true pick order, rebuilt synergy/counter/draft stats CSVs), and `frontend/public/dataset_metadata.json` (`frontend/dist-prod/dataset_metadata.json`). Dev-only features (Draft Turn Timer, Ranked 10-Ban) remain excluded.
