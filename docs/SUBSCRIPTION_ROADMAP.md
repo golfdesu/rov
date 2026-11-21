@@ -15,7 +15,8 @@ Production remains focused on the **Draft Board** (`VITE_DRAFT_ONLY=true`; Meta 
 | Capability | Guest (Not Logged In) | Free (Registered) | Pro (50 THB / 30d) | Team Pro (149 THB / 30d) |
 | :--- | :--- | :--- | :--- | :--- |
 | **Manual Draft Board (Single Game)** | Allowed | Allowed | Allowed | Allowed |
-| **AI Predictions (`/predict`)** | Blocked (Prompt to Login) | **36 calls / day** (Full Top-K & Lookahead, resets 00:00 UTC+7) | **Unlimited** | **Unlimited** |
+| **AI Predictions (`/predict`)** | Blocked (Prompt to Login) | **36 calls / day** (full Top-K and optional standard Lookahead, resets 00:00 UTC+7) | **Unlimited** | **Unlimited** |
+| **Interactive Draft Comparison (Planned)** | — | — | Included | Included |
 | **Global Ban (Bo3 / Bo5 / Bo7)** | Locked | Locked | Unlocked | Unlocked |
 | **Saved Draft History** | **10 games per browser** | **50 games per account** | **500 games per account** | **500 personal games per member + 500 shared games per team** |
 | **Cloud Sync (`/draft/session`)** | Browser storage only | Synced across devices | Synced across devices | Synced across devices |
@@ -103,3 +104,20 @@ Production remains focused on the **Draft Board** (`VITE_DRAFT_ONLY=true`; Meta 
 ## 7. Future Draft History Export
 
 Add an **Export** button to Draft History so users can download their saved games as a `.json` file before deleting entries to free up space.
+
+---
+
+## 8. Planned Lookahead Improvements
+
+Free, Pro, and Team Pro use the same draft recommendation model. The planned Pro and Team Pro feature lets players compare two candidate picks side by side when they need help making a decision.
+
+### First Release
+
+1. Let the player select two legal picks from the current draft and run Lookahead for those candidates on demand.
+2. Follow the actual draft order through the opponent's next pick turn and the player's reply. For example, after a candidate blue first pick (B1), evaluate both red picks (R1–R2) and both blue replies (B2–B3).
+3. For each candidate, show a likely opponent response, the most threatening response among the branches searched, and a legal reply the player can use. Explain the practical difference between the candidates, such as whether the opponent can take the preferred initiator and which roam pick remains available.
+
+### Follow-up Improvements
+
+- Let the player replace the predicted opponent picks with legal picks to check a known opponent preference.
+- For Global Ban series such as Bo5, show which heroes remain available to the player's team in the next game if they commit to either candidate.

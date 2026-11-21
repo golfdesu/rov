@@ -1,3 +1,5 @@
+import { StableButtonLabel } from "../StableButtonLabel";
+import { useLanguage } from "../../i18n/language";
 import { Search, X } from "lucide-react";
 import { useId, useMemo, useRef, useState } from "react";
 import type { Hero, RoleType } from "../../types/draft";
@@ -7,10 +9,13 @@ import { HeroPortrait } from "../HeroPortrait";
 import { Modal } from "../Modal";
 
 interface HeroPickerModalProps {
-  heroes: { name: string; role: string | null; ranged: boolean }[];
+  heroes: { name: string; role: string | null }[];
   currentHero: string;
   heroMap: Map<string, Hero>;
-  onSelect: (name: string) => void;
+  title?: string;
+  mobileSheet?: boolean;
+  unavailableHeroes?: ReadonlySet<string>;
+  onSelect: (name: string) => void | boolean;
   onClose: () => void;
 }
 
@@ -27,9 +32,13 @@ export function HeroPickerModal({
   heroes,
   currentHero,
   heroMap,
+  title,
+  mobileSheet,
+  unavailableHeroes,
   onSelect,
   onClose,
 }: HeroPickerModalProps) {
+  const { t } = useLanguage();
   const [query, setQuery] = useState("");
   const [role, setRole] = useState<RoleType | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -44,18 +53,24 @@ export function HeroPickerModal({
   }, [heroes, query, role]);
 
   return (
-    <Modal labelledBy={titleId} className="max-h-[88vh] max-w-3xl" initialFocusRef={searchInputRef} onClose={onClose}>
+    <Modal
+      labelledBy={titleId}
+      className="max-w-3xl"
+      mobileSheet={mobileSheet}
+      initialFocusRef={window.matchMedia("(any-pointer: coarse)").matches ? undefined : searchInputRef}
+      onClose={onClose}
+    >
       {/* Header */}
       <div className="flex items-center justify-between border-b border-line px-4 py-3">
         <div className="flex items-center gap-2">
-          <span id={titleId} className="font-display text-sm font-bold tracking-wider text-ink">เลือกฮีโร่</span>
+          <span id={titleId} className="font-display text-sm font-bold tracking-wider text-ink">{title ?? t("เลือกฮีโร่")}</span>
           <span className="font-mono text-xs text-dim">({filtered.length} / {heroes.length})</span>
         </div>
         <button
           type="button"
           onClick={onClose}
           className="rounded p-1 text-dim transition-colors hover:bg-panel-2 hover:text-ink"
-          aria-label="ปิด"
+          aria-label={t("ปิด")}
         >
           <X size={18} />
         </button>
@@ -70,16 +85,20 @@ export function HeroPickerModal({
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="ค้นหาชื่อฮีโร่ (เช่น Valhein, มอร์ตอส, มูราด...)"
-            className="w-full rounded border border-line bg-bg py-1.5 pl-9 pr-8 text-xs font-medium text-ink placeholder-dim outline-none transition-colors focus:border-gold"
+            placeholder={t("ค้นหาชื่อฮีโร่ (เช่น Valhein, มอร์ตอส, มูราด...)")}
+            aria-label={t("ค้นหาฮีโร่")}
+            className="min-h-8 w-full rounded border border-line bg-bg py-1.5 pl-9 pr-8 text-xs font-medium text-ink placeholder-dim outline-none transition-colors focus:border-gold"
           />
           {query && (
             <button
               type="button"
-              onClick={() => setQuery("")}
-              title="ล้างคำค้นหา"
-              aria-label="ล้างคำค้นหา"
-              className="absolute right-2.5 text-dim hover:text-ink"
+              onClick={() => {
+                setQuery("");
+                searchInputRef.current?.focus();
+              }}
+              title={t("ล้างคำค้นหา")}
+              aria-label={t("ล้างคำค้นหา")}
+              className="absolute right-1 grid size-6 place-items-center text-dim hover:text-ink"
             >
               <X size={14} />
             </button>
@@ -90,26 +109,26 @@ export function HeroPickerModal({
           <button
             type="button"
             onClick={() => setRole(null)}
-            className={`rounded px-2.5 py-1 text-[11px] font-medium transition-all ${
+            className={`min-h-6 rounded px-2.5 py-1 text-[11px] font-medium transition-all ${
               role === null
                 ? "border border-gold bg-gold/15 font-bold text-gold shadow-sm"
                 : "border border-line/60 bg-bg/50 text-muted hover:border-line hover:text-ink"
             }`}
           >
-            ทั้งหมด
+            <StableButtonLabel message="ทั้งหมด" />
           </button>
           {ROLES.map((r) => (
             <button
               key={r}
               type="button"
               onClick={() => setRole(role === r ? null : r)}
-              className={`rounded px-2.5 py-1 text-[11px] font-medium transition-all ${
+              className={`min-h-6 rounded px-2.5 py-1 text-[11px] font-medium transition-all ${
                 role === r
                   ? "border border-gold bg-gold/15 font-bold text-gold shadow-sm"
                   : "border border-line/60 bg-bg/50 text-muted hover:border-line hover:text-ink"
               }`}
             >
-              {ROLE_LABELS[r]}
+              <StableButtonLabel message={ROLE_LABELS[r]} />
             </button>
           ))}
         </div>
@@ -119,32 +138,34 @@ export function HeroPickerModal({
       <div className="flex-1 overflow-y-auto p-3">
         {filtered.length === 0 ? (
           <div className="flex h-48 flex-col items-center justify-center text-center text-dim">
-            <p className="text-sm">ไม่พบฮีโร่ที่ตรงกับการค้นหา</p>
+            <p className="text-sm">{t("ไม่พบฮีโร่ที่ตรงกับการค้นหา")}</p>
             <button
               type="button"
               onClick={() => {
                 setQuery("");
                 setRole(null);
               }}
-              className="mt-2 text-xs text-gold underline underline-offset-2"
+              className="mt-2 min-h-6 text-xs text-gold underline underline-offset-2"
             >
-              ล้างคำค้นหา
+              <StableButtonLabel message="ล้างคำค้นหา" />
             </button>
           </div>
         ) : (
           <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 md:grid-cols-8">
             {filtered.map((h) => {
               const isSelected = h.name === currentHero;
+              const isUnavailable = unavailableHeroes?.has(h.name);
               const dName = displayName(h.name);
               return (
                 <button
                   key={h.name}
                   type="button"
+                  disabled={isUnavailable}
+                  title={isUnavailable ? t("ฮีโร่ตัวนี้ใช้ในช่องนี้ไม่ได้") : undefined}
                   onClick={() => {
-                    onSelect(h.name);
-                    onClose();
+                    if (onSelect(h.name) !== false) onClose();
                   }}
-                  className={`group relative flex flex-col items-center rounded-lg border p-1.5 transition-all ${
+                  className={`group relative flex flex-col items-center rounded-lg border p-1.5 transition-all disabled:cursor-not-allowed disabled:opacity-55 ${
                     isSelected
                       ? "border-gold bg-gold/15 ring-2 ring-gold shadow-md shadow-gold/20"
                       : "border-line/70 bg-bg/40 hover:border-gold/60 hover:bg-panel-2 hover:shadow"
@@ -167,7 +188,7 @@ export function HeroPickerModal({
                   </span>
                   {h.role && (
                     <span className="text-[9px] text-dim">
-                      {ROLE_LABELS[h.role as RoleType] || h.role}
+                      {t(ROLE_LABELS[h.role as RoleType] || h.role)}
                     </span>
                   )}
                 </button>

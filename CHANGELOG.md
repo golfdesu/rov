@@ -27,6 +27,383 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-21 13:10 (UTC+7) — Highlight Overlapping Draft Lanes
+**Agent:** Codex
+
+### ✅ Completed Work
+- Added a red border and a localized lane warning to each Draft pick card whose displayed lane overlaps with a teammate's.
+- Counted both automatic and manual lanes. The border clears when the overlap is resolved, and the result can still be saved.
+
+### 📁 Modified Files
+- `frontend/src/components/TeamColumn.tsx`
+- `frontend/src/i18n/englishMessages.ts` and `CHANGELOG.md`
+
+### 🧪 Verification
+- Playwright verified overlapping automatic and manual lanes, independent teams, border removal after editing, and result saving at desktop and phone widths in Thai and English.
+- Frontend build and lint, Ruff lint and format, and the UX/UI audit passed.
+
+### ⚠️ Open Issues / Important Notes
+- Verified in the local dev workspace.
+
+---
+
+## 📅 2026-11-21 13:05 (UTC+7) — Save and Sync Manual Draft Lanes in History
+**Agent:** Codex
+
+### ✅ Completed Work
+- Stored each picked hero's manual lane in the recorded game across result saves, draft saves, and series navigation.
+- Restored lane assignments when reopening a recorded board and made lane-only edits eligible for Update Result and Save Current Draft.
+- Added lane assignments to the Draft session API. Legacy game records load with automatic lanes.
+
+### 📁 Modified Files
+- `frontend/src/types/draft.ts`, `frontend/src/utils/draft.ts`, and `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/DraftBoardView.tsx`
+- `src/schemas.py`, `tests/test_api.py`, and `CHANGELOG.md`
+
+### 🧪 Verification
+- Playwright verified Guest History restoration, lane-only edits across a game switch and reload, result updates, draft saves, and legacy history restoration.
+- Signed in to the same test account in a second browser context with empty local storage and restored the saved lanes through the running Draft API.
+- All 39 API tests, frontend build and lint, Ruff lint and format, and the UX/UI audit passed.
+
+### ⚠️ Open Issues / Important Notes
+- Verified on the local Dev API with the existing development database.
+
+---
+
+## 📅 2026-11-21 12:56 (UTC+7) — Fix Draft Board QA Findings
+**Agent:** Codex with two Draft QA agents
+
+### ✅ Completed Work
+- Preserved the active draft when removing a manual Global Ban or deleting an earlier result forces the board to return to an unlocked game.
+- Restored the saved board when Continue Series lands on a recorded game, including a completed G7.
+- Restored custom lanes on Redo when the lane is still free on the hero's team.
+- Fixed focus trapping, focus restoration, and landscape scrolling in Draft Timer Settings.
+- Localized the Global Ban search clear control, raised its target to 24 px, and returned focus to the search field after clearing.
+
+### 📁 Modified Files
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/{DraftBoardView,GlobalBanModal,ScoreBar}.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Chromium reproduced and verified the two forced returns, reload and restoration after unlocking, completed G7, Redo lane restoration, lane collisions, and branching after Undo.
+- Tested all 18 draft turns, result saving, and manual side preservation in Thai on a phone viewport and English on desktop.
+- Verified timer dialog keyboard behavior and landscape layout, localized search clearing, and the Global Ban conflict cues.
+- Frontend build and lint, Ruff lint and format, the UX/UI audit, and all 39 API tests passed.
+
+### ⚠️ Open Issues / Important Notes
+- Loading a recorded game resets custom lanes. Restoring them requires storing lane assignments in the saved-game payload used by Draft session sync.
+- Verified in the local dev workspace.
+
+---
+
+## 📅 2026-11-21 09:19 (UTC+7) — Compact the Global Ban Warning on Phones
+**Agent:** Codex
+
+### ✅ Completed Work
+- Condensed the phone warning into one row with the conflict count, affected slot, and an Edit button. Kept the full description available to assistive technology and on wider screens.
+
+### 📁 Modified Files
+- `frontend/src/components/Alert.tsx` and `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/i18n/englishMessages.ts` and `CHANGELOG.md`
+
+### 🧪 Verification
+- Chromium measured a reduction from 66–82 px to 38 px at 320, 375, and 390 px in Thai and English. The Edit target measured about 55 × 28 px, opened the correct slot, and advanced to the next conflict on repair.
+- Frontend build and lint, Ruff lint and format, and the whitespace check passed.
+
+### ⚠️ Open Issues / Important Notes
+- Measurements used emulated phone viewports in the local dev workspace.
+
+---
+
+## 📅 2026-11-21 09:12 (UTC+7) — Show Remaining Global Ban Conflicts
+**Agent:** Codex
+
+### ✅ Completed Work
+- Added the remaining conflict count to the draft warning in Thai and English. The count updates after each edit, and the existing action points to the first remaining slot.
+
+### 📁 Modified Files
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/i18n/englishMessages.ts` and `CHANGELOG.md`
+
+### 🧪 Verification
+- Playwright verified the count decreasing from two to one, the warning clearing after the last edit, and no horizontal overflow at 320, 375, 390, and 1280 px.
+- Frontend build and lint, Ruff lint and format, and the whitespace check passed.
+
+### ⚠️ Open Issues / Important Notes
+- Verified in the local dev workspace.
+
+---
+
+## 📅 2026-11-21 08:43 (UTC+7) — Draw Attention to the First Blocked Draft Slot
+**Agent:** Codex
+
+### ✅ Completed Work
+- Made blocked draft and save attempts pulse the first conflicting slot twice. Other conflicting slots keep their red borders, and the next attempt targets the next unresolved slot after an edit.
+- Brought the target into view on phones when needed and used a brief steady highlight under reduced motion.
+- Named the affected Pick or Ban slot in the warning and preserved hero search text when a lock attempt was blocked.
+
+### 📁 Modified Files
+- `frontend/src/components/{DraftBoardView,HeroGrid,TeamColumn}.tsx`
+- `frontend/src/i18n/englishMessages.ts` and `CHANGELOG.md`
+
+### 🧪 Verification
+- Playwright verified click and keyboard cues, repeated attempts, progression across two conflicts, reduced motion, and off-screen slot scrolling on the mobile team board.
+- Frontend build and lint, Ruff lint and format, and the Playwright UX/UI audit passed.
+
+### ⚠️ Open Issues / Important Notes
+- Verified in the local dev workspace.
+
+---
+
+## 📅 2026-11-21 08:37 (UTC+7) — Highlight Global Ban Conflicts on the Board
+**Agent:** Codex
+
+### ✅ Completed Work
+- Reused the draft-timeout red border to mark every Pick or Ban slot with a Global Ban conflict in both board layouts.
+- Added the conflict status to each affected slot's accessible name. The warning continues to link to the first conflict in draft order.
+
+### 📁 Modified Files
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/DraftBoardView.tsx` and `frontend/src/components/TeamColumn.tsx`
+- `frontend/src/i18n/englishMessages.ts` and `CHANGELOG.md`
+
+### 🧪 Verification
+- Playwright verified two simultaneous conflicts and confirmed that fixing each slot clears its border on the desktop, compact mobile, and mobile team boards in Thai and English.
+- Frontend build and lint, Ruff lint and format, and the whitespace check passed.
+
+### ⚠️ Open Issues / Important Notes
+- Verified in the local dev workspace.
+
+---
+
+## 📅 2026-11-21 08:28 (UTC+7) — Edit Individual Picks and Bans
+**Agent:** Codex
+
+### ✅ Completed Work
+- Made each filled draft slot an edit target. Pick cards offer hero and lane changes, and filled ban slots open the hero picker directly.
+- Presented the editor as a bottom sheet on phones, preserved the board dimensions, and suspended the turn timer while an edit is open.
+- Replaced only the targeted action after checking board duplicates and Global Ban rules for that specific turn. Rebuilt Undo history and refreshed predictions after an edit.
+- Added a shortcut from the Global Ban warning to the affected slot. Replacing a picked hero clears its manual lane assignment and keeps other heroes' assignments.
+
+### 📁 Modified Files
+- `frontend/src/components/{DraftBoardView,DraftPickActions,Modal,PickLaneModal,TeamColumn}.tsx`
+- `frontend/src/components/lab/HeroPickerModal.tsx`
+- `frontend/src/hooks/{useDraft,useDraftTimer}.ts`
+- `frontend/src/utils/draft.ts` and `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Chromium Playwright verified whole-card activation, keyboard and focus behavior, hero and lane edits, Undo and Redo, predictions, and reload persistence.
+- Verified touch editing at 320, 375, 390, and 768 px in Thai and English, including the mobile team view, stable board dimensions, and timer suspension.
+- Reproduced the G1 Zip change and edited the affected G2 ban in place. The original turn and later bans remained intact, while illegal and duplicate replacements were disabled.
+- Frontend build and lint, Ruff lint and format, UX/UI and asset audits, and all 39 API tests passed.
+
+### ⚠️ Open Issues / Important Notes
+- Verified in the local dev workspace.
+
+---
+
+## 📅 2026-11-21 08:12 (UTC+7) — Preserve Parked Drafts and Fix Dev QA Findings
+**Agent:** Codex
+
+### ✅ Completed Work
+- Stored parked draft boards by series and game in the browser session snapshot. Advancing after a result update restores the next game's parked board, turn history, lane assignments, and side assignment.
+- Checked restored picks and bans against current Global Ban rules. A conflicting hero stays visible, and the board explains how to undo the conflicting action before continuing or saving.
+- Kept keyboard focus inside History after saving and restored focus to the input or select after clearing a hero filter.
+- Raised clear and item category controls to 24 px, prevented touch autofocus in the Combat Lab hero picker, allowed long hero names to wrap, and completed the affected English labels.
+- Forwarded telemetry, pricing survey, and admin API requests through the Vite dev server.
+
+### 📁 Modified Files
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/{DraftBoardView,DraftHistoryModal,HeroGrid,ScoreBar}.tsx`
+- `frontend/src/components/lab/{ArcanaBoard,BuildPanel,HeroPickerModal,ItemCardModal}.tsx`
+- `frontend/src/i18n/englishMessages.ts` and `frontend/vite.config.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Playwright verified Thai and English restores after reload and result updates, the Zip Global Ban conflict, Undo recovery, save blocking on a completed conflicting draft, and same-browser restoration for a signed-in account.
+- Chromium verified History and filter focus, touch target sizes, mobile hero picker behavior, Arcana labels, and long names at 1024 px. Direct requests verified all three Vite route prefixes.
+- Frontend build and lint, Ruff lint and format, UX/UI and asset audits, and all 39 API tests passed.
+
+### ⚠️ Open Issues / Important Notes
+- Parked drafts are browser-local for guests and signed-in accounts. The active board and saved history use the existing account sync.
+- Changes were applied and verified in the local dev workspace.
+
+---
+
+## 📅 2026-11-21 01:04 (UTC+7) — Animate the Desktop Game Selector
+**Agent:** Codex
+
+### ✅ Completed Work
+- Added a gold highlight that slides between the desktop G1–G7 buttons when the active game changes.
+- Exposed the selected game to assistive technology and made the highlight snap into place when reduced motion is enabled.
+
+### 📁 Modified Files
+- `frontend/src/components/DraftBoardView.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Frontend build, frontend lint, Ruff lint, and Ruff format passed.
+- Playwright verified the 200 ms transition, fixed selector dimensions, keyboard switching, reduced motion, locked-game behavior, and alignment on G7.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-21 00:59 (UTC+7) — Fix History Focus, Mobile Combat Cards, and Lookahead Copy
+**Agent:** Codex
+
+### ✅ Completed Work
+- Moved focus into History when it opens on desktop and cycled keyboard focus through visible controls in the active dialog. Escape closes the top dialog and restores focus to its opener.
+- Put the Combat Lab hero actions on their own row on phones so long hero names fit. Raised the Item Cards target to at least 24 px.
+- Renamed the Lookahead control in Thai and English and described its current depth as the current pick or ban plus one further draft action.
+
+### 📁 Modified Files
+- `frontend/src/components/Modal.tsx`
+- `frontend/src/components/lab/BuildPanel.tsx`
+- `frontend/src/components/ScoreBar.tsx` and `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Frontend build, frontend lint, Ruff lint, Ruff format, and the project UX/UI audit passed.
+- Playwright verified both languages at 375, 390, 768, and 1280 px, including History focus, a depth-two prediction request, full hero names, and Item Cards target size.
+- Verified Escape and focus restoration for stacked History dialogs, toolbar stability during language changes, and the full Flowborn (Marksman) name at 390 px.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-21 00:47 (UTC+7) — Share Stable Button Sizing Across Thai and English
+**Agent:** Codex
+
+### ✅ Completed Work
+- Added a shared label component that reserves room for both translations and alternate states such as Save, Saved, and Update.
+- Applied it to translated controls across the landing page, navigation, draft toolbar, dialogs, and dev tabs. Stabilized the game and role selectors and the draft history count beside those controls.
+- Kept adjacent translated text from compressing action buttons in the Combat Lab.
+
+### 📁 Modified Files
+- `frontend/src/components/StableButtonLabel.tsx` and `frontend/src/App.tsx`
+- Draft, navigation, account, dialog, and dev tab components under `frontend/src/components/`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm run build`, `npm run lint`, `ruff check --fix .`, `ruff format .`, and the project UX/UI audit passed.
+- Playwright verified fixed toolbar positions at 375, 640, 768, and 1280 px, plus consistent sizes for New Series, History, Global Ban, Tier List, MetaLab, Combat Lab, and skill screenshot controls at 390 and 1280 px.
+- Saved and reopened a draft to verify that the result button retains its size and position in both languages across all three states.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-21 00:31 (UTC+7) — Stabilize Save Result Across Thai and English
+**Agent:** Codex
+
+### ✅ Completed Work
+- Reserved a single width for the Save Result button across all Thai and English labels for saving, saved results, and updates.
+- Kept draft controls on one row at tablet and desktop widths by letting the series name truncate when space is limited.
+
+### 📁 Modified Files
+- `frontend/src/components/DraftBoardView.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Frontend build, frontend lint, Ruff lint, Ruff format, and the project UX/UI audit passed.
+- Playwright switched languages in all three result states at 390, 640, and 1280 px and verified constant button widths and positions.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-21 00:27 (UTC+7) — Stabilize the English Save Result Button
+**Agent:** Codex
+
+### ✅ Completed Work
+- Used consistent English labels for saving, viewing a saved result, and updating a result. The accessible name matches the current status.
+- Reserved the same button width across all three states and kept the compact icon treatment on phones.
+
+### 📁 Modified Files
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Frontend build, frontend lint, Ruff lint, and Ruff format passed.
+- Playwright saved a game, reopened it, and changed the draft at 390, 640, and 1280 px. The button width stayed constant through all three states.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-21 00:16 (UTC+7) — Animate the Language Switch
+**Agent:** Codex
+
+### ✅ Completed Work
+- Added a sliding selection highlight to the Thai and English language switch. The page text updates immediately, and the highlight snaps into place when reduced motion is enabled.
+
+### 📁 Modified Files
+- `frontend/src/i18n/LanguageProvider.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Frontend build, frontend lint, Ruff lint, and Ruff format passed.
+- Playwright verified the slide on desktop and mobile, keyboard switching, and reduced-motion behavior.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-21 00:10 (UTC+7) — Add Thai and English Switching to the Dev Frontend
+**Agent:** Codex
+
+### ✅ Completed Work
+- Added a Thai and English language switch to the guest and sign-in page, the desktop workspace header, and the mobile menu. The browser remembers the selected language and updates the document language for assistive technology.
+- Added plain English UI copy for draft controls and history, account forms and errors, Tier List, MetaLab, Combat Lab, and shared dialogs. Saved draft state and canonical hero names use the existing data formats.
+- Scoped the switch and English catalog to the dev build. The draft-only production build defaults to Thai.
+
+### 📁 Modified Files
+- `frontend/src/i18n/`, `frontend/src/main.tsx`, and `frontend/src/App.tsx`
+- Localized screens and controls under `frontend/src/components/`
+- `frontend/src/hooks/useDraft.ts`, `frontend/src/hooks/useCombatLab.ts`, and `frontend/src/utils/skillEffects.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check --fix .`, `ruff format .`, `npm run build`, and `npm run lint` passed.
+- Playwright verified language switching and persistence at 375, 390, 768, and 1280 px, preservation of an existing draft without a new prediction request, OAuth error translation, and navigation to the English dev tabs.
+- The project UX/UI and asset audits passed. `tests/test_api.py` passed all 39 tests.
+- A local draft-only build excluded the English catalog.
+
+### ⚠️ Open Issues / Important Notes
+- Original in-game screenshots retain their source language. Skill and item descriptions use the available source text for each language.
+
+---
+
+## 📅 2026-11-20 23:50 (UTC+7) — Document Interactive Draft Comparison for Lookahead
+**Agent:** Codex
+
+### ✅ Completed Work
+- Added a planned Pro and Team Pro feature for on-demand comparison of two legal picks using the same core model as Free recommendations.
+- Specified that Lookahead follows the actual draft order through the opponent's picks and the player's reply, and shows the responses that matter to the decision.
+- Recorded manual opponent pick overrides and next-game Global Ban availability as follow-up improvements.
+
+### 📁 Modified Files
+- `docs/SUBSCRIPTION_ROADMAP.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Reviewed the tier matrix and the first-release and follow-up scope. `git diff --check` passed for the edited files.
+
+### ⚠️ Open Issues / Important Notes
+- The roadmap describes a planned feature.
+
+---
+
 ## 📅 2026-11-20 23:18 (UTC+7) — Document Team Pro Membership and Active Session Limits
 **Agent:** Codex
 

@@ -1,13 +1,15 @@
+import { type Message, useLanguage } from "../i18n/language";
 import { AlertTriangle, X } from "lucide-react";
 import { useId } from "react";
 import { createPortal } from "react-dom";
 import { Modal } from "./Modal";
+import { StableButtonLabel } from "./StableButtonLabel";
 
 interface ConfirmDialogProps {
   title: string;
   message: string;
-  confirmLabel?: string;
-  cancelLabel?: string;
+  confirmLabel?: Message;
+  cancelLabel?: Message;
   tone?: "gold" | "danger";
   onConfirm: () => void;
   onCancel: () => void;
@@ -23,6 +25,7 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const { t } = useLanguage();
   const titleId = useId();
   const isDanger = tone === "danger";
 
@@ -51,7 +54,7 @@ export function ConfirmDialog({
         <button
           type="button"
           onClick={() => requestClose()}
-          aria-label="ปิด"
+          aria-label={t("ปิด")}
           className="min-h-7 min-w-7 rounded p-1 text-dim transition-colors hover:bg-panel-2 hover:text-ink"
         >
           <X className="h-4 w-4" />
@@ -68,7 +71,7 @@ export function ConfirmDialog({
           onClick={() => requestClose()}
           className="h-9 border border-line-strong bg-panel px-4 font-display text-xs font-semibold text-muted transition-colors hover:border-ink/40 hover:text-ink"
         >
-          {cancelLabel}
+          <StableButtonLabel message={cancelLabel} />
         </button>
         <button
           type="button"
@@ -79,7 +82,7 @@ export function ConfirmDialog({
               : "border border-gold bg-gold text-bg hover:bg-gold/90"
           }`}
         >
-          {confirmLabel}
+          <StableButtonLabel message={confirmLabel} />
         </button>
       </div>
         </>

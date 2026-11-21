@@ -92,6 +92,7 @@ export interface RecordedDraftGame {
   redBans: string[];
   bluePicks: string[];
   redPicks: string[];
+  pickLanes?: Record<string, LaneKey>;
   blueWinRate: number;
   winner?: TeamId;
 }

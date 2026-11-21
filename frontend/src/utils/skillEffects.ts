@@ -1,3 +1,4 @@
+import type { Translate } from "../i18n/language";
 import { resolveScalingValue, type ScalingValue } from "../types/combat";
 
 export type SkillEffectCategory =
@@ -297,6 +298,7 @@ function categorizeContext(ctx: string): SkillEffectCategory {
  * Main parser extracting progression effects and UI highlights for any RoV skill.
  */
 export function parseSkillEffects(
+  t: Translate,
   skill: SkillLike,
   heroName?: string,
   heroLevel?: number,
@@ -367,11 +369,11 @@ export function parseSkillEffects(
 
     progressions.push({
       id: `${category}-${key}`,
-      label: cfg.defaultLabel,
-      shortLabel: cfg.defaultShort,
+      label: t(cfg.defaultLabel),
+      shortLabel: t(cfg.defaultShort),
       category,
       values: item.values,
-      unit: item.raw.endsWith("%") ? "%" : item.raw.endsWith("s") ? "วิ" : "",
+      unit: item.raw.endsWith("%") ? "%" : item.raw.endsWith("s") ? t("วิ") : "",
       badgeClass: cfg.badgeClass,
       textClass: cfg.textClass,
     });
@@ -395,20 +397,20 @@ export function parseSkillEffects(
     ];
     highlights.push({
       icon: "shield",
-      title: "ทน/ลดความเสียหาย",
-      detail: `ลดความเสียหายที่ได้รับลง ${drValues[0]} - ${drValues[drValues.length - 1]} (ตามเลเวลสกิล)`,
+      title: t("ทน/ลดความเสียหาย"),
+      detail: t("ลดความเสียหายที่ได้รับลง {0} - {1} (ตามเลเวลสกิล)", drValues[0], drValues[drValues.length - 1]),
       badgeClass: "border-emerald-500/40 bg-emerald-500/10 text-emerald-400",
     });
     highlights.push({
       icon: "speed",
-      title: "เพิ่มความเร็วเคลื่อนที่",
-      detail: "+30% ความเร็วเคลื่อนที่เป็นเวลา 2 วินาที",
+      title: t("เพิ่มความเร็วเคลื่อนที่"),
+      detail: t("+30% ความเร็วเคลื่อนที่เป็นเวลา 2 วินาที"),
       badgeClass: "border-cyan-500/40 bg-cyan-500/10 text-cyan-400",
     });
     highlights.push({
       icon: "swords",
-      title: "สะท้อนการโจมตีปกติ",
-      detail: "สะท้อนดาเมจการโจมตีปกติกลับหาผู้โจมตีเป็นกายภาพ พร้อมสโลว์ 30% (ติดผลไอเทม)",
+      title: t("สะท้อนการโจมตีปกติ"),
+      detail: t("สะท้อนดาเมจการโจมตีปกติกลับหาผู้โจมตีเป็นกายภาพ พร้อมสโลว์ 30% (ติดผลไอเทม)"),
       badgeClass: "border-gold/40 bg-gold/10 text-gold",
     });
   } else {
@@ -447,29 +449,29 @@ export function parseSkillEffects(
   if (heroName === "Stuart" && skill.slot === "Skill 2") {
     highlights.push({
       icon: "shield",
-      title: "อมตะความเสียหายกายภาพ",
-      detail: "ป้องกันความเสียหายกายภาพ 100% เป็นเวลา 1.5 วินาที พร้อมวิ่งเร็วขึ้น 30%",
+      title: t("อมตะความเสียหายกายภาพ"),
+      detail: t("ป้องกันความเสียหายกายภาพ 100% เป็นเวลา 1.5 วินาที พร้อมวิ่งเร็วขึ้น 30%"),
       badgeClass: "border-emerald-500/40 bg-emerald-500/10 text-emerald-400",
     });
   } else if (heroName === "Dextra" && skill.slot === "Ultimate") {
     highlights.push({
       icon: "heart",
-      title: "อมตะ + เปลี่ยนดาเมจเป็นเลือด",
-      detail: "อมตะ 2.5 วินาที ลบล้างสถานะ CC และแปลงดาเมจที่ได้รับทั้งหมดเป็นพลังชีวิต 100%",
+      title: t("อมตะ + เปลี่ยนดาเมจเป็นเลือด"),
+      detail: t("อมตะ 2.5 วินาที ลบล้างสถานะ CC และแปลงดาเมจที่ได้รับทั้งหมดเป็นพลังชีวิต 100%"),
       badgeClass: "border-green-500/40 bg-green-500/10 text-green-400",
     });
   } else if (heroName === "Kil'Groth" && skill.slot === "Ultimate") {
     highlights.push({
       icon: "zap",
-      title: "ลบล้างสถานะ + ต้าน CC สมบูรณ์",
-      detail: "ลบล้างทุกสถานะผิดปกติ ป้องกัน CC นาน 4 วินาที และเพิ่มความเร็วเคลื่อนที่ 80% (ค่อยๆ ลดลง)",
+      title: t("ลบล้างสถานะ + ต้าน CC สมบูรณ์"),
+      detail: t("ลบล้างทุกสถานะผิดปกติ ป้องกัน CC นาน 4 วินาที และเพิ่มความเร็วเคลื่อนที่ 80% (ค่อยๆ ลดลง)"),
       badgeClass: "border-cyan-500/40 bg-cyan-500/10 text-cyan-400",
     });
   } else if (heroName === "Taara" && skill.slot === "Ultimate" && highlights.length === 0) {
     highlights.push({
       icon: "heart",
-      title: "ฟื้นฟูเลือดมหาศาล",
-      detail: "ฟื้นฟู 6% Max HP + 6% เลือดที่เสีย ทุก 1 วินาที (นาน 5 / 6 / 7 วินาที) + วิ่งเร็ว 30%",
+      title: t("ฟื้นฟูเลือดมหาศาล"),
+      detail: t("ฟื้นฟู 6% Max HP + 6% เลือดที่เสีย ทุก 1 วินาที (นาน 5 / 6 / 7 วินาที) + วิ่งเร็ว 30%"),
       badgeClass: "border-green-500/40 bg-green-500/10 text-green-400",
     });
   }
@@ -485,7 +487,7 @@ export function parseSkillEffects(
 
   // Check exact hero passive scaling profile first
   const exactProfile = heroName
-    ? getExactHeroPassiveScaling(heroName, skill.slot, skill.name, heroLevel ?? 1)
+    ? getExactHeroPassiveScaling(t, heroName, skill.slot, skill.name, heroLevel ?? 1)
     : null;
 
   if (exactProfile) {
@@ -511,27 +513,27 @@ export function parseSkillEffects(
 
     if (drProg) {
       summaryBadge = {
-        text: `🛡️ ลดดาเมจ ${pickProgVal(drProg)}`,
+        text: t("🛡️ ลดดาเมจ {0}", pickProgVal(drProg)),
         badgeClass: drProg.badgeClass,
       };
     } else if (shieldProg) {
       summaryBadge = {
-        text: `🛡️ โล่ ${pickProgVal(shieldProg)}`,
+        text: t("🛡️ โล่ {0}", pickProgVal(shieldProg)),
         badgeClass: shieldProg.badgeClass,
       };
     } else if (healProg) {
       summaryBadge = {
-        text: `💖 ฟื้นฟู ${pickProgVal(healProg)}`,
+        text: t("💖 ฟื้นฟู {0}", pickProgVal(healProg)),
         badgeClass: healProg.badgeClass,
       };
     } else if (asProg) {
       summaryBadge = {
-        text: `⚡ ตีเร็ว +${pickProgVal(asProg)}`,
+        text: t("⚡ ตีเร็ว +{0}", pickProgVal(asProg)),
         badgeClass: asProg.badgeClass,
       };
     } else if (pierceProg) {
       summaryBadge = {
-        text: `🎯 เจาะเกราะ ${pickProgVal(pierceProg)}`,
+        text: t("🎯 เจาะเกราะ {0}", pickProgVal(pierceProg)),
         badgeClass: pierceProg.badgeClass,
       };
     } else if (adProg) {
@@ -541,22 +543,22 @@ export function parseSkillEffects(
       };
     } else if (msProg) {
       summaryBadge = {
-        text: `🏃 วิ่งเร็ว +${pickProgVal(msProg)}`,
+        text: t("🏃 วิ่งเร็ว +{0}", pickProgVal(msProg)),
         badgeClass: msProg.badgeClass,
       };
     } else if (isTypeShield) {
       summaryBadge = {
-        text: "🛡️ โล่ป้องกัน",
+        text: t("🛡️ โล่ป้องกัน"),
         badgeClass: CATEGORY_STYLES.shield.badgeClass,
       };
     } else if (isTypeHeal) {
       summaryBadge = {
-        text: "💖 ฟื้นฟูเลือด",
+        text: t("💖 ฟื้นฟูเลือด"),
         badgeClass: CATEGORY_STYLES.heal.badgeClass,
       };
     } else if (!hasDamage && isTypeDamageReduction) {
       summaryBadge = {
-        text: "🛡️ ทนความเสียหาย",
+        text: t("🛡️ ทนความเสียหาย"),
         badgeClass: CATEGORY_STYLES.damage_reduction.badgeClass,
       };
     }
@@ -594,6 +596,7 @@ export interface ExactHeroPassiveConfig {
 }
 
 export function getExactHeroPassiveScaling(
+  t: Translate,
   heroName: string,
   slot: string,
   skillName: string,
@@ -609,7 +612,7 @@ export function getExactHeroPassiveScaling(
       rows: [
         {
           code: "DEF Up",
-          label: "เกราะ/ต้านเวท 1สแต็ก (3สแต็ก)",
+          label: t("เกราะ/ต้านเวท 1สแต็ก (3สแต็ก)"),
           values: ms.map((lv) => {
             const p = 30 + 5 * (lv - 1);
             return `${p} (${p * 3})`;
@@ -618,13 +621,13 @@ export function getExactHeroPassiveScaling(
         },
         {
           code: "DMG",
-          label: "ดาเมจพิเศษ (+25%AD)",
+          label: t("ดาเมจพิเศษ (+25%AD)"),
           values: ms.map((lv) => (30 + 5 * (lv - 1)).toString()),
           colorClass: "text-ink font-bold",
         },
         {
           code: "Heal",
-          label: "ฟื้นฟูเลือด (Heal)",
+          label: t("ฟื้นฟูเลือด (Heal)"),
           values: Array(6).fill("100"),
           colorClass: "text-green-300 font-bold",
         },
@@ -632,18 +635,18 @@ export function getExactHeroPassiveScaling(
       highlights: [
         {
           icon: "shield",
-          title: "เกราะ & ต้านเวท (+30-100 ต่อสแต็ก)",
-          detail: "เพิ่ม 30 (+5 ต่อ Lv.ฮีโร่) เกราะและต้านเวท นาน 5 วิ (สะสมครบ 3 สแต็ก = 90 - 300 หน่วย)",
+          title: t("เกราะ & ต้านเวท (+30-100 ต่อสแต็ก)"),
+          detail: t("เพิ่ม 30 (+5 ต่อ Lv.ฮีโร่) เกราะและต้านเวท นาน 5 วิ (สะสมครบ 3 สแต็ก = 90 - 300 หน่วย)"),
           badgeClass: "border-emerald-500/40 bg-emerald-500/10 text-emerald-400",
         },
         {
           icon: "swords",
-          title: "โจมตีพิเศษ & ฮีลเลือด (+100% ตีไว)",
-          detail: "สกิลโดนศัตรู ตีไวขึ้น 100% 2 ครั้ง เสริมดาเมจ 30 (+5/Lv) (+25%AD) และฮีล 100 HP (สะสม 4 ครั้ง)",
+          title: t("โจมตีพิเศษ & ฮีลเลือด (+100% ตีไว)"),
+          detail: t("สกิลโดนศัตรู ตีไวขึ้น 100% 2 ครั้ง เสริมดาเมจ 30 (+5/Lv) (+25%AD) และฮีล 100 HP (สะสม 4 ครั้ง)"),
           badgeClass: "border-amber-500/40 bg-amber-500/10 text-amber-400",
         },
       ],
-      summaryBadgeText: (lv) => `🛡️ เกราะ/ต้านเวท ${(30 + 5 * (lv - 1)) * 3} (3สแต็ก) [Lv ${lv}]`,
+      summaryBadgeText: (lv) => t("🛡️ เกราะ/ต้านเวท {0} (3สแต็ก) [Lv {1}]", (30 + 5 * (lv - 1)) * 3, lv),
       badgeClass: CATEGORY_STYLES.defense.badgeClass,
     };
   }
@@ -655,13 +658,13 @@ export function getExactHeroPassiveScaling(
       rows: [
         {
           code: "DMG",
-          label: "ดาเมจรอบตัว (+175%AD)",
+          label: t("ดาเมจรอบตัว (+175%AD)"),
           values: ms.map((lv) => (300 + 25 * (lv - 1)).toString()),
           colorClass: "text-ink font-bold",
         },
         {
           code: "Heal",
-          label: "ดูดเลือดพื้นฐาน (Base Lifesteal)",
+          label: t("ดูดเลือดพื้นฐาน (Base Lifesteal)"),
           values: ms.map((lv) => `${(8.0 + (7.0 / 14) * (lv - 1)).toFixed(1)}%`),
           colorClass: "text-green-300 font-bold",
         },
@@ -669,18 +672,18 @@ export function getExactHeroPassiveScaling(
       highlights: [
         {
           icon: "swords",
-          title: "ดาเมจรอบตัว (+25 ต่อ Lv)",
-          detail: "สร้างความเสียหายกายภาพ 300 (+25 ต่อ Lv.ฮีโร่) (+175%AD) แก่ศัตรูรอบๆ เมื่อสะสมครบ 4 ครั้ง",
+          title: t("ดาเมจรอบตัว (+25 ต่อ Lv)"),
+          detail: t("สร้างความเสียหายกายภาพ 300 (+25 ต่อ Lv.ฮีโร่) (+175%AD) แก่ศัตรูรอบๆ เมื่อสะสมครบ 4 ครั้ง"),
           badgeClass: "border-[#ff9f43]/40 bg-[#ff9f43]/10 text-[#ff9f43]",
         },
         {
           icon: "heart",
-          title: "ดูดเลือดพื้นฐาน (8% - 15%)",
-          detail: "ดูดเลือดพื้นฐาน 8% (+0.5%/Lv, สูงสุด 15% ที่ Lv.15) และเพิ่มขึ้นตาม HP ที่เสียไป สูงสุด 10 เท่า (80% - 150%)",
+          title: t("ดูดเลือดพื้นฐาน (8% - 15%)"),
+          detail: t("ดูดเลือดพื้นฐาน 8% (+0.5%/Lv, สูงสุด 15% ที่ Lv.15) และเพิ่มขึ้นตาม HP ที่เสียไป สูงสุด 10 เท่า (80% - 150%)"),
           badgeClass: "border-green-500/40 bg-green-500/10 text-green-400",
         },
       ],
-      summaryBadgeText: (lv) => `⚔️ ดาเมจ ${300 + 25 * (Math.min(15, Math.max(1, lv)) - 1)} [Lv ${Math.min(15, Math.max(1, lv))}]`,
+      summaryBadgeText: (lv) => t("⚔️ ดาเมจ {0} [Lv {1}]", 300 + 25 * (Math.min(15, Math.max(1, lv)) - 1), Math.min(15, Math.max(1, lv))),
       badgeClass: CATEGORY_STYLES.damage.badgeClass,
     };
   }
@@ -692,7 +695,7 @@ export function getExactHeroPassiveScaling(
       rows: [
         {
           code: "DMG",
-          label: "ดาเมจจริง (+30%AP)",
+          label: t("ดาเมจจริง (+30%AP)"),
           values: ms.map((lv) => (84 + 10 * (lv - 1)).toString()),
           colorClass: "text-ink font-bold",
         },
@@ -700,12 +703,12 @@ export function getExactHeroPassiveScaling(
       highlights: [
         {
           icon: "zap",
-          title: "ดาเมจจริงสายฟ้า (+10 ต่อ Lv)",
-          detail: "สะสมคำสาปครบ 3 ครั้ง ระเบิดความเสียหายจริง 84 (+10 ต่อ Lv.ฮีโร่) (+30%AP)",
+          title: t("ดาเมจจริงสายฟ้า (+10 ต่อ Lv)"),
+          detail: t("สะสมคำสาปครบ 3 ครั้ง ระเบิดความเสียหายจริง 84 (+10 ต่อ Lv.ฮีโร่) (+30%AP)"),
           badgeClass: "border-ink/40 bg-ink/10 text-ink",
         },
       ],
-      summaryBadgeText: (lv) => `⚡ ดาเมจจริง ${84 + 10 * (lv - 1)} [Lv ${lv}]`,
+      summaryBadgeText: (lv) => t("⚡ ดาเมจจริง {0} [Lv {1}]", 84 + 10 * (lv - 1), lv),
       badgeClass: CATEGORY_STYLES.damage.badgeClass,
     };
   }
@@ -717,13 +720,13 @@ export function getExactHeroPassiveScaling(
       rows: [
         {
           code: "DMG",
-          label: "ดาเมจจริง/วิ (+35%โบนัส AD)",
+          label: t("ดาเมจจริง/วิ (+35%โบนัส AD)"),
           values: ms.map((lv) => (70 + 5 * (lv - 1)).toString()),
           colorClass: "text-ink font-bold",
         },
         {
           code: "DEF Down",
-          label: "ลดการฟื้นฟู (Anti-Heal)",
+          label: t("ลดการฟื้นฟู (Anti-Heal)"),
           values: Array(6).fill("40%"),
           colorClass: "text-amber-300 font-bold",
         },
@@ -731,18 +734,18 @@ export function getExactHeroPassiveScaling(
       highlights: [
         {
           icon: "zap",
-          title: "ดาเมจจริงช็อตไฟฟ้า (+5 ต่อ Lv)",
-          detail: "สร้างความเสียหายจริง 70 (+5 ต่อ Lv.ฮีโร่) (+35% โบนัส AD) ต่อวินาที นาน 3 วิ",
+          title: t("ดาเมจจริงช็อตไฟฟ้า (+5 ต่อ Lv)"),
+          detail: t("สร้างความเสียหายจริง 70 (+5 ต่อ Lv.ฮีโร่) (+35% โบนัส AD) ต่อวินาที นาน 3 วิ"),
           badgeClass: "border-ink/40 bg-ink/10 text-ink",
         },
         {
           icon: "target",
-          title: "ตัดเลือดศัตรู 40%",
-          detail: "ลดความสามารถฟื้นฟูเลือดของศัตรูลง 40% นาน 3 วิ (ไม่ทับซ้อนกับไอเทมตัดเลือด)",
+          title: t("ตัดเลือดศัตรู 40%"),
+          detail: t("ลดความสามารถฟื้นฟูเลือดของศัตรูลง 40% นาน 3 วิ (ไม่ทับซ้อนกับไอเทมตัดเลือด)"),
           badgeClass: "border-amber-500/40 bg-amber-500/10 text-amber-400",
         },
       ],
-      summaryBadgeText: (lv) => `⚡ ดาเมจจริง ${70 + 5 * (lv - 1)}/วิ [Lv ${lv}]`,
+      summaryBadgeText: (lv) => t("⚡ ดาเมจจริง {0}/วิ [Lv {1}]", 70 + 5 * (lv - 1), lv),
       badgeClass: CATEGORY_STYLES.damage.badgeClass,
     };
   }
@@ -754,7 +757,7 @@ export function getExactHeroPassiveScaling(
       rows: [
         {
           code: "DEF Down",
-          label: "เจาะเกราะ (Pierce)",
+          label: t("เจาะเกราะ (Pierce)"),
           values: ms.map((lv) => Math.min(200, 60 + 10 * (lv - 1)).toString()),
           colorClass: "text-orange-300 font-bold",
         },
@@ -762,12 +765,12 @@ export function getExactHeroPassiveScaling(
       highlights: [
         {
           icon: "target",
-          title: "เจาะเกราะสะสม (+10 ต่อ Lv)",
-          detail: "โจมตีปกติครบ 4 ครั้ง ได้รับเจาะเกราะ 60 (+10 ต่อ Lv.ฮีโร่ สูงสุด 200) และปลดล็อกอัลติเมท 5 วิ",
+          title: t("เจาะเกราะสะสม (+10 ต่อ Lv)"),
+          detail: t("โจมตีปกติครบ 4 ครั้ง ได้รับเจาะเกราะ 60 (+10 ต่อ Lv.ฮีโร่ สูงสุด 200) และปลดล็อกอัลติเมท 5 วิ"),
           badgeClass: "border-orange-500/40 bg-orange-500/10 text-orange-400",
         },
       ],
-      summaryBadgeText: (lv) => `🎯 เจาะเกราะ ${Math.min(200, 60 + 10 * (lv - 1))} [Lv ${lv}]`,
+      summaryBadgeText: (lv) => t("🎯 เจาะเกราะ {0} [Lv {1}]", Math.min(200, 60 + 10 * (lv - 1)), lv),
       badgeClass: CATEGORY_STYLES.pierce.badgeClass,
     };
   }
@@ -779,7 +782,7 @@ export function getExactHeroPassiveScaling(
       rows: [
         {
           code: "DMG",
-          label: "โบนัส AD ต่อ 1% เลือดที่เสีย",
+          label: t("โบนัส AD ต่อ 1% เลือดที่เสีย"),
           values: ms.map((lv) => (3.0 + (4.0 / 14) * (lv - 1)).toFixed(1)),
           colorClass: "text-gold font-bold",
         },
@@ -787,8 +790,8 @@ export function getExactHeroPassiveScaling(
       highlights: [
         {
           icon: "swords",
-          title: "ยิ่งเลือดยิ่งแรง (+0.29 AD/Lv)",
-          detail: "เสียเลือด 1% ได้รับ 3.0 ถึง 7.0 โบนัส AD (+0.29 ต่อ Lv.ฮีโร่)",
+          title: t("ยิ่งเลือดยิ่งแรง (+0.29 AD/Lv)"),
+          detail: t("เสียเลือด 1% ได้รับ 3.0 ถึง 7.0 โบนัส AD (+0.29 ต่อ Lv.ฮีโร่)"),
           badgeClass: "border-gold/40 bg-gold/10 text-gold",
         },
       ],
@@ -804,7 +807,7 @@ export function getExactHeroPassiveScaling(
       rows: [
         {
           code: "DMG",
-          label: "ดาเมจเวท (% Max HP)",
+          label: t("ดาเมจเวท (% Max HP)"),
           values: ms.map((lv) => `${(4.0 + (4.0 / 14) * (lv - 1)).toFixed(1)}%`),
           colorClass: "text-purple-300 font-bold",
         },
@@ -812,12 +815,12 @@ export function getExactHeroPassiveScaling(
       highlights: [
         {
           icon: "zap",
-          title: "สตั๊น & ดาเมจ % เลือดสูงสุด",
-          detail: "ความเสียหายมีโอกาสติดสตั๊น 0.75 วิ และทำดาเมจเวท 4.0% (+0.29%/Lv สูงสุด 8.0%) ของ Max HP",
+          title: t("สตั๊น & ดาเมจ % เลือดสูงสุด"),
+          detail: t("ความเสียหายมีโอกาสติดสตั๊น 0.75 วิ และทำดาเมจเวท 4.0% (+0.29%/Lv สูงสุด 8.0%) ของ Max HP"),
           badgeClass: "border-purple-500/40 bg-purple-500/10 text-purple-400",
         },
       ],
-      summaryBadgeText: (lv) => `💥 ดาเมจ ${(4.0 + (4.0 / 14) * (lv - 1)).toFixed(1)}% HP [Lv ${lv}]`,
+      summaryBadgeText: (lv) => t("💥 ดาเมจ {0}% HP [Lv {1}]", (4.0 + (4.0 / 14) * (lv - 1)).toFixed(1), lv),
       badgeClass: CATEGORY_STYLES.damage.badgeClass,
     };
   }
@@ -829,7 +832,7 @@ export function getExactHeroPassiveScaling(
       rows: [
         {
           code: "ATK SPD",
-          label: "ตีไว 1สแต็ก (5สแต็ก)",
+          label: t("ตีไว 1สแต็ก (5สแต็ก)"),
           values: ms.map((lv) => {
             const one = 8.0 + (6.0 / 14) * (lv - 1);
             return `${one.toFixed(1)}% (${(one * 5).toFixed(1)}%)`;
@@ -840,13 +843,13 @@ export function getExactHeroPassiveScaling(
       highlights: [
         {
           icon: "zap",
-          title: "เร่งความเร็วโจมตี (+0.43%/Lv)",
-          detail: "ตีปกติเพิ่มความเร็วโจมตี 8.0% (+0.43%/Lv) ต่อสแต็ก สะสม 5 สแต็ก = 40% ถึง 70%",
+          title: t("เร่งความเร็วโจมตี (+0.43%/Lv)"),
+          detail: t("ตีปกติเพิ่มความเร็วโจมตี 8.0% (+0.43%/Lv) ต่อสแต็ก สะสม 5 สแต็ก = 40% ถึง 70%"),
           badgeClass: "border-amber-500/40 bg-amber-500/10 text-amber-400",
         },
       ],
       summaryBadgeText: (lv) =>
-        `⚡ ตีไว +${((8.0 + (6.0 / 14) * (Math.min(15, Math.max(1, lv)) - 1)) * 5).toFixed(1)}% (5สแต็ก) [Lv ${Math.min(15, Math.max(1, lv))}]`,
+        t("⚡ ตีไว +{0}% (5สแต็ก) [Lv {1}]", ((8.0 + (6.0 / 14) * (Math.min(15, Math.max(1, lv)) - 1)) * 5).toFixed(1), Math.min(15, Math.max(1, lv))),
       badgeClass: CATEGORY_STYLES.attack_speed.badgeClass,
     };
   }
@@ -858,7 +861,7 @@ export function getExactHeroPassiveScaling(
       rows: [
         {
           code: "ATK SPD",
-          label: "เพิ่มความเร็วโจมตี (ATK SPD)",
+          label: t("เพิ่มความเร็วโจมตี (ATK SPD)"),
           values: ms.map((lv) => `${(35.0 + (35.0 / 14) * (lv - 1)).toFixed(1)}%`),
           colorClass: "text-amber-300 font-bold",
         },
@@ -866,12 +869,12 @@ export function getExactHeroPassiveScaling(
       highlights: [
         {
           icon: "zap",
-          title: "คลื่นดาบตีไว (+2.5%/Lv)",
-          detail: "ใช้สกิลแล้วตีปกติเปลี่ยนเป็นคลื่นดาบ เพิ่มตีไว +35% (+2.5%/Lv สูงสุด 70%) สะสม 5 ครั้ง",
+          title: t("คลื่นดาบตีไว (+2.5%/Lv)"),
+          detail: t("ใช้สกิลแล้วตีปกติเปลี่ยนเป็นคลื่นดาบ เพิ่มตีไว +35% (+2.5%/Lv สูงสุด 70%) สะสม 5 ครั้ง"),
           badgeClass: "border-amber-500/40 bg-amber-500/10 text-amber-400",
         },
       ],
-      summaryBadgeText: (lv) => `⚡ ตีไว +${(35.0 + (35.0 / 14) * (lv - 1)).toFixed(1)}% [Lv ${lv}]`,
+      summaryBadgeText: (lv) => t("⚡ ตีไว +{0}% [Lv {1}]", (35.0 + (35.0 / 14) * (lv - 1)).toFixed(1), lv),
       badgeClass: CATEGORY_STYLES.attack_speed.badgeClass,
     };
   }
@@ -883,19 +886,19 @@ export function getExactHeroPassiveScaling(
       rows: [
         {
           code: "SLOW",
-          label: "สโลว์ศัตรู (Slow)",
+          label: t("สโลว์ศัตรู (Slow)"),
           values: ms.map((lv) => `${(50.0 + (40.0 / 14) * (lv - 1)).toFixed(1)}%`),
           colorClass: "text-indigo-300 font-bold",
         },
         {
           code: "DMG",
-          label: "ดาเมจจริง (+50%AP)",
+          label: t("ดาเมจจริง (+50%AP)"),
           values: Array(6).fill("160"),
           colorClass: "text-ink font-bold",
         },
         {
           code: "Heal",
-          label: "ฟื้นฟูเลือด (+1%โบนัส HP)",
+          label: t("ฟื้นฟูเลือด (+1%โบนัส HP)"),
           values: Array(6).fill("140"),
           colorClass: "text-green-300 font-bold",
         },
@@ -903,12 +906,12 @@ export function getExactHeroPassiveScaling(
       highlights: [
         {
           icon: "target",
-          title: "สโลว์มหาศาล (+2.86%/Lv)",
-          detail: "ระเบิดสัญลักษณ์ สโลว์ศัตรู 50% (+2.86%/Lv สูงสุด 90%) 1 วิ พร้อมดาเมจจริง 160 และฮีล 140",
+          title: t("สโลว์มหาศาล (+2.86%/Lv)"),
+          detail: t("ระเบิดสัญลักษณ์ สโลว์ศัตรู 50% (+2.86%/Lv สูงสุด 90%) 1 วิ พร้อมดาเมจจริง 160 และฮีล 140"),
           badgeClass: "border-indigo-500/40 bg-indigo-500/10 text-indigo-400",
         },
       ],
-      summaryBadgeText: (lv) => `❄️ สโลว์ ${(50.0 + (40.0 / 14) * (lv - 1)).toFixed(1)}% [Lv ${lv}]`,
+      summaryBadgeText: (lv) => t("❄️ สโลว์ {0}% [Lv {1}]", (50.0 + (40.0 / 14) * (lv - 1)).toFixed(1), lv),
       badgeClass: CATEGORY_STYLES.slow.badgeClass,
     };
   }
@@ -920,7 +923,7 @@ export function getExactHeroPassiveScaling(
       rows: [
         {
           code: "DMG",
-          label: "โบนัสดาเมจตีปกติ (+1% Max HP)",
+          label: t("โบนัสดาเมจตีปกติ (+1% Max HP)"),
           values: ms.map((lv) => (28 + 2 * (lv - 1)).toString()),
           colorClass: "text-ink font-bold",
         },
@@ -928,12 +931,12 @@ export function getExactHeroPassiveScaling(
       highlights: [
         {
           icon: "swords",
-          title: "โบนัสดาเมจตีปกติ (+2 ต่อ Lv)",
-          detail: "โจมตีปกติสร้างโบนัสดาเมจกายภาพ 28 (+2 ต่อ Lv.ฮีโร่) (+1% Max HP)",
+          title: t("โบนัสดาเมจตีปกติ (+2 ต่อ Lv)"),
+          detail: t("โจมตีปกติสร้างโบนัสดาเมจกายภาพ 28 (+2 ต่อ Lv.ฮีโร่) (+1% Max HP)"),
           badgeClass: "border-[#ff9f43]/40 bg-[#ff9f43]/10 text-[#ff9f43]",
         },
       ],
-      summaryBadgeText: (lv) => `⚔️ ดาเมจ ${28 + 2 * (lv - 1)} [Lv ${lv}]`,
+      summaryBadgeText: (lv) => t("⚔️ ดาเมจ {0} [Lv {1}]", 28 + 2 * (lv - 1), lv),
       badgeClass: CATEGORY_STYLES.damage.badgeClass,
     };
   }
@@ -945,7 +948,7 @@ export function getExactHeroPassiveScaling(
       rows: [
         {
           code: "SPD Up",
-          label: "เพิ่มความเร็วเคลื่อนที่ (SPD Up)",
+          label: t("เพิ่มความเร็วเคลื่อนที่ (SPD Up)"),
           values: ms.map((lv) => `${(6.0 + (4.0 / 14) * (lv - 1)).toFixed(1)}%`),
           colorClass: "text-cyan-300 font-bold",
         },
@@ -953,12 +956,12 @@ export function getExactHeroPassiveScaling(
       highlights: [
         {
           icon: "speed",
-          title: "วิ่งเร็วขึ้น (+0.29%/Lv)",
-          detail: "เพิ่มความเร็วเคลื่อนที่ 6.0% (+0.29% ต่อ Lv.ฮีโร่ สูงสุด 10.0%)",
+          title: t("วิ่งเร็วขึ้น (+0.29%/Lv)"),
+          detail: t("เพิ่มความเร็วเคลื่อนที่ 6.0% (+0.29% ต่อ Lv.ฮีโร่ สูงสุด 10.0%)"),
           badgeClass: "border-cyan-500/40 bg-cyan-500/10 text-cyan-400",
         },
       ],
-      summaryBadgeText: (lv) => `🏃 วิ่งเร็ว +${(6.0 + (4.0 / 14) * (lv - 1)).toFixed(1)}% [Lv ${lv}]`,
+      summaryBadgeText: (lv) => t("🏃 วิ่งเร็ว +{0}% [Lv {1}]", (6.0 + (4.0 / 14) * (lv - 1)).toFixed(1), lv),
       badgeClass: CATEGORY_STYLES.move_speed.badgeClass,
     };
   }
@@ -970,7 +973,7 @@ export function getExactHeroPassiveScaling(
       rows: [
         {
           code: "ATK SPD",
-          label: "ตีไว 1สแต็ก (5สแต็ก)",
+          label: t("ตีไว 1สแต็ก (5สแต็ก)"),
           values: ms.map((lv) => {
             const one = 7.0 + (7.0 / 14) * (lv - 1);
             return `${one.toFixed(1)}% (${(one * 5).toFixed(1)}%)`;
@@ -981,13 +984,13 @@ export function getExactHeroPassiveScaling(
       highlights: [
         {
           icon: "zap",
-          title: "ตีไวคลั่ง (+0.5%/Lv)",
-          detail: "สัญลักษณ์แต่ละอันเพิ่มตีไว 7.0% (+0.5%/Lv) สะสม 5 อัน = 35% ถึง 70% และดูดเลือด 3.5%",
+          title: t("ตีไวคลั่ง (+0.5%/Lv)"),
+          detail: t("สัญลักษณ์แต่ละอันเพิ่มตีไว 7.0% (+0.5%/Lv) สะสม 5 อัน = 35% ถึง 70% และดูดเลือด 3.5%"),
           badgeClass: "border-amber-500/40 bg-amber-500/10 text-amber-400",
         },
       ],
       summaryBadgeText: (lv) =>
-        `⚡ ตีไว +${((7.0 + (7.0 / 14) * (Math.min(15, Math.max(1, lv)) - 1)) * 5).toFixed(1)}% (5สแต็ก) [Lv ${Math.min(15, Math.max(1, lv))}]`,
+        t("⚡ ตีไว +{0}% (5สแต็ก) [Lv {1}]", ((7.0 + (7.0 / 14) * (Math.min(15, Math.max(1, lv)) - 1)) * 5).toFixed(1), Math.min(15, Math.max(1, lv))),
       badgeClass: CATEGORY_STYLES.attack_speed.badgeClass,
     };
   }
@@ -999,13 +1002,13 @@ export function getExactHeroPassiveScaling(
       rows: [
         {
           code: "ATK SPD",
-          label: "เพิ่มความเร็วโจมตี (ATK SPD)",
+          label: t("เพิ่มความเร็วโจมตี (ATK SPD)"),
           values: ms.map((lv) => `${(50.0 + (30.0 / 14) * (lv - 1)).toFixed(1)}%`),
           colorClass: "text-amber-300 font-bold",
         },
         {
           code: "SPD Up",
-          label: "เพิ่มความเร็วเคลื่อนที่ (SPD Up)",
+          label: t("เพิ่มความเร็วเคลื่อนที่ (SPD Up)"),
           values: ms.map((lv) => `${(20.0 + (10.0 / 14) * (lv - 1)).toFixed(1)}%`),
           colorClass: "text-cyan-300 font-bold",
         },
@@ -1013,12 +1016,12 @@ export function getExactHeroPassiveScaling(
       highlights: [
         {
           icon: "zap",
-          title: "สถานะเสริมพลัง ตีไว & วิ่งเร็ว",
-          detail: "ตีไว +50% (+2.14%/Lv สูงสุด 80%) และวิ่งเร็ว +20% (+0.71%/Lv สูงสุด 30%) นาน 6 วิ",
+          title: t("สถานะเสริมพลัง ตีไว & วิ่งเร็ว"),
+          detail: t("ตีไว +50% (+2.14%/Lv สูงสุด 80%) และวิ่งเร็ว +20% (+0.71%/Lv สูงสุด 30%) นาน 6 วิ"),
           badgeClass: "border-amber-500/40 bg-amber-500/10 text-amber-400",
         },
       ],
-      summaryBadgeText: (lv) => `⚡ ตีไว +${(50.0 + (30.0 / 14) * (lv - 1)).toFixed(1)}% [Lv ${lv}]`,
+      summaryBadgeText: (lv) => t("⚡ ตีไว +{0}% [Lv {1}]", (50.0 + (30.0 / 14) * (lv - 1)).toFixed(1), lv),
       badgeClass: CATEGORY_STYLES.attack_speed.badgeClass,
     };
   }
@@ -1030,7 +1033,7 @@ export function getExactHeroPassiveScaling(
       rows: [
         {
           code: "Heal",
-          label: "ฟื้นฟูเลือดพันธมิตร (+10% AP)",
+          label: t("ฟื้นฟูเลือดพันธมิตร (+10% AP)"),
           values: ms.map((lv) => (50 + 5 * (lv - 1)).toString()),
           colorClass: "text-green-300 font-bold",
         },
@@ -1038,12 +1041,12 @@ export function getExactHeroPassiveScaling(
       highlights: [
         {
           icon: "heart",
-          title: "ฟื้นฟูเลือดพันธมิตร (+5 ต่อ Lv)",
-          detail: "ใช้สกิลแล้วฟื้นฟูเลือดให้เพื่อนที่เลือดน้อยสุด 50 (+5 ต่อ Lv.ฮีโร่) (+10% AP)",
+          title: t("ฟื้นฟูเลือดพันธมิตร (+5 ต่อ Lv)"),
+          detail: t("ใช้สกิลแล้วฟื้นฟูเลือดให้เพื่อนที่เลือดน้อยสุด 50 (+5 ต่อ Lv.ฮีโร่) (+10% AP)"),
           badgeClass: "border-green-500/40 bg-green-500/10 text-green-400",
         },
       ],
-      summaryBadgeText: (lv) => `💖 ฮีล ${50 + 5 * (lv - 1)} [Lv ${lv}]`,
+      summaryBadgeText: (lv) => t("💖 ฮีล {0} [Lv {1}]", 50 + 5 * (lv - 1), lv),
       badgeClass: CATEGORY_STYLES.heal.badgeClass,
     };
   }
@@ -1055,7 +1058,7 @@ export function getExactHeroPassiveScaling(
       rows: [
         {
           code: "DMG",
-          label: "โบนัสดาเมจตีใกล้ (Melee Bonus)",
+          label: t("โบนัสดาเมจตีใกล้ (Melee Bonus)"),
           values: ms.map((lv) => (18 + 3 * (lv - 1)).toString()),
           colorClass: "text-ink font-bold",
         },
@@ -1063,12 +1066,12 @@ export function getExactHeroPassiveScaling(
       highlights: [
         {
           icon: "swords",
-          title: "ตีใกล้โบนัสดาเมจ (+3 ต่อ Lv)",
-          detail: "ขณะเปิดอัลติเมท ตีปกติระยะใกล้สร้างโบนัสความเสียหายกายภาพ 18 (+3 ต่อ Lv.ฮีโร่ สูงสุด 60)",
+          title: t("ตีใกล้โบนัสดาเมจ (+3 ต่อ Lv)"),
+          detail: t("ขณะเปิดอัลติเมท ตีปกติระยะใกล้สร้างโบนัสความเสียหายกายภาพ 18 (+3 ต่อ Lv.ฮีโร่ สูงสุด 60)"),
           badgeClass: "border-[#ff9f43]/40 bg-[#ff9f43]/10 text-[#ff9f43]",
         },
       ],
-      summaryBadgeText: (lv) => `⚔️ ตีใกล้ +${18 + 3 * (lv - 1)} [Lv ${lv}]`,
+      summaryBadgeText: (lv) => t("⚔️ ตีใกล้ +{0} [Lv {1}]", 18 + 3 * (lv - 1), lv),
       badgeClass: CATEGORY_STYLES.damage.badgeClass,
     };
   }
@@ -1080,13 +1083,13 @@ export function getExactHeroPassiveScaling(
       rows: [
         {
           code: "DMG",
-          label: "โบนัสดาเมจ (+28% โบนัส AD)",
+          label: t("โบนัสดาเมจ (+28% โบนัส AD)"),
           values: ms.map((lv) => (182 + 13 * (lv - 1)).toString()),
           colorClass: "text-ink font-bold",
         },
         {
           code: "Heal",
-          label: "ฟื้นฟูเลือด (+2% โบนัส HP)",
+          label: t("ฟื้นฟูเลือด (+2% โบนัส HP)"),
           values: ms.map((lv) => (100 + 7 * (lv - 1)).toString()),
           colorClass: "text-green-300 font-bold",
         },
@@ -1094,18 +1097,18 @@ export function getExactHeroPassiveScaling(
       highlights: [
         {
           icon: "swords",
-          title: "หอกศักดิ์สิทธิ์ (+13 ต่อ Lv)",
-          detail: "โจมตีพิเศษสร้างโบนัสดาเมจ 182 (+13 ต่อ Lv) (+28% โบนัส AD) ลด CD สกิล 1 วิ",
+          title: t("หอกศักดิ์สิทธิ์ (+13 ต่อ Lv)"),
+          detail: t("โจมตีพิเศษสร้างโบนัสดาเมจ 182 (+13 ต่อ Lv) (+28% โบนัส AD) ลด CD สกิล 1 วิ"),
           badgeClass: "border-[#ff9f43]/40 bg-[#ff9f43]/10 text-[#ff9f43]",
         },
         {
           icon: "heart",
-          title: "ฟื้นฟูเลือด (+7 ต่อ Lv)",
-          detail: "เก็บหอกฟื้นฟู 100 (+7 ต่อ Lv) (+2% โบนัส HP) โจมตีพิเศษโดนฮีล x2",
+          title: t("ฟื้นฟูเลือด (+7 ต่อ Lv)"),
+          detail: t("เก็บหอกฟื้นฟู 100 (+7 ต่อ Lv) (+2% โบนัส HP) โจมตีพิเศษโดนฮีล x2"),
           badgeClass: "border-green-500/40 bg-green-500/10 text-green-400",
         },
       ],
-      summaryBadgeText: (lv) => `⚔️ ดาเมจ ${182 + 13 * (lv - 1)} [Lv ${lv}]`,
+      summaryBadgeText: (lv) => t("⚔️ ดาเมจ {0} [Lv {1}]", 182 + 13 * (lv - 1), lv),
       badgeClass: CATEGORY_STYLES.damage.badgeClass,
     };
   }
@@ -1117,7 +1120,7 @@ export function getExactHeroPassiveScaling(
       rows: [
         {
           code: "DMG",
-          label: "โบนัส AP ในบ่อน้ำพุ",
+          label: t("โบนัส AP ในบ่อน้ำพุ"),
           values: ms.map((lv) => (50 + 4 * (lv - 1)).toString()),
           colorClass: "text-purple-300 font-bold",
         },
@@ -1125,8 +1128,8 @@ export function getExactHeroPassiveScaling(
       highlights: [
         {
           icon: "sparkles",
-          title: "โบนัส AP ในบ่อ (+4 ต่อ Lv)",
-          detail: "ได้รับพลังเวทในบ่อน้ำพุ 50 (+4 ต่อ Lv.ฮีโร่ สูงสุด 106 AP)",
+          title: t("โบนัส AP ในบ่อ (+4 ต่อ Lv)"),
+          detail: t("ได้รับพลังเวทในบ่อน้ำพุ 50 (+4 ต่อ Lv.ฮีโร่ สูงสุด 106 AP)"),
           badgeClass: "border-purple-500/40 bg-purple-500/10 text-purple-400",
         },
       ],
@@ -1142,7 +1145,7 @@ export function getExactHeroPassiveScaling(
       rows: [
         {
           code: "ATK SPD",
-          label: "เพิ่มความเร็วโจมตี (ATK SPD)",
+          label: t("เพิ่มความเร็วโจมตี (ATK SPD)"),
           values: ms.map((lv) => `${(10.0 + (9.9 / 14) * (lv - 1)).toFixed(1)}%`),
           colorClass: "text-amber-300 font-bold",
         },
@@ -1150,12 +1153,12 @@ export function getExactHeroPassiveScaling(
       highlights: [
         {
           icon: "zap",
-          title: "โบนัสตีไวในบ่อ (+0.71%/Lv)",
-          detail: "ได้รับความเร็วโจมตีในบ่อน้ำพุ 10.0% (+0.71% ต่อ Lv.ฮีโร่ สูงสุด 19.9%)",
+          title: t("โบนัสตีไวในบ่อ (+0.71%/Lv)"),
+          detail: t("ได้รับความเร็วโจมตีในบ่อน้ำพุ 10.0% (+0.71% ต่อ Lv.ฮีโร่ สูงสุด 19.9%)"),
           badgeClass: "border-amber-500/40 bg-amber-500/10 text-amber-400",
         },
       ],
-      summaryBadgeText: (lv) => `⚡ ตีไว +${(10.0 + (9.9 / 14) * (lv - 1)).toFixed(1)}% [Lv ${lv}]`,
+      summaryBadgeText: (lv) => t("⚡ ตีไว +{0}% [Lv {1}]", (10.0 + (9.9 / 14) * (lv - 1)).toFixed(1), lv),
       badgeClass: CATEGORY_STYLES.attack_speed.badgeClass,
     };
   }
@@ -1168,7 +1171,7 @@ export function getExactHeroPassiveScaling(
         rows: [
           {
             code: "SPD Up",
-            label: "โบนัสความเร็วเคลื่อนที่ (+2.5%/Lv)",
+            label: t("โบนัสความเร็วเคลื่อนที่ (+2.5%/Lv)"),
             values: ms.map((lv) => `${(5.0 + 2.5 * (lv - 1)).toFixed(1)}%`),
             colorClass: "text-cyan-300 font-bold",
           },
@@ -1176,13 +1179,13 @@ export function getExactHeroPassiveScaling(
         highlights: [
           {
             icon: "zap",
-            title: "เร่งความเร็ว Vanguard (+2.5%/Lv)",
-            detail: "ขณะเปิดสกิล 1 ได้รับความเร็วเคลื่อนที่เพิ่ม 5.0% (+2.5% ต่อ Lv.ฮีโร่ สูงสุด 40.0%)",
+            title: t("เร่งความเร็ว Vanguard (+2.5%/Lv)"),
+            detail: t("ขณะเปิดสกิล 1 ได้รับความเร็วเคลื่อนที่เพิ่ม 5.0% (+2.5% ต่อ Lv.ฮีโร่ สูงสุด 40.0%)"),
             badgeClass: CATEGORY_STYLES.move_speed.badgeClass,
           },
         ],
         summaryBadgeText: (lv) =>
-          `⚡ วิ่งเร็ว +${(5.0 + 2.5 * (Math.min(15, Math.max(1, lv)) - 1)).toFixed(1)}% [Lv ${Math.min(15, Math.max(1, lv))}]`,
+          t("⚡ วิ่งเร็ว +{0}% [Lv {1}]", (5.0 + 2.5 * (Math.min(15, Math.max(1, lv)) - 1)).toFixed(1), Math.min(15, Math.max(1, lv))),
         badgeClass: CATEGORY_STYLES.move_speed.badgeClass,
       };
     }
@@ -1192,7 +1195,7 @@ export function getExactHeroPassiveScaling(
         rows: [
           {
             code: "DMG",
-            label: "โบนัสดาเมจใส่ครีป (+6%โบนัส HP)",
+            label: t("โบนัสดาเมจใส่ครีป (+6%โบนัส HP)"),
             values: ms.map((lv) => (150 + 10 * (lv - 1)).toString()),
             colorClass: "text-ink font-bold",
           },
@@ -1200,13 +1203,13 @@ export function getExactHeroPassiveScaling(
         highlights: [
           {
             icon: "swords",
-            title: "โบนัสดาเมจครีป (+10 ต่อ Lv)",
-            detail: "โจมตีพิเศษสร้างโบนัส 150 (+10 ต่อ Lv.ฮีโร่) (+6% โบนัส HP) ใส่ครีป และสตั๊นป้อม 2 วิ",
+            title: t("โบนัสดาเมจครีป (+10 ต่อ Lv)"),
+            detail: t("โจมตีพิเศษสร้างโบนัส 150 (+10 ต่อ Lv.ฮีโร่) (+6% โบนัส HP) ใส่ครีป และสตั๊นป้อม 2 วิ"),
             badgeClass: "border-[#ff9f43]/40 bg-[#ff9f43]/10 text-[#ff9f43]",
           },
         ],
         summaryBadgeText: (lv) =>
-          `💥 ดาเมจครีป ${150 + 10 * (Math.min(15, Math.max(1, lv)) - 1)} [Lv ${Math.min(15, Math.max(1, lv))}]`,
+          t("💥 ดาเมจครีป {0} [Lv {1}]", 150 + 10 * (Math.min(15, Math.max(1, lv)) - 1), Math.min(15, Math.max(1, lv))),
         badgeClass: CATEGORY_STYLES.damage.badgeClass,
       };
     }
@@ -1226,7 +1229,7 @@ export function getSlotCircledNumber(slot: string): string {
   return "①";
 }
 
-export function getInGameTagCapsules(skill: SkillLike): Array<{ label: string; bg: string; text: string; border: string }> {
+export function getInGameTagCapsules(t: Translate, skill: SkillLike): Array<{ label: string; bg: string; text: string; border: string }> {
   const list: Array<{ label: string; bg: string; text: string; border: string }> = [];
   const dtype = skill.damage_type;
   const stype = (skill.type ?? "").toLowerCase();
@@ -1234,11 +1237,11 @@ export function getInGameTagCapsules(skill: SkillLike): Array<{ label: string; b
 
   // Primary damage type pill
   if (dtype === "physical") {
-    list.push({ label: "กายภาพ", bg: "bg-[#7c2d2d]/80", text: "text-[#fca5a5]", border: "border-[#ef4444]/50" });
+    list.push({ label: t("กายภาพ"), bg: "bg-[#7c2d2d]/80", text: "text-[#fca5a5]", border: "border-[#ef4444]/50" });
   } else if (dtype === "magic") {
-    list.push({ label: "เวท", bg: "bg-[#581c87]/80", text: "text-[#d8b4fe]", border: "border-[#a855f7]/50" });
+    list.push({ label: t("เวท"), bg: "bg-[#581c87]/80", text: "text-[#d8b4fe]", border: "border-[#a855f7]/50" });
   } else if (dtype === "true") {
-    list.push({ label: "ความเสียหายจริง", bg: "bg-slate-700/80", text: "text-white font-bold", border: "border-slate-400/60" });
+    list.push({ label: t("ความเสียหายจริง"), bg: "bg-slate-700/80", text: "text-white font-bold", border: "border-slate-400/60" });
   }
 
   // Effect pills based on in-game screenshots
@@ -1246,25 +1249,26 @@ export function getInGameTagCapsules(skill: SkillLike): Array<{ label: string; b
     list.push({ label: "ลดความเสียหาย", bg: "bg-[#115e59]/80", text: "text-[#5eead4]", border: "border-[#14b8a6]/50" });
   }
   if (stype.includes("speed") || desc.includes("ความเร็วเคลื่อนที่") || desc.includes("วิ่งเร็ว")) {
-    list.push({ label: "เพิ่มความเร็ว", bg: "bg-[#1e3a8a]/80", text: "text-[#93c5fd]", border: "border-[#3b82f6]/50" });
+    list.push({ label: t("เพิ่มความเร็ว"), bg: "bg-[#1e3a8a]/80", text: "text-[#93c5fd]", border: "border-[#3b82f6]/50" });
   }
   if (stype.includes("control") || stype.includes("stun") || stype.includes("restrict") || desc.includes("ควบคุม") || desc.includes("สตั๊น") || desc.includes("ดึง")) {
-    list.push({ label: "ควบคุม", bg: "bg-[#164e63]/80", text: "text-[#67e8f9]", border: "border-[#06b6d4]/50" });
+    list.push({ label: t("ควบคุม"), bg: "bg-[#164e63]/80", text: "text-[#67e8f9]", border: "border-[#06b6d4]/50" });
   }
   if (stype.includes("heal") || desc.includes("ฟื้นฟู") || desc.includes("รักษา")) {
-    list.push({ label: "ฟื้นฟู", bg: "bg-[#14532d]/80", text: "text-[#86efac]", border: "border-[#22c55e]/50" });
+    list.push({ label: t("ฟื้นฟู"), bg: "bg-[#14532d]/80", text: "text-[#86efac]", border: "border-[#22c55e]/50" });
   }
   if (stype.includes("shield") || desc.includes("โล่") || desc.includes("เกราะป้องกัน")) {
-    list.push({ label: "โล่ป้องกัน", bg: "bg-[#075985]/80", text: "text-[#7dd3fc]", border: "border-[#0ea5e9]/50" });
+    list.push({ label: t("โล่ป้องกัน"), bg: "bg-[#075985]/80", text: "text-[#7dd3fc]", border: "border-[#0ea5e9]/50" });
   }
   if (stype.includes("damage up") || desc.includes("ลดเกราะ") || desc.includes("เพิ่มความเสียหาย")) {
-    list.push({ label: "เพิ่มความเสียหาย", bg: "bg-[#065f46]/80", text: "text-[#6ee7b7]", border: "border-[#10b981]/50" });
+    list.push({ label: t("เพิ่มความเสียหาย"), bg: "bg-[#065f46]/80", text: "text-[#6ee7b7]", border: "border-[#10b981]/50" });
   }
 
   return list.filter((item, index, self) => index === self.findIndex((t) => t.label === item.label));
 }
 
 export function getInGameSkillRows(
+  t: Translate,
   skill: SkillLike,
   profile: ParsedSkillProfile,
   maxLevels: number,
@@ -1278,12 +1282,12 @@ export function getInGameSkillRows(
 
   // Exact hero passive level scaling profiles (e.g. Qi, Veres, Aleister, Max, Murad, Taara, etc.)
   if (heroName) {
-    const exact = getExactHeroPassiveScaling(heroName, skill.slot, skill.name);
+    const exact = getExactHeroPassiveScaling(t, heroName, skill.slot, skill.name);
     if (exact && isPassiveSlot) {
       return exact.rows.map((r) => ({ ...r, values: [...r.values] }));
     }
   } else if (skill.name === "Protection Aura" || (isPassiveSlot && skill.desc_th?.includes("Aura"))) {
-    const exact = getExactHeroPassiveScaling("Qi", skill.slot, skill.name);
+    const exact = getExactHeroPassiveScaling(t, "Qi", skill.slot, skill.name);
     if (exact && isPassiveSlot) {
       return exact.rows.map((r) => ({ ...r, values: [...r.values] }));
     }
@@ -1293,21 +1297,21 @@ export function getInGameSkillRows(
   if (profile.baseValueType === "shield" && bd.length > 0) {
     rows.push({
       code: "Shield",
-      label: "โล่ป้องกัน (Shield)",
+      label: t("โล่ป้องกัน (Shield)"),
       values: bd.map((v) => v.toLocaleString()),
       colorClass: "text-sky-300 font-bold",
     });
   } else if (profile.baseValueType === "heal" && bd.length > 0) {
     rows.push({
       code: "Heal",
-      label: "ฟื้นฟูเลือด (Heal)",
+      label: t("ฟื้นฟูเลือด (Heal)"),
       values: bd.map((v) => v.toLocaleString()),
       colorClass: "text-green-300 font-bold",
     });
   } else if (bd.length > 0 && bd.some((v) => v > 0)) {
     rows.push({
       code: "DMG",
-      label: "ดาเมจพื้นฐาน (Base DMG)",
+      label: t("ดาเมจพื้นฐาน (Base DMG)"),
       values: bd.map((v) => v.toLocaleString()),
       colorClass: "text-ink font-bold",
     });
@@ -1318,7 +1322,7 @@ export function getInGameSkillRows(
   if (drProg) {
     rows.push({
       code: "DEF Up",
-      label: "ลดความเสียหาย (DEF Up)",
+      label: t("ลดความเสียหาย (DEF Up)"),
       values: [...drProg.values],
       colorClass: "text-emerald-300 font-bold",
     });
@@ -1331,7 +1335,7 @@ export function getInGameSkillRows(
   if (defDownProg) {
     rows.push({
       code: "DEF Down",
-      label: "ลดเกราะศัตรู (DEF Down)",
+      label: t("ลดเกราะศัตรู (DEF Down)"),
       values: [...defDownProg.values],
       colorClass: "text-amber-300 font-bold",
     });
@@ -1353,7 +1357,7 @@ export function getInGameSkillRows(
   if (slowDurProg) {
     rows.push({
       code: isSlowContext ? "SLOW" : "Duration",
-      label: isSlowContext ? "ระยะเวลาสโลว์ (SLOW)" : "ระยะเวลา (Duration)",
+      label: isSlowContext ? t("ระยะเวลาสโลว์ (SLOW)") : t("ระยะเวลา (Duration)"),
       values: [...slowDurProg.values],
       colorClass: isSlowContext ? "text-indigo-300 font-bold" : "text-sky-300 font-mono",
     });
@@ -1364,7 +1368,7 @@ export function getInGameSkillRows(
   if (spdDownProg) {
     rows.push({
       code: "SPD Down",
-      label: "สโลว์ความเร็ว (SPD Down)",
+      label: t("สโลว์ความเร็ว (SPD Down)"),
       values: [...spdDownProg.values],
       colorClass: "text-indigo-300 font-bold",
     });
@@ -1375,7 +1379,7 @@ export function getInGameSkillRows(
   if (spdUpProg) {
     rows.push({
       code: "SPD Up",
-      label: "เพิ่มความเร็ว (SPD Up)",
+      label: t("เพิ่มความเร็ว (SPD Up)"),
       values: [...spdUpProg.values],
       colorClass: "text-cyan-300 font-bold",
     });
@@ -1386,7 +1390,7 @@ export function getInGameSkillRows(
   if (atkSpdProg) {
     rows.push({
       code: "ATK SPD",
-      label: "เพิ่มความเร็วโจมตี (ATK SPD)",
+      label: t("เพิ่มความเร็วโจมตี (ATK SPD)"),
       values: [...atkSpdProg.values],
       colorClass: "text-amber-300 font-bold",
     });
@@ -1397,7 +1401,7 @@ export function getInGameSkillRows(
   if (shieldProg && !rows.some((r) => r.code === "Shield")) {
     rows.push({
       code: "Shield",
-      label: "โล่ป้องกัน (Shield)",
+      label: t("โล่ป้องกัน (Shield)"),
       values: [...shieldProg.values],
       colorClass: "text-sky-300 font-bold",
     });
@@ -1408,7 +1412,7 @@ export function getInGameSkillRows(
   if (healProg && !rows.some((r) => r.code === "Heal")) {
     rows.push({
       code: "Heal",
-      label: "ฟื้นฟูเลือด (Heal)",
+      label: t("ฟื้นฟูเลือด (Heal)"),
       values: [...healProg.values],
       colorClass: "text-green-300 font-bold",
     });
@@ -1418,7 +1422,7 @@ export function getInGameSkillRows(
   if (cdArr.length > 0) {
     rows.push({
       code: "CD",
-      label: "คูลดาวน์ (CD)",
+      label: t("คูลดาวน์ (CD)"),
       values: cdArr.map((v) => (Number.isInteger(v) ? v.toString() : v.toFixed(1))),
       colorClass: "text-muted font-mono",
     });
@@ -1428,7 +1432,7 @@ export function getInGameSkillRows(
   if (manaArr.length > 0 && Math.max(...manaArr) > 0 && (new Set(manaArr).size > 1 || rows.length <= 2)) {
     rows.push({
       code: "MANA",
-      label: "การใช้มานา (MANA)",
+      label: t("การใช้มานา (MANA)"),
       values: manaArr.map((v) => v.toString()),
       colorClass: "text-blue-300 font-mono",
     });

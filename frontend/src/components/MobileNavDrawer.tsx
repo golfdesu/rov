@@ -1,3 +1,6 @@
+import { StableButtonLabel } from "./StableButtonLabel";
+import { useLanguage } from "../i18n/language";
+import { LanguageSwitch } from "../i18n/LanguageProvider";
 import { BarChart3, Coffee, LogIn, LogOut, MessageSquare, User, X } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { AuthUser, PricingSurveyChoice } from "../types/auth";
@@ -43,6 +46,7 @@ export function MobileNavDrawer<T extends string>({
   onLogout,
   onClose,
 }: MobileNavDrawerProps<T>) {
+  const { t } = useLanguage();
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
@@ -136,7 +140,7 @@ export function MobileNavDrawer<T extends string>({
     };
   }, [requestClose]);
 
-  const surveyStatusText = surveyAnswered
+  const surveyStatusMessage = surveyAnswered
     ? surveyChoice === "willing"
       ? "ตอบแล้ว: พร้อมจ่าย"
       : surveyChoice === "not_willing"
@@ -173,7 +177,7 @@ export function MobileNavDrawer<T extends string>({
           <button
             type="button"
             onClick={() => requestClose()}
-            aria-label="ปิดเมนู"
+            aria-label={t("ปิดเมนู")}
             className="inline-flex h-8 w-8 items-center justify-center rounded text-dim transition-colors hover:bg-panel-2 hover:text-ink"
           >
             <X size={18} />
@@ -181,6 +185,7 @@ export function MobileNavDrawer<T extends string>({
         </div>
 
         <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
+          <LanguageSwitch />
           {/* Account Section */}
           <div className="border border-line bg-bg/60 p-3">
             {authUser ? (
@@ -198,19 +203,19 @@ export function MobileNavDrawer<T extends string>({
                   className="inline-flex h-9 w-full items-center justify-center gap-1.5 border border-line-strong bg-panel-2 px-3 font-display text-xs font-semibold text-muted transition-colors hover:border-red/60 hover:text-red"
                 >
                   <LogOut className="h-3.5 w-3.5 shrink-0" />
-                  <span>ออกจากระบบ</span>
+                  <span><StableButtonLabel message="ออกจากระบบ" /></span>
                 </button>
               </div>
             ) : (
               <div className="flex flex-col gap-2">
-                <span className="font-mono text-[11px] text-muted">กำลังใช้งานในโหมด Guest (บันทึกในเครื่องนี้)</span>
+                <span className="font-mono text-[11px] text-muted">{t("กำลังใช้งานในโหมด Guest (บันทึกในเครื่องนี้)")}</span>
                 <button
                   type="button"
                   onClick={() => requestClose(onOpenAuth)}
                   className="inline-flex h-9 w-full items-center justify-center gap-1.5 border border-gold/60 bg-gold/10 px-3 font-display text-xs font-bold text-gold transition-colors hover:bg-gold hover:text-bg"
                 >
                   <LogIn className="h-3.5 w-3.5 shrink-0" />
-                  <span>เข้าสู่ระบบ / สมัครสมาชิก</span>
+                  <span><StableButtonLabel message="เข้าสู่ระบบ / สมัครสมาชิก" /></span>
                 </button>
               </div>
             )}
@@ -218,7 +223,7 @@ export function MobileNavDrawer<T extends string>({
 
           {/* Mode Navigation */}
           <div className="flex flex-col gap-1.5">
-            <span className="font-mono text-[10px] font-semibold tracking-wider text-dim uppercase">โหมดใช้งาน</span>
+            <span className="font-mono text-[10px] font-semibold tracking-wider text-dim uppercase">{t("โหมดใช้งาน")}</span>
             {tabs.map((t) => {
               const active = activeTab === t.key;
               return (
@@ -246,7 +251,7 @@ export function MobileNavDrawer<T extends string>({
           {/* Actions */}
           <div className="flex flex-col gap-2">
             <span className="font-mono text-[10px] font-semibold tracking-wider text-dim uppercase">
-              แบบสอบถาม &amp; สนับสนุน
+              {t("แบบสอบถาม & สนับสนุน")}
             </span>
             <button
               type="button"
@@ -255,12 +260,15 @@ export function MobileNavDrawer<T extends string>({
             >
               <span className="flex items-center gap-2">
                 <MessageSquare className="h-4 w-4 shrink-0 text-gold" />
-                <span>แบบสอบถาม / Feedback</span>
+                <span><StableButtonLabel message="แบบสอบถาม / Feedback" /></span>
               </span>
               <span
                 className={`font-mono text-[10px] ${surveyAnswered ? "text-good" : "text-gold"}`}
               >
-                {surveyStatusText}
+                <StableButtonLabel
+                  message={surveyStatusMessage}
+                  alternatives={["ตอบแล้ว: พร้อมจ่าย", "ตอบแล้ว: ไม่พร้อม", "ตอบแล้ว", "ยังไม่ได้ตอบ"]}
+                />
               </span>
             </button>
 
@@ -280,14 +288,14 @@ export function MobileNavDrawer<T extends string>({
                 className="flex h-10 w-full items-center gap-2 border border-gold/60 bg-gold/10 px-3 font-display text-xs font-bold text-gold transition-colors hover:bg-gold hover:text-bg"
               >
                 <BarChart3 className="h-4 w-4 shrink-0" />
-                <span>สถิติระบบ (Owner Stats)</span>
+                <span><StableButtonLabel message="สถิติระบบ (Owner Stats)" /></span>
               </button>
             )}
           </div>
         </div>
 
         <div className="shrink-0 border-t border-line bg-gold/10 px-4 py-2.5 text-center font-mono text-[11px] font-bold text-gold">
-          ให้บริการฟรีถึง 30/11/2026
+          {t("ให้บริการฟรีถึง 30/11/2026")}
         </div>
       </div>
     </div>

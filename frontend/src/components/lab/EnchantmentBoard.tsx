@@ -1,3 +1,5 @@
+import { StableButtonLabel } from "../StableButtonLabel";
+import { useLanguage } from "../../i18n/language";
 import { Check, Lock, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { CatalogEnchantment, CombatCatalog } from "../../types/combat";
@@ -26,6 +28,7 @@ export function EnchantmentBoard({
   secondaryEnchantments,
   onChange,
 }: EnchantmentBoardProps) {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<"primary" | "secondary">("primary");
   const [hoveredEnch, setHoveredEnch] = useState<CatalogEnchantment | null>(null);
 
@@ -209,15 +212,15 @@ export function EnchantmentBoard({
           <div className="flex items-center gap-2">
             <Sparkles size={14} className="text-gold" />
             <span className="font-display text-xs font-bold tracking-wider text-ink">
-              ผังพลังแฝง 5 ช่อง (In-Game Sockets)
+              {t("ผังพลังแฝง 5 ช่อง (In-Game Sockets)")}
             </span>
           </div>
           <button
             type="button"
             onClick={handleClearAll}
-            className="text-[10px] text-dim transition-colors hover:text-red"
+            className="min-h-6 shrink-0 whitespace-nowrap text-[10px] text-dim transition-colors hover:text-red"
           >
-            ล้างทั้งหมด
+            <StableButtonLabel message="ล้างทั้งหมด" />
           </button>
         </div>
 
@@ -239,9 +242,9 @@ export function EnchantmentBoard({
               }}
               className="mb-1.5 flex w-full items-center justify-between text-left"
             >
-              <span className="font-display text-[11px] font-bold text-gold">สายหลัก (Primary)</span>
+              <span className="font-display text-[11px] font-bold text-gold"><StableButtonLabel message="สายหลัก (Primary)" /></span>
               <span className="text-[10px] font-medium text-muted">
-                {primaryFaction ? FACTION_INFO[primaryFaction]?.nameTh ?? primaryFaction : "⚠️ ยังไม่เลือกฝ่าย"}
+                <StableButtonLabel message={primaryFaction ? FACTION_INFO[primaryFaction]?.nameTh ?? primaryFaction : "⚠️ ยังไม่เลือกฝ่าย"} />
               </span>
             </button>
 
@@ -302,15 +305,11 @@ export function EnchantmentBoard({
               className="mb-1.5 flex w-full items-center justify-between text-left disabled:cursor-not-allowed"
             >
               <div className="flex items-center gap-1.5">
-                <span className="font-display text-[11px] font-bold text-blue">สายรอง (Secondary)</span>
+                <span className="font-display text-[11px] font-bold text-blue"><StableButtonLabel message="สายรอง (Secondary)" /></span>
                 {!primaryFaction && <Lock size={11} className="text-muted" />}
               </div>
               <span className="text-[10px] font-medium text-muted">
-                {!primaryFaction
-                  ? "🔒 ต้องเลือกสายหลักก่อน"
-                  : secondaryEnchantments.length > 0
-                    ? `${secondaryEnchantments.length} / 2 ชิ้น`
-                    : "ว่าง (แตะเพื่อเลือก)"}
+                <StableButtonLabel message={!primaryFaction ? "🔒 ต้องเลือกสายหลักก่อน" : secondaryEnchantments.length > 0 ? ["{0} / 2 ชิ้น", secondaryEnchantments.length] : "ว่าง (แตะเพื่อเลือก)"} alternatives={["🔒 ต้องเลือกสายหลักก่อน", ["{0} / 2 ชิ้น", secondaryEnchantments.length], "ว่าง (แตะเพื่อเลือก)"]} />
               </span>
             </button>
 
@@ -341,9 +340,9 @@ export function EnchantmentBoard({
         /* STEP 1: Select Primary Faction First */
         <div className="flex flex-col gap-3 rounded-lg border border-gold/40 bg-gold/5 p-4">
           <div>
-            <h4 className="font-display text-xs font-bold text-gold">ขั้นตอนที่ 1: เลือกฝ่ายพลังแฝงหลัก (Primary Faction)</h4>
+            <h4 className="font-display text-xs font-bold text-gold">{t("ขั้นตอนที่ 1: เลือกฝ่ายพลังแฝงหลัก (Primary Faction)")}</h4>
             <p className="mt-0.5 text-[11px] text-muted">
-              กรุณาเลือกฝ่ายหลักของฮีโร่ก่อน เพื่อเปิดใช้งานผังพลังแฝงหลัก Tier I, II, III และปลดล็อคสายรอง
+              {t("กรุณาเลือกฝ่ายหลักของฮีโร่ก่อน เพื่อเปิดใช้งานผังพลังแฝงหลัก Tier I, II, III และปลดล็อคสายรอง")}
             </p>
           </div>
 
@@ -360,9 +359,9 @@ export function EnchantmentBoard({
                   } bg-panel hover:scale-[1.02] hover:shadow-lg hover:shadow-gold/10`}
                 >
                   <span className={`text-sm font-bold ${info?.color || "text-ink"}`}>{f}</span>
-                  <span className="mt-1 text-xs text-muted font-medium">{info?.nameTh || ""}</span>
+                  <span className="mt-1 text-xs text-muted font-medium"><StableButtonLabel message={info?.nameTh ?? ""} /></span>
                   <span className="mt-2 text-[10px] text-gold underline underline-offset-2 opacity-80 group-hover:opacity-100">
-                    เลือกฝ่ายนี้ →
+                    <StableButtonLabel message="เลือกฝ่ายนี้ →" />
                   </span>
                 </button>
               );
@@ -374,9 +373,9 @@ export function EnchantmentBoard({
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between rounded-md border border-line bg-panel-2 px-3 py-2">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted">ฝ่ายหลัก:</span>
+              <span className="text-xs text-muted">{t("ฝ่ายหลัก:")}</span>
               <span className={`text-xs font-bold ${FACTION_INFO[primaryFaction]?.color || "text-gold"}`}>
-                {primaryFaction} ({FACTION_INFO[primaryFaction]?.nameTh || ""})
+                {primaryFaction} ({t(FACTION_INFO[primaryFaction]?.nameTh ?? "")})
               </span>
             </div>
             <button
@@ -384,7 +383,7 @@ export function EnchantmentBoard({
               onClick={() => handleSelectPrimaryFaction(null)}
               className="text-[11px] text-gold underline underline-offset-2 hover:text-ink"
             >
-              เปลี่ยนฝ่ายหลัก
+              <StableButtonLabel message="เปลี่ยนฝ่ายหลัก" />
             </button>
           </div>
 
@@ -413,14 +412,14 @@ export function EnchantmentBoard({
                   <div className="flex-1">
                     <div className="mb-1 flex items-center justify-between text-[11px]">
                       <span className="font-mono text-[10px] text-dim">
-                        ขั้น {tier} {tier === 3 ? "(พลังแฝงแกนหลัก Core)" : ""}
+                        {t("ขั้น")} {tier} {tier === 3 ? t("(พลังแฝงแกนหลัก Core)") : ""}
                       </span>
                       {activeEnch && (
                         <span className="font-semibold text-ink">
                           {activeEnch.name}
                           {!activeEnch.modeled && (
                             <span className="ml-1 text-[9px] font-normal text-dim">
-                              (ยังไม่คิดตัวเลข)
+                              {t("(ยังไม่คิดตัวเลข)")}
                             </span>
                           )}
                         </span>
@@ -498,7 +497,7 @@ export function EnchantmentBoard({
               onClick={() => setActiveTab("secondary")}
               className="flex items-center gap-1.5 rounded border border-blue/40 bg-blue/10 px-3 py-1.5 text-xs font-bold text-blue hover:bg-blue/20"
             >
-              <span>ไปตั้งค่าสายรอง (Secondary)</span>
+              <span><StableButtonLabel message="ไปตั้งค่าสายรอง (Secondary)" /></span>
               <span>→</span>
             </button>
           </div>
@@ -508,16 +507,16 @@ export function EnchantmentBoard({
         <div className="flex flex-col gap-3">
           <div className="rounded-lg border border-blue/40 bg-blue/10 p-2.5 text-xs">
             <div className="flex items-center gap-1.5 font-bold text-blue">
-              <span>💡 กติกาสายรอง (Secondary Enchants):</span>
+              <span>{t("💡 กติกาสายรอง (Secondary Enchants):")}</span>
             </div>
             <p className="mt-1 text-[11px] leading-relaxed text-muted">
-              สามารถเลือก <span className="font-semibold text-ink">ขั้น 1 + ขั้น 2 จากสายเดียวกัน</span> หรือ{" "}
-              <span className="font-semibold text-ink">เลือกขั้น 1 จำนวน 2 ชิ้นจากคนละสายได้</span> (แตะสลับแท็บฝ่ายด้านล่างเพื่อเลือกขั้น 1 คนละสี)
+              {t("สามารถเลือก")} <span className="font-semibold text-ink">{t("ขั้น 1 + ขั้น 2 จากสายเดียวกัน")}</span> {t("หรือ")}{" "}
+              <span className="font-semibold text-ink">{t("เลือกขั้น 1 จำนวน 2 ชิ้นจากคนละสายได้")}</span> {t("(แตะสลับแท็บฝ่ายด้านล่างเพื่อเลือกขั้น 1 คนละสี)")}
             </p>
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <span className="text-[11px] font-medium text-muted">เลือกดูฝ่ายสำหรับสายรอง:</span>
+            <span className="text-[11px] font-medium text-muted">{t("เลือกดูฝ่ายสำหรับสายรอง:")}</span>
             <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-3">
               {secondaryAvailableFactions.map((f) => {
                 const isSelected = effectiveSecFaction === f;
@@ -539,11 +538,11 @@ export function EnchantmentBoard({
                   >
                     <div>
                       <span className={`text-xs font-semibold ${info?.color || "text-ink"}`}>{f}</span>
-                      <span className="block text-[9px] text-dim">{info?.nameTh}</span>
+                      <span className="block text-[9px] text-dim"><StableButtonLabel message={info?.nameTh ?? ""} /></span>
                     </div>
                     {pickedCount > 0 && (
                       <span className="rounded-full bg-gold px-1.5 py-0.5 text-[9px] font-bold text-bg">
-                        เลือกแล้ว {pickedCount}
+                        {t("เลือกแล้ว")} {pickedCount}
                       </span>
                     )}
                   </button>
@@ -578,14 +577,14 @@ export function EnchantmentBoard({
                     <div className="flex-1">
                       <div className="mb-1 flex items-center justify-between text-[11px]">
                         <span className="font-mono text-[10px] text-dim">
-                          ขั้น {tier} ({effectiveSecFaction})
+                          {t("ขั้น")} {tier} ({effectiveSecFaction})
                         </span>
                         {activeEnch && (
                           <span className="font-semibold text-ink">
                             {activeEnch.name}
                             {!activeEnch.modeled && (
                               <span className="ml-1 text-[9px] font-normal text-dim">
-                                (ยังไม่คิดตัวเลข)
+                                {t("(ยังไม่คิดตัวเลข)")}
                               </span>
                             )}
                           </span>
@@ -657,7 +656,7 @@ export function EnchantmentBoard({
               onClick={() => setActiveTab("primary")}
               className="text-xs text-muted hover:text-ink underline underline-offset-2"
             >
-              ← กลับไปดูสายหลัก (Primary)
+              <StableButtonLabel message="← กลับไปดูสายหลัก (Primary)" />
             </button>
           </div>
         </div>
@@ -671,7 +670,7 @@ export function EnchantmentBoard({
               {hoveredEnch.name} {hoveredEnch.alias && `(${hoveredEnch.alias})`}
             </span>
             <span className="rounded bg-panel-2 px-1.5 py-0.5 font-mono text-[10px] text-muted">
-              {hoveredEnch.faction} · ขั้น {hoveredEnch.tier} · {hoveredEnch.category || "พลังแฝง"}
+              {hoveredEnch.faction} {t("· ขั้น")} {hoveredEnch.tier} · {hoveredEnch.category || t("พลังแฝง")}
             </span>
           </div>
           <p className="text-[11px] leading-relaxed text-muted">{hoveredEnch.description}</p>

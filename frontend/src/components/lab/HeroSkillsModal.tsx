@@ -1,3 +1,5 @@
+import { StableButtonLabel } from "../StableButtonLabel";
+import { type Message, type Translate, translateMessage, useLanguage } from "../../i18n/language";
 import {
   ChevronLeft,
   ChevronRight,
@@ -51,7 +53,8 @@ interface HeroScreenshotsResponse {
 
 interface ScreenshotItem {
   url: string;
-  label: string;
+  label: Message;
+  suffixes: string[];
   type: "skill" | "status";
   slotKey?: string;
 }
@@ -104,11 +107,11 @@ const SLOT_ORDER = [
   "Skill 4 (Berserker Mode)",
 ];
 
-function slotLabelTh(slot: string): string {
-  if (slot === "Passive") return "สกิลติดตัว";
-  if (slot === "Passive 2" || slot === "Passive (Berserker Mode)") return "สกิลติดตัว 2";
-  if (slot === "Ultimate" || slot === "Ultimate (Berserker Mode)") return "อัลติเมท";
-  return slot.replace(" (Berserker Mode)", "").replace("Skill ", "สกิล ");
+function slotLabel(slot: string, t: Translate): string {
+  if (slot === "Passive") return t("สกิลติดตัว");
+  if (slot === "Passive 2" || slot === "Passive (Berserker Mode)") return t("สกิลติดตัว 2");
+  if (slot === "Ultimate" || slot === "Ultimate (Berserker Mode)") return t("อัลติเมท");
+  return slot.replace(" (Berserker Mode)", "").replace("Skill ", t("สกิล "));
 }
 
 const NON_DAMAGE_OWN_HP_SKILLS = new Set([
@@ -122,7 +125,7 @@ const NON_DAMAGE_OWN_HP_SKILLS = new Set([
   "Volkath|Passive",
 ]);
 
-function formatScaling(scaling?: Record<string, ScalingValue>, skillLevel = 1): string[] {
+function formatScaling(t: Translate, scaling?: Record<string, ScalingValue>, skillLevel = 1): string[] {
   if (!scaling) return [];
   const v = (key: string) => resolveScalingValue(scaling[key], skillLevel);
   const list: string[] = [];
@@ -131,29 +134,29 @@ function formatScaling(scaling?: Record<string, ScalingValue>, skillLevel = 1): 
   if (v("as_to_ad")) list.push(`+${v("as_to_ad")} AD/1% Bonus AS`);
   if (v("ap_pct")) list.push(`+${v("ap_pct")}% AP`);
   if (v("bonus_ap_pct")) list.push(`+${v("bonus_ap_pct")}% Bonus AP`);
-  if (v("bonus_dmg_hp_pct")) list.push(`+${v("bonus_dmg_hp_pct")}% Max HP ตัวเอง`);
-  else if (v("own_hp_pct")) list.push(`+${v("own_hp_pct")}% HP ตัวเอง`);
+  if (v("bonus_dmg_hp_pct")) list.push(t("+{0}% Max HP ตัวเอง", v("bonus_dmg_hp_pct")));
+  else if (v("own_hp_pct")) list.push(t("+{0}% HP ตัวเอง", v("own_hp_pct")));
   else if (v("hp_pct")) list.push(`+${v("hp_pct")}% HP`);
   else if (v("max_hp_pct")) list.push(`+${v("max_hp_pct")}% Max HP`);
   if (v("bonus_hp_pct") || v("bonus_max_hp_pct")) {
     list.push(`+${v("bonus_hp_pct") + v("bonus_max_hp_pct")}% Bonus HP`);
   }
-  if (v("burn_max_hp_pct")) list.push(`เผา +${v("burn_max_hp_pct")}% Max HP/วิ`);
+  if (v("burn_max_hp_pct")) list.push(t("เผา +{0}% Max HP/วิ", v("burn_max_hp_pct")));
   if (v("bonus_armor_pct")) list.push(`+${v("bonus_armor_pct")}% Bonus Armor`);
-  if (v("armor_pct")) list.push(`+${v("armor_pct")}% เกราะ`);
-  if (v("magic_defense_pct")) list.push(`+${v("magic_defense_pct")}% ต้านเวท`);
+  if (v("armor_pct")) list.push(t("+{0}% เกราะ", v("armor_pct")));
+  if (v("magic_defense_pct")) list.push(t("+{0}% ต้านเวท", v("magic_defense_pct")));
   const tgtHp = v("target_hp_pct") + v("target_max_hp_pct") + v("target_current_hp_pct");
-  if (tgtHp) list.push(`+${tgtHp}% HP ศัตรู`);
-  if (v("target_hp_ap_pct")) list.push(`+${v("target_hp_ap_pct")}% HP ศัตรู/100 AP`);
+  if (tgtHp) list.push(t("+{0}% HP ศัตรู", tgtHp));
+  if (v("target_hp_ap_pct")) list.push(t("+{0}% HP ศัตรู/100 AP", v("target_hp_ap_pct")));
   const lostHp = v("target_lost_hp_pct") + v("lost_hp_pct");
-  if (lostHp) list.push(`+${lostHp}% HP ที่หายไปศัตรู`);
-  if (v("lost_hp_ap_pct")) list.push(`+${v("lost_hp_ap_pct")}% HP ที่หายไปศัตรู/100 AP`);
-  if (v("lost_hp_bonus_ad_pct")) list.push(`+${v("lost_hp_bonus_ad_pct")}% HP ที่หายไปศัตรู/100 Bonus AD`);
-  if (v("target_hp_per_100_ad_pct")) list.push(`+${v("target_hp_per_100_ad_pct")}% HP ศัตรู/100 AD`);
+  if (lostHp) list.push(t("+{0}% HP ที่หายไปศัตรู", lostHp));
+  if (v("lost_hp_ap_pct")) list.push(t("+{0}% HP ที่หายไปศัตรู/100 AP", v("lost_hp_ap_pct")));
+  if (v("lost_hp_bonus_ad_pct")) list.push(t("+{0}% HP ที่หายไปศัตรู/100 Bonus AD", v("lost_hp_bonus_ad_pct")));
+  if (v("target_hp_per_100_ad_pct")) list.push(t("+{0}% HP ศัตรู/100 AD", v("target_hp_per_100_ad_pct")));
   if (v("target_hp_per_100_bonus_ad_pct")) {
-    list.push(`+${v("target_hp_per_100_bonus_ad_pct")}% HP ศัตรู/100 Bonus AD`);
+    list.push(t("+{0}% HP ศัตรู/100 Bonus AD", v("target_hp_per_100_bonus_ad_pct")));
   }
-  if (v("target_hp_per_100_ap_pct")) list.push(`+${v("target_hp_per_100_ap_pct")}% HP ศัตรู/100 AP`);
+  if (v("target_hp_per_100_ap_pct")) list.push(t("+{0}% HP ศัตรู/100 AP", v("target_hp_per_100_ap_pct")));
   if (v("level_scaling")) list.push(`+${v("level_scaling")}/Lv`);
   return list;
 }
@@ -170,6 +173,7 @@ export function HeroSkillsModal({
   enemyName,
   onClose,
 }: HeroSkillsModalProps) {
+  const { language, t } = useLanguage();
   const dName = displayName(hero);
   const [prevHero, setPrevHero] = useState<string>(hero);
   const [selectedSlot, setSelectedSlot] = useState<string>(skills[0]?.slot ?? "Passive");
@@ -223,8 +227,8 @@ export function HeroSkillsModal({
 
   const skillProfile = useMemo(() => {
     if (!activeSkill) return null;
-    return parseSkillEffects(activeSkill, hero, buildStats?.level, activeRow?.skill_level);
-  }, [activeSkill, hero, buildStats?.level, activeRow?.skill_level]);
+    return parseSkillEffects(t, activeSkill, hero, buildStats?.level, activeRow?.skill_level);
+  }, [activeSkill, hero, buildStats?.level, activeRow?.skill_level, t]);
 
   // Unified list of screenshot items
   const allScreenshots = useMemo<ScreenshotItem[]>(() => {
@@ -233,7 +237,8 @@ export function HeroSkillsModal({
     const skillImgs = screenshotsData.skill_screenshots || [];
     skillImgs.forEach((url, i) => {
       const fileName = (url.split("/").pop() || url).toLowerCase();
-      let label = `สกิล ${i}`;
+      let label: Message = ["สกิล {0}", i];
+      const suffixes: string[] = [];
       let slotKey = `Skill ${i}`;
 
       if (fileName.startsWith("passive") || fileName.includes("_passive")) {
@@ -268,55 +273,54 @@ export function HeroSkillsModal({
       }
 
       if (fileName.includes("_awakened")) {
-        label += " (ตื่นรู้)";
+        suffixes.push(" (ตื่นรู้)");
         slotKey = `${slotKey} (Berserker Mode)`;
       } else if (fileName.includes("_normal")) {
-        label += " (ปกติ)";
+        suffixes.push(" (ปกติ)");
       } else if (fileName.includes("_form2")) {
-        label += " (รวมดาบ)";
+        suffixes.push(" (รวมดาบ)");
         if (slotKey === "Passive") slotKey = "Passive 2";
         else if (slotKey === "Skill 1") slotKey = "Skill 3";
         else if (slotKey === "Skill 2") slotKey = "Skill 4";
         else if (slotKey === "Ultimate") slotKey = "Skill 5";
       } else if (fileName.includes("_form1")) {
-        label += " (ดาบคู่)";
+        suffixes.push(" (ดาบคู่)");
       } else if (fileName.includes("_fox")) {
-        label += " (ร่างจิ้งจอก)";
+        suffixes.push(" (ร่างจิ้งจอก)");
         if (slotKey === "Skill 1") slotKey = "Skill 4";
         else if (slotKey === "Skill 2") slotKey = "Skill 5";
       } else if (fileName.includes("_human")) {
-        label += " (ร่างมนุษย์)";
+        suffixes.push(" (ร่างมนุษย์)");
         if (slotKey === "Ultimate") slotKey = "Skill 3";
       } else if (fileName.includes("_cannon")) {
-        label += " (ปืนใหญ่)";
+        suffixes.push(" (ปืนใหญ่)");
       } else if (fileName.includes("_rapid")) {
-        label += " (ปืนกล)";
+        suffixes.push(" (ปืนกล)");
       }
 
       if (fileName.includes("_v2")) {
-        label += " (หน้า 2)";
+        suffixes.push(" (หน้า 2)");
       }
 
-      list.push({ url, label, type: "skill", slotKey });
+      list.push({ url, label, suffixes, type: "skill", slotKey });
     });
 
     const statusImgs = screenshotsData.status_screenshots || [];
     statusImgs.forEach((url) => {
       const fileName = (url.split("/").pop() || url).toLowerCase();
       const isLv15 = fileName.includes("lv15");
-      let statusLabel = isLv15 ? "สเตตัส Lv 15" : "สเตตัส Lv 1";
-      if (fileName.includes("_alt")) {
-        statusLabel += " (ในเกม)";
-      }
+      const label = isLv15 ? "สเตตัส Lv 15" : "สเตตัส Lv 1";
       list.push({
         url,
-        label: statusLabel,
+        label,
+        suffixes: fileName.includes("_alt") ? [" (ในเกม)"] : [],
         type: "status",
       });
     });
 
     return list;
   }, [screenshotsData]);
+  const selectedScreenshot = allScreenshots[selectedScreenshotIdx];
 
   const findScreenshotIdxForSlot = (slot: string) =>
     allScreenshots.findIndex(
@@ -407,8 +411,8 @@ export function HeroSkillsModal({
   // Authentic in-game table rows
   const inGameRows = useMemo(() => {
     if (!activeSkill || !skillProfile) return [];
-    return getInGameSkillRows(activeSkill, skillProfile, maxLevels, hero);
-  }, [activeSkill, skillProfile, maxLevels, hero]);
+    return getInGameSkillRows(t, activeSkill, skillProfile, maxLevels, hero);
+  }, [activeSkill, skillProfile, maxLevels, hero, t]);
 
   const isHeroLevelScaling = isPassive && inGameRows.length > 0 && inGameRows[0].values.length === 6;
   const milestoneLabels = ["LV 1", "LV 4", "LV 7", "LV 10", "LV 13", "LV 15"];
@@ -421,18 +425,18 @@ export function HeroSkillsModal({
 
   const tagCapsules = useMemo(() => {
     if (!activeSkill) return [];
-    return getInGameTagCapsules(activeSkill);
-  }, [activeSkill]);
+    return getInGameTagCapsules(t, activeSkill);
+  }, [activeSkill, t]);
 
   const circledNumber = useMemo(() => {
     if (!activeSkill) return "①";
     return getSlotCircledNumber(activeSkill.slot);
   }, [activeSkill]);
 
-  const thaiTokens = useMemo(() => {
-    const text = activeSkill?.desc_th || activeSkill?.description || "";
+  const descriptionTokens = useMemo(() => {
+    const text = (language === "en" ? activeSkill?.description || activeSkill?.desc_th : activeSkill?.desc_th || activeSkill?.description) || "";
     return tokenizeThaiSkillDescription(text);
-  }, [activeSkill]);
+  }, [activeSkill, language]);
 
   return (
     <Modal labelledBy={titleId} className="max-h-[94vh] max-w-4xl" onClose={onClose}>
@@ -448,16 +452,16 @@ export function HeroSkillsModal({
               {dName !== hero && <span className="text-xs text-dim">({hero})</span>}
               {heroObj?.role && (
                 <span className="rounded bg-panel px-1.5 py-0.5 font-mono text-[9px] font-semibold text-gold">
-                  {heroObj.role} {heroObj.ranged ? "· ระยะไกล" : "· ระยะใกล้"}
+                  {heroObj.role} {heroObj.ranged ? t("· ระยะไกล") : t("· ระยะใกล้")}
                 </span>
               )}
               {buildStats && (
                 <span className="rounded border border-line/60 bg-bg px-1.5 py-0.5 font-mono text-[9px] text-muted">
-                  เลเวล {buildStats.level} · AD {Math.round(buildStats.stats.attack_damage)} · AP {Math.round(buildStats.stats.ability_power)}
+                  {t("เลเวล")} {buildStats.level} · AD {Math.round(buildStats.stats.attack_damage)} · AP {Math.round(buildStats.stats.ability_power)}
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-muted">คำอธิบายสกิลทางการ รูปแบบหน้าต่างในเกม และภาพสกรีนช็อตแคปจริง 130 ฮีโร่</p>
+            <p className="text-[11px] text-muted">{t("คำอธิบายสกิลทางการ รูปแบบหน้าต่างในเกม และภาพสกรีนช็อตแคปจริง 130 ฮีโร่")}</p>
           </div>
         </div>
 
@@ -472,10 +476,10 @@ export function HeroSkillsModal({
                   ? "bg-gold text-bg shadow-sm font-bold"
                   : "text-muted hover:text-ink hover:bg-panel"
               }`}
-              title="รูปแบบหน้าต่างทางการเหมือนในเกม RoV"
+              title={t("รูปแบบหน้าต่างทางการเหมือนในเกม RoV")}
             >
               <LayoutGrid size={13} />
-              <span>หน้าต่างในเกม</span>
+              <span><StableButtonLabel message="หน้าต่างในเกม" /></span>
             </button>
             <button
               type="button"
@@ -491,10 +495,10 @@ export function HeroSkillsModal({
                   ? "bg-gold text-bg shadow-sm font-bold"
                   : "text-muted hover:text-ink hover:bg-panel"
               }`}
-              title="ดูภาพสกรีนช็อตแคปจริงจากในเกม"
+              title={t("ดูภาพสกรีนช็อตแคปจริงจากในเกม")}
             >
               <ImageIcon size={13} />
-              <span>รูปแคปจริง ({allScreenshots.length})</span>
+              <span><StableButtonLabel message="รูปแคปจริง (" />{allScreenshots.length})</span>
             </button>
             <button
               type="button"
@@ -504,10 +508,10 @@ export function HeroSkillsModal({
                   ? "bg-gold text-bg shadow-sm font-bold"
                   : "text-muted hover:text-ink hover:bg-panel"
               }`}
-              title="ตารางคำนวณดาเมจจริงและการเจาะเกราะตามของที่ใส่"
+              title={t("ตารางคำนวณดาเมจจริงและการเจาะเกราะตามของที่ใส่")}
             >
               <Swords size={13} />
-              <span>คำนวณดาเมจจริง</span>
+              <span><StableButtonLabel message="คำนวณดาเมจจริง" /></span>
             </button>
           </div>
 
@@ -515,7 +519,7 @@ export function HeroSkillsModal({
             type="button"
             onClick={onClose}
             className="rounded p-1 text-dim transition-colors hover:bg-panel hover:text-ink"
-            aria-label="ปิด"
+            aria-label={t("ปิด")}
           >
             <X size={18} />
           </button>
@@ -567,10 +571,10 @@ export function HeroSkillsModal({
               <div className="text-left">
                 <div className="flex items-center gap-1">
                   <span className="font-mono text-[10px] font-bold text-gold">{cNum}</span>
-                  <span className="text-[10px] leading-tight text-dim">{slotLabelTh(s.slot)}</span>
+                  <span className="text-[10px] leading-tight text-dim">{slotLabel(s.slot, t)}</span>
                   {badge && (
                     <span className={`rounded border px-1 py-0.5 font-mono text-[8px] font-semibold ${badge.style}`}>
-                      {badge.label}
+                      {t(badge.label)}
                     </span>
                   )}
                 </div>
@@ -605,7 +609,7 @@ export function HeroSkillsModal({
                             : "border-line/60 bg-panel-2 text-muted hover:border-line hover:text-ink"
                         }`}
                       >
-                        {item.label}
+                        <StableButtonLabel message={item.label} suffixes={item.suffixes} />
                       </button>
                     );
                   })}
@@ -617,7 +621,7 @@ export function HeroSkillsModal({
                     disabled={selectedScreenshotIdx <= 0}
                     onClick={() => selectScreenshotAt(selectedScreenshotIdx - 1)}
                     className="rounded border border-line p-1 text-muted hover:bg-panel-2 hover:text-ink disabled:opacity-30"
-                    title="ภาพก่อนหน้า"
+                    title={t("ภาพก่อนหน้า")}
                   >
                     <ChevronLeft size={16} />
                   </button>
@@ -629,7 +633,7 @@ export function HeroSkillsModal({
                     disabled={selectedScreenshotIdx >= allScreenshots.length - 1}
                     onClick={() => selectScreenshotAt(selectedScreenshotIdx + 1)}
                     className="rounded border border-line p-1 text-muted hover:bg-panel-2 hover:text-ink disabled:opacity-30"
-                    title="ภาพถัดไป"
+                    title={t("ภาพถัดไป")}
                   >
                     <ChevronRight size={16} />
                   </button>
@@ -638,10 +642,10 @@ export function HeroSkillsModal({
                     target="_blank"
                     rel="noopener noreferrer"
                     className="ml-2 flex items-center gap-1 rounded border border-line/80 bg-panel-2 px-2 py-1 text-[11px] font-semibold text-gold hover:border-gold hover:text-gold"
-                    title="เปิดรูปขนาดเต็มในแท็บใหม่"
+                    title={t("เปิดรูปขนาดเต็มในแท็บใหม่")}
                   >
                     <ExternalLink size={12} />
-                    <span>รูปขนาดเต็ม</span>
+                    <span>{t("รูปขนาดเต็ม")}</span>
                   </a>
                 </div>
               </div>
@@ -649,34 +653,34 @@ export function HeroSkillsModal({
               {/* Large Image View */}
               <div className="relative flex min-h-[460px] items-center justify-center overflow-hidden rounded-xl border border-line bg-black/80 p-2 shadow-2xl">
                 <img
-                  src={allScreenshots[selectedScreenshotIdx]?.url}
-                  alt={allScreenshots[selectedScreenshotIdx]?.label}
+                  src={selectedScreenshot?.url}
+                  alt={selectedScreenshot && translateMessage(t, selectedScreenshot.label) + selectedScreenshot.suffixes.map((suffix) => t(suffix)).join("")}
                   className="max-h-[66vh] w-auto rounded-lg object-contain shadow-md"
                 />
               </div>
 
               <div className="flex items-center justify-between text-[11px] text-muted px-1">
                 <span className="font-mono text-dim">
-                  ไฟล์: {allScreenshots[selectedScreenshotIdx]?.url.split("/").pop()}
+                  {t("ไฟล์:")} {allScreenshots[selectedScreenshotIdx]?.url.split("/").pop()}
                 </span>
                 <span className="text-dim">
-                  ภาพสกรีนช็อตของจริงในเกมที่บันทึกไว้ในระบบ (โฟลเดอร์ heroes/{screenshotsData?.folder || hero}/)
+                  {t("ภาพสกรีนช็อตของจริงในเกมที่บันทึกไว้ในระบบ (โฟลเดอร์ heroes/")}{screenshotsData?.folder || hero}/)
                 </span>
               </div>
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center p-12 text-center">
               <ImageIcon size={48} className="text-dim mb-3" />
-              <div className="font-display text-sm font-bold text-ink">ยังไม่มีภาพสกรีนช็อตสำหรับ {dName}</div>
+              <div className="font-display text-sm font-bold text-ink">{t("ยังไม่มีภาพสกรีนช็อตสำหรับ")} {dName}</div>
               <p className="text-xs text-muted mt-1 max-w-md">
-                ยังไม่พบไฟล์ภาพในโฟลเดอร์ heroes/{hero}/skill/ สามารถสลับไปดูข้อมูลที่หน้าต่างในเกมได้ทันที
+                {t("ยังไม่พบไฟล์ภาพในโฟลเดอร์ heroes/")}{hero}{t("/skill/ สามารถสลับไปดูข้อมูลที่หน้าต่างในเกมได้ทันที")}
               </p>
               <button
                 type="button"
                 onClick={() => setViewMode("ingame")}
                 className="mt-4 rounded-md border border-gold bg-gold/15 px-3 py-1.5 text-xs font-bold text-gold hover:bg-gold/25"
               >
-                สลับไปดูหน้าต่างในเกม
+                <StableButtonLabel message="สลับไปดูหน้าต่างในเกม" />
               </button>
             </div>
           )}
@@ -705,7 +709,7 @@ export function HeroSkillsModal({
                             getFormBadge(hero, activeSkill.slot)!.style
                           }`}
                         >
-                          {getFormBadge(hero, activeSkill.slot)!.label}
+                          {t(getFormBadge(hero, activeSkill.slot)!.label)}
                         </span>
                       )}
                     </div>
@@ -737,10 +741,10 @@ export function HeroSkillsModal({
                     type="button"
                     onClick={() => jumpToSkillScreenshot(activeSkill.slot)}
                     className="flex items-center gap-1.5 rounded-lg border border-gold/40 bg-gold/10 px-2.5 py-1 text-xs font-semibold text-gold transition-colors hover:border-gold hover:bg-gold/20"
-                    title="เปิดดูภาพแคปจริงของสกิลนี้"
+                    title={t("เปิดดูภาพแคปจริงของสกิลนี้")}
                   >
                     <ImageIcon size={13} />
-                    <span>ดูรูปแคปจริง</span>
+                    <span><StableButtonLabel message="ดูรูปแคปจริง" /></span>
                   </button>
                 )}
               </div>
@@ -750,9 +754,9 @@ export function HeroSkillsModal({
                 {activeSkill.cooldown && activeSkill.cooldown.length > 0 ? (
                   <div className="flex items-center gap-1.5">
                     <Clock size={13} className="text-muted" />
-                    <span>คูลดาวน์:</span>
+                    <span>{t("คูลดาวน์:")}</span>
                     <span className="font-bold text-ink">
-                      {activeSkill.cooldown.join(" / ")} วิ
+                      {activeSkill.cooldown.join(" / ")} {t("วิ")}
                     </span>
                     {heroCdr > 0 && (() => {
                       const curSkillLv = activeRow?.skill_level ?? 1;
@@ -762,8 +766,8 @@ export function HeroSkillsModal({
                       return (
                         <span className="text-[10px] text-gold">
                           {curSkillLv > 0
-                            ? `(เหลือ ${reducedCd}วิ ที่ Lv.${curSkillLv} ด้วย CDR ${heroCdr}%)`
-                            : `(Lv.1: ${reducedCd}วิ ด้วย CDR ${heroCdr}% — ยังไม่อัพสกิล)`}
+                            ? t("(เหลือ {0}วิ ที่ Lv.{1} ด้วย CDR {2}%)", reducedCd, curSkillLv, heroCdr)
+                            : t("(Lv.1: {0}วิ ด้วย CDR {1}% — ยังไม่อัพสกิล)", reducedCd, heroCdr)}
                         </span>
                       );
                     })()}
@@ -771,14 +775,14 @@ export function HeroSkillsModal({
                 ) : (
                   <div className="flex items-center gap-1.5 text-muted">
                     <Clock size={13} />
-                    <span>คูลดาวน์: ไม่มี</span>
+                    <span>{t("คูลดาวน์: ไม่มี")}</span>
                   </div>
                 )}
 
                 {activeSkill.mana_cost && activeSkill.mana_cost.length > 0 && Math.max(...activeSkill.mana_cost) > 0 ? (
                   <div className="flex items-center gap-1.5 text-blue">
                     <Droplet size={13} />
-                    <span>ใช้มานา:</span>
+                    <span>{t("ใช้มานา:")}</span>
                     <span className="font-bold text-blue-200">
                       {activeSkill.mana_cost.join(" / ")}
                     </span>
@@ -786,7 +790,7 @@ export function HeroSkillsModal({
                 ) : (
                   <div className="flex items-center gap-1.5 text-muted">
                     <Droplet size={13} />
-                    <span>ไม่ใช้มานา / พลังงาน</span>
+                    <span>{t("ไม่ใช้มานา / พลังงาน")}</span>
                   </div>
                 )}
               </div>
@@ -795,10 +799,10 @@ export function HeroSkillsModal({
               <div className="rounded-lg border border-line/70 bg-bg/60 p-3.5 text-xs leading-relaxed">
                 <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold text-gold">
                   <Sparkles size={12} />
-                  <span>คำอธิบายสกิล (รายละเอียดทางการในเกม)</span>
+                  <span>{t("คำอธิบายสกิล (รายละเอียดทางการในเกม)")}</span>
                 </div>
                 <div className="whitespace-pre-line text-muted">
-                  {thaiTokens.map((t, idx) => (
+                  {descriptionTokens.map((t, idx) => (
                     <span key={idx} className={t.className}>
                       {t.text}
                     </span>
@@ -814,13 +818,13 @@ export function HeroSkillsModal({
                       <Zap size={14} className="text-gold" />
                       <h4 className="font-display text-xs font-bold tracking-wider text-ink">
                         {isHeroLevelScaling
-                          ? "ตารางค่าสถิติสกิลตามเลเวลฮีโร่ (LV 1, 4, 7, 10, 13, 15)"
-                          : `ตารางค่าสถิติสกิลตามเลเวล (LV 1 - LV ${maxLevels})`}
+                          ? t("ตารางค่าสถิติสกิลตามเลเวลฮีโร่ (LV 1, 4, 7, 10, 13, 15)")
+                          : t("ตารางค่าสถิติสกิลตามเลเวล (LV 1 - LV {0})", maxLevels)}
                       </h4>
                     </div>
                     {buildStats && (
                       <span className="font-mono text-[10px] text-gold">
-                        ★ ไฮไลต์ตามเลเวลฮีโร่ปัจจุบัน (Lv {buildStats.level})
+                        {t("★ ไฮไลต์ตามเลเวลฮีโร่ปัจจุบัน (Lv")} {buildStats.level})
                       </span>
                     )}
                   </div>
@@ -829,7 +833,7 @@ export function HeroSkillsModal({
                     <table className="w-full text-xs font-mono">
                       <thead>
                         <tr className="border-b border-line/60 text-left text-[11px] text-dim">
-                          <th className="py-2 pr-3 font-semibold text-ink">สถิติสกิล</th>
+                          <th className="py-2 pr-3 font-semibold text-ink">{t("สถิติสกิล")}</th>
                           {isHeroLevelScaling
                             ? milestoneLabels.map((lbl, i) => {
                                 const isCur = activeMilestoneIdx === i;
@@ -910,10 +914,10 @@ export function HeroSkillsModal({
                 <div className="rounded-lg border border-line bg-panel/70 p-3">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-gold">
                     <Swords size={13} />
-                    <span>สูตรการคูณพลังโจมตี (Scaling Ratios)</span>
+                    <span>{t("สูตรการคูณพลังโจมตี (Scaling Ratios)")}</span>
                   </div>
                   <div className="mt-2 flex flex-wrap gap-1.5">
-                    {formatScaling(activeSkill.scaling, Math.max(1, activeRow?.skill_level ?? 1)).map((s, idx) => (
+                    {formatScaling(t, activeSkill.scaling, Math.max(1, activeRow?.skill_level ?? 1)).map((s, idx) => (
                       <span
                         key={idx}
                         className="rounded border border-gold/40 bg-gold/10 px-2 py-1 font-mono text-xs font-semibold text-gold"
@@ -953,7 +957,7 @@ export function HeroSkillsModal({
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-[10px] font-bold tracking-wider text-gold">
-                          {slotLabelTh(activeSkill.slot)}
+                          {slotLabel(activeSkill.slot, t)}
                         </span>
                         <span
                           className={`rounded px-1.5 py-0.5 text-[10px] font-semibold border ${
@@ -962,7 +966,7 @@ export function HeroSkillsModal({
                             TYPE_CONFIG[activeSkill.damage_type]?.border
                           }`}
                         >
-                          {TYPE_CONFIG[activeSkill.damage_type]?.labelTh || activeSkill.damage_type}
+                          {t(TYPE_CONFIG[activeSkill.damage_type]?.labelTh || activeSkill.damage_type)}
                         </span>
                       </div>
                       <h3 className="font-display text-base font-bold text-ink mt-0.5">
@@ -975,7 +979,7 @@ export function HeroSkillsModal({
                     {activeSkill.cooldown && activeSkill.cooldown.length > 0 && (
                       <div className="flex items-center gap-1 text-dim">
                         <Clock size={12} className="text-muted" />
-                        <span>{activeSkill.cooldown.join(" / ")} วิ</span>
+                        <span>{activeSkill.cooldown.join(" / ")} {t("วิ")}</span>
                       </div>
                     )}
                     {activeSkill.mana_cost && activeSkill.mana_cost.length > 0 && activeSkill.mana_cost[0] > 0 && (
@@ -1018,12 +1022,12 @@ export function HeroSkillsModal({
                   <div className="flex items-center gap-2">
                     <Swords size={14} className="text-gold" />
                     <h4 className="font-display text-xs font-bold tracking-wider text-ink">
-                      ตารางคำนวณดาเมจและเอฟเฟกต์ตามของสวมใส่ (Lv 1 - {numRows})
+                      {t("ตารางคำนวณดาเมจและเอฟเฟกต์ตามของสวมใส่ (Lv 1 -")} {numRows})
                     </h4>
                   </div>
                   {buildStats && (
                     <span className="font-mono text-[10px] text-dim">
-                      คำนวณตามของและรูนปัจจุบัน (CDR {heroCdr}%)
+                      {t("คำนวณตามของและรูนปัจจุบัน (CDR")} {heroCdr}%)
                     </span>
                   )}
                 </div>
@@ -1032,7 +1036,7 @@ export function HeroSkillsModal({
                   <table className="w-full text-xs">
                     <thead>
                       <tr className="border-b border-line/40 text-left text-[10px] text-dim">
-                        <th className="py-1.5 font-normal">เลเวล</th>
+                        <th className="py-1.5 font-normal">{t("เลเวล")}</th>
                         {skillProfile?.isDefensiveOrBuffOnly ? (
                           <>
                             {skillProfile.progressions.length > 0 ? (
@@ -1042,33 +1046,33 @@ export function HeroSkillsModal({
                                 </th>
                               ))
                             ) : (
-                              <th className="py-1.5 text-center font-normal text-dim">ผลลัพธ์ของสกิล</th>
+                              <th className="py-1.5 text-center font-normal text-dim">{t("ผลลัพธ์ของสกิล")}</th>
                             )}
                           </>
                         ) : (
                           <>
                             <th className="py-1.5 text-right font-normal">
                               {skillProfile?.baseValueType === "shield"
-                                ? "โล่พื้นฐาน"
+                                ? t("โล่พื้นฐาน")
                                 : skillProfile?.baseValueType === "heal"
-                                ? "ฟื้นฟูพื้นฐาน"
-                                : "ดาเมจพื้นฐาน"}
+                                ? t("ฟื้นฟูพื้นฐาน")
+                                : t("ดาเมจพื้นฐาน")}
                             </th>
                             {bonusScalingVal > 0 && (
-                              <th className="py-1.5 text-right font-normal">+โบนัสของ/รูน</th>
+                              <th className="py-1.5 text-right font-normal">{t("+โบนัสของ/รูน")}</th>
                             )}
                             <th className="py-1.5 text-right font-normal">
                               {skillProfile?.baseValueType === "shield"
-                                ? "รวมโล่ป้องกัน"
+                                ? t("รวมโล่ป้องกัน")
                                 : skillProfile?.baseValueType === "heal"
-                                ? "รวมปริมาณฟื้นฟู"
-                                : "รวมดาเมจดิบ"}
+                                ? t("รวมปริมาณฟื้นฟู")
+                                : t("รวมดาเมจดิบ")}
                             </th>
                             {skillProfile?.baseValueType === "damage" &&
                               activeRow &&
                               activeRow.mitigation_multiplier > 0 &&
                               activeRow.mitigation_multiplier < 1 && (
-                                <th className="py-1.5 text-right font-normal">เข้าจริง (ใส่ {enemyName ?? "ศัตรู"})</th>
+                                <th className="py-1.5 text-right font-normal">{t("เข้าจริง (ใส่")} {enemyName ?? t("ศัตรู")})</th>
                               )}
                             {skillProfile?.progressions
                               .filter((p) => p.category !== "damage")
@@ -1079,8 +1083,8 @@ export function HeroSkillsModal({
                               ))}
                           </>
                         )}
-                        <th className="py-1.5 text-right font-normal">คูลดาวน์</th>
-                        <th className="py-1.5 text-right font-normal">มานา</th>
+                        <th className="py-1.5 text-right font-normal">{t("คูลดาวน์")}</th>
+                        <th className="py-1.5 text-right font-normal">{t("มานา")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1113,7 +1117,7 @@ export function HeroSkillsModal({
                                 {isCurrentLv && <ChevronRight size={11} className="text-gold" />}
                                 <span>Lv {lv}</span>
                                 {isCurrentLv && (
-                                  <span className="rounded bg-gold/20 px-1 text-[9px] text-gold">ปัจจุบัน</span>
+                                  <span className="rounded bg-gold/20 px-1 text-[9px] text-gold">{t("ปัจจุบัน")}</span>
                                 )}
                               </span>
                             </td>
@@ -1134,7 +1138,7 @@ export function HeroSkillsModal({
                                   })
                                 ) : (
                                   <td className="py-1.5 text-center text-dim text-[11px]">
-                                    — สกิลสถานะคงที่ —
+                                    {t("— สกิลสถานะคงที่ —")}
                                   </td>
                                 )}
                               </>
@@ -1178,8 +1182,8 @@ export function HeroSkillsModal({
                             <td className="py-1.5 text-right tabular-nums text-muted">
                               {baseCd > 0 ? (
                                 <span>
-                                  {finalCd}วิ
-                                  {heroCdr > 0 && <span className="text-[10px] text-dim"> ({baseCd}วิ)</span>}
+                                  {finalCd}{t("วิ")}
+                                  {heroCdr > 0 && <span className="text-[10px] text-dim"> ({baseCd}{t("วิ)")}</span>}
                                 </span>
                               ) : (
                                 "—"

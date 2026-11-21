@@ -1,3 +1,5 @@
+import { StableButtonLabel } from "../StableButtonLabel";
+import { translateMessage, useLanguage } from "../../i18n/language";
 import { useCombatLab } from "../../hooks/useCombatLab";
 import { Alert } from "../Alert";
 import type { Side } from "../../types/combat";
@@ -18,6 +20,7 @@ export function CombatLab({
   storageKey?: string;
   persistRemote?: boolean;
 }) {
+  const { t } = useLanguage();
   const {
     catalog,
     builds,
@@ -38,14 +41,14 @@ export function CombatLab({
   if (!catalog) {
     return (
       <div className="flex flex-wrap items-center gap-3 p-6 text-sm text-muted">
-        <span>{error ?? "กำลังโหลดข้อมูลฮีโร่ ไอเทม รูน และพลังแฝง…"}</span>
+        <span>{error ? translateMessage(t, error) : t("กำลังโหลดข้อมูลฮีโร่ ไอเทม รูน และพลังแฝง…")}</span>
         {error && (
           <button
             type="button"
             onClick={retryCatalog}
             className="border border-gold bg-gold/10 px-2.5 py-1 text-xs font-bold text-gold hover:bg-gold hover:text-bg"
           >
-            โหลดใหม่
+            <StableButtonLabel message="โหลดใหม่" />
           </button>
         )}
       </div>
@@ -98,13 +101,13 @@ export function CombatLab({
       {error && (
         <Alert>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span>{error}</span>
+            <span>{translateMessage(t, error)}</span>
             <button
               type="button"
               onClick={resetBuilds}
               className="border border-line-strong bg-panel px-2 py-0.5 text-xs font-semibold text-ink hover:border-gold hover:text-gold"
             >
-              รีเซ็ตบิลด์
+              <StableButtonLabel message="รีเซ็ตบิลด์" />
             </button>
           </div>
         </Alert>

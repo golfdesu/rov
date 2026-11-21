@@ -1,3 +1,5 @@
+import { type Translate, useLanguage } from "../../i18n/language";
+import { StableButtonLabel } from "../StableButtonLabel";
 import { ChevronDown, ChevronUp, Clock, Droplet, Heart, Shield, Sparkles, Swords, Target, Wind, Zap } from "lucide-react";
 import { useState } from "react";
 import { resolveScalingValue, type CombatBuild, type DuelSide, type ScalingValue, type SkillDamageRow } from "../../types/combat";
@@ -32,7 +34,7 @@ const COMPONENT_LABELS: Record<string, string> = {
   extra: "เพิ่มเติม",
 };
 
-function formatScalingFormula(scaling?: Record<string, ScalingValue>, skillLevel = 1): string {
+function formatScalingFormula(t: Translate, scaling?: Record<string, ScalingValue>, skillLevel = 1): string {
   if (!scaling) return "";
   const v = (key: string) => resolveScalingValue(scaling[key], skillLevel);
   const parts: string[] = [];
@@ -41,34 +43,35 @@ function formatScalingFormula(scaling?: Record<string, ScalingValue>, skillLevel
   if (v("as_to_ad")) parts.push(`+${v("as_to_ad")} AD/1% Bonus AS`);
   if (v("ap_pct")) parts.push(`+${v("ap_pct")}% AP`);
   if (v("bonus_ap_pct")) parts.push(`+${v("bonus_ap_pct")}% Bonus AP`);
-  if (v("bonus_dmg_hp_pct")) parts.push(`+${v("bonus_dmg_hp_pct")}% Max HP ตัวเอง`);
-  else if (v("own_hp_pct")) parts.push(`+${v("own_hp_pct")}% HP ตัวเอง`);
+  if (v("bonus_dmg_hp_pct")) parts.push(t("+{0}% Max HP ตัวเอง", v("bonus_dmg_hp_pct")));
+  else if (v("own_hp_pct")) parts.push(t("+{0}% HP ตัวเอง", v("own_hp_pct")));
   else if (v("hp_pct")) parts.push(`+${v("hp_pct")}% HP`);
   else if (v("max_hp_pct")) parts.push(`+${v("max_hp_pct")}% Max HP`);
   if (v("bonus_hp_pct") || v("bonus_max_hp_pct")) {
     parts.push(`+${v("bonus_hp_pct") + v("bonus_max_hp_pct")}% Bonus HP`);
   }
-  if (v("burn_max_hp_pct")) parts.push(`เผา +${v("burn_max_hp_pct")}% Max HP/วิ`);
+  if (v("burn_max_hp_pct")) parts.push(t("เผา +{0}% Max HP/วิ", v("burn_max_hp_pct")));
   if (v("bonus_armor_pct")) parts.push(`+${v("bonus_armor_pct")}% Bonus Armor`);
-  if (v("armor_pct")) parts.push(`+${v("armor_pct")}% เกราะ`);
-  if (v("magic_defense_pct")) parts.push(`+${v("magic_defense_pct")}% ต้านเวท`);
+  if (v("armor_pct")) parts.push(t("+{0}% เกราะ", v("armor_pct")));
+  if (v("magic_defense_pct")) parts.push(t("+{0}% ต้านเวท", v("magic_defense_pct")));
   const tgtHp = v("target_hp_pct") + v("target_max_hp_pct") + v("target_current_hp_pct");
-  if (tgtHp) parts.push(`+${tgtHp}% HP ศัตรู`);
-  if (v("target_hp_ap_pct")) parts.push(`+${v("target_hp_ap_pct")}% HP ศัตรู/100 AP`);
+  if (tgtHp) parts.push(t("+{0}% HP ศัตรู", tgtHp));
+  if (v("target_hp_ap_pct")) parts.push(t("+{0}% HP ศัตรู/100 AP", v("target_hp_ap_pct")));
   const lostHp = v("target_lost_hp_pct") + v("lost_hp_pct");
-  if (lostHp) parts.push(`+${lostHp}% HP ที่หายไปศัตรู`);
-  if (v("lost_hp_ap_pct")) parts.push(`+${v("lost_hp_ap_pct")}% HP ที่หายไปศัตรู/100 AP`);
-  if (v("lost_hp_bonus_ad_pct")) parts.push(`+${v("lost_hp_bonus_ad_pct")}% HP ที่หายไปศัตรู/100 Bonus AD`);
-  if (v("target_hp_per_100_ad_pct")) parts.push(`+${v("target_hp_per_100_ad_pct")}% HP ศัตรู/100 AD`);
+  if (lostHp) parts.push(t("+{0}% HP ที่หายไปศัตรู", lostHp));
+  if (v("lost_hp_ap_pct")) parts.push(t("+{0}% HP ที่หายไปศัตรู/100 AP", v("lost_hp_ap_pct")));
+  if (v("lost_hp_bonus_ad_pct")) parts.push(t("+{0}% HP ที่หายไปศัตรู/100 Bonus AD", v("lost_hp_bonus_ad_pct")));
+  if (v("target_hp_per_100_ad_pct")) parts.push(t("+{0}% HP ศัตรู/100 AD", v("target_hp_per_100_ad_pct")));
   if (v("target_hp_per_100_bonus_ad_pct")) {
-    parts.push(`+${v("target_hp_per_100_bonus_ad_pct")}% HP ศัตรู/100 Bonus AD`);
+    parts.push(t("+{0}% HP ศัตรู/100 Bonus AD", v("target_hp_per_100_bonus_ad_pct")));
   }
-  if (v("target_hp_per_100_ap_pct")) parts.push(`+${v("target_hp_per_100_ap_pct")}% HP ศัตรู/100 AP`);
+  if (v("target_hp_per_100_ap_pct")) parts.push(t("+{0}% HP ศัตรู/100 AP", v("target_hp_per_100_ap_pct")));
   if (v("level_scaling")) parts.push(`+${v("level_scaling")}/Lv`);
   return parts.join(" ");
 }
 
 export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDamageTableProps) {
+  const { language, t } = useLanguage();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [draftHits, setDraftHits] = useState<Record<string, string>>({});
   const [draftLevels, setDraftLevels] = useState<Record<string, string>>({});
@@ -164,9 +167,9 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
       {/* Header */}
       <div className="mb-2 flex flex-wrap items-center justify-between gap-1 border-b border-line/60 pb-2">
         <div className="flex items-center gap-2">
-          <h3 className="font-display text-xs font-bold tracking-wider text-ink">ดาเมจสกิลใส่ {enemyName}</h3>
+          <h3 className="font-display text-xs font-bold tracking-wider text-ink">{t("ดาเมจสกิลใส่")} {enemyName}</h3>
           <span className="font-mono text-[10px] text-dim">
-            ตีปกติ {side.basic_attack.final_per_hit.toLocaleString()}/ครั้ง · DPS {side.basic_attack.dps.toLocaleString()}
+            {t("ตีปกติ")} {side.basic_attack.final_per_hit.toLocaleString()}{t("/ครั้ง · DPS")} {side.basic_attack.dps.toLocaleString()}
           </span>
         </div>
 
@@ -175,17 +178,11 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
           onClick={toggleAll}
           className="flex items-center gap-1 rounded border border-line/60 bg-bg px-2 py-0.5 text-[10px] font-medium text-dim transition-colors hover:border-gold hover:text-gold"
         >
-          {isAllExpanded ? (
-            <>
-              <ChevronUp size={11} />
-              <span>ซ่อนคำอธิบายสกิล</span>
-            </>
-          ) : (
-            <>
-              <ChevronDown size={11} />
-              <span>อ่านรายละเอียดสกิล</span>
-            </>
-          )}
+          {isAllExpanded ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
+          <StableButtonLabel
+            message={isAllExpanded ? "ซ่อนคำอธิบายสกิล" : "อ่านรายละเอียดสกิล"}
+            alternatives={["ซ่อนคำอธิบายสกิล", "อ่านรายละเอียดสกิล"]}
+          />
         </button>
       </div>
 
@@ -193,7 +190,7 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
       <div className="mb-2.5 flex flex-wrap items-center justify-between gap-1.5 rounded border border-line/50 bg-bg/40 px-2.5 py-1.5">
         <div className="flex items-center gap-1.5 text-[10px] text-muted">
           <Swords size={11} className="text-gold" />
-          <span>เซ็ตคอมโบ:</span>
+          <span>{t("เซ็ตคอมโบ:")}</span>
         </div>
 
         <div className="flex flex-wrap items-center gap-1">
@@ -214,7 +211,7 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                     : "border-line/60 bg-panel text-muted hover:border-line hover:text-ink"
                 }`}
               >
-                {p.label}
+                <StableButtonLabel message={p.label} />
               </button>
             );
           })}
@@ -225,12 +222,12 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
         <table className="w-full min-w-[490px] text-xs">
           <thead>
             <tr className="text-left text-[10px] text-dim border-b border-line/50">
-              <th className="pb-1.5 font-normal text-center w-7" title="เลือกสกิลที่จะนับในคอมโบ">คอมโบ</th>
-              <th className="pb-1.5 font-normal">สกิล</th>
+              <th className="pb-1.5 font-normal text-center w-7" title={t("เลือกสกิลที่จะนับในคอมโบ")}>{t("คอมโบ")}</th>
+              <th className="pb-1.5 font-normal">{t("สกิล")}</th>
               <th className="pb-1.5 font-normal text-center">Lv</th>
-              <th className="pb-1.5 font-normal text-center">โดน</th>
-              <th className="pb-1.5 text-right font-normal">ดิบ</th>
-              <th className="pb-1.5 text-right font-normal">เข้าจริง</th>
+              <th className="pb-1.5 font-normal text-center">{t("โดน")}</th>
+              <th className="pb-1.5 text-right font-normal">{t("ดิบ")}</th>
+              <th className="pb-1.5 text-right font-normal">{t("เข้าจริง")}</th>
               <th className="pb-1.5 text-right font-normal">%HP</th>
               <th className="pb-1.5 text-right font-normal">CD</th>
             </tr>
@@ -241,7 +238,7 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
               const inCombo = isSlotInCombo(s.slot);
               const isPassive = s.slot.startsWith("Passive");
               const badge = getFormBadge(build.hero, s.slot);
-              const skillProfile = parseSkillEffects(s, build.hero, build.level, s.skill_level);
+              const skillProfile = parseSkillEffects(t, s, build.hero, build.level, s.skill_level);
               const drProg = skillProfile.progressions.find((p) => p.category === "damage_reduction");
               const shieldProg = skillProfile.progressions.find((p) => p.category === "shield");
               const healProg = skillProfile.progressions.find((p) => p.category === "heal");
@@ -260,9 +257,9 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                   : null;
               const parts = Object.entries(s.components)
                 .filter(([, v]) => v)
-                .map(([k, v]) => `${COMPONENT_LABELS[k] ?? k} ${v.toLocaleString()}`)
+                .map(([k, v]) => `${t(COMPONENT_LABELS[k] ?? k)} ${v.toLocaleString()}`)
                 .join(" + ");
-              const scalingText = formatScalingFormula(s.scaling, Math.max(1, s.skill_level));
+              const scalingText = formatScalingFormula(t, s.scaling, Math.max(1, s.skill_level));
 
               return (
                 <tr
@@ -283,8 +280,8 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                             checked={inCombo}
                             onChange={() => toggleSlotInCombo(s.slot)}
                             className="h-3.5 w-3.5 rounded border border-line bg-bg accent-gold cursor-pointer"
-                            aria-label={`นับ ${s.name} ในคอมโบ`}
-                            title={inCombo ? "คลิกเพื่อนำออกจากคอมโบ" : "คลิกเพื่อนับในคอมโบ"}
+                            aria-label={t("นับ {0} ในคอมโบ", s.name)}
+                            title={inCombo ? t("คลิกเพื่อนำออกจากคอมโบ") : t("คลิกเพื่อนับในคอมโบ")}
                           />
                         )}
                       </div>
@@ -316,24 +313,24 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                               <button
                                 type="button"
                                 onClick={() => toggleExpand(s.slot)}
-                                className="group flex items-center gap-1 text-left"
+                                className="group flex max-w-full shrink-0 items-center gap-1 text-left"
                               >
-                                <span className={`font-bold transition-colors group-hover:underline ${TYPE_STYLE[s.damage_type]}`}>
+                                <span className={`min-w-0 truncate font-bold transition-colors group-hover:underline ${TYPE_STYLE[s.damage_type]}`}>
                                   {s.name}
                                 </span>
                                 {isExp ? (
-                                  <ChevronUp size={12} className="text-gold" />
+                                  <ChevronUp size={12} className="shrink-0 text-gold" />
                                 ) : (
-                                  <ChevronDown size={12} className="text-dim group-hover:text-gold" />
+                                  <ChevronDown size={12} className="shrink-0 text-dim group-hover:text-gold" />
                                 )}
                               </button>
                               {badge && (
-                                <span className={`rounded border px-1 py-0.5 font-mono text-[9px] font-semibold ${badge.style}`}>
-                                  {badge.label}
+                                <span title={t(badge.label)} className={`min-w-0 truncate rounded border px-1 py-0.5 font-mono text-[9px] font-semibold ${badge.style}`}>
+                                  {t(badge.label)}
                                 </span>
                               )}
                               {skillProfile.summaryBadge && (
-                                <span className={`rounded border px-1.5 py-0.5 font-mono text-[9px] font-semibold ${skillProfile.summaryBadge.badgeClass}`}>
+                                <span title={skillProfile.summaryBadge.text} className={`min-w-0 truncate rounded border px-1.5 py-0.5 font-mono text-[9px] font-semibold ${skillProfile.summaryBadge.badgeClass}`}>
                                   {skillProfile.summaryBadge.text}
                                 </span>
                               )}
@@ -345,7 +342,7 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                             </div>
                             {s.has_charge && (
                               <div className="flex items-center gap-1.5 mt-1">
-                                <span className="text-[10px] text-gold font-medium">ชาร์จ:</span>
+                                <span className="text-[10px] text-gold font-medium">{t("ชาร์จ:")}</span>
                                 <input
                                   type="range"
                                   min={0}
@@ -354,7 +351,7 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                                   value={build.skill_charges?.[s.slot] ?? s.charge_ratio ?? 0}
                                   onChange={(e) => setCharge(s.slot, Number.parseFloat(e.target.value))}
                                   className="h-1.5 w-16 accent-gold cursor-pointer"
-                                  title={`ระยะเวลาชาร์จ ${Math.round((build.skill_charges?.[s.slot] ?? s.charge_ratio ?? 0) * 100)}%`}
+                                  title={t("ระยะเวลาชาร์จ {0}%", Math.round((build.skill_charges?.[s.slot] ?? s.charge_ratio ?? 0) * 100))}
                                 />
                                 <span className="font-mono text-[9px] text-gold">
                                   {Math.round((build.skill_charges?.[s.slot] ?? s.charge_ratio ?? 0) * 100)}%
@@ -411,7 +408,7 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                                     }
                                   }}
                                   className="w-10 rounded border border-line bg-bg px-1 py-0.5 text-center font-mono focus:border-gold outline-none"
-                                  aria-label={`เลเวล ${s.name}`}
+                                  aria-label={t("เลเวล {0}", s.name)}
                                 />
                               );
                             })()
@@ -449,7 +446,7 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                               }
                             }}
                             className="w-10 rounded border border-line bg-bg px-1 py-0.5 text-center font-mono focus:border-gold outline-none"
-                            aria-label={`จำนวนครั้งที่โดน ${s.name}`}
+                            aria-label={t("จำนวนครั้งที่โดน {0}", s.name)}
                           />
                         </div>
 
@@ -460,16 +457,16 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                           ) : s.raw_damage > 0 ? (
                             s.raw_damage.toLocaleString()
                           ) : currentDrVal ? (
-                            <span className="text-emerald-400 font-semibold" title="ทน/ลดความเสียหาย">
-                              ลด {currentDrVal}
+                            <span className="text-emerald-400 font-semibold" title={t("ทน/ลดความเสียหาย")}>
+                              {t("ลด")} {currentDrVal}
                             </span>
                           ) : currentShieldVal ? (
-                            <span className="text-sky-400 font-semibold" title="โล่ป้องกัน">
-                              โล่ {currentShieldVal}
+                            <span className="text-sky-400 font-semibold" title={t("โล่ป้องกัน")}>
+                              {t("โล่")} {currentShieldVal}
                             </span>
                           ) : currentHealVal ? (
-                            <span className="text-green-400 font-semibold" title="ฟื้นฟูเลือด">
-                              ฮีล {currentHealVal}
+                            <span className="text-green-400 font-semibold" title={t("ฟื้นฟูเลือด")}>
+                              {t("ฮีล")} {currentHealVal}
                             </span>
                           ) : (
                             "0"
@@ -483,16 +480,16 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                           ) : s.final_damage > 0 ? (
                             s.final_damage.toLocaleString()
                           ) : currentDrVal ? (
-                            <span className="text-emerald-400 font-bold" title="ทน/ลดความเสียหาย">
-                              ลด {currentDrVal}
+                            <span className="text-emerald-400 font-bold" title={t("ทน/ลดความเสียหาย")}>
+                              {t("ลด")} {currentDrVal}
                             </span>
                           ) : currentShieldVal ? (
-                            <span className="text-sky-400 font-bold" title="โล่ป้องกัน">
-                              โล่ {currentShieldVal}
+                            <span className="text-sky-400 font-bold" title={t("โล่ป้องกัน")}>
+                              {t("โล่")} {currentShieldVal}
                             </span>
                           ) : currentHealVal ? (
-                            <span className="text-green-400 font-bold" title="ฟื้นฟูเลือด">
-                              ฮีล {currentHealVal}
+                            <span className="text-green-400 font-bold" title={t("ฟื้นฟูเลือด")}>
+                              {t("ฮีล")} {currentHealVal}
                             </span>
                           ) : (
                             "0"
@@ -506,11 +503,11 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                           ) : s.pct_target_hp > 0 ? (
                             `${s.pct_target_hp}%`
                           ) : currentDrVal ? (
-                            <span className="text-emerald-400/80 font-mono text-[10px]">บัฟทน</span>
+                            <span className="text-emerald-400/80 font-mono text-[10px]">{t("บัฟทน")}</span>
                           ) : currentShieldVal ? (
-                            <span className="text-sky-400/80 font-mono text-[10px]">เกราะ</span>
+                            <span className="text-sky-400/80 font-mono text-[10px]">{t("เกราะ")}</span>
                           ) : currentHealVal ? (
-                            <span className="text-green-400/80 font-mono text-[10px]">ฟื้นฟู</span>
+                            <span className="text-green-400/80 font-mono text-[10px]">{t("ฟื้นฟู")}</span>
                           ) : (
                             "0%"
                           )}
@@ -554,49 +551,49 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                             <span className="font-mono text-[10px] font-bold text-gold">{s.slot}</span>
                             {badge && (
                               <span className={`rounded border px-1 py-0.5 font-mono text-[9px] font-semibold ${badge.style}`}>
-                                {badge.label}
+                                {t(badge.label)}
                               </span>
                             )}
                             <span className={`text-[10px] font-semibold ${TYPE_STYLE[s.damage_type]}`}>
-                              ความเสียหาย: {s.damage_type}
+                              {t("ความเสียหาย:")} {s.damage_type}
                             </span>
                           </div>
 
                           <div className="flex items-center gap-3 font-mono text-[11px]">
                             {s.cooldown > 0 && (
-                              <div className="flex items-center gap-1 text-dim" title="คูลดาวน์">
+                              <div className="flex items-center gap-1 text-dim" title={t("คูลดาวน์")}>
                                 <Clock size={11} className="text-muted" />
                                 <span>
-                                  คูลดาวน์: <strong className="text-ink">{s.cooldown}วิ</strong>
+                                  {t("คูลดาวน์:")} <strong className="text-ink">{s.cooldown}{t("วิ")}</strong>
                                   {s.base_cooldown && s.base_cooldown !== s.cooldown && (
-                                    <span className="text-dim text-[10px]"> (พื้นฐาน {s.base_cooldown}วิ)</span>
+                                    <span className="text-dim text-[10px]"> {t("(พื้นฐาน")} {s.base_cooldown}{t("วิ)")}</span>
                                   )}
                                 </span>
                               </div>
                             )}
 
                             {s.mana_cost != null && s.mana_cost > 0 && (
-                              <div className="flex items-center gap-1 text-blue" title="การใช้มานา">
+                              <div className="flex items-center gap-1 text-blue" title={t("การใช้มานา")}>
                                 <Droplet size={11} />
-                                <span>มานา: {s.mana_cost}</span>
+                                <span>{t("มานา:")} {s.mana_cost}</span>
                               </div>
                             )}
                           </div>
                         </div>
 
-                        {/* Thai Description */}
-                        {s.desc_th && (
+                        {/* Skill description from the selected language, with the other as a fallback. */}
+                        {(language === "th" ? s.desc_th : s.description || s.desc_th) && (
                           <div className="rounded border border-line/60 bg-bg/50 p-2 text-ink leading-relaxed">
                             <div className="flex items-center gap-1 mb-0.5 text-[10px] font-bold text-gold">
                               <Sparkles size={10} />
-                              <span>รายละเอียดสกิล:</span>
+                              <span>{t("รายละเอียดสกิล:")}</span>
                             </div>
-                            <p className="text-muted whitespace-pre-line">{s.desc_th}</p>
+                            <p className="text-muted whitespace-pre-line">{language === "th" ? s.desc_th : s.description || s.desc_th}</p>
                           </div>
                         )}
 
-                        {/* English Description Fallback */}
-                        {s.description && s.description !== s.desc_th && (
+                        {/* English comparison text in the Thai view. */}
+                        {language === "th" && s.description && s.description !== s.desc_th && (
                           <div className="rounded border border-line/30 bg-bg/20 p-2 text-dim leading-relaxed">
                             <div className="text-[10px] font-semibold text-dim mb-0.5">Description (EN):</div>
                             <p className="text-muted/80 whitespace-pre-line">{s.description}</p>
@@ -608,14 +605,14 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                           <div className="rounded border border-gold/40 bg-gold/10 p-2 text-gold font-mono text-[11px] space-y-1">
                             <div className="font-bold flex items-center gap-1">
                               <Sparkles size={11} />
-                              <span>ระบบชาร์จสกิล / สเกลตามระยะทาง (Linear Interpolation):</span>
+                              <span>{t("ระบบชาร์จสกิล / สเกลตามระยะทาง (Linear Interpolation):")}</span>
                             </div>
                             {(() => {
                               const lvIdx = Math.max(0, s.skill_level - 1);
                               return (
                                 <>
                                   <div className="text-[10px] text-ink">
-                                    ดาเมจต่ำสุด (0%):{" "}
+                                    {t("ดาเมจต่ำสุด (0%):")}{" "}
                                     <span className="font-bold">
                                       {s.base_damage ? s.base_damage[lvIdx] ?? s.base_damage[0] : 0}
                                     </span>{" "}
@@ -623,11 +620,11 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                                   </div>
                                   {s.max_damage && (
                                     <div className="text-[10px] text-ink">
-                                      ดาเมจสูงสุด (100%):{" "}
+                                      {t("ดาเมจสูงสุด (100%):")}{" "}
                                       <span className="font-bold">
                                         {s.max_damage[lvIdx] ?? s.max_damage[0]}
                                       </span>{" "}
-                                      {formatScalingFormula(s.max_scaling, Math.max(1, s.skill_level))}
+                                      {formatScalingFormula(t, s.max_scaling, Math.max(1, s.skill_level))}
                                     </div>
                                   )}
                                 </>
@@ -640,12 +637,12 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                         <div className="flex flex-wrap items-center gap-2 pt-1 font-mono text-[11px]">
                           {scalingText && (
                             <span className="rounded bg-panel px-2 py-0.5 text-gold border border-gold/30">
-                              สูตรคำนวณ: {scalingText}
+                              {t("สูตรคำนวณ:")} {scalingText}
                             </span>
                           )}
                           {s.mitigation_multiplier > 0 && s.mitigation_multiplier < 1 && (
                             <span className="rounded bg-panel px-2 py-0.5 text-muted border border-line">
-                              เกราะศัตรูลดทอนเหลือ: {(s.mitigation_multiplier * 100).toFixed(1)}%
+                              {t("เกราะศัตรูลดทอนเหลือ:")} {(s.mitigation_multiplier * 100).toFixed(1)}%
                             </span>
                           )}
                         </div>
@@ -662,13 +659,13 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
       {/* Burst Combo Summary */}
       <div className="mt-2.5 flex flex-wrap items-center justify-between gap-1 border-t border-line/60 pt-2 text-xs">
         <div className="flex items-center gap-2">
-          <span className="text-muted">คอมโบสกิลที่เลือก</span>
+          <span className="text-muted">{t("คอมโบสกิลที่เลือก")}</span>
           <span className="rounded bg-panel-2 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-gold border border-line/60">
-            {selectedCount} สกิล
+            {selectedCount} {t("สกิล")}
           </span>
           {side.burst_per_1000_gold != null && (
             <span className="font-mono text-[10px] text-dim">
-              ({side.burst_per_1000_gold.toLocaleString()} dmg/1k ทอง)
+              ({side.burst_per_1000_gold.toLocaleString()} {t("dmg/1k ทอง)")}
             </span>
           )}
         </div>
@@ -679,7 +676,7 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
           </span>
           {side.combo_kills && (
             <span className="rounded bg-good/20 px-1.5 py-0.5 text-[10px] font-bold text-good border border-good/40">
-              ฆ่าได้ในคอมโบเดียว
+              {t("ฆ่าได้ในคอมโบเดียว")}
             </span>
           )}
         </div>

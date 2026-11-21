@@ -1,3 +1,5 @@
+import { useLanguage } from "../i18n/language";
+import { StableButtonLabel } from "./StableButtonLabel";
 import { Flame, Loader2, Sparkles, Trophy } from "lucide-react";
 import { useState } from "react";
 import type { DraftStep, Hero, HeroRecommendation } from "../types/draft";
@@ -61,6 +63,7 @@ export function AiPanel({
   onLockHero,
   variant = "full",
 }: AiPanelProps) {
+  const { t } = useLanguage();
   const [laneFilterState, setLaneFilterState] = useState<{ step: number | undefined; lane: string }>({
     step: currentStep?.step,
     lane: "ALL",
@@ -143,7 +146,7 @@ export function AiPanel({
               <div key={i} className="h-7 w-20 shrink-0 animate-pulse bg-panel-2" />
             ))
           ) : shown.length === 0 ? (
-            <span className="py-1 font-mono text-[10px] text-muted">ไม่มีคำแนะนำ</span>
+            <span className="py-1 font-mono text-[10px] text-muted">{t("ไม่มีคำแนะนำ")}</span>
           ) : (
             <>
               {shown.map((rec, idx) => {
@@ -217,7 +220,7 @@ export function AiPanel({
 
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           {/* Interactive Lane Filter Tabs */}
-          <div className="flex flex-wrap items-center gap-1.5 sm:gap-1" role="group" aria-label="กรองตำแหน่งที่แนะนำ">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-1" role="group" aria-label={t("กรองตำแหน่งที่แนะนำ")}>
             {LANE_FILTER_TABS.map((tab) => {
               const active = selectedLane === tab.key;
               const isMissing = !isBan && tab.key !== "ALL" && missing.size < 5 && missing.has(tab.key);
@@ -228,8 +231,8 @@ export function AiPanel({
                   onClick={() => toggleLane(tab.key)}
                   title={
                     tab.key === "ALL"
-                      ? "แสดงคำแนะนำทุกตำแหน่ง"
-                      : `กรองเฉพาะตำแหน่ง ${tab.label}${isMissing ? " (เลนที่ทีมยังขาด)" : ""}`
+                      ? t("แสดงคำแนะนำทุกตำแหน่ง")
+                      : t("กรองเฉพาะตำแหน่ง {0}{1}", t(tab.label), isMissing ? t(" (เลนที่ทีมยังขาด)") : "")
                   }
                   className={`border h-8 sm:h-7 px-3 sm:px-2 font-mono text-xs sm:text-[10px] font-bold transition-colors touch-manipulation inline-flex items-center justify-center gap-1 shrink-0 ${
                     active
@@ -241,7 +244,8 @@ export function AiPanel({
                 >
                   {tab.key !== "ALL" && <LaneIcon lane={tab.key} className="h-3.5 w-3.5 sm:h-3 sm:w-3" />}
                   <span className={tab.key === "ALL" ? undefined : "hidden sm:inline"}>
-                    {isMissing && !active ? `+${tab.label}` : tab.label}
+                    {tab.key !== "ALL" && <span aria-hidden="true" className={isMissing && !active ? "" : "invisible"}>+</span>}
+                    <StableButtonLabel message={tab.label} />
                   </span>
                 </button>
               );
@@ -259,7 +263,7 @@ export function AiPanel({
         <div className="flex shrink-0 flex-nowrap items-center gap-1.5 overflow-x-auto border-b border-line bg-gold/5 px-2.5 py-1 sm:gap-2 xl:px-3.5">
           <span className="flex shrink-0 items-center gap-1 text-[10px] font-semibold text-gold sm:text-[11px]">
             <Flame className="h-3.5 w-3.5 shrink-0" />
-            ตัวปลดล็อก:
+            {t("ตัวปลดล็อก:")}
           </span>
           {banUnlockedHeroes.slice(0, 4).map((u) => {
             const triggers = (u.triggered_by ?? []).map(displayName).join(", ");
@@ -268,7 +272,7 @@ export function AiPanel({
                 type="button"
                 key={u.hero_name}
                 onClick={() => onLockHero(u.hero_name)}
-                title={triggers ? `เก่งขึ้นเพราะแบน ${triggers}` : undefined}
+                title={triggers ? t("เก่งขึ้นเพราะแบน {0}", triggers) : undefined}
                 className="flex shrink-0 items-center gap-1.5 border border-gold/40 bg-panel px-1.5 py-0.5 text-left transition-colors hover:border-gold hover:bg-panel-2 xl:px-2"
               >
                 <div className="h-4 w-4 shrink-0 overflow-hidden xl:h-4.5 xl:w-4.5">
@@ -277,7 +281,7 @@ export function AiPanel({
                 <span className="font-display text-[11px] font-bold whitespace-nowrap text-ink">
                   {displayName(u.hero_name)}
                 </span>
-                {triggers && <span className="font-mono text-[9px] whitespace-nowrap text-gold">← แบน {triggers}</span>}
+                {triggers && <span className="font-mono text-[9px] whitespace-nowrap text-gold">{t("← แบน")} {triggers}</span>}
               </button>
             );
           })}
@@ -299,7 +303,7 @@ export function AiPanel({
           ))}
         {!isLoading && shown.length === 0 && (
           <li className="col-span-5 flex h-[60px] items-center justify-center p-4 font-mono text-xs text-muted lg:h-[128px]">
-            ไม่มีคำแนะนำสำหรับตำแหน่งนี้
+            {t("ไม่มีคำแนะนำสำหรับตำแหน่งนี้")}
           </li>
         )}
         {shown.map((rec, idx) => {
@@ -310,21 +314,21 @@ export function AiPanel({
           const triggerNames = (rec.triggered_by ?? []).map(displayName);
           const triggerTitle =
             rec.trigger_reason === "counter"
-              ? `แก้ทาง ${triggerNames.join(", ")}`
+              ? t("แก้ทาง {0}", triggerNames.join(", "))
               : rec.trigger_reason === "combo"
-                ? `คอมโบกับ ${triggerNames.join(", ")}`
+                ? t("คอมโบกับ {0}", triggerNames.join(", "))
                 : isBan || rec.trigger_reason === "protect"
-                  ? `ปกป้อง ${triggerNames.join(", ")}`
-                  : `ปลดล็อกจากการแบน ${triggerNames.join(", ")}`;
+                  ? t("ปกป้อง {0}", triggerNames.join(", "))
+                  : t("ปลดล็อกจากการแบน {0}", triggerNames.join(", "));
 
           const triggerBadgeText =
             rec.trigger_reason === "counter"
-              ? `⚔️ แก้ ${triggerNames.join(", ")}`
+              ? t("⚔️ แก้ {0}", triggerNames.join(", "))
               : rec.trigger_reason === "combo"
-                ? `🤝 คู่ ${triggerNames.join(", ")}`
+                ? t("🤝 คู่ {0}", triggerNames.join(", "))
                 : isBan || rec.trigger_reason === "protect"
-                  ? `🛡️ ป้อง ${triggerNames.join(", ")}`
-                  : `⚡ ปลดล็อก (${triggerNames.join(", ")})`;
+                  ? t("🛡️ ป้อง {0}", triggerNames.join(", "))
+                  : t("⚡ ปลดล็อก ({0})", triggerNames.join(", "));
 
           const triggerBadgeClass =
             rec.trigger_reason === "counter"
@@ -369,7 +373,7 @@ export function AiPanel({
                       className={`shrink-0 font-mono text-[9px] font-bold ${
                         fillsLane ? "border border-good/50 bg-good/10 px-1 text-good" : "text-muted"
                       }`}
-                      title={fillsLane ? `เติมเลนที่ยังขาด: ${LANE_SHORT[lane]?.th ?? lane}` : undefined}
+                      title={fillsLane ? t("เติมเลนที่ยังขาด: {0}", LANE_SHORT[lane]?.th ?? lane) : undefined}
                     >
                       {fillsLane && "+"}
                       {LANE_SHORT[lane]?.en ?? lane}
@@ -464,7 +468,7 @@ export function AiPanel({
                           className={`inline-flex shrink-0 items-center gap-1 font-mono text-[9.5px] font-bold sm:text-[10px] ${
                             fillsLane ? "border border-good/50 bg-good/10 p-0.5 text-good sm:px-1 sm:py-0" : "text-muted"
                           }`}
-                          title={fillsLane ? `เติมเลนที่ยังขาด: ${LANE_SHORT[lane]?.th ?? lane}` : LANE_SHORT[lane]?.th ?? lane}
+                          title={fillsLane ? t("เติมเลนที่ยังขาด: {0}", LANE_SHORT[lane]?.th ?? lane) : LANE_SHORT[lane]?.th ?? lane}
                           aria-label={LANE_SHORT[lane]?.th ?? lane}
                         >
                           <LaneIcon lane={lane} className="h-3 w-3 shrink-0" />

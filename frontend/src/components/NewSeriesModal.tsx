@@ -1,3 +1,5 @@
+import { StableButtonLabel } from "./StableButtonLabel";
+import { useLanguage } from "../i18n/language";
 import { PlusCircle, Swords, Users, X } from "lucide-react";
 import { useId, useState } from "react";
 import { Modal } from "./Modal";
@@ -55,6 +57,7 @@ export function NewSeriesModal({
   onConfirm,
   onClose,
 }: NewSeriesModalProps) {
+  const { t } = useLanguage();
   const titleId = useId();
   const [teamA, setTeamA] = useState(defaultTeamA || "BAC");
   const [teamB, setTeamB] = useState(defaultTeamB || "TLN");
@@ -84,11 +87,11 @@ export function NewSeriesModal({
           <Swords className="h-4 w-4 text-gold" />
           <div>
             <h2 id={titleId} className="font-display text-sm font-bold tracking-wider text-ink">
-              เริ่มซีรีส์ / แมตช์ใหม่ (NEW SERIES)
+              {t("เริ่มซีรีส์ / แมตช์ใหม่ (NEW SERIES)")}
             </h2>
             <p className="text-[11px] text-dim">
-              สร้างคู่แข่งขันใหม่ — เริ่ม Game 1 สะอาดเอี่ยม และแยกประวัติออกจากแมตช์เดิม
-              {currentSeriesName && <span className="text-muted"> (แมตช์ปัจจุบัน: {currentSeriesName})</span>}
+              {t("สร้างคู่แข่งขันใหม่ — เริ่ม Game 1 สะอาดเอี่ยม และแยกประวัติออกจากแมตช์เดิม")}
+              {currentSeriesName && <span className="text-muted"> {t("(แมตช์ปัจจุบัน:")} {currentSeriesName})</span>}
             </p>
           </div>
         </div>
@@ -96,7 +99,7 @@ export function NewSeriesModal({
           type="button"
           onClick={() => requestClose()}
           className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-dim transition-colors hover:bg-panel-2 hover:text-ink"
-          aria-label="ปิด"
+          aria-label={t("ปิด")}
         >
           <X size={18} />
         </button>
@@ -105,9 +108,9 @@ export function NewSeriesModal({
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-5">
         {hasCurrentActions && (
           <div className="border border-gold/40 bg-gold/10 px-3 py-2 text-[11px] leading-relaxed text-gold">
-            💡 <strong>หมายเหตุ:</strong> มีฮีโร่ที่ดราฟต์ค้างอยู่ในกระดานปัจจุบัน
-            {currentSeriesName ? ` ของ ${currentSeriesName}` : ""} ระบบจะ{" "}
-            <strong>บันทึกเก็บเข้าประวัติแมตช์เดิมให้อัตโนมัติ</strong> ก่อนเริ่มแมตช์ใหม่
+            💡 <strong>{t("หมายเหตุ:")}</strong> {t("มีฮีโร่ที่ดราฟต์ค้างอยู่ในกระดานปัจจุบัน")}
+            {currentSeriesName ? t(" ของ {0}", currentSeriesName) : ""} {t("ระบบจะ")}{" "}
+            <strong>{t("บันทึกเก็บเข้าประวัติแมตช์เดิมให้อัตโนมัติ")}</strong> {t("ก่อนเริ่มแมตช์ใหม่")}
           </div>
         )}
 
@@ -117,7 +120,7 @@ export function NewSeriesModal({
           <div className="flex flex-col gap-1.5">
             <label htmlFor="new-series-team-a" className="flex items-center gap-1 font-display text-xs font-bold text-blue">
               <span className="h-2 w-2 rounded-full bg-blue" />
-              <span>ทีม A (เริ่มต้นฝั่ง BLUE)</span>
+              <span>{t("ทีม A (เริ่มต้นฝั่ง BLUE)")}</span>
             </label>
             <input
               id="new-series-team-a"
@@ -125,7 +128,7 @@ export function NewSeriesModal({
               value={teamA}
               onChange={(e) => setTeamA(e.target.value.toUpperCase())}
               maxLength={14}
-              placeholder="เช่น BRU, BAC"
+              placeholder={t("เช่น BRU, BAC")}
               required
               className="h-9 border border-line bg-bg px-3 font-display text-sm font-bold text-ink focus:border-blue focus:outline-none"
             />
@@ -152,7 +155,7 @@ export function NewSeriesModal({
           <div className="flex flex-col gap-1.5">
             <label htmlFor="new-series-team-b" className="flex items-center gap-1 font-display text-xs font-bold text-red">
               <span className="h-2 w-2 rounded-full bg-red" />
-              <span>ทีม B (เริ่มต้นฝั่ง RED)</span>
+              <span>{t("ทีม B (เริ่มต้นฝั่ง RED)")}</span>
             </label>
             <input
               id="new-series-team-b"
@@ -160,7 +163,7 @@ export function NewSeriesModal({
               value={teamB}
               onChange={(e) => setTeamB(e.target.value.toUpperCase())}
               maxLength={14}
-              placeholder="เช่น FS, TLN"
+              placeholder={t("เช่น FS, TLN")}
               required
               className="h-9 border border-line bg-bg px-3 font-display text-sm font-bold text-ink focus:border-red focus:outline-none"
             />
@@ -189,10 +192,10 @@ export function NewSeriesModal({
           <label htmlFor="new-series-name" className="flex items-center justify-between font-display text-xs font-medium text-muted">
             <span className="flex items-center gap-1">
               <Users className="h-3.5 w-3.5 text-gold" />
-              <span>ชื่อกลุ่ม / ชื่อซีรีส์ (ไม่บังคับ)</span>
+              <span>{t("ชื่อกลุ่ม / ชื่อซีรีส์ (ไม่บังคับ)")}</span>
             </span>
             <span className="font-mono text-[10px] text-dim">
-              ค่าเริ่มต้น: {teamA.trim() || "A"} vs {teamB.trim() || "B"}
+              {t("ค่าเริ่มต้น:")} {teamA.trim() || "A"} vs {teamB.trim() || "B"}
             </span>
           </label>
           <input
@@ -200,7 +203,7 @@ export function NewSeriesModal({
             type="text"
             value={customSeries}
             onChange={(e) => setCustomSeries(e.target.value)}
-            placeholder={`เช่น ${teamA || "TEAM A"} vs ${teamB || "TEAM B"} (Playoffs)`}
+            placeholder={t("เช่น {0} vs {1} (Playoffs)", teamA || "TEAM A", teamB || "TEAM B")}
             maxLength={32}
             className="h-8 border border-line bg-bg px-3 font-display text-xs text-ink placeholder:text-dim focus:border-gold focus:outline-none"
           />
@@ -208,14 +211,14 @@ export function NewSeriesModal({
 
         {/* Summary Card */}
         <div className="border border-line bg-panel-2/50 p-3">
-          <div className="text-[11px] text-dim">แมตช์ใหม่ที่จะเริ่ม:</div>
+          <div className="text-[11px] text-dim">{t("แมตช์ใหม่ที่จะเริ่ม:")}</div>
           <div className="mt-0.5 font-display text-sm font-bold text-gold">{currentPreview}</div>
           <div className="mt-1 flex items-center gap-2 text-[11px] text-muted">
-            <span>กระดาน: GAME 1</span>
+            <span>{t("กระดาน: GAME 1")}</span>
             <span>•</span>
-            <span>สถิติ Global Ban: รีเซ็ตเป็น 0 ฮีโร่</span>
+            <span>{t("สถิติ Global Ban: รีเซ็ตเป็น 0 ฮีโร่")}</span>
             <span>•</span>
-            <span>ประวัติแมตช์เดิม: ยังอยู่ครบ</span>
+            <span>{t("ประวัติแมตช์เดิม: ยังอยู่ครบ")}</span>
           </div>
         </div>
 
@@ -226,14 +229,14 @@ export function NewSeriesModal({
             onClick={() => requestClose()}
             className="h-9 px-3.5 font-display text-xs font-semibold text-muted transition-colors hover:text-ink"
           >
-            ยกเลิก
+            <StableButtonLabel message="ยกเลิก" />
           </button>
           <button
             type="submit"
             className="flex h-9 items-center gap-1.5 border border-gold bg-gold px-4 font-display text-xs font-bold tracking-wider text-bg shadow-sm transition-colors hover:bg-gold/90"
           >
             <PlusCircle className="h-4 w-4" />
-            <span>สร้างแมตช์ใหม่ และเริ่มดราฟต์</span>
+            <span><StableButtonLabel message="สร้างแมตช์ใหม่ และเริ่มดราฟต์" /></span>
           </button>
         </div>
       </form>

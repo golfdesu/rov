@@ -17,6 +17,34 @@ export interface DraftState {
   redBans: string[];
 }
 
+export function isSameRecordedDraft(
+  saved: RecordedDraftGame | null | undefined,
+  current: DraftState & Pick<RecordedDraftGame, "blueSideTeam" | "pickLanes">,
+): boolean {
+  if (!saved || saved.blueSideTeam !== current.blueSideTeam) return false;
+  const sameHeroes = (a: string[], b: string[]) => a.length === b.length && a.every((hero, index) => hero === b[index]);
+  const savedLanes = saved.pickLanes ?? {};
+  const currentLanes = Object.entries(current.pickLanes ?? {});
+  return (
+    sameHeroes(saved.blueBans, current.blueBans) &&
+    sameHeroes(saved.redBans, current.redBans) &&
+    sameHeroes(saved.bluePicks, current.bluePicks) &&
+    sameHeroes(saved.redPicks, current.redPicks) &&
+    Object.keys(savedLanes).length === currentLanes.length &&
+    currentLanes.every(([hero, lane]) => savedLanes[hero] === lane)
+  );
+}
+
+export type DraftSlot = Pick<DraftStep, "side" | "action"> & { index: number };
+
+export function draftSlotKey(slot: Pick<DraftSlot, "side" | "action">): keyof DraftState {
+  return `${slot.side}${slot.action === "pick" ? "Picks" : "Bans"}`;
+}
+
+export function getDraftSlotStep(slot: DraftSlot): DraftStep | undefined {
+  return CANONICAL_DRAFT_STEPS.filter((step) => step.side === slot.side && step.action === slot.action)[slot.index];
+}
+
 export function getCurrentDraftStep(stepIndex: number): DraftStep | null {
   return CANONICAL_DRAFT_STEPS[stepIndex] ?? null;
 }
@@ -133,6 +161,7 @@ export interface DraftMachineState extends DraftState {
 
 export type DraftAction =
   | { type: "lock"; hero: string }
+  | { type: "replace"; slot: DraftSlot; hero: string; globalBans: GlobalBanState }
   | { type: "undo" }
   | { type: "redo" }
   | { type: "reset" }
@@ -473,7 +502,7 @@ export function draftReducer(state: DraftMachineState, action: DraftAction): Dra
       if (unavailableSet(state).has(action.hero)) return state;
       const step = CANONICAL_DRAFT_STEPS[state.stepIndex];
       if (!step) return state;
-      const key = `${step.side}${step.action === "pick" ? "Picks" : "Bans"}` as keyof DraftState;
+      const key = draftSlotKey(step);
       return {
         ...state,
         [key]: [...state[key], action.hero],
@@ -482,6 +511,26 @@ export function draftReducer(state: DraftMachineState, action: DraftAction): Dra
         future: [],
         prediction: EMPTY_PREDICTION,
         winHistory: state.winHistory.slice(0, state.stepIndex + 1),
+      };
+    }
+    case "replace": {
+      const { slot, hero, globalBans } = action;
+      const step = getDraftSlotStep(slot);
+      const key = draftSlotKey(slot);
+      if (!step || !state[key][slot.index] || unavailableSet(state, globalBans, step.step).has(hero)) return state;
+
+      const heroes = state[key].slice();
+      heroes[slot.index] = hero;
+      const draft = { ...state, [key]: heroes };
+      // Keep the actual turn and the later actions, and rebuild Undo snapshots for the edited board.
+      const { history } = reconstructDraftHistory(draft);
+      return {
+        ...draft,
+        history,
+        future: [],
+        prediction: EMPTY_PREDICTION,
+        winHistory: state.winHistory.slice(0, step.step + 1),
+        blueWinRate: state.winHistory[step.step] ?? DEFAULT_WIN_RATE,
       };
     }
     case "undo": {
@@ -542,7 +591,7 @@ export function reconstructDraftHistory(draft: DraftState): {
   let stepIndex = 0;
   for (let i = 0; i < CANONICAL_DRAFT_STEPS.length; i++) {
     const s = CANONICAL_DRAFT_STEPS[i];
-    const key = `${s.side}${s.action === "pick" ? "Picks" : "Bans"}` as keyof DraftState;
+    const key = draftSlotKey(s);
     const hero = draft[key][idx[key]];
     if (!hero) break;
     history.push({

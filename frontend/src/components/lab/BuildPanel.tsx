@@ -1,3 +1,5 @@
+import { StableButtonLabel } from "../StableButtonLabel";
+import { useLanguage } from "../../i18n/language";
 import { BookOpen, Info, Plus, Swords, X } from "lucide-react";
 import { type ReactNode, useMemo, useState } from "react";
 import type { BuildStats, CatalogItem, CombatBuild, CombatCatalog, Side, SkillDamageRow } from "../../types/combat";
@@ -81,6 +83,7 @@ function ItemPicker({
   onInspect: (name: string) => void;
   onClose: () => void;
 }) {
+  const { t } = useLanguage();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
   const categories = useMemo(() => ["all", ...new Set(items.map((i) => i.category))], [items]);
@@ -97,10 +100,10 @@ function ItemPicker({
           autoFocus
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="ค้นหาไอเทม (ไม่พิมพ์ = เฉพาะชิ้นสำเร็จ)"
+          placeholder={t("ค้นหาไอเทม (ไม่พิมพ์ = เฉพาะชิ้นสำเร็จ)")}
           className="min-w-0 flex-1 border border-line bg-bg px-2 py-1 text-xs"
         />
-        <button type="button" onClick={onClose} className="px-2 text-muted hover:text-ink" aria-label="ปิด">
+        <button type="button" onClick={onClose} className="px-2 text-muted hover:text-ink" aria-label={t("ปิด")}>
           <X size={14} />
         </button>
       </div>
@@ -142,9 +145,9 @@ function ItemPicker({
                 e.stopPropagation();
                 onInspect(i.name);
               }}
-              title="ดูภาพการ์ดไอเทมในเกม"
+              title={t("ดูภาพการ์ดไอเทมในเกม")}
               className="rounded p-1 text-muted hover:bg-panel-2 hover:text-gold"
-              aria-label={`ดูการ์ด ${i.name}`}
+              aria-label={t("ดูการ์ด {0}", i.name)}
             >
               <Info size={14} />
             </button>
@@ -165,6 +168,7 @@ export function BuildPanel({
   enemyName,
   onChange,
 }: BuildPanelProps) {
+  const { t } = useLanguage();
   const [picking, setPicking] = useState<number | null>(null);
   const [showHeroPicker, setShowHeroPicker] = useState(false);
   const [showSkillsModal, setShowSkillsModal] = useState(false);
@@ -191,7 +195,7 @@ export function BuildPanel({
     <div className="flex flex-col gap-3 border border-line bg-panel p-3">
       {/* Hero Showcase Card */}
       <div
-        className={`group relative flex w-full flex-wrap items-center justify-between gap-3 rounded-lg border p-2.5 transition-all ${
+        className={`group relative flex w-full flex-col gap-3 rounded-lg border p-2.5 transition-all sm:flex-row sm:items-center sm:justify-between ${
           side === "a"
             ? "border-blue/40 bg-gradient-to-r from-blue/15 via-panel to-panel shadow-sm shadow-blue/5"
             : "border-red/40 bg-gradient-to-r from-red/15 via-panel to-panel shadow-sm shadow-red/5"
@@ -209,7 +213,7 @@ export function BuildPanel({
             }
           }}
           className="flex min-w-0 flex-1 cursor-pointer items-center gap-3"
-          title="แตะเพื่อเปลี่ยนฮีโร่"
+          title={t("แตะเพื่อเปลี่ยนฮีโร่")}
         >
           {/* Large Chamfered Portrait */}
           <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded clip-chamfer ring-2 ring-line-strong transition-transform group-hover:scale-105 group-hover:ring-gold">
@@ -220,16 +224,16 @@ export function BuildPanel({
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <span className={`font-display text-[10px] font-bold tracking-[0.2em] ${accent}`}>
-                {side === "a" ? "🔵 ฝั่ง A" : "🔴 ฝั่ง B"}
+                {side === "a" ? t("🔵 ฝั่ง A") : t("🔴 ฝั่ง B")}
               </span>
               {currentHeroObj?.role && (
                 <span className="rounded bg-panel-2 px-1.5 py-0.5 font-mono text-[9px] font-semibold text-muted">
-                  {currentHeroObj.role} {currentHeroObj.ranged ? "· ระยะไกล" : "· ระยะใกล้"}
+                  {currentHeroObj.role} {currentHeroObj.ranged ? t("· ระยะไกล") : t("· ระยะใกล้")}
                 </span>
               )}
             </div>
 
-            <div className="mt-1 truncate font-display text-base font-bold text-ink transition-colors hover:text-gold">
+            <div className="mt-1 font-display text-base font-bold wrap-anywhere text-ink transition-colors hover:text-gold">
               {heroDisplay}
               {heroDisplay !== build.hero && (
                 <span className="ml-1.5 font-sans text-xs font-normal text-dim">({build.hero})</span>
@@ -239,26 +243,26 @@ export function BuildPanel({
         </div>
 
         {/* Right: Action Buttons */}
-        <div className="flex shrink-0 items-center gap-1.5">
+        <div className="flex w-full shrink-0 items-center gap-1.5 sm:w-auto">
           {/* View Skills Button */}
           <button
             type="button"
             onClick={() => setShowSkillsModal(true)}
-            className="flex items-center gap-1.5 rounded-md border border-line bg-panel-2 px-2.5 py-1.5 text-xs font-semibold text-ink shadow-sm transition-all hover:border-gold hover:text-gold"
-            title="ดูรายละเอียดสกิล คูลดาวน์ และสูตรการคำนวณ"
+            className="flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-md border border-line bg-panel-2 px-2.5 py-1.5 text-xs font-semibold text-ink shadow-sm transition-all hover:border-gold hover:text-gold sm:min-h-0 sm:flex-none"
+            title={t("ดูรายละเอียดสกิล คูลดาวน์ และสูตรการคำนวณ")}
           >
             <BookOpen size={13} className="text-gold" />
-            <span>ดูสกิล</span>
+            <span><StableButtonLabel message="ดูสกิล" /></span>
           </button>
 
           {/* Change Hero Button */}
           <button
             type="button"
             onClick={() => setShowHeroPicker(true)}
-            className="flex items-center gap-1.5 rounded-md border border-gold/40 bg-gold/10 px-3 py-1.5 text-xs font-bold text-gold shadow-sm transition-all hover:border-gold hover:bg-gold hover:text-bg"
+            className="flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-md border border-gold/40 bg-gold/10 px-3 py-1.5 text-xs font-bold text-gold shadow-sm transition-all hover:border-gold hover:bg-gold hover:text-bg sm:min-h-0 sm:flex-none"
           >
             <Swords size={13} />
-            <span>เปลี่ยน</span>
+            <span><StableButtonLabel message="เปลี่ยน" /></span>
           </button>
         </div>
       </div>
@@ -298,7 +302,7 @@ export function BuildPanel({
 
       {/* Level Slider */}
       <label className="flex items-center gap-3 text-xs">
-        <span className="w-14 text-muted">เลเวล</span>
+        <span className="w-14 text-muted">{t("เลเวล")}</span>
         <input
           type="range"
           min={1}
@@ -312,7 +316,7 @@ export function BuildPanel({
 
       {/* Items Section */}
       <Section
-        title="ไอเทม"
+        title={t("ไอเทม")}
         right={
           <div className="flex items-center gap-2">
             <span className="font-mono text-[10px] text-dim">{cost.toLocaleString()}g</span>
@@ -321,11 +325,11 @@ export function BuildPanel({
               onClick={() =>
                 setInspectingItem(build.items[0] || catalog.items[0]?.name || "Fenrir's Tooth")
               }
-              className="flex items-center gap-1 rounded border border-line bg-panel-2 px-1.5 py-0.5 text-[10px] font-semibold text-muted transition-colors hover:border-gold hover:text-gold"
-              title="ดูคลังภาพการ์ดไอเทมในเกมทั้งหมด (114 ไอเทม)"
+              className="flex min-h-6 items-center gap-1 rounded border border-line bg-panel-2 px-1.5 py-0.5 text-[10px] font-semibold text-muted transition-colors hover:border-gold hover:text-gold"
+              title={t("ดูคลังภาพการ์ดไอเทมในเกมทั้งหมด (114 ไอเทม)")}
             >
               <BookOpen size={10} className="text-gold" />
-              <span>การ์ดไอเทม</span>
+              <span><StableButtonLabel message="การ์ดไอเทม" /></span>
             </button>
           </div>
         }
@@ -341,7 +345,7 @@ export function BuildPanel({
                     const targetSlot = item ? i : build.items.length;
                     setPicking(picking === targetSlot ? null : targetSlot);
                   }}
-                  title={item ? `${item.name}\n${formatStats(item.stats)}` : "เพิ่มไอเทม"}
+                  title={item ? `${item.name}\n${formatStats(item.stats)}` : t("เพิ่มไอเทม")}
                   className={`grid aspect-square w-full place-items-center border ${
                     picking === (item ? i : build.items.length) ? "border-gold" : "border-line"
                   } bg-panel-2 hover:border-line-strong`}
@@ -356,7 +360,7 @@ export function BuildPanel({
                   <>
                     <button
                       type="button"
-                      aria-label={`ถอด ${item.name}`}
+                      aria-label={t("ถอด {0}", item.name)}
                       onClick={(e) => {
                         e.stopPropagation();
                         setItem(i, null);
@@ -367,8 +371,8 @@ export function BuildPanel({
                     </button>
                     <button
                       type="button"
-                      aria-label={`ดูการ์ด ${item.name}`}
-                      title={`ดูภาพการ์ดในเกม: ${item.name}`}
+                      aria-label={t("ดูการ์ด {0}", item.name)}
+                      title={t("ดูภาพการ์ดในเกม: {0}", item.name)}
                       onClick={(e) => {
                         e.stopPropagation();
                         setInspectingItem(item.name);
@@ -414,7 +418,7 @@ export function BuildPanel({
       )}
 
       {/* Arcana Board */}
-      <Section title="รูน (Tier 3 Arcana)">
+      <Section title={t("รูน (Tier 3 Arcana)")}>
         <ArcanaBoard
           arcana={catalog.arcana}
           chosen={build.arcana}
@@ -424,7 +428,7 @@ export function BuildPanel({
       </Section>
 
       {/* Enchantment Board */}
-      <Section title="พลังแฝง">
+      <Section title={t("พลังแฝง")}>
         <EnchantmentBoard
           catalog={catalog}
           primaryFaction={build.primary_faction}

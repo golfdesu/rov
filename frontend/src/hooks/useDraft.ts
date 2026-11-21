@@ -1,6 +1,8 @@
+import type { Message } from "../i18n/language";
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { ApiError, deleteJson, getJson, isAbortError, postJson, putJson } from "../api/client";
 import {
+  CANONICAL_DRAFT_STEPS,
   type DraftPredictionResponse,
   type DraftSessionPayload,
   type GlobalBanState,
@@ -16,15 +18,20 @@ import {
   buildPredictPayload,
   DEFAULT_WIN_RATE,
   type DraftMachineState,
+  type DraftSlot,
+  type DraftState,
   draftReducer,
+  draftSlotKey,
   EMPTY_GLOBAL_BANS,
   EMPTY_PREDICTION,
   getCurrentDraftStep,
+  getDraftSlotStep,
   getGameSeriesGroup,
   getGameUnlockStatus,
   getMaxUnlockedGame,
   getSeriesWinningHeroes,
   INITIAL_DRAFT_STATE,
+  isSameRecordedDraft,
   LANE_CYCLE,
   type PredictionState,
   prioritizeMissingLanes,
@@ -41,6 +48,32 @@ const CANDIDATE_POOL = 50;
 export const MAX_SERIES_GAMES = 100;
 const SESSION_STORAGE_KEY = "rov_draft_session_v1";
 const VALID_LEAGUES: readonly LeagueCode[] = ["GLOBAL", "RPL", "GCS", "AOG", "INTL"];
+
+type ParkedDraft = Pick<
+  DraftMachineState,
+  "stepIndex" | "bluePicks" | "redPicks" | "blueBans" | "redBans" | "history" | "blueWinRate"
+> & {
+  winHistory: DraftSessionPayload["winHistory"];
+  blueSideTeam: TeamId;
+  pickLanes: Record<string, LaneKey>;
+};
+
+// Parked drafts are kept with the local board snapshot, scoped to its guest or account storage key.
+type LocalDraftSession = DraftSessionPayload & { parkedDrafts?: Record<string, ParkedDraft> };
+
+function findGlobalBanConflicts(draft: DraftState, globalBans: GlobalBanState) {
+  const conflicts: { hero: string; slot: DraftSlot }[] = [];
+  const next = { bluePicks: 0, redPicks: 0, blueBans: 0, redBans: 0 };
+  for (const step of CANONICAL_DRAFT_STEPS) {
+    const key = draftSlotKey(step);
+    const index = next[key]++;
+    const hero = draft[key][index];
+    if (hero && activeGlobalBansForStep(globalBans, step.step).includes(hero)) {
+      conflicts.push({ hero, slot: { side: step.side, action: step.action, index } });
+    }
+  }
+  return conflicts;
+}
 
 function upsertSeriesGame(list: RecordedDraftGame[], snapshot: RecordedDraftGame, currentGroup: string): RecordedDraftGame[] {
   const filtered = list.filter(
@@ -96,6 +129,11 @@ function normalizePickLanes(raw: unknown): Record<string, LaneKey> {
   return out;
 }
 
+function filterPickLanes(pickLanes: Record<string, LaneKey>, bluePicks: string[], redPicks: string[]) {
+  const picked = new Set([...bluePicks, ...redPicks]);
+  return Object.fromEntries(Object.entries(pickLanes).filter(([hero]) => picked.has(hero)));
+}
+
 export function normalizeSessionPayload(parsed: Partial<DraftSessionPayload>): DraftSessionPayload {
   const rawGb = parsed.globalBans ? { ...EMPTY_GLOBAL_BANS, ...parsed.globalBans } : EMPTY_GLOBAL_BANS;
   const globalBans: GlobalBanState = {
@@ -105,13 +143,18 @@ export function normalizeSessionPayload(parsed: Partial<DraftSessionPayload>): D
     universalBans: normalizeHeroList(rawGb.universalBans),
   };
   const seriesGames: RecordedDraftGame[] = Array.isArray(parsed.seriesGames)
-    ? parsed.seriesGames.map((g) => ({
-        ...g,
-        bluePicks: normalizeHeroList(g.bluePicks),
-        redPicks: normalizeHeroList(g.redPicks),
-        blueBans: normalizeHeroList(g.blueBans),
-        redBans: normalizeHeroList(g.redBans),
-      }))
+    ? parsed.seriesGames.map((g) => {
+        const bluePicks = normalizeHeroList(g.bluePicks);
+        const redPicks = normalizeHeroList(g.redPicks);
+        return {
+          ...g,
+          bluePicks,
+          redPicks,
+          blueBans: normalizeHeroList(g.blueBans),
+          redBans: normalizeHeroList(g.redBans),
+          pickLanes: filterPickLanes(normalizePickLanes(g.pickLanes), bluePicks, redPicks),
+        };
+      })
     : [];
 
   return {
@@ -178,19 +221,19 @@ export function mergeGuestIntoAccountSession(
   };
 }
 
-function loadLocalSession(key = SESSION_STORAGE_KEY): DraftSessionPayload | null {
+function loadLocalSession(key = SESSION_STORAGE_KEY): LocalDraftSession | null {
   try {
     const raw = window.localStorage.getItem(key);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as Partial<DraftSessionPayload>;
+    const parsed = JSON.parse(raw) as Partial<LocalDraftSession>;
     if (!parsed || typeof parsed !== "object") return null;
-    return normalizeSessionPayload(parsed);
+    return { ...normalizeSessionPayload(parsed), parkedDrafts: parsed.parkedDrafts };
   } catch {
     return null;
   }
 }
 
-function saveLocalSession(payload: DraftSessionPayload, key = SESSION_STORAGE_KEY): void {
+function saveLocalSession(payload: LocalDraftSession, key = SESSION_STORAGE_KEY): void {
   try {
     window.localStorage.setItem(key, JSON.stringify(payload));
   } catch {
@@ -264,25 +307,6 @@ async function fetchHeroCatalogOnce(): Promise<{ heroes: Hero[]; isFallback: boo
   return inflightHeroesPromise;
 }
 
-function isSameRecordedDraft(
-  saved: RecordedDraftGame | undefined,
-  blueSideTeam: TeamId,
-  blueBans: string[],
-  redBans: string[],
-  bluePicks: string[],
-  redPicks: string[],
-): boolean {
-  if (!saved) return false;
-  const sameArr = (a: string[], b: string[]) => a.length === b.length && a.every((v, i) => v === b[i]);
-  return (
-    saved.blueSideTeam === blueSideTeam &&
-    sameArr(saved.blueBans, blueBans) &&
-    sameArr(saved.redBans, redBans) &&
-    sameArr(saved.bluePicks, bluePicks) &&
-    sameArr(saved.redPicks, redPicks)
-  );
-}
-
 function useHeroCatalog() {
   const [heroes, setHeroes] = useState<Hero[]>(() => cachedHeroesCatalog?.heroes ?? []);
   const [isLoading, setIsLoading] = useState<boolean>(() => cachedHeroesCatalog === null);
@@ -327,7 +351,7 @@ export function useDraft(options: UseDraftOptions = {}) {
   } = options;
 
   const catalog = useHeroCatalog();
-  const [initialSession] = useState<DraftSessionPayload | null>(() => loadLocalSession(storageKey));
+  const [initialSession] = useState(() => loadLocalSession(storageKey));
   const engine = "sota" as const;
   const [state, dispatch] = useReducer(draftReducer, initialSession, initMachineState);
   const [globalBans, setGlobalBans] = useState<GlobalBanState>(
@@ -340,30 +364,16 @@ export function useDraft(options: UseDraftOptions = {}) {
     () => initialSession?.seriesGames ?? [],
   );
   const [isLoading, setIsLoading] = useState(false);
-  const [predictError, setPredictError] = useState<string | null>(null);
-  const [syncError, setSyncError] = useState<string | null>(null);
+  const [predictError, setPredictError] = useState<Message | null>(null);
+  const [syncError, setSyncError] = useState<Message | null>(null);
   const [predictRetryKey, setPredictRetryKey] = useState(0);
   const [pausePredict, setPausePredict] = useState(false);
   const predictCacheRef = useRef<Map<string, DraftPredictionResponse>>(new Map());
+  const activePredictRequestRef = useRef<AbortController | null>(null);
   const lastPredictedKeyRef = useRef<string | null>(null);
   const handledRetryKeyRef = useRef<number>(0);
-  const unsavedDraftsRef = useRef<
-    Record<
-      string,
-      {
-        stepIndex: number;
-        bluePicks: string[];
-        redPicks: string[];
-        blueBans: string[];
-        redBans: string[];
-        history: typeof state.history;
-        winHistory: typeof state.winHistory;
-        blueWinRate: number;
-        blueSideTeam: TeamId;
-        pickLanes: Record<string, LaneKey>;
-      }
-    >
-  >({});
+  const unsavedDraftsRef = useRef(initialSession?.parkedDrafts ?? {});
+  const redoPickLanesRef = useRef(new Map<string, LaneKey>());
 
   const lastSavedAtRef = useRef<number>(initialSession?.updatedAt ?? 0);
   const isHydratingRemoteRef = useRef<boolean>(false);
@@ -376,6 +386,15 @@ export function useDraft(options: UseDraftOptions = {}) {
 
   const { stepIndex, bluePicks, redPicks, blueBans, redBans } = state;
   const currentStep = getCurrentDraftStep(stepIndex);
+  useEffect(() => {
+    if (!state.future?.length) redoPickLanesRef.current.clear();
+  }, [state.future]);
+
+  const globalBanConflicts = useMemo(
+    () => findGlobalBanConflicts({ bluePicks, redPicks, blueBans, redBans }, globalBans),
+    [bluePicks, redPicks, blueBans, redBans, globalBans],
+  );
+  const conflictingHero = globalBanConflicts[0]?.hero;
 
   // On mount: synchronize with backend /draft/session so state survives browser cache clears or new windows
   useEffect(() => {
@@ -411,7 +430,7 @@ export function useDraft(options: UseDraftOptions = {}) {
           setLeague(sanitizeLeague(remote.league));
           setPickLanes(remote.pickLanes ?? {});
           setSeriesGames(remote.seriesGames);
-          saveLocalSession(remote, storageKey);
+          saveLocalSession({ ...remote, parkedDrafts: unsavedDraftsRef.current }, storageKey);
         }
       } catch (err) {
         if (!isAbortError(err)) {
@@ -430,14 +449,14 @@ export function useDraft(options: UseDraftOptions = {}) {
     return () => ctrl.abort();
   }, [persistSession, storageKey]);
 
-  const activePickLanes = useMemo(() => {
-    const picked = new Set([...bluePicks, ...redPicks]);
-    const out: Record<string, LaneKey> = {};
-    for (const [hero, lane] of Object.entries(pickLanes)) {
-      if (picked.has(hero)) out[hero] = lane;
-    }
-    return out;
-  }, [pickLanes, bluePicks, redPicks]);
+  const activePickLanes = useMemo(
+    () => filterPickLanes(pickLanes, bluePicks, redPicks),
+    [pickLanes, bluePicks, redPicks],
+  );
+  const draftToRecord = useMemo(
+    () => ({ bluePicks, redPicks, blueBans, redBans, blueSideTeam: globalBans.blueSideTeam, pickLanes: activePickLanes }),
+    [bluePicks, redPicks, blueBans, redBans, globalBans.blueSideTeam, activePickLanes],
+  );
 
   const heroMap = useMemo(() => new Map(catalog.heroes.map((h) => [h.name, h])), [catalog.heroes]);
 
@@ -494,7 +513,8 @@ export function useDraft(options: UseDraftOptions = {}) {
       winHistory: state.winHistory.map((v) => (typeof v === "number" && Number.isFinite(v) ? v : null)),
       blueWinRate: state.blueWinRate,
     };
-    const fullSnapshotKey = JSON.stringify(bodyWithoutTimestamp);
+    const localSnapshot = { ...bodyWithoutTimestamp, parkedDrafts: unsavedDraftsRef.current };
+    const fullSnapshotKey = JSON.stringify(localSnapshot);
 
     if (isHydratingRemoteRef.current) {
       isHydratingRemoteRef.current = false;
@@ -521,7 +541,7 @@ export function useDraft(options: UseDraftOptions = {}) {
       lastSavedAtRef.current = now;
       saveLocalSession(
         {
-          ...bodyWithoutTimestamp,
+          ...localSnapshot,
           updatedAt: now,
         },
         storageKey,
@@ -559,6 +579,7 @@ export function useDraft(options: UseDraftOptions = {}) {
     const isPredictNetworkPending =
       enabled &&
       !pausePredict &&
+      !conflictingHero &&
       !predictError &&
       (isLoading ||
         (lastPredictedKeyRef.current !== predictPayloadKey && !predictCacheRef.current.has(predictPayloadKey)));
@@ -585,7 +606,7 @@ export function useDraft(options: UseDraftOptions = {}) {
           if (!isAbortError(err)) {
             console.warn("Could not persist /draft/session to server:", err);
             setSyncError(
-              `ซิงก์ข้อมูลขึ้นเซิร์ฟเวอร์ไม่สำเร็จ (${err instanceof Error ? err.message : "Network error"}) — ข้อมูลถูกเก็บไว้ในเครื่องชั่วคราวแล้ว`,
+              ["ซิงก์ข้อมูลขึ้นเซิร์ฟเวอร์ไม่สำเร็จ ({0}) — ข้อมูลถูกเก็บไว้ในเครื่องชั่วคราวแล้ว", err instanceof Error ? err.message : "Network error"],
             );
           }
         });
@@ -599,6 +620,7 @@ export function useDraft(options: UseDraftOptions = {}) {
     pausePredict,
     isLoading,
     predictError,
+    conflictingHero,
     persistSession,
     storageKey,
     initialSyncTick,
@@ -624,6 +646,10 @@ export function useDraft(options: UseDraftOptions = {}) {
   // Reuses exact payload cache (0 requests on no-op swaps/undo) and debounces rapid bursts.
   useEffect(() => {
     if (!enabled || pausePredict) return;
+    if (conflictingHero) {
+      setIsLoading(false);
+      return;
+    }
     const draft = { bluePicks, redPicks, blueBans, redBans };
     const step = getCurrentDraftStep(stepIndex);
     const predictPayload = buildPredictPayload(
@@ -687,12 +713,14 @@ export function useDraft(options: UseDraftOptions = {}) {
 
     const ctrl = new AbortController();
     const delayMs = isRetry ? 0 : 100;
+    activePredictRequestRef.current = ctrl;
     setIsLoading(true);
     setPredictError(null);
 
     const timer = window.setTimeout(async () => {
       try {
         const data = await postJson<DraftPredictionResponse>("/predict", predictPayload, ctrl.signal);
+        if (ctrl.signal.aborted) return;
         const cache = predictCacheRef.current;
         if (cache.size >= 64) {
           const oldestKey = cache.keys().next().value;
@@ -726,6 +754,7 @@ export function useDraft(options: UseDraftOptions = {}) {
   }, [
     enabled,
     pausePredict,
+    conflictingHero,
     engine,
     stepIndex,
     bluePicks,
@@ -747,15 +776,44 @@ export function useDraft(options: UseDraftOptions = {}) {
 
   const lockHero = useCallback(
     (hero: string) => {
-      if (unavailableHeroes.has(hero)) return;
+      if (conflictingHero || unavailableHeroes.has(hero)) return;
       dispatch({ type: "lock", hero });
     },
-    [unavailableHeroes],
+    [conflictingHero, unavailableHeroes],
   );
+
+  const getUnavailableHeroesForSlot = (slot: DraftSlot) =>
+    unavailableSet(state, globalBans, getDraftSlotStep(slot)?.step);
+
+  const replaceHero = (slot: DraftSlot, hero: string): boolean => {
+    const oldHero = state[draftSlotKey(slot)][slot.index];
+    if (!oldHero || !heroMap.has(hero) || getUnavailableHeroesForSlot(slot).has(hero)) return false;
+
+    activePredictRequestRef.current?.abort();
+    dispatch({ type: "replace", slot, hero, globalBans });
+    if (slot.action === "pick") {
+      setPickLanes((prev) => {
+        if (!prev[oldHero]) return prev;
+        const next = { ...prev };
+        delete next[oldHero];
+        return next;
+      });
+    }
+    lastPredictedKeyRef.current = null;
+    setPredictError(null);
+    return true;
+  };
   const undo = useCallback(() => {
     const prevEntry = state.history.at(-1);
     if (prevEntry) {
       const stillPicked = new Set([...prevEntry.bluePicks, ...prevEntry.redPicks]);
+      for (const hero of [...bluePicks, ...redPicks]) {
+        if (stillPicked.has(hero)) continue;
+        const lane = pickLanes[hero];
+        if (lane) redoPickLanesRef.current.set(hero, lane);
+        else redoPickLanesRef.current.delete(hero);
+      }
+
       setPickLanes((prev) => {
         let changed = false;
         const next: Record<string, LaneKey> = {};
@@ -770,7 +828,7 @@ export function useDraft(options: UseDraftOptions = {}) {
       });
     }
     dispatch({ type: "undo" });
-  }, [state.history]);
+  }, [state.history, bluePicks, redPicks, pickLanes]);
   const redo = useCallback(() => {
     const next = state.future?.at(-1);
     if (!next) return;
@@ -784,9 +842,22 @@ export function useDraft(options: UseDraftOptions = {}) {
       restricted.has(h),
     );
     if (blocked && step) {
-      setPredictError(`ไม่สามารถ Redo ${displayName(blocked)} ได้ เนื่องจากถูกเพิ่มเข้า Global Ban แล้ว`);
+      setPredictError(["ไม่สามารถ Redo {0} ได้ เนื่องจากถูกเพิ่มเข้า Global Ban แล้ว", displayName(blocked)]);
       return;
     }
+
+    const restoredLanes = { ...pickLanes };
+    for (const [addedPicks, teamPicks] of [[newlyBluePicks, next.bluePicks], [newlyRedPicks, next.redPicks]]) {
+      for (const hero of addedPicks) {
+        const lane = redoPickLanesRef.current.get(hero);
+        redoPickLanesRef.current.delete(hero);
+        if (lane && !teamPicks.some((teammate) => teammate !== hero && restoredLanes[teammate] === lane)) {
+          restoredLanes[hero] = lane;
+        }
+      }
+    }
+    if (newlyBluePicks.length || newlyRedPicks.length) setPickLanes(restoredLanes);
+
     setPredictError(null);
     dispatch({ type: "redo" });
   }, [
@@ -797,6 +868,7 @@ export function useDraft(options: UseDraftOptions = {}) {
     redPicks,
     blueBans,
     redBans,
+    pickLanes,
   ]);
   const setPickLane = useCallback(
     (heroName: string, lane?: LaneKey) => {
@@ -838,6 +910,65 @@ export function useDraft(options: UseDraftOptions = {}) {
     }));
   }, []);
 
+  const parkCurrentDraft = useCallback(
+    (blueSideTeam = globalBans.blueSideTeam) => {
+      const draftKey = `${resolveSeriesName(globalBans)}::g${globalBans.gameNumber}`;
+      const { stepIndex, bluePicks, redPicks, blueBans, redBans, history, winHistory, blueWinRate } = state;
+      unsavedDraftsRef.current[draftKey] = {
+        stepIndex,
+        bluePicks,
+        redPicks,
+        blueBans,
+        redBans,
+        history,
+        winHistory,
+        blueWinRate,
+        blueSideTeam,
+        pickLanes,
+      };
+    },
+    [globalBans, state, pickLanes],
+  );
+
+  const restoreParkedDraft = useCallback((draftKey: string) => {
+    const draft = unsavedDraftsRef.current[draftKey];
+    if (draft) {
+      delete unsavedDraftsRef.current[draftKey];
+      const { stepIndex, bluePicks, redPicks, blueBans, redBans, history, blueWinRate, winHistory } = draft;
+      dispatch({
+        type: "hydrate",
+        payload: {
+          stepIndex, bluePicks, redPicks, blueBans, redBans, history, blueWinRate,
+          winHistory: sanitizeWinHistory(winHistory),
+        },
+      });
+      setPickLanes(draft.pickLanes);
+    } else {
+      dispatch({ type: "reset" });
+      setPickLanes({});
+    }
+    setPredictError(null);
+  }, []);
+
+  const createRecordedGame = useCallback(
+    (seriesName: string, winner?: TeamId): RecordedDraftGame => ({
+      ...draftToRecord,
+      id: `${Date.now()}-g${globalBans.gameNumber}`,
+      gameNumber: globalBans.gameNumber,
+      timestamp: new Date().toLocaleTimeString("th-TH", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      }),
+      seriesName,
+      blueTeamName: blueTeamName(globalBans),
+      redTeamName: redTeamName(globalBans),
+      blueWinRate: state.blueWinRate,
+      winner,
+    }),
+    [draftToRecord, globalBans, state.blueWinRate],
+  );
+
   const loadRecordedGame = useCallback(
     (
       game: RecordedDraftGame,
@@ -854,35 +985,10 @@ export function useDraft(options: UseDraftOptions = {}) {
           const overwritten = activeSeriesGames.filter(
             (g) => getGameSeriesGroup(g) === currentGroup && g.gameNumber === globalBans.gameNumber,
           );
-          if (
-            !isSameRecordedDraft(
-              overwritten[0],
-              globalBans.blueSideTeam,
-              blueBans,
-              redBans,
-              bluePicks,
-              redPicks,
-            )
-          ) {
-            const snapshot: RecordedDraftGame = {
-              id: `${Date.now()}-g${globalBans.gameNumber}`,
-              gameNumber: globalBans.gameNumber,
-              timestamp: new Date().toLocaleTimeString("th-TH", {
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-              }),
-              seriesName: currentGroup,
-              blueTeamName: blueTeamName(globalBans),
-              redTeamName: redTeamName(globalBans),
-              blueSideTeam: globalBans.blueSideTeam,
-              blueBans: [...blueBans],
-              redBans: [...redBans],
-              bluePicks: [...bluePicks],
-              redPicks: [...redPicks],
-              blueWinRate: state.blueWinRate,
-              winner: overwritten[0]?.winner,
-            };
+          if (conflictingHero) {
+            parkCurrentDraft();
+          } else if (!isSameRecordedDraft(overwritten[0], draftToRecord)) {
+            const snapshot = createRecordedGame(currentGroup, overwritten[0]?.winner);
             activeSeriesGames = upsertSeriesGame(activeSeriesGames, snapshot, currentGroup);
             setSeriesGames(activeSeriesGames);
           }
@@ -932,15 +1038,15 @@ export function useDraft(options: UseDraftOptions = {}) {
           blueSideTeam: game.blueSideTeam,
         };
       });
-      setPickLanes({});
+      setPickLanes(game.pickLanes ?? {});
       setPredictError(null);
     },
-    [seriesGames, bluePicks, redPicks, blueBans, redBans, globalBans, state.blueWinRate],
+    [seriesGames, bluePicks, redPicks, blueBans, redBans, globalBans, draftToRecord, conflictingHero, parkCurrentDraft, createRecordedGame],
   );
 
   const recordGameToSeries = useCallback(
     (swapAfter = false, winner?: TeamId) => {
-      if (bluePicks.length < 5 || redPicks.length < 5) return;
+      if (conflictingHero || bluePicks.length < 5 || redPicks.length < 5) return;
 
       const currentGroup = resolveSeriesName(globalBans);
       delete unsavedDraftsRef.current[`${currentGroup}::g${globalBans.gameNumber}`];
@@ -949,25 +1055,7 @@ export function useDraft(options: UseDraftOptions = {}) {
       );
       const effectiveWinner = winner ?? overwrittenGames[0]?.winner;
 
-      const snapshot: RecordedDraftGame = {
-        id: `${Date.now()}-g${globalBans.gameNumber}`,
-        gameNumber: globalBans.gameNumber,
-        timestamp: new Date().toLocaleTimeString("th-TH", {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        }),
-        seriesName: currentGroup,
-        blueTeamName: blueTeamName(globalBans),
-        redTeamName: redTeamName(globalBans),
-        blueSideTeam: globalBans.blueSideTeam,
-        blueBans: [...blueBans],
-        redBans: [...redBans],
-        bluePicks: [...bluePicks],
-        redPicks: [...redPicks],
-        blueWinRate: state.blueWinRate,
-        winner: effectiveWinner,
-      };
+      const snapshot = createRecordedGame(currentGroup, effectiveWinner);
       const nextSeriesGames = upsertSeriesGame(seriesGames, snapshot, currentGroup);
       setSeriesGames(nextSeriesGames);
 
@@ -984,46 +1072,36 @@ export function useDraft(options: UseDraftOptions = {}) {
       }
 
       const nextGame = globalBans.gameNumber + 1;
+      const nextDraftKey = `${currentGroup}::g${nextGame}`;
+      const nextDraft = unsavedDraftsRef.current[nextDraftKey];
       const existingNextGame = nextSeriesGames.find(
         (g) => getGameSeriesGroup(g) === currentGroup && g.gameNumber === nextGame,
       );
-      if (existingNextGame) {
-        loadRecordedGame(existingNextGame, nextSeriesGames);
+      const synced = syncSeriesGlobalBans(globalBans, nextSeriesGames, nextGame, overwrittenGames);
+      const nextGlobalBans = { ...globalBans, ...synced, gameNumber: nextGame };
+      if (!nextDraft && existingNextGame) {
+        loadRecordedGame(existingNextGame, nextSeriesGames, nextGlobalBans);
         return;
       }
 
-      setGlobalBans((prev) => {
-        const blueIsA = prev.blueSideTeam === "A";
-        const addToA = blueIsA ? bluePicks : redPicks;
-        const addToB = blueIsA ? redPicks : bluePicks;
-        const synced = syncSeriesGlobalBans(prev, nextSeriesGames, nextGame, overwrittenGames);
-        // Side switching is strictly manual via Swap Sides; finishing a game keeps the current side assignment.
-        const nextBlueSide: TeamId = swapAfter
-          ? prev.blueSideTeam === "A"
-            ? "B"
-            : "A"
-          : prev.blueSideTeam;
-        return {
-          ...prev,
-          teamAUsed: Array.from(new Set([...synced.teamAUsed, ...addToA])),
-          teamBUsed: Array.from(new Set([...synced.teamBUsed, ...addToB])),
-          gameNumber: nextGame,
-          blueSideTeam: nextBlueSide,
-        };
+      const nextBlueSide = swapAfter
+        ? globalBans.blueSideTeam === "A" ? "B" : "A"
+        : globalBans.blueSideTeam;
+      setGlobalBans({
+        ...nextGlobalBans,
+        blueSideTeam: nextDraft?.blueSideTeam ?? nextBlueSide,
       });
-      dispatch({ type: "reset" });
-      setPickLanes({});
-      setPredictError(null);
+      restoreParkedDraft(nextDraftKey);
     },
     [
       bluePicks,
       redPicks,
-      blueBans,
-      redBans,
       globalBans,
       seriesGames,
-      state.blueWinRate,
+      createRecordedGame,
       loadRecordedGame,
+      conflictingHero,
+      restoreParkedDraft,
     ],
   );
 
@@ -1033,47 +1111,20 @@ export function useDraft(options: UseDraftOptions = {}) {
 
   const saveCurrentDraftSnapshot = useCallback(() => {
     const hasAnyAction = bluePicks.length + redPicks.length + blueBans.length + redBans.length > 0;
-    if (!hasAnyAction) return;
+    if (!hasAnyAction || conflictingHero) return;
     const currentGroup = resolveSeriesName(globalBans);
     delete unsavedDraftsRef.current[`${currentGroup}::g${globalBans.gameNumber}`];
     setSeriesGames((prev) => {
       const overwrittenGames = prev.filter(
         (g) => getGameSeriesGroup(g) === currentGroup && g.gameNumber === globalBans.gameNumber,
       );
-      if (
-        isSameRecordedDraft(
-          overwrittenGames[0],
-          globalBans.blueSideTeam,
-          blueBans,
-          redBans,
-          bluePicks,
-          redPicks,
-        )
-      ) {
+      if (isSameRecordedDraft(overwrittenGames[0], draftToRecord)) {
         return prev;
       }
-      const snapshot: RecordedDraftGame = {
-        id: `${Date.now()}-g${globalBans.gameNumber}`,
-        gameNumber: globalBans.gameNumber,
-        timestamp: new Date().toLocaleTimeString("th-TH", {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        }),
-        seriesName: currentGroup,
-        blueTeamName: blueTeamName(globalBans),
-        redTeamName: redTeamName(globalBans),
-        blueSideTeam: globalBans.blueSideTeam,
-        blueBans: [...blueBans],
-        redBans: [...redBans],
-        bluePicks: [...bluePicks],
-        redPicks: [...redPicks],
-        blueWinRate: state.blueWinRate,
-        winner: overwrittenGames[0]?.winner,
-      };
+      const snapshot = createRecordedGame(currentGroup, overwrittenGames[0]?.winner);
       return upsertSeriesGame(prev, snapshot, currentGroup);
     });
-  }, [bluePicks, redPicks, blueBans, redBans, globalBans, state.blueWinRate]);
+  }, [bluePicks, redPicks, blueBans, redBans, globalBans, draftToRecord, conflictingHero, createRecordedGame]);
 
   const selectGameNumber = useCallback(
     (nextGameNumber: number, globalBansOverride?: GlobalBanState, skipAutoSave = false) => {
@@ -1101,27 +1152,9 @@ export function useDraft(options: UseDraftOptions = {}) {
       // Preserve in-progress unsaved drafts in an isolated scratchpad instead of auto-saving them into seriesGames
       if (
         hasCurrentActions &&
-        !isSameRecordedDraft(
-          existingCurrentGame,
-          effectiveGlobalBans.blueSideTeam,
-          blueBans,
-          redBans,
-          bluePicks,
-          redPicks,
-        )
+        !isSameRecordedDraft(existingCurrentGame, { ...draftToRecord, blueSideTeam: effectiveGlobalBans.blueSideTeam })
       ) {
-        unsavedDraftsRef.current[currentDraftKey] = {
-          stepIndex,
-          bluePicks: [...bluePicks],
-          redPicks: [...redPicks],
-          blueBans: [...blueBans],
-          redBans: [...redBans],
-          history: [...state.history],
-          winHistory: [...state.winHistory],
-          blueWinRate: state.blueWinRate,
-          blueSideTeam: effectiveGlobalBans.blueSideTeam,
-          pickLanes: { ...pickLanes },
-        };
+        parkCurrentDraft(effectiveGlobalBans.blueSideTeam);
       } else if (!hasCurrentActions) {
         delete unsavedDraftsRef.current[currentDraftKey];
       }
@@ -1132,63 +1165,31 @@ export function useDraft(options: UseDraftOptions = {}) {
         (g) => getGameSeriesGroup(g) === currentGroup && g.gameNumber === nextGameNumber,
       );
 
-      if (unsavedTarget) {
-        dispatch({
-          type: "hydrate",
-          payload: {
-            stepIndex: unsavedTarget.stepIndex,
-            bluePicks: [...unsavedTarget.bluePicks],
-            redPicks: [...unsavedTarget.redPicks],
-            blueBans: [...unsavedTarget.blueBans],
-            redBans: [...unsavedTarget.redBans],
-            history: [...unsavedTarget.history],
-            winHistory: [...unsavedTarget.winHistory],
-            blueWinRate: unsavedTarget.blueWinRate,
-          },
-        });
-        setPickLanes({ ...unsavedTarget.pickLanes });
-        setPredictError(null);
-        setGlobalBans((prev) => {
-          const base = globalBansOverride ?? prev;
-          const synced = syncSeriesGlobalBans(base, seriesGames, nextGameNumber, []);
-          return {
-            ...base,
-            ...synced,
-            blueSideTeam: unsavedTarget.blueSideTeam,
-            gameNumber: nextGameNumber,
-          };
-        });
-      } else if (targetGame) {
+      if (!unsavedTarget && targetGame) {
         loadRecordedGame(targetGame, seriesGames, effectiveGlobalBans);
-      } else {
-        dispatch({ type: "reset" });
-        setPickLanes({});
-        setPredictError(null);
-        setGlobalBans((prev) => {
-          const base = globalBansOverride ?? prev;
-          const synced = syncSeriesGlobalBans(base, seriesGames, nextGameNumber, []);
-          return {
-            ...base,
-            ...synced,
-            blueSideTeam: base.blueSideTeam,
-            gameNumber: nextGameNumber,
-          };
-        });
+        return;
       }
+
+      restoreParkedDraft(targetDraftKey);
+      const synced = syncSeriesGlobalBans(effectiveGlobalBans, seriesGames, nextGameNumber);
+      setGlobalBans({
+        ...effectiveGlobalBans,
+        ...synced,
+        blueSideTeam: unsavedTarget?.blueSideTeam ?? effectiveGlobalBans.blueSideTeam,
+        gameNumber: nextGameNumber,
+      });
     },
     [
       globalBans,
       seriesGames,
-      stepIndex,
       bluePicks,
       redPicks,
       blueBans,
       redBans,
-      state.history,
-      state.winHistory,
-      state.blueWinRate,
-      pickLanes,
+      draftToRecord,
       loadRecordedGame,
+      parkCurrentDraft,
+      restoreParkedDraft,
     ],
   );
 
@@ -1198,8 +1199,10 @@ export function useDraft(options: UseDraftOptions = {}) {
       const nextSeriesGames = seriesGames.filter((g) => g.id !== id);
       setSeriesGames(nextSeriesGames);
       if (deleted) {
+        const deletedGroup = getGameSeriesGroup(deleted);
+        delete unsavedDraftsRef.current[`${deletedGroup}::g${deleted.gameNumber}`];
         const currentGroup = resolveSeriesName(globalBans);
-        if (getGameSeriesGroup(deleted) !== currentGroup) return;
+        if (deletedGroup !== currentGroup) return;
 
         const isDeletedActiveGame = deleted.gameNumber === globalBans.gameNumber;
         const synced = syncSeriesGlobalBans(globalBans, nextSeriesGames, globalBans.gameNumber, [deleted]);
@@ -1220,20 +1223,23 @@ export function useDraft(options: UseDraftOptions = {}) {
         };
 
         if (clampedGame !== globalBans.gameNumber) {
+          if (!isDeletedActiveGame && bluePicks.length + redPicks.length + blueBans.length + redBans.length > 0) {
+            parkCurrentDraft();
+          }
+          const targetDraftKey = `${currentGroup}::g${clampedGame}`;
+          const parked = unsavedDraftsRef.current[targetDraftKey];
           const targetGame = nextSeriesGames.find(
             (g) => getGameSeriesGroup(g) === currentGroup && g.gameNumber === clampedGame,
           );
-          if (targetGame) {
+          if (targetGame && !parked) {
             loadRecordedGame(targetGame, nextSeriesGames, finalState);
           } else {
             const nextBlueSide: TeamId =
               deleted.gameNumber === clampedGame ? deleted.blueSideTeam : globalBans.blueSideTeam;
-            dispatch({ type: "reset" });
-            setPickLanes({});
-            setPredictError(null);
+            restoreParkedDraft(targetDraftKey);
             setGlobalBans({
               ...finalState,
-              blueSideTeam: nextBlueSide,
+              blueSideTeam: parked?.blueSideTeam ?? nextBlueSide,
             });
           }
           return;
@@ -1253,11 +1259,14 @@ export function useDraft(options: UseDraftOptions = {}) {
         setGlobalBans(finalState);
       }
     },
-    [seriesGames, globalBans, loadRecordedGame],
+    [seriesGames, globalBans, bluePicks, redPicks, blueBans, redBans, parkCurrentDraft, loadRecordedGame, restoreParkedDraft],
   );
 
   const deleteSeriesGroup = useCallback(
     (groupName: string) => {
+      for (let gameNumber = 1; gameNumber <= 7; gameNumber++) {
+        delete unsavedDraftsRef.current[`${groupName}::g${gameNumber}`];
+      }
       setSeriesGames((prev) => prev.filter((g) => getGameSeriesGroup(g) !== groupName));
       if (resolveSeriesName(globalBans) === groupName) {
         dispatch({ type: "reset" });
@@ -1277,7 +1286,9 @@ export function useDraft(options: UseDraftOptions = {}) {
   const startNewSeries = useCallback(
     (teamAName: string, teamBName: string, customSeriesName?: string) => {
       const hasAnyAction = bluePicks.length + redPicks.length + blueBans.length + redBans.length > 0;
-      if (hasAnyAction) {
+      if (conflictingHero) {
+        parkCurrentDraft();
+      } else if (hasAnyAction) {
         saveCurrentDraftSnapshot();
       }
 
@@ -1300,7 +1311,7 @@ export function useDraft(options: UseDraftOptions = {}) {
         gameNumber: 1,
       });
     },
-    [bluePicks, redPicks, blueBans, redBans, saveCurrentDraftSnapshot],
+    [bluePicks, redPicks, blueBans, redBans, conflictingHero, parkCurrentDraft, saveCurrentDraftSnapshot],
   );
 
   const switchSeries = useCallback(
@@ -1310,30 +1321,15 @@ export function useDraft(options: UseDraftOptions = {}) {
         bluePicks.length + redPicks.length + blueBans.length + redBans.length > 0;
 
       let nextSeriesGames = seriesGames;
-      if (hasCurrentActions) {
+      if (conflictingHero) {
+        parkCurrentDraft();
+      } else if (hasCurrentActions) {
         const overwrittenGames = seriesGames.filter(
           (g) => getGameSeriesGroup(g) === currentGroup && g.gameNumber === globalBans.gameNumber,
         );
-        const snapshot: RecordedDraftGame = {
-          id: `${Date.now()}-g${globalBans.gameNumber}`,
-          gameNumber: globalBans.gameNumber,
-          timestamp: new Date().toLocaleTimeString("th-TH", {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-          }),
-          seriesName: currentGroup,
-          blueTeamName: blueTeamName(globalBans),
-          redTeamName: redTeamName(globalBans),
-          blueSideTeam: globalBans.blueSideTeam,
-          blueBans: [...blueBans],
-          redBans: [...redBans],
-          bluePicks: [...bluePicks],
-          redPicks: [...redPicks],
-          blueWinRate: state.blueWinRate,
-          winner: overwrittenGames[0]?.winner,
-        };
+        const snapshot = createRecordedGame(currentGroup, overwrittenGames[0]?.winner);
         nextSeriesGames = upsertSeriesGame(seriesGames, snapshot, currentGroup);
+        delete unsavedDraftsRef.current[`${currentGroup}::g${globalBans.gameNumber}`];
         setSeriesGames(nextSeriesGames);
       }
 
@@ -1343,14 +1339,16 @@ export function useDraft(options: UseDraftOptions = {}) {
       const sorted = [...groupGames].sort((a, b) => a.gameNumber - b.gameNumber);
       const latest = sorted[sorted.length - 1];
 
-      if (latest.bluePicks.length < 5 || latest.redPicks.length < 5) {
+      const latestIncomplete = latest.bluePicks.length < 5 || latest.redPicks.length < 5;
+      const latestParked = unsavedDraftsRef.current[`${groupName}::g${latest.gameNumber}`];
+      if (latestIncomplete && !latestParked) {
         loadRecordedGame(latest, nextSeriesGames);
         return;
       }
 
       const teamAName = latest.blueSideTeam === "A" ? latest.blueTeamName : latest.redTeamName;
       const teamBName = latest.blueSideTeam === "A" ? latest.redTeamName : latest.blueTeamName;
-      const targetGameNumber = Math.min(latest.gameNumber + 1, 7);
+      const targetGameNumber = latestIncomplete ? latest.gameNumber : Math.min(latest.gameNumber + 1, 7);
       const nextBlueSide: TeamId = latest.blueSideTeam;
 
       const baseBans: GlobalBanState = {
@@ -1367,18 +1365,25 @@ export function useDraft(options: UseDraftOptions = {}) {
       const candidate: GlobalBanState = { ...baseBans, ...synced };
       const maxUnlocked = getMaxUnlockedGame(candidate, nextSeriesGames, groupName);
       const finalGameNumber = Math.min(targetGameNumber, maxUnlocked);
+      const targetDraftKey = `${groupName}::g${finalGameNumber}`;
+      const parked = unsavedDraftsRef.current[targetDraftKey];
+      const recordedTarget = groupGames.find((g) => g.gameNumber === finalGameNumber);
+      if (!parked && recordedTarget) {
+        loadRecordedGame(recordedTarget, nextSeriesGames, baseBans);
+        return;
+      }
+
       const finalSynced =
         finalGameNumber !== targetGameNumber
           ? syncSeriesGlobalBans(baseBans, nextSeriesGames, finalGameNumber, [], groupName)
           : synced;
 
-      dispatch({ type: "reset" });
-      setPickLanes({});
-      setPredictError(null);
+      restoreParkedDraft(targetDraftKey);
       setGlobalBans({
         ...baseBans,
         ...finalSynced,
         gameNumber: finalGameNumber,
+        blueSideTeam: parked?.blueSideTeam ?? nextBlueSide,
       });
     },
     [
@@ -1388,8 +1393,11 @@ export function useDraft(options: UseDraftOptions = {}) {
       redPicks,
       blueBans,
       redBans,
-      state.blueWinRate,
+      createRecordedGame,
+      conflictingHero,
       loadRecordedGame,
+      parkCurrentDraft,
+      restoreParkedDraft,
     ],
   );
 
@@ -1455,6 +1463,10 @@ export function useDraft(options: UseDraftOptions = {}) {
     [],
   );
 
+  const conflictError: Message | null = conflictingHero
+    ? ["{0} ติด Global Ban แล้ว กดย้อนกลับไปก่อนเลือกหรือแบนฮีโร่ตัวนี้ แล้วดราฟต์ต่อ", displayName(conflictingHero)]
+    : null;
+
   return {
     heroes: catalog.heroes,
     heroMap,
@@ -1471,6 +1483,7 @@ export function useDraft(options: UseDraftOptions = {}) {
     setGlobalBans,
     selectGameNumber,
     seriesGames,
+    globalBanConflicts,
     saveCurrentDraftSnapshot,
     startNewSeries,
     switchSeries,
@@ -1493,12 +1506,14 @@ export function useDraft(options: UseDraftOptions = {}) {
     winHistory: state.winHistory,
     isLoading,
     isHeroesLoading: catalog.isLoading,
-    error: predictError ?? catalog.error,
+    error: conflictError ?? predictError ?? catalog.error,
     syncError,
     retryPredict,
     setPausePredict,
     heroesFallback: catalog.isFallback,
     lockHero,
+    replaceHero,
+    getUnavailableHeroesForSlot,
     undo,
     redo,
     reset,

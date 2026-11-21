@@ -1,3 +1,5 @@
+import { StableButtonLabel } from "../StableButtonLabel";
+import { type Translate, useLanguage } from "../../i18n/language";
 import { Minus, Plus, RotateCcw } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { CatalogArcana } from "../../types/combat";
@@ -59,13 +61,14 @@ const STAT_NAMES_TH: Record<string, string> = {
   hp_regen_5s: "ฟื้นฟู HP/5วิ",
 };
 
-function formatArcanaStat(key: string, val: number): string {
-  const name = STAT_NAMES_TH[key] ?? key;
+function formatArcanaStat(t: Translate, key: string, val: number): string {
+  const name = t(STAT_NAMES_TH[key] ?? key);
   const isPct = key.endsWith("_pct");
   return `+${val}${isPct ? "%" : ""} ${name}`;
 }
 
 export function ArcanaBoard({ arcana, chosen, maxPerColor, onChange }: ArcanaBoardProps) {
+  const { language, t } = useLanguage();
   const [activeColor, setActiveColor] = useState<ArcanaColor>("Red");
 
   const byColor = useMemo(() => {
@@ -130,27 +133,27 @@ export function ArcanaBoard({ arcana, chosen, maxPerColor, onChange }: ArcanaBoa
       {/* Header & Total Counter */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line/60 pb-2">
         <div className="flex items-center gap-2">
-          <span className="font-display text-xs font-bold tracking-wider text-ink">รูน (Tier 3 Arcana)</span>
+          <span className="font-display text-xs font-bold tracking-wider text-ink"><StableButtonLabel message="รูน (Tier 3 Arcana)" /></span>
           <span className="rounded bg-panel-2 px-2 py-0.5 font-mono text-[11px] font-semibold text-muted">
-            รวม {totalUsed} / {maxTotal} เม็ด
+            <StableButtonLabel message="รวม" /> {totalUsed} / {maxTotal} <StableButtonLabel message="เม็ด" />
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2 whitespace-nowrap">
           <button
             type="button"
             onClick={() => handleClearColor(activeColor)}
-            className="text-[10px] text-dim hover:text-muted"
+            className="min-h-6 text-[10px] text-dim hover:text-muted"
           >
-            ล้างสีนี้
+            <StableButtonLabel message="ล้างสีนี้" />
           </button>
           <span className="text-dim">·</span>
           <button
             type="button"
             onClick={handleClearAll}
-            className="flex items-center gap-1 text-[10px] text-dim hover:text-red"
+            className="flex min-h-6 items-center gap-1 text-[10px] text-dim hover:text-red"
           >
             <RotateCcw size={10} />
-            ล้างทั้งหมด
+            <StableButtonLabel message="ล้างทั้งหมด" />
           </button>
         </div>
       </div>
@@ -173,12 +176,12 @@ export function ArcanaBoard({ arcana, chosen, maxPerColor, onChange }: ArcanaBoa
               }`}
             >
               <div className="flex items-center gap-1.5">
-                <span className="font-semibold">{cfg.label}</span>
+                <span className="font-semibold"><StableButtonLabel message={cfg.label} /></span>
                 <span className="font-mono text-[11px] font-bold">
                   ({count}/{maxPerColor})
                 </span>
               </div>
-              <span className="text-[9px] text-dim line-clamp-1">{cfg.tag}</span>
+              <span className="text-[9px] text-dim line-clamp-1"><StableButtonLabel message={cfg.tag} /></span>
             </button>
           );
         })}
@@ -189,7 +192,7 @@ export function ArcanaBoard({ arcana, chosen, maxPerColor, onChange }: ArcanaBoa
         {byColor[activeColor].map((a) => {
           const count = chosen[a.name] ?? 0;
           const statsStr = Object.entries(a.stats)
-            .map(([k, v]) => formatArcanaStat(k, v))
+            .map(([k, v]) => formatArcanaStat(t, k, v))
             .join(" · ");
           const isFilled = count > 0;
 
@@ -219,7 +222,7 @@ export function ArcanaBoard({ arcana, chosen, maxPerColor, onChange }: ArcanaBoa
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-xs font-bold text-ink">
-                    {a.name_th ? `${a.name_th} (${a.name})` : a.name}
+                    {language === "th" && a.name_th ? `${a.name_th} (${a.name})` : a.name}
                   </span>
                 </div>
                 <div className="text-[10px] font-medium leading-tight text-gold line-clamp-1">
@@ -231,7 +234,7 @@ export function ArcanaBoard({ arcana, chosen, maxPerColor, onChange }: ArcanaBoa
               <div className="flex items-center gap-1 shrink-0">
                 <button
                   type="button"
-                  aria-label={`ลด ${a.name}`}
+                  aria-label={t("ลด {0}", a.name)}
                   onClick={() => handleAdjust(a.name, activeColor, -1)}
                   disabled={count <= 0}
                   className="grid h-7 w-7 place-items-center rounded border border-line bg-panel text-dim hover:border-muted hover:text-ink disabled:opacity-20"
@@ -249,7 +252,7 @@ export function ArcanaBoard({ arcana, chosen, maxPerColor, onChange }: ArcanaBoa
 
                 <button
                   type="button"
-                  aria-label={`เพิ่ม ${a.name}`}
+                  aria-label={t("เพิ่ม {0}", a.name)}
                   onClick={() => handleAdjust(a.name, activeColor, 1)}
                   disabled={countByColor[activeColor] >= maxPerColor}
                   className="grid h-7 w-7 place-items-center rounded border border-line bg-panel text-dim hover:border-muted hover:text-ink disabled:opacity-20"
@@ -262,7 +265,7 @@ export function ArcanaBoard({ arcana, chosen, maxPerColor, onChange }: ArcanaBoa
                   onClick={() => handleFillTen(a.name, activeColor)}
                   disabled={countByColor[activeColor] >= maxPerColor}
                   className="ml-0.5 rounded border border-line/60 bg-bg px-1.5 py-1 text-[10px] font-mono font-bold text-muted hover:border-gold hover:text-gold disabled:opacity-20"
-                  title="ใส่เต็ม 10 เม็ด"
+                  title={t("ใส่เต็ม 10 เม็ด")}
                 >
                   +10
                 </button>

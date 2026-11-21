@@ -1,3 +1,5 @@
+import { StableButtonLabel } from "./StableButtonLabel";
+import { useLanguage } from "../i18n/language";
 import {
   BookmarkPlus,
   Clock,
@@ -11,7 +13,7 @@ import {
   Trophy,
   X,
 } from "lucide-react";
-import { useId, useMemo, useState } from "react";
+import { useId, useMemo, useRef, useState } from "react";
 import { MAX_SERIES_GAMES } from "../hooks/useDraft";
 import type { Hero, RecordedDraftGame, TeamId } from "../types/draft";
 import { getGameSeriesGroup } from "../utils/draft";
@@ -49,7 +51,9 @@ export function DraftHistoryModal({
   onClearAllSeries,
   onClose,
 }: DraftHistoryModalProps) {
+  const { t } = useLanguage();
   const titleId = useId();
+  const titleRef = useRef<HTMLHeadingElement>(null);
   const [selectedGroup, setSelectedGroup] = useState<string>("ALL");
   const [confirmState, setConfirmState] = useState<{
     title: string;
@@ -99,16 +103,16 @@ export function DraftHistoryModal({
           <div className="flex min-w-0 items-center gap-2">
             <History className="h-4 w-4 shrink-0 text-gold lg:h-5 lg:w-5" />
             <div className="min-w-0">
-              <h2 id={titleId} className="flex flex-wrap items-center gap-1.5 font-display text-xs font-bold tracking-wider text-ink sm:gap-2 sm:text-sm lg:text-base">
+              <h2 id={titleId} ref={titleRef} tabIndex={-1} className="flex flex-wrap items-center gap-1.5 font-display text-xs font-bold tracking-wider text-ink sm:gap-2 sm:text-sm lg:text-base">
                 <span>
-                  DRAFT HISTORY<span className="hidden sm:inline"> &amp; SERIES · ประวัติการดราฟต์แยกตามกลุ่มซีรีส์</span>
+                  DRAFT HISTORY<span className="hidden sm:inline"> {t("& SERIES · ประวัติการดราฟต์แยกตามกลุ่มซีรีส์")}</span>
                 </span>
                 <span className="border border-gold/60 bg-gold/15 px-1.5 py-0.5 font-mono text-[10px] font-bold text-gold sm:px-2 sm:text-xs lg:text-[13px]">
                   {games.length}/{MAX_SERIES_GAMES}
                 </span>
               </h2>
               <p className="hidden text-[11px] text-dim sm:block lg:text-xs">
-                ระบบจัดกลุ่มตามคู่แข่งขัน (เช่น BRU vs FS) อัตโนมัติ — บันทึกสูงสุด {MAX_SERIES_GAMES} เกมล่าสุด (หากเกินจะลบเกมเก่าสุดอัตโนมัติ)
+                {t("ระบบจัดกลุ่มตามคู่แข่งขัน (เช่น BRU vs FS) อัตโนมัติ — บันทึกสูงสุด")} {MAX_SERIES_GAMES} {t("เกมล่าสุด (หากเกินจะลบเกมเก่าสุดอัตโนมัติ)")}
               </p>
             </div>
           </div>
@@ -117,7 +121,7 @@ export function DraftHistoryModal({
             type="button"
             onClick={() => requestClose()}
             className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-dim transition-colors hover:bg-panel-2 hover:text-ink sm:hidden"
-            aria-label="ปิด"
+            aria-label={t("ปิด")}
           >
             <X size={18} />
           </button>
@@ -128,23 +132,26 @@ export function DraftHistoryModal({
             <button
               type="button"
               onClick={() => requestClose(onOpenNewSeries)}
-              title="เริ่มแมตช์ / ซีรีส์ใหม่ (แยกประวัติออกจากแมตช์เดิม)"
+              title={t("เริ่มแมตช์ / ซีรีส์ใหม่ (แยกประวัติออกจากแมตช์เดิม)")}
               className="flex h-7 items-center gap-1 border border-gold bg-gold px-2 font-display text-[10px] font-bold tracking-wide whitespace-nowrap text-bg transition-colors hover:bg-gold/90 sm:h-8 sm:gap-1.5 sm:px-2.5 sm:text-[11px] lg:px-3 lg:text-xs"
             >
               <PlusCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-              <span>+ แมตช์ใหม่</span>
+              <span><StableButtonLabel message="+ แมตช์ใหม่" /></span>
             </button>
           )}
           {hasCurrentDraftActions && (
             <button
               type="button"
-              onClick={onSaveCurrentSnapshot}
-              title="บันทึกกระดานดราฟต์ปัจจุบันเก็บเข้าประวัติโดยไม่ล้างกระดาน"
+              onClick={() => {
+                titleRef.current?.focus({ preventScroll: true });
+                onSaveCurrentSnapshot();
+              }}
+              title={t("บันทึกกระดานดราฟต์ปัจจุบันเก็บเข้าประวัติโดยไม่ล้างกระดาน")}
               className="flex h-7 items-center gap-1 border border-gold/60 bg-gold/10 px-2 font-display text-[10px] font-bold tracking-wide whitespace-nowrap text-gold transition-colors hover:bg-gold hover:text-bg sm:h-8 sm:gap-1.5 sm:px-2.5 sm:text-[11px] lg:px-3 lg:text-xs"
             >
               <BookmarkPlus className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-              <span className="sm:hidden">บันทึกปัจจุบัน</span>
-              <span className="hidden sm:inline">บันทึกกระดานปัจจุบัน</span>
+              <span className="sm:hidden"><StableButtonLabel message="บันทึกปัจจุบัน" /></span>
+              <span className="hidden sm:inline"><StableButtonLabel message="บันทึกกระดานปัจจุบัน" /></span>
             </button>
           )}
           <button
@@ -152,8 +159,8 @@ export function DraftHistoryModal({
             disabled={games.length === 0}
             onClick={() =>
               setConfirmState({
-                title: "รีเซ็ตประวัติทั้งซีรีส์?",
-                message: "ล้างประวัติซีรีส์, Global Ban และกระดานปัจจุบันทั้งหมดเพื่อเริ่มซีรีส์ใหม่? (ไม่สามารถย้อนกลับได้)",
+                title: t("รีเซ็ตประวัติทั้งซีรีส์?"),
+                message: t("ล้างประวัติซีรีส์, Global Ban และกระดานปัจจุบันทั้งหมดเพื่อเริ่มซีรีส์ใหม่? (ไม่สามารถย้อนกลับได้)"),
                 confirmLabel: "ล้างทั้งหมด",
                 onConfirm: () => {
                   setConfirmState(null);
@@ -165,14 +172,14 @@ export function DraftHistoryModal({
             className="flex h-7 items-center gap-1 border border-red/40 bg-red/10 px-2 font-display text-[11px] font-semibold tracking-wide whitespace-nowrap text-red transition-colors hover:bg-red hover:text-ink disabled:pointer-events-none disabled:opacity-35 sm:h-8 sm:gap-1.5 sm:px-2.5 lg:px-3 lg:text-xs"
           >
             <RotateCcw className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-            <span className="sm:hidden">รีเซ็ตทั้งหมด</span>
-            <span className="hidden sm:inline">รีเซ็ตทั้งซีรีส์</span>
+            <span className="sm:hidden"><StableButtonLabel message="รีเซ็ตทั้งหมด" /></span>
+            <span className="hidden sm:inline"><StableButtonLabel message="รีเซ็ตทั้งซีรีส์" /></span>
           </button>
           <button
             type="button"
             onClick={() => requestClose()}
             className="hidden h-8 w-8 shrink-0 items-center justify-center rounded text-dim transition-colors hover:bg-panel-2 hover:text-ink sm:inline-flex"
-            aria-label="ปิด"
+            aria-label={t("ปิด")}
           >
             <X size={18} />
           </button>
@@ -184,7 +191,7 @@ export function DraftHistoryModal({
         <div className="flex shrink-0 flex-nowrap items-center gap-1.5 overflow-x-auto border-b border-line bg-panel-2/60 px-3 py-1.5 sm:flex-wrap sm:overflow-visible sm:px-4 sm:py-2">
           <span className="mr-0.5 flex shrink-0 items-center gap-1 font-mono text-[10px] font-bold text-muted sm:mr-1 sm:text-[11px] lg:text-xs">
             <Layers className="h-3 w-3 text-gold sm:h-3.5 sm:w-3.5" />
-            <span className="hidden sm:inline">GROUP / แมตช์:</span>
+            <span className="hidden sm:inline">{t("GROUP / แมตช์:")}</span>
           </span>
           <button
             type="button"
@@ -195,7 +202,7 @@ export function DraftHistoryModal({
                 : "border-line bg-bg text-muted hover:border-line-strong hover:text-ink"
             }`}
           >
-            <span>ทั้งหมด</span>
+            <span><StableButtonLabel message="ทั้งหมด" /></span>
             <span
               className={`px-1 font-mono text-[10px] lg:text-[11px] ${
                 activeGroup === "ALL" ? "bg-bg text-gold" : "bg-panel-2 text-dim"
@@ -237,10 +244,9 @@ export function DraftHistoryModal({
         {games.length === 0 ? (
           <div className="flex h-52 flex-col items-center justify-center gap-2 border border-dashed border-line bg-bg/40 p-6 text-center text-dim">
             <History className="h-7 w-7 text-muted/60 lg:h-8 lg:w-8" />
-            <p className="font-display text-sm font-semibold text-muted lg:text-base">ยังไม่มีประวัติเกมที่บันทึกไว้ในระบบ</p>
+            <p className="font-display text-sm font-semibold text-muted lg:text-base">{t("ยังไม่มีประวัติเกมที่บันทึกไว้ในระบบ")}</p>
             <p className="max-w-md text-xs text-dim lg:max-w-lg lg:text-sm">
-              เมื่อกดปุ่ม &ldquo;จบเกมนี้ → บันทึก Global Ban&rdquo; หรือกด &ldquo;บันทึกกระดานปัจจุบัน&rdquo;
-              รายละเอียดการแบนและเลือกฮีโร่จะถูกจัดกลุ่มตามคู่แข่งขัน (เช่น BRU vs FS) และเก็บรักษาไว้อย่างถาวร
+              {t("เมื่อกดปุ่ม “จบเกมนี้ → บันทึก Global Ban” หรือกด “บันทึกกระดานปัจจุบัน” รายละเอียดการแบนและเลือกฮีโร่จะถูกจัดกลุ่มตามคู่แข่งขัน (เช่น BRU vs FS) และเก็บรักษาไว้อย่างถาวร")}
             </p>
           </div>
         ) : (
@@ -254,12 +260,12 @@ export function DraftHistoryModal({
                       {grp.name}
                     </span>
                     <span className="font-mono text-xs text-muted lg:text-[13px]">
-                      ({grp.count} เกมในซีรีส์)
+                      ({grp.count} {t("เกมในซีรีส์)")}
                     </span>
                     {grp.latestTimestamp && (
                       <span className="hidden items-center gap-1 font-mono text-[11px] text-dim sm:flex lg:text-xs">
                         <Clock className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
-                        ล่าสุด {grp.latestTimestamp}
+                        {t("ล่าสุด")} {grp.latestTimestamp}
                       </span>
                     )}
                   </div>
@@ -272,19 +278,19 @@ export function DraftHistoryModal({
                           onSwitchSeries(grp.name);
                           requestClose();
                         }}
-                        title={`สลับกระดานมาดราฟต์เกมถัดไปของซีรีส์ "${grp.name}"`}
+                        title={t("สลับกระดานมาดราฟต์เกมถัดไปของซีรีส์ \"{0}\"", grp.name)}
                         className="flex h-7 items-center gap-1 border border-gold/60 bg-gold/15 px-2 font-display text-[10px] font-bold text-gold transition-colors hover:bg-gold hover:text-bg lg:px-2.5 lg:text-xs"
                       >
                         <Play className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
-                        <span>ดราฟต์ซีรีส์นี้ต่อ</span>
+                        <span><StableButtonLabel message="ดราฟต์ซีรีส์นี้ต่อ" /></span>
                       </button>
                     )}
                     <button
                       type="button"
                       onClick={() =>
                         setConfirmState({
-                          title: `ลบประวัติกลุ่ม "${grp.name}"?`,
-                          message: `ต้องการลบประวัติทั้งหมดของกลุ่ม "${grp.name}" (${grp.count} เกม) ออกจากระบบหรือไม่?`,
+                          title: t("ลบประวัติกลุ่ม \"{0}\"?", grp.name),
+                          message: t("ต้องการลบประวัติทั้งหมดของกลุ่ม \"{0}\" ({1} เกม) ออกจากระบบหรือไม่?", grp.name, grp.count),
                           confirmLabel: "ลบกลุ่มนี้",
                           onConfirm: () => {
                             setConfirmState(null);
@@ -292,11 +298,11 @@ export function DraftHistoryModal({
                           },
                         })
                       }
-                      title={`ลบประวัติเฉพาะกลุ่ม ${grp.name}`}
+                      title={t("ลบประวัติเฉพาะกลุ่ม {0}", grp.name)}
                       className="flex h-7 items-center gap-1 border border-red/40 bg-red/10 px-2 font-display text-[11px] font-semibold text-red transition-colors hover:bg-red hover:text-ink lg:px-2.5 lg:text-xs"
                     >
                       <Trash2 className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
-                      <span>ลบเฉพาะกลุ่มนี้</span>
+                      <span><StableButtonLabel message="ลบเฉพาะกลุ่มนี้" /></span>
                     </button>
                   </div>
                 </div>
@@ -375,13 +381,13 @@ export function DraftHistoryModal({
                               className="flex h-7 items-center gap-1 border border-gold/60 bg-gold/15 px-2.5 font-display text-[11px] font-bold text-gold transition-colors hover:bg-gold hover:text-bg lg:h-8 lg:px-3 lg:text-xs"
                             >
                               <FolderOpen className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
-                              <span>โหลดขึ้นกระดาน</span>
+                              <span><StableButtonLabel message="โหลดขึ้นกระดาน" /></span>
                             </button>
                             <button
                               type="button"
                               onClick={() => onDeleteGame(g.id)}
-                              title="ลบเกมนี้"
-                              aria-label={`ลบเกมที่ ${g.gameNumber}`}
+                              title={t("ลบเกมนี้")}
+                              aria-label={t("ลบเกมที่ {0}", g.gameNumber)}
                               className="flex h-7 w-7 items-center justify-center border border-line bg-bg text-dim transition-colors hover:border-red/50 hover:text-red lg:h-8 lg:w-8"
                             >
                               <Trash2 className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
@@ -417,7 +423,7 @@ export function DraftHistoryModal({
                                 </div>
                               ))}
                               {g.bluePicks.length === 0 && (
-                                <span className="text-[11px] text-dim lg:text-xs">ไม่มีตัวที่เลือก</span>
+                                <span className="text-[11px] text-dim lg:text-xs">{t("ไม่มีตัวที่เลือก")}</span>
                               )}
                             </div>
                             {g.blueBans.length > 0 && (
@@ -463,7 +469,7 @@ export function DraftHistoryModal({
                                 </div>
                               ))}
                               {g.redPicks.length === 0 && (
-                                <span className="text-[11px] text-dim lg:text-xs">ไม่มีตัวที่เลือก</span>
+                                <span className="text-[11px] text-dim lg:text-xs">{t("ไม่มีตัวที่เลือก")}</span>
                               )}
                             </div>
                             {g.redBans.length > 0 && (
@@ -496,13 +502,13 @@ export function DraftHistoryModal({
       {/* Footer */}
       <div className="flex shrink-0 items-center justify-between gap-2 border-t border-line bg-bg px-3 py-2 sm:px-4 sm:py-2.5">
         <span className="min-w-0 truncate font-mono text-[11px] text-muted sm:text-xs lg:text-[13px]">
-          <span className="sm:hidden">บันทึกอัตโนมัติ · </span>
-          <span className="hidden sm:inline">บันทึกอัตโนมัติ (สูงสุด {MAX_SERIES_GAMES} เกมล่าสุด · ปัจจุบัน </span>
+          <span className="sm:hidden">{t("บันทึกอัตโนมัติ ·")} </span>
+          <span className="hidden sm:inline">{t("บันทึกอัตโนมัติ (สูงสุด")} {MAX_SERIES_GAMES} {t("เกมล่าสุด · ปัจจุบัน")} </span>
           <strong className={games.length >= MAX_SERIES_GAMES - 10 ? "text-gold" : "text-ink"}>
             {games.length}/{MAX_SERIES_GAMES}
           </strong>
           <span className="hidden sm:inline">
-            {games.length >= MAX_SERIES_GAMES ? " — ครบโควตาแล้ว เกมใหม่จะทับรายการเก่าสุด" : ""})
+            {games.length >= MAX_SERIES_GAMES ? t(" — ครบโควตาแล้ว เกมใหม่จะทับรายการเก่าสุด") : ""})
           </span>
         </span>
         <button
@@ -510,7 +516,7 @@ export function DraftHistoryModal({
           onClick={() => requestClose()}
           className="shrink-0 border border-gold bg-gold px-3 py-1.5 font-display text-xs font-bold tracking-wider whitespace-nowrap text-bg transition-colors hover:bg-gold/90 sm:px-4 lg:text-sm"
         >
-          ปิดหน้าต่าง
+          <StableButtonLabel message="ปิดหน้าต่าง" />
         </button>
       </div>
 

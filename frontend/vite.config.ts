@@ -43,7 +43,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       // Every FastAPI route; add a prefix here when the backend gains a new top-level path
-      "^/(auth|heroes|predict|draft|health|combat|items-media|privacy)": "http://127.0.0.1:8000",
+      "^/(auth|heroes(?:-media)?|predict|draft|health|combat|items-media|privacy|telemetry|survey|admin)(?:/|$|\\?)": "http://127.0.0.1:8000",
     },
   },
   build: {

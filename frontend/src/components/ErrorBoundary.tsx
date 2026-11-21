@@ -1,4 +1,6 @@
-import { Component, type ErrorInfo, type ReactNode } from "react";
+import { StableButtonLabel } from "./StableButtonLabel";
+import { Component, type ContextType, type ErrorInfo, type ReactNode } from "react";
+import { LanguageContext } from "../i18n/language";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -13,6 +15,8 @@ interface ErrorBoundaryState {
 
 /** Keeps a crash inside one section from blanking the whole page. */
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  static contextType = LanguageContext;
+  declare context: ContextType<typeof LanguageContext>;
   state: ErrorBoundaryState = { error: null, resetKey: this.props.resetKey };
 
   static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
@@ -29,16 +33,17 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   render() {
     if (!this.state.error) return this.props.children;
+    const { t } = this.context;
     return (
       <div role="alert" className="m-4 border border-red/40 bg-red/10 p-4 text-sm text-red">
-        <p className="font-semibold">เกิดข้อผิดพลาดในส่วนนี้</p>
+        <p className="font-semibold">{t("เกิดข้อผิดพลาดในส่วนนี้")}</p>
         <p className="mt-1 font-mono text-xs text-muted">{this.state.error.message}</p>
         <button
           type="button"
           onClick={() => this.setState({ error: null })}
           className="mt-3 border border-line-strong px-3 py-1 text-xs text-ink hover:bg-panel-2"
         >
-          ลองใหม่
+          <StableButtonLabel message="ลองใหม่" />
         </button>
       </div>
     );

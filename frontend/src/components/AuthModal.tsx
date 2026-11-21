@@ -1,3 +1,6 @@
+import { StableButtonLabel } from "./StableButtonLabel";
+import { useLanguage } from "../i18n/language";
+import { LanguageSwitch } from "../i18n/LanguageProvider";
 import { ArrowRight, Eye, EyeOff, Lock, LogIn, Sparkles, User, UserCheck, UserPlus, X } from "lucide-react";
 import { type FormEvent, type RefObject, useRef, useState } from "react";
 import { postJson } from "../api/client";
@@ -108,6 +111,7 @@ function AuthForm({
   initialError = null,
   showPrivacyLink = true,
 }: AuthFormProps) {
+  const { t } = useLanguage();
   const hasOAuth = googleLoginEnabled || discordLoginEnabled;
   const [showCredentials, setShowCredentials] = useState(!hasOAuth);
   const [username, setUsername] = useState("");
@@ -176,7 +180,7 @@ function AuthForm({
             }}
             className={tabClass(mode === "login")}
           >
-            เข้าสู่ระบบ
+            <StableButtonLabel message="เข้าสู่ระบบ" />
           </button>
           <button
             type="button"
@@ -188,13 +192,13 @@ function AuthForm({
             }}
             className={tabClass(mode === "register")}
           >
-            สมัครสมาชิก
+            <StableButtonLabel message="สมัครสมาชิก" />
           </button>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 px-6 pt-5 pb-6">
-        {error && <Alert>{error}</Alert>}
+        {error && <Alert>{t(error)}</Alert>}
 
         <div className="flex flex-col gap-2">
           {googleLoginEnabled && (
@@ -204,7 +208,7 @@ function AuthForm({
               className="flex h-10 w-full items-center justify-center gap-2.5 rounded-md border border-white/80 bg-white px-4 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-100 lg:h-11 lg:text-[15px]"
             >
               <GoogleIcon />
-              <span>ดำเนินการต่อด้วย Google</span>
+              <span><StableButtonLabel message="ดำเนินการต่อด้วย Google" /></span>
             </button>
           )}
           {discordLoginEnabled && (
@@ -214,7 +218,7 @@ function AuthForm({
               className="flex h-10 w-full items-center justify-center gap-2.5 rounded-md border border-[#5865F2] bg-[#5865F2] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#4752C4] lg:h-11 lg:text-[15px]"
             >
               <DiscordIcon />
-              <span>ดำเนินการต่อด้วย Discord</span>
+              <span><StableButtonLabel message="ดำเนินการต่อด้วย Discord" /></span>
             </button>
           )}
           {!showCredentials && (
@@ -227,7 +231,7 @@ function AuthForm({
               className="flex h-10 w-full items-center justify-center gap-2.5 rounded-md border border-line-strong bg-bg px-4 text-sm font-semibold text-ink transition-colors hover:border-gold/70 hover:bg-panel-2 lg:h-11 lg:text-[15px]"
             >
               <User className="h-4 w-4 shrink-0 text-gold" />
-              <span>{mode === "login" ? "เข้าสู่ระบบด้วย Username" : "สมัครสมาชิกด้วย Username"}</span>
+              <span><StableButtonLabel message={mode === "login" ? "เข้าสู่ระบบด้วย Username" : "สมัครสมาชิกด้วย Username"} alternatives={["เข้าสู่ระบบด้วย Username", "สมัครสมาชิกด้วย Username"]} /></span>
             </button>
           )}
         </div>
@@ -238,7 +242,7 @@ function AuthForm({
               <div className="flex items-center justify-between gap-2">
                 <span className="flex items-center gap-1.5 text-xs font-semibold text-gold lg:text-[13px]">
                   <User className="h-3.5 w-3.5" />
-                  <span>{mode === "login" ? "เข้าสู่ระบบด้วย Username" : "สมัครด้วย Username"}</span>
+                  <span>{mode === "login" ? t("เข้าสู่ระบบด้วย Username") : t("สมัครด้วย Username")}</span>
                 </span>
                 <button
                   type="button"
@@ -248,14 +252,14 @@ function AuthForm({
                   }}
                   className="inline-flex min-h-6 min-w-6 items-center justify-center px-1.5 text-xs text-dim underline underline-offset-2 hover:text-ink lg:text-[13px]"
                 >
-                  ซ่อน
+                  <StableButtonLabel message="ซ่อน" />
                 </button>
               </div>
             )}
 
             <label className="flex flex-col gap-1.5">
               <span className="flex items-center justify-between text-xs font-medium text-ink/90 sm:text-sm">
-                <span>ชื่อผู้ใช้</span>
+                <span>{t("ชื่อผู้ใช้")}</span>
                 <span className="font-mono text-[11px] text-dim sm:text-xs">a-z 0-9 _ - .</span>
               </span>
               <div className="relative flex items-center">
@@ -270,7 +274,7 @@ function AuthForm({
                   pattern="^[a-zA-Z0-9_.\-]+$"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="เช่น coach_pro"
+                  placeholder={t("เช่น coach_pro")}
                   className={`${INPUT_CLASS} pr-3 font-mono`}
                 />
               </div>
@@ -279,7 +283,7 @@ function AuthForm({
             {mode === "register" && (
               <label className="flex flex-col gap-1.5">
                 <span className="text-xs font-medium text-ink/90 sm:text-sm">
-                  ชื่อที่แสดง <span className="font-normal text-dim">(ไม่บังคับ)</span>
+                  {t("ชื่อที่แสดง")} <span className="font-normal text-dim">{t("(ไม่บังคับ)")}</span>
                 </span>
                 <div className="relative flex items-center">
                   <Sparkles className="pointer-events-none absolute left-3 h-4 w-4 text-dim" />
@@ -288,7 +292,7 @@ function AuthForm({
                     maxLength={40}
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
-                    placeholder="เช่น Coach A"
+                    placeholder={t("เช่น Coach A")}
                     className={`${INPUT_CLASS} pr-3`}
                   />
                 </div>
@@ -297,8 +301,8 @@ function AuthForm({
 
             <label className="flex flex-col gap-1.5">
               <span className="flex items-center justify-between text-xs font-medium text-ink/90 sm:text-sm">
-                <span>รหัสผ่าน</span>
-                {mode === "register" && <span className="font-mono text-[11px] text-dim sm:text-xs">อย่างน้อย 6 ตัวอักษร</span>}
+                <span>{t("รหัสผ่าน")}</span>
+                {mode === "register" && <span className="font-mono text-[11px] text-dim sm:text-xs">{t("อย่างน้อย 6 ตัวอักษร")}</span>}
               </span>
               <div className="relative flex items-center">
                 <Lock className="pointer-events-none absolute left-3 h-4 w-4 text-dim" />
@@ -316,7 +320,7 @@ function AuthForm({
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+                  aria-label={showPassword ? t("ซ่อนรหัสผ่าน") : t("แสดงรหัสผ่าน")}
                   className="absolute right-2 p-1.5 text-dim transition-colors hover:text-ink"
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -330,14 +334,14 @@ function AuthForm({
               className="mt-0.5 flex h-11 w-full items-center justify-center gap-2 rounded-md bg-gold px-4 font-display text-sm font-bold text-bg transition-colors hover:bg-[#f8d27a] active:bg-[#e9b73f] disabled:opacity-50"
             >
               {mode === "login" ? <LogIn className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
-              <span>{submitting ? "กำลังดำเนินการ…" : mode === "login" ? "เข้าสู่ระบบ" : "สร้างบัญชีและเข้าใช้งาน"}</span>
+              <span><StableButtonLabel message={submitting ? "กำลังดำเนินการ…" : mode === "login" ? "เข้าสู่ระบบ" : "สร้างบัญชีและเข้าใช้งาน"} alternatives={["กำลังดำเนินการ…", "เข้าสู่ระบบ", "สร้างบัญชีและเข้าใช้งาน"]} /></span>
             </button>
           </div>
         )}
 
         <div className="flex items-center gap-3">
           <div className="h-px flex-1 bg-line" />
-          <span className="text-xs text-dim lg:text-[13px]">หรือ</span>
+          <span className="text-xs text-dim lg:text-[13px]">{t("หรือ")}</span>
           <div className="h-px flex-1 bg-line" />
         </div>
 
@@ -351,8 +355,8 @@ function AuthForm({
               <UserCheck className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <div className="font-display text-sm font-semibold text-white lg:text-[15px]">{secondaryLabel}</div>
-              {secondaryHint && <div className="truncate text-xs text-slate-300 lg:text-[13px]">{secondaryHint}</div>}
+              <div className="font-display text-sm font-semibold text-white lg:text-[15px]"><StableButtonLabel message={secondaryLabel} /></div>
+              {secondaryHint && <div className="truncate text-xs text-slate-300 lg:text-[13px]"><StableButtonLabel message={secondaryHint} /></div>}
             </div>
           </div>
           <ArrowRight className="h-4 w-4 shrink-0 text-slate-300 transition-all group-hover:translate-x-0.5 group-hover:text-white" />
@@ -364,7 +368,7 @@ function AuthForm({
               href="/privacy"
               className="inline-flex min-h-6 items-center underline decoration-line-strong underline-offset-2 hover:text-muted"
             >
-              นโยบายความเป็นส่วนตัว (Privacy Policy)
+              {t("นโยบายความเป็นส่วนตัว (Privacy Policy)")}
             </a>
           </div>
         )}
@@ -437,16 +441,17 @@ export function AuthLanding({
   onSuccess,
   onContinueGuest,
 }: AuthLandingProps) {
+  const { t } = useLanguage();
   const [mode, setMode] = useState<"login" | "register">("login");
   const usernameRef = useRef<HTMLInputElement>(null);
   const loginCardRef = useRef<HTMLElement>(null);
 
   const stats = [
-    { value: "130", label: "ฮีโร่ครบเมต้า 2026" },
-    { value: "Bo1–Bo7", label: "รองรับทุกรูปแบบซีรีส์" },
+    { value: "130", label: t("ฮีโร่ครบเมต้า 2026") },
+    { value: "Bo1–Bo7", label: t("รองรับทุกรูปแบบซีรีส์") },
     __DRAFT_ONLY__
-      ? { value: "Global Ban", label: "กติกาการแข่งขันจริง" }
-      : { value: "3,512", label: "เกมโปรลีกระดับโลก" },
+      ? { value: "Global Ban", label: t("กติกาการแข่งขันจริง") }
+      : { value: "3,512", label: t("เกมโปรลีกระดับโลก") },
   ];
 
   return (
@@ -472,12 +477,13 @@ export function AuthLanding({
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="rounded border border-gold/40 bg-gold/10 px-2.5 py-1 font-mono text-[10px] font-bold tracking-wider text-gold sm:text-[11px]">
-              ให้บริการฟรีถึง 30/11/2026
+            <span className="hidden rounded border border-gold/40 bg-gold/10 px-2.5 py-1 font-mono text-[10px] font-bold tracking-wider text-gold min-[420px]:inline-block sm:text-[11px]">
+              <StableButtonLabel message="ให้บริการฟรีถึง 30/11/2026" />
             </span>
             <span className="hidden rounded border border-line px-2.5 py-1 font-mono text-[10px] tracking-wider text-muted sm:inline-block">
               130 HEROES · 2026 META
             </span>
+            <LanguageSwitch />
           </div>
         </div>
       </header>
@@ -494,12 +500,11 @@ export function AuthLanding({
                 </span>
               </div>
               <h1 className="mt-4 font-display text-[28px] font-bold leading-[1.2] tracking-tight text-ink sm:text-[40px]">
-                วิเคราะห์และจำลอง <span className="text-gold">Ban / Pick</span>
-                <span className="block text-ink/90">ระดับการแข่งขันอาชีพ</span>
+                {t("วิเคราะห์และจำลอง")} <span className="text-gold">Ban / Pick</span>
+                <span className="block text-ink/90">{t("ระดับการแข่งขันอาชีพ")}</span>
               </h1>
               <p className="mt-3.5 max-w-xl text-sm leading-relaxed text-muted">
-                ประเมินฮีโร่แก้ทาง ความเข้ากันของทีม และโอกาสชนะแบบเรียลไทม์ ตามกติกา Global Ban Pick
-                สำหรับทีมแข่ง โค้ช และนักวิเคราะห์ ใช้งานได้ทั้งคอมพิวเตอร์ iPad และมือถือ
+                {t("ประเมินฮีโร่แก้ทาง ความเข้ากันของทีม และโอกาสชนะแบบเรียลไทม์ ตามกติกา Global Ban Pick สำหรับทีมแข่ง โค้ช และนักวิเคราะห์ ใช้งานได้ทั้งคอมพิวเตอร์ iPad และมือถือ")}
               </p>
 
               <dl className="mt-6 grid max-w-xl grid-cols-3 divide-x divide-line border-y border-line">
@@ -518,7 +523,7 @@ export function AuthLanding({
                   className="group inline-flex items-center gap-2 rounded-md border border-line-strong bg-panel px-4 py-2.5 font-display text-[13px] font-semibold text-ink transition-colors hover:border-blue/60 hover:bg-panel-2"
                 >
                   <UserCheck className="h-4 w-4 shrink-0 text-blue" />
-                  <span>เข้าใช้งานแบบ Guest ทันที</span>
+                  <span><StableButtonLabel message="เข้าใช้งานแบบ Guest ทันที" /></span>
                   <ArrowRight className="h-3.5 w-3.5 shrink-0 text-muted transition-all group-hover:translate-x-0.5 group-hover:text-blue" />
                 </button>
                 <button
@@ -527,11 +532,11 @@ export function AuthLanding({
                   className="inline-flex items-center gap-2 rounded-md border border-gold bg-gold px-4 py-2.5 font-display text-[13px] font-bold text-bg transition-colors hover:bg-[#f8d27a] lg:hidden"
                 >
                   <LogIn className="h-4 w-4 shrink-0" />
-                  <span>เข้าสู่ระบบ</span>
+                  <span><StableButtonLabel message="เข้าสู่ระบบ" /></span>
                 </button>
               </div>
               <p className="mt-2 text-xs text-dim">
-                ไม่ต้องสมัครสมาชิก · เปิดกระดานดราฟต์ได้ทันที หรือเข้าสู่ระบบด้วย Google / Discord / Username
+                {t("ไม่ต้องสมัครสมาชิก · เปิดกระดานดราฟต์ได้ทันที หรือเข้าสู่ระบบด้วย Google / Discord / Username")}
               </p>
             </div>
 
@@ -565,12 +570,12 @@ export function AuthLanding({
               <div className="h-0.5 w-full bg-gold" />
               <div className="border-b border-line px-6 py-5">
                 <h2 className="font-display text-base font-bold text-ink">
-                  {mode === "login" ? "ลงชื่อเข้าใช้ MiniDraft" : "สร้างบัญชีผู้ใช้ใหม่"}
+                  {mode === "login" ? t("ลงชื่อเข้าใช้ MiniDraft") : t("สร้างบัญชีผู้ใช้ใหม่")}
                 </h2>
                 <p className="mt-0.5 text-xs leading-relaxed text-muted">
                   {__DRAFT_ONLY__
-                    ? "บันทึกประวัติซีรีส์ Global Ban และซิงก์ข้ามอุปกรณ์อัตโนมัติ"
-                    : "บันทึกซีรีส์ Global Ban และบิลด์ Combat Lab พร้อมซิงก์ข้ามอุปกรณ์"}
+                    ? t("บันทึกประวัติซีรีส์ Global Ban และซิงก์ข้ามอุปกรณ์อัตโนมัติ")
+                    : t("บันทึกซีรีส์ Global Ban และบิลด์ Combat Lab พร้อมซิงก์ข้ามอุปกรณ์")}
                 </p>
               </div>
 
@@ -594,12 +599,12 @@ export function AuthLanding({
 
       <footer className="relative z-10 border-t border-line">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-3 text-[11px] text-dim sm:px-6">
-          <span>© 2026 MiniDraft · อ้างอิงเมต้าโปรลีกระดับโลก</span>
+          <span>{t("© 2026 MiniDraft · อ้างอิงเมต้าโปรลีกระดับโลก")}</span>
           <a
             href="/privacy"
             className="inline-flex min-h-6 items-center py-1 underline decoration-line-strong underline-offset-2 hover:text-muted"
           >
-            นโยบายความเป็นส่วนตัว (Privacy Policy)
+            {t("นโยบายความเป็นส่วนตัว (Privacy Policy)")}
           </a>
         </div>
       </footer>
@@ -629,6 +634,7 @@ export function AuthModal({
   onSuccess,
   onClose,
 }: AuthModalProps) {
+  const { t } = useLanguage();
   const [mode, setMode] = useState<"login" | "register">(initialMode);
   const usernameRef = useRef<HTMLInputElement>(null);
 
@@ -647,15 +653,15 @@ export function AuthModal({
           <MiniDraftLogo className="h-8 w-8 shrink-0" />
           <div className="min-w-0">
             <h2 id="auth-modal-title" className="font-display text-sm font-bold text-ink sm:text-base">
-              {mode === "login" ? "ลงชื่อเข้าใช้ MiniDraft" : "สร้างบัญชีผู้ใช้ใหม่"}
+              {mode === "login" ? t("ลงชื่อเข้าใช้ MiniDraft") : t("สร้างบัญชีผู้ใช้ใหม่")}
             </h2>
-            <p className="truncate text-xs text-muted sm:text-[13px]">ซิงก์ประวัติซีรีส์ข้ามอุปกรณ์อัตโนมัติ</p>
+            <p className="truncate text-xs text-muted sm:text-[13px]">{t("ซิงก์ประวัติซีรีส์ข้ามอุปกรณ์อัตโนมัติ")}</p>
           </div>
         </div>
         <button
           type="button"
           onClick={() => requestClose()}
-          aria-label="ปิดหน้าต่างบัญชีผู้ใช้"
+          aria-label={t("ปิดหน้าต่างบัญชีผู้ใช้")}
           className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-dim transition-colors hover:bg-panel-2 hover:text-ink"
         >
           <X className="h-4.5 w-4.5" />

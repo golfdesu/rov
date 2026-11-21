@@ -1,3 +1,5 @@
+import { StableButtonLabel } from "./StableButtonLabel";
+import { useLanguage } from "../i18n/language";
 import { RotateCcw, X } from "lucide-react";
 import { CANONICAL_LANES, type Hero, type LaneKey } from "../types/draft";
 import { LANE_SHORT, laneKey } from "../utils/draft";
@@ -27,6 +29,7 @@ export function PickLaneModal({
   onSelectLane,
   onClose,
 }: PickLaneModalProps) {
+  const { t } = useLanguage();
   const isBlue = side === "blue";
   const defaultLane = laneKey(
     hero?.main_pro_lane && hero.main_pro_lane !== "Unpicked" ? hero.main_pro_lane : hero?.lane,
@@ -34,7 +37,7 @@ export function PickLaneModal({
   const defaultShort = LANE_SHORT[defaultLane];
 
   return (
-    <Modal labelledBy="pick-lane-title" className="max-w-xs sm:max-w-sm" onClose={onClose}>
+    <Modal labelledBy="pick-lane-title" className="sm:max-w-sm" mobileSheet onClose={onClose}>
       {(requestClose) => {
         const handleSelect = (lane?: LaneKey) => {
           onSelectLane(lane);
@@ -55,14 +58,14 @@ export function PickLaneModal({
               {displayName(heroName)}
             </h3>
             <p className="text-[11px] text-muted">
-              เลือกตำแหน่งที่เล่นจริงในเกมนี้
+              {t("เลือกตำแหน่งที่เล่นจริงในเกมนี้")}
             </p>
           </div>
         </div>
         <button
           type="button"
           onClick={() => requestClose()}
-          aria-label="ปิดหน้าต่างเลือกเลน"
+          aria-label={t("ปิดหน้าต่างเลือกเลน")}
           className="flex h-9 w-9 shrink-0 items-center justify-center border border-line text-muted transition-colors hover:border-line-strong hover:text-ink"
         >
           <X className="h-4 w-4" />
@@ -86,7 +89,7 @@ export function PickLaneModal({
             <div>
               <div className="font-mono text-xs font-bold tracking-wide">AUTO</div>
               <div className="text-xs text-muted">
-                {defaultShort ? `ค่าเริ่มต้น (${defaultShort.en})` : "ค่าอัตโนมัติ"}
+                <StableButtonLabel message={defaultShort ? ["ค่าเริ่มต้น ({0})", defaultShort.en] : "ค่าอัตโนมัติ"} />
               </div>
             </div>
           </div>
@@ -109,7 +112,7 @@ export function PickLaneModal({
                 onClick={() => handleSelect(key)}
                 title={
                   isTaken && lockedBy
-                    ? `ตำแหน่งนี้ถูกล็อกให้ ${displayName(lockedBy)} แล้ว`
+                    ? t("ตำแหน่งนี้ถูกล็อกให้ {0} แล้ว", displayName(lockedBy))
                     : undefined
                 }
                 className={`flex min-h-[48px] items-center justify-between gap-2.5 border px-3 py-2 text-left transition-colors ${
@@ -135,14 +138,14 @@ export function PickLaneModal({
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 font-mono text-xs font-bold">
                       <span>{short?.en ?? key}</span>
-                      {isDefault && <span className="text-[9px] font-normal text-muted">(หลัก)</span>}
+                      {isDefault && <span className="text-[9px] font-normal text-muted">{t("(หลัก)")}</span>}
                     </div>
                     <div className="truncate text-xs text-muted">
-                      {isTaken && lockedBy ? `ล็อก: ${displayName(lockedBy)}` : (short?.th ?? lane.nameTh)}
+                      <StableButtonLabel message={isTaken && lockedBy ? ["ล็อก: {0}", displayName(lockedBy)] : short?.th ?? lane.nameTh} />
                     </div>
                   </div>
                 </div>
-                {isSelected && <span className="shrink-0 font-mono text-[10px] font-bold text-gold">เลือก</span>}
+                {isSelected && <span className="shrink-0 font-mono text-[10px] font-bold text-gold">{t("เลือก")}</span>}
               </button>
             );
           })}

@@ -1,3 +1,5 @@
+import { StableButtonLabel } from "../StableButtonLabel";
+import { useLanguage } from "../../i18n/language";
 import {
   ChevronLeft,
   ChevronRight,
@@ -20,7 +22,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   magic: "เวท",
   defense: "ป้องกัน",
   movement: "ความเร็ว",
-  jungling: "ฟาร์มป่า",
+  jungle: "ฟาร์มป่า",
   support: "ซัพพอร์ต",
 };
 
@@ -70,6 +72,7 @@ export function ItemCardModal({
   onClose,
   onPick,
 }: ItemCardModalProps) {
+  const { language, t } = useLanguage();
   const titleId = useId();
   const [prevItem, setPrevItem] = useState(itemName);
   const [currentItem, setCurrentItem] = useState(itemName);
@@ -217,7 +220,7 @@ export function ItemCardModal({
                 )}
                 {catalogItem?.category && (
                   <span className="rounded bg-panel-2 px-1.5 py-0.5 text-[10px] text-muted">
-                    {CATEGORY_LABELS[catalogItem.category] ?? catalogItem.category}
+                    {t(CATEGORY_LABELS[catalogItem.category] ?? catalogItem.category)}
                   </span>
                 )}
               </div>
@@ -229,7 +232,7 @@ export function ItemCardModal({
                 <span className="text-dim">·</span>
                 <span className="flex items-center gap-1 text-[11px]">
                   <ImageIcon size={12} className="text-blue" />
-                  ภาพการ์ดไอเทมแท้จากในเกม (100% In-Game Screenshot)
+                  {t("ภาพการ์ดไอเทมแท้จากในเกม (100% In-Game Screenshot)")}
                 </span>
               </div>
             </div>
@@ -246,14 +249,14 @@ export function ItemCardModal({
                 className="flex items-center gap-1.5 rounded bg-gold px-3 py-1.5 font-display text-xs font-bold text-bg shadow hover:bg-gold/90 active:scale-95"
               >
                 <Swords size={13} />
-                <span>ใส่ไอเทมนี้</span>
+                <span><StableButtonLabel message="ใส่ไอเทมนี้" /></span>
               </button>
             )}
             <button
               type="button"
               onClick={onClose}
               className="rounded p-1.5 text-muted hover:bg-panel-2 hover:text-ink"
-              aria-label="ปิด"
+              aria-label={t("ปิด")}
             >
               <X size={18} />
             </button>
@@ -267,7 +270,7 @@ export function ItemCardModal({
             {/* Pagination Tabs (For multi-page items) */}
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-1.5">
-                <span className="text-[11px] font-semibold text-muted">หน้าการ์ด:</span>
+                <span className="text-[11px] font-semibold text-muted">{t("หน้าการ์ด:")}</span>
                 {pagesCount > 1 ? (
                   <div className="flex gap-1">
                     {Array.from({ length: pagesCount }, (_, i) => (
@@ -281,12 +284,12 @@ export function ItemCardModal({
                             : "bg-panel text-muted hover:bg-line hover:text-ink"
                         }`}
                       >
-                        หน้า {i + 1}
+                        <StableButtonLabel message="หน้า" /> {i + 1}
                       </button>
                     ))}
                   </div>
                 ) : (
-                  <span className="rounded bg-panel px-2 py-0.5 text-xs text-dim">หน้าเดียว</span>
+                  <span className="rounded bg-panel px-2 py-0.5 text-xs text-dim">{t("หน้าเดียว")}</span>
                 )}
               </div>
 
@@ -297,7 +300,7 @@ export function ItemCardModal({
                     onClick={() => setPage(pageIdx - 1)}
                     disabled={pageIdx === 0}
                     className="rounded p-1 text-muted hover:bg-line hover:text-ink disabled:opacity-30"
-                    title="หน้าก่อนหน้า (ลูกศรซ้าย)"
+                    title={t("หน้าก่อนหน้า (ลูกศรซ้าย)")}
                   >
                     <ChevronLeft size={16} />
                   </button>
@@ -309,7 +312,7 @@ export function ItemCardModal({
                     onClick={() => setPage(pageIdx + 1)}
                     disabled={pageIdx >= pagesCount - 1}
                     className="rounded p-1 text-muted hover:bg-line hover:text-ink disabled:opacity-30"
-                    title="หน้าถัดไป (ลูกศรขวา)"
+                    title={t("หน้าถัดไป (ลูกศรขวา)")}
                   >
                     <ChevronRight size={16} />
                   </button>
@@ -322,7 +325,7 @@ export function ItemCardModal({
               {loading ? (
                 <div className="flex flex-col items-center gap-2 py-20 text-muted">
                   <div className="h-6 w-6 animate-spin rounded-full border-2 border-gold border-t-transparent" />
-                  <span className="text-xs">กำลังโหลดภาพการ์ดไอเทม...</span>
+                  <span className="text-xs">{t("กำลังโหลดภาพการ์ดไอเทม...")}</span>
                 </div>
               ) : currentScreenshotUrl && !imageError ? (
                 <div className="relative max-h-[58vh] overflow-y-auto">
@@ -341,7 +344,7 @@ export function ItemCardModal({
               ) : (
                 <div className="flex flex-col items-center gap-2 py-20 text-dim">
                   <ImageIcon size={32} className="opacity-40" />
-                  <span className="text-xs">ยังไม่มีภาพการ์ดสำหรับไอเทมนี้ในระบบ</span>
+                  <span className="text-xs">{t("ยังไม่มีภาพการ์ดสำหรับไอเทมนี้ในระบบ")}</span>
                 </div>
               )}
             </div>
@@ -353,7 +356,7 @@ export function ItemCardModal({
             <div className="mb-4">
               <h3 className="mb-2 flex items-center gap-1.5 font-display text-xs font-bold tracking-wide text-muted">
                 <Shield size={13} className="text-blue" />
-                <span>สเตตัสพื้นฐาน (Base Attributes)</span>
+                <span>{t("สเตตัสพื้นฐาน (Base Attributes)")}</span>
               </h3>
               {currentDetails?.stats_raw && currentDetails.stats_raw.length > 0 ? (
                 <div className="flex flex-wrap gap-1.5">
@@ -378,7 +381,7 @@ export function ItemCardModal({
                   ))}
                 </div>
               ) : (
-                <span className="text-xs text-dim">ไม่มีสเตตัสพื้นฐาน</span>
+                <span className="text-xs text-dim">{t("ไม่มีสเตตัสพื้นฐาน")}</span>
               )}
             </div>
 
@@ -386,10 +389,10 @@ export function ItemCardModal({
             <div className="mb-5 flex-1">
               <h3 className="mb-2 flex items-center gap-1.5 font-display text-xs font-bold tracking-wide text-muted">
                 <Sparkles size={13} className="text-gold" />
-                <span>เอฟเฟกต์ & สกิลติดตัว (Passives & Description)</span>
+                <span>{t("เอฟเฟกต์ & สกิลติดตัว (Passives & Description)")}</span>
               </h3>
               <div className="space-y-2 rounded-lg border border-line bg-panel-2 p-3 text-xs leading-relaxed text-ink/90">
-                {currentDetails?.desc_th && currentDetails.desc_th.length > 0 ? (
+                {currentDetails?.desc_th?.length && (language === "th" || !catalogItem?.passives?.length) ? (
                   currentDetails.desc_th.map((text, i) => (
                     <div key={i} className="whitespace-pre-line border-b border-line/40 pb-2 last:border-b-0 last:pb-0">
                       {text}
@@ -402,7 +405,7 @@ export function ItemCardModal({
                     </div>
                   ))
                 ) : (
-                  <span className="text-dim">ไม่มีเอฟเฟกต์พิเศษหรือสกิลติดตัว</span>
+                  <span className="text-dim">{t("ไม่มีเอฟเฟกต์พิเศษหรือสกิลติดตัว")}</span>
                 )}
               </div>
             </div>
@@ -412,9 +415,9 @@ export function ItemCardModal({
               <div className="mb-2 flex items-center justify-between">
                 <h4 className="flex items-center gap-1 text-[11px] font-semibold text-muted">
                   <Filter size={11} />
-                  <span>ดูไอเทมชิ้นอื่นในคลัง (114 ไอเทม)</span>
+                  <span>{t("ดูไอเทมชิ้นอื่นในคลัง (114 ไอเทม)")}</span>
                 </h4>
-                <span className="font-mono text-[10px] text-dim">{filteredItems.length} ชิ้น</span>
+                <span className="font-mono text-[10px] text-dim">{filteredItems.length} {t("ชิ้น")}</span>
               </div>
 
               {/* Category Pills */}
@@ -426,13 +429,13 @@ export function ItemCardModal({
                     onClick={() => {
                       setSelectedCategory(c);
                     }}
-                    className={`rounded px-1.5 py-0.5 text-[10px] font-semibold transition-colors ${
+                    className={`min-h-6 min-w-6 rounded px-1.5 py-0.5 text-[10px] font-semibold transition-colors ${
                       selectedCategory === c
                         ? "bg-gold text-bg"
                         : "bg-panel-2 text-muted hover:bg-line hover:text-ink"
                     }`}
                   >
-                    {CATEGORY_LABELS[c] ?? c}
+                    <StableButtonLabel message={CATEGORY_LABELS[c] ?? c} />
                   </button>
                 ))}
               </div>
@@ -443,7 +446,7 @@ export function ItemCardModal({
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="ค้นหาชื่อไอเทม..."
+                  placeholder={t("ค้นหาชื่อไอเทม...")}
                   className="w-full rounded border border-line bg-bg px-2 py-1 text-xs text-ink placeholder:text-dim"
                 />
               </div>

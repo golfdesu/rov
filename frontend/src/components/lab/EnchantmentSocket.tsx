@@ -1,3 +1,4 @@
+import { useLanguage } from "../../i18n/language";
 import { X } from "lucide-react";
 import { useState } from "react";
 import type { CatalogEnchantment } from "../../types/combat";
@@ -19,6 +20,7 @@ export function SocketItem({
   factionColor?: string;
   onClear: () => void;
 }) {
+  const { t } = useLanguage();
   const sizeClass = isMajor ? "h-14 w-14" : "h-11 w-11";
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
 
@@ -30,7 +32,7 @@ export function SocketItem({
         >
           {ROMAN[tier]}
         </div>
-        <span className="mt-1 text-[9px] text-dim">ขั้น {tier}</span>
+        <span className="mt-1 text-[9px] text-dim">{t("ขั้น")} {tier}</span>
       </div>
     );
   }
@@ -63,8 +65,8 @@ export function SocketItem({
             onClear();
           }}
           className="absolute -right-1 -top-1 grid h-4 w-4 place-items-center rounded-full bg-red text-bg shadow opacity-100 transition-opacity focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
-          title={`ลบ ${name}`}
-          aria-label={`ลบ ${name}`}
+          title={t("ลบ {0}", name)}
+          aria-label={t("ลบ {0}", name)}
         >
           <X size={10} />
         </button>

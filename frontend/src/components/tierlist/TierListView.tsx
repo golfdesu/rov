@@ -1,3 +1,5 @@
+import { StableButtonLabel } from "../StableButtonLabel";
+import { useLanguage } from "../../i18n/language";
 import {
   ArrowUpDown,
   Filter,
@@ -101,6 +103,7 @@ const TIER_META: Record<
 };
 
 export function TierListView({ heroes, disableShortcuts = false }: TierListViewProps) {
+  const { language, t } = useLanguage();
   const [selectedLane, setSelectedLane] = useState<LaneFilter>("ALL");
   const [selectedRole, setSelectedRole] = useState<RoleFilter>("ALL");
   const [includeFlex, setIncludeFlex] = useState<boolean>(false);
@@ -257,8 +260,8 @@ export function TierListView({ heroes, disableShortcuts = false }: TierListViewP
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  aria-label="ค้นหาฮีโร่ใน Tier List"
-                  placeholder="ค้นหาฮีโร่... (กด /)"
+                  aria-label={t("ค้นหาฮีโร่ใน Tier List")}
+                  placeholder={t("ค้นหาฮีโร่... (กด /)")}
                   className="h-8 w-full rounded border border-line bg-bg pl-8 pr-7 text-xs text-ink placeholder-dim focus:border-gold focus:outline-none"
                 />
                 {searchQuery && (
@@ -269,7 +272,7 @@ export function TierListView({ heroes, disableShortcuts = false }: TierListViewP
                       searchInputRef.current?.focus();
                     }}
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-dim hover:text-ink"
-                    aria-label="ล้างการค้นหา"
+                    aria-label={t("ล้างการค้นหา")}
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
@@ -328,7 +331,7 @@ export function TierListView({ heroes, disableShortcuts = false }: TierListViewP
                   }`}
                 >
                   {f.label}
-                  <span className="ml-1 text-[10px] font-normal text-dim">({f.th})</span>
+                  <span lang="th" aria-hidden={language === "en"} className={`ml-1 text-[10px] font-normal text-dim ${language === "en" ? "invisible" : ""}`}>({f.th})</span>
                 </button>
               ))}
 
@@ -341,7 +344,7 @@ export function TierListView({ heroes, disableShortcuts = false }: TierListViewP
                     onChange={(e) => setIncludeFlex(e.target.checked)}
                     className="h-3.5 w-3.5 rounded border-line bg-panel text-gold focus:ring-0 cursor-pointer accent-[#f5c451]"
                   />
-                  <span>รวม Flex (≥15%)</span>
+                  <span>{t("รวม Flex (≥15%)")}</span>
                 </label>
               )}
             </div>
@@ -353,14 +356,14 @@ export function TierListView({ heroes, disableShortcuts = false }: TierListViewP
                 LANE:
               </span>
               <select
-                aria-label="กรองตามเลน"
+                aria-label={t("กรองตามเลน")}
                 value={selectedLane}
                 onChange={(e) => setSelectedLane(e.target.value as LaneFilter)}
-                className="h-7 rounded border border-line bg-bg px-2 text-xs font-medium text-ink focus:border-gold focus:outline-none"
+                className="h-7 w-32 rounded border border-line bg-bg px-2 text-xs font-medium text-ink focus:border-gold focus:outline-none"
               >
                 {LANE_FILTERS.map((f) => (
                   <option key={f.key} value={f.key}>
-                    {f.label} ({f.th})
+                    {language === "th" ? f.label + " (" + f.th + ")" : f.label}
                   </option>
                 ))}
               </select>
@@ -382,14 +385,14 @@ export function TierListView({ heroes, disableShortcuts = false }: TierListViewP
               <div className="flex items-center gap-1.5 text-xs text-muted">
                 <span className="text-[11px] font-semibold text-dim uppercase">ROLE:</span>
                 <select
-                  aria-label="กรองตามสายอาชีพ"
+                  aria-label={t("กรองตามสายอาชีพ")}
                   value={selectedRole}
                   onChange={(e) => setSelectedRole(e.target.value as RoleFilter)}
-                  className="h-7 rounded border border-line bg-bg px-2 text-xs font-medium text-ink focus:border-gold focus:outline-none"
+                  className="h-7 w-32 rounded border border-line bg-bg px-2 text-xs font-medium text-ink focus:border-gold focus:outline-none"
                 >
                   {ROLE_FILTERS.map((r) => (
                     <option key={r.key} value={r.key}>
-                      {r.label}
+                      {t(r.label)}
                     </option>
                   ))}
                 </select>
@@ -444,7 +447,7 @@ export function TierListView({ heroes, disableShortcuts = false }: TierListViewP
                     <div className="flex-1 p-3">
                       {list.length === 0 ? (
                         <div className="py-6 text-center text-xs text-dim italic">
-                          ไม่มีฮีโร่ใน Tier นี้ตามเงื่อนไขตัวกรอง
+                          {t("ไม่มีฮีโร่ใน Tier นี้ตามเงื่อนไขตัวกรอง")}
                         </div>
                       ) : (
                         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-12">
@@ -803,7 +806,7 @@ export function TierListView({ heroes, disableShortcuts = false }: TierListViewP
               onClick={() => setInspectHero(null)}
               className="rounded border border-line bg-panel-2 px-4 py-1.5 text-xs font-semibold text-muted hover:border-gold hover:text-ink"
             >
-              ปิด
+              <StableButtonLabel message="ปิด" />
             </button>
           </div>
         </Modal>

@@ -1,3 +1,5 @@
+import { StableButtonLabel } from "../StableButtonLabel";
+import { translateMessage, useLanguage } from "../../i18n/language";
 import { ArrowDownToLine, Calculator, RotateCcw, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDraft } from "../../hooks/useDraft";
@@ -45,6 +47,7 @@ export function MetaLab({
   mainSeriesGames = [],
   disableShortcuts = false,
 }: MetaLabProps) {
+  const { t } = useLanguage();
   const [mobileView, setMobileView] = useState<MobileDraftView>("draft");
   const [globalBanModalCat, setGlobalBanModalCat] = useState<GlobalBanCategoryKey | null>(null);
   const [importNotification, setImportNotification] = useState<string | null>(null);
@@ -154,7 +157,7 @@ export function MetaLab({
       globalBans: mainGlobalBans,
       seriesGames: mainSeriesGames,
     });
-    setImportNotification("ดึงสถานะจากกระดานหลักเรียบร้อยแล้ว!");
+    setImportNotification(t("ดึงสถานะจากกระดานหลักเรียบร้อยแล้ว!"));
     setTimeout(() => setImportNotification(null), 3000);
   };
 
@@ -167,7 +170,7 @@ export function MetaLab({
     if (globalBans.gameNumber > 1 && !statusAfter.isUnlocked) {
       const maxUnlocked = getMaxUnlockedGame(candidate, seriesGames);
       const ok = window.confirm(
-        `การลบ ${displayName(heroName)} จะทำให้จำนวน Global Ban ไม่ครบตามเงื่อนไขของ Game ${globalBans.gameNumber} (ต้องมีอย่างน้อยฝั่งละ ${statusAfter.requiredCount} ตัว)\n\nระบบจะย้อนกลับไปยัง Game ${maxUnlocked} อัตโนมัติ ยืนยันหรือไม่?`,
+        t("การลบ {0} จะทำให้จำนวน Global Ban ไม่ครบตามเงื่อนไขของ Game {1} (ต้องมีอย่างน้อยฝั่งละ {2} ตัว)\n\nระบบจะย้อนกลับไปยัง Game {3} อัตโนมัติ ยืนยันหรือไม่?", displayName(heroName), globalBans.gameNumber, statusAfter.requiredCount, maxUnlocked),
       );
       if (!ok) return;
       selectGameNumber(maxUnlocked, candidate);
@@ -234,7 +237,7 @@ export function MetaLab({
                 </span>
               </div>
               <p className="truncate font-mono text-[10px] text-muted sm:text-xs">
-                จำลองสถานการณ์ดราฟต์ด้วยโมเดล SOTA ร่วมกับ Synergy / Counter Matrix{totalMatches ? ` (${totalMatches.toLocaleString()} เกม)` : ""}
+                {t("จำลองสถานการณ์ดราฟต์ด้วยโมเดล SOTA ร่วมกับ Synergy / Counter Matrix")}{totalMatches ? t(" ({0} เกม)", totalMatches.toLocaleString()) : ""}
               </p>
             </div>
           </div>
@@ -251,23 +254,23 @@ export function MetaLab({
               onClick={handleImport}
               title={
                 hasMainPicks
-                  ? "คัดลอกฮีโร่ที่เลือกและแบนจากหน้าดราฟต์หลักมาทดสอบด้วยระบบสถิติ Matrix"
-                  : "หน้าดราฟต์หลักยังไม่มีการเลือกฮีโร่"
+                  ? t("คัดลอกฮีโร่ที่เลือกและแบนจากหน้าดราฟต์หลักมาทดสอบด้วยระบบสถิติ Matrix")
+                  : t("หน้าดราฟต์หลักยังไม่มีการเลือกฮีโร่")
               }
               className="flex h-7.5 items-center gap-1.5 border border-gold/60 bg-gold/10 px-2.5 font-display text-xs font-bold text-gold transition-colors hover:bg-gold hover:text-bg disabled:pointer-events-none disabled:opacity-40"
             >
               <ArrowDownToLine className="h-3.5 w-3.5 shrink-0" />
-              <span>ดึงจากกระดานหลัก</span>
+              <span><StableButtonLabel message="ดึงจากกระดานหลัก" /></span>
             </button>
 
             <button
               type="button"
               onClick={reset}
-              title="ล้างกระดาน Matrix Draft"
+              title={t("ล้างกระดาน Matrix Draft")}
               className="flex h-7.5 items-center gap-1.5 border border-line-strong bg-panel px-2.5 font-display text-xs font-semibold text-muted transition-colors hover:border-red/60 hover:text-red"
             >
               <RotateCcw className="h-3.5 w-3.5 shrink-0" />
-              <span className="hidden sm:inline">ล้าง</span>
+              <span className="hidden sm:inline"><StableButtonLabel message="ล้าง" /></span>
             </button>
           </div>
         </div>
@@ -305,13 +308,13 @@ export function MetaLab({
       <main className="mx-auto flex min-h-0 w-full max-w-[1920px] flex-1 flex-col gap-1.5 overflow-hidden px-2 py-1.5 sm:px-3 sm:py-2">
         {error && (
           <div className="shrink-0">
-            <Alert>{error}</Alert>
+            <Alert>{translateMessage(t, error)}</Alert>
           </div>
         )}
         {heroesFallback && (
           <div className="shrink-0">
             <Alert tone="warning">
-              โหลดข้อมูลฮีโร่จากเซิร์ฟเวอร์ไม่ได้ — ใช้รายชื่อสำรอง
+              {t("โหลดข้อมูลฮีโร่จากเซิร์ฟเวอร์ไม่ได้ — ใช้รายชื่อสำรอง")}
             </Alert>
           </div>
         )}
@@ -543,7 +546,7 @@ export function MetaLab({
                 : "border border-line text-muted hover:text-ink"
             }`}
           >
-            <span>กระดาน</span>
+            <span><StableButtonLabel message="กระดาน" /></span>
           </button>
           <button
             type="button"
@@ -555,7 +558,7 @@ export function MetaLab({
             }`}
           >
             <Sparkles className="h-3 w-3" />
-            <span>สถิติแนะนำ</span>
+            <span><StableButtonLabel message="สถิติแนะนำ" /></span>
             {recommendations.length > 0 && (
               <span className="ml-1 bg-gold px-1 font-mono text-[9px] font-bold text-bg">
                 {recommendations.length}
@@ -571,7 +574,7 @@ export function MetaLab({
                 : "border border-line text-muted hover:text-ink"
             }`}
           >
-            <span>ทั้ง 2 ทีม</span>
+            <span><StableButtonLabel message="ทั้ง 2 ทีม" /></span>
           </button>
         </div>
       </footer>

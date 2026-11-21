@@ -1,3 +1,4 @@
+import { useLanguage } from "../i18n/language";
 import { LANE_SHORT, laneKey } from "../utils/draft";
 
 interface LaneIconProps {
@@ -7,9 +8,10 @@ interface LaneIconProps {
 
 /** Minimal tactical vector lane emblems modeled after RoV's 5 in-game position icons. */
 export function LaneIcon({ lane, className = "h-4 w-4" }: LaneIconProps) {
+  const { t } = useLanguage();
   const key = laneKey(lane);
   if (!key) return null;
-  const label = LANE_SHORT[key]?.th ?? key;
+  const label = t(LANE_SHORT[key]?.th ?? key);
 
   return (
     <svg

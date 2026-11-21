@@ -1,3 +1,4 @@
+import type { Message } from "../i18n/language";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { deleteJson, getJson, isAbortError, postJson, putJson } from "../api/client";
 import { type CombatBuild, type CombatCatalog, type DuelResult, type Side, emptyBuild } from "../types/combat";
@@ -76,7 +77,7 @@ export function useCombatLab(options: UseCombatLabOptions = {}) {
   const [enableActives, setEnableActives] = useState(initialState.enableActives);
   const [catalogReloadKey, setCatalogReloadKey] = useState(0);
   const [result, setResult] = useState<DuelResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Message | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const lastSavedAtRef = useRef<number>(initialState.updatedAt);
@@ -161,7 +162,7 @@ export function useCombatLab(options: UseCombatLabOptions = {}) {
         });
       })
       .catch((e: unknown) => {
-        if (!isAbortError(e)) setError(`โหลดข้อมูลไม่สำเร็จ: ${e instanceof Error ? e.message : String(e)}`);
+        if (!isAbortError(e)) setError(["โหลดข้อมูลไม่สำเร็จ: {0}", e instanceof Error ? e.message : String(e)]);
       });
     return () => ctrl.abort();
   }, [catalogReloadKey]);

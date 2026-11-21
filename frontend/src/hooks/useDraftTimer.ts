@@ -159,6 +159,7 @@ export interface UseDraftTimerOptions {
   currentStepIndex: number;
   resetSignal: string;
   isBusy: boolean;
+  suspended?: boolean;
   fallbackHero: string | null;
   onExpireAutoLock: (heroName: string) => void;
 }
@@ -168,6 +169,7 @@ export function useDraftTimer({
   currentStepIndex,
   resetSignal,
   isBusy,
+  suspended = false,
   fallbackHero,
   onExpireAutoLock,
 }: UseDraftTimerOptions) {
@@ -216,7 +218,7 @@ export function useDraftTimer({
 
   // Tick loop anchored to wall-clock deadline (resists background-tab timer throttling)
   useEffect(() => {
-    if (!prefs.enabled || clock.paused || !currentStep || totalSeconds <= 0) return;
+    if (!prefs.enabled || clock.paused || suspended || !currentStep || totalSeconds <= 0) return;
     const startRemaining = Math.max(0, remainingRef.current);
     if (startRemaining === 0) return;
 
@@ -227,11 +229,11 @@ export function useDraftTimer({
       setClock((prev) => (prev.secondsLeft === next ? prev : { ...prev, secondsLeft: next }));
     }, 200);
     return () => window.clearInterval(id);
-  }, [prefs.enabled, clock.paused, stepSignature, currentStep, totalSeconds]);
+  }, [prefs.enabled, clock.paused, suspended, stepSignature, currentStep, totalSeconds]);
 
   // Countdown audio cues (5..1 gentle tick, 0 double chime)
   useEffect(() => {
-    if (!prefs.enabled || clock.paused || !prefs.soundEnabled || !currentStep) return;
+    if (!prefs.enabled || clock.paused || suspended || !prefs.soundEnabled || !currentStep) return;
     const sec = clock.secondsLeft;
     if (lastSoundSecRef.current === sec) return;
     if (sec >= 1 && sec <= 5) {
@@ -242,11 +244,11 @@ export function useDraftTimer({
       playTone(520, 120, 0.07);
       window.setTimeout(() => playTone(780, 140, 0.07), 130);
     }
-  }, [clock.secondsLeft, clock.paused, prefs.enabled, prefs.soundEnabled, currentStep, totalSeconds]);
+  }, [clock.secondsLeft, clock.paused, suspended, prefs.enabled, prefs.soundEnabled, currentStep, totalSeconds]);
 
   // Optional Auto-Lock AI #1 when clock hits 00s (tracks individual stepIndex so double-picks lock both slots)
   useEffect(() => {
-    if (!prefs.enabled || clock.paused || !prefs.autoLock || !currentStep) return;
+    if (!prefs.enabled || clock.paused || suspended || !prefs.autoLock || !currentStep) return;
     if (clock.secondsLeft > 0 || isBusy || !fallbackHero) return;
     if (expiredLockedStepRef.current === autoLockKey) return;
     expiredLockedStepRef.current = autoLockKey;
@@ -254,6 +256,7 @@ export function useDraftTimer({
   }, [
     clock.secondsLeft,
     clock.paused,
+    suspended,
     prefs.enabled,
     prefs.autoLock,
     currentStep,

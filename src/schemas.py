@@ -1,12 +1,21 @@
 import re
 from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, StrictInt, field_validator, model_validator
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field, StrictInt, field_validator, model_validator
 
 HeroStr = Annotated[str, Field(min_length=1, max_length=64)]
 ShortStr = Annotated[str, Field(max_length=64)]
 FinitePct = Annotated[float, Field(allow_inf_nan=False, ge=0.0, le=100.0)]
 LaneKey = Literal["DS_Lane", "Jungle", "Mid", "Dragon_Lane", "Roam"]
+
+
+def _validate_pick_lane_keys(value: dict[str, LaneKey]) -> dict[str, LaneKey]:
+    if any(not hero.strip() for hero in value):
+        raise ValueError("Empty hero name in pickLanes")
+    return value
+
+
+PickLaneAssignments = Annotated[dict[HeroStr, LaneKey], Field(max_length=10), AfterValidator(_validate_pick_lane_keys)]
 
 _SCHEMA_HERO_ALIASES: dict[str, str] = {
     "riktor": "riktor",
@@ -370,6 +379,7 @@ class RecordedDraftGameSchema(BaseModel):
     redBans: list[ShortStr] = Field(default_factory=list, max_length=4)
     bluePicks: list[ShortStr] = Field(default_factory=list, max_length=5)
     redPicks: list[ShortStr] = Field(default_factory=list, max_length=5)
+    pickLanes: PickLaneAssignments = Field(default_factory=dict)
     blueWinRate: FinitePct = 50.0
     winner: Literal["A", "B"] | None = None
 
@@ -380,7 +390,7 @@ class DraftSessionStateSchema(BaseModel):
     redPicks: list[ShortStr] = Field(default_factory=list, max_length=5)
     blueBans: list[ShortStr] = Field(default_factory=list, max_length=4)
     redBans: list[ShortStr] = Field(default_factory=list, max_length=4)
-    pickLanes: dict[HeroStr, LaneKey] = Field(default_factory=dict, max_length=10)
+    pickLanes: PickLaneAssignments = Field(default_factory=dict)
     history: list[DraftHistoryItemSchema] = Field(default_factory=list, max_length=25)
     winHistory: list[FinitePct | None] = Field(default_factory=list, max_length=25)
     blueWinRate: FinitePct = 50.0
@@ -395,14 +405,6 @@ class DraftSessionStateSchema(BaseModel):
         le=9223372036854775807,
         description="Epoch milliseconds of last state update",
     )
-
-    @field_validator("pickLanes")
-    @classmethod
-    def validate_non_empty_pick_lane_keys(cls, value: dict[str, LaneKey]) -> dict[str, LaneKey]:
-        for hero_name in value:
-            if not hero_name.strip():
-                raise ValueError("Empty hero name in pickLanes")
-        return value
 
     @field_validator("engine", mode="before")
     @classmethod

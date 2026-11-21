@@ -7,12 +7,13 @@ const TONE_STYLE = {
 
 interface AlertProps {
   tone?: keyof typeof TONE_STYLE;
+  className?: string;
   children: ReactNode;
 }
 
-export function Alert({ tone = "error", children }: AlertProps) {
+export function Alert({ tone = "error", className = "", children }: AlertProps) {
   return (
-    <div role={tone === "error" ? "alert" : "status"} className={`border px-3 py-2 text-xs ${TONE_STYLE[tone]}`}>
+    <div role={tone === "error" ? "alert" : "status"} className={`border px-3 py-2 text-xs ${TONE_STYLE[tone]} ${className}`}>
       {children}
     </div>
   );

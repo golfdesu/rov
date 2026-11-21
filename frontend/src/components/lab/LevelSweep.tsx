@@ -1,3 +1,4 @@
+import { useLanguage } from "../../i18n/language";
 import type { DuelSide } from "../../types/combat";
 
 interface LevelSweepProps {
@@ -8,14 +9,15 @@ interface LevelSweepProps {
 
 /** Combo damage as % of enemy HP at every level, with the build kept fixed. */
 export function LevelSweep({ sweep, currentLevel, color }: LevelSweepProps) {
+  const { t } = useLanguage();
   const killLevel = sweep.find((s) => s.pct_enemy_hp >= 100)?.level;
   const max = Math.max(100, ...sweep.map((s) => s.pct_enemy_hp));
   return (
     <div className="border border-line bg-panel p-3">
       <div className="mb-2 flex flex-wrap items-baseline justify-between gap-1">
-        <h3 className="font-display text-[11px] font-semibold tracking-[0.18em] text-muted">คอมโบตามเลเวล</h3>
+        <h3 className="font-display text-[11px] font-semibold tracking-[0.18em] text-muted">{t("คอมโบตามเลเวล")}</h3>
         <span className="text-[10px] text-dim">
-          {killLevel ? `คอมโบเดียวฆ่าได้ตั้งแต่ Lv.${killLevel}` : "คอมโบเดียวยังฆ่าไม่ได้ทุกเลเวล"}
+          {killLevel ? t("คอมโบเดียวฆ่าได้ตั้งแต่ Lv.{0}", killLevel) : t("คอมโบเดียวยังฆ่าไม่ได้ทุกเลเวล")}
         </span>
       </div>
       <div className="relative flex h-20 items-end gap-0.5">

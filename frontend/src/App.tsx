@@ -1,3 +1,6 @@
+import { StableButtonLabel } from "./components/StableButtonLabel";
+import { type Message, translateMessage, useLanguage } from "./i18n/language";
+import { LanguageSwitch } from "./i18n/LanguageProvider";
 import { BarChart3, Coffee, LogIn, LogOut, Menu, MessageSquare, User } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { getJson, postJson, putJson, setExpectedAuthUser, setSessionMismatchHandler } from "./api/client";
@@ -74,6 +77,7 @@ function Workspace({
   onOpenMobileDrawer,
   onLogout,
 }: WorkspaceProps) {
+  const { t } = useLanguage();
   const isAuthenticated = authUser !== null;
   const scope = isAuthenticated ? `user:${authUser.username}` : "guest";
   const activeTabLabel = TABS.find((t) => t.key === tab)?.label ?? "Draft Board";
@@ -88,7 +92,7 @@ function Workspace({
   return (
     <div className="flex h-dvh max-h-dvh flex-col overflow-hidden bg-bg">
       {/* Unified Top Navigation */}
-      <nav className="shrink-0 border-b border-line bg-panel/90" aria-label="โหมด">
+      <nav className="shrink-0 border-b border-line bg-panel/90" aria-label={t("โหมด")}>
         <div className="mx-auto flex max-w-[1920px] items-center justify-between gap-2 px-2.5 py-1.5 sm:px-4 lg:py-0">
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
             <div className="flex shrink-0 items-center gap-1.5 lg:border-r lg:border-line lg:pr-3">
@@ -118,15 +122,16 @@ function Workspace({
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5">
+            <LanguageSwitch className="hidden lg:inline-flex lg:self-center" />
             <span className="hidden h-7 items-center border border-gold/40 bg-gold/10 px-2.5 font-mono text-[11px] font-bold text-gold xl:inline-flex">
-              ให้บริการฟรีถึง 30/11/2026
+              <StableButtonLabel message="ให้บริการฟรีถึง 30/11/2026" />
             </span>
             {isAdmin && (
               <button
                 type="button"
                 onClick={onOpenAdminStatsModal}
-                title="ดูสถิติระบบ & ผลสำรวจ (Owner Only)"
-                aria-label="เปิดสถิติระบบ"
+                title={t("ดูสถิติระบบ & ผลสำรวจ (Owner Only)")}
+                aria-label={t("เปิดสถิติระบบ")}
                 className="hidden h-7 items-center gap-1 border border-gold/60 bg-gold/10 px-2 font-display text-[11px] font-bold text-gold transition-colors hover:bg-gold hover:text-bg lg:inline-flex"
               >
                 <BarChart3 className="h-3 w-3 shrink-0" />
@@ -136,8 +141,8 @@ function Workspace({
             <button
               type="button"
               onClick={onOpenSurveyModal}
-              title="แบบสอบถาม / Feedback ความคิดเห็นต่อ MiniDraft"
-              aria-label="เปิดแบบสอบถาม / Feedback"
+              title={t("แบบสอบถาม / Feedback ความคิดเห็นต่อ MiniDraft")}
+              aria-label={t("เปิดแบบสอบถาม / Feedback")}
               className="relative hidden h-7 items-center gap-1 border border-line-strong bg-panel-2 px-2 font-display text-[11px] font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold lg:inline-flex"
             >
               <MessageSquare className="h-3 w-3 shrink-0 text-gold" />
@@ -152,8 +157,8 @@ function Workspace({
             <button
               type="button"
               onClick={onOpenDonateModal}
-              title="สนับสนุนผู้พัฒนา (PromptPay QR)"
-              aria-label="Donate สนับสนุนผู้พัฒนา"
+              title={t("สนับสนุนผู้พัฒนา (PromptPay QR)")}
+              aria-label={t("Donate สนับสนุนผู้พัฒนา")}
               className="hidden h-7 items-center gap-1 border border-line-strong bg-panel-2 px-2 font-display text-[11px] font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold lg:inline-flex"
             >
               <Coffee className="h-3 w-3 shrink-0 text-gold" />
@@ -162,7 +167,7 @@ function Workspace({
             {authLoading ? null : isAuthenticated ? (
               <div className="flex items-center gap-1">
                 <span
-                  title={`กำลังซิงก์ข้อมูลข้ามอุปกรณ์ด้วยบัญชี @${authUser.username}`}
+                  title={t("กำลังซิงก์ข้อมูลข้ามอุปกรณ์ด้วยบัญชี @{0}", authUser.username)}
                   className="inline-flex h-7 items-center gap-1 border border-good/40 bg-good/10 px-2 font-mono text-[10.5px] font-bold text-good"
                 >
                   <User className="h-3 w-3 shrink-0" />
@@ -171,30 +176,30 @@ function Workspace({
                 <button
                   type="button"
                   onClick={onLogout}
-                  title="ออกจากระบบ (สลับกลับโหมด Guest เฉพาะเครื่อง)"
-                  aria-label="ออกจากระบบ"
+                  title={t("ออกจากระบบ (สลับกลับโหมด Guest เฉพาะเครื่อง)")}
+                  aria-label={t("ออกจากระบบ")}
                   className="hidden h-7 items-center gap-1 border border-line bg-bg px-2 font-display text-[11px] font-semibold text-muted transition-colors hover:border-red/60 hover:text-red lg:inline-flex"
                 >
                   <LogOut className="h-3 w-3 shrink-0" />
-                  <span>ออก</span>
+                  <span><StableButtonLabel message="ออก" /></span>
                 </button>
               </div>
             ) : (
               <button
                 type="button"
                 onClick={onOpenAuthModal}
-                title="เข้าสู่ระบบหรือสมัครสมาชิก เพื่อแยกฐานข้อมูลส่วนตัวและซิงก์ข้าม PC / iPad / มือถือ"
+                title={t("เข้าสู่ระบบหรือสมัครสมาชิก เพื่อแยกฐานข้อมูลส่วนตัวและซิงก์ข้าม PC / iPad / มือถือ")}
                 className="inline-flex h-7 items-center gap-1 border border-gold/50 bg-gold/10 px-2 font-display text-[11px] font-bold text-gold transition-colors hover:bg-gold hover:text-bg"
               >
                 <LogIn className="h-3 w-3 shrink-0" />
-                <span>เข้าสู่ระบบ</span>
+                <span><StableButtonLabel message="เข้าสู่ระบบ" /></span>
               </button>
             )}
             <button
               type="button"
               onClick={onOpenMobileDrawer}
-              aria-label="เปิดเมนูเพิ่มเติม"
-              title="เมนูเพิ่มเติม"
+              aria-label={t("เปิดเมนูเพิ่มเติม")}
+              title={t("เมนูเพิ่มเติม")}
               className="relative inline-flex h-8 w-8 items-center justify-center border border-line-strong bg-panel-2 text-ink transition-colors hover:border-gold/60 hover:text-gold lg:hidden"
             >
               <Menu className="h-4 w-4" />
@@ -208,7 +213,7 @@ function Workspace({
           </div>
         </div>
         <div className="border-t border-line/70 bg-gold/10 px-3 py-0.5 text-center font-mono text-[11px] font-bold text-gold xl:hidden">
-          ให้บริการฟรีถึง 30/11/2026
+          {t("ให้บริการฟรีถึง 30/11/2026")}
         </div>
       </nav>
 
@@ -444,6 +449,7 @@ function formatOAuthError(code: string | null): string | null {
 }
 
 export function App() {
+  const { t } = useLanguage();
   const [tab, setTab] = useState<Tab>(initialTab);
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const authUserRef = useRef<AuthUser | null>(null);
@@ -467,10 +473,10 @@ export function App() {
   const [pricingSurveyAnsweredServer, setPricingSurveyAnsweredServer] = useState(false);
   const [pricingSurveyChoiceServer, setPricingSurveyChoiceServer] = useState<PricingSurveyChoice | null>(null);
   const [surveyBusy, setSurveyBusy] = useState(false);
-  const [surveyError, setSurveyError] = useState<string | null>(null);
+  const [surveyError, setSurveyError] = useState<Message | null>(null);
   const [pendingMigration, setPendingMigration] = useState<{ user: AuthUser; draft: PendingGuestDraft } | null>(null);
   const [migrationBusy, setMigrationBusy] = useState(false);
-  const [migrationError, setMigrationError] = useState<string | null>(null);
+  const [migrationError, setMigrationError] = useState<Message | null>(null);
   const migrationTitleId = useId();
 
   const surveyScope = authUser ? `user:${authUser.username.toLowerCase()}` : "guest";
@@ -714,7 +720,7 @@ export function App() {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-bg px-4">
         <div className="border border-line bg-panel px-5 py-3 font-mono text-xs text-muted">
-          กำลังตรวจสอบเซสชันผู้ใช้...
+          {t("กำลังตรวจสอบเซสชันผู้ใช้...")}
         </div>
       </div>
     );
@@ -761,7 +767,7 @@ export function App() {
         setExpectedAuthUser(null);
       }
       setMigrationError(
-        `ไม่สามารถรวมข้อมูลกับเซิร์ฟเวอร์ได้ในขณะนี้ (${err instanceof Error ? err.message : "Network error"}) — ข้อมูลเดิมในบัญชีและโหมด Guest ยังอยู่ครบ`,
+        ["ไม่สามารถรวมข้อมูลกับเซิร์ฟเวอร์ได้ในขณะนี้ ({0}) — ข้อมูลเดิมในบัญชีและโหมด Guest ยังอยู่ครบ", err instanceof Error ? err.message : "Network error"],
       );
     } finally {
       setMigrationBusy(false);
@@ -795,7 +801,7 @@ export function App() {
       return true;
     } catch (err) {
       setSurveyError(
-        `ไม่สามารถบันทึกคำตอบได้ในขณะนี้ (${err instanceof Error ? err.message : "Network error"}) กรุณาลองอีกครั้งหรือกด "ภายหลัง"`,
+        ["ไม่สามารถบันทึกคำตอบได้ในขณะนี้ ({0}) กรุณาลองอีกครั้งหรือกด \"ภายหลัง\"", err instanceof Error ? err.message : "Network error"],
       );
       return false;
     } finally {
@@ -908,7 +914,7 @@ export function App() {
       {pricingSurveyOpen && (
         <PricingSurveyModal
           busy={surveyBusy}
-          error={surveyError}
+          error={surveyError && translateMessage(t, surveyError)}
           answered={surveyAnswered}
           currentChoice={effectiveSurveyChoice}
           onSelect={handleSelectSurveyChoice}
@@ -939,31 +945,31 @@ export function App() {
         >
           <div className="border-b border-line px-5 py-3.5">
             <h2 id={migrationTitleId} className="font-display text-sm font-bold tracking-wide text-ink sm:text-base">
-              พบข้อมูลดราฟต์จากโหมด Guest
+              {t("พบข้อมูลดราฟต์จากโหมด Guest")}
             </h2>
           </div>
           <div className="space-y-3 px-5 py-4 text-xs leading-relaxed text-muted sm:text-sm">
             <p className="text-ink">
-              มีข้อมูลที่ทำค้างไว้ (
+              {t("มีข้อมูลที่ทำค้างไว้ (")}
               {[
-                pendingMigration.draft.actionsCount > 0 ? `เลือก/แบน ${pendingMigration.draft.actionsCount} ตัว` : null,
-                pendingMigration.draft.seriesCount > 0 ? `บันทึก ${pendingMigration.draft.seriesCount} เกม` : null,
+                pendingMigration.draft.actionsCount > 0 ? t("เลือก/แบน {0} ตัว", pendingMigration.draft.actionsCount) : null,
+                pendingMigration.draft.seriesCount > 0 ? t("บันทึก {0} เกม", pendingMigration.draft.seriesCount) : null,
                 pendingMigration.draft.globalBanCount > 0
-                  ? `Global Ban ${pendingMigration.draft.globalBanCount} ตัว`
+                  ? t("Global Ban {0} ตัว", pendingMigration.draft.globalBanCount)
                   : null,
               ]
                 .filter(Boolean)
                 .join(" · ")}
-              ) ต้องการย้ายมาใช้ต่อในบัญชี{" "}
-              <span className="font-mono font-bold text-gold">@{pendingMigration.user.username}</span> หรือไม่?
+              {t(") ต้องการย้ายมาใช้ต่อในบัญชี")}{" "}
+              <span className="font-mono font-bold text-gold">@{pendingMigration.user.username}</span> {t("หรือไม่?")}
             </p>
             <p className="text-[11px] text-dim sm:text-xs">
-              <strong className="text-ink">Confirm</strong> = นำเข้าสู่บัญชีและรวมกับประวัติเดิม (ไม่ลบประวัติเก่า) ·{" "}
-              <strong className="text-ink">Ignore</strong> = โหลดข้อมูลเดิมของบัญชี
+              <strong className="text-ink">Confirm</strong> {t("= นำเข้าสู่บัญชีและรวมกับประวัติเดิม (ไม่ลบประวัติเก่า) ·")}{" "}
+              <strong className="text-ink">Ignore</strong> {t("= โหลดข้อมูลเดิมของบัญชี")}
             </p>
             {migrationError && (
               <div className="border border-red/40 bg-red/10 px-3 py-2 text-[11px] text-red sm:text-xs">
-                {migrationError}
+                {translateMessage(t, migrationError)}
               </div>
             )}
           </div>
@@ -982,7 +988,7 @@ export function App() {
               onClick={() => void handleConfirmMigration()}
               className="border border-gold bg-gold px-4 py-1.5 font-display text-xs font-bold text-bg transition-colors hover:bg-gold/90 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {migrationBusy ? "กำลังรวมข้อมูล..." : "Confirm"}
+              <StableButtonLabel message={migrationBusy ? "กำลังรวมข้อมูล..." : "Confirm"} alternatives={["กำลังรวมข้อมูล...", "Confirm"]} />
             </button>
           </div>
         </Modal>

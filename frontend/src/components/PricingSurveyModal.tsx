@@ -1,3 +1,5 @@
+import { StableButtonLabel } from "./StableButtonLabel";
+import { useLanguage } from "../i18n/language";
 import { Check, Coins, X } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { PricingSurveyChoice } from "../types/auth";
@@ -23,6 +25,7 @@ export function PricingSurveyModal({
   onAfterSelect,
   onSnooze,
 }: PricingSurveyModalProps) {
+  const { t } = useLanguage();
   const titleId = useId();
   const [isClosing, setIsClosing] = useState(false);
   const closeTimerRef = useRef<number | null>(null);
@@ -81,7 +84,7 @@ export function PricingSurveyModal({
         <div className="flex items-center gap-2">
           <Coins className="h-4 w-4 shrink-0 text-gold" />
           <h2 id={titleId} className="font-display text-sm font-bold tracking-wider text-ink sm:text-base">
-            สำรวจความคิดเห็น MINIDRAFT
+            {t("สำรวจความคิดเห็น MINIDRAFT")}
           </h2>
         </div>
         <button
@@ -89,7 +92,7 @@ export function PricingSurveyModal({
           disabled={busy || isClosing}
           onClick={handleRequestSnooze}
           className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-dim transition-colors hover:bg-panel-2 hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
-          aria-label={alreadyAnswered ? "ปิดหน้าต่าง" : "ไว้ถามใหม่วันพรุ่งนี้"}
+          aria-label={alreadyAnswered ? t("ปิดหน้าต่าง") : t("ไว้ถามใหม่วันพรุ่งนี้")}
         >
           <X size={18} />
         </button>
@@ -97,28 +100,28 @@ export function PricingSurveyModal({
 
       <div className="flex shrink-0 flex-col gap-3.5 p-4 sm:p-5">
         <div className="inline-flex w-fit items-center border border-gold/40 bg-gold/10 px-2.5 py-1 font-mono text-[11px] font-bold text-gold">
-          เปิดให้ใช้งานฟรีถึง 30/11/2026
+          {t("เปิดให้ใช้งานฟรีถึง 30/11/2026")}
         </div>
 
         <p className="text-sm font-medium leading-relaxed text-ink sm:text-base">
-          หากในอนาคตเว็บมีการเก็บค่าบริการรายเดือนเพื่อช่วยดูแลค่าเซิร์ฟเวอร์และพัฒนาต่อ คุณพร้อมจะจ่ายหรือไม่?
+          {t("หากในอนาคตเว็บมีการเก็บค่าบริการรายเดือนเพื่อช่วยดูแลค่าเซิร์ฟเวอร์และพัฒนาต่อ คุณพร้อมจะจ่ายหรือไม่?")}
         </p>
 
         {alreadyAnswered ? (
           <div className="border border-good/40 bg-good/10 px-3 py-2 text-xs text-good">
-            คุณตอบแล้ว:{" "}
+            {t("คุณตอบแล้ว:")}{" "}
             <strong>
               {currentChoice === "willing"
-                ? "พร้อมจ่าย"
+                ? t("พร้อมจ่าย")
                 : currentChoice === "not_willing"
-                  ? "ไม่พร้อม"
-                  : "บันทึกคำตอบแล้ว"}
+                  ? t("ไม่พร้อม")
+                  : t("บันทึกคำตอบแล้ว")}
             </strong>{" "}
-            (สามารถกดเปลี่ยนคำตอบได้)
+            {t("(สามารถกดเปลี่ยนคำตอบได้)")}
           </div>
         ) : (
           <p className="text-xs leading-relaxed text-muted sm:text-[13px]">
-            คำตอบของคุณจะช่วยให้ผู้พัฒนาวางแผนการเปิดให้บริการต่อได้อย่างเหมาะสม (ตอบครั้งเดียว จะไม่แสดงซ้ำอีก)
+            {t("คำตอบของคุณจะช่วยให้ผู้พัฒนาวางแผนการเปิดให้บริการต่อได้อย่างเหมาะสม (ตอบครั้งเดียว จะไม่แสดงซ้ำอีก)")}
           </p>
         )}
 
@@ -140,7 +143,7 @@ export function PricingSurveyModal({
             }`}
           >
             <Check className="h-4 w-4 shrink-0" />
-            <span>พร้อมจ่าย</span>
+            <span><StableButtonLabel message="พร้อมจ่าย" /></span>
           </button>
           <button
             type="button"
@@ -152,7 +155,7 @@ export function PricingSurveyModal({
                 : "border-line-strong bg-panel-2 text-ink hover:border-ink/40 hover:bg-panel"
             }`}
           >
-            ไม่พร้อม
+            <StableButtonLabel message="ไม่พร้อม" />
           </button>
         </div>
 
@@ -162,7 +165,7 @@ export function PricingSurveyModal({
           onClick={handleRequestSnooze}
           className="inline-flex h-9 w-full items-center justify-center border border-line bg-transparent px-3 font-display text-xs font-medium text-muted transition-colors hover:border-line-strong hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {alreadyAnswered ? "ปิด" : "ภายหลัง (ไว้ถามใหม่พรุ่งนี้)"}
+          <StableButtonLabel message={alreadyAnswered ? "ปิด" : "ภายหลัง (ไว้ถามใหม่พรุ่งนี้)"} alternatives={["ปิด", "ภายหลัง (ไว้ถามใหม่พรุ่งนี้)"]} />
         </button>
       </div>
     </Modal>

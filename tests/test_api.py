@@ -1,3 +1,5 @@
+import json
+
 from fastapi.testclient import TestClient
 
 from src.api import app
@@ -347,6 +349,7 @@ def test_draft_session_persistence_endpoints(tmp_path, monkeypatch):
         "redPicks": [],
         "blueBans": ["Florentino", "Liliana"],
         "redBans": ["Billow", "Dolia"],
+        "pickLanes": {"Rouie": "Mid"},
         "history": [
             {
                 "stepIndex": 4,
@@ -382,6 +385,7 @@ def test_draft_session_persistence_endpoints(tmp_path, monkeypatch):
                 "redBans": ["Eland'orr", "TeeMee", "Riktor", "Yena"],
                 "bluePicks": ["Thane", "Capheny", "Krixi", "Nakroth", "Skud"],
                 "redPicks": ["Toro", "Hayate", "Raz", "Biron", "Kriknak"],
+                "pickLanes": {"Thane": "Roam", "Toro": "Roam", "Krixi": "Mid"},
                 "blueWinRate": 47.8,
             }
         ],
@@ -397,15 +401,24 @@ def test_draft_session_persistence_endpoints(tmp_path, monkeypatch):
     saved = r_get.json()
     assert saved["stepIndex"] == 5
     assert saved["bluePicks"] == ["Rouie"]
+    assert saved["pickLanes"] == {"Rouie": "Mid"}
     assert saved["globalBans"]["teamAName"] == "BAC"
     assert saved["globalBans"]["seriesName"] == "BAC vs BRU"
     assert saved["globalBans"]["gameNumber"] == 2
     assert len(saved["seriesGames"]) == 1
     assert saved["seriesGames"][0]["seriesName"] == "BAC vs BRU"
     assert saved["seriesGames"][0]["blueTeamName"] == "BRU"
+    assert saved["seriesGames"][0]["pickLanes"] == {"Thane": "Roam", "Toro": "Roam", "Krixi": "Mid"}
     assert saved["updatedAt"] == 1761650000000
 
-    # 4. DELETE clears persisted session
+    # 4. Old records load with automatic lanes and keep their recorded picks.
+    del payload["seriesGames"][0]["pickLanes"]
+    temp_session_file.write_text(json.dumps(payload), encoding="utf-8")
+    legacy_game = client.get("/draft/session").json()["seriesGames"][0]
+    assert legacy_game["pickLanes"] == {}
+    assert legacy_game["bluePicks"] == payload["seriesGames"][0]["bluePicks"]
+
+    # 5. DELETE clears persisted session
     r_del = client.delete("/draft/session")
     assert r_del.status_code == 200
     assert not temp_session_file.exists()

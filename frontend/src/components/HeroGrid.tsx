@@ -1,5 +1,6 @@
+import { useLanguage } from "../i18n/language";
 import { Search, X } from "lucide-react";
-import { forwardRef, useMemo, useState } from "react";
+import { forwardRef, useMemo, useRef, useState } from "react";
 import type { DraftStep, Hero, RoleType } from "../types/draft";
 import { LANE_SHORT, ROLES, TIER_STYLE, heroLanes, laneKey, missingLaneKeys } from "../utils/draft";
 import { displayName, matchesHeroQuery } from "../utils/heroNames";
@@ -19,7 +20,7 @@ interface HeroGridProps {
   currentStep: DraftStep | null;
   isLoading?: boolean;
   isHeroesLoading: boolean;
-  onLockHero: (name: string) => void;
+  onLockHero: (name: string) => void | boolean;
 }
 
 const LANE_KEYS = Object.keys(LANE_SHORT);
@@ -42,6 +43,8 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
   },
   searchRef,
 ) {
+  const { t } = useLanguage();
+  const roleSelectRef = useRef<HTMLSelectElement>(null);
   const [query, setQuery] = useState("");
   const [role, setRole] = useState<RoleType | null>(null);
   const [lane, setLane] = useState<string | null>(null);
@@ -100,22 +103,24 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
                   e.stopPropagation();
                   if (isLoading) return;
                   const first = filtered.find((h) => !unavailableHeroes.has(h.name));
-                  if (first && currentStep) {
-                    onLockHero(first.name);
+                  if (first && currentStep && onLockHero(first.name) !== false) {
                     setQuery("");
                   }
                 }
               }}
-              placeholder="ค้นหาฮีโร่…"
-              aria-label="Search heroes"
+              placeholder={t("ค้นหาฮีโร่…")}
+              aria-label={t("ค้นหาฮีโร่")}
               className="h-8 w-full border border-line bg-bg pr-7 pl-8 text-xs text-ink placeholder:text-dim focus:border-gold/60 focus:outline-none sm:pr-12 sm:text-sm"
             />
             {query ? (
               <button
                 type="button"
-                onClick={() => setQuery("")}
-                aria-label="Clear search"
-                className="absolute top-1/2 right-2 -translate-y-1/2 text-dim hover:text-ink"
+                onClick={() => {
+                  setQuery("");
+                  if (typeof searchRef !== "function") searchRef?.current?.focus();
+                }}
+                aria-label={t("ล้างคำค้นหา")}
+                className="absolute top-1/2 right-0.5 grid size-6 -translate-y-1/2 place-items-center text-dim hover:text-ink"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -127,13 +132,14 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
           </label>
           <div className="relative shrink-0">
             <select
-              aria-label="กรองตามสายอาชีพ"
+              ref={roleSelectRef}
+              aria-label={t("กรองตามสายอาชีพ")}
               value={role ?? ""}
               onChange={(e) => setRole(e.target.value ? (e.target.value as RoleType) : null)}
-              className="h-8 border border-line-strong bg-bg px-2 font-display text-[10px] font-semibold tracking-wide text-ink cursor-pointer focus:border-gold/60 focus:outline-none sm:text-[11px]"
+              className="h-8 w-28 border border-line-strong bg-bg px-2 font-display text-[10px] font-semibold tracking-wide text-ink cursor-pointer focus:border-gold/60 focus:outline-none sm:text-[11px]"
             >
               <option value="" className="bg-panel text-ink py-1">
-                ทุกสาย (All Roles)
+                {t("ทุกสาย (All Roles)")}
               </option>
               {ROLES.map((r) => (
                 <option key={r} value={r} className="bg-panel text-ink py-1">
@@ -155,8 +161,8 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
             <button
               key={k}
               type="button"
-              title={LANE_SHORT[k].th}
-              aria-label={LANE_SHORT[k].th}
+              title={t(LANE_SHORT[k].th)}
+              aria-label={t(LANE_SHORT[k].th)}
               className={`${chip(lane === k)} inline-flex items-center gap-1`}
               onClick={() => setLane(lane === k ? null : k)}
             >
@@ -165,14 +171,17 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
             </button>
           ))}
           {role && (
-            <div className="ml-auto flex shrink-0 items-center gap-1 border border-gold/40 bg-gold/10 px-1.5 py-0.5 text-gold">
+            <div className="ml-auto flex shrink-0 items-center gap-1 bg-gold/10 pl-1.5 text-gold ring-1 ring-gold/40 ring-inset">
               <span className="font-display text-[10px] font-semibold tracking-wide uppercase">{role}</span>
               <button
                 type="button"
-                onClick={() => setRole(null)}
-                title="ล้างตัวกรองสายอาชีพ"
-                aria-label="ล้างตัวกรองสายอาชีพ"
-                className="text-gold/70 hover:text-gold"
+                onClick={() => {
+                  setRole(null);
+                  roleSelectRef.current?.focus();
+                }}
+                title={t("ล้างตัวกรองสายอาชีพ")}
+                aria-label={t("ล้างตัวกรองสายอาชีพ")}
+                className="grid size-6 place-items-center text-gold/70 hover:text-gold"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -187,7 +196,7 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
           {isHeroesLoading &&
             Array.from({ length: 18 }).map((_, i) => <div key={i} className="aspect-square animate-pulse bg-panel-2" />)}
           {!isHeroesLoading && filtered.length === 0 && (
-            <div className="col-span-full py-10 text-center text-sm text-muted">ไม่พบฮีโร่ที่ตรงกับตัวกรอง</div>
+            <div className="col-span-full py-10 text-center text-sm text-muted">{t("ไม่พบฮีโร่ที่ตรงกับตัวกรอง")}</div>
           )}
           {filtered.map((hero) => {
             const taken = unavailableHeroes.has(hero.name);
@@ -216,11 +225,11 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
                 onClick={() => onLockHero(hero.name)}
                 title={`${displayName(hero.name)} · ${hero.role} · ${primaryLane} · Tier ${hero.tier}${
                   lockedByGlobalBan
-                    ? ` · GLOBAL BAN (${inUnivBan ? "แบนร่วม" : isBan ? `${opponentTeamName} เคยใช้แล้ว · ไม่ต้องแบน` : `${actingTeamName} ใช้แล้ว`})`
+                    ? ` · GLOBAL BAN (${inUnivBan ? t("แบนร่วม") : isBan ? t("{0} เคยใช้แล้ว · ไม่ต้องแบน", opponentTeamName) : t("{0} ใช้แล้ว", actingTeamName)})`
                     : canBanToDeny
-                      ? ` · ${actingTeamName} เคยเล่นแล้ว · สามารถแบนตัด ${opponentTeamName} ได้`
+                      ? t(" · {0} เคยเล่นแล้ว · สามารถแบนตัด {1} ได้", actingTeamName, opponentTeamName)
                       : usedByOpponentOnly
-                        ? ` · ${opponentTeamName} ใช้ไปแล้วในเกมก่อน`
+                        ? t(" · {0} ใช้ไปแล้วในเกมก่อน", opponentTeamName)
                         : ""
                 }`}
                 className={`group relative aspect-square overflow-hidden border text-left transition-all ${
@@ -271,7 +280,7 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
                       isBlueTurn ? "bg-red/85 text-ink" : "bg-blue/85 text-ink"
                     }`}
                   >
-                    {opponentTeamName.slice(0, 4)} ใช้แล้ว
+                    {opponentTeamName.slice(0, 4)} {t("ใช้แล้ว")}
                   </span>
                 )}
                 {canBanToDeny && !rank && (
@@ -280,7 +289,7 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
                       isBlueTurn ? "bg-blue/85 text-ink" : "bg-red/85 text-ink"
                     }`}
                   >
-                    {actingTeamName.slice(0, 4)} เคยเล่น
+                    {actingTeamName.slice(0, 4)} {t("เคยเล่น")}
                   </span>
                 )}
                 {lockedByGlobalBan && (
@@ -288,10 +297,10 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
                     <div className="font-mono text-[8px] font-bold tracking-wider text-red">GLOBAL BAN</div>
                     <div className="truncate px-1 font-display text-[8px] text-muted">
                       {inUnivBan
-                        ? "แบนทั้งซีรีส์"
+                        ? t("แบนทั้งซีรีส์")
                         : isBan
-                          ? `${opponentTeamName} เคยใช้แล้ว`
-                          : `${actingTeamName} ใช้แล้ว`}
+                          ? t("{0} เคยใช้แล้ว", opponentTeamName)
+                          : t("{0} ใช้แล้ว", actingTeamName)}
                     </div>
                   </div>
                 )}

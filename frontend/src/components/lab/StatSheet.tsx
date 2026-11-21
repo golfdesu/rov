@@ -1,3 +1,4 @@
+import { useLanguage } from "../../i18n/language";
 import { type BuildStats, STAT_LABELS } from "../../types/combat";
 
 interface StatSheetProps {
@@ -19,6 +20,7 @@ function fmt(v: number, pct?: boolean): string {
 }
 
 export function StatSheet({ stats, effectiveHp }: StatSheetProps) {
+  const { t } = useLanguage();
   const s = stats.stats;
   const base = stats.sources.level;
   const rows = STAT_LABELS.filter(
@@ -31,9 +33,9 @@ export function StatSheet({ stats, effectiveHp }: StatSheetProps) {
   return (
     <div className="border border-line bg-panel p-3">
       <div className="mb-2 flex flex-wrap items-baseline justify-between gap-1">
-        <h3 className="font-display text-[11px] font-semibold tracking-[0.18em] text-muted">สเตตัส Lv.{stats.level}</h3>
+        <h3 className="font-display text-[11px] font-semibold tracking-[0.18em] text-muted">{t("สเตตัส Lv.")}{stats.level}</h3>
         <span className="font-mono text-[10px] text-dim">
-          EHP กายภาพ {fmt(Math.round(effectiveHp.physical))} · เวท {fmt(Math.round(effectiveHp.magic))}
+          {t("EHP กายภาพ")} {fmt(Math.round(effectiveHp.physical))} {t("· เวท")} {fmt(Math.round(effectiveHp.magic))}
         </span>
       </div>
       <table className="w-full text-xs">
@@ -43,11 +45,11 @@ export function StatSheet({ stats, effectiveHp }: StatSheetProps) {
             const bonus = baseVal !== undefined ? s[l.key] - baseVal : null;
             const breakdown = SOURCE_LABELS.map(([src, label]) => {
               const v = stats.sources[src][l.key];
-              return v ? `${label} +${fmt(v, l.pct)}` : null;
+              return v ? `${t(label)} +${fmt(v, l.pct)}` : null;
             }).filter(Boolean);
             return (
               <tr key={l.key} className="border-b border-line/50">
-                <td className="py-1 text-muted">{l.label}</td>
+                <td className="py-1 text-muted">{t(l.label)}</td>
                 <td className="py-1 text-right text-[10px] text-dim">{breakdown.join(" · ")}</td>
                 <td className="w-28 py-1 text-right font-mono tabular-nums">
                   {fmt(s[l.key], l.pct)}
@@ -62,16 +64,16 @@ export function StatSheet({ stats, effectiveHp }: StatSheetProps) {
       </table>
       {s.cooldown_reduction_uncapped > s.cooldown_reduction && (
         <p className="mt-2 text-[10px] text-gold">
-          ลดคูลดาวน์เกินเพดาน 40% (รวม {fmt(s.cooldown_reduction_uncapped)}%) ส่วนที่เกินเสียเปล่า
+          {t("ลดคูลดาวน์เกินเพดาน 40% (รวม")} {fmt(s.cooldown_reduction_uncapped)}{t("%) ส่วนที่เกินเสียเปล่า")}
         </p>
       )}
       {stats.enchantments_unmodeled.length > 0 && (
         <p className="mt-1 text-[10px] text-dim">
-          พลังแฝงที่ยังไม่คิดตัวเลข: {stats.enchantments_unmodeled.join(", ")}
+          {t("พลังแฝงที่ยังไม่คิดตัวเลข:")} {stats.enchantments_unmodeled.join(", ")}
         </p>
       )}
       {stats.items_missing_price.length > 0 && (
-        <p className="mt-1 text-[10px] text-dim">ไอเทมไม่มีข้อมูลราคา: {stats.items_missing_price.join(", ")}</p>
+        <p className="mt-1 text-[10px] text-dim">{t("ไอเทมไม่มีข้อมูลราคา:")} {stats.items_missing_price.join(", ")}</p>
       )}
       {stats.item_warnings && stats.item_warnings.length > 0 && (
         <div className="mt-2 rounded border border-gold/35 bg-gold/10 px-2.5 py-1.5 text-[10px] text-gold">
