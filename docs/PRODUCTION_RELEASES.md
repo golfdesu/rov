@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov`) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `main` (cross-device Practice History sync, unified drawer, bilingual UI, Draft vs AI, Assistant toggle, and Draft Turn Timer) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-CKQbz309.js` (`655.20 kB`) + `dist-prod/assets/index-BKHs1Fu2.css` (`125.16 kB`), `dist-prod/index.html` (`3.01 kB`) |
+| **Git Base Commit on VM** | `6253177` (`main`: responsive Spotlight Replace Mode + Focus Lock + single-row mobile Practice bar) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-C2grrDgg.js` (`664.41 kB`) + `dist-prod/assets/index-sNaMQu7-.css` (`128.19 kB`), `dist-prod/index.html` (`2.96 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-21 21:11 (UTC+7)` |
+| **Last Updated** | `2026-11-21 22:18 (UTC+7)` |
 
 ---
 
@@ -38,6 +38,21 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-21 22:18 (UTC+7) — Deploy Responsive Spotlight Hero Replace (Focus Lock) & Single-Row Practice Mobile Bar (`6253177`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `10600a8` to `6253177` (`main`).
+- **Delta:**
+  - **Responsive Hero Replacement (`DraftBoardView.tsx`, `HeroGrid.tsx`, `TeamColumn.tsx`, `englishMessages.ts`):**
+    - On Desktop/iPad (`>= 768px`), replaced `HeroPickerModal` popup with **Spotlight Replace Mode (Option A)** inline inside `HeroGrid` (`AiPanel` dimmed `opacity-30 pointer-events-none` with zero height shift, opposite team column dimmed `opacity-45`, golden grid frame with `[Old Hero] -> [?]` header, `"ตัวเดิม"`/`"เปลี่ยน"` badges, Desktop search auto-focus, two-step `Esc` handling, and single pulsing **`กำลังแก้`** slot) guarded by a full-screen focus-lock scrim (`data-replace-backdrop`, `z-30`), trapped `Tab`/`Shift+Tab`, and locked Undo/Redo & `TeamColumn` actions until resolved or canceled.
+    - On Phone (`< 768px`), kept `<HeroPickerModal mobileSheet />` bottom-sheet popup cleanly without switching away from the active tab (`banOpensDialog` + `aria-haspopup` synced to viewport).
+  - **Compact Practice Sub-Header (`PracticeDraftView.tsx`):** Compressed the `< 640px` mobile bar into a single `39px` row (`BoX` `<select>`, `G1/7`, `BLUE`/`RED` + shuffle, icon-first action buttons) and changed **"เริ่มรอบใหม่"** to solid gold `PlusCircle` so it is clearly distinct from red **`RESET`** (`RotateCcw`).
+- **Bundle Built:** `dist-prod/index.html` (`2.96 kB`), `dist-prod/assets/index-C2grrDgg.js` (`664.41 kB`), `dist-prod/assets/index-sNaMQu7-.css` (`128.19 kB`).
+- **Deploy Method:** `cd ~/rov/deploy && sudo docker compose up -d --build app` (`deploy_rov_db_data`, `deploy-caddy-1`, `rov-cloudflared`, and `deploy/.env` untouched).
+- **Verification:**
+  - Pre-deploy `pytest -q --tb=short`: `135 passed` (`22.90s` / `36.10s`), `oxlint`: `0` warnings/`0` errors, `vite build`: `1.32s`, `ruff`: clean (`119` files unchanged).
+  - `https://minidraft.app/health` -> `200` (`{"status":"healthy","model_loaded":true}`).
+  - Live Playwright E2E on `https://minidraft.app/`: verified Desktop (`1440x900`) Focus Lock backdrop + `HeroGrid` height (`472.8 -> 472.8`) + Ban replace, Phone (`390x844`) popup sheet Ban replace, `#practice` (`360x800`) single `39px` sub-header + `PlusCircle` vs `RotateCcw` + zero horizontal overflow, and `0` console/page errors.
+  - `/app/db/rov_app.db` intact (`users: 867`, `user_oauth_accounts: 824`, `user_draft_states: 826`, `user_practice_histories: 1`, `auth_sessions: 909`, `pricing_survey_responses: 309`, `daily_visits: 588`).
 
 ### 📅 2026-11-21 21:11 (UTC+7) — Deploy Cross-Device Sync for Draft vs AI History (`/draft/practice-history`, `user_practice_histories`)
 - **Database Backup:** Created online SQLite backup `/app/db/rov_app.db.bak_20261121_sync` inside `deploy_rov_db_data` prior to schema update adding `user_practice_histories`.
