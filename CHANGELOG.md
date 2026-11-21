@@ -27,6 +27,25 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+---
+
+## 📅 2026-11-21 20:47 (UTC+7) — Enable Bilingual Language Switch (TH / EN) in Production
+**Agent:** Antigravity / Claude Sonnet
+
+### ✅ Completed Work
+- Enabled `languageSwitchEnabled = true` in `frontend/src/i18n/language.ts` so `LanguageSwitch` (`ไทย` / `EN` with sliding pill animation and persistent `localStorage` choice) renders in production (`VITE_DRAFT_ONLY=true`) across `AuthLanding`, Desktop Navbar, and `MobileNavDrawer`.
+- Recorded deployment update in `docs/PRODUCTION_RELEASES.md`.
+
+### 📁 Modified Files
+- `frontend/src/i18n/language.ts`
+- `docs/PRODUCTION_RELEASES.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified via `oxlint` (`0 warnings, 0 errors`), `vite build` (dev `dist/` + prod `dist-prod/` `VITE_DRAFT_ONLY=true`), `ruff check/format`, `pytest tests/test_api.py` (`41 passed`), and live Chromium Playwright E2E on `https://minidraft.app/` across both `ไทย` and `EN`.
+
+---
+
 ## 📅 2026-11-21 20:28 (UTC+7) — Deploy Draft Board + Draft vs AI, Practice History, Assistant Toggle & Draft Turn Timer to Production
 **Agent:** Antigravity / Claude Sonnet
 

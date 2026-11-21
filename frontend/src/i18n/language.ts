@@ -11,7 +11,7 @@ export function translateMessage(t: Translate, message: Message): string {
 }
 
 export const languageStorageKey = "minidraft_language";
-export const languageSwitchEnabled = import.meta.env.VITE_DRAFT_ONLY !== "true";
+export const languageSwitchEnabled = true;
 
 export function readLanguage(): Language {
   try {

@@ -14,17 +14,17 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov`) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `981b773` (`feat(draft,practice): enable Draft vs AI, Practice History, Assistant toggle, and Draft Turn Timer for production`) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-CP_XwVbT.js` (`565.26 kB`) + `dist-prod/assets/index-DO23SNI6.css` (`125.16 kB`), `dist-prod/index.html` (`2.96 kB`) |
+| **Git Base Commit on VM** | `main` (rebased cleanly with bilingual UI, Draft vs AI, Assistant toggle, and Draft Turn Timer) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-DfrnWxNW.js` (`654.75 kB`) + `dist-prod/assets/index-CdOMJcVs.css` (`125.17 kB`), `dist-prod/index.html` (`3.01 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-21 20:28 (UTC+7)` |
+| **Last Updated** | `2026-11-21 20:47 (UTC+7)` |
 
 ---
 
 ## Active Uncommitted Hotfixes on Production VM (`~/rov`)
 
-None — all previous hotfixes over `4dbc614` were reconciled into `main` (`981b773`) during the Dev -> Prod cutover on `2026-11-21`.
+None — all previous hotfixes over `4dbc614` were reconciled into `main` during the Dev -> Prod cutover on `2026-11-21`.
 
 ---
 
@@ -33,12 +33,16 @@ None — all previous hotfixes over `4dbc614` were reconciled into `main` (`981b
 These features exist in the local workspace (`main`) and remain **excluded** from `minidraft.app` while `VITE_DRAFT_ONLY=true`:
 
 - **Meta Tier List, MetaLab & Combat Lab (`TierListView.tsx`, `MetaLab.tsx`, `CombatLab.tsx`):** Hidden in production while `VITE_DRAFT_ONLY=true`.
-- **Language Switch (`TH` / `EN` in `frontend/src/i18n/language.ts`):** Still gated off when `VITE_DRAFT_ONLY=true`.
 - **Ranked 10-Ban Mode (`docs/archive/ranked_10_ban_mode/`):** Archived patch; not active in main Draft Board.
 
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-21 20:47 (UTC+7) — Enable Bilingual Language Switch (`ไทย` / `EN`) on Production (`minidraft.app`)
+- **Delta:** Updated `frontend/src/i18n/language.ts` (`languageSwitchEnabled = true`) so the smooth sliding `ไทย` / `EN` language switch renders in production (`VITE_DRAFT_ONLY=true`) across `AuthLanding`, Desktop Navbar, and `MobileNavDrawer` with full 966-key English localization (`englishMessages.ts`).
+- **Bundle Built:** `dist-prod/index.html` (`3.01 kB`), `dist-prod/assets/index-DfrnWxNW.js` (`654.75 kB`), `dist-prod/assets/index-CdOMJcVs.css` (`125.17 kB`).
+- **Deploy Method:** `cd ~/rov/deploy && sudo docker compose up -d --build app` (`deploy_rov_db_data` untouched).
 
 ### 📅 2026-11-21 20:28 (UTC+7) — Dev-to-Prod Cutover: Deploy Draft Board + Draft vs AI, Assistant Toggle, Practice History & Draft Turn Timer (`981b773`)
 - **Database Backup:** Created online SQLite backup `/app/db/rov_app.db.bak_20261121` inside `deploy_rov_db_data` prior to container rebuild (`users: 856`, `user_oauth_accounts: 813`, `user_draft_states: 816`, `auth_sessions: 896`, `pricing_survey_responses: 290`, `daily_visits: 519`).
