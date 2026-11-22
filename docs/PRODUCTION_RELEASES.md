@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov`) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `15ce12a` (`main`: expanded telemetry & stochastic/statistical analytics engine `src/analytics.py`, `GET /admin/analytics`, `POST /telemetry/event`) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-CG-lnUfb.js` (`696.73 kB`) + `dist-prod/assets/index-DKEIpV1d.css` (`128.77 kB`), `dist-prod/index.html` (`2.96 kB`) |
+| **Git Base Commit on VM** | `3fec0dc` (`main`: research-grade dashboard upgrade — BG/NBD `P(Alive)`, Pfeifer-Carraway Markov 3x3, Kaplan-Meier SVG, Kohavi Power Guardrails, Sifa Signals) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-_zWybZtk.js` (`708.58 kB`) + `dist-prod/assets/index-BswwniSY.css` (`129.22 kB`), `dist-prod/index.html` (`2.96 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-22 12:55 (UTC+7)` |
+| **Last Updated** | `2026-11-22 13:10 (UTC+7)` |
 
 ---
 
@@ -38,6 +38,11 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-22 13:10 (UTC+7) — Research-Grade Dashboard Visualizations & Literature Models (`3fec0dc`)
+- **Backend Research Models (`src/analytics.py`, `src/schemas.py`)**: Implemented Fader-Hardie BG/NBD `P(Alive)` segmentation & per-user `user_btyd_scores`, Pfeifer-Carraway 3x3 Markov Transition Matrix + 14-day finite-horizon expectation + steady-state equilibrium, nonparametric right-censored Kaplan-Meier survival curves (`member` vs `guest` + Greenwood 95% CI), Kohavi Statistical Power / MDE=10pp guardrails & `p95 <= 500ms` SLA, and Sifa et al. (2015) behavioral feature-to-WTP signal matrix.
+- **Dashboard UI (`frontend/src/components/AdminDashboardView.tsx`, `frontend/src/types/auth.ts`)**: Added responsive SVG Kaplan-Meier survival curve, 3x3 Markov migration heatmap, BTYD `P(Alive)` stacked cohort health bar, Wilson/Bayes 95% CI interval bars with Kohavi Power guardrail badges, Sifa behavioral signal table, sortable `BTYD P(Alive)` user column, and collapsible academic citations drawer.
+- **Verification & Live Rollout**: Passed `pytest` (`139 passed`), `ruff check/format`, `oxlint` (`0 warnings, 0 errors`), `tsc -b && vite build`, Playwright research dashboard E2E (`/#admin` desktop + mobile + SVG + zero console errors), `audit_arch_perf.py --skip-bench`, `preflight_check.py`, and `validate_gating.py`. Deployed via `sudo docker compose up -d --build app` (`deploy_rov_db_data` untouched); `/health` healthy (`model_loaded: true`), `/admin/analytics` unauthenticated `404`, live HTML serving `index-_zWybZtk.js` / `index-BswwniSY.css`.
 
 ### 📅 2026-11-22 12:55 (UTC+7) — Expanded Telemetry & Stochastic / Statistical Inference Engine (`15ce12a`)
 - **Pure-Python Stochastic & Statistical Engine (`src/analytics.py`)**: Added `build_statistical_analytics(conn, today_str)` computing Markov retention transitions, absorbing streak `E[L]`, survival curve, Bayesian `Beta(1, 3)` WTP segmentation + 95% Wilson CIs + Two-Proportion Z-tests + Spearman `rho`, Member-vs-Guest retention Relative Risk (`RR`), usage overdispersion (`Var/Mean`) + Gini + Pareto concentration, Gamma-Poisson next-day DAU/AI load forecast, Binomial AI Top-5 Trust Z-test, and piecewise-linear latency quantiles (`p50`/`p95`).
