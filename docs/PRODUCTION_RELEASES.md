@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov`) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `25d680d` (`main`: plain-Thai accessible copy localization for Owner Analytics Dashboard `AdminDashboardView.tsx`) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-Bmz-m1vZ.js` (`713.11 kB`) + `dist-prod/assets/index-BswwniSY.css` (`129.22 kB`), `dist-prod/index.html` (`2.96 kB`) |
+| **Git Base Commit on VM** | `6fec71a` (`main`: scaled up dashboard typography cleanly for Thai readability `AdminDashboardView.tsx`) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-CIqebms0.js` (`713.54 kB`) + `dist-prod/assets/index-BxP94eC5.css` (`129.42 kB`), `dist-prod/index.html` (`2.96 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-22 13:17 (UTC+7)` |
+| **Last Updated** | `2026-11-22 13:23 (UTC+7)` |
 
 ---
 
@@ -38,6 +38,10 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-22 13:23 (UTC+7) — Increase Owner Dashboard Typography Scale (`6fec71a`)
+- **Frontend UI Typography (`frontend/src/components/AdminDashboardView.tsx`)**: Eliminated micro `9px`/`10px` fonts across all analytics cards, badges, tables, and SVG survival plot axes (`fontSize="11"`, `text-xs sm:text-sm` body/tables, `text-sm sm:text-base` card headings).
+- **Verification & Live Rollout**: Passed `oxlint` (`0 warnings, 0 errors`), `tsc -b && vite build`, Playwright E2E (`min table/strong fontSize=12px, 0 errors`), and `preflight_check.py`. Deployed via `sudo docker compose up -d --build app` (`deploy_rov_db_data` untouched), live HTML serving `index-CIqebms0.js` / `index-BxP94eC5.css`.
 
 ### 📅 2026-11-22 13:17 (UTC+7) — Plain-Thai Owner-Friendly Copy Localization (`25d680d`)
 - **Frontend UI Copy (`frontend/src/components/AdminDashboardView.tsx`)**: Replaced academic jargon across all analytics cards, interval bars, behavioral signal tables, and user retention badges with plain-Thai labels and 1-sentence owner takeaways (`สรุปให้`), keeping citations collapsed at the bottom drawer.
