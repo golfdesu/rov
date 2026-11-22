@@ -39,6 +39,7 @@ from src.db import (
 from src.predictor import RoVDraftPredictor
 from src.schemas import (
     AdminStatsResponse,
+    AdminUsersResponse,
     AuthLoginRequest,
     AuthProfileRequest,
     AuthRegisterRequest,
@@ -1199,6 +1200,7 @@ def save_draft_session(
     if user is not None:
         dumped = session.model_dump()
         stored = get_user_db().save_user_draft_state(user.id, dumped, int(session.updatedAt or 0))
+        get_user_db().record_user_usage(user.id, draft_save_delta=1)
         return DraftSessionStateSchema.model_validate(stored)
 
     if config.is_production:
@@ -1533,10 +1535,19 @@ def get_admin_stats(user: AuthUser | None = Depends(get_optional_user)):
     )
 
 
+@app.get("/admin/users", response_model=AdminUsersResponse)
+def get_admin_users(user: AuthUser | None = Depends(get_optional_user)):
+    """Owner-only detailed user activity leaderboard and unlinked guest device summary."""
+    if user is None or not config.is_admin_username(user.username):
+        raise HTTPException(status_code=404, detail="Not Found")
+    return AdminUsersResponse.model_validate(get_user_db().get_admin_users_report())
+
+
 @app.post("/predict", response_model=DraftPredictionResponse)
 def predict_draft(
     request: DraftStateRequest,
     http_request: Request,
+    user: AuthUser | None = Depends(get_optional_user),
 ):
     restricted_prod = config.is_production
     if restricted_prod:
@@ -1564,6 +1575,8 @@ def predict_draft(
     except (ValueError, KeyError, IndexError) as exc:
         detail = "Invalid draft request or unknown hero name" if restricted_prod else str(exc)
         raise HTTPException(status_code=422, detail=detail) from exc
+    if user is not None:
+        get_user_db().record_user_usage(user.id, predict_delta=1)
     if restricted_prod:
         return result.model_copy(update={"architecture": "RoV Draft AI"})
     return result

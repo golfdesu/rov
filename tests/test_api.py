@@ -1821,9 +1821,11 @@ def test_pricing_survey_endpoint_and_deduplication(tmp_path, monkeypatch):
     assert rows[1][2] == "not_willing"
     assert rows[1][3] == 0
 
-    # Non-admin and Guest receive 404 on /admin/stats and is_admin=False
+    # Non-admin and Guest receive 404 on /admin/stats and /admin/users and is_admin=False
     assert guest.get("/admin/stats").status_code == 404
+    assert guest.get("/admin/users").status_code == 404
     assert user_a.get("/admin/stats").status_code == 404
+    assert user_a.get("/admin/users").status_code == 404
     assert me_a["is_admin"] is False
 
     # Fail-closed by default: even username "chayanin5392" has no admin rights unless ROV_ADMIN_USERNAMES configures it
@@ -1833,10 +1835,20 @@ def test_pricing_survey_endpoint_and_deduplication(tmp_path, monkeypatch):
     assert reg_owner.status_code == 201
     assert reg_owner.json()["is_admin"] is False
     assert owner.get("/admin/stats").status_code == 404
+    assert owner.get("/admin/users").status_code == 404
 
-    # When configured via ROV_ADMIN_USERNAMES, owner receives is_admin=True and 200 on /admin/stats
+    # When configured via ROV_ADMIN_USERNAMES, owner receives is_admin=True and 200 on /admin/stats and /admin/users
     monkeypatch.setattr(config, "admin_usernames", ("chayanin5392",))
     assert owner.get("/auth/me").json()["is_admin"] is True
+    assert user_a.put("/draft/session", json={"bluePicks": ["Hayate"], "updatedAt": 123456}).status_code == 200
+    assert (
+        user_a.post(
+            "/predict",
+            json={"mode": "pick", "side": "blue", "phase": 1, "ally_picks": ["Hayate"]},
+        ).status_code
+        == 200
+    )
+
     stats_res = owner.get("/admin/stats")
     assert stats_res.status_code == 200
     stats_body = stats_res.json()
@@ -1845,6 +1857,16 @@ def test_pricing_survey_endpoint_and_deduplication(tmp_path, monkeypatch):
     assert stats_body["survey"]["willing_total"] == 1
     assert stats_body["survey"]["not_willing_total"] == 1
     assert stats_body["survey"]["willing_pct"] == 50.0
+
+    users_res = owner.get("/admin/users")
+    assert users_res.status_code == 200
+    users_body = users_res.json()
+    assert users_body["total_users"] == 3
+    by_name = {u["username"]: u for u in users_body["users"]}
+    assert by_name["survey_user_a"]["predict_calls"] == 1
+    assert by_name["survey_user_a"]["draft_save_calls"] == 1
+    assert by_name["survey_user_a"]["survey_choice"] == "willing"
+    assert by_name["survey_user_b"]["survey_choice"] == "not_willing"
 
 
 def test_daily_visit_telemetry_and_retention_stats(tmp_path, monkeypatch):

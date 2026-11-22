@@ -1,6 +1,6 @@
 import { StableButtonLabel } from "./StableButtonLabel";
 import { useLanguage } from "../i18n/language";
-import { BarChart3, Coins, Globe, RefreshCw, Repeat, Users, X } from "lucide-react";
+import { BarChart3, Coins, ExternalLink, Globe, RefreshCw, Repeat, Users, X } from "lucide-react";
 import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import { ApiError, getJson } from "../api/client";
 import type { AdminStatsResponse } from "../types/auth";
@@ -104,6 +104,16 @@ export function AdminStatsModal({ onClose }: AdminStatsModalProps) {
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-1.5">
+              <a
+                href="/#admin"
+                target="_blank"
+                rel="noopener noreferrer"
+                title={t("เปิดหน้า Dashboard เต็มจอในแท็บใหม่")}
+                className="inline-flex h-8 items-center gap-1.5 border border-gold/50 bg-gold/10 px-2.5 font-display text-xs font-bold text-gold transition-colors hover:bg-gold hover:text-bg"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                <span>Dashboard</span>
+              </a>
               <button
                 type="button"
                 disabled={loading}
@@ -111,7 +121,7 @@ export function AdminStatsModal({ onClose }: AdminStatsModalProps) {
                 className="inline-flex h-8 items-center gap-1.5 border border-line-strong bg-panel-2 px-2.5 font-display text-xs font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold disabled:opacity-50"
               >
                 <RefreshCw className={`h-3.5 w-3.5 text-gold ${loading ? "animate-spin" : ""}`} />
-                <span>Refresh</span>
+                <span className="hidden sm:inline">Refresh</span>
               </button>
               <button
                 type="button"

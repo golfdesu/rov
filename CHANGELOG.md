@@ -27,6 +27,29 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-22 11:54 (UTC+7) — Owner Full-Screen Analytics Dashboard (`/#admin`) & Per-User Usage Tracking
+**Agent:** Antigravity CLI
+
+### ✅ Completed Work
+- **Per-User Usage Counter & Owner Leaderboard Endpoint (`src/db.py`, `src/schemas.py`, `src/api.py`):**
+  - Added `user_usage_daily` table (`predict_count`, `draft_save_count`) and `UserDatabase.record_user_usage()`, recording authenticated AI prediction calls (`POST /predict`) and draft saves (`PUT /draft/session`) with zero DB overhead for anonymous requests.
+  - Added `UserDatabase.get_admin_users_report()` and owner-only `GET /admin/users` (`404` for guests and non-admins) aggregating `active_days`, `first_visit`, `last_visit`, `saved_series_games`, `practice_games`, `predict_calls`, `draft_save_calls`, `active_sessions`, `survey_choice`, plus top returning unlinked Guest browser clients.
+- **Full-Screen Admin Dashboard & Modal Launch Button (`frontend/src/components/AdminStatsModal.tsx`, `AdminDashboardView.tsx`, `App.tsx`, `types/auth.ts`):**
+  - Added a `Dashboard` (`ExternalLink`) button inside `AdminStatsModal.tsx` header to open `/#admin` in a new tab while keeping the existing modal unchanged.
+  - Built `AdminDashboardView.tsx` (restricted to `isAdminUser`, rendering KPI cards, searchable/filterable/sortable Power Users table, unlinked Guest devices table, and Cloudflare top referers).
+- **Tests (`tests/test_api.py`):**
+  - Verified `404` isolation on `/admin/users` for Guests/non-admins and exact `predict_calls`, `draft_save_calls`, and `survey_choice` metrics for the owner account.
+
+### 📁 Modified Files
+- `src/db.py`, `src/schemas.py`, `src/api.py`
+- `frontend/src/types/auth.ts`, `frontend/src/components/AdminStatsModal.tsx`, `frontend/src/components/AdminDashboardView.tsx`, `frontend/src/App.tsx`
+- `tests/test_api.py`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified with `ruff`, `oxlint`, `vite build`, full `pytest -q --tb=short`, `audit_arch_perf.py`, `preflight_check.py`, `validate_gating.py`, Playwright E2E on `/#admin`, and live deployment on `https://minidraft.app/`.
+
+---
+
 ## 📅 2026-11-22 11:36 (UTC+7) — Practice `clearedAt` Tombstone Propagation, Index Ordering Fix & Dual-Agent E2E QA
 **Agent:** Antigravity CLI
 

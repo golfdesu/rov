@@ -321,6 +321,18 @@ class UserDatabase:
 
                     CREATE INDEX IF NOT EXISTS idx_daily_visits_first_seen
                         ON daily_visits(first_seen_date);
+
+                    CREATE TABLE IF NOT EXISTS user_usage_daily (
+                        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                        usage_date TEXT NOT NULL,
+                        predict_count INTEGER NOT NULL DEFAULT 0,
+                        draft_save_count INTEGER NOT NULL DEFAULT 0,
+                        last_seen_at INTEGER NOT NULL DEFAULT 0,
+                        PRIMARY KEY (user_id, usage_date)
+                    );
+
+                    CREATE INDEX IF NOT EXISTS idx_user_usage_daily_date
+                        ON user_usage_daily(usage_date);
                     """
                 )
                 conn.execute("BEGIN IMMEDIATE")
@@ -1153,4 +1165,177 @@ class UserDatabase:
                 "d1_pct": d1_pct,
                 "daily_breakdown": daily_breakdown,
             },
+        }
+
+    def record_user_usage(
+        self,
+        user_id: int,
+        *,
+        predict_delta: int = 0,
+        draft_save_delta: int = 0,
+    ) -> None:
+        """Increment daily AI prediction and draft save counters for an authenticated user."""
+        if predict_delta <= 0 and draft_save_delta <= 0:
+            return
+        self.ensure_schema()
+        now = int(time.time())
+        tz_th = timezone(timedelta(hours=7))
+        today_str = datetime.fromtimestamp(now, tz_th).strftime("%Y-%m-%d")
+        with self._lock, self._connect() as conn:
+            conn.execute(
+                """
+                INSERT INTO user_usage_daily (user_id, usage_date, predict_count, draft_save_count, last_seen_at)
+                VALUES (?, ?, ?, ?, ?)
+                ON CONFLICT(user_id, usage_date) DO UPDATE SET
+                    predict_count = user_usage_daily.predict_count + excluded.predict_count,
+                    draft_save_count = user_usage_daily.draft_save_count + excluded.draft_save_count,
+                    last_seen_at = MAX(user_usage_daily.last_seen_at, excluded.last_seen_at)
+                """,
+                (user_id, today_str, max(0, int(predict_delta)), max(0, int(draft_save_delta)), now),
+            )
+
+    def get_admin_users_report(self) -> dict[str, Any]:
+        """Return per-user activity leaderboard and top returning unlinked guest clients."""
+        self.ensure_schema()
+        now = int(time.time())
+        tz_th = timezone(timedelta(hours=7))
+        now_dt = datetime.fromtimestamp(now, tz_th)
+
+        def _fmt_epoch(raw_val: int | None, is_ms: bool = False) -> str | None:
+            if not raw_val or int(raw_val) <= 0:
+                return None
+            secs = int(raw_val) / 1000.0 if is_ms else int(raw_val)
+            return datetime.fromtimestamp(secs, tz_th).strftime("%Y-%m-%d %H:%M:%S")
+
+        with self._lock, self._connect() as conn:
+            rows = conn.execute(
+                """
+                WITH visit_agg AS (
+                    SELECT
+                        user_id,
+                        COUNT(DISTINCT visit_date) AS active_days,
+                        MIN(visit_date) AS first_visit,
+                        MAX(visit_date) AS last_visit
+                    FROM daily_visits
+                    WHERE user_id IS NOT NULL
+                    GROUP BY user_id
+                ),
+                usage_agg AS (
+                    SELECT
+                        user_id,
+                        COALESCE(SUM(predict_count), 0) AS predict_calls,
+                        COALESCE(SUM(draft_save_count), 0) AS draft_save_calls
+                    FROM user_usage_daily
+                    GROUP BY user_id
+                ),
+                session_agg AS (
+                    SELECT
+                        user_id,
+                        COUNT(*) AS active_sessions
+                    FROM auth_sessions
+                    WHERE expires_at > ?
+                    GROUP BY user_id
+                ),
+                oauth_agg AS (
+                    SELECT
+                        user_id,
+                        MIN(provider) AS oauth_provider
+                    FROM user_oauth_accounts
+                    GROUP BY user_id
+                )
+                SELECT
+                    u.id,
+                    u.username,
+                    u.display_name,
+                    u.email,
+                    u.created_at,
+                    u.google_sub,
+                    oa.oauth_provider,
+                    COALESCE(va.active_days, 0) AS active_days,
+                    va.first_visit,
+                    va.last_visit,
+                    COALESCE(json_array_length(json_extract(ds.payload_json, '$.seriesGames')), 0) AS saved_series_games,
+                    COALESCE(CAST(json_extract(ds.payload_json, '$.stepIndex') AS INTEGER), 0) AS draft_step_index,
+                    COALESCE(ds.updated_at, 0) AS draft_updated_at,
+                    COALESCE(json_array_length(json_extract(ph.payload_json, '$.entries')), 0) AS practice_games,
+                    COALESCE(ph.updated_at, 0) AS practice_updated_at,
+                    COALESCE(ua.predict_calls, 0) AS predict_calls,
+                    COALESCE(ua.draft_save_calls, 0) AS draft_save_calls,
+                    COALESCE(sa.active_sessions, 0) AS active_sessions,
+                    ps.choice AS survey_choice
+                FROM users u
+                LEFT JOIN visit_agg va ON va.user_id = u.id
+                LEFT JOIN usage_agg ua ON ua.user_id = u.id
+                LEFT JOIN session_agg sa ON sa.user_id = u.id
+                LEFT JOIN oauth_agg oa ON oa.user_id = u.id
+                LEFT JOIN user_draft_states ds ON ds.user_id = u.id
+                LEFT JOIN user_practice_histories ph ON ph.user_id = u.id
+                LEFT JOIN pricing_survey_responses ps ON ps.user_id = u.id
+                ORDER BY
+                    COALESCE(va.active_days, 0) DESC,
+                    (COALESCE(json_array_length(json_extract(ds.payload_json, '$.seriesGames')), 0)
+                     + COALESCE(json_array_length(json_extract(ph.payload_json, '$.entries')), 0)) DESC,
+                    COALESCE(ua.predict_calls, 0) DESC,
+                    u.id DESC
+                """,
+                (now,),
+            ).fetchall()
+
+            guest_rows = conn.execute(
+                """
+                SELECT
+                    client_id,
+                    COUNT(*) AS active_days,
+                    MIN(visit_date) AS first_visit,
+                    MAX(visit_date) AS last_visit
+                FROM daily_visits
+                WHERE user_id IS NULL
+                GROUP BY client_id
+                ORDER BY active_days DESC, last_visit DESC
+                LIMIT 50
+                """
+            ).fetchall()
+
+        users_list: list[dict[str, Any]] = []
+        for r in rows:
+            provider = str(r["oauth_provider"] or ("google" if r["google_sub"] else "password"))
+            survey_val = str(r["survey_choice"]) if r["survey_choice"] in {"willing", "not_willing"} else None
+            users_list.append(
+                {
+                    "id": int(r["id"]),
+                    "username": str(r["username"]),
+                    "display_name": str(r["display_name"]),
+                    "email": str(r["email"]) if r["email"] else None,
+                    "auth_provider": provider,
+                    "created_at_th": _fmt_epoch(int(r["created_at"])) or "",
+                    "active_days": int(r["active_days"] or 0),
+                    "first_visit": str(r["first_visit"]) if r["first_visit"] else None,
+                    "last_visit": str(r["last_visit"]) if r["last_visit"] else None,
+                    "saved_series_games": int(r["saved_series_games"] or 0),
+                    "draft_step_index": int(r["draft_step_index"] or 0),
+                    "last_draft_save_th": _fmt_epoch(int(r["draft_updated_at"] or 0), is_ms=True),
+                    "practice_games": int(r["practice_games"] or 0),
+                    "last_practice_save_th": _fmt_epoch(int(r["practice_updated_at"] or 0), is_ms=True),
+                    "predict_calls": int(r["predict_calls"] or 0),
+                    "draft_save_calls": int(r["draft_save_calls"] or 0),
+                    "active_sessions": int(r["active_sessions"] or 0),
+                    "survey_choice": survey_val,
+                }
+            )
+
+        guests_list = [
+            {
+                "client_id": str(g["client_id"]),
+                "active_days": int(g["active_days"] or 0),
+                "first_visit": str(g["first_visit"]) if g["first_visit"] else None,
+                "last_visit": str(g["last_visit"]) if g["last_visit"] else None,
+            }
+            for g in guest_rows
+        ]
+
+        return {
+            "generated_at_th": now_dt.strftime("%Y-%m-%d %H:%M:%S"),
+            "total_users": len(users_list),
+            "users": users_list,
+            "top_guest_clients": guests_list,
         }

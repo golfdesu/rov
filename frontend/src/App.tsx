@@ -3,6 +3,7 @@ import { type Message, translateMessage, useLanguage } from "./i18n/language";
 import { LogIn, Menu, User } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { ApiError, getJson, postJson, putJson, setExpectedAuthUser, setSessionMismatchHandler } from "./api/client";
+import { AdminDashboardView } from "./components/AdminDashboardView";
 import { AdminStatsModal } from "./components/AdminStatsModal";
 import { AuthLanding, AuthModal } from "./components/AuthModal";
 import { DonateModal } from "./components/DonateModal";
@@ -27,7 +28,7 @@ import type {
 import type { DraftSessionPayload } from "./types/draft";
 import { accountLabel, restorePreviewAccountStorage } from "./utils/auth";
 
-export type Tab = "draft" | "practice" | "tierlist" | "metalab" | "lab" | "profile";
+export type Tab = "draft" | "practice" | "tierlist" | "metalab" | "lab" | "profile" | "admin";
 
 const DRAFT_ONLY = import.meta.env.VITE_DRAFT_ONLY === "true";
 
@@ -45,6 +46,7 @@ const TABS: { key: Tab; label: string }[] = DRAFT_ONLY
     ];
 
 function initialTab(): Tab {
+  if (window.location.hash === "#admin") return "admin";
   if (window.location.hash === "#profile") return "profile";
   if (window.location.hash === "#practice") return "practice";
   if (DRAFT_ONLY) return "draft";
@@ -58,6 +60,7 @@ interface WorkspaceProps {
   tab: Tab;
   selectTab: (next: Tab) => void;
   authUser: AuthUser | null;
+  isAdmin: boolean;
   authLoading: boolean;
   surveyAnswered: boolean;
   disableShortcuts: boolean;
@@ -70,6 +73,7 @@ function Workspace({
   tab,
   selectTab,
   authUser,
+  isAdmin,
   authLoading,
   surveyAnswered,
   disableShortcuts,
@@ -81,7 +85,13 @@ function Workspace({
   const isAuthenticated = authUser !== null;
   const accountName = isAuthenticated ? accountLabel(authUser) : "";
   const scope = isAuthenticated ? `user:${authUser.username}` : "guest";
-  const activeTabLabel = t(tab === "profile" ? "โปรไฟล์" : TABS.find((item) => item.key === tab)?.label ?? "Draft Board");
+  const activeTabLabel = t(
+    tab === "profile"
+      ? "โปรไฟล์"
+      : tab === "admin"
+        ? "Dashboard สถิติระบบ"
+        : TABS.find((item) => item.key === tab)?.label ?? "Draft Board",
+  );
 
   // Unified Draft Machine isolated per user account (or local-only in Guest mode)
   const [assistantEnabled, setAssistantEnabled] = useState(true);
@@ -176,7 +186,9 @@ function Workspace({
       </nav>
 
       <ErrorBoundary resetKey={`${tab}:${scope}`}>
-        {tab === "profile" && authUser ? (
+        {tab === "admin" && isAdmin ? (
+          <AdminDashboardView onBack={() => selectTab("draft")} />
+        ) : tab === "profile" && authUser ? (
           <ProfileView user={authUser} onSaveDisplayName={onSaveDisplayName} />
         ) : tab === "practice" ? (
           <PracticeDraftView key={scope} scope={scope} persistSession={isAuthenticated} />
@@ -423,7 +435,6 @@ export function App() {
   const { t } = useLanguage();
   const [requestedTab, setTab] = useState<Tab>(initialTab);
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
-  const tab = requestedTab === "profile" && !authUser ? "draft" : requestedTab;
   const authUserRef = useRef<AuthUser | null>(null);
   const authRefreshInFlightRef = useRef(false);
   const lastAuthCheckAtRef = useRef(0);
@@ -439,6 +450,8 @@ export function App() {
   const [donateModalOpen, setDonateModalOpen] = useState(false);
   const [adminStatsModalOpen, setAdminStatsModalOpen] = useState(false);
   const [isAdminUser, setIsAdminUser] = useState(false);
+  const tab =
+    (requestedTab === "profile" && !authUser) || (requestedTab === "admin" && !isAdminUser) ? "draft" : requestedTab;
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [manualSurveyOpen, setManualSurveyOpen] = useState(false);
   const [surveyStateByScope, setSurveyStateByScope] = useState<Record<string, PricingSurveyStorage>>({});
@@ -704,7 +717,7 @@ export function App() {
     } catch {
       // clear client state regardless
     }
-    if (requestedTab === "profile" || window.location.hash === "#profile") {
+    if (requestedTab === "profile" || requestedTab === "admin" || window.location.hash === "#profile" || window.location.hash === "#admin") {
       setTab("draft");
       window.history.replaceState(null, "", "#");
     }
@@ -871,6 +884,7 @@ export function App() {
         tab={tab}
         selectTab={selectTab}
         authUser={authUser}
+        isAdmin={isAdminUser}
         authLoading={authLoading}
         surveyAnswered={surveyAnswered}
         disableShortcuts={

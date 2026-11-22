@@ -470,6 +470,41 @@ class AdminStatsResponse(BaseModel):
     retention: dict[str, Any] | None = None
 
 
+class AdminUserActivitySchema(BaseModel):
+    id: int
+    username: str
+    display_name: str
+    email: str | None = None
+    auth_provider: str = "password"
+    created_at_th: str
+    active_days: int = 0
+    first_visit: str | None = None
+    last_visit: str | None = None
+    saved_series_games: int = 0
+    draft_step_index: int = 0
+    last_draft_save_th: str | None = None
+    practice_games: int = 0
+    last_practice_save_th: str | None = None
+    predict_calls: int = 0
+    draft_save_calls: int = 0
+    active_sessions: int = 0
+    survey_choice: Literal["willing", "not_willing"] | None = None
+
+
+class AdminGuestClientSchema(BaseModel):
+    client_id: str
+    active_days: int = 0
+    first_visit: str | None = None
+    last_visit: str | None = None
+
+
+class AdminUsersResponse(BaseModel):
+    generated_at_th: str
+    total_users: int
+    users: list[AdminUserActivitySchema]
+    top_guest_clients: list[AdminGuestClientSchema]
+
+
 class DailyVisitRequest(BaseModel):
     client_id: str = Field(..., min_length=8, max_length=64, pattern=r"^[a-zA-Z0-9_-]+$")
 

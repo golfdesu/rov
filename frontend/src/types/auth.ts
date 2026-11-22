@@ -86,3 +86,38 @@ export interface AdminStatsResponse {
     daily_breakdown: { date: string; new: number; returning: number; total: number }[];
   } | null;
 }
+
+export interface AdminUserActivityItem {
+  id: number;
+  username: string;
+  display_name: string;
+  email?: string | null;
+  auth_provider: string;
+  created_at_th: string;
+  active_days: number;
+  first_visit?: string | null;
+  last_visit?: string | null;
+  saved_series_games: number;
+  draft_step_index: number;
+  last_draft_save_th?: string | null;
+  practice_games: number;
+  last_practice_save_th?: string | null;
+  predict_calls: number;
+  draft_save_calls: number;
+  active_sessions: number;
+  survey_choice?: PricingSurveyChoice | null;
+}
+
+export interface AdminGuestClientItem {
+  client_id: string;
+  active_days: number;
+  first_visit?: string | null;
+  last_visit?: string | null;
+}
+
+export interface AdminUsersResponse {
+  generated_at_th: string;
+  total_users: number;
+  users: AdminUserActivityItem[];
+  top_guest_clients: AdminGuestClientItem[];
+}
