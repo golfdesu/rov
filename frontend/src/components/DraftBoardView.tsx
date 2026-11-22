@@ -63,6 +63,9 @@ function getIsMobileViewport() {
 
 export type MobileDraftView = "draft" | "ai" | "teams";
 
+const MOBILE_TAB_CLASS =
+  "flex min-h-10 min-w-0 items-center justify-center gap-1 px-1.5 py-2 font-display text-[11px] font-bold tracking-wide transition-colors sm:flex-col sm:gap-0.5 sm:text-xs";
+
 export interface DraftBoardViewProps {
   draft: ReturnType<typeof useDraft>;
   isActiveTab: boolean;
@@ -594,10 +597,10 @@ export function DraftBoardView({
       {/* Sub-header mode & series bar */}
       <div className="shrink-0 border-b border-line bg-panel/60 px-2 py-1.5 sm:px-3 xl:px-4">
         <div className="mx-auto flex max-w-[1920px] flex-wrap items-center justify-between gap-1.5 sm:flex-nowrap xl:gap-2">
-          {/* Left: Mode Switcher + Series Name */}
-          <div className="flex min-w-0 items-center gap-2 sm:flex-1">
+          {/* Series name */}
+          <div className="hidden min-w-0 flex-1 items-center gap-2 sm:flex">
             <span
-              className="hidden max-w-[200px] truncate font-display text-xs font-bold tracking-wider text-muted sm:inline"
+              className="max-w-[200px] truncate font-display text-xs font-bold tracking-wider text-muted"
               title={globalBans.seriesName || `${bName} vs ${rName}`}
             >
               {globalBans.seriesName || `${bName} vs ${rName}`}
@@ -994,7 +997,7 @@ export function DraftBoardView({
         />
       )}
 
-      <main className="mx-auto flex min-h-0 w-full max-w-[1920px] flex-1 flex-col gap-1.5 overflow-hidden px-2 py-1.5 sm:px-3 sm:py-2">
+      <main className="mx-auto flex min-h-0 w-full max-w-[1920px] flex-1 flex-col gap-1 overflow-hidden px-2 py-1.5 sm:gap-1.5 sm:px-3 sm:py-2">
         {conflictMessage && globalBanConflict && (
           <div className="shrink-0">
             <Alert tone="warning" className="max-sm:px-2 max-sm:py-1">
@@ -1139,8 +1142,8 @@ export function DraftBoardView({
 
           {/* Center / Split-View Workspace: AI Suggestions + Hero Grid */}
           <div className="flex min-h-0 flex-1 flex-col gap-1.5 md:col-span-12 md:grid md:grid-cols-12 md:gap-2.5 lg:order-2 lg:col-span-1 lg:flex lg:flex-col lg:gap-2">
-            {/* Mobile Quick AI Ribbon (Only on Mobile 'draft' view when Assistant is enabled) */}
-            {mobileView === "draft" && assistantEnabled && (
+            {/* Mobile draft completion summary */}
+            {mobileView === "draft" && assistantEnabled && isDraftComplete && (
               <div
                 aria-hidden={Boolean(editingSlot)}
                 className={`shrink-0 transition-opacity md:hidden ${
@@ -1228,6 +1231,7 @@ export function DraftBoardView({
                 currentStep={editingSlotStep}
                 isLoading={assistantEnabled && isLoading}
                 isHeroesLoading={isHeroesLoading}
+                compactFiltersOnShortScreens
                 replacingHero={editingSlot ? (editingHero ?? null) : null}
                 replaceHeader={
                   editingSlot && editingHero ? (
@@ -1307,27 +1311,27 @@ export function DraftBoardView({
         <button
           type="button"
           onClick={() => setMobileView("draft")}
-          className={`flex min-w-0 flex-col items-center justify-center gap-0.5 px-1.5 py-2 font-display text-[11px] font-bold tracking-wide transition-colors sm:text-xs ${
+          className={`${MOBILE_TAB_CLASS} ${
             mobileView === "draft"
               ? "border-t-2 border-gold bg-gold/10 text-gold"
               : "border-t-2 border-transparent text-muted hover:text-ink"
           }`}
         >
           <LayoutGrid className="h-4 w-4 shrink-0 sm:h-4.5 sm:w-4.5" />
-          <span className="w-full truncate text-center"><StableButtonLabel message="เลือกฮีโร่ (" />{heroes.length})</span>
+          <span className="min-w-0 truncate text-center sm:w-full"><StableButtonLabel message="เลือกฮีโร่ (" />{heroes.length})</span>
         </button>
 
         <button
           type="button"
           onClick={() => setMobileView("ai")}
-          className={`flex min-w-0 flex-col items-center justify-center gap-0.5 px-1.5 py-2 font-display text-[11px] font-bold tracking-wide transition-colors sm:text-xs ${
+          className={`${MOBILE_TAB_CLASS} ${
             mobileView === "ai"
               ? "border-t-2 border-gold bg-gold/10 text-gold"
               : "border-t-2 border-transparent text-muted hover:text-ink"
           }`}
         >
           <Sparkles className="h-4 w-4 shrink-0 sm:h-4.5 sm:w-4.5" />
-          <span className="w-full truncate text-center">
+          <span className="min-w-0 truncate text-center sm:w-full">
             {!assistantEnabled
               ? t("ปิดตัวช่วยอยู่")
               : recommendations[0]
@@ -1339,14 +1343,18 @@ export function DraftBoardView({
         <button
           type="button"
           onClick={() => setMobileView("teams")}
-          className={`flex min-w-0 flex-col items-center justify-center gap-0.5 px-1.5 py-2 font-display text-[11px] font-bold tracking-wide transition-colors sm:text-xs ${
+          aria-label={`${t("กระดาน & แบน (")}${bUsed.length + rUsed.length})`}
+          className={`${MOBILE_TAB_CLASS} ${
             mobileView === "teams"
               ? "border-t-2 border-gold bg-gold/10 text-gold"
               : "border-t-2 border-transparent text-muted hover:text-ink"
           }`}
         >
           <Users className="h-4 w-4 shrink-0 sm:h-4.5 sm:w-4.5" />
-          <span className="w-full truncate text-center">
+          <span className="min-w-0 truncate text-center sm:hidden">
+            <StableButtonLabel message="กระดาน" /> ({bUsed.length + rUsed.length})
+          </span>
+          <span className="hidden w-full truncate text-center sm:block">
             <StableButtonLabel message="กระดาน & แบน (" />{bUsed.length + rUsed.length})
           </span>
         </button>

@@ -1198,8 +1198,8 @@ def save_draft_session(
     session = session.model_copy(update={"engine": "sota"})
     if user is not None:
         dumped = session.model_dump()
-        get_user_db().save_user_draft_state(user.id, dumped, int(session.updatedAt or 0))
-        return session
+        stored = get_user_db().save_user_draft_state(user.id, dumped, int(session.updatedAt or 0))
+        return DraftSessionStateSchema.model_validate(stored)
 
     if config.is_production:
         return session
@@ -1268,8 +1268,8 @@ def save_practice_history(
 ):
     _verify_expected_user(user, x_expected_user)
     dumped = payload.model_dump()
-    get_user_db().save_user_practice_history(user.id, dumped, int(payload.updatedAt or 0))
-    return payload
+    stored = get_user_db().save_user_practice_history(user.id, dumped, int(payload.updatedAt or 0))
+    return PracticeHistorySyncSchema.model_validate(stored)
 
 
 @app.delete("/draft/practice-history", response_model=PracticeHistorySyncSchema)
@@ -1280,7 +1280,8 @@ def clear_practice_history_remote(
     _verify_expected_user(user, x_expected_user)
     get_user_db().clear_user_practice_history(user.id)
     raw = get_user_db().get_user_practice_history(user.id)
-    return PracticeHistorySyncSchema(entries=[], updatedAt=int((raw or {}).get("updatedAt", 0)))
+    tomb = int((raw or {}).get("updatedAt", 0))
+    return PracticeHistorySyncSchema(entries=[], updatedAt=tomb, clearedAt=int((raw or {}).get("clearedAt", tomb)))
 
 
 @app.get("/combat/builds", response_model=CombatBuildsSyncSchema)
@@ -1308,8 +1309,8 @@ def save_combat_builds(
 ):
     _verify_expected_user(user, x_expected_user)
     dumped = builds.model_dump()
-    get_user_db().save_user_combat_builds(user.id, dumped, int(builds.updatedAt or 0))
-    return builds
+    stored = get_user_db().save_user_combat_builds(user.id, dumped, int(builds.updatedAt or 0))
+    return CombatBuildsSyncSchema.model_validate(stored)
 
 
 @app.delete("/combat/builds", response_model=CombatBuildsSyncSchema)

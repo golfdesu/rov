@@ -27,6 +27,223 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-22 11:36 (UTC+7) — Practice `clearedAt` Tombstone Propagation, Index Ordering Fix & Dual-Agent E2E QA
+**Agent:** Antigravity CLI
+
+### ✅ Completed Work
+- **Practice History `clearedAt` Propagation & Offline-Resurrection Shield (`src/schemas.py`, `src/api.py`, `src/db.py`, `frontend/src/utils/practiceHistory.ts`, `frontend/src/components/PracticeDraftView.tsx`):**
+  - Added `clearedAt` to `PracticeHistorySyncSchema` and `DELETE /draft/practice-history` response so clients always receive the server clear tombstone even after newer post-clear games are recorded.
+  - Updated `UserDatabase.save_user_practice_history()` with `_entry_recorded_ms()` filtering to drop any pre-clear entries (`recordedAt < effective_cleared_at`) when an offline device syncs stale cached games alongside newer games.
+  - Updated `practiceHistory.ts` (`filterEntriesAfterClear`) and `PracticeDraftView.tsx` to persist and apply `clearedAt` before cross-device merging.
+- **SQLite Session Index Sort-Free Backwards Scan (`src/db.py`, `tests/test_api.py`, `.agents/skills/arch-perf-auditor/`):**
+  - Changed `idx_auth_sessions_user_created` to `ON auth_sessions(user_id, created_at)` (including an automatic migration in `ensure_schema()` to drop legacy `DESC` index definitions), eliminating `USE TEMP B-TREE` even when `created_at` timestamps tie.
+  - Tightened `EXPLAIN QUERY PLAN` assertions in `tests/test_api.py` and `audit_arch_perf.py` to reject any `USE TEMP B-TREE`.
+- **Two-Agent Live Playwright E2E QA (`http://127.0.0.1:8011/`):**
+  - Verified both **Draft Board** and **Draft vs AI (`#practice`)** across Desktop (`1280x800`) and Mobile (`375x667`, `360x640`): 18/18 drafts, Undo/Redo, Replace Mode, PickLaneModal, Global Ban BO1–BO7 series & conflict resolution, Draft Turn Timer auto-stop, Practice AI turns, single delete, clear-all + 2-device sync without resurrection, with zero console/page/HTTP errors and zero horizontal overflow.
+
+### 📁 Modified Files
+- `src/schemas.py`, `src/api.py`, `src/db.py`
+- `frontend/src/utils/practiceHistory.ts`, `frontend/src/components/PracticeDraftView.tsx`
+- `.agents/skills/arch-perf-auditor/SKILL.md`, `.agents/skills/arch-perf-auditor/scripts/audit_arch_perf.py` (mirrored to `.claude/skills/`)
+- `tests/test_api.py`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified with `ruff`, `oxlint` + `vite build`, full `pytest -q --tb=short`, `audit_arch_perf.py`, `preflight_check.py`, and `validate_gating.py` before deploying to production.
+
+---
+
+## 📅 2026-11-22 11:18 (UTC+7) — Add `arch-perf-auditor` Skill (DSA, SQLite Plans, Sync & ML Leakage Audit)
+**Agent:** Antigravity CLI
+
+### ✅ Completed Work
+- **Created `arch-perf-auditor` Skill (`.agents/skills/arch-perf-auditor/SKILL.md` + `scripts/audit_arch_perf.py`):**
+  - Codifies the 4 RoV engineering audit pillars: Serving & Algorithmic Hot Paths (GNN embedding cache + latency benchmark), SQLite Data Structures & Query Plans (`EXPLAIN QUERY PLAN` + CTE analytics), Sync Concurrency & Fail-Closed Defaults (monotonic merge bump, `pushSeqRef`, `ROV_ADMIN_USERNAMES`), and ML Pipeline Leakage Hygiene (no 2024 fallback, series-boundary split, train-only node stats).
+  - Automated all checks in `scripts/audit_arch_perf.py` (supports `--skip-bench` for fast CI).
+- **Skill Cross-Links, Mirror & Docs (`AGENTS.md`, neighbor `SKILL.md` files, `.claude/skills/`):**
+  - Linked `arch-perf-auditor` in `rov-draft-serving`, `security-audit`, and `regression-guard` Related Skills sections, registered skill #10 in `AGENTS.md`, and mirrored `.agents/skills/` to `.claude/skills/`.
+
+### 📁 Modified Files
+- `.agents/skills/arch-perf-auditor/SKILL.md`, `.agents/skills/arch-perf-auditor/scripts/audit_arch_perf.py`
+- `.agents/skills/rov-draft-serving/SKILL.md`, `.agents/skills/security-audit/SKILL.md`, `.agents/skills/regression-guard/SKILL.md`
+- `.claude/skills/` (mirrored)
+- `AGENTS.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified with `ruff check --fix . && ruff format .`, `python .agents/skills/arch-perf-auditor/scripts/audit_arch_perf.py`, `pytest tests/test_skills_sync.py -q --tb=short`, `preflight_check.py`, and `validate_gating.py`.
+
+---
+
+## 📅 2026-11-22 11:12 (UTC+7) — Sync Revision Hardening, Serving GNN Cache, & SQLite Index/Analytics
+**Agent:** Antigravity CLI
+
+### ✅ Completed Work
+- **Multi-Device Sync Revision & Draft Reconciliation (`src/db.py`, `frontend/src/utils/practiceHistory.ts`, `frontend/src/components/PracticeDraftView.tsx`, `frontend/src/hooks/useDraft.ts`):**
+  - Updated `UserDatabase.save_user_practice_history()` to issue a monotonic `updatedAt` bump (`> existing_updated_at`) whenever merging an entry or `deletedIds` modifies the persisted set—even if the incoming client timestamp was older—so other online devices reliably detect and pull merged updates.
+  - Added out-of-order response sequence protection (`pushSeqRef`) and `localStorage` persistence for pending `deletedIds` in `PracticeDraftView.tsx` / `practiceHistory.ts` until server acknowledgement.
+  - Updated `useDraft.ts` `PUT /draft/session` handler to reconcile local state via `applyRemoteSession(res)` whenever the server returns an authoritative newer `updatedAt` instead of discarding the server payload.
+- **Serving GNN Embedding Cache (`src/train_sota_model.py`, `src/predictor.py`):**
+  - Added `precompute_gnn_embeddings()` and `invalidate_gnn_cache()` to `RoVDraftGNNTransformer`, automatically clearing `_cached_h_gnn` on `.train(True)` and `._apply(...)`, and reusing cached `H_gnn` during `eval()` forward passes (cutting repeated GNN message passing across direct and minimax lookahead inference).
+  - Invoked `self.model.precompute_gnn_embeddings()` upon checkpoint load in `RoVDraftPredictor.__init__()`.
+- **SQLite Session Index & SQL Retention CTE (`src/db.py`):**
+  - Added composite index `idx_auth_sessions_user_created ON auth_sessions(user_id, created_at DESC)` to eliminate full-table scan + temporary B-tree sorting on session pruning.
+  - Replaced the Python full-table loop over `daily_visits` in `get_admin_stats()` with SQLite CTE aggregation queries for DAU, returning-user rates, D1 retention, and 7-day breakdown.
+
+### 📁 Modified Files
+- `src/db.py`, `src/train_sota_model.py`, `src/predictor.py`
+- `frontend/src/utils/practiceHistory.ts`, `frontend/src/components/PracticeDraftView.tsx`, `frontend/src/hooks/useDraft.ts`
+- `tests/test_api.py`, `tests/test_model_pipeline.py`
+
+### 🧪 Verification
+- Verified with `ruff check --fix . && ruff format .`, `frontend` `npm run lint && npm run build`, `pytest -q --tb=short`, `preflight_check.py`, and `validate_gating.py` (including 72/72 Golden Draft States).
+
+---
+
+## 📅 2026-11-22 10:44 (UTC+7) — Best-Practice Security, Sync & Data-Leakage Hardening
+**Agent:** Antigravity CLI
+
+### ✅ Completed Work
+- **Fail-Closed Admin Config (`src/config.py`, `deploy/compose.yaml`):** Removed the hardcoded `"chayanin5392"` default fallback from `ROV_ADMIN_USERNAMES`; admin privileges and `/admin/stats` are now disabled (`()`) unless explicitly configured in environment variables (kept verified-email OAuth auto-linking intact per owner decision).
+- **Multi-Device Practice History Merge & Authoritative DB Echo (`src/schemas.py`, `src/db.py`, `src/api.py`, `frontend/src/utils/practiceHistory.ts`, `frontend/src/components/PracticeDraftView.tsx`):**
+  - Updated `UserDatabase.save_user_practice_history()` to merge `entries` by entry `id`/signature across concurrent devices, track `deletedIds` tombstones (`PracticeHistorySyncSchema.deletedIds`) and `clearedAt` tombstones, and store the authoritative merged state.
+  - Updated `_save_user_json_state()`, `PUT /draft/session`, `PUT /draft/practice-history`, and `PUT /combat/builds` to return the actual persisted DB payload (preventing stale client writes from receiving their own discarded request payload).
+  - Updated `PracticeDraftView.tsx` and `practiceHistory.ts` to adopt server-merged entries on `PUT`, pass `deletedIds` on single-entry deletion, and merge non-conflicting entries on pull.
+- **Leak-Free Trainer Split & Strict Curated Dataset Guard (`src/train_sota_model.py`):**
+  - Removed the silent fallback to `data/matches_draft_full.json` (now raises `FileNotFoundError` when the curated 2025–2026 dataset is absent, enforcing `AGENTS.md` Rule 13).
+  - Grouped chronological train/validation splitting (85/15) along `series_id` boundaries so zero BO3/BO5/BO7 series span both splits.
+  - Computed `lane_probs`, `meta_stats` (pick/ban/presence/smoothed win rate), and `priority_scores` strictly from `train_games` after splitting rather than reading the global `data/hero_draft_stats.csv`.
+- **Asset & Windows UTF-8 Robustness (`scripts/fetch_hero_icons.py`, `tests/test_model_pipeline.py`, `tests/test_security.py`):**
+  - Hardened `scripts/fetch_hero_icons.py` to preserve valid existing icon mappings on transient download failures and abort with exit code `1` without overwriting `hero_images.json` if any heroes remain missing.
+  - Added explicit `encoding="utf-8", errors="replace"` to `subprocess.run(..., text=True)` calls in `tests/` to avoid Windows locale `UnicodeDecodeError`.
+
+### 📁 Modified Files
+- `src/config.py`, `deploy/compose.yaml`, `src/schemas.py`, `src/db.py`, `src/api.py`, `src/train_sota_model.py`
+- `frontend/src/utils/practiceHistory.ts`, `frontend/src/components/PracticeDraftView.tsx`
+- `scripts/fetch_hero_icons.py`
+- `tests/test_api.py`, `tests/test_model_pipeline.py`, `tests/test_security.py`
+
+### 🧪 Verification
+- Verified with `ruff check --fix . && ruff format .`, `frontend` `npm run lint && npm run build`, `pytest -q --tb=short`, `preflight_check.py`, and `validate_gating.py`.
+
+---
+
+## 📅 2026-11-22 10:16 (UTC+7) — Rename `deploy/docker-compose.yml` to `deploy/compose.yaml`
+**Agent:** Antigravity / Gemini 4 Argon
+
+### ✅ Completed Work
+- Renamed `deploy/docker-compose.yml` to the modern canonical `deploy/compose.yaml` via `git mv`.
+- Updated references in `AGENTS.md`, `README.md`, `docs/ARCHITECTURE_MAP.md`, and `.wikiskill/wiki/production_deployment_and_ui.md`.
+
+### 📁 Modified Files
+- `deploy/compose.yaml` (renamed from `deploy/docker-compose.yml`)
+- `AGENTS.md`
+- `README.md`
+- `docs/ARCHITECTURE_MAP.md`
+- `.wikiskill/wiki/production_deployment_and_ui.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified `git status -s`, `python scripts/sync_metadata.py --check`, `ruff check --fix .`, and `ruff format .`.
+
+---
+
+## 📅 2026-11-22 10:05 (UTC+7) — Show Three Hero Rows on Mobile Draft Board (Dev)
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Moved the phone Draft Board announcement into the existing menu by removing its duplicate above the board. Tightened the series bar and placed footer icons and labels on one line, with a shorter visible Board label and 40 px minimum button height.
+- Kept five columns of square hero cards and both teams' ban and pick slots. Short phone viewports place hero search and lane filters on the same row.
+
+### 📁 Modified Files
+- `frontend/src/App.tsx`
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/components/HeroGrid.tsx`
+- `frontend/src/index.css`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Playwright Chromium and WebKit showed at least three full rows with the timer on and off at 360×640, 375×667, 390×640, 390×700, 390×844, and 430×670. Verified the mobile menu announcement, navigation tabs, lane filtering with text search, and the iPad and desktop layouts.
+- `npm run build`, `npm run lint`, `ruff check --fix .`, `ruff format .`, and the frontend UX/UI audit passed.
+
+### ⚠️ Open Issues / Important Notes
+- Verified in local development with emulated viewports. Vite reported a bundle-size warning.
+
+---
+
+## 📅 2026-11-22 09:54 (UTC+7) — Remove the Role Dropdown from Draft Hero Grids (Dev)
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Removed the role dropdown, active role chip, and role filter state from the hero grid shared by Draft Board, Draft vs AI, and MetaLab.
+- Expanded the hero search field into the freed space. The five lane buttons and `ALL` still work alongside text search. Tier List retains its role filter.
+
+### 📁 Modified Files
+- `frontend/src/components/HeroGrid.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm run build`, `npm run lint`, `ruff check --fix .`, and `ruff format .` passed.
+- Playwright verified all five lane filters, `ALL`, and combined lane and text search across the three draft views at 390×844 and 1440×900. The Tier List role dropdown and full frontend UX/UI audit also passed.
+
+### ⚠️ Open Issues / Important Notes
+- Verified on local dev. Vite reported a bundle-size warning.
+
+---
+
+## 📅 2026-11-22 09:47 (UTC+7) — Remove Duplicate Mobile Draft Recommendations (Dev)
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Removed the compact AI PICK/BAN ribbon during active drafts on phones. The hero grid still marks the top ten recommendations, and the mobile AI tab still opens the full recommendation panel.
+- Kept the mobile draft completion summary and the full recommendation panel for tablet and desktop.
+
+### 📁 Modified Files
+- `frontend/src/components/DraftBoardView.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm run build`, `npm run lint`, `ruff check --fix .`, and `ruff format .` passed.
+- Playwright verified ranks 1–10 and the absence of the ribbon at 375×667 and 390×844, the full panel at 820×1180 and 1440×900, and the mobile AI tab and completion summary. The frontend UX/UI audit passed.
+
+### ⚠️ Open Issues / Important Notes
+- Verified in local development. Vite reported a bundle-size warning.
+
+---
+
+## 📅 2026-11-22 09:42 (UTC+7) — Build 3-Layer WikiSkill LLM Knowledge Base (`.wikiskill/`)
+**Agent:** Antigravity / Gemini 4 Argon
+
+### ✅ Completed Work
+- **Wiki Knowledge Layer (`.wikiskill/wiki/`):**
+  - Created [`INDEX.md`](.wikiskill/wiki/INDEX.md) and 6 cross-linked English wiki articles covering [`system_architecture_and_data.md`](.wikiskill/wiki/system_architecture_and_data.md), [`draft_invariants_and_pitfalls.md`](.wikiskill/wiki/draft_invariants_and_pitfalls.md), [`production_hyperparameters_and_hpo.md`](.wikiskill/wiki/production_hyperparameters_and_hpo.md), [`erawan_hpc_playbook.md`](.wikiskill/wiki/erawan_hpc_playbook.md), [`combat_engine_and_mechanics.md`](.wikiskill/wiki/combat_engine_and_mechanics.md), and [`production_deployment_and_ui.md`](.wikiskill/wiki/production_deployment_and_ui.md).
+- **Operational Traces Layer (`.wikiskill/traces/`):**
+  - Created [`h100_hpo_and_training_trace.md`](.wikiskill/traces/h100_hpo_and_training_trace.md) (80-trial 37-dim H100 Optuna HPO + True Pick Order vs 0% Heuristic ablation) and [`production_cutover_and_ux_trace.md`](.wikiskill/traces/production_cutover_and_ux_trace.md) (`minidraft.app` deployment, SQLite migration, and responsive UX lessons).
+- **Automated Preflight & Gating Layer (`.wikiskill/skills/`):**
+  - Created [`SKILL.md`](.wikiskill/skills/SKILL.md), [`preflight_check.py`](.wikiskill/skills/scripts/preflight_check.py) (scans `src/`, `scripts/`, `*.sbatch`, and `configs/selected_production_params.json`), and [`validate_gating.py`](.wikiskill/skills/scripts/validate_gating.py) (chains preflight scan, `rov-data-guardian`, `regression-guard`, and `tests/test_skills_sync.py`).
+- **Repository Index Updates (`AGENTS.md`, `docs/ARCHITECTURE_MAP.md`):**
+  - Registered `.wikiskill/` and its preflight/gating commands in `AGENTS.md` (Sections 2 & 3) and `docs/ARCHITECTURE_MAP.md`.
+
+### 📁 Modified Files
+- `.wikiskill/wiki/INDEX.md` (new)
+- `.wikiskill/wiki/system_architecture_and_data.md` (new)
+- `.wikiskill/wiki/draft_invariants_and_pitfalls.md` (new)
+- `.wikiskill/wiki/production_hyperparameters_and_hpo.md` (new)
+- `.wikiskill/wiki/erawan_hpc_playbook.md` (new)
+- `.wikiskill/wiki/combat_engine_and_mechanics.md` (new)
+- `.wikiskill/wiki/production_deployment_and_ui.md` (new)
+- `.wikiskill/traces/h100_hpo_and_training_trace.md` (new)
+- `.wikiskill/traces/production_cutover_and_ux_trace.md` (new)
+- `.wikiskill/skills/SKILL.md` (new)
+- `.wikiskill/skills/scripts/preflight_check.py` (new)
+- `.wikiskill/skills/scripts/validate_gating.py` (new)
+- `AGENTS.md`
+- `docs/ARCHITECTURE_MAP.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified via `preflight_check.py`, `validate_gating.py`, `scripts/sync_metadata.py --check`, `ruff check --fix .`, `ruff format .`, and `pytest -q --tb=short`.
+
+---
+
 ## 📅 2026-11-21 22:45 (UTC+7) — Auto-Stop Draft Timer on Completion, Reset, & Game Transition
 **Agent:** Antigravity / Gemini 4 Argon
 

@@ -528,3 +528,5 @@ class PracticeHistoryEntrySchema(BaseModel):
 class PracticeHistorySyncSchema(BaseModel):
     entries: list[PracticeHistoryEntrySchema] = Field(default_factory=list, max_length=100)
     updatedAt: int = Field(default=0, ge=0, le=9223372036854775807)
+    deletedIds: list[ShortStr] = Field(default_factory=list, max_length=100)
+    clearedAt: int = Field(default=0, ge=0, le=9223372036854775807)

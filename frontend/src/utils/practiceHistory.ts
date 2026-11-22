@@ -197,6 +197,36 @@ export function clearPracticeActiveRound(
 export interface PracticeHistorySyncPayload {
   entries: PracticeHistoryEntry[];
   updatedAt: number;
+  deletedIds?: string[];
+  clearedAt?: number;
+}
+
+export function filterEntriesAfterClear(entries: PracticeHistoryEntry[], clearedAt: number): PracticeHistoryEntry[] {
+  if (!clearedAt || clearedAt <= 0) return entries;
+  return entries.filter((entry) => {
+    const ms = Date.parse(entry.recordedAt || "");
+    return !Number.isFinite(ms) || ms >= clearedAt;
+  });
+}
+
+export function mergePracticeHistoryEntries(
+  primary: PracticeHistoryEntry[],
+  secondary: PracticeHistoryEntry[],
+  deletedIds?: string[],
+): PracticeHistoryEntry[] {
+  const deletedSet = new Set(deletedIds ?? []);
+  const merged: PracticeHistoryEntry[] = [];
+  const seenIds = new Set<string>();
+  const seenSigs = new Set<string>();
+  for (const entry of [...primary, ...secondary]) {
+    if (!entry.id || deletedSet.has(entry.id) || seenIds.has(entry.id)) continue;
+    if (entry.signature && seenSigs.has(entry.signature)) continue;
+    seenIds.add(entry.id);
+    if (entry.signature) seenSigs.add(entry.signature);
+    merged.push(entry);
+  }
+  merged.sort((a, b) => (b.recordedAt || "").localeCompare(a.recordedAt || ""));
+  return merged.slice(0, MAX_PRACTICE_HISTORY);
 }
 
 export function sanitizePracticeHistoryEntries(raw: unknown): PracticeHistoryEntry[] {
@@ -260,13 +290,23 @@ export function loadPracticeHistoryState(scope: string): PracticeHistorySyncPayl
     if (parsed && typeof parsed === "object") {
       const obj = parsed as Partial<PracticeHistorySyncPayload>;
       const entries = sanitizePracticeHistoryEntries(obj.entries);
+      const deletedIds = Array.isArray(obj.deletedIds)
+        ? obj.deletedIds.filter((id): id is string => typeof id === "string" && id.length > 0).slice(0, 100)
+        : undefined;
+      const clearedAt =
+        typeof obj.clearedAt === "number" && Number.isFinite(obj.clearedAt) && obj.clearedAt > 0 ? obj.clearedAt : 0;
       const updatedAt =
         typeof obj.updatedAt === "number" && Number.isFinite(obj.updatedAt) && obj.updatedAt >= 0
           ? obj.updatedAt
           : entries.length > 0
             ? 1
             : 0;
-      return { entries, updatedAt };
+      return {
+        entries: filterEntriesAfterClear(entries, clearedAt),
+        updatedAt,
+        ...(deletedIds && deletedIds.length > 0 ? { deletedIds } : {}),
+        ...(clearedAt > 0 ? { clearedAt } : {}),
+      };
     }
     return { entries: [], updatedAt: 0 };
   } catch {
@@ -277,11 +317,18 @@ export function loadPracticeHistoryState(scope: string): PracticeHistorySyncPayl
 export function savePracticeHistoryState(scope: string, state: PracticeHistorySyncPayload): void {
   if (typeof window === "undefined") return;
   try {
+    const deletedIds = Array.isArray(state.deletedIds)
+      ? state.deletedIds.filter((id): id is string => typeof id === "string" && id.length > 0).slice(0, 100)
+      : [];
+    const clearedAt =
+      typeof state.clearedAt === "number" && Number.isFinite(state.clearedAt) && state.clearedAt > 0 ? state.clearedAt : 0;
     window.localStorage.setItem(
       practiceHistoryStorageKey(scope),
       JSON.stringify({
         entries: state.entries.slice(0, MAX_PRACTICE_HISTORY),
         updatedAt: state.updatedAt,
+        ...(deletedIds.length > 0 ? { deletedIds } : {}),
+        ...(clearedAt > 0 ? { clearedAt } : {}),
       }),
     );
   } catch {

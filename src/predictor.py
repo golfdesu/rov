@@ -93,6 +93,7 @@ class RoVDraftPredictor:
         self.device = torch.device("cpu")
         self.model.to(self.device)
         self.model.eval()
+        self.model.precompute_gnn_embeddings()
 
         self.heroes_df = pd.read_csv(config.paths.heroes_csv_path).set_index("name")
         self.stats_df = pd.read_csv(config.paths.hero_stats_csv_path).set_index("name")

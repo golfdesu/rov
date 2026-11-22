@@ -1129,7 +1129,12 @@ def test_multi_user_auth_and_database_isolation(tmp_path, monkeypatch):
     assert cleared["updatedAt"] > 0
 
     # Practice history cross-device sync is isolated from main Draft Board & protected by X-Expected-User
-    assert client_b.get("/draft/practice-history").json() == {"entries": [], "updatedAt": 0}
+    assert client_b.get("/draft/practice-history").json() == {
+        "entries": [],
+        "updatedAt": 0,
+        "deletedIds": [],
+        "clearedAt": 0,
+    }
     practice_entry = {
         "id": "p-1",
         "signature": "sess1|G1|blue|Valhein,Hayate,Toro,Krixi,Zuka|Tel'Annas,Yorn,Thane,Tulen,Butterfly|Murad|Florentino",
@@ -1152,18 +1157,59 @@ def test_multi_user_auth_and_database_isolation(tmp_path, monkeypatch):
         ).status_code
         == 200
     )
-    # Stale timestamp must not overwrite newer Practice history
+    # Concurrent second device saving a newer game without p-1 merges both entries instead of clobbering p-1
+    practice_entry_2 = {
+        **practice_entry,
+        "id": "p-2",
+        "signature": "sess2|G1|red|Tel'Annas,Yorn,Thane,Tulen,Butterfly|Valhein,Hayate,Toro,Krixi,Zuka|Florentino|Murad",
+        "recordedAt": "2026-11-21T14:00:00Z",
+        "playerSide": "red",
+    }
+    res_merge = client_a.put(
+        "/draft/practice-history",
+        json={"entries": [practice_entry_2], "updatedAt": 1761650006000},
+        headers={"X-Expected-User": "user_alpha"},
+    )
+    assert res_merge.status_code == 200
+    assert {e["id"] for e in res_merge.json()["entries"]} == {"p-1", "p-2"}
+    # Explicit deletedIds removes p-1 across devices without dropping p-2
+    res_del = client_a.put(
+        "/draft/practice-history",
+        json={"entries": [practice_entry_2], "updatedAt": 1761650007000, "deletedIds": ["p-1"]},
+        headers={"X-Expected-User": "user_alpha"},
+    )
+    assert res_del.status_code == 200
+    assert [e["id"] for e in res_del.json()["entries"]] == ["p-2"]
+    # Stale timestamp must not overwrite or resurrect deleted Practice history
+    res_stale_p = client_a.put(
+        "/draft/practice-history",
+        json={"entries": [practice_entry], "updatedAt": 1761650004000},
+        headers={"X-Expected-User": "user_alpha"},
+    )
+    assert res_stale_p.status_code == 200
+    assert [e["id"] for e in res_stale_p.json()["entries"]] == ["p-2"]
+    res_p_a = client_a.get("/draft/practice-history", headers={"X-Expected-User": "user_alpha"})
+    assert res_p_a.status_code == 200
+    assert [e["id"] for e in res_p_a.json()["entries"]] == ["p-2"]
+    # Stale draft session PUT returns authoritative newer DB state instead of echoing stale request
+    newer_ts = int(cleared["updatedAt"]) + 2000
+    stale_ts = int(cleared["updatedAt"]) + 1000
     assert (
         client_a.put(
-            "/draft/practice-history",
-            json={"entries": [], "updatedAt": 1761650004000},
+            "/draft/session",
+            json={"bluePicks": ["Hayate"], "updatedAt": newer_ts},
             headers={"X-Expected-User": "user_alpha"},
         ).status_code
         == 200
     )
-    res_p_a = client_a.get("/draft/practice-history", headers={"X-Expected-User": "user_alpha"})
-    assert res_p_a.status_code == 200
-    assert len(res_p_a.json()["entries"]) == 1
+    res_stale_draft = client_a.put(
+        "/draft/session",
+        json={"bluePicks": ["Yorn"], "updatedAt": stale_ts},
+        headers={"X-Expected-User": "user_alpha"},
+    )
+    assert res_stale_draft.status_code == 200
+    assert res_stale_draft.json()["bluePicks"] == ["Hayate"]
+    assert res_stale_draft.json()["updatedAt"] == newer_ts
     assert client_b.get("/draft/practice-history").json()["entries"] == []
     assert (
         client_b.put(
@@ -1780,11 +1826,17 @@ def test_pricing_survey_endpoint_and_deduplication(tmp_path, monkeypatch):
     assert user_a.get("/admin/stats").status_code == 404
     assert me_a["is_admin"] is False
 
-    # Owner account (@chayanin5392) receives is_admin=True and 200 on /admin/stats
+    # Fail-closed by default: even username "chayanin5392" has no admin rights unless ROV_ADMIN_USERNAMES configures it
+    monkeypatch.setattr(config, "admin_usernames", ())
     owner = TestClient(app)
     reg_owner = owner.post("/auth/register", json={"username": "chayanin5392", "password": "owner-secret-pass"})
     assert reg_owner.status_code == 201
-    assert reg_owner.json()["is_admin"] is True
+    assert reg_owner.json()["is_admin"] is False
+    assert owner.get("/admin/stats").status_code == 404
+
+    # When configured via ROV_ADMIN_USERNAMES, owner receives is_admin=True and 200 on /admin/stats
+    monkeypatch.setattr(config, "admin_usernames", ("chayanin5392",))
+    assert owner.get("/auth/me").json()["is_admin"] is True
     stats_res = owner.get("/admin/stats")
     assert stats_res.status_code == 200
     stats_body = stats_res.json()
@@ -1803,6 +1855,7 @@ def test_daily_visit_telemetry_and_retention_stats(tmp_path, monkeypatch):
 
     db_file = tmp_path / "retention_test.db"
     monkeypatch.setattr(config.paths, "app_db_path", db_file)
+    monkeypatch.setattr(config, "admin_usernames", ("chayanin5392",))
     monkeypatch.setattr(api_mod._telemetry_rate_limiter, "max_attempts", 50)
 
     guest = TestClient(app)
@@ -1845,3 +1898,111 @@ def test_daily_visit_telemetry_and_retention_stats(tmp_path, monkeypatch):
     assert ret["daily_breakdown"][0]["date"] == today_str
     assert ret["daily_breakdown"][0]["new"] == 1
     assert ret["daily_breakdown"][0]["returning"] == 1
+
+    # Verify auth_sessions lookup uses the composite (user_id, created_at) index instead of a full-table scan
+    import sqlite3
+
+    with sqlite3.connect(db_file) as conn:
+        plan_rows = conn.execute(
+            "EXPLAIN QUERY PLAN SELECT token_hash FROM auth_sessions WHERE user_id = ? "
+            "ORDER BY created_at DESC, rowid DESC LIMIT 9",
+            (1,),
+        ).fetchall()
+    plan_text = " ".join(str(r[-1]) for r in plan_rows).upper()
+    assert "IDX_AUTH_SESSIONS_USER_CREATED" in plan_text
+    assert "USE TEMP B-TREE" not in plan_text
+
+
+def test_practice_clear_prevents_old_offline_resurrection_after_new_game(tmp_path, monkeypatch):
+    """Clearing history then playing a new game must block an offline device's pre-clear game from returning."""
+    import time
+
+    from src.config import config
+
+    monkeypatch.setattr(config.paths, "app_db_path", tmp_path / "clear_resurrect.db")
+    device_a = TestClient(app)
+    device_b = TestClient(app)
+    creds = {"username": "clear_sync_user", "password": "secret-pass-123"}
+    assert device_a.post("/auth/register", json=creds).status_code == 201
+    assert device_b.post("/auth/login", json=creds).status_code == 200
+
+    base_game = {
+        "id": "p-old",
+        "signature": "old|G1|blue|Valhein,Hayate,Toro,Krixi,Zuka|Tel'Annas,Yorn,Thane,Tulen,Butterfly|Murad|Florentino",
+        "recordedAt": "2020-01-01T10:00:00Z",
+        "gameNumber": 1,
+        "gameCount": 1,
+        "startingSide": "blue",
+        "playerSide": "blue",
+        "bluePicks": ["Valhein", "Hayate", "Toro", "Krixi", "Zuka"],
+        "redPicks": ["Tel'Annas", "Yorn", "Thane", "Tulen", "Butterfly"],
+        "blueBans": ["Murad"],
+        "redBans": ["Florentino"],
+        "playerEstimate": 50.0,
+    }
+    t0 = int(time.time() * 1000) - 5000
+    assert device_a.put("/draft/practice-history", json={"entries": [base_game], "updatedAt": t0}).status_code == 200
+
+    # Device A clears history, then records a brand-new post-clear game
+    del_res = device_a.delete("/draft/practice-history")
+    assert del_res.status_code == 200
+    cleared_at = del_res.json()["clearedAt"]
+    assert cleared_at > 0
+
+    new_game = {
+        **base_game,
+        "id": "p-new",
+        "signature": "new|G1|red|Tel'Annas,Yorn,Thane,Tulen,Butterfly|Valhein,Hayate,Toro,Krixi,Zuka|Florentino|Murad",
+        "recordedAt": "2099-01-01T10:00:00Z",
+        "playerSide": "red",
+    }
+    put_new = device_a.put("/draft/practice-history", json={"entries": [new_game], "updatedAt": cleared_at + 100})
+    assert put_new.status_code == 200
+    assert put_new.json()["clearedAt"] == cleared_at
+    assert [e["id"] for e in put_new.json()["entries"]] == ["p-new"]
+
+    # Device B comes back online and pushes its stale offline cache [p-old] with a newer wall clock
+    res_b = device_b.put("/draft/practice-history", json={"entries": [base_game], "updatedAt": cleared_at + 500})
+    assert res_b.status_code == 200
+    assert res_b.json()["clearedAt"] == cleared_at
+    assert [e["id"] for e in res_b.json()["entries"]] == ["p-new"]
+    assert [e["id"] for e in device_a.get("/draft/practice-history").json()["entries"]] == ["p-new"]
+
+
+def test_practice_merge_older_client_clock_bumps_server_revision(tmp_path):
+    """Verify merging a new game with an older client updatedAt bumps stored updatedAt monotonically."""
+    from src.db import UserDatabase
+
+    db = UserDatabase(tmp_path / "merge_rev.db")
+    user = db.register_user("sync_merge_user", "secret-pass-123")
+    base_entry = {
+        "id": "p-a",
+        "signature": "sA|G1|blue|Valhein,Hayate,Toro,Krixi,Zuka|Tel'Annas,Yorn,Thane,Tulen,Butterfly|Murad|Florentino",
+        "recordedAt": "2026-11-22T10:00:00Z",
+        "gameNumber": 1,
+        "gameCount": 1,
+        "startingSide": "blue",
+        "playerSide": "blue",
+        "bluePicks": ["Valhein", "Hayate", "Toro", "Krixi", "Zuka"],
+        "redPicks": ["Tel'Annas", "Yorn", "Thane", "Tulen", "Butterfly"],
+        "blueBans": ["Murad"],
+        "redBans": ["Florentino"],
+        "playerEstimate": 52.0,
+    }
+    first = db.save_user_practice_history(
+        user.id, {"entries": [base_entry], "updatedAt": 5_000_000_000_000}, 5_000_000_000_000
+    )
+    assert first["updatedAt"] == 5_000_000_000_000
+
+    # Concurrent second device sends p-b with an older client clock (4_000_000_000_000 < 5_000_000_000_000)
+    other_entry = {
+        **base_entry,
+        "id": "p-b",
+        "signature": "sB|G1|red|Tel'Annas,Yorn,Thane,Tulen,Butterfly|Valhein,Hayate,Toro,Krixi,Zuka|Florentino|Murad",
+        "recordedAt": "2026-11-22T10:05:00Z",
+    }
+    merged = db.save_user_practice_history(
+        user.id, {"entries": [other_entry], "updatedAt": 4_000_000_000_000}, 4_000_000_000_000
+    )
+    assert {e["id"] for e in merged["entries"]} == {"p-a", "p-b"}
+    assert merged["updatedAt"] > first["updatedAt"]

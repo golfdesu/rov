@@ -18,7 +18,7 @@ Comprehensive hero database covering all **130 heroes (up to Evita)**, pro match
 * `src/api.py` — FastAPI service endpoints (`/health`, `/heroes`, `/auth/*` including Username/Password and Google/Discord OAuth 2.0 PKCE, `/privacy`, `/draft/steps`, `/draft/session`, `/predict`, and dev-only `/combat/*`) plus static serving from `frontend/dist` (dev) or `frontend/dist-prod` (prod).
 * `src/combat_calculator.py` — Combat calculations: hero attributes (level + items + Tier-3 arcana + enchantments), mitigated skill damage (armor/magic defense/flat and percentage pierce), and 1v1 duel simulator (**Stat & Duel Lab** tab in web UI, direct link: `/#lab`).
 * `frontend/` — Broadcast-style draft web UI (React 19 + Vite + Tailwind CSS 4) displaying Thai server names (e.g. Mortos, Celica, Riktor), Guest/Account portal, and Global Ban Bo1–Bo7 series management.
-* `deploy/` & `scripts/start_public_15d.ps1` — Production Docker Compose + Caddy TLS stack (`deploy/docker-compose.yml`, `deploy/Caddyfile`) and local Windows Cloudflare Tunnel runner (`minidraft.app`).
+* `deploy/` & `scripts/start_public_15d.ps1` — Production Docker Compose + Caddy TLS stack (`deploy/compose.yaml`, `deploy/Caddyfile`) and local Windows Cloudflare Tunnel runner (`minidraft.app`).
 * `docs/SUBSCRIPTION_ROADMAP.md` — Planned future freemium subscription blueprint (currently open free access for all users).
 * `scripts/fetch_hero_icons.py` — Downloads 130 square hero icons to `frontend/public/avatars/`.
 * `data/items.json` — 114 items (numeric stats, gold price, passives) from rovmeta.com with patch note corrections via `data/items_overrides.json` (rov.in.th).

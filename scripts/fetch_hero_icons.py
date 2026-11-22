@@ -101,6 +101,13 @@ def main() -> None:
     lq_urls = resolve_liquipedia_urls(list(LIQUIPEDIA_OVERRIDES.values()))
 
     AVATAR_DIR.mkdir(parents=True, exist_ok=True)
+    existing_mapping: dict[str, str] = {}
+    if OUT_PATH.exists():
+        try:
+            existing_mapping = json.loads(OUT_PATH.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            existing_mapping = {}
+
     mapping: dict[str, str] = {}
     missing: list[str] = []
     for name in names:
@@ -115,7 +122,10 @@ def main() -> None:
             mapping[name] = f"/avatars/{filename}"
             continue
         if not url:
-            missing.append(name)
+            if name in existing_mapping and dest.exists():
+                mapping[name] = existing_mapping[name]
+            else:
+                missing.append(name)
             continue
         try:
             resp = requests.get(url, headers=HEADERS, timeout=20)
@@ -124,13 +134,18 @@ def main() -> None:
             mapping[name] = f"/avatars/{filename}"
         except (requests.RequestException, OSError) as exc:
             print(f"Failed {name}: {exc}")
-            missing.append(name)
+            if name in existing_mapping and dest.exists():
+                mapping[name] = existing_mapping[name]
+            else:
+                missing.append(name)
         time.sleep(0.15)
 
-    OUT_PATH.write_text(json.dumps(dict(sorted(mapping.items())), ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Heroes: {len(names)} | with icon: {len(mapping)} | missing: {len(missing)}")
-    if missing:
-        print("Missing (UI falls back to a monogram):", ", ".join(missing))
+    if missing or len(mapping) < len(names):
+        print("Aborting hero_images.json update to preserve existing icons. Missing:", ", ".join(missing))
+        raise SystemExit(1)
+
+    OUT_PATH.write_text(json.dumps(dict(sorted(mapping.items())), ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Saved: {OUT_PATH}")
 
 

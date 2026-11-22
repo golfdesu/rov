@@ -189,6 +189,19 @@ def _safe_json_loads(raw: str) -> dict | None:
         return None
 
 
+def _entry_recorded_ms(entry: dict) -> int | None:
+    raw = entry.get("recordedAt")
+    if not isinstance(raw, str) or not raw.strip():
+        return None
+    try:
+        dt = datetime.fromisoformat(raw.strip().replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return int(dt.timestamp() * 1000)
+
+
 class UserDatabase:
     """Thread-safe SQLite storage isolating draft and combat data per user."""
 
@@ -243,6 +256,9 @@ class UserDatabase:
 
                     CREATE INDEX IF NOT EXISTS idx_auth_sessions_expires
                         ON auth_sessions(expires_at);
+
+                    CREATE INDEX IF NOT EXISTS idx_auth_sessions_user_created
+                        ON auth_sessions(user_id, created_at);
 
                     CREATE TABLE IF NOT EXISTS user_draft_states (
                         user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
@@ -319,6 +335,15 @@ class UserDatabase:
                 conn.execute(
                     "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_sub ON users(google_sub) WHERE google_sub IS NOT NULL"
                 )
+                idx_row = conn.execute(
+                    "SELECT sql FROM sqlite_master WHERE type = 'index' AND name = 'idx_auth_sessions_user_created'"
+                ).fetchone()
+                if idx_row and idx_row["sql"] and "DESC" in str(idx_row["sql"]).upper():
+                    conn.execute("DROP INDEX idx_auth_sessions_user_created")
+                    conn.execute(
+                        "CREATE INDEX IF NOT EXISTS idx_auth_sessions_user_created "
+                        "ON auth_sessions(user_id, created_at)"
+                    )
                 conn.execute("CREATE INDEX IF NOT EXISTS idx_users_email ON users(email) WHERE email IS NOT NULL")
                 conn.execute(
                     """
@@ -672,7 +697,7 @@ class UserDatabase:
             return None
         return _safe_json_loads(str(row["payload_json"]))
 
-    def _save_user_json_state(self, table: str, user_id: int, payload: dict, updated_at: int) -> None:
+    def _save_user_json_state(self, table: str, user_id: int, payload: dict, updated_at: int) -> dict:
         if table not in self._USER_STATE_TABLES:
             raise ValueError(f"Unsupported user state table: {table}")
         encoded = json.dumps(payload, ensure_ascii=False, allow_nan=False)
@@ -689,6 +714,15 @@ class UserDatabase:
                 """,
                 (user_id, encoded, updated_at),
             )
+            row = conn.execute(
+                f"SELECT payload_json FROM {table} WHERE user_id = ?",
+                (user_id,),
+            ).fetchone()
+        if row is not None:
+            parsed = _safe_json_loads(str(row["payload_json"]))
+            if parsed is not None:
+                return parsed
+        return payload
 
     def _clear_user_json_state(self, table: str, user_id: int) -> None:
         # Store an empty tombstone with current timestamp so stale offline clients cannot resurrect cleared state.
@@ -698,8 +732,8 @@ class UserDatabase:
     def get_user_draft_state(self, user_id: int) -> dict | None:
         return self._get_user_json_state("user_draft_states", user_id)
 
-    def save_user_draft_state(self, user_id: int, payload: dict, updated_at: int) -> None:
-        self._save_user_json_state("user_draft_states", user_id, payload, updated_at)
+    def save_user_draft_state(self, user_id: int, payload: dict, updated_at: int) -> dict:
+        return self._save_user_json_state("user_draft_states", user_id, payload, updated_at)
 
     def clear_user_draft_state(self, user_id: int) -> None:
         self._clear_user_json_state("user_draft_states", user_id)
@@ -707,8 +741,8 @@ class UserDatabase:
     def get_user_combat_builds(self, user_id: int) -> dict | None:
         return self._get_user_json_state("user_combat_builds", user_id)
 
-    def save_user_combat_builds(self, user_id: int, payload: dict, updated_at: int) -> None:
-        self._save_user_json_state("user_combat_builds", user_id, payload, updated_at)
+    def save_user_combat_builds(self, user_id: int, payload: dict, updated_at: int) -> dict:
+        return self._save_user_json_state("user_combat_builds", user_id, payload, updated_at)
 
     def clear_user_combat_builds(self, user_id: int) -> None:
         self._clear_user_json_state("user_combat_builds", user_id)
@@ -716,11 +750,108 @@ class UserDatabase:
     def get_user_practice_history(self, user_id: int) -> dict | None:
         return self._get_user_json_state("user_practice_histories", user_id)
 
-    def save_user_practice_history(self, user_id: int, payload: dict, updated_at: int) -> None:
-        self._save_user_json_state("user_practice_histories", user_id, payload, updated_at)
+    def save_user_practice_history(self, user_id: int, payload: dict, updated_at: int) -> dict:
+        self.ensure_schema()
+        with self._lock, self._connect() as conn:
+            row = conn.execute(
+                "SELECT payload_json, updated_at FROM user_practice_histories WHERE user_id = ?",
+                (user_id,),
+            ).fetchone()
+            existing = _safe_json_loads(str(row["payload_json"])) if row is not None else None
+            existing_updated_at = int(row["updated_at"]) if row is not None else 0
+            existing_cleared_at = int((existing or {}).get("clearedAt") or 0)
+            effective_cleared_at = max(existing_cleared_at, int(payload.get("clearedAt") or 0))
+
+            if existing is not None and effective_cleared_at > 0 and updated_at < effective_cleared_at:
+                return existing
+
+            existing_entries = [e for e in (existing or {}).get("entries", []) if isinstance(e, dict)]
+            incoming_entries = [e for e in payload.get("entries", []) if isinstance(e, dict)]
+            existing_deleted = [str(d) for d in (existing or {}).get("deletedIds", []) if isinstance(d, str) and d]
+            incoming_deleted = [str(d) for d in (payload.get("deletedIds") or []) if isinstance(d, str) and d]
+            deleted_ids = list(dict.fromkeys([*incoming_deleted, *existing_deleted]))[:100]
+            deleted_set = set(deleted_ids)
+
+            if (
+                existing is not None
+                and not incoming_entries
+                and not incoming_deleted
+                and updated_at < existing_updated_at
+            ):
+                return existing
+
+            # Newer payload wins per entry id; distinct games from concurrent devices are preserved.
+            if updated_at >= existing_updated_at:
+                primary, secondary = incoming_entries, existing_entries
+            else:
+                primary, secondary = existing_entries, incoming_entries
+
+            merged_entries: list[dict] = []
+            seen_ids: set[str] = set()
+            seen_sigs: set[str] = set()
+            for entry in [*primary, *secondary]:
+                eid = str(entry.get("id") or "").strip()
+                sig = str(entry.get("signature") or "").strip()
+                if not eid or eid in deleted_set or eid in seen_ids:
+                    continue
+                if effective_cleared_at > 0:
+                    rec_ms = _entry_recorded_ms(entry)
+                    if rec_ms is not None and rec_ms < effective_cleared_at:
+                        continue
+                if sig and sig in seen_sigs:
+                    continue
+                seen_ids.add(eid)
+                if sig:
+                    seen_sigs.add(sig)
+                merged_entries.append(entry)
+
+            merged_entries.sort(key=lambda e: str(e.get("recordedAt") or ""), reverse=True)
+            merged_entries = merged_entries[:100]
+            merged_updated_at = max(existing_updated_at, int(updated_at or 0))
+            changed = (
+                (merged_entries != existing_entries)
+                or (deleted_ids != existing_deleted)
+                or (effective_cleared_at != existing_cleared_at)
+            )
+            if existing is not None and changed and merged_updated_at <= existing_updated_at:
+                # Server-issued monotonic bump so concurrent devices detect merges from older client clocks.
+                merged_updated_at = max(existing_updated_at + 1, int(time.time() * 1000))
+            stored_payload: dict = {
+                "entries": merged_entries,
+                "updatedAt": merged_updated_at,
+                "deletedIds": deleted_ids,
+                "clearedAt": effective_cleared_at,
+            }
+
+            encoded = json.dumps(stored_payload, ensure_ascii=False, allow_nan=False)
+            conn.execute(
+                """
+                INSERT INTO user_practice_histories (user_id, payload_json, updated_at)
+                VALUES (?, ?, ?)
+                ON CONFLICT(user_id) DO UPDATE SET
+                    payload_json = excluded.payload_json,
+                    updated_at = excluded.updated_at
+                """,
+                (user_id, encoded, merged_updated_at),
+            )
+            return stored_payload
 
     def clear_user_practice_history(self, user_id: int) -> None:
-        self._clear_user_json_state("user_practice_histories", user_id)
+        tombstone_at = int(time.time() * 1000)
+        cleared_payload = {"entries": [], "updatedAt": tombstone_at, "clearedAt": tombstone_at, "deletedIds": []}
+        encoded = json.dumps(cleared_payload, ensure_ascii=False, allow_nan=False)
+        self.ensure_schema()
+        with self._lock, self._connect() as conn:
+            conn.execute(
+                """
+                INSERT INTO user_practice_histories (user_id, payload_json, updated_at)
+                VALUES (?, ?, ?)
+                ON CONFLICT(user_id) DO UPDATE SET
+                    payload_json = excluded.payload_json,
+                    updated_at = excluded.updated_at
+                """,
+                (user_id, encoded, tombstone_at),
+            )
 
     def get_pricing_survey_choice(self, user_id: int) -> str | None:
         self.ensure_schema()
@@ -923,47 +1054,67 @@ class UserDatabase:
             ]
 
             today_str = now_dt.strftime("%Y-%m-%d")
-            visit_rows = conn.execute("SELECT client_id, visit_date FROM daily_visits").fetchall()
-            client_days: dict[str, set[str]] = {}
-            for r in visit_rows:
-                cid = str(r["client_id"])
-                vdate = str(r["visit_date"])
-                client_days.setdefault(cid, set()).add(vdate)
-
-            first_seen = {cid: min(days) for cid, days in client_days.items()}
-            total_tracked_clients = len(client_days)
-            returning_clients = sum(1 for days in client_days.values() if len(days) >= 2)
+            ret_row = conn.execute(
+                """
+                WITH client_stats AS (
+                    SELECT
+                        client_id,
+                        MIN(visit_date) AS first_date,
+                        COUNT(*) AS visit_days,
+                        MAX(CASE WHEN visit_date = ? THEN 1 ELSE 0 END) AS visited_today
+                    FROM daily_visits
+                    GROUP BY client_id
+                )
+                SELECT
+                    COUNT(*) AS total_tracked_clients,
+                    COALESCE(SUM(CASE WHEN visit_days >= 2 THEN 1 ELSE 0 END), 0) AS returning_clients,
+                    COALESCE(SUM(CASE WHEN visited_today = 1 AND first_date = ? THEN 1 ELSE 0 END), 0) AS today_new,
+                    COALESCE(SUM(CASE WHEN visited_today = 1 AND first_date < ? THEN 1 ELSE 0 END), 0) AS today_returning,
+                    COALESCE(SUM(CASE WHEN first_date < ? THEN 1 ELSE 0 END), 0) AS d1_eligible,
+                    COALESCE(SUM(CASE WHEN first_date < ? AND visit_days >= 2 THEN 1 ELSE 0 END), 0) AS d1_retained
+                FROM client_stats
+                """,
+                (today_str, today_str, today_str, today_str, today_str),
+            ).fetchone()
+            total_tracked_clients = int(ret_row["total_tracked_clients"] or 0)
+            returning_clients = int(ret_row["returning_clients"] or 0)
             returning_pct = (
                 round((returning_clients / total_tracked_clients) * 100.0, 1) if total_tracked_clients > 0 else 0.0
             )
-            today_new = sum(
-                1 for cid, days in client_days.items() if today_str in days and first_seen[cid] == today_str
-            )
-            today_returning = sum(
-                1 for cid, days in client_days.items() if today_str in days and first_seen[cid] < today_str
-            )
+            today_new = int(ret_row["today_new"] or 0)
+            today_returning = int(ret_row["today_returning"] or 0)
             today_dau = today_new + today_returning
-            d1_eligible = sum(1 for fs in first_seen.values() if fs < today_str)
-            d1_retained = sum(
-                1
-                for cid, days in client_days.items()
-                if first_seen[cid] < today_str and any(d > first_seen[cid] for d in days)
-            )
+            d1_eligible = int(ret_row["d1_eligible"] or 0)
+            d1_retained = int(ret_row["d1_retained"] or 0)
             d1_pct = round((d1_retained / d1_eligible) * 100.0, 1) if d1_eligible > 0 else 0.0
 
-            daily_map: dict[str, dict[str, int]] = {}
-            for cid, days in client_days.items():
-                fs = first_seen[cid]
-                for d in days:
-                    bucket = daily_map.setdefault(d, {"new": 0, "returning": 0, "total": 0})
-                    if d == fs:
-                        bucket["new"] += 1
-                    else:
-                        bucket["returning"] += 1
-                    bucket["total"] += 1
+            breakdown_rows = conn.execute(
+                """
+                WITH first_seen AS (
+                    SELECT client_id, MIN(visit_date) AS first_date
+                    FROM daily_visits
+                    GROUP BY client_id
+                )
+                SELECT
+                    dv.visit_date AS date,
+                    SUM(CASE WHEN dv.visit_date = fs.first_date THEN 1 ELSE 0 END) AS new_cnt,
+                    SUM(CASE WHEN dv.visit_date > fs.first_date THEN 1 ELSE 0 END) AS returning_cnt,
+                    COUNT(*) AS total_cnt
+                FROM daily_visits dv
+                JOIN first_seen fs ON fs.client_id = dv.client_id
+                GROUP BY dv.visit_date
+                ORDER BY dv.visit_date DESC
+                LIMIT 7
+                """
+            ).fetchall()
             daily_breakdown = [
-                {"date": d, "new": counts["new"], "returning": counts["returning"], "total": counts["total"]}
-                for d, counts in sorted(daily_map.items(), reverse=True)[:7]
+                {
+                    "date": str(r["date"]),
+                    "new": int(r["new_cnt"] or 0),
+                    "returning": int(r["returning_cnt"] or 0),
+                    "total": int(r["total_cnt"] or 0),
+                }
+                for r in breakdown_rows
             ]
 
         return {

@@ -118,6 +118,13 @@
   clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
 }
 
+/* Wider phones need more vertical room for the same three square hero rows. */
+@media (min-width: 360px) and (max-width: 639px) and (max-height: calc(80vw + 360px)) {
+  .draft-hero-filters {
+    @apply grid grid-cols-[minmax(0,1fr)_auto] items-center py-1.5;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -306,6 +306,8 @@ def test_predict_draft_cli_invocation():
         ],
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         check=True,
     )
     assert "#1" in proc.stdout and "#3" in proc.stdout
@@ -543,15 +545,29 @@ def test_rich_hero_features_and_continuous_recency():
 
     from src.train_sota_model import _compute_match_recency_weight, load_sota_data_and_graphs
 
-    hero_names, _, hero_features, *_ = load_sota_data_and_graphs(recency_half_life=150.0)
+    hero_names, _, hero_features, *_, train_games, val_games = load_sota_data_and_graphs(recency_half_life=150.0)
     assert len(hero_names) == 130
     assert hero_features.shape == (130, 37)
     assert np.isfinite(hero_features).all()
+
+    train_sids = {str(g.get("series_id", "")).strip() for g in train_games if g.get("series_id")}
+    val_sids = {str(g.get("series_id", "")).strip() for g in val_games if g.get("series_id")}
+    assert train_sids & val_sids == set()
 
     w_recent = _compute_match_recency_weight({"date": "2026-11-01"}, ref_ordinal=739921, half_life_days=150.0)
     w_older = _compute_match_recency_weight({"date": "2026-06-04"}, ref_ordinal=739921, half_life_days=150.0)
     w_oldest = _compute_match_recency_weight({"date": "2025-01-01"}, ref_ordinal=739921, half_life_days=150.0)
     assert w_recent > w_older > w_oldest > 0.0
+
+
+def test_trainer_missing_curated_dataset_raises_file_not_found(tmp_path):
+    """Ensure load_sota_data_and_graphs never silently falls back to the 2024 archive."""
+    import pytest
+
+    from src.train_sota_model import load_sota_data_and_graphs
+
+    with pytest.raises(FileNotFoundError):
+        load_sota_data_and_graphs(dataset_path=tmp_path / "missing_training.json")
 
 
 def test_global_ban_context_forward_and_predictor_load(tmp_path):
@@ -692,3 +708,43 @@ def test_lookahead_matrix_and_session_pick_lane_validation():
     for bad_key in ("", "   "):
         with pytest.raises(ValidationError):
             DraftSessionStateSchema(pickLanes={bad_key: "Mid"})
+
+
+def test_gnn_cache_inference_equivalence_and_train_invalidation():
+    """Precomputed GNN embeddings during eval() match uncached forward passes and clear on train(True)."""
+    import torch
+
+    from src.predictor import RoVDraftPredictor
+    from src.schemas import DraftStateRequest
+
+    predictor = RoVDraftPredictor()
+    assert predictor.model._cached_h_gnn is not None
+
+    req = DraftStateRequest(
+        mode="pick",
+        side="blue",
+        phase=1,
+        ally_picks=["Yena", "Toro"],
+        enemy_picks=["Hayate", "Krixi"],
+        ally_bans=["Florentino"],
+        enemy_bans=["Nakroth"],
+        top_k=5,
+        use_lookahead=False,
+    )
+    cached_resp = predictor.predict(req)
+
+    predictor.model.invalidate_gnn_cache()
+    assert predictor.model._cached_h_gnn is None
+    uncached_resp = predictor.predict(req)
+
+    assert [r.hero_name for r in cached_resp.recommendations] == [r.hero_name for r in uncached_resp.recommendations]
+    for c_rec, u_rec in zip(cached_resp.recommendations, uncached_resp.recommendations, strict=True):
+        assert abs(c_rec.probability_pct - u_rec.probability_pct) < 1e-4
+        assert abs(c_rec.predicted_win_rate_pct - u_rec.predicted_win_rate_pct) < 1e-4
+
+    # Training mode must clear cached embeddings; re-precompute afterward for serving safety
+    predictor.model.train(True)
+    assert predictor.model._cached_h_gnn is None
+    predictor.model.eval()
+    cached = predictor.model.precompute_gnn_embeddings()
+    assert torch.isfinite(cached).all()

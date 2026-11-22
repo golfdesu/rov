@@ -116,13 +116,14 @@ Every AI agent (including fast models such as `3.8flash`) MUST strictly obey the
 | `AGENTS.md` / `CHANGELOG.md` / `DESIGN.md` | Master agent rules, cross-session work log (read top entries first, prepend on finish), and UI design system |
 | `docs/PRODUCTION_RELEASES.md` | Live production (`minidraft.app`) state, VM hotfix ledger, dev-only exclusions, and deploy history |
 | `docs/ARCHITECTURE_MAP.md` | Complete file-by-file repository & architecture map (read when locating files) |
-| `.agents/skills/` (mirrored to `.claude/skills/`) | 9 workspace skills: `rov-data-guardian`, `hpo-parsimony-selector`, `erawan-hpc-ops`, `rov-draft-serving`, `draft-screenshot-reader`, `security-audit`, `frontend-e2e-inspector`, `moba-meta-intel`, `regression-guard` |
+| `.agents/skills/` (mirrored to `.claude/skills/`) | 10 workspace skills: `rov-data-guardian`, `hpo-parsimony-selector`, `erawan-hpc-ops`, `rov-draft-serving`, `draft-screenshot-reader`, `security-audit`, `frontend-e2e-inspector`, `moba-meta-intel`, `regression-guard`, `arch-perf-auditor` |
+| `.wikiskill/` | 3-Layer LLM Wiki (Google Research WikiSkill): `.wikiskill/wiki/INDEX.md`, operational traces (`.wikiskill/traces/`), and preflight/gating validators (`.wikiskill/skills/scripts/`) |
 | `src/` | FastAPI (`api.py`), SQLite auth/state (`db.py`), Pydantic schemas (`schemas.py`), config (`config.py`), SOTA predictor (`predictor.py`, `search/draft_mcts.py`), Combat Engine (`combat_calculator.py`, `skill_mechanics.py`), SOTA trainer & HPO (`train_sota_model.py`, `hpo_sota_optuna.py`), data builders & scrapers |
 | `frontend/` | React 19 + TypeScript + Vite + Tailwind 4 draft board (`DraftBoardView`), Combat Lab (`components/lab/`), Matrix Sandbox (`meta_lab/`), Tier List (`tierlist/`), and OAuth/Account portal (`dist/` dev, `dist-prod/` prod) |
 | `data/` | 130 heroes, 534 skills, 114 items, 30 T3 arcana, 33 enchantments, 4,340 pro games (`matches_draft_full.json`), 3,523 curated 2025–2026 training games (`matches_training.json`), 1,821 screenshot pick orders (`true_pick_order.json`), 130x130 combat matchups (`mechanical_matchups_130x130.csv`, `counter_item_flips.csv`) |
 | `models/` & `configs/` & `best_params/` | Served `sota_draft_gnn_transformer.pt` checkpoint, `selected_production_params.json`, and H100 Optuna HPO trials |
 | `scripts/` (`+ scripts/archive/`) | Active pipelines (`discover_mechanical_matchups.py`, `sync_metadata.py`, `simulate_draft_selfplay.py`, `fetch_*`, `build_*`) + archived one-off patch scripts |
-| `deploy/` & `Dockerfile` | Production multi-stage Docker build, `docker-compose.yml`, and `Caddyfile` reverse proxy |
+| `deploy/` & `Dockerfile` | Production multi-stage Docker build, `compose.yaml`, and `Caddyfile` reverse proxy |
 | `tests/` | Full Pytest suite (`test_data_integrity.py`, `test_model_pipeline.py`, `test_api.py`, `test_combat_calculator.py`, `test_predictor_golden.py`, `test_rl_search.py`, `test_security.py`, `test_skills_sync.py`) |
 
 ---
@@ -169,4 +170,11 @@ python .agents/skills/security-audit/scripts/audit_security.py
 # 11. Patch-aware meta intelligence (tier list with hero_tier_overrides.json, emerging heroes)
 python .agents/skills/moba-meta-intel/scripts/query_meta_intel.py --tier-list --top 25
 python .agents/skills/moba-meta-intel/scripts/query_meta_intel.py --emerging --top 15
+
+# 12. WikiSkill preflight scan & regression gating (.wikiskill/)
+python .wikiskill/skills/scripts/preflight_check.py
+python .wikiskill/skills/scripts/validate_gating.py
+
+# 13. Architecture, DSA & best-practice audit (SQLite EXPLAIN QUERY PLAN, GNN cache, ML leak check)
+python .agents/skills/arch-perf-auditor/scripts/audit_arch_perf.py
 ```

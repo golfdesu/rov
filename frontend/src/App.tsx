@@ -166,7 +166,11 @@ function Workspace({
             </button>
           </div>
         </div>
-        <div className="border-t border-line/70 bg-gold/10 px-3 py-0.5 text-center font-mono text-[11px] font-bold text-gold xl:hidden">
+        <div
+          className={`border-t border-line/70 bg-gold/10 px-3 py-0.5 text-center font-mono text-[11px] font-bold text-gold xl:hidden ${
+            tab === "draft" ? "hidden sm:block" : ""
+          }`}
+        >
           {t("ให้บริการฟรีถึง 30/11/2026")}
         </div>
       </nav>

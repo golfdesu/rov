@@ -1,8 +1,8 @@
 import { useLanguage } from "../i18n/language";
 import { Search, X } from "lucide-react";
-import { forwardRef, type ReactNode, useMemo, useRef, useState } from "react";
-import type { DraftStep, Hero, RoleType } from "../types/draft";
-import { LANE_SHORT, ROLES, TIER_STYLE, heroLanes, laneKey, missingLaneKeys } from "../utils/draft";
+import { forwardRef, type ReactNode, useMemo, useState } from "react";
+import type { DraftStep, Hero } from "../types/draft";
+import { LANE_SHORT, TIER_STYLE, heroLanes, laneKey, missingLaneKeys } from "../utils/draft";
 import { displayName, matchesHeroQuery } from "../utils/heroNames";
 import { HeroPortrait } from "./HeroPortrait";
 import { LaneIcon } from "./LaneIcon";
@@ -21,6 +21,7 @@ interface HeroGridProps {
   allowLock?: boolean;
   isLoading?: boolean;
   isHeroesLoading: boolean;
+  compactFiltersOnShortScreens?: boolean;
   replacingHero?: string | null;
   replaceHeader?: ReactNode;
   onLockHero: (name: string) => void | boolean;
@@ -43,6 +44,7 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
     allowLock = true,
     isLoading = false,
     isHeroesLoading,
+    compactFiltersOnShortScreens = false,
     replacingHero = null,
     replaceHeader = null,
     onLockHero,
@@ -50,9 +52,7 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
   searchRef,
 ) {
   const { t } = useLanguage();
-  const roleSelectRef = useRef<HTMLSelectElement>(null);
   const [query, setQuery] = useState("");
-  const [role, setRole] = useState<RoleType | null>(null);
   const [lane, setLane] = useState<string | null>(null);
 
   const isBan = currentStep?.action === "ban";
@@ -80,10 +80,10 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
       return fills ? 1000 : 2000;
     };
     return heroes
-      .filter((h) => (!q || matchesHeroQuery(h.name, q)) && (!role || h.role === role))
+      .filter((h) => !q || matchesHeroQuery(h.name, q))
       .filter((h) => !lane || heroLanes(h.lane).includes(lane) || heroPrimaryLane(h) === lane)
       .sort((a, b) => score(a) - score(b) || displayName(a.name).localeCompare(displayName(b.name)));
-  }, [heroes, query, role, lane, unavailableHeroes, recommendedRanks, missing]);
+  }, [heroes, query, lane, unavailableHeroes, recommendedRanks, missing]);
   const chip = (active: boolean) =>
     `h-6 shrink-0 border px-2 font-display text-[10px] font-semibold tracking-wide transition-colors sm:h-6.5 sm:px-2.5 sm:text-[11px] ${
       active ? "border-gold/60 bg-gold/10 text-gold" : "border-line text-muted hover:border-line-strong hover:text-ink"
@@ -99,9 +99,9 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
     >
       {replaceHeader}
       {/* Filters */}
-      <div className="flex shrink-0 flex-col gap-1.5 border-b border-line p-2 sm:p-2.5">
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <label className="relative flex-1">
+      <div className={`flex shrink-0 flex-col gap-1.5 border-b border-line p-2 sm:p-2.5 ${compactFiltersOnShortScreens ? "draft-hero-filters" : ""}`}>
+        <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
+          <label className="relative min-w-0 flex-1">
             <Search className="pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-dim" />
             <input
               ref={searchRef}
@@ -151,24 +151,6 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
               </kbd>
             )}
           </label>
-          <div className="relative shrink-0">
-            <select
-              ref={roleSelectRef}
-              aria-label={t("กรองตามสายอาชีพ")}
-              value={role ?? ""}
-              onChange={(e) => setRole(e.target.value ? (e.target.value as RoleType) : null)}
-              className="h-8 w-28 border border-line-strong bg-bg px-2 font-display text-[10px] font-semibold tracking-wide text-ink cursor-pointer focus:border-gold/60 focus:outline-none sm:text-[11px]"
-            >
-              <option value="" className="bg-panel text-ink py-1">
-                {t("ทุกสาย (All Roles)")}
-              </option>
-              {ROLES.map((r) => (
-                <option key={r} value={r} className="bg-panel text-ink py-1">
-                  {r.toUpperCase()}
-                </option>
-              ))}
-            </select>
-          </div>
           <span className="hidden font-mono text-[11px] text-dim sm:inline">
             {filtered.length}/{heroes.length}
           </span>
@@ -191,23 +173,6 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
               <span className="hidden sm:inline">{LANE_SHORT[k].en}</span>
             </button>
           ))}
-          {role && (
-            <div className="ml-auto flex shrink-0 items-center gap-1 bg-gold/10 pl-1.5 text-gold ring-1 ring-gold/40 ring-inset">
-              <span className="font-display text-[10px] font-semibold tracking-wide uppercase">{role}</span>
-              <button
-                type="button"
-                onClick={() => {
-                  setRole(null);
-                  roleSelectRef.current?.focus();
-                }}
-                title={t("ล้างตัวกรองสายอาชีพ")}
-                aria-label={t("ล้างตัวกรองสายอาชีพ")}
-                className="grid size-6 place-items-center text-gold/70 hover:text-gold"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </div>
-          )}
         </div>
       </div>
 

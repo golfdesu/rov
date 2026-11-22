@@ -129,3 +129,4 @@ python scripts/simulate_draft_selfplay.py --blue-strategy lookahead --red-strate
 - [`moba-meta-intel`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/moba-meta-intel/SKILL.md): Query tournament meta intelligence, patch recency, and tier list overrides across all 4,329 games.
 - [`hpo-parsimony-selector`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/hpo-parsimony-selector/SKILL.md): Production hyperparameter audit and served checkpoint metrics.
 - [`rov-data-guardian`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/rov-data-guardian/SKILL.md): Hero & match data schema validator.
+- [`arch-perf-auditor`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/arch-perf-auditor/SKILL.md): Audits GNN cache serving, SQLite query plans, sync revisions, and ML split hygiene.

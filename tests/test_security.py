@@ -123,6 +123,8 @@ def test_no_secrets_in_tracked_files():
             cwd=REPO_ROOT,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             check=True,
         )
         tracked = res.stdout.splitlines()

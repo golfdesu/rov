@@ -33,6 +33,10 @@ ROV/
 │       └── regression-guard/        # Regression testing: 72 golden draft states & combat duel simulation stability
 ├── .claude/
 │   └── skills/                      # Copy of .agents/skills/ for Claude Code (kept in sync by tests/test_skills_sync.py)
+├── .wikiskill/                      # 3-Layer LLM Wiki (Google Research WikiSkill)
+│   ├── wiki/                        # Compiled knowledge articles (INDEX.md, architecture, invariants, HPO, HPC, combat, prod UI)
+│   ├── traces/                      # Empirical H100 HPO and production cutover/UX traces
+│   └── skills/                      # SKILL.md + scripts/ (preflight_check.py, validate_gating.py)
 ├── configs/
 │   └── selected_production_params.json  # Curated production hyperparameters (Safest & Compact)
 ├── best_params/
@@ -41,7 +45,7 @@ ROV/
 │   └── heuristic_sota_*.json        # H100 HPO results for the 0% true pick order heuristic experiment model
 ├── deploy/
 │   ├── Caddyfile                    # Reverse proxy TLS + security headers -> app:8000
-│   └── docker-compose.yml           # Production Compose stack (app + Caddy + persistent /app/db volume)
+│   └── compose.yaml                 # Production Compose stack (app + Caddy + persistent /app/db volume)
 ├── docs/
 │   ├── ARCHITECTURE_MAP.md          # Complete file-by-file repository & architecture index (this file)
 │   ├── MECHANICAL_MATCHUP_DISCOVERY.md # 130x130 combat simulation matchup & counter-item flip report

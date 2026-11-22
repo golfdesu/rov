@@ -400,6 +400,35 @@ export function useDraft(options: UseDraftOptions = {}) {
   );
   const conflictingHero = globalBanConflicts[0]?.hero;
 
+  const applyRemoteSession = useCallback(
+    (rawRemote: DraftSessionPayload) => {
+      const remote = normalizeSessionPayload(rawRemote);
+      isHydratingRemoteRef.current = true;
+      lastSavedAtRef.current = remote.updatedAt;
+      const hydrated = initMachineState(remote);
+      dispatch({
+        type: "hydrate",
+        payload: {
+          stepIndex: hydrated.stepIndex,
+          bluePicks: hydrated.bluePicks,
+          redPicks: hydrated.redPicks,
+          blueBans: hydrated.blueBans,
+          redBans: hydrated.redBans,
+          history: hydrated.history,
+          blueWinRate: hydrated.blueWinRate,
+          winHistory: hydrated.winHistory,
+        },
+      });
+      setGlobalBans(remote.globalBans);
+      setUseLookahead(Boolean(remote.useLookahead));
+      setLeague(sanitizeLeague(remote.league));
+      setPickLanes(remote.pickLanes ?? {});
+      setSeriesGames(remote.seriesGames);
+      if (storageKey !== null) saveLocalSession({ ...remote, parkedDrafts: unsavedDraftsRef.current }, storageKey);
+    },
+    [storageKey],
+  );
+
   // On mount: synchronize with backend /draft/session so state survives browser cache clears or new windows
   useEffect(() => {
     if (!persistSession) {
@@ -412,29 +441,7 @@ export function useDraft(options: UseDraftOptions = {}) {
       try {
         const rawRemote = await getJson<DraftSessionPayload>("/draft/session", ctrl.signal);
         if (rawRemote && rawRemote.updatedAt > lastSavedAtRef.current && !hasDirtyLocalChangesRef.current) {
-          const remote = normalizeSessionPayload(rawRemote);
-          isHydratingRemoteRef.current = true;
-          lastSavedAtRef.current = remote.updatedAt;
-          const hydrated = initMachineState(remote);
-          dispatch({
-            type: "hydrate",
-            payload: {
-              stepIndex: hydrated.stepIndex,
-              bluePicks: hydrated.bluePicks,
-              redPicks: hydrated.redPicks,
-              blueBans: hydrated.blueBans,
-              redBans: hydrated.redBans,
-              history: hydrated.history,
-              blueWinRate: hydrated.blueWinRate,
-              winHistory: hydrated.winHistory,
-            },
-          });
-          setGlobalBans(remote.globalBans);
-          setUseLookahead(Boolean(remote.useLookahead));
-          setLeague(sanitizeLeague(remote.league));
-          setPickLanes(remote.pickLanes ?? {});
-          setSeriesGames(remote.seriesGames);
-          if (storageKey !== null) saveLocalSession({ ...remote, parkedDrafts: unsavedDraftsRef.current }, storageKey);
+          applyRemoteSession(rawRemote);
         }
       } catch (err) {
         if (!isAbortError(err)) {
@@ -451,7 +458,7 @@ export function useDraft(options: UseDraftOptions = {}) {
     }
     syncFromServer();
     return () => ctrl.abort();
-  }, [persistSession, storageKey]);
+  }, [applyRemoteSession, persistSession]);
 
   const activePickLanes = useMemo(
     () => filterPickLanes(pickLanes, bluePicks, redPicks),
@@ -594,10 +601,14 @@ export function useDraft(options: UseDraftOptions = {}) {
 
     const ctrl = new AbortController();
     const timer = window.setTimeout(() => {
-      putJson("/draft/session", payload, ctrl.signal)
-        .then(() => {
+      putJson<DraftSessionPayload>("/draft/session", payload, ctrl.signal)
+        .then((res) => {
           if (!ctrl.signal.aborted) {
-            lastSyncedSnapshotKeyRef.current = syncIdentityKey;
+            if (res && typeof res.updatedAt === "number" && res.updatedAt > payload.updatedAt) {
+              applyRemoteSession(res);
+            } else {
+              lastSyncedSnapshotKeyRef.current = syncIdentityKey;
+            }
             setSyncError(null);
           }
         })
@@ -639,6 +650,7 @@ export function useDraft(options: UseDraftOptions = {}) {
     predictGlobalBans,
     seriesGames,
     seriesWinningHeroes,
+    applyRemoteSession,
   ]);
 
   // Fetch AI recommendations whenever the draft or lookahead setting changes.

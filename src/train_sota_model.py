@@ -279,106 +279,60 @@ def _load_rich_hero_stat_features(hero_names: list[str], heroes_df: pd.DataFrame
 
 
 def load_sota_data_and_graphs(dataset_path: Path | str | None = None, recency_half_life: float = 90.0):
-    """Load 130 heroes, build multi-relational GNN adjacency matrices, and split train/val."""
+    """Load 130 heroes, split train/val on series boundaries, and build leak-free GNN features & graphs."""
     heroes_df = pd.read_csv(DATA_DIR / "heroes_130_summary.csv").sort_values("name").reset_index(drop=True)
-    stats_df = pd.read_csv(DATA_DIR / "hero_draft_stats.csv").sort_values("name").reset_index(drop=True)
 
     hero_names = heroes_df["name"].tolist()
     hero_to_id = {name: i for i, name in enumerate(hero_names)}
     num_heroes = len(hero_names)
 
-    roles = ["Fighter", "Mage", "Carry", "Tank", "Assassin", "Support"]
-    role_map = {"Warrior": "Fighter", "Marksman": "Carry"}
-    feature_list = []
-    lane_probs_list = []
-    skill_flags_list = []
-    priority_scores = np.zeros(num_heroes, dtype=np.float32)
-
-    for i in range(num_heroes):
-        h_row = heroes_df.iloc[i]
-        s_row = stats_df.iloc[i]
-
-        r_vec = [0.0] * len(roles)
-        p_role = role_map.get(h_row["primary_role"], h_row["primary_role"])
-        if p_role in roles:
-            r_vec[roles.index(p_role)] = 1.0
-        if pd.notna(h_row["secondary_role"]):
-            s_role = role_map.get(h_row["secondary_role"], h_row["secondary_role"])
-            if s_role in roles:
-                r_vec[roles.index(s_role)] = 0.5
-
-        lane_counts = np.array(
-            [
-                s_row["ds_lane_picks"],
-                s_row["jungle_picks"],
-                s_row["mid_picks"],
-                s_row["dragon_lane_picks"],
-                s_row["roam_picks"],
-            ],
-            dtype=np.float32,
-        )
-        total_p = lane_counts.sum()
-        if total_p > 0:
-            l_prob = lane_counts / total_p
-        else:
-            role_to_lane = {
-                "Warrior": [0.7, 0.2, 0.0, 0.0, 0.1],
-                "Assassin": [0.15, 0.8, 0.05, 0.0, 0.0],
-                "Mage": [0.05, 0.0, 0.85, 0.0, 0.1],
-                "Marksman": [0.0, 0.1, 0.0, 0.9, 0.0],
-                "Tank": [0.2, 0.0, 0.0, 0.0, 0.8],
-                "Support": [0.0, 0.0, 0.1, 0.0, 0.9],
-            }
-            l_prob = np.array(role_to_lane.get(h_row["primary_role"], [0.2] * 5), dtype=np.float32)
-        lane_probs_list.append(l_prob)
-
-        skill_flags = [
-            float(h_row["has_true_damage"]),
-            float(h_row["has_physical_damage"]),
-            float(h_row["has_magic_damage"]),
-            float(h_row["has_hard_cc"]),
-            float(h_row["has_soft_cc"]),
-            float(h_row["has_suppress"]),
-            float(h_row["has_mobility"]),
-            float(h_row["has_immunity"]),
-            float(h_row["has_heal_sustain"]),
-            float(h_row["has_shield"]),
-        ]
-        skill_flags_list.append(skill_flags)
-
-        meta_stats = [
-            float(s_row["pick_rate_pct"]) / 50.0,
-            float(s_row["ban_rate_pct"]) / 50.0,
-            float(s_row["presence_pct"]) / 100.0,
-            (float(s_row["smoothed_win_rate_pct"]) - 50.0) / 20.0,
-        ]
-
-        priority_scores[i] = float(s_row["presence_pct"]) + 0.5 * float(s_row["bans_phase1"]) / 42.08
-        feat_vec = np.concatenate([r_vec, l_prob, skill_flags, meta_stats]).astype(np.float32)
-        feature_list.append(feat_vec)
-
-    base_features = np.stack(feature_list, axis=0)  # (130, 25)
-    rich_stat_features = _load_rich_hero_stat_features(hero_names, heroes_df)  # (130, 12)
-    hero_features = np.concatenate([base_features, rich_stat_features], axis=1).astype(np.float32)  # (130, 37)
-    lane_probs = np.stack(lane_probs_list, axis=0)  # (130, 5)
-    skill_matrix = np.array(skill_flags_list, dtype=np.float32)  # (130, 10)
-
     if dataset_path is None:
-        training_file = DATA_DIR / "matches_training.json"
-        dataset_path = training_file if training_file.exists() else DATA_DIR / "matches_draft_full.json"
+        dataset_path = DATA_DIR / "matches_training.json"
     else:
         dataset_path = Path(dataset_path)
+
+    if not dataset_path.exists():
+        raise FileNotFoundError(
+            f"Curated training dataset not found at {dataset_path}. "
+            "2024 fallback is strictly forbidden by AGENTS.md Rule 13."
+        )
 
     with open(dataset_path, "r", encoding="utf-8") as f:
         games = json.load(f)
 
     print(f"Loaded {len(games)} draft games from {dataset_path.name}", flush=True)
 
-    games = sorted(games, key=lambda g: _parse_game_sort_key(g)[:3])
+    games = sorted(games, key=_parse_game_sort_key)
 
-    n_train_games = int(len(games) * 0.85)
-    train_games = games[:n_train_games]
-    val_games = games[n_train_games:]
+    # Group chronologically by series_id so no BO3/BO5/BO7 series ever splits across train and validation.
+    series_groups: list[list[dict]] = []
+    series_index: dict[str, int] = {}
+    for idx, g in enumerate(games):
+        sid = str(g.get("series_id", "") or "").strip() or f"__game_{idx}"
+        if sid not in series_index:
+            series_index[sid] = len(series_groups)
+            series_groups.append([])
+        series_groups[series_index[sid]].append(g)
+
+    target_train = int(len(games) * 0.85)
+    train_games: list[dict] = []
+    val_games: list[dict] = []
+    for grp in series_groups:
+        if len(train_games) < target_train:
+            train_games.extend(grp)
+        else:
+            val_games.extend(grp)
+
+    # Look up Liquipedia lane-ordered picks strictly for keys in train_games (never val or 2024 games).
+    train_keys = {(str(g.get("series_id", "")), int(g.get("game_number", 0))) for g in train_games}
+    train_lane_lookup: dict[tuple[str, int], tuple[list[str], list[str]]] = {}
+    full_archive_path = DATA_DIR / "matches_draft_full.json"
+    if full_archive_path.exists():
+        with open(full_archive_path, "r", encoding="utf-8") as f:
+            for fg in json.load(f):
+                key = (str(fg.get("series_id", "")), int(fg.get("game_number", 0)))
+                if key in train_keys:
+                    train_lane_lookup[key] = (list(fg.get("blue_picks", [])), list(fg.get("red_picks", [])))
 
     syn_g = np.zeros((num_heroes, num_heroes), dtype=np.float32)
     syn_w = np.zeros((num_heroes, num_heroes), dtype=np.float32)
@@ -392,6 +346,8 @@ def load_sota_data_and_graphs(dataset_path: Path | str | None = None, recency_ha
     pick_counts = np.zeros(num_heroes, dtype=np.float32)
     ban_p1_counts = np.zeros(num_heroes, dtype=np.float32)
     ban_p2_counts = np.zeros(num_heroes, dtype=np.float32)
+    raw_ban_p1_counts = np.zeros(num_heroes, dtype=np.float32)
+    train_lane_counts = np.zeros((num_heroes, 5), dtype=np.float32)
 
     pick_2026 = np.zeros(num_heroes, dtype=np.float32)
     ban_p1_2026 = np.zeros(num_heroes, dtype=np.float32)
@@ -426,6 +382,21 @@ def load_sota_data_and_graphs(dataset_path: Path | str | None = None, recency_ha
         bb = [hero_to_id[h] for h in g["blue_bans"] if h in hero_to_id]
         rb = [hero_to_id[h] for h in g["red_bans"] if h in hero_to_id]
 
+        g_key = (str(g.get("series_id", "")), int(g.get("game_number", 0)))
+        if g_key in train_lane_lookup:
+            lane_bp_names, lane_rp_names = train_lane_lookup[g_key]
+            for lane_idx, h_name in enumerate(lane_bp_names[:5]):
+                if h_name in hero_to_id:
+                    train_lane_counts[hero_to_id[h_name], lane_idx] += w
+            for lane_idx, h_name in enumerate(lane_rp_names[:5]):
+                if h_name in hero_to_id:
+                    train_lane_counts[hero_to_id[h_name], lane_idx] += w
+        elif not g.get("is_true_order", False):
+            for lane_idx, h_id in enumerate(bp[:5]):
+                train_lane_counts[h_id, lane_idx] += w
+            for lane_idx, h_id in enumerate(rp[:5]):
+                train_lane_counts[h_id, lane_idx] += w
+
         for hp in bp:
             for hb in bb:
                 co_ban_same[hp, hb] += w
@@ -455,6 +426,7 @@ def load_sota_data_and_graphs(dataset_path: Path | str | None = None, recency_ha
                 pick_2026[h] += lg_mult * red_win_mult
 
         for h in bb[:2] + rb[:2]:
+            raw_ban_p1_counts[h] += 1.0
             ban_p1_counts[h] += w
             lg_ban_p1_counts[lg_id, h] += w_2026
             if yr >= 2026:
@@ -492,6 +464,81 @@ def load_sota_data_and_graphs(dataset_path: Path | str | None = None, recency_ha
                     cnt_w[i, j] += w
                 elif bw == 0:
                     cnt_w[j, i] += w
+
+    # Compute hero node features, lane probabilities, and priority scores strictly from train_games.
+    roles = ["Fighter", "Mage", "Carry", "Tank", "Assassin", "Support"]
+    role_map = {"Warrior": "Fighter", "Marksman": "Carry"}
+    role_to_lane = {
+        "Warrior": [0.7, 0.2, 0.0, 0.0, 0.1],
+        "Assassin": [0.15, 0.8, 0.05, 0.0, 0.0],
+        "Mage": [0.05, 0.0, 0.85, 0.0, 0.1],
+        "Marksman": [0.0, 0.1, 0.0, 0.9, 0.0],
+        "Tank": [0.2, 0.0, 0.0, 0.0, 0.8],
+        "Support": [0.0, 0.0, 0.1, 0.0, 0.9],
+    }
+    feature_list = []
+    lane_probs_list = []
+    skill_flags_list = []
+    priority_scores = np.zeros(num_heroes, dtype=np.float32)
+    denom_w = max(1.0, total_effective_w)
+    ban_all_counts = ban_p1_counts + ban_p2_counts
+
+    for i in range(num_heroes):
+        h_row = heroes_df.iloc[i]
+
+        r_vec = [0.0] * len(roles)
+        p_role = role_map.get(h_row["primary_role"], h_row["primary_role"])
+        if p_role in roles:
+            r_vec[roles.index(p_role)] = 1.0
+        if pd.notna(h_row["secondary_role"]):
+            s_role = role_map.get(h_row["secondary_role"], h_row["secondary_role"])
+            if s_role in roles:
+                r_vec[roles.index(s_role)] = 0.5
+
+        lane_counts = train_lane_counts[i]
+        total_p = lane_counts.sum()
+        if total_p > 0:
+            l_prob = lane_counts / total_p
+        else:
+            l_prob = np.array(role_to_lane.get(h_row["primary_role"], [0.2] * 5), dtype=np.float32)
+        lane_probs_list.append(l_prob)
+
+        skill_flags = [
+            float(h_row["has_true_damage"]),
+            float(h_row["has_physical_damage"]),
+            float(h_row["has_magic_damage"]),
+            float(h_row["has_hard_cc"]),
+            float(h_row["has_soft_cc"]),
+            float(h_row["has_suppress"]),
+            float(h_row["has_mobility"]),
+            float(h_row["has_immunity"]),
+            float(h_row["has_heal_sustain"]),
+            float(h_row["has_shield"]),
+        ]
+        skill_flags_list.append(skill_flags)
+
+        wp = float(raw_pick_counts[i])
+        wb = float(ban_all_counts[i])
+        pick_rate_pct = (wp / denom_w) * 100.0
+        ban_rate_pct = (wb / denom_w) * 100.0
+        presence_pct = ((wp + wb) / denom_w) * 100.0
+        smoothed_wr_pct = ((float(hero_wins_train[i]) + 3.0) / (wp + 6.0)) * 100.0
+        meta_stats = [
+            pick_rate_pct / 50.0,
+            ban_rate_pct / 50.0,
+            presence_pct / 100.0,
+            (smoothed_wr_pct - 50.0) / 20.0,
+        ]
+
+        priority_scores[i] = presence_pct + 0.5 * float(raw_ban_p1_counts[i]) / 42.08
+        feat_vec = np.concatenate([r_vec, l_prob, skill_flags, meta_stats]).astype(np.float32)
+        feature_list.append(feat_vec)
+
+    base_features = np.stack(feature_list, axis=0)  # (130, 25)
+    rich_stat_features = _load_rich_hero_stat_features(hero_names, heroes_df)  # (130, 12)
+    hero_features = np.concatenate([base_features, rich_stat_features], axis=1).astype(np.float32)  # (130, 37)
+    lane_probs = np.stack(lane_probs_list, axis=0)  # (130, 5)
+    skill_matrix = np.array(skill_flags_list, dtype=np.float32)  # (130, 10)
 
     co_pick_mat = np.zeros((num_heroes, num_heroes), dtype=np.float32)
     synergy_mat = np.zeros((num_heroes, num_heroes), dtype=np.float32)
@@ -1231,6 +1278,30 @@ class RoVDraftGNNTransformer(nn.Module):
                 dropout=dropout,
                 skill_dim=int(self.skill_matrix.size(1)),
             )
+        self._cached_h_gnn: torch.Tensor | None = None
+
+    def invalidate_gnn_cache(self) -> None:
+        self._cached_h_gnn = None
+
+    def precompute_gnn_embeddings(self) -> torch.Tensor:
+        with torch.no_grad():
+            self._cached_h_gnn = self.gnn(
+                self.hero_features,
+                self.adj_copick,
+                self.adj_synergy,
+                self.adj_counter,
+                self.adj_countered_by,
+            ).detach()
+        return self._cached_h_gnn
+
+    def train(self, mode: bool = True):
+        if mode:
+            self._cached_h_gnn = None
+        return super().train(mode)
+
+    def _apply(self, fn):
+        self._cached_h_gnn = None
+        return super()._apply(fn)
 
     def forward(
         self,
@@ -1266,13 +1337,16 @@ class RoVDraftGNNTransformer(nn.Module):
         else:
             meta_ctx_macro = meta_ctx
 
-        H_gnn = self.gnn(
-            self.hero_features,
-            self.adj_copick,
-            self.adj_synergy,
-            self.adj_counter,
-            self.adj_countered_by,
-        )
+        if not self.training and self._cached_h_gnn is not None and self._cached_h_gnn.device == device:
+            H_gnn = self._cached_h_gnn
+        else:
+            H_gnn = self.gnn(
+                self.hero_features,
+                self.adj_copick,
+                self.adj_synergy,
+                self.adj_counter,
+                self.adj_countered_by,
+            )
 
         ally_p_emb = torch.matmul(ally_picks_vec, H_gnn)
         enemy_p_emb = torch.matmul(enemy_picks_vec, H_gnn)

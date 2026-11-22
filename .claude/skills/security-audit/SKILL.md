@@ -85,3 +85,4 @@ Deploy targeted inspection across the project's critical vulnerability categorie
 - [`rov-draft-serving`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/rov-draft-serving/SKILL.md): Implements FastAPI endpoints, static asset routing, and inference pipeline.
 - [`frontend-e2e-inspector`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/frontend-e2e-inspector/SKILL.md): Audits production frontend bundles, media assets, and endpoint health.
 - [`regression-guard`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/regression-guard/SKILL.md): Protects against algorithmic regression and bounds simulation runtime.
+- [`arch-perf-auditor`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/arch-perf-auditor/SKILL.md): Audits fail-closed config defaults, sync revisions, SQLite plans, and leakage hygiene.
