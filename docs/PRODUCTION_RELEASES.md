@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `fc06c96` (`main`: stratified 7-day active returning users into regulars `3+` days vs 1-time `2`-day returnees) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-CAYnP3Ja.js` (`714.72 kB`) + `dist-prod/assets/index-7UEaMoXV.css` (`129.60 kB`), `dist-prod/index.html` (`2.96 kB`) |
+| **Git Base Commit on VM** | `af45b80` (`main`: place Ban slots above Pick slots in desktop/full TeamColumn) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-BzpQ5bH6.js` (`714.72 kB`) + `dist-prod/assets/index-7UEaMoXV.css` (`129.60 kB`), `dist-prod/index.html` (`2.96 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-22 15:55 (UTC+7)` |
+| **Last Updated** | `2026-11-22 21:05 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,16 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-22 21:05 (UTC+7) — Place Ban Slots Above Pick Slots in Full `TeamColumn` (`af45b80`)
+- **Commit**: `af45b80` (`feat(ui): place Ban slots above Pick slots in full TeamColumn`)
+- **Summary**: Reordered `frontend/src/components/TeamColumn.tsx` (`variant="full"`) so the 4-slot Ban row (`B1..B4`) renders at the top above the 5-slot Pick stack (`1..5`) across both Draft Board and Practice vs AI desktop views.
+- **Built Assets (`dist-prod/`)**: `index.html` (`2.96 kB`), `assets/index-7UEaMoXV.css` (`129.60 kB`), `assets/index-BzpQ5bH6.js` (`714.72 kB`).
+- **Verification**:
+  - Local: `npm run lint` (`0` warnings/errors), `npm run build` (`tsc -b && vite build`), `ruff check --fix .` & `ruff format .`, and local Playwright `1440x900` layout check (`BAN_ABOVE_PICK_OK`, `0` errors).
+  - Live (`https://minidraft.app/`): `/health` returned `200 {"status":"healthy","model_loaded":true}`; Playwright `1440x900` verified `BAN_ABOVE_PICK_OK` on both Draft Board and Practice vs AI (`blue: ban1_y=179 < pick1_y=267`, `red: ban1_y=179 < pick1_y=267`, `0` console/page errors).
+  - Persistent DB (`/app/db/rov_app.db`): preserved intact (`users: 906`, `user_oauth_accounts: 860`, `user_draft_states: 865`, `user_practice_histories: 13`, `auth_sessions: 948`, `pricing_survey_responses: 377`, `daily_visits: 836`).
+- **VM Sync Note**: Docs-only commit recording this release is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
 
 ### 📅 2026-11-22 15:55 (UTC+7) — Stratify 7-Day Active Returning Users into Regulars vs One-Time Returnees (`fc06c96`)
 - **Base Commit:** Fast-forwarded `~/rov` (sparse-checkout) cleanly from `86dc150` to `fc06c96` (`main`).
