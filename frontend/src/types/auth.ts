@@ -80,6 +80,11 @@ export interface AdminStatsResponse {
     total_tracked_clients: number;
     returning_clients: number;
     returning_pct: number;
+    active_returning_7d?: number;
+    active_returning_7d_pct?: number;
+    active_repeat_3plus_7d?: number;
+    active_returned_once_7d?: number;
+    dormant_returning?: number;
     d1_eligible: number;
     d1_retained: number;
     d1_pct: number;

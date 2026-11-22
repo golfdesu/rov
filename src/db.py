@@ -1199,12 +1199,14 @@ class UserDatabase:
             ]
 
             today_str = now_dt.strftime("%Y-%m-%d")
+            cutoff_7d = (now_dt - timedelta(days=6)).strftime("%Y-%m-%d")
             ret_row = conn.execute(
                 """
                 WITH client_stats AS (
                     SELECT
                         client_id,
                         MIN(visit_date) AS first_date,
+                        MAX(visit_date) AS last_date,
                         COUNT(*) AS visit_days,
                         MAX(CASE WHEN visit_date = ? THEN 1 ELSE 0 END) AS visited_today
                     FROM daily_visits
@@ -1213,19 +1215,40 @@ class UserDatabase:
                 SELECT
                     COUNT(*) AS total_tracked_clients,
                     COALESCE(SUM(CASE WHEN visit_days >= 2 THEN 1 ELSE 0 END), 0) AS returning_clients,
+                    COALESCE(SUM(CASE WHEN visit_days >= 2 AND last_date >= ? THEN 1 ELSE 0 END), 0) AS active_returning_7d,
+                    COALESCE(SUM(CASE WHEN visit_days >= 3 AND last_date >= ? THEN 1 ELSE 0 END), 0) AS active_repeat_3plus_7d,
+                    COALESCE(SUM(CASE WHEN visit_days = 2 AND last_date >= ? THEN 1 ELSE 0 END), 0) AS active_returned_once_7d,
+                    COALESCE(SUM(CASE WHEN visit_days >= 2 AND last_date < ? THEN 1 ELSE 0 END), 0) AS dormant_returning,
                     COALESCE(SUM(CASE WHEN visited_today = 1 AND first_date = ? THEN 1 ELSE 0 END), 0) AS today_new,
                     COALESCE(SUM(CASE WHEN visited_today = 1 AND first_date < ? THEN 1 ELSE 0 END), 0) AS today_returning,
                     COALESCE(SUM(CASE WHEN first_date < ? THEN 1 ELSE 0 END), 0) AS d1_eligible,
                     COALESCE(SUM(CASE WHEN first_date < ? AND visit_days >= 2 THEN 1 ELSE 0 END), 0) AS d1_retained
                 FROM client_stats
                 """,
-                (today_str, today_str, today_str, today_str, today_str),
+                (
+                    today_str,
+                    cutoff_7d,
+                    cutoff_7d,
+                    cutoff_7d,
+                    cutoff_7d,
+                    today_str,
+                    today_str,
+                    today_str,
+                    today_str,
+                ),
             ).fetchone()
             total_tracked_clients = int(ret_row["total_tracked_clients"] or 0)
             returning_clients = int(ret_row["returning_clients"] or 0)
             returning_pct = (
                 round((returning_clients / total_tracked_clients) * 100.0, 1) if total_tracked_clients > 0 else 0.0
             )
+            active_returning_7d = int(ret_row["active_returning_7d"] or 0)
+            active_returning_7d_pct = (
+                round((active_returning_7d / total_tracked_clients) * 100.0, 1) if total_tracked_clients > 0 else 0.0
+            )
+            active_repeat_3plus_7d = int(ret_row["active_repeat_3plus_7d"] or 0)
+            active_returned_once_7d = int(ret_row["active_returned_once_7d"] or 0)
+            dormant_returning = int(ret_row["dormant_returning"] or 0)
             today_new = int(ret_row["today_new"] or 0)
             today_returning = int(ret_row["today_returning"] or 0)
             today_dau = today_new + today_returning
@@ -1293,6 +1316,11 @@ class UserDatabase:
                 "total_tracked_clients": total_tracked_clients,
                 "returning_clients": returning_clients,
                 "returning_pct": returning_pct,
+                "active_returning_7d": active_returning_7d,
+                "active_returning_7d_pct": active_returning_7d_pct,
+                "active_repeat_3plus_7d": active_repeat_3plus_7d,
+                "active_returned_once_7d": active_returned_once_7d,
+                "dormant_returning": dormant_returning,
                 "d1_eligible": d1_eligible,
                 "d1_retained": d1_retained,
                 "d1_pct": d1_pct,

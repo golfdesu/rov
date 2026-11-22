@@ -973,4 +973,7 @@ export const englishMessages: Readonly<Record<string, string>> = {
   "ปิดตัวช่วยอยู่": "Assistant is off",
   "เปิดตัวช่วย": "Enable Assistant",
   "ปิดตัวช่วยอยู่ · กดปุ่มตัวช่วยเพื่อดูคำแนะนำ AI": "Assistant is off · Enable Assistant to view AI recommendations",
+  "กลับมาใช้ซ้ำ (7 วันล่าสุด)": "Returning (Last 7d)",
+  "ขาประจำ 3+ วัน: {0} · แวะ 2 วัน: {1}": "Regulars (3+d): {0} · Returned once (2d): {1}",
+  "สะสม {0} · หาย >7 วัน {1}": "All-time {0} · Churned >7d: {1}",
 };

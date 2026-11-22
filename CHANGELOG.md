@@ -27,6 +27,37 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-22 15:52 (UTC+7) — Stratified 7-Day Active Returning Users & Regulars vs One-Time Returnees
+**Agent:** Antigravity / Gemini 4 Hydrogen
+
+### ✅ Completed Work
+- **Backend Retention Stratification (`src/db.py`, `tests/test_api.py`):**
+  - Extended `get_admin_stats()["retention"]` to segment returning visitors (`daily_visits`) against a 7-day rolling window (`last_date >= today - 6 days`) instead of surfacing only a monotonically accumulating all-time counter:
+    - `active_returning_7d` & `active_returning_7d_pct` (`visit_days >= 2` and active in last 7 days)
+    - `active_repeat_3plus_7d` (regulars with `>= 3` visit days active in last 7 days)
+    - `active_returned_once_7d` (visited `2` days total, active in last 7 days)
+    - `dormant_returning` (returned `>= 2` days historically, inactive `> 7` days)
+  - Retained `returning_clients` (`visit_days >= 2`) for historical baseline and expanded `test_daily_visit_telemetry_and_retention_stats` to verify all segments.
+- **Admin UI Cards (`frontend/src/components/AdminDashboardView.tsx`, `frontend/src/components/AdminStatsModal.tsx`, `frontend/src/types/auth.ts`, `frontend/src/i18n/englishMessages.ts`):**
+  - Updated the Returning Users KPI card to highlight `active_returning_7d` as the primary headline, with sub-metrics separating `ขาประจำ 3+ วัน` vs `แวะ 2 วัน` and `หาย >7 วัน`.
+
+### 📁 Modified Files
+- `src/db.py`
+- `tests/test_api.py`
+- `frontend/src/types/auth.ts`
+- `frontend/src/components/AdminDashboardView.tsx`
+- `frontend/src/components/AdminStatsModal.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `cd frontend && npm run lint` (`oxlint`): `0` warnings, `0` errors across 66 files.
+- `cd frontend && npm run build` (`tsc -b && vite build`): succeeded (`dist/` built in `1.75s`).
+- `ruff check --fix .` & `ruff format .`: passed cleanly.
+- `pytest -q --tb=short`: `139 passed` (`46.46s`), including expanded `test_daily_visit_telemetry_and_retention_stats` verifying `active_returning_7d`, `active_repeat_3plus_7d`, `active_returned_once_7d`, and `dormant_returning`.
+
+---
+
 ## 📅 2026-11-22 15:23 (UTC+7) — Align Feedback Survey Button Text & Single-Line Status in `MobileNavDrawer`
 **Agent:** Antigravity / Gemini 4 Argon
 

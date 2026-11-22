@@ -410,17 +410,24 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
 
           <div className="border border-line bg-panel p-4">
             <div className="flex items-center justify-between text-xs text-muted sm:text-sm">
-              <span className="font-display font-bold">กลับมาใช้ซ้ำ (ไม่ลืมเว็บ)</span>
+              <span className="font-display font-bold">กลับมาใช้ซ้ำ (7 วันล่าสุด)</span>
               <Repeat className="h-4 w-4 text-good" />
             </div>
             <div className="mt-1.5 font-mono text-2xl font-extrabold text-good sm:text-3xl">
-              {stats.retention ? `${stats.retention.returning_clients.toLocaleString()} เครื่อง` : "-"}
+              {stats.retention
+                ? `${(stats.retention.active_returning_7d ?? stats.retention.returning_clients).toLocaleString()} เครื่อง`
+                : "-"}
             </div>
             <div className="mt-1.5 font-mono text-xs text-dim">
               {stats.retention
-                ? `วันนี้ ${stats.retention.today_dau} (ซ้ำ ${stats.retention.today_returning}) · กลับมาพรุ่งนี้ ${stats.retention.d1_pct}%`
+                ? `ขาประจำ 3+ วัน: ${(stats.retention.active_repeat_3plus_7d ?? 0).toLocaleString()} · แวะ 2 วัน: ${(stats.retention.active_returned_once_7d ?? 0).toLocaleString()} · หาย >7 วัน ${(stats.retention.dormant_returning ?? 0).toLocaleString()}`
                 : "ไม่มีข้อมูล"}
             </div>
+            {stats.retention && (
+              <div className="mt-1 font-mono text-[11px] text-dim/90">
+                {`วันนี้ ${stats.retention.today_dau} (ซ้ำ ${stats.retention.today_returning}) · สะสมรวม ${stats.retention.returning_clients} เครื่อง`}
+              </div>
+            )}
           </div>
 
           <div className="border border-line bg-panel p-4">

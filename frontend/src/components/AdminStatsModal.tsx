@@ -504,12 +504,25 @@ export function AdminStatsModal({ onClose }: AdminStatsModalProps) {
                         </div>
                       </div>
                       <div className="border border-line bg-bg/60 p-2.5">
-                        <div className="font-mono text-[10px] text-dim">{t("กลับมาซ้ำ >= 2 วัน")}</div>
+                        <div className="font-mono text-[10px] text-dim">{t("กลับมาใช้ซ้ำ (7 วันล่าสุด)")}</div>
                         <div className="mt-0.5 font-mono text-sm font-extrabold text-good">
-                          {data.retention.returning_clients.toLocaleString()} {t("เครื่อง (")}{data.retention.returning_pct}%)
+                          {(data.retention.active_returning_7d ?? data.retention.returning_clients).toLocaleString()}{" "}
+                          {t("เครื่อง (")}
+                          {data.retention.active_returning_7d_pct ?? data.retention.returning_pct}%)
                         </div>
                         <div className="mt-0.5 font-mono text-[10px] text-muted">
-                          {t("จากทั้งหมด")} {data.retention.total_tracked_clients.toLocaleString()} {t("เครื่อง")}
+                          {t(
+                            "ขาประจำ 3+ วัน: {0} · แวะ 2 วัน: {1}",
+                            data.retention.active_repeat_3plus_7d ?? 0,
+                            data.retention.active_returned_once_7d ?? 0,
+                          )}
+                        </div>
+                        <div className="mt-0.5 font-mono text-[10px] text-dim">
+                          {t(
+                            "สะสม {0} · หาย >7 วัน {1}",
+                            data.retention.returning_clients,
+                            data.retention.dormant_returning ?? 0,
+                          )}
                         </div>
                       </div>
                       <div className="col-span-2 border border-line bg-bg/60 p-2.5 sm:col-span-1">

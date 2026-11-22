@@ -1933,12 +1933,25 @@ def test_daily_visit_telemetry_and_retention_stats(tmp_path, monkeypatch):
     assert r1.json()["recorded"] is True
     today_str = r1.json()["visit_date"]
 
-    # Seed yesterday's visits: cid_returning came yesterday AND today; cid_one_day came only yesterday
+    # Seed yesterday's visits + a 3-day active regular + a >7d dormant returning client
     tz_th = timezone(timedelta(hours=7))
-    yesterday_str = (datetime.now(tz_th) - timedelta(days=1)).strftime("%Y-%m-%d")
+    now_th = datetime.now(tz_th)
+    yesterday_str = (now_th - timedelta(days=1)).strftime("%Y-%m-%d")
     db = api_mod.get_user_db()
     db.record_daily_visit(client_id="cid_returning", user_id=None, visit_date_override=yesterday_str)
     db.record_daily_visit(client_id="cid_one_day", user_id=None, visit_date_override=yesterday_str)
+    for offset in (3, 2, 1):
+        db.record_daily_visit(
+            client_id="cid_regular_3d",
+            user_id=None,
+            visit_date_override=(now_th - timedelta(days=offset)).strftime("%Y-%m-%d"),
+        )
+    for offset in (15, 14):
+        db.record_daily_visit(
+            client_id="cid_dormant_old",
+            user_id=None,
+            visit_date_override=(now_th - timedelta(days=offset)).strftime("%Y-%m-%d"),
+        )
 
     owner = TestClient(app)
     reg = owner.post("/auth/register", json={"username": "chayanin5392", "password": "owner-secret-pass"})
@@ -1952,13 +1965,18 @@ def test_daily_visit_telemetry_and_retention_stats(tmp_path, monkeypatch):
     assert ret["today_dau"] == 2
     assert ret["today_new"] == 1
     assert ret["today_returning"] == 1
-    assert ret["total_tracked_clients"] == 3
-    assert ret["returning_clients"] == 1
-    assert ret["returning_pct"] == 33.3
-    assert ret["d1_eligible"] == 2
-    assert ret["d1_retained"] == 1
-    assert ret["d1_pct"] == 50.0
-    assert len(ret["daily_breakdown"]) == 2
+    assert ret["total_tracked_clients"] == 5
+    assert ret["returning_clients"] == 3
+    assert ret["returning_pct"] == 60.0
+    assert ret["active_returning_7d"] == 2
+    assert ret["active_returning_7d_pct"] == 40.0
+    assert ret["active_repeat_3plus_7d"] == 1
+    assert ret["active_returned_once_7d"] == 1
+    assert ret["dormant_returning"] == 1
+    assert ret["d1_eligible"] == 4
+    assert ret["d1_retained"] == 3
+    assert ret["d1_pct"] == 75.0
+    assert len(ret["daily_breakdown"]) == 6
     assert ret["daily_breakdown"][0]["date"] == today_str
     assert ret["daily_breakdown"][0]["new"] == 1
     assert ret["daily_breakdown"][0]["returning"] == 1
