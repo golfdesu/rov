@@ -48,6 +48,7 @@ ROV/
 │   └── compose.yaml                 # Production Compose stack (app + Caddy + persistent /app/db volume)
 ├── docs/
 │   ├── ARCHITECTURE_MAP.md          # Complete file-by-file repository & architecture index (this file)
+│   ├── PRODUCTION_RELEASES.md       # Live production (minidraft.app) commit snapshot, bundle ledger & deploy history
 │   ├── MECHANICAL_MATCHUP_DISCOVERY.md # 130x130 combat simulation matchup & counter-item flip report
 │   ├── COMPETITORS.md               # Competitive landscape vs other draft tools
 │   └── SUBSCRIPTION_ROADMAP.md      # Planned future monetization spec (Pro 50 THB / Team Pro 149 THB + PromptPay slip verification)
@@ -90,11 +91,15 @@ ROV/
 │   │   │   └── useCombatLab.ts      # Combat Lab build state, /combat/builds sync & /combat/duel simulation
 │   │   ├── utils/
 │   │   │   ├── draft.ts             # Pure draftReducer, flex-lane bipartite matcher, Global Ban helpers & payload builder
+│   │   │   ├── telemetry.ts         # Client ID persistence, device detection & batched /telemetry/event emitter
 │   │   │   ├── heroNames.ts         # Canonical <-> Thai server display name mapping & search matching
 │   │   │   ├── heroForms.ts         # Multi-form stance badges (Liliana, Yena, Edras, Dirak)
 │   │   │   └── skillEffects.ts      # Skill description effect tag parser
 │   │   └── components/
 │   │       ├── DraftBoardView.tsx   # Main broadcast-style draft board, lane filters & series controls
+│   │       ├── PracticeDraftView.tsx # Draft vs AI practice board, Bo1-Bo7 series & synced history
+│   │       ├── AdminStatsModal.tsx  # Owner quick stats modal with new-tab launcher to /#admin
+│   │       ├── AdminDashboardView.tsx # Full-screen owner analytics dashboard (/#admin, plain-Thai stochastic & user insights)
 │   │       ├── AiPanel.tsx          # Top-K AI recommendations, synergy/counter badges & opponent forecasts
 │   │       ├── HeroGrid.tsx         # 130-hero filterable grid with Global Ban & rank overlays
 │   │       ├── TeamColumn.tsx       # Blue/Red pick & ban slots with manual lane assignment modal triggers
@@ -122,7 +127,8 @@ ROV/
 ├── src/
 │   ├── __init__.py
 │   ├── config.py                    # Centralized OOP configuration (PathConfig, DraftModelConfig, HPOConfig, auto-.env load, OAuth env)
-│   ├── db.py                        # SQLite UserDatabase (users, auth_sessions, user_oauth_accounts, per-user draft/combat state, RateLimiter)
+│   ├── db.py                        # SQLite UserDatabase (users, auth_sessions, user_oauth_accounts, per-user draft/combat state, telemetry, RateLimiter)
+│   ├── analytics.py                 # Pure-Python probabilistic, stochastic & statistical inference engine (BG/NBD, Markov 3x3, Kaplan-Meier, Wilson/Katz, Kohavi, Sifa)
 │   ├── schemas.py                   # Pydantic V2 request/response validation schemas
 │   ├── predictor.py                 # Production OOP inference engine (RoVDraftPredictor)
 │   ├── search/

@@ -50,9 +50,10 @@ All exact numerical game parameters in this repository come directly from the **
 
 ## 4. Backend, Persistence & Frontend
 
-- **FastAPI (`src/api.py`, `src/schemas.py`)**: Exposes `/health`, `/heroes`, `/auth/*`, `/privacy`, `/draft/steps`, `/draft/session`, `/draft/practice-history`, `/predict`, and dev-only `/combat/*`, while serving `frontend/dist` (dev) or `frontend/dist-prod` (prod).
-- **SQLite Store (`src/db.py`)**: Stores `users` (`scrypt`), `auth_sessions`, `user_oauth_accounts` (Google & Discord OAuth 2.0 PKCE), isolated `user_draft_states`, `user_practice_histories`, `user_combat_builds`, and `RateLimiter` state (`data/rov_app.db` locally or `/app/db/rov_app.db` in Docker).
-- **React 19 UI (`frontend/src/`)**: Built with TypeScript, Vite, and Tailwind CSS 4. Includes `DraftBoardView`, `PracticeDraftView`, `CombatLab` (`components/lab/`), `MetaLab` (`meta_lab/`), and `TierListView` (`tierlist/`).
+- **FastAPI (`src/api.py`, `src/schemas.py`, `src/analytics.py`)**: Exposes `/health`, `/heroes`, `/auth/*`, `/privacy`, `/draft/steps`, `/draft/session`, `/draft/practice-history`, `/predict`, `/telemetry/visit`, `/telemetry/event`, `/survey/pricing`, owner-only `/admin/stats`, `/admin/users`, `/admin/analytics` (fail-closed `404` for non-owners), and dev-only `/combat/*`, while serving `frontend/dist` (dev) or `frontend/dist-prod` (prod).
+- **Stochastic & Statistical Analytics Engine (`src/analytics.py`)**: Pure-Python (`math`) quantitative engine computing Fader-Hardie BG/NBD `P(Alive)` & 7-day repeat forecasts, Pfeifer-Carraway 3x3 Markov retention transitions & 14-day finite-horizon expectations, right-censored Kaplan-Meier survival curves (`S(t)` with Greenwood 95% CIs), Bayesian `Beta(1, 3)` WTP posteriors with Wilson 95% CIs, Katz log-RR CIs, Kohavi statistical power (`MDE = 10pp`) & `p95 <= 500ms` latency guardrails, Sifa behavioral feature-to-WTP Spearman correlations/lifts, and piecewise-linear latency quantiles (`p50`/`p95`).
+- **SQLite Store (`src/db.py`)**: Stores `users` (`scrypt`), `auth_sessions`, `user_oauth_accounts` (Google & Discord OAuth 2.0 PKCE), isolated `user_draft_states`, `user_practice_histories`, `user_combat_builds`, `daily_visits` (`client_id`, `visit_date`, `user_id`, `predict_count`, `device_type`), `user_usage_daily`, `site_events_daily`, `pricing_survey_responses`, and `RateLimiter` state (`data/rov_app.db` locally or `/app/db/rov_app.db` in Docker).
+- **React 19 UI (`frontend/src/`)**: Built with TypeScript, Vite, and Tailwind CSS 4. Includes `DraftBoardView`, `PracticeDraftView`, `AdminStatsModal`, `AdminDashboardView` (`/#admin`), `telemetry.ts`, `CombatLab` (`components/lab/`), `MetaLab` (`meta_lab/`), and `TierListView` (`tierlist/`).
 
 ---
 

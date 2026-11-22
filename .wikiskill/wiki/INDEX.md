@@ -23,7 +23,7 @@ Constructed under the 3-layer **WikiSkill** institutional memory architecture (*
 | Trace | Scope |
 | :--- | :--- |
 | [`h100_hpo_and_training_trace.md`](../traces/h100_hpo_and_training_trace.md) | Empirical trace of 80-trial 37-dim H100 Optuna HPO (90d recency decay) and True Pick Order vs 0% Heuristic baseline experiments |
-| [`production_cutover_and_ux_trace.md`](../traces/production_cutover_and_ux_trace.md) | Distilled engineering lessons from `CHANGELOG.md` and `docs/PRODUCTION_RELEASES.md` (`981b773` -> `a248e7c`) |
+| [`production_cutover_and_ux_trace.md`](../traces/production_cutover_and_ux_trace.md) | Distilled engineering lessons from `CHANGELOG.md` and `docs/PRODUCTION_RELEASES.md` (`981b773` -> `6fec71a`, including stochastic telemetry & `/#admin` UX) |
 
 ---
 

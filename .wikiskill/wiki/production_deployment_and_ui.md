@@ -35,6 +35,10 @@ Live production runs at **`https://minidraft.app/`** on Azure VM `rov-draft-vm` 
 4. **Assistant Toggle & Unified Drawer (`App.tsx`, `MobileNavDrawer.tsx`)**:
    - Turning **`ตัวช่วย` (`Assistant`)** OFF skips `/predict` requests and shows Draft Progress in the center bar.
    - `≡` slide-out menu drawer renders across all viewports (`LanguageSwitch`, `Stats`, `Feedback`, `Donate`, `Logout`).
+5. **Owner Analytics Dashboard (`/#admin`, `AdminStatsModal.tsx`, `AdminDashboardView.tsx`, `src/analytics.py`)**:
+   - **Access & Navigation**: `AdminStatsModal` keeps its compact modal layout intact and provides a `Dashboard` link opening `/#admin` in a new tab. All `/admin/*` endpoints (`/admin/stats`, `/admin/users`, `/admin/analytics`) return fail-closed HTTP `404` for guests and non-owner accounts.
+   - **Plain-Thai Translation Invariant**: While `src/analytics.py` computes rigorous models (BG/NBD `P(Alive)`, 3x3 Markov chain, right-censored Kaplan-Meier survival, Wilson/Katz 95% CIs, Kohavi statistical power, Sifa behavioral feature correlations), the main dashboard UI MUST translate every card title, column header, and status badge into everyday, self-explanatory Thai with a 1-sentence owner takeaway (`สรุปให้:`). Reserve academic citations and raw notation for the collapsed reference `<details>` drawer at the bottom.
+   - **Thai Typography Floor (`>= 12px` / `text-xs`)**: Never use `text-[9px]` or `text-[10px]` on Thai dashboard copy or tables (Thai vowels and tone marks become illegible below `12px`); use `text-xs sm:text-sm` (`12px–14px`) for body/table cells, `text-sm sm:text-base` for card titles, and `fontSize="11"` on SVG chart axes.
 
 ---
 

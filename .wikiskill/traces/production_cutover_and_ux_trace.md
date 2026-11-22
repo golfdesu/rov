@@ -1,6 +1,6 @@
 # Trace: Production Cutover & UX Stabilization (`minidraft.app`)
 
-Distilled lessons from `CHANGELOG.md` and `docs/PRODUCTION_RELEASES.md` covering the Dev-to-Prod cutover (`2026-11-21`, commits `981b773` -> `6253177` -> `a248e7c`).
+Distilled lessons from `CHANGELOG.md` and `docs/PRODUCTION_RELEASES.md` covering the Dev-to-Prod cutover (`2026-11-21` to `2026-11-22`, commits `981b773` -> `a248e7c` -> `6fec71a`).
 
 ---
 
@@ -29,3 +29,17 @@ Distilled lessons from `CHANGELOG.md` and `docs/PRODUCTION_RELEASES.md` covering
 
 - Every predictor or draft-state change must pass the 72-state golden snapshot guard (`tests/test_predictor_golden.py` / `audit_regression_guard.py`).
 - Every UI/layout change is verified via `oxlint` (`0` warnings/errors), `vite build`, and multi-viewport Playwright E2E checks (`360x800`, `390x844`, `1440x900`) with `0` console/page errors.
+
+---
+
+## 4. Owner Analytics, Stochastic Telemetry & Plain-Thai UX Trace (`2026-11-22`, `8767742` -> `6fec71a`)
+
+- **Zero-Overhead Telemetry Architecture (`src/db.py`, `src/api.py`, `frontend/src/utils/telemetry.ts`)**:
+  - `POST /predict` attributes guest calls via `X-Client-Id` (`daily_visits.predict_count`) and member calls via `user_usage_daily.predict_count`, while recording latency histogram buckets (`<25ms`, `25-100ms`, `100-500ms`, `>500ms`) into `site_events_daily` (`p50 = 12.5 ms`, `p95 = 23.7 ms` in live production).
+  - Frontend batches non-blocking feature & AI adoption events (`draft_completed_18`, `practice_completed_18`, `ai_adopt_top1`, `ai_adopt_top2_5`, `ai_adopt_top6_10`, `ai_adopt_offmeta`, leagues, BoX modes, tools) to `POST /telemetry/event`.
+- **Empirical Findings from Live Production DB (`/app/db/rov_app.db`, `893` registered users, `663` tracked device clients)**:
+  - **Member vs Guest Return Rate (`>= 2d`)**: Member return rate (`15.8%`, `34/215`) is **`RR = 2.08x`** higher than Guest (`7.6%`, `34/448`, Katz 95% CI `[1.33, 3.26]`, `p = 0.0011`, Kohavi statistical power = `84.0%`, adequately powered).
+  - **Self-Reported WTP vs Actual Engagement**: Engaged members report `30.4%` WTP (`17/56`) vs Casual `23.9%` (`21/88`, `p = 0.3887`, Spearman `rho = 0.035`), but Kohavi power analysis shows only `13.3%` achieved power (`required_n_per_arm = 310` for `MDE = 10pp`), preventing premature conclusions.
+  - **Heavy-Tailed Usage & AI Trust**: Saved-game distribution is strongly overdispersed (`Var/Mean = 4.69`, `Gini = 0.863`, Top 10% users generate `73.3%` of saved games). Live AI Top-5 adoption reached `52.2%` vs `3.85%` random baseline (`Binomial Z = 12.05`, `p < 0.0001`).
+- **Dashboard Readability Lesson**:
+  - Exposing raw academic terms (`BG/NBD`, `Markov Migration`, `Wilson/Katz CI`, `Spearman rho`) or micro-typography (`9px–10px`) obscures decision-making for product owners. Keep the math engine in `src/analytics.py`, render plain-Thai headlines and `"สรุปให้:"` callouts at `>= 12px` (`text-xs sm:text-sm`), and tuck formal citations into a collapsible footer drawer.

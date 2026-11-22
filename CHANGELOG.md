@@ -27,6 +27,26 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-22 13:28 (UTC+7) — Sync LLM Wiki (`.wikiskill/`) & `docs/ARCHITECTURE_MAP.md`
+**Agent:** Antigravity CLI
+
+### ✅ Completed Work
+- **`.wikiskill/wiki/system_architecture_and_data.md`**: Added `src/analytics.py`, SQLite telemetry tables (`daily_visits`, `user_usage_daily`, `site_events_daily`, `pricing_survey_responses`), telemetry/admin endpoints, and `AdminStatsModal`/`AdminDashboardView`/`telemetry.ts`.
+- **`.wikiskill/wiki/production_deployment_and_ui.md`**: Added Section 5 documenting `/#admin` access controls (`404` fail-closed), plain-Thai owner translation rules, and the `>= 12px` Thai typography floor.
+- **`.wikiskill/traces/production_cutover_and_ux_trace.md` & `.wikiskill/wiki/INDEX.md`**: Recorded `2026-11-22` empirical production analytics findings (`RR = 2.08x`, `Gini = 0.863`, AI Top-5 Trust `52.2%`) and plain-Thai UX lessons.
+- **`docs/ARCHITECTURE_MAP.md`**: Indexed `docs/PRODUCTION_RELEASES.md`, `src/analytics.py`, `frontend/src/utils/telemetry.ts`, `PracticeDraftView.tsx`, `AdminStatsModal.tsx`, and `AdminDashboardView.tsx`.
+
+### 📁 Modified Files
+- `.wikiskill/wiki/system_architecture_and_data.md`, `.wikiskill/wiki/production_deployment_and_ui.md`, `.wikiskill/traces/production_cutover_and_ux_trace.md`, `.wikiskill/wiki/INDEX.md`, `docs/ARCHITECTURE_MAP.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- `python .wikiskill/skills/scripts/preflight_check.py`: verified post-edit.
+
+### ⚠️ Open Issues / Important Notes
+- Documentation/knowledge-base update only; no application code modified.
+
+---
+
 ## 📅 2026-11-22 13:22 (UTC+7) — Increase Owner Dashboard Typography Scale (`AdminDashboardView.tsx`)
 **Agent:** Antigravity CLI
 
