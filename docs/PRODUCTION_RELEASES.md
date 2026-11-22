@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `86dc150` (`main`: centered single-line Feedback Survey button label & status in `MobileNavDrawer`) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-CmB764jK.js` (`713.70 kB`) + `dist-prod/assets/index-BNeNphRr.css` (`129.45 kB`), `dist-prod/index.html` (`2.96 kB`) |
+| **Git Base Commit on VM** | `fc06c96` (`main`: stratified 7-day active returning users into regulars `3+` days vs 1-time `2`-day returnees) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-CAYnP3Ja.js` (`714.72 kB`) + `dist-prod/assets/index-7UEaMoXV.css` (`129.60 kB`), `dist-prod/index.html` (`2.96 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-22 15:24 (UTC+7)` |
+| **Last Updated** | `2026-11-22 15:55 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,20 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-22 15:55 (UTC+7) — Stratify 7-Day Active Returning Users into Regulars vs One-Time Returnees (`fc06c96`)
+- **Base Commit:** Fast-forwarded `~/rov` (sparse-checkout) cleanly from `86dc150` to `fc06c96` (`main`).
+- **Delta:**
+  - `src/db.py` (`get_admin_stats()["retention"]`): Added 7-day rolling active returning cohort stratification (`active_returning_7d`, `active_returning_7d_pct`, `active_repeat_3plus_7d` for `>= 3` visit days, `active_returned_once_7d` for `2` visit days, and `dormant_returning` for inactive `> 7` days) while keeping `returning_clients` cumulative count for historical comparison.
+  - `frontend/src/types/auth.ts`, `frontend/src/components/AdminDashboardView.tsx`, `frontend/src/components/AdminStatsModal.tsx`, `frontend/src/i18n/englishMessages.ts`: Updated Returning Users KPI cards to surface 7-day active returning clients and separate regulars (`3+` days) from 1-time returnees (`2` days) and churned (`> 7` days).
+  - `tests/test_api.py`: Expanded `test_daily_visit_telemetry_and_retention_stats` for `3+`-day active, `2`-day active, and `>7d` dormant returning cohorts.
+- **Bundle Built:** `dist-prod/index.html` (`2.96 kB`), `dist-prod/assets/index-CAYnP3Ja.js` (`714.72 kB`), `dist-prod/assets/index-7UEaMoXV.css` (`129.60 kB`).
+- **Deploy Method:** `cd ~/rov/deploy && sudo docker compose up -d --build app` (`deploy_rov_db_data`, `deploy-caddy-1`, `rov-cloudflared`, and `deploy/.env` untouched).
+- **Verification:**
+  - Pre-deploy: `oxlint` `0` warnings / `0` errors across 66 files; `vite build` `1.75s`; `ruff` clean; `pytest -q --tb=short` `139 passed` (`46.46s`).
+  - `https://minidraft.app/health` -> `200` (`{"status":"healthy","model_loaded":true}`), `https://minidraft.app/admin/stats` (unauthenticated) -> `404`.
+  - Live `deploy-app-1` `get_admin_stats()["retention"]`: `active_returning_7d = 70` (`active_repeat_3plus_7d = 12`, `active_returned_once_7d = 58`, `dormant_returning = 0`, `today_dau = 156`).
+  - `/app/db/rov_app.db` intact (`users: 896`, `user_oauth_accounts: 851`, `user_draft_states: 855`, `user_practice_histories: 8`, `auth_sessions: 938`, `pricing_survey_responses: 362`, `daily_visits: 768`).
 
 ### 📅 2026-11-22 15:24 (UTC+7) — Align Feedback Survey Button Label & Single-Line Status in `MobileNavDrawer` (`86dc150`)
 - **Base Commit:** Fast-forwarded `~/rov` (sparse-checkout) cleanly from `6f41a4f` to `86dc150` (`main`).
