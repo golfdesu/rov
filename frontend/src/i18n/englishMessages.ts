@@ -363,6 +363,7 @@ export const englishMessages: Readonly<Record<string, string>> = {
   "เข้าสู่ระบบ / สมัครสมาชิก": "Log In / Sign Up",
   "โหมดใช้งาน": "Modes",
   "แบบสอบถาม & สนับสนุน": "Feedback and Support",
+  "แบบสอบถาม": "Feedback Survey",
   "แบบสอบถาม / Feedback": "Feedback Survey",
   "สถิติระบบ (Owner Stats)": "Site Stats (Owner)",
   "เริ่มซีรีส์ / แมตช์ใหม่ (NEW SERIES)": "New Series",

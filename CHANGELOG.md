@@ -27,6 +27,47 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-22 15:23 (UTC+7) — Align Feedback Survey Button Text & Single-Line Status in `MobileNavDrawer`
+**Agent:** Antigravity / Gemini 4 Argon
+
+### ✅ Completed Work
+- **Single-Line Label & Vertical Centering (`frontend/src/components/MobileNavDrawer.tsx`, `frontend/src/components/StableButtonLabel.tsx`, `frontend/src/i18n/englishMessages.ts`):**
+  - Shortened the drawer survey button label from `"แบบสอบถาม / Feedback"` to `"แบบสอบถาม"` / `"Feedback Survey"` (`whitespace-nowrap`) and centered grid variants vertically (`self-center` in `StableButtonLabel`, `items-center`).
+  - Shortened the right-side status badge to `"ตอบแล้ว"` / `"Answered"` or `"ยังไม่ได้ตอบ"` / `"No answer yet"` while preserving the full detailed choice (`"ตอบแล้ว: พร้อมจ่าย"` / `"ตอบแล้ว: ไม่พร้อม"`) in the button `title` tooltip.
+
+### 📁 Modified Files
+- `frontend/src/components/MobileNavDrawer.tsx`
+- `frontend/src/components/StableButtonLabel.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm run lint` (`oxlint`): `0` warnings, `0` errors across 66 files.
+- `npm run build` (`tsc -b && vite build`): succeeded (`dist/` rebuilt cleanly in `1.94s`).
+- `ruff check --fix .` & `ruff format .`: passed cleanly (`136` Python files unchanged).
+- Playwright E2E check (`verify_feedback_btn_alignment.py` on `http://localhost:3000`, `360x800` & `1440x900`): verified `แบบสอบถาม` / `Feedback Survey` and status badge render on a single line (`16px` height) with `0.0px` icon-to-label and `0.01px` icon-to-status midpoint offset in both Thai and English, and `0` console/page errors.
+
+---
+
+## 📅 2026-11-22 14:02 (UTC+7) — Automated `.wikiskill/` Metric Sync & Structural Coverage Gating
+**Agent:** Antigravity CLI
+
+### ✅ Completed Work
+- **`scripts/sync_metadata.py`**: Added `update_wikiskill_arch_md()` and `update_wikiskill_invariants_md()` to automatically sync hero, skill, match, training set, true-pick-order, graph edge, Arcana, and Enchantment counts across `.wikiskill/wiki/*.md`.
+- **`.wikiskill/skills/scripts/preflight_check.py`**: Added `_check_wikiskill_coverage()` to enforce automatic structural change detection (new `src/*.py` modules, SQLite tables in `src/db.py`, `*View.tsx` components, and the VM `sparse-checkout` invariant) during preflight and `validate_gating.py`.
+- **`.wikiskill/wiki/system_architecture_and_data.md` & `AGENTS.md` (Rule 9)**: Documented remaining `src/*.py` utilities and `ProfileView.tsx` in the wiki catalog and codified WikiSkill structural enforcement in Rule 9.
+
+### 📁 Modified Files
+- `scripts/sync_metadata.py`, `.wikiskill/skills/scripts/preflight_check.py`, `.wikiskill/wiki/system_architecture_and_data.md`, `AGENTS.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- `python scripts/sync_metadata.py --check`, `python .wikiskill/skills/scripts/validate_gating.py`, `ruff check --fix . && ruff format --check .`, `pytest -q --tb=short`
+
+### ⚠️ Open Issues / Important Notes
+- Local tooling/docs update only; production VM remains untouched at sparse-checkout state.
+
+---
+
 ## 📅 2026-11-22 13:48 (UTC+7) — Lock Production VM Sparse-Checkout Guardrails in `AGENTS.md` & `PRODUCTION_RELEASES.md`
 **Agent:** Antigravity CLI
 

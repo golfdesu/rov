@@ -126,13 +126,14 @@ export function MobileNavDrawer<T extends string>({
     };
   }, [requestClose]);
 
-  const surveyStatusMessage = surveyAnswered
+  const surveyTooltipMessage = surveyAnswered
     ? surveyChoice === "willing"
       ? "ตอบแล้ว: พร้อมจ่าย"
       : surveyChoice === "not_willing"
         ? "ตอบแล้ว: ไม่พร้อม"
         : "ตอบแล้ว"
     : "ยังไม่ได้ตอบ";
+  const surveyStatusMessage = surveyAnswered ? "ตอบแล้ว" : "ยังไม่ได้ตอบ";
 
   return (
     <div
@@ -244,19 +245,21 @@ export function MobileNavDrawer<T extends string>({
             </span>
             <button
               type="button"
+              title={t(surveyTooltipMessage)}
               onClick={() => requestClose(onOpenSurvey)}
-              className="flex h-10 w-full items-center justify-between border border-line-strong bg-panel-2 px-3 font-display text-xs font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold"
+              className="flex h-10 w-full items-center justify-between gap-2 border border-line-strong bg-panel-2 px-3 font-display text-xs font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold"
             >
-              <span className="flex items-center gap-2">
+              <span className="flex min-w-0 items-center gap-2">
                 <MessageSquare className="h-4 w-4 shrink-0 text-gold" />
-                <span><StableButtonLabel message="แบบสอบถาม / Feedback" /></span>
+                <StableButtonLabel message="แบบสอบถาม" className="inline-grid items-center whitespace-nowrap" />
               </span>
               <span
-                className={`font-mono text-[10px] ${surveyAnswered ? "text-good" : "text-gold"}`}
+                className={`shrink-0 font-mono text-[10px] whitespace-nowrap ${surveyAnswered ? "text-good" : "text-gold"}`}
               >
                 <StableButtonLabel
                   message={surveyStatusMessage}
-                  alternatives={["ตอบแล้ว: พร้อมจ่าย", "ตอบแล้ว: ไม่พร้อม", "ตอบแล้ว", "ยังไม่ได้ตอบ"]}
+                  alternatives={["ตอบแล้ว", "ยังไม่ได้ตอบ"]}
+                  className="inline-grid items-center whitespace-nowrap text-right"
                 />
               </span>
             </button>

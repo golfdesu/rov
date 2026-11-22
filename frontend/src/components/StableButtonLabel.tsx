@@ -33,7 +33,7 @@ export function StableButtonLabel({ message, alternatives = [], suffixes = [], c
           key={variant}
           lang={language}
           aria-hidden={variant !== label}
-          className={`col-start-1 row-start-1 ${variant === label ? "" : "invisible"}`}
+          className={`col-start-1 row-start-1 self-center ${variant === label ? "" : "invisible"}`}
         >
           {variant}
         </span>
