@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov`) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `a248e7c` (`main`: auto-stop Draft Turn Timer on completion, reset, & game transition) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-CXX5ped2.js` (`664.60 kB`) + `dist-prod/assets/index-sNaMQu7-.css` (`128.19 kB`), `dist-prod/index.html` (`2.96 kB`) |
+| **Git Base Commit on VM** | `13758c4` (`main`: mobile UX density, GNN serving cache, multi-device sync merge/`clearedAt`, SQLite index/CTE, fail-closed admin, leak-free split, `compose.yaml`) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-OYcteBXS.js` (`665.66 kB`) + `dist-prod/assets/index-DyAYAAUJ.css` (`128.26 kB`), `dist-prod/index.html` (`2.96 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-21 22:47 (UTC+7)` |
+| **Last Updated** | `2026-11-22 11:39 (UTC+7)` |
 
 ---
 
@@ -38,6 +38,20 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-22 11:39 (UTC+7) — Mobile UX Density, GNN Serving Cache, Multi-Device Sync Hardening & SQLite Indexing (`13758c4`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `113bde2` to `13758c4` (`main`), migrating `deploy/docker-compose.yml` -> `deploy/compose.yaml`.
+- **Delta:**
+  - **Mobile UX & Hero Grid (`frontend/src/App.tsx`, `DraftBoardView.tsx`, `HeroGrid.tsx`, `index.css`):** Removed duplicate mobile AI PICK/BAN strip during active drafts (retaining `#1–#10` grid badges, mobile AI tab, and 18/18 summary), removed shared role dropdown from `HeroGrid`, moved free-access banner to mobile menu, compacted bottom nav to one line, and fit search + lane filters on one row on short phones (`>= 3` hero rows visible).
+  - **Multi-Device Sync Hardening (`src/schemas.py`, `src/db.py`, `src/api.py`, `frontend/src/components/PracticeDraftView.tsx`, `frontend/src/utils/practiceHistory.ts`, `frontend/src/hooks/useDraft.ts`):** Added server-side entry merge (`id`/`signature`), `deletedIds` & `clearedAt` tombstones, monotonic server-issued `updatedAt` revision bump on merge, client `pushSeqRef` sequence guard, and authoritative DB echo reconciliation on `PUT /draft/session`.
+  - **Serving & SQLite Performance (`src/train_sota_model.py`, `src/predictor.py`, `src/db.py`):** Precomputed static `H_gnn` embeddings during `eval()` (`precompute_gnn_embeddings()`), added composite index `idx_auth_sessions_user_created ON auth_sessions(user_id, created_at)`, and moved `daily_visits` retention analytics to SQLite CTEs.
+  - **Security & Trainer Hygiene (`src/config.py`, `deploy/compose.yaml`, `src/train_sota_model.py`, `scripts/fetch_hero_icons.py`):** Fail-closed `ROV_ADMIN_USERNAMES` (`deploy/.env` explicitly defines `chayanin5392`), strict `FileNotFoundError` when curated training dataset is missing, series-boundary 85/15 split (`series_overlap=0`), and manifest completeness guard on icon fetches.
+- **Bundle Built:** `dist-prod/index.html` (`2.96 kB`), `dist-prod/assets/index-OYcteBXS.js` (`665.66 kB`), `dist-prod/assets/index-DyAYAAUJ.css` (`128.26 kB`).
+- **Deploy Method:** `cd ~/rov/deploy && sudo docker compose up -d --build app` (`deploy_rov_db_data`, `deploy-caddy-1`, `rov-cloudflared`, and `deploy/.env` untouched).
+- **Verification:**
+  - Local gates prior to push: `pytest -q --tb=short` (`139 passed`), `audit_arch_perf.py` (`direct median=8.0 ms, depth-2 median=13.6 ms`, `series_overlap=0`), `validate_gating.py` (`72/72` Golden Draft States in `1.35s`, `3/3` Duel Benchmarks), `oxlint` (`0` warnings / `0` errors), `ruff` clean, plus dual-agent Playwright QA across Draft Board & Draft vs AI on Desktop (`1280x800`) and Mobile (`375x667`, `360x640`).
+  - Live `https://minidraft.app/health` -> `200` (`{"status":"healthy","model_loaded":true}`), `/admin/stats` (unauthenticated) -> `404`, live HTML references `index-OYcteBXS.js` & `index-DyAYAAUJ.css`.
+  - `/app/db/rov_app.db` intact (`users: 892`, `user_draft_states: 850`, `user_practice_histories: 8`, `daily_visits: 715`, `idx_auth_sessions_user_created` migrated cleanly).
 
 ### 📅 2026-11-21 22:47 (UTC+7) — Auto-Stop Draft Turn Timer on Draft Completion, Reset, & Game Transition (`a248e7c`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `f34fc15` to `a248e7c` (`main`).
