@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `af45b80` (`main`: place Ban slots above Pick slots in desktop/full TeamColumn) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-BzpQ5bH6.js` (`714.72 kB`) + `dist-prod/assets/index-7UEaMoXV.css` (`129.60 kB`), `dist-prod/index.html` (`2.96 kB`) |
+| **Git Base Commit on VM** | `4252991` (`main`: remove full TeamColumn turn badge and auto-reset HeroGrid lane filter to ALL) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-B-WaLS7p.js` (`714.67 kB`) + `dist-prod/assets/index-7UEaMoXV.css` (`129.60 kB`), `dist-prod/index.html` (`2.96 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-22 21:05 (UTC+7)` |
+| **Last Updated** | `2026-11-22 21:33 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,18 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-22 21:33 (UTC+7) — Remove Full `TeamColumn` Turn Badge & Auto-Reset `HeroGrid` Lane Filter to `ALL` (`4252991`)
+- **Commit**: `4252991` (`feat(ui): remove full TeamColumn turn badge and auto-reset lane filter to ALL`)
+- **Summary**:
+  - Removed the redundant `NOW` / `ON THE CLOCK` turn badge from `TeamColumn` (`variant="full"`), keeping `ScoreBar` and pulsing gold slot borders uncluttered.
+  - Updated `HeroGrid` (`laneResetKey` + `lockHeroAndResetLane`) and callers (`DraftBoardView`, `PracticeDraftView`, `MetaLab`) so selecting/replacing a hero via `HeroGrid`, `AiPanel`, or ghost slots resets the active lane filter back to `ALL`.
+- **Built Assets (`dist-prod/`)**: `index.html` (`2.96 kB`), `assets/index-7UEaMoXV.css` (`129.60 kB`), `assets/index-B-WaLS7p.js` (`714.67 kB`).
+- **Verification**:
+  - Local: `npm run lint` (`0` warnings, `0` errors across `67` files), `npm run build` (`tsc -b && vite build`), `ruff check --fix .` & `ruff format .`, and Playwright `1440x900` against `http://127.0.0.1:8000` (`UI_VERIFY_OK`, `errors: 0`).
+  - Live (`https://minidraft.app/`): `/health` returned `200 {"status":"healthy","model_loaded":true}`; Playwright `1440x900` verified `UI_VERIFY_OK` on both Draft Board and Practice vs AI (`mid_activated: true`, `all_reset: true`, `no_turn_badge: true`, `errors: 0`).
+  - Persistent DB (`/app/db/rov_app.db`): preserved intact (`users: 906`, `user_oauth_accounts: 860`, `user_draft_states: 865`, `user_practice_histories: 13`, `auth_sessions: 948`, `pricing_survey_responses: 379`, `daily_visits: 849`).
+- **VM Sync Note**: Docs-only commit recording this release is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
 
 ### 📅 2026-11-22 21:05 (UTC+7) — Place Ban Slots Above Pick Slots in Full `TeamColumn` (`af45b80`)
 - **Commit**: `af45b80` (`feat(ui): place Ban slots above Pick slots in full TeamColumn`)
