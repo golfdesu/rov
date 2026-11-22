@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov`) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `3fec0dc` (`main`: research-grade dashboard upgrade — BG/NBD `P(Alive)`, Pfeifer-Carraway Markov 3x3, Kaplan-Meier SVG, Kohavi Power Guardrails, Sifa Signals) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-_zWybZtk.js` (`708.58 kB`) + `dist-prod/assets/index-BswwniSY.css` (`129.22 kB`), `dist-prod/index.html` (`2.96 kB`) |
+| **Git Base Commit on VM** | `25d680d` (`main`: plain-Thai accessible copy localization for Owner Analytics Dashboard `AdminDashboardView.tsx`) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-Bmz-m1vZ.js` (`713.11 kB`) + `dist-prod/assets/index-BswwniSY.css` (`129.22 kB`), `dist-prod/index.html` (`2.96 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-22 13:10 (UTC+7)` |
+| **Last Updated** | `2026-11-22 13:17 (UTC+7)` |
 
 ---
 
@@ -38,6 +38,10 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-22 13:17 (UTC+7) — Plain-Thai Owner-Friendly Copy Localization (`25d680d`)
+- **Frontend UI Copy (`frontend/src/components/AdminDashboardView.tsx`)**: Replaced academic jargon across all analytics cards, interval bars, behavioral signal tables, and user retention badges with plain-Thai labels and 1-sentence owner takeaways (`สรุปให้`), keeping citations collapsed at the bottom drawer.
+- **Verification & Live Rollout**: Passed `oxlint` (`0 warnings, 0 errors`), `tsc -b && vite build`, Playwright E2E (`/#admin` desktop + mobile + SVG + zero console errors), and `preflight_check.py`. Deployed via `sudo docker compose up -d --build app` (`deploy_rov_db_data` untouched), live HTML serving `index-Bmz-m1vZ.js` / `index-BswwniSY.css`.
 
 ### 📅 2026-11-22 13:10 (UTC+7) — Research-Grade Dashboard Visualizations & Literature Models (`3fec0dc`)
 - **Backend Research Models (`src/analytics.py`, `src/schemas.py`)**: Implemented Fader-Hardie BG/NBD `P(Alive)` segmentation & per-user `user_btyd_scores`, Pfeifer-Carraway 3x3 Markov Transition Matrix + 14-day finite-horizon expectation + steady-state equilibrium, nonparametric right-censored Kaplan-Meier survival curves (`member` vs `guest` + Greenwood 95% CI), Kohavi Statistical Power / MDE=10pp guardrails & `p95 <= 500ms` SLA, and Sifa et al. (2015) behavioral feature-to-WTP signal matrix.
