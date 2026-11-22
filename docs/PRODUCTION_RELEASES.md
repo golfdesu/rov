@@ -22,6 +22,21 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 
 ---
 
+## Production VM Sparse-Checkout Invariant (NEVER Pull Non-Production Files)
+
+`~/rov` on `rov-draft-vm` (`20.2.210.230`) is locked with `git sparse-checkout --no-cone` to check out **ONLY** the 19 production paths required by `Dockerfile` and `deploy/`:
+- `/Dockerfile`, `/.dockerignore`, `/requirements.txt`
+- `/deploy/**`, `/configs/**`, `/src/**`, `/frontend/**`
+- `/models/sota_draft_gnn_transformer.pt`
+- `/data/heroes_130_summary.csv`, `/data/hero_draft_stats.csv`, `/data/hero_tier_overrides.json`, `/data/dataset_metadata.json`, `/data/matches_training.json`, `/data/heroes_130_full.json`, `/data/hero_level_stats.json`, `/data/hero_skills_full.json`, `/data/items.json`, `/data/arcana.json`, `/data/enchantments.json`
+
+**Hard Guardrails for All Agents:**
+1. **NEVER** run `git sparse-checkout disable` or widen the sparse-checkout list on the VM to include `tests/`, `scripts/`, `docs/`, `.wikiskill/`, `.agents/`, `.claude/`, `best_params/`, `models/archive/`, `models/*heuristic*`, `data/draft_screenshots/`, or non-serving `data/*` files.
+2. **NEVER** `scp` or `rsync` non-production files onto the VM.
+3. **NEVER** SSH to run `git pull` on the VM for commits that only touch `docs/`, `.wikiskill/`, `CHANGELOG.md`, `AGENTS.md`, `tests/`, or `scripts/`. Only pull on the VM when deploying changes to the 19 production paths above.
+
+---
+
 ## Active Uncommitted Hotfixes on Production VM (`~/rov`)
 
 None — all previous hotfixes over `4dbc614` were reconciled into `main` during the Dev -> Prod cutover on `2026-11-21`.

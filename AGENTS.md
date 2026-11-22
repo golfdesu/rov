@@ -59,7 +59,7 @@ Every AI agent (including fast models such as `3.8flash`) MUST strictly obey the
 
 9. **Cross-Session Changelog (`CHANGELOG.md`), Production Log (`docs/PRODUCTION_RELEASES.md`) & English Documentation Invariant**:
    - Before starting work, read the top entries of `CHANGELOG.md` to learn what previous agents already did.
-   - Before touching or deploying to production (`20.2.210.230` / `minidraft.app`), read `docs/PRODUCTION_RELEASES.md` to check the live base commit, active VM hotfixes, and dev-only exclusions; update it whenever a production release or hotfix is deployed.
+   - Before touching or deploying to production (`20.2.210.230` / `minidraft.app`), read `docs/PRODUCTION_RELEASES.md` to check the live base commit, active VM hotfixes, dev-only exclusions, and the **Production VM Sparse-Checkout Invariant**; update it whenever a production release or hotfix is deployed. Never run `git pull` on the VM for docs/wiki/tests/scripts-only commits.
    - Before finishing any task that modified files, add a new entry at the TOP (date, time, agent, what was done, files, verification, open issues) following the format in that file.
    - **STRICT English Requirement**: All entries in `CHANGELOG.md`, `docs/PRODUCTION_RELEASES.md`, skill documentation (`SKILL.md`), agent notes, and repository markdown files MUST be authored strictly in English to maximize token efficiency and prevent semantic loss across LLM context windows.
 
@@ -104,6 +104,7 @@ Every AI agent (including fast models such as `3.8flash`) MUST strictly obey the
     - `minidraft.app` is currently **100% free for all users** (do NOT add paywalls or prediction quotas unless the owner explicitly initiates the future monetization phase documented in `docs/SUBSCRIPTION_ROADMAP.md`).
     - Multi-user accounts and per-user draft/combat state live in SQLite (`src/db.py` -> `data/rov_app.db` locally or `ROV_DB_PATH=/app/db/rov_app.db` in Docker), supporting Username/Password (`scrypt`) plus optional Google and Discord OAuth 2.0 + PKCE (`user_oauth_accounts`).
     - OAuth credentials (`ROV_GOOGLE_*`, `ROV_DISCORD_*`) and raw client JSON files MUST stay strictly inside gitignored `.env` and `.secrets/` — never commit secrets or tracked `*env*` filenames (`tests/test_security.py::test_no_secrets_in_tracked_files`).
+    - **Production VM Sparse-Checkout Lock (`~/rov` on `20.2.210.230`)**: The production VM uses `git sparse-checkout --no-cone` restricted strictly to production build/runtime files (`/Dockerfile`, `/.dockerignore`, `/requirements.txt`, `/deploy/**`, `/configs/**`, `/src/**`, `/frontend/**`, `/models/sota_draft_gnn_transformer.pt`, and the 11 serving `/data/*` files). **STRICTLY FORBIDDEN** to run `git sparse-checkout disable`, check out or `scp`/`rsync` non-production files (`tests/`, `scripts/`, `docs/`, `.wikiskill/`, `.agents/`, `.claude/`, `best_params/`, `models/archive/`, `models/*heuristic*`, `data/draft_screenshots/`, or non-serving `data/*`) onto the VM, or run `git pull` on the VM when only docs/tests/scripts changed.
 
 ---
 

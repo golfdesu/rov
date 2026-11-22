@@ -27,6 +27,24 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-22 13:48 (UTC+7) — Lock Production VM Sparse-Checkout Guardrails in `AGENTS.md` & `PRODUCTION_RELEASES.md`
+**Agent:** Antigravity CLI
+
+### ✅ Completed Work
+- **`AGENTS.md` (Rules 9 & 15)**: Added non-negotiable guardrails forbidding `git sparse-checkout disable`, copying/checking out non-production paths (`tests/`, `scripts/`, `docs/`, `.wikiskill/`, `.agents/`, `.claude/`, `best_params/`, `models/archive/`, `models/*heuristic*`, `data/draft_screenshots/`, non-serving `data/*`) onto the Azure VM (`20.2.210.230:~/rov`), or running `git pull` on the VM for docs/tests/scripts-only commits.
+- **`docs/PRODUCTION_RELEASES.md`**: Added the top-level **Production VM Sparse-Checkout Invariant** section listing the exact 19 allowed production paths and agent prohibitions.
+
+### 📁 Modified Files
+- `AGENTS.md`, `docs/PRODUCTION_RELEASES.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- `python .wikiskill/skills/scripts/preflight_check.py` (verified post-edit); local commit pushed without pulling docs-only changes onto VM.
+
+### ⚠️ Open Issues / Important Notes
+- Local rules/docs update only; VM remains cleanly untouched at sparse-checkout production state.
+
+---
+
 ## 📅 2026-11-22 13:36 (UTC+7) — Production-Only VM Sparse Checkout (`git sparse-checkout --no-cone`) & `.dockerignore`
 **Agent:** Antigravity CLI
 
