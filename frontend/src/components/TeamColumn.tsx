@@ -404,6 +404,101 @@ export function TeamColumn({
         )}
       </div>
 
+      {/* Ban slots */}
+      <div className={`flex shrink-0 items-center gap-1 sm:gap-1.5 ${isBlue ? "" : "flex-row-reverse"}`}>
+          <Ban className="hidden h-4 w-4 shrink-0 text-dim sm:block" aria-label="Bans" />
+          {Array.from({ length: 4 }).map((_, i) => {
+            const name = bans[i];
+            const banTimedOut = name ? timedOutHeroes[name] : undefined;
+            const isActive = i === activeBanSlot;
+            const ghostBanOffset = i - bans.length;
+            const ghostBan =
+              !name && ghostBanOffset >= 0 && ghostBanOffset < 2 ? predictedNextBans[ghostBanOffset] : undefined;
+            const canClickGhostBan = Boolean(ghostBan && isActive && onLockHero && !isReplaceLocked);
+            const edit = getEdit("ban", i, name);
+            const activate = edit?.activate ?? (canClickGhostBan && ghostBan ? () => onLockHero?.(ghostBan.hero_name) : undefined);
+            const banTriggers = ghostBan?.triggered_by?.map(displayName) ?? [];
+
+            return (
+              <div
+                key={i}
+                {...slotControls(activate, edit)}
+                title={edit?.label ?? (
+                  name
+                    ? `${displayName(name)}${
+                        banTimedOut === "autolock"
+                          ? t(" · หมดเวลา (Auto-Lock)")
+                          : banTimedOut
+                            ? t(" · แบนไม่ทันเวลา (0:00)")
+                            : ""
+                      }`
+                    : ghostBan
+                      ? t("AI คาดเดาแบน #{0}: {1} ({2}%){3}", ghostBanOffset + 1, displayName(ghostBan.hero_name), ghostBan.probability_pct.toFixed(1), banTriggers.length > 0 ? t(" · ป้องกัน {0}", banTriggers.join(", ")) : "")
+                      : `Ban ${i + 1}`
+                )}
+                className={`relative aspect-square h-8.5 shrink-0 overflow-hidden border bg-panel sm:h-11 lg:h-11 xl:h-12 2xl:h-13 ${
+                  isActive
+                    ? "border-gold animate-slot-pulse"
+                    : edit?.isEditing
+                      ? "border-gold ring-2 ring-gold/80 animate-slot-pulse"
+                      : banTimedOut || edit?.conflict
+                        ? "border-red ring-1 ring-red/75"
+                      : ghostBan
+                        ? "border-dashed border-red/50"
+                        : "border-line"
+                } ${isReplaceLocked && !edit?.isEditing ? "opacity-45" : ""} ${i === 2 ? (isBlue ? "ml-1 sm:ml-2" : "mr-1 sm:mr-2") : ""} ${activate ? "cursor-pointer hover:border-gold/60 focus-visible:border-gold" : ""}`}
+              >
+                {edit?.conflict && <ConflictOutline />}
+                {name ? (
+                  <>
+                    <HeroPortrait name={name} hero={heroMap.get(name)} className="grayscale opacity-60" />
+                    <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,transparent_46%,var(--color-red)_47%,var(--color-red)_53%,transparent_54%)] opacity-80" />
+                    {banTimedOut && (
+                      <>
+                        <span className="pointer-events-none absolute top-0.5 right-0.5 z-10 grid h-3.5 w-3.5 place-items-center bg-red text-bg shadow sm:h-4 sm:w-4">
+                          <ClockAlert className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                        </span>
+                        <span className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-red/95 py-0.5 text-center font-display text-[7.5px] font-extrabold leading-none text-bg sm:text-[8.5px]">
+                          <span className="sm:hidden">{t("ไม่ทัน")}</span>
+                          <span className="hidden sm:inline">{t("แบนไม่ทัน")}</span>
+                        </span>
+                      </>
+                    )}
+                    {edit?.isEditing && (
+                      <span className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gold py-[1px] text-center font-display text-[8px] font-extrabold leading-none text-bg">
+                        {t("กำลังแก้")}
+                      </span>
+                    )}
+                  </>
+                ) : ghostBan ? (
+                  <div
+                    className={`relative h-full w-full transition-opacity ${
+                      ghostBanOffset === 0 ? "opacity-45 hover:opacity-85" : "opacity-30 hover:opacity-75"
+                    }`}
+                  >
+                    <HeroPortrait
+                      name={ghostBan.hero_name}
+                      hero={heroMap.get(ghostBan.hero_name)}
+                      className="saturate-50"
+                    />
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 truncate bg-bg/85 px-0.5 py-0.5 text-center font-mono text-[8px] font-bold text-red sm:text-[9px]">
+                      {displayName(ghostBan.hero_name)}
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    className={`grid h-full place-items-center font-mono text-[10px] font-bold sm:text-xs ${
+                      isActive ? "text-gold" : "text-dim"
+                    }`}
+                  >
+                    B{i + 1}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
       {/* Pick slots — flex-1 min-h-0 scales smoothly to fit any laptop/desktop screen height */}
       <div className="flex min-h-0 flex-1 flex-col gap-2">
         {Array.from({ length: 5 }).map((_, i) => {
@@ -608,101 +703,6 @@ export function TeamColumn({
           );
         })}
       </div>
-
-      {/* Ban slots */}
-      <div className={`flex shrink-0 items-center gap-1 sm:gap-1.5 ${isBlue ? "" : "flex-row-reverse"}`}>
-          <Ban className="hidden h-4 w-4 shrink-0 text-dim sm:block" aria-label="Bans" />
-          {Array.from({ length: 4 }).map((_, i) => {
-            const name = bans[i];
-            const banTimedOut = name ? timedOutHeroes[name] : undefined;
-            const isActive = i === activeBanSlot;
-            const ghostBanOffset = i - bans.length;
-            const ghostBan =
-              !name && ghostBanOffset >= 0 && ghostBanOffset < 2 ? predictedNextBans[ghostBanOffset] : undefined;
-            const canClickGhostBan = Boolean(ghostBan && isActive && onLockHero && !isReplaceLocked);
-            const edit = getEdit("ban", i, name);
-            const activate = edit?.activate ?? (canClickGhostBan && ghostBan ? () => onLockHero?.(ghostBan.hero_name) : undefined);
-            const banTriggers = ghostBan?.triggered_by?.map(displayName) ?? [];
-
-            return (
-              <div
-                key={i}
-                {...slotControls(activate, edit)}
-                title={edit?.label ?? (
-                  name
-                    ? `${displayName(name)}${
-                        banTimedOut === "autolock"
-                          ? t(" · หมดเวลา (Auto-Lock)")
-                          : banTimedOut
-                            ? t(" · แบนไม่ทันเวลา (0:00)")
-                            : ""
-                      }`
-                    : ghostBan
-                      ? t("AI คาดเดาแบน #{0}: {1} ({2}%){3}", ghostBanOffset + 1, displayName(ghostBan.hero_name), ghostBan.probability_pct.toFixed(1), banTriggers.length > 0 ? t(" · ป้องกัน {0}", banTriggers.join(", ")) : "")
-                      : `Ban ${i + 1}`
-                )}
-                className={`relative aspect-square h-8.5 shrink-0 overflow-hidden border bg-panel sm:h-11 lg:h-11 xl:h-12 2xl:h-13 ${
-                  isActive
-                    ? "border-gold animate-slot-pulse"
-                    : edit?.isEditing
-                      ? "border-gold ring-2 ring-gold/80 animate-slot-pulse"
-                      : banTimedOut || edit?.conflict
-                        ? "border-red ring-1 ring-red/75"
-                      : ghostBan
-                        ? "border-dashed border-red/50"
-                        : "border-line"
-                } ${isReplaceLocked && !edit?.isEditing ? "opacity-45" : ""} ${i === 2 ? (isBlue ? "ml-1 sm:ml-2" : "mr-1 sm:mr-2") : ""} ${activate ? "cursor-pointer hover:border-gold/60 focus-visible:border-gold" : ""}`}
-              >
-                {edit?.conflict && <ConflictOutline />}
-                {name ? (
-                  <>
-                    <HeroPortrait name={name} hero={heroMap.get(name)} className="grayscale opacity-60" />
-                    <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,transparent_46%,var(--color-red)_47%,var(--color-red)_53%,transparent_54%)] opacity-80" />
-                    {banTimedOut && (
-                      <>
-                        <span className="pointer-events-none absolute top-0.5 right-0.5 z-10 grid h-3.5 w-3.5 place-items-center bg-red text-bg shadow sm:h-4 sm:w-4">
-                          <ClockAlert className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                        </span>
-                        <span className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-red/95 py-0.5 text-center font-display text-[7.5px] font-extrabold leading-none text-bg sm:text-[8.5px]">
-                          <span className="sm:hidden">{t("ไม่ทัน")}</span>
-                          <span className="hidden sm:inline">{t("แบนไม่ทัน")}</span>
-                        </span>
-                      </>
-                    )}
-                    {edit?.isEditing && (
-                      <span className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gold py-[1px] text-center font-display text-[8px] font-extrabold leading-none text-bg">
-                        {t("กำลังแก้")}
-                      </span>
-                    )}
-                  </>
-                ) : ghostBan ? (
-                  <div
-                    className={`relative h-full w-full transition-opacity ${
-                      ghostBanOffset === 0 ? "opacity-45 hover:opacity-85" : "opacity-30 hover:opacity-75"
-                    }`}
-                  >
-                    <HeroPortrait
-                      name={ghostBan.hero_name}
-                      hero={heroMap.get(ghostBan.hero_name)}
-                      className="saturate-50"
-                    />
-                    <div className="pointer-events-none absolute inset-x-0 bottom-0 truncate bg-bg/85 px-0.5 py-0.5 text-center font-mono text-[8px] font-bold text-red sm:text-[9px]">
-                      {displayName(ghostBan.hero_name)}
-                    </div>
-                  </div>
-                ) : (
-                  <div
-                    className={`grid h-full place-items-center font-mono text-[10px] font-bold sm:text-xs ${
-                      isActive ? "text-gold" : "text-dim"
-                    }`}
-                  >
-                    B{i + 1}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
 
       {/* On-Board Global Ban */}
       {(onOpenGlobalBanForTeam || gameNumber > 1 || usedHeroes.length > 0) && <div

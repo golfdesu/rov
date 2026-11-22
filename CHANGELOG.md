@@ -27,6 +27,157 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-22 21:03 (UTC+7) — Place Ban Slots Above Pick Slots in Full `TeamColumn`
+**Agent:** Antigravity / Gemini 4 Hydrogen
+
+### ✅ Completed Work
+- **Full `TeamColumn` Slot Order (`frontend/src/components/TeamColumn.tsx`):**
+  - Moved the 4-slot `{/* Ban slots */}` row above the 5-slot `{/* Pick slots */}` stack in `variant="full"` so desktop and full mobile team views match both draft chronology (Bans before Picks) and the compact HUD layout across Draft Board and Practice vs AI.
+
+### 📁 Modified Files
+- `frontend/src/components/TeamColumn.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `cd frontend && npm run lint` (`oxlint`): `0` warnings, `0` errors across 66 files.
+- `cd frontend && npm run build` (`tsc -b && vite build`): succeeded (`2.12s`).
+- `ruff check --fix .` & `ruff format .`: passed cleanly (`136` files unchanged after 1 format pass).
+- Playwright E2E check (`verify_ban_above_pick.py` on `http://localhost:3000`, `1440x900`): verified Ban 1 sits above Pick 1 symmetrically on both Blue and Red (`ban1_y=179` < `pick1_y=267`) across Draft Board and Practice vs AI with `0` console/page errors.
+
+---
+
+## 📅 2026-11-22 20:50 (UTC+7) — Prepare Local Stripe Configuration
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Added the empty `STRIPE_SECRET_KEY` setting for the Stripe sandbox integration.
+
+### 📁 Modified Files
+- `.env` (local and ignored by Git)
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Confirmed the setting appears once with an empty value and `.env` is ignored by Git.
+
+### ⚠️ Open Issues / Important Notes
+- A replacement sandbox key is needed before testing the future integration.
+
+---
+
+## 📅 2026-11-22 20:35 (UTC+7) — Select Stripe PromptPay Checkout
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Documented hosted Stripe Checkout with PromptPay as the payment method for 30- and 90-day passes. Added automatic access activation after verified payment and manual renewal through a new payment.
+- Updated implementation notes and rollout tests for account-linked orders, webhook verification, and duplicate delivery. Updated the architecture index.
+
+### 📁 Modified Files
+- `docs/SUBSCRIPTION_ROADMAP.md`
+- `docs/ARCHITECTURE_MAP.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Checked Checkout, activation, and renewal references for consistency. `git diff --check` passed.
+
+### ⚠️ Open Issues / Important Notes
+- Checkout and webhook handling remain planned for the billing rollout.
+
+---
+
+## 📅 2026-11-22 20:23 (UTC+7) — Set the Pro 30-Day Pass to 49 THB
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Set the planned Pro 30-day price to 49 THB. Recalculated the savings on the 119 THB 90-day pass and the cost of four individual passes in the Team Pro pricing rationale.
+
+### 📁 Modified Files
+- `docs/SUBSCRIPTION_ROADMAP.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified the savings of 28 THB (19.0%) versus three 30-day passes and ran `git diff --check`.
+
+### ⚠️ Open Issues / Important Notes
+- Pricing is documented for the planned billing rollout.
+
+---
+
+## 📅 2026-11-22 20:13 (UTC+7) — Set the Team Pro 90-Day Pass Price
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Set the planned Team Pro 90-day pass to 469 THB, saving 128 THB (21.4%) compared with three 30-day passes.
+
+### 📁 Modified Files
+- `docs/SUBSCRIPTION_ROADMAP.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified the savings against the 199 THB 30-day price. `git diff --check` passed.
+
+### ⚠️ Open Issues / Important Notes
+- The price is documented for the planned billing rollout.
+
+---
+
+## 📅 2026-11-22 20:11 (UTC+7) — Record Updated Pro and Team Pro Prices
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Recorded Pro at 50 THB for 30 days and 119 THB for 90 days. Recorded Team Pro at 199 THB for 30 days and 479 THB for 90 days.
+- Documented the roughly 20% savings on 90-day passes and the Team Pro pricing rationale for four to five members. Removed the outdated price from the architecture index.
+
+### 📁 Modified Files
+- `docs/SUBSCRIPTION_ROADMAP.md`
+- `docs/ARCHITECTURE_MAP.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Checked prices and savings against three 30-day passes. `git diff --check` passed.
+
+### ⚠️ Open Issues / Important Notes
+- Pricing is documented as part of the planned billing rollout.
+
+---
+
+## 📅 2026-11-22 20:03 (UTC+7) — Plan 90-Day Prepaid Passes
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Added proposed 90-day prepaid prices of 129 THB for Pro and 399 THB for Team Pro, with savings compared with three 30-day passes.
+- Updated renewal, upgrade, checkout, and verification requirements to support both prepaid durations.
+
+### 📁 Modified Files
+- `docs/SUBSCRIPTION_ROADMAP.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Checked prices, savings, and duration rules for consistency. `git diff --check` passed.
+
+### ⚠️ Open Issues / Important Notes
+- The 90-day prices are proposals in the roadmap. Billing remains planned.
+
+---
+
+## 📅 2026-11-22 19:58 (UTC+7) — Record Guest and Free Assistant Allowances
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Documented a 36-turn Guest trial with sign-in required for additional AI suggestions, and 72 turns daily for Free accounts resetting at midnight Bangkok time.
+- Clarified game equivalents, separate Guest and Free usage, and quota handling for retries, final estimates, and manual drafts.
+
+### 📁 Modified Files
+- `docs/SUBSCRIPTION_ROADMAP.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Checked the tier table, quota rules, implementation notes, and rollout tests for consistency. `git diff --check` passed.
+
+### ⚠️ Open Issues / Important Notes
+- Roadmap update only. Quota enforcement remains planned.
+
+---
+
 ## 📅 2026-11-22 15:52 (UTC+7) — Stratified 7-Day Active Returning Users & Regulars vs One-Time Returnees
 **Agent:** Antigravity / Gemini 4 Hydrogen
 
