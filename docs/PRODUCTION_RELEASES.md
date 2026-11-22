@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `6fec71a` (`main`: scaled up dashboard typography cleanly for Thai readability `AdminDashboardView.tsx`) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-CIqebms0.js` (`713.54 kB`) + `dist-prod/assets/index-BxP94eC5.css` (`129.42 kB`), `dist-prod/index.html` (`2.96 kB`) |
+| **Git Base Commit on VM** | `86dc150` (`main`: centered single-line Feedback Survey button label & status in `MobileNavDrawer`) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-CmB764jK.js` (`713.70 kB`) + `dist-prod/assets/index-BNeNphRr.css` (`129.45 kB`), `dist-prod/index.html` (`2.96 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-22 13:23 (UTC+7)` |
+| **Last Updated** | `2026-11-22 15:24 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,19 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-22 15:24 (UTC+7) — Align Feedback Survey Button Label & Single-Line Status in `MobileNavDrawer` (`86dc150`)
+- **Base Commit:** Fast-forwarded `~/rov` (sparse-checkout) cleanly from `6f41a4f` to `86dc150` (`main`).
+- **Delta:**
+  - `frontend/src/components/MobileNavDrawer.tsx`: Shortened survey action label from `"แบบสอบถาม / Feedback"` to `"แบบสอบถาม"` (`"Feedback Survey"`), shortened visible right status pill to `"ตอบแล้ว"` / `"ยังไม่ได้ตอบ"`, and moved the full choice breakdown (`"ตอบแล้ว: พร้อมจ่าย"` / `"ตอบแล้ว: ไม่พร้อม"`) into the button `title` tooltip.
+  - `frontend/src/components/StableButtonLabel.tsx` & `frontend/src/i18n/englishMessages.ts`: Added `self-center` vertical centering inside the dual-language grid and `"แบบสอบถาม": "Feedback Survey"` translation key.
+- **Bundle Built:** `dist-prod/index.html` (`2.96 kB`), `dist-prod/assets/index-CmB764jK.js` (`713.70 kB`), `dist-prod/assets/index-BNeNphRr.css` (`129.45 kB`).
+- **Deploy Method:** `cd ~/rov/deploy && sudo docker compose up -d --build app` (`deploy_rov_db_data`, `deploy-caddy-1`, `rov-cloudflared`, and `deploy/.env` untouched).
+- **Verification:**
+  - `oxlint`: `0` warnings / `0` errors across 66 files; `vite build`: `1.94s`; `ruff`: clean (`136` files unchanged).
+  - `https://minidraft.app/health` -> `200` (`{"status":"healthy","model_loaded":true}`).
+  - Live Playwright E2E (`verify_feedback_btn_alignment.py` on `https://minidraft.app/`, `360x800` & `1440x900`): confirmed single-line `16px` height, `0.0px` icon-to-label and `0.01px` icon-to-status vertical midpoint delta in both Thai & English, and `0` console/page errors.
+  - `/app/db/rov_app.db` intact (`users: 895`, `user_oauth_accounts: 850`, `user_draft_states: 854`, `user_practice_histories: 8`, `auth_sessions: 937`, `pricing_survey_responses: 360`, `daily_visits: 761`).
 
 ### 📅 2026-11-22 13:36 (UTC+7) — Production-Only VM Working Tree (`git sparse-checkout --no-cone`) & `.dockerignore` Hardening
 - **VM Working Tree (`~/rov` on `rov-draft-vm`)**: Enabled `git sparse-checkout --no-cone` restricted strictly to production build/runtime files (`/Dockerfile`, `/.dockerignore`, `/requirements.txt`, `/deploy/**`, `/configs/**`, `/src/**`, `/frontend/**`, `/models/sota_draft_gnn_transformer.pt`, and the 11 serving `/data/*` files), removing dev/training/archive/doc clutter (`~38 MB` working-tree files) from VM disk while preserving `deploy/.env` and `deploy_rov_db_data`.
