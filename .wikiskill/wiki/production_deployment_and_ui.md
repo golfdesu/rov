@@ -17,6 +17,7 @@ Live production runs at **`https://minidraft.app/`** on Azure VM `rov-draft-vm` 
   - **NEVER** delete, truncate, or overwrite `deploy_rov_db_data` or `deploy/.env`.
   - Always create an online SQLite backup inside the volume before any schema migration (e.g., when `user_practice_histories` was added on `2026-11-21`).
   - **Open Free Access**: `minidraft.app` is 100% free during launch; do not add paywalls unless explicitly instructed (`docs/SUBSCRIPTION_ROADMAP.md` is future spec only).
+- **Production-Only VM Checkout (`git sparse-checkout --no-cone`)**: `~/rov` on `rov-draft-vm` checks out only the production subset required by `Dockerfile` and `deploy/` (`/Dockerfile`, `/.dockerignore`, `/requirements.txt`, `/deploy/`, `/configs/`, `/src/`, `/frontend/`, `/models/sota_draft_gnn_transformer.pt`, and the 11 serving `/data/*` files). Dev/training/doc folders (`tests/`, `scripts/`, `docs/`, `.wikiskill/`, `.agents/`, `.claude/`, `best_params/`, `models/archive/`, `models/*heuristic*`, and non-serving `data/*` files) are excluded from the VM disk. Do not run `git pull` on the VM for docs-only commits.
 
 ---
 

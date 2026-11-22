@@ -39,3 +39,7 @@ docs/
 exports/
 *.sbatch
 *.md
+.wikiskill/
+.agents/
+.claude/
+.github/

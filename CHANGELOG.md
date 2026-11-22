@@ -27,6 +27,25 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-22 13:36 (UTC+7) — Production-Only VM Sparse Checkout (`git sparse-checkout --no-cone`) & `.dockerignore`
+**Agent:** Antigravity CLI
+
+### ✅ Completed Work
+- Restricted `~/rov` on Azure VM `20.2.210.230` via `git sparse-checkout --no-cone` to check out only production runtime/build files (`/Dockerfile`, `/.dockerignore`, `/requirements.txt`, `/deploy/**`, `/configs/**`, `/src/**`, `/frontend/**`, `/models/sota_draft_gnn_transformer.pt`, and the 11 serving `/data/*` files), freeing ~38 MB of non-production files from the VM disk while keeping `deploy/.env` and `deploy_rov_db_data` intact.
+- Added `.wikiskill/`, `.agents/`, `.claude/`, and `.github/` to `.dockerignore`.
+- Updated `.wikiskill/wiki/production_deployment_and_ui.md` and `docs/PRODUCTION_RELEASES.md`.
+
+### 📁 Modified Files
+- `.dockerignore`, `.wikiskill/wiki/production_deployment_and_ui.md`, `docs/PRODUCTION_RELEASES.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- `python .wikiskill/skills/scripts/preflight_check.py`, VM `ls`/`du` layout check, and `https://minidraft.app/health`.
+
+### ⚠️ Open Issues / Important Notes
+- Docs-only commits no longer need `git pull` on the production VM.
+
+---
+
 ## 📅 2026-11-22 13:28 (UTC+7) — Sync LLM Wiki (`.wikiskill/`) & `docs/ARCHITECTURE_MAP.md`
 **Agent:** Antigravity CLI
 
