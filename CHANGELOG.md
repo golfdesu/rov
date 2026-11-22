@@ -27,6 +27,25 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-22 13:22 (UTC+7) — Increase Owner Dashboard Typography Scale (`AdminDashboardView.tsx`)
+**Agent:** Antigravity CLI
+
+### ✅ Completed Work
+- Scaled up all typography in `frontend/src/components/AdminDashboardView.tsx`, eliminating `text-[9px]` / `text-[10px]` micro-text across card titles (`text-sm sm:text-base`), summaries/insights (`text-xs sm:text-sm leading-relaxed`), status badges (`text-xs`), tables (`text-xs sm:text-sm`), and SVG Kaplan-Meier axes (`fontSize="11"`, height `h-44`).
+
+### 📁 Modified Files
+- `frontend/src/components/AdminDashboardView.tsx`, `CHANGELOG.md`
+
+### 🧪 Verification
+- `oxlint`: `0 warnings, 0 errors`; `tsc -b && vite build`: passed (`1.09s`).
+- Playwright E2E (`/#admin` desktop + mobile): `PLAYWRIGHT FONT-SCALE E2E: PASS (min table/strong fontSize=12px, 0 errors)`.
+- `preflight_check.py`: `PASSED`.
+
+### ⚠️ Open Issues / Important Notes
+- Deploying updated typography bundle to `minidraft.app`.
+
+---
+
 ## 📅 2026-11-22 13:16 (UTC+7) — Plain-Thai Owner-Friendly Copy Localization for Analytics Dashboard (`AdminDashboardView.tsx`)
 **Agent:** Antigravity CLI
 
