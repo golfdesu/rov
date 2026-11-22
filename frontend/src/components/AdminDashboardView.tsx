@@ -43,6 +43,21 @@ type SortColumn =
 
 const INITIAL_VISIBLE_USERS = 50;
 
+const FEATURE_LABELS_TH: Record<string, string> = {
+  active_days: "เข้าเว็บซ้ำ (2+ วัน)",
+  predict_calls: "กดเรียก AI ช่วยคิด (5+ ครั้ง)",
+  draft_games: "เซฟเกมดราฟต์ไว้ (1+ เกม)",
+  practice_games: "เล่นโหมดซ้อม vs AI (1+ เกม)",
+  oauth_linked: "ล็อกอิน Google / Discord",
+  tenure_days: "สมัครมานานกว่า 1 วัน",
+};
+
+const MARKOV_STATE_LABELS_TH: Record<string, string> = {
+  "New (D0)": "เข้าเว็บวันแรก",
+  "Active (D1+)": "เคยกลับมาใช้แล้ว",
+  Dormant: "เคยเงียบหายไป",
+};
+
 function lastActivityKey(u: AdminUserActivityItem): string {
   return (
     [u.last_draft_save_th ?? "", u.last_practice_save_th ?? "", u.last_visit ?? "", u.created_at_th ?? ""]
@@ -53,16 +68,16 @@ function lastActivityKey(u: AdminUserActivityItem): string {
 
 function PowerBadge({ summary }: { summary?: GuardrailPowerSummary }) {
   if (!summary) return null;
-  let label = `Underpowered · Req n=${summary.required_n_per_arm_mde10}/arm`;
+  let label = `ข้อมูลยังไม่พอสรุป (ต้องรอ ~${summary.required_n_per_arm_mde10} คน/กลุ่ม)`;
   let cls = "border-gold/40 bg-gold/10 text-gold";
   if (summary.status === "reliable_significant") {
-    label = `Powered Sig · ${summary.achieved_power_pct}% power`;
+    label = `มั่นใจได้ทางสถิติ (${summary.achieved_power_pct}%)`;
     cls = "border-good/50 bg-good/15 text-good";
   } else if (summary.status === "significant_moderate_power") {
-    label = `Sig (p=${summary.p_value ?? "-"}) · ${summary.achieved_power_pct}% power`;
+    label = `ผลเริ่มชัด (p=${summary.p_value ?? "-"})`;
     cls = "border-blue/50 bg-blue/15 text-blue";
   } else if (summary.status === "no_material_effect") {
-    label = `Powered No Effect · ${summary.achieved_power_pct}%`;
+    label = "ข้อมูลพอแล้ว: แทบไม่ต่างกัน";
     cls = "border-line-strong bg-panel-2 text-muted";
   }
   return <span className={`border px-1.5 py-0.5 font-mono text-[9px] font-bold ${cls}`}>{label}</span>;
@@ -93,12 +108,15 @@ function ConfidenceIntervalBar({
       <div className="flex items-center justify-between gap-2">
         <span className="font-bold text-ink">{label}</span>
         <span className="text-muted">
-          <strong className="text-ink">{ratePct}%</strong> ({willing}/{n})
-          {bayesPct !== undefined && <span className="text-dim"> · Bayes {bayesPct}%</span>}
+          <strong className="text-ink">{ratePct}%</strong> ({willing}/{n} คน)
+          {bayesPct !== undefined && <span className="text-dim"> · ปรับฐาน {bayesPct}%</span>}
         </span>
       </div>
       <div className="relative h-2.5 w-full bg-bg">
-        <div className="absolute top-1/2 h-1 -translate-y-1/2 bg-line-strong" style={{ left: `${lo}%`, width: `${Math.max(1.5, hi - lo)}%` }} />
+        <div
+          className="absolute top-1/2 h-1 -translate-y-1/2 bg-line-strong"
+          style={{ left: `${lo}%`, width: `${Math.max(1.5, hi - lo)}%` }}
+        />
         <div
           className={`absolute top-1/2 h-2.5 w-1.5 -translate-x-1/2 -translate-y-1/2 ${accentClass}`}
           style={{ left: `${pt}%` }}
@@ -107,7 +125,7 @@ function ConfidenceIntervalBar({
       <div className="flex justify-between text-[9px] text-dim">
         <span>0%</span>
         <span>
-          Wilson 95% CI: [{lo}%, {hi}%]
+          ค่าจริงที่น่าจะเป็นไปได้: [{lo}% – {hi}%]
         </span>
         <span>100%</span>
       </div>
@@ -115,18 +133,8 @@ function ConfidenceIntervalBar({
   );
 }
 
-function KaplanMeierChart({
-  member,
-  guest,
-}: {
-  member: KaplanMeierPoint[];
-  guest: KaplanMeierPoint[];
-}) {
-  const maxDay = Math.max(
-    1,
-    member[member.length - 1]?.day ?? 0,
-    guest[guest.length - 1]?.day ?? 0,
-  );
+function KaplanMeierChart({ member, guest }: { member: KaplanMeierPoint[]; guest: KaplanMeierPoint[] }) {
+  const maxDay = Math.max(1, member[member.length - 1]?.day ?? 0, guest[guest.length - 1]?.day ?? 0);
   const W = 440;
   const H = 150;
   const padL = 34;
@@ -154,7 +162,12 @@ function KaplanMeierChart({
   );
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="h-36 w-full select-none" role="img" aria-label="Kaplan-Meier Retention Survival Curve">
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      className="h-36 w-full select-none"
+      role="img"
+      aria-label="กราฟสัดส่วนคนที่ยังกลับมาใช้งานเทียบ สมาชิก vs Guest"
+    >
       {[0, 25, 50, 75, 100].map((yVal) => {
         const y = toY(yVal);
         return (
@@ -170,7 +183,7 @@ function KaplanMeierChart({
         const x = toX(d);
         return (
           <text key={d} x={x} y={H - 6} textAnchor="middle" fill="#8b96a8" fontSize="9" fontFamily="monospace">
-            D{d}
+            วันที่ {d}
           </text>
         );
       })}
@@ -336,6 +349,10 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
   const btydTotal = Math.max(1, btyd?.total_clients ?? 1);
   const kmMember = analytics?.kaplan_meier_survival?.member ?? [];
   const kmGuest = analytics?.kaplan_meier_survival?.guest ?? [];
+  const aiTrustLiftVsRandom =
+    analytics && analytics.ai_trust.random_top5_baseline_pct > 0
+      ? (analytics.ai_trust.top5_pct / analytics.ai_trust.random_top5_baseline_pct).toFixed(1)
+      : null;
 
   return (
     <main className="mx-auto flex w-full max-w-[1680px] flex-1 flex-col gap-4 overflow-y-auto px-3 py-4 sm:px-6">
@@ -345,10 +362,10 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
           <BarChart3 className="h-5 w-5 shrink-0 text-gold" />
           <div className="min-w-0">
             <h1 className="truncate font-display text-base font-extrabold tracking-wider text-ink sm:text-lg">
-              OWNER ANALYTICS DASHBOARD · MINIDRAFT
+              แดชบอร์ดเจ้าของเว็บ · MINIDRAFT
             </h1>
             <p className="font-mono text-[11px] text-dim">
-              {usersReport ? `อัปเดตล่าสุด: ${usersReport.generated_at_th} (UTC+7)` : t("กำลังโหลดข้อมูล...")}
+              {usersReport ? `อัปเดตล่าสุด: ${usersReport.generated_at_th} (เวลาไทย)` : t("กำลังโหลดข้อมูล...")}
             </p>
           </div>
         </div>
@@ -360,7 +377,7 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
             className="inline-flex h-8 items-center gap-1.5 border border-line-strong bg-panel-2 px-3 font-display text-xs font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold disabled:opacity-50"
           >
             <RefreshCw className={`h-3.5 w-3.5 text-gold ${loading ? "animate-spin" : ""}`} />
-            <span>Refresh</span>
+            <span>รีเฟรช</span>
           </button>
           <button
             type="button"
@@ -391,7 +408,7 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
 
           <div className="border border-line bg-panel p-3.5">
             <div className="flex items-center justify-between text-xs text-muted">
-              <span className="font-display font-bold">กลับมาใช้ซ้ำ (Retention)</span>
+              <span className="font-display font-bold">กลับมาใช้ซ้ำ (ไม่ลืมเว็บ)</span>
               <Repeat className="h-4 w-4 text-good" />
             </div>
             <div className="mt-1 font-mono text-2xl font-extrabold text-good">
@@ -399,14 +416,14 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
             </div>
             <div className="mt-1 font-mono text-[11px] text-dim">
               {stats.retention
-                ? `วันนี้ ${stats.retention.today_dau} (ซ้ำ ${stats.retention.today_returning}) · D1 ${stats.retention.d1_pct}%`
+                ? `วันนี้ ${stats.retention.today_dau} (ซ้ำ ${stats.retention.today_returning}) · กลับมาพรุ่งนี้ ${stats.retention.d1_pct}%`
                 : "ไม่มีข้อมูล"}
             </div>
           </div>
 
           <div className="border border-line bg-panel p-3.5">
             <div className="flex items-center justify-between text-xs text-muted">
-              <span className="font-display font-bold">Cloudflare Uniques</span>
+              <span className="font-display font-bold">คนเข้าเว็บทั้งหมด</span>
               <Globe className="h-4 w-4 text-gold" />
             </div>
             <div className="mt-1 font-mono text-2xl font-extrabold text-gold">
@@ -414,7 +431,7 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
             </div>
             <div className="mt-1 font-mono text-[11px] text-dim">
               {stats.cloudflare
-                ? `วันนี้ ${stats.cloudflare.today_uniques.toLocaleString()} คน · Guest ~${estimatedGuests?.toLocaleString() ?? "-"}`
+                ? `วันนี้ ${stats.cloudflare.today_uniques.toLocaleString()} คน · ไม่ล็อกอิน ~${estimatedGuests?.toLocaleString() ?? "-"}`
                 : "Cloudflare token ไม่ได้ตั้งค่า"}
             </div>
           </div>
@@ -427,41 +444,44 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
             <div className="mt-1 font-mono text-2xl font-extrabold text-ink">
               {stats.survey.willing_pct}%{" "}
               <span className="text-xs font-normal text-muted">
-                ({stats.survey.willing_total}/{stats.survey.total})
+                ({stats.survey.willing_total}/{stats.survey.total} คน)
               </span>
             </div>
             <div className="mt-1 font-mono text-[11px] text-dim">
-              สมาชิกพร้อม {stats.survey.willing_member} · Guest {stats.survey.willing_guest}
+              สมาชิกพร้อม {stats.survey.willing_member} · ขาจร {stats.survey.willing_guest}
             </div>
           </div>
         </section>
       )}
 
-      {/* Probability, Stochastic & Research Analytics Section */}
+      {/* Plain-Thai Behavior & AI Summary Section */}
       {analytics && (
         <section className="flex flex-col gap-3 border border-gold/35 bg-panel p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Sigma className="h-4 w-4 text-gold" />
               <h2 className="font-display text-sm font-bold tracking-wide text-ink sm:text-base">
-                RESEARCH-GRADE STOCHASTIC & STATISTICAL INFERENCE ENGINE
+                สรุปวิเคราะห์พฤติกรรมผู้ใช้ &amp; ความแม่นยำ AI (แปลผลให้อ่านง่าย)
               </h2>
             </div>
             <span className="border border-gold/40 bg-gold/10 px-2 py-0.5 font-mono text-[10px] font-bold text-gold">
-              BG/NBD · Markov 3×3 · Kaplan-Meier · Wilson/Katz CI · Kohavi Power
+              วิเคราะห์จากข้อมูลใช้งานจริง
             </span>
           </div>
 
-          {/* Row 1: Pfeifer-Carraway Markov 3x3 + Wilson/Kohavi WTP + BTYD P(Alive) & Katz RR */}
+          {/* Row 1: 3 Core Plain-Thai Insight Cards */}
           <div className="grid grid-cols-1 gap-3 xl:grid-cols-3">
-            {/* 1. Pfeifer & Carraway 3x3 Markov Matrix */}
+            {/* Card 1: Tomorrow Return Probability */}
             <div className="flex flex-col gap-2 border border-line bg-bg/60 p-3.5">
               <div className="flex items-center justify-between gap-2">
                 <span className="font-display text-xs font-bold text-good">
-                  1. Markov Migration Matrix (Pfeifer &amp; Carraway)
+                  1. โอกาสที่คนจะกลับมาใช้วันพรุ่งนี้
                 </span>
                 <span className="font-mono text-[10px] text-dim">
-                  E[14d] = {analytics.markov_retention.expected_active_days_14d ?? analytics.markov_retention.expected_active_streak_days}d
+                  14 วันข้างหน้าใช้เฉลี่ย{" "}
+                  {analytics.markov_retention.expected_active_days_14d ??
+                    analytics.markov_retention.expected_active_streak_days}{" "}
+                  วัน
                 </span>
               </div>
 
@@ -469,16 +489,18 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                 <table className="w-full border-collapse border border-line font-mono text-[10px]">
                   <thead>
                     <tr className="border-b border-line bg-panel text-muted">
-                      <th className="px-2 py-1 text-left">From State</th>
-                      <th className="px-2 py-1 text-right">n</th>
-                      <th className="px-2 py-1 text-right text-good">→ Active</th>
-                      <th className="px-2 py-1 text-right text-dim">→ Dormant</th>
+                      <th className="px-2 py-1 text-left">กลุ่มผู้ใช้เดิม</th>
+                      <th className="px-2 py-1 text-right">วัดจาก</th>
+                      <th className="px-2 py-1 text-right text-good">กลับมาวันถัดไป</th>
+                      <th className="px-2 py-1 text-right text-dim">เงียบหายไป</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-line">
                     {analytics.markov_retention.matrix_3x3.map((row) => (
                       <tr key={row.from_state} className="bg-panel/40">
-                        <td className="px-2 py-1 font-bold text-ink">{row.from_state}</td>
+                        <td className="px-2 py-1 font-bold text-ink">
+                          {MARKOV_STATE_LABELS_TH[row.from_state] ?? row.from_state}
+                        </td>
                         <td className="px-2 py-1 text-right text-dim">{row.sample}</td>
                         <td
                           className="px-2 py-1 text-right font-bold text-good"
@@ -498,36 +520,25 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                 </table>
               ) : null}
 
-              <div className="flex flex-wrap items-center justify-between gap-1 font-mono text-[10px] text-muted">
-                <span>
-                  Streak E[L]: <strong className="text-ink">{analytics.markov_retention.expected_active_streak_days}d</strong>
-                </span>
-                <span>
-                  Half-Life:{" "}
-                  <strong className="text-ink">
-                    {analytics.markov_retention.retention_half_life_days !== null
-                      ? `${analytics.markov_retention.retention_half_life_days}d`
-                      : "-"}
-                  </strong>
-                </span>
-                <span>
-                  Steady-State Active:{" "}
-                  <strong className="text-gold">{analytics.markov_retention.steady_state_active_pct ?? 0}%</strong>
-                </span>
+              <div className="border-l-2 border-good/60 bg-panel/60 px-2.5 py-1.5 font-mono text-[10px] text-ink">
+                <strong className="text-good">สรุปให้:</strong> คนเข้าวันแรก 100 คน จะกลับมาพรุ่งนี้ ~
+                {Math.round(analytics.markov_retention.transitions.new_to_active_pct)} คน · แต่ถ้ากลับมาแล้ว โอกาสใช้ต่อจะเพิ่มเป็น{" "}
+                <strong className="text-good">{analytics.markov_retention.transitions.retained_to_active_pct}%</strong>{" "}
+                (ระยะยาวเหลือแอคทีฟ ~{analytics.markov_retention.steady_state_active_pct ?? 0}%)
               </div>
             </div>
 
-            {/* 2. Bayesian Beta-Binomial WTP + Wilson 95% CI Error Bars */}
+            {/* Card 2: Do Heavy Users Actually Want to Pay More? */}
             <div className="flex flex-col gap-2 border border-line bg-bg/60 p-3.5">
               <div className="flex flex-wrap items-center justify-between gap-1">
                 <span className="font-display text-xs font-bold text-gold">
-                  2. Bayesian WTP &amp; Wilson 95% CI (Wilson 1927)
+                  2. คนที่ใช้เว็บจริง ยอมจ่ายมากกว่าขาจรไหม?
                 </span>
                 <PowerBadge summary={analytics.experiment_guardrails?.wtp_engaged_vs_casual} />
               </div>
 
               <ConfidenceIntervalBar
-                label="Engaged Users (ใช้ซ้ำ / เล่นเกม)"
+                label="กลุ่มใช้จริง (เข้าซ้ำ 2+ วัน / เล่นเกม / เรียก AI 10+)"
                 ratePct={analytics.bayesian_wtp.engaged.empirical_pct}
                 ci={analytics.bayesian_wtp.engaged.wilson_ci_95}
                 bayesPct={analytics.bayesian_wtp.engaged.bayes_posterior_pct}
@@ -536,7 +547,7 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                 accentClass="bg-good"
               />
               <ConfidenceIntervalBar
-                label="Casual / 1st Visit"
+                label="กลุ่มขาจร (เพิ่งลองเข้าครั้งแรก)"
                 ratePct={analytics.bayesian_wtp.casual.empirical_pct}
                 ci={analytics.bayesian_wtp.casual.wilson_ci_95}
                 bayesPct={analytics.bayesian_wtp.casual.bayes_posterior_pct}
@@ -545,18 +556,19 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                 accentClass="bg-blue"
               />
 
-              <div className="font-mono text-[10px] text-muted">
-                Z-test (Engaged vs Casual): p={analytics.bayesian_wtp.engaged_vs_casual_test.p_value} · Guests:{" "}
-                <strong className="text-ink">{analytics.bayesian_wtp.guests.empirical_pct}%</strong> (
-                {analytics.bayesian_wtp.guests.willing}/{analytics.bayesian_wtp.guests.n})
+              <div className="border-l-2 border-gold/60 bg-panel/60 px-2.5 py-1.5 font-mono text-[10px] text-ink">
+                <strong className="text-gold">สรุปให้:</strong>{" "}
+                {analytics.bayesian_wtp.engaged_vs_casual_test.significant_95
+                  ? `กลุ่มใช้จริงพร้อมจ่ายสูงกว่าขาจรอย่างชัดเจน (+${analytics.bayesian_wtp.engaged_vs_casual_test.diff_pct}%)`
+                  : `ตอนนี้ผลต่างกันยังไม่ชัดเจนทางสถิติ (p=${analytics.bayesian_wtp.engaged_vs_casual_test.p_value}) ยังสรุปไม่ได้ว่าใช้เยอะแล้วอยากจ่ายเพิ่ม · ฝั่งไม่ล็อกอินพร้อมจ่าย ${analytics.bayesian_wtp.guests.empirical_pct}%`}
               </div>
             </div>
 
-            {/* 3. BTYD P(Alive) Cohorts + Katz Relative Risk & Gamma-Poisson */}
+            {/* Card 3: Active Users Remaining + Member vs Guest Loyalty */}
             <div className="flex flex-col gap-2 border border-line bg-bg/60 p-3.5">
               <div className="flex flex-wrap items-center justify-between gap-1">
                 <span className="font-display text-xs font-bold text-blue">
-                  3. BTYD P(Alive) &amp; Katz Relative Risk
+                  3. เหลือคนใช้งานอยู่จริงกี่เครื่อง &amp; สมาชิกติดเว็บแค่ไหน?
                 </span>
                 <PowerBadge summary={analytics.experiment_guardrails?.member_vs_guest_retention} />
               </div>
@@ -565,87 +577,80 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                 <div className="flex flex-col gap-1 border border-line bg-panel p-2 font-mono text-[10px]">
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-ink">
-                      BG/NBD Expected Alive: <strong className="text-good">{btyd.expected_alive_clients}</strong> /{" "}
-                      {btyd.total_clients}
+                      คาดว่ายังไม่เลิกใช้: <strong className="text-good">{btyd.expected_alive_clients}</strong> /{" "}
+                      {btyd.total_clients} เครื่อง
                     </span>
-                    <span className="text-dim">7d repeat ~{btyd.expected_7d_repeat_visits}</span>
+                    <span className="text-dim">7 วันหน้า ~{btyd.expected_7d_repeat_visits} ครั้ง</span>
                   </div>
                   <div className="flex h-2.5 w-full overflow-hidden bg-bg">
                     <div
                       className="bg-blue"
                       style={{ width: `${(btyd.segments.new_today / btydTotal) * 100}%` }}
-                      title={`New Today: ${btyd.segments.new_today}`}
+                      title={`เข้าใหม่วันนี้: ${btyd.segments.new_today}`}
                     />
                     <div
                       className="bg-good"
                       style={{ width: `${(btyd.segments.active_core / btydTotal) * 100}%` }}
-                      title={`Active Core (>=70%): ${btyd.segments.active_core}`}
+                      title={`ขาประจำ (>=70%): ${btyd.segments.active_core}`}
                     />
                     <div
                       className="bg-gold"
                       style={{ width: `${(btyd.segments.slipping / btydTotal) * 100}%` }}
-                      title={`At-Risk (30-69%): ${btyd.segments.slipping}`}
+                      title={`กำลังจะหาย (30-69%): ${btyd.segments.slipping}`}
                     />
                     <div
                       className="bg-line-strong"
                       style={{ width: `${(btyd.segments.dormant / btydTotal) * 100}%` }}
-                      title={`Dormant (<30%): ${btyd.segments.dormant}`}
+                      title={`หายไปแล้ว (<30%): ${btyd.segments.dormant}`}
                     />
                   </div>
                   <div className="flex flex-wrap justify-between gap-x-2 text-[9px] text-dim">
-                    <span className="text-blue">New {btyd.segments.new_today}</span>
-                    <span className="text-good">Core {btyd.segments.active_core}</span>
-                    <span className="text-gold">At-Risk {btyd.segments.slipping}</span>
-                    <span>Dormant {btyd.segments.dormant}</span>
-                    <span>
-                      Avg Alive: Mem {btyd.member_avg_p_alive_pct}% / Gst {btyd.guest_avg_p_alive_pct}%
-                    </span>
+                    <span className="text-blue">ใหม่วันนี้ {btyd.segments.new_today}</span>
+                    <span className="text-good">ขาประจำ {btyd.segments.active_core}</span>
+                    <span className="text-gold">ใกล้หาย {btyd.segments.slipping}</span>
+                    <span>หายแล้ว {btyd.segments.dormant}</span>
                   </div>
                 </div>
               )}
 
               <div className="grid grid-cols-2 gap-1.5 font-mono text-[10px]">
                 <div className="border border-line bg-panel p-2">
-                  <div className="text-[9px] text-dim">Member vs Guest RR (Katz CI)</div>
+                  <div className="text-[9px] text-dim">สมาชิก vs คนไม่ล็อกอิน</div>
                   <div className="font-extrabold text-blue">
-                    RR = {analytics.member_vs_guest_retention.relative_risk}x{" "}
-                    <span className="text-[9px] font-normal text-muted">
-                      [{analytics.member_vs_guest_retention.rr_ci_95[0]}–{analytics.member_vs_guest_retention.rr_ci_95[1]}]
-                    </span>
+                    กลับมาบ่อยกว่า {analytics.member_vs_guest_retention.relative_risk} เท่า
                   </div>
                   <div className="text-[9px] text-dim">
-                    Mem {analytics.member_vs_guest_retention.member.rate_pct}% vs Guest{" "}
-                    {analytics.member_vs_guest_retention.guest.rate_pct}% (p={analytics.member_vs_guest_retention.p_value})
+                    สมาชิก {analytics.member_vs_guest_retention.member.rate_pct}% vs Guest{" "}
+                    {analytics.member_vs_guest_retention.guest.rate_pct}%
                   </div>
                 </div>
                 <div className="border border-line bg-panel p-2">
-                  <div className="text-[9px] text-dim">Pareto &amp; Overdispersion</div>
+                  <div className="text-[9px] text-dim">ยอดใช้งานกระจุกตัวสูง</div>
                   <div className="font-extrabold text-gold">
-                    Gini {analytics.usage_distribution.gini_coefficient} · Var/M {analytics.usage_distribution.dispersion_index}
+                    Top 10% สร้าง {analytics.usage_distribution.top_10pct_share_pct}% เกม
                   </div>
                   <div className="text-[9px] text-dim">
-                    Top10%={analytics.usage_distribution.top_10pct_share_pct}% · Next DAU{" "}
-                    <strong className="text-good">{analytics.load_forecast.dau_next_day.expected_next_day}</strong>
+                    พรุ่งนี้คาดว่าเข้า ~<strong className="text-good">{analytics.load_forecast.dau_next_day.expected_next_day}</strong> คน
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Row 2: Kaplan-Meier Survival Chart + Sifa Behavioral Signals Matrix */}
+          {/* Row 2: Retention Survival Chart + What Behavior Drives WTP? */}
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-            {/* 4. Kaplan-Meier Survival Plot */}
+            {/* Card 4: Visual Survival Curve */}
             <div className="flex flex-col gap-2 border border-line bg-bg/60 p-3.5">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-display text-xs font-bold text-ink">
-                  4. Kaplan–Meier Survival S(t) (Right-Censored · 95% Greenwood Band)
+                  4. กราฟความอยู่รอด: ผ่านไปกี่วันคนถึงเลิกเข้าเว็บ?
                 </span>
                 <div className="flex items-center gap-3 font-mono text-[10px]">
                   <span className="flex items-center gap-1 text-blue">
-                    <span className="inline-block h-1.5 w-3 bg-blue" /> Member ({kmMember[0]?.at_risk ?? 0})
+                    <span className="inline-block h-1.5 w-3 bg-blue" /> สมาชิก ({kmMember[0]?.at_risk ?? 0})
                   </span>
                   <span className="flex items-center gap-1 text-gold">
-                    <span className="inline-block h-1.5 w-3 bg-gold" /> Guest ({kmGuest[0]?.at_risk ?? 0})
+                    <span className="inline-block h-1.5 w-3 bg-gold" /> ไม่ล็อกอิน ({kmGuest[0]?.at_risk ?? 0})
                   </span>
                 </div>
               </div>
@@ -655,20 +660,23 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
               </div>
 
               <div className="font-mono text-[10px] text-dim">
-                Cohort Retention ≥Dk:{" "}
-                {analytics.markov_retention.survival_curve.map((s) => `D${s.day}: ${s.pct}% (${s.survived}/${s.eligible})`).join(" · ")}
+                เส้นยิ่งอยู่สูง = คนยังอยู่เยอะ · อัตรากลับมาใช้ซ้ำจริง:{" "}
+                {analytics.markov_retention.survival_curve
+                  .map((s) => `วันที่ ${s.day}: ${s.pct}% (${s.survived}/${s.eligible})`)
+                  .join(" · ")}
               </div>
             </div>
 
-            {/* 5. Sifa Behavioral Feature-to-WTP Signal Matrix */}
+            {/* Card 5: Which Behavior Makes People Willing to Pay? */}
             <div className="flex flex-col gap-2 border border-line bg-bg/60 p-3.5">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-display text-xs font-bold text-ink">
-                  5. Behavioral Feature-to-WTP Signal Matrix (Sifa et al. 2015)
+                  5. พฤติกรรมแบบไหน ทำให้คนอยากจ่ายเงินมากที่สุด?
                 </span>
                 <span className="font-mono text-[10px] text-dim">
-                  Global Spearman rho = {analytics.bayesian_wtp.spearman_engagement_vs_wtp.rho} (p=
-                  {analytics.bayesian_wtp.spearman_engagement_vs_wtp.p_value})
+                  {analytics.bayesian_wtp.spearman_engagement_vs_wtp.p_value < 0.05
+                    ? "ภาพรวมการใช้งานสัมพันธ์กับการพร้อมจ่าย"
+                    : "ภาพรวม: ความถี่ใช้งานยังไม่ค่อยตรงกับปุ่มพร้อมจ่าย"}
                 </span>
               </div>
 
@@ -676,27 +684,30 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                 <table className="w-full border-collapse font-mono text-[10px]">
                   <thead>
                     <tr className="border-b border-line bg-panel text-muted">
-                      <th className="px-2 py-1.5 text-left">Behavioral Feature</th>
-                      <th className="px-2 py-1.5 text-right">Spearman rho</th>
-                      <th className="px-2 py-1.5 text-right">p-value</th>
-                      <th className="px-2 py-1.5 text-right">High WTP%</th>
-                      <th className="px-2 py-1.5 text-right">Low WTP%</th>
-                      <th className="px-2 py-1.5 text-right">Lift</th>
+                      <th className="px-2 py-1.5 text-left">พฤติกรรมการใช้งาน</th>
+                      <th className="px-2 py-1.5 text-left">ความเชื่อมโยง</th>
+                      <th className="px-2 py-1.5 text-right">กลุ่มทำบ่อย</th>
+                      <th className="px-2 py-1.5 text-right">กลุ่มไม่ทำ</th>
+                      <th className="px-2 py-1.5 text-right">ต่างกัน</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-line">
                     {(analytics.behavioral_signals ?? []).map((sig) => {
-                      const sigColor =
-                        sig.p_value < 0.05
-                          ? "font-bold text-good"
-                          : Math.abs(sig.rho) >= 0.1
-                            ? "text-gold"
-                            : "text-dim";
+                      let statusText = "ยังไม่ชัด (คนตอบน้อย)";
+                      let statusClass = "text-dim";
+                      if (sig.p_value < 0.05) {
+                        statusText = sig.rho >= 0 ? "ยิ่งทำยิ่งอยากจ่าย" : "ยิ่งทำยิ่งไม่อยากจ่าย";
+                        statusClass = "font-bold text-good";
+                      } else if (Math.abs(sig.rho) >= 0.1) {
+                        statusText = sig.rho >= 0 ? "เริ่มมีแนวโน้ม +" : "เริ่มมีแนวโน้ม -";
+                        statusClass = "text-gold";
+                      }
                       return (
                         <tr key={sig.key} className="hover:bg-panel-2/40">
-                          <td className="px-2 py-1 text-ink">{sig.label}</td>
-                          <td className={`px-2 py-1 text-right ${sigColor}`}>{sig.rho}</td>
-                          <td className="px-2 py-1 text-right text-muted">{sig.p_value}</td>
+                          <td className="px-2 py-1 text-ink">{FEATURE_LABELS_TH[sig.key] ?? sig.label}</td>
+                          <td className={`px-2 py-1 ${statusClass}`} title={`rho=${sig.rho}, p=${sig.p_value}`}>
+                            {statusText}
+                          </td>
                           <td className="px-2 py-1 text-right text-ink">
                             {sig.high_wtp_pct}% <span className="text-[9px] text-dim">({sig.high_n})</span>
                           </td>
@@ -704,7 +715,7 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                             {sig.low_wtp_pct}% ({sig.low_n})
                           </td>
                           <td className="px-2 py-1 text-right font-bold text-gold">
-                            {sig.lift > 0 ? `${sig.lift}x` : "-"}
+                            {sig.lift > 0 ? `${sig.lift} เท่า` : "-"}
                           </td>
                         </tr>
                       );
@@ -715,12 +726,12 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
             </div>
           </div>
 
-          {/* Row 3: Guardrails, AI Calls & Latency, AI Trust, Devices & Tools */}
+          {/* Row 3: Operational AI Usage, Trust & Devices */}
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
             <div className="border border-line bg-bg/60 p-3 font-mono text-[11px]">
               <div className="mb-1.5 flex items-center justify-between font-display text-xs font-bold text-ink">
                 <span className="flex items-center gap-1.5">
-                  <Cpu className="h-3.5 w-3.5 text-gold" /> Guest vs Member AI Calls &amp; SLA
+                  <Cpu className="h-3.5 w-3.5 text-gold" /> ยอดเรียก AI (สมาชิก vs Guest) &amp; ความเร็ว
                 </span>
                 <span
                   className={`flex items-center gap-1 border px-1.5 py-0.5 font-mono text-[9px] font-bold ${
@@ -733,15 +744,15 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                 >
                   <ShieldCheck className="h-2.5 w-2.5" />
                   {analytics.experiment_guardrails?.latency_sla.status === "pass"
-                    ? "SLA p95<=500ms OK"
+                    ? `ตอบเร็วมาก (${analytics.latency.p95_ms} ms)`
                     : analytics.experiment_guardrails?.latency_sla.status === "warn"
-                      ? "SLA WARN >500ms"
-                      : "Pending traffic"}
+                      ? "ช้าเกิน 500 ms"
+                      : "รอเก็บข้อมูล"}
                 </span>
               </div>
               <div className="flex items-center justify-between text-muted">
                 <span>
-                  Member: <strong className="text-blue">{analytics.guest_vs_member_predicts.member}</strong> (
+                  สมาชิก: <strong className="text-blue">{analytics.guest_vs_member_predicts.member}</strong> (
                   {analytics.guest_vs_member_predicts.member_share_pct}%)
                 </span>
                 <span>
@@ -750,56 +761,57 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                 </span>
               </div>
               <div className="mt-1.5 text-[10px] text-dim">
-                Reqs: {analytics.latency.total_requests} · Mean: <strong className="text-ink">{analytics.latency.mean_ms} ms</strong> ·
-                p50: <strong className="text-good">{analytics.latency.p50_ms} ms</strong> · p95:{" "}
-                <strong className="text-gold">{analytics.latency.p95_ms} ms</strong>
+                รวม {analytics.latency.total_requests} ครั้ง · เฉลี่ย{" "}
+                <strong className="text-ink">{analytics.latency.mean_ms} ms</strong> · ปกติ{" "}
+                <strong className="text-good">{analytics.latency.p50_ms} ms</strong>
               </div>
             </div>
 
             <div className="border border-line bg-bg/60 p-3 font-mono text-[11px]">
               <div className="mb-1.5 flex items-center justify-between font-display text-xs font-bold text-ink">
                 <span className="flex items-center gap-1.5">
-                  <Sparkles className="h-3.5 w-3.5 text-good" /> AI Trust Rate (Adoption vs Random)
+                  <Sparkles className="h-3.5 w-3.5 text-good" /> คนเชื่อคำแนะนำ AI แค่ไหน?
                 </span>
-                <span className="text-[10px] text-dim">{analytics.ai_trust.total_logged_picks} picks</span>
+                <span className="text-[10px] text-dim">{analytics.ai_trust.total_logged_picks} ตัวที่หยิบ</span>
               </div>
               <div className="flex flex-wrap gap-x-3 gap-y-1 text-muted">
                 <span>
-                  #1: <strong className="text-good">{analytics.ai_trust.top1_pct}%</strong>
+                  หยิบตัวอันดับ #1: <strong className="text-good">{analytics.ai_trust.top1_pct}%</strong>
                 </span>
                 <span>
-                  #1–5: <strong className="text-gold">{analytics.ai_trust.top5_pct}%</strong>
+                  ติด Top 5: <strong className="text-gold">{analytics.ai_trust.top5_pct}%</strong>
                 </span>
                 <span>
-                  #1–10: <strong className="text-ink">{analytics.ai_trust.top10_pct}%</strong>
+                  ติด Top 10: <strong className="text-ink">{analytics.ai_trust.top10_pct}%</strong>
                 </span>
               </div>
               <div className="mt-1.5 text-[10px] text-dim">
-                Bayes Top-5: {analytics.ai_trust.top5_bayes_posterior_pct}% (Random=
-                {analytics.ai_trust.random_top5_baseline_pct}% · Z={analytics.ai_trust.binomial_z_vs_random}, p=
-                {analytics.ai_trust.p_value})
+                {analytics.ai_trust.total_logged_picks > 0
+                  ? `เลือกตาม Top-5 สูงกว่าเดาสุ่ม (3.85%) ถึง ${aiTrustLiftVsRandom ?? "-"} เท่า`
+                  : "กำลังรอเก็บข้อมูลการกดหยิบฮีโร่หลัง Deploy"}
               </div>
             </div>
 
             <div className="border border-line bg-bg/60 p-3 font-mono text-[11px]">
               <div className="mb-1.5 flex items-center justify-between font-display text-xs font-bold text-ink">
                 <span className="flex items-center gap-1.5">
-                  <Activity className="h-3.5 w-3.5 text-blue" /> Completion, Devices &amp; Tools
+                  <Activity className="h-3.5 w-3.5 text-blue" /> เล่นจบเกม, อุปกรณ์ &amp; เครื่องมือที่ใช้
                 </span>
                 <span className="text-[10px] text-dim">
-                  18/18: {analytics.feature_usage.draft_completed_18}D / {analytics.feature_usage.practice_completed_18}P
+                  ครบ 18 ตัว: ดราฟต์ {analytics.feature_usage.draft_completed_18} / ซ้อม AI{" "}
+                  {analytics.feature_usage.practice_completed_18}
                 </span>
               </div>
               <div className="flex flex-wrap gap-x-2.5 gap-y-0.5 text-[10px] text-muted">
                 <span>
-                  Mobile {analytics.feature_usage.devices.mobile} / Desk {analytics.feature_usage.devices.desktop}
+                  มือถือ {analytics.feature_usage.devices.mobile} / คอม {analytics.feature_usage.devices.desktop}
                 </span>
-                <span>· Timer {analytics.feature_usage.tools.timer_start}</span>
-                <span>· Lane {analytics.feature_usage.tools.pick_lane}</span>
-                <span>· Replace {analytics.feature_usage.tools.replace_hero}</span>
+                <span>· จับเวลา {analytics.feature_usage.tools.timer_start}</span>
+                <span>· เลือกเลน {analytics.feature_usage.tools.pick_lane}</span>
+                <span>· สลับฮีโร่ {analytics.feature_usage.tools.replace_hero}</span>
               </div>
               <div className="mt-1 text-[10px] text-dim">
-                Leagues:{" "}
+                ลีกที่ใช้:{" "}
                 {Object.entries(analytics.feature_usage.leagues)
                   .map(([k, v]) => `${k}:${v}`)
                   .join(" · ")}
@@ -807,28 +819,28 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
             </div>
           </div>
 
-          {/* Collapsible Research Citations Drawer */}
+          {/* Collapsible Deep Math / Citations Reference for Optional Reading */}
           <details className="border border-line bg-bg/40 px-3 py-2 font-mono text-[10px] text-muted">
             <summary className="flex cursor-pointer items-center gap-1.5 font-display text-[11px] font-bold text-ink select-none hover:text-gold">
               <BookOpen className="h-3.5 w-3.5 text-gold" />
-              <span>Research Methodology &amp; Academic References (คลิกเพื่อดูที่มาของสูตรทั้งหมด)</span>
+              <span>อ้างอิงทฤษฎี &amp; สูตรเบื้องหลังทั้งหมด (คลิกเปิดดูได้ถ้าสนใจเชิงลึก)</span>
             </summary>
             <div className="mt-2 grid grid-cols-1 gap-2 border-t border-line pt-2 md:grid-cols-2">
               <div>
                 <strong className="text-ink">1. BTYD P(Alive) &amp; Gamma-Poisson (Fader, Hardie &amp; Lee 2005, 2009):</strong>{" "}
-                ใช้ความถี่ (x), recency (t_x) และ tenure (T) ประมาณโอกาสที่ผู้ใช้ยังคง active อยู่ vs เลิกใช้แบบ non-contractual
+                ใช้ความถี่การเข้า, วันที่ล่าสุด และอายุบัญชี คำนวณโอกาสที่ผู้ใช้ยังไม่เลิกใช้แบบ Non-contractual
               </div>
               <div>
-                <strong className="text-ink">2. Markov Retention &amp; Expected Horizon (Pfeifer &amp; Carraway 2000):</strong>{" "}
-                ตาราง 3×3 คำนวณ Transition Matrix ข้ามสถานะ New / Active / Dormant และพยากรณ์จำนวนวันที่ active ในช่วง 14 วัน
+                <strong className="text-ink">2. Markov Retention (Pfeifer &amp; Carraway 2000):</strong>{" "}
+                ตาราง 3×3 คำนวณโอกาสย้ายสถานะรายวัน (เข้าใหม่ / แอคทีฟ / หายไป) และคาดการณ์จำนวนวันที่เข้าใน 14 วัน
               </div>
               <div>
                 <strong className="text-ink">3. Kaplan–Meier Survival (Kaplan &amp; Meier 1958):</strong>{" "}
-                เส้นรอดชีวิตแบบ nonparametric product-limit พร้อม right-censoring และช่วงความเชื่อมั่น 95% Greenwood
+                เส้นอัตราอยู่รอดที่หักลบคนที่เพิ่งเข้ามาใหม่ไม่ให้ตัวหารเพี้ยน พร้อมช่วงความเชื่อมั่น 95% Greenwood
               </div>
               <div>
                 <strong className="text-ink">4. Wilson (1927), Katz (1978), Kohavi (2020) &amp; Sifa (2015):</strong>{" "}
-                Wilson CI สำหรับ sample เล็ก, Log Relative Risk CI, Kohavi Statistical Power / MDE Guardrails และ Feature-to-WTP signals
+                ช่วงความเชื่อมั่นสำหรับ sample เล็ก, การคำนวณ Power กันด่วนสรุป และอันดับพฤติกรรมที่สัมพันธ์กับ WTP
               </div>
             </div>
           </details>
@@ -893,7 +905,7 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                 <th className="px-3 py-2 text-right">{sortHeaderBtn("saved_series_games", "Draft (เกม)")}</th>
                 <th className="px-3 py-2 text-right">{sortHeaderBtn("practice_games", "vs AI (เกม)")}</th>
                 <th className="px-3 py-2 text-right">{sortHeaderBtn("predict_calls", "เรียก AI")}</th>
-                <th className="px-3 py-2 text-right">{sortHeaderBtn("p_alive", "BTYD P(Alive)")}</th>
+                <th className="px-3 py-2 text-right">{sortHeaderBtn("p_alive", "โอกาสกลับมาใช้")}</th>
                 <th className="px-3 py-2 text-center text-[11px] font-bold text-muted">แบบสอบถาม</th>
                 <th className="px-3 py-2 text-right">{sortHeaderBtn("last_activity", "ใช้งานล่าสุด")}</th>
                 <th className="px-3 py-2 text-right">{sortHeaderBtn("created_at", "สมัครเมื่อ")}</th>
@@ -909,14 +921,23 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
               ) : (
                 visibleUsers.map((u, idx) => {
                   const bScore = userScores[String(u.id)];
-                  const tierBadge =
-                    bScore?.btyd_tier === "Core"
-                      ? "text-good"
-                      : bScore?.btyd_tier === "At-Risk"
-                        ? "text-gold"
-                        : bScore?.btyd_tier === "New"
-                          ? "text-blue"
-                          : "text-dim";
+                  let tierLabel = "-";
+                  let tierBadge = "text-dim";
+                  if (bScore) {
+                    if (bScore.btyd_tier === "Core") {
+                      tierLabel = `ขาประจำ (${bScore.p_alive_pct}%)`;
+                      tierBadge = "text-good";
+                    } else if (bScore.btyd_tier === "At-Risk") {
+                      tierLabel = `กำลังจะหาย (${bScore.p_alive_pct}%)`;
+                      tierBadge = "text-gold";
+                    } else if (bScore.btyd_tier === "New") {
+                      tierLabel = "เพิ่งเข้าใหม่";
+                      tierBadge = "text-blue";
+                    } else {
+                      tierLabel = `หายไปนาน (${bScore.p_alive_pct}%)`;
+                      tierBadge = "text-dim";
+                    }
+                  }
                   return (
                     <tr key={u.id} className="hover:bg-panel-2/40">
                       <td className="px-3 py-2 text-dim">{idx + 1}</td>
@@ -941,7 +962,7 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                           {u.saved_series_games}
                         </span>
                         {u.draft_step_index > 0 && (
-                          <div className="text-[10px] text-dim">step {u.draft_step_index}</div>
+                          <div className="text-[10px] text-dim">ถึงตัวที่ {u.draft_step_index}</div>
                         )}
                       </td>
                       <td className="px-3 py-2 text-right">
@@ -954,16 +975,14 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                           {u.predict_calls.toLocaleString()}
                         </span>
                         {u.draft_save_calls > 0 && (
-                          <div className="text-[10px] text-dim">save {u.draft_save_calls}</div>
+                          <div className="text-[10px] text-dim">เซฟ {u.draft_save_calls}</div>
                         )}
                       </td>
                       <td className="px-3 py-2 text-right">
                         {bScore ? (
                           <>
-                            <div className={`font-bold ${tierBadge}`}>{bScore.p_alive_pct}%</div>
-                            <div className="text-[10px] text-dim">
-                              {bScore.btyd_tier} · S{bScore.behavior_score}
-                            </div>
+                            <div className={`font-bold ${tierBadge}`}>{tierLabel}</div>
+                            <div className="text-[10px] text-dim">คะแนนใช้งาน {bScore.behavior_score}/100</div>
                           </>
                         ) : (
                           <span className="text-dim">-</span>
@@ -1019,7 +1038,7 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
             <table className="w-full border-collapse text-left font-mono text-xs">
               <thead>
                 <tr className="border-b border-line bg-panel-2/70 text-[11px] text-muted">
-                  <th className="px-3 py-2">Client ID</th>
+                  <th className="px-3 py-2">รหัสเครื่อง</th>
                   <th className="px-3 py-2 text-center">อุปกรณ์</th>
                   <th className="px-3 py-2 text-right">วันใช้งาน</th>
                   <th className="px-3 py-2 text-right">เรียก AI</th>

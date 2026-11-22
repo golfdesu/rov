@@ -27,6 +27,25 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-22 13:16 (UTC+7) — Plain-Thai Owner-Friendly Copy Localization for Analytics Dashboard (`AdminDashboardView.tsx`)
+**Agent:** Antigravity CLI
+
+### ✅ Completed Work
+- Replaced academic statistical/stochastic jargon across all 5 inference cards, 3 operational panels, and the account leaderboard table in `frontend/src/components/AdminDashboardView.tsx` with plain, actionable Thai headlines, human-readable takeaway callouts (`สรุปให้`), plain status badges (`ข้อมูลยังไม่พอสรุป`, `มั่นใจได้ทางสถิติ`), and intuitive user retention labels (`ขาประจำ`, `กำลังจะหาย`, `หายไปนาน`, `เพิ่งเข้าใหม่`), while preserving the collapsed academic references drawer for optional deep inspection.
+
+### 📁 Modified Files
+- `frontend/src/components/AdminDashboardView.tsx`, `CHANGELOG.md`
+
+### 🧪 Verification
+- `oxlint`: `0 warnings, 0 errors`; `tsc -b && vite build`: passed (`1.09s`).
+- Playwright E2E (`/#admin` desktop + mobile + SVG survival plot + zero console errors): `PLAYWRIGHT PLAIN-THAI DASHBOARD E2E: PASS`.
+- `preflight_check.py`: `PASSED`.
+
+### ⚠️ Open Issues / Important Notes
+- Deploying updated frontend bundle to production `minidraft.app`.
+
+---
+
 ## 📅 2026-11-22 13:09 (UTC+7) — Research-Grade Analytics Dashboard Upgrade (`BG/NBD`, `Markov 3x3`, `Kaplan-Meier`, `Kohavi Power`, `Sifa Signals`)
 **Agent:** Antigravity CLI
 
