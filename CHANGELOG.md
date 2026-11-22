@@ -27,6 +27,48 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-22 21:30 (UTC+7) — Remove Full TeamColumn Turn Badge & Auto-Reset HeroGrid Lane Filter to ALL
+**Agent:** Antigravity / Gemini 3.1 Pro
+
+### ✅ Completed Work
+- Removed the redundant `NOW` / `ON THE CLOCK` turn badge from the desktop/full `TeamColumn` header (`variant="full"`), keeping the `ScoreBar` turn indicator and active pulsing gold slot borders uncluttered.
+- Added automatic lane filter reset back to `ALL` (`lane = null`) in `HeroGrid` whenever a hero is locked or replaced—both on direct hero card clicks / `Enter` key in `HeroGrid` and on player picks from `AiPanel` or ghost slots via `laneResetKey` across `DraftBoardView`, `PracticeDraftView`, and `MetaLab`.
+
+### 📁 Modified Files
+- `frontend/src/components/TeamColumn.tsx`
+- `frontend/src/components/HeroGrid.tsx`
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/components/PracticeDraftView.tsx`
+- `frontend/src/components/meta_lab/MetaLab.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified with `npm run lint` (`oxlint`), `npm run build` (`tsc -b && vite build`), `ruff check --fix .` / `ruff format .`, and live E2E Playwright checks after deploy.
+
+---
+
+## 📅 2026-11-22 21:13 (UTC+7) — Integrate Stripe PromptPay in Development
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Added development-only Stripe Sandbox Checkout for the 30- and 90-day Pro and Team Pro passes. FastAPI sets the THB price and restricts Checkout to PromptPay.
+- Added account-linked orders, signed webhook fulfillment, recent payment status, and atomic SQLite pass renewals and upgrades. The Profile page supports Thai and English and shows the expiry.
+- Configured the local Stripe CLI signing secret and forwarded test events to the local API.
+
+### 📁 Modified Files
+- `src/billing.py`, `src/api.py`, `src/config.py`, `src/db.py`, `src/schemas.py`, `requirements.txt`
+- `frontend/src/components/BillingSandbox.tsx`, `frontend/src/components/ProfileView.tsx`, `frontend/src/api/client.ts`, `frontend/src/i18n/englishMessages.ts`, `frontend/src/types/auth.ts`, `frontend/vite.config.ts`
+- `tests/test_billing.py`, `docs/SUBSCRIPTION_ROADMAP.md`, `docs/ARCHITECTURE_MAP.md`, `CHANGELOG.md`, and the ignored local `.env`
+
+### 🧪 Verification
+- Simulated a THB 49 payment in Stripe Sandbox. A CLI-forwarded Stripe webhook granted exactly 30 days with the return page blocked. An expired THB 469 Team Pro order was closed without granting access.
+- Billing, API, and security tests passed. Ruff, frontend build and lint, and the architecture audit passed. Verified indexed order lookups and the 375px Profile layout.
+
+### ⚠️ Open Issues / Important Notes
+- The Sandbox records test passes. Feature quotas, team membership, and live billing remain planned.
+
+---
+
 ## 📅 2026-11-22 21:03 (UTC+7) — Place Ban Slots Above Pick Slots in Full `TeamColumn`
 **Agent:** Antigravity / Gemini 4 Hydrogen
 

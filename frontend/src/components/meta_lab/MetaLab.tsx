@@ -1,7 +1,7 @@
 import { StableButtonLabel } from "../StableButtonLabel";
 import { translateMessage, useLanguage } from "../../i18n/language";
 import { ArrowDownToLine, Calculator, RotateCcw, Sparkles } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDraft } from "../../hooks/useDraft";
 import type { GlobalBanState, Hero, RecordedDraftGame } from "../../types/draft";
 import {
@@ -107,6 +107,17 @@ export function MetaLab({
     persistSession: false,
     storageKey: "rov_matrix_draft_v1",
   });
+
+  const [laneResetKey, setLaneResetKey] = useState(0);
+  const handleLockHero = useCallback(
+    (heroName: string) => {
+      if (!currentStep || unavailableHeroes.has(heroName)) return false;
+      lockHero(heroName);
+      setLaneResetKey((k) => k + 1);
+      return true;
+    },
+    [currentStep, unavailableHeroes, lockHero],
+  );
 
   useEffect(() => {
     setPausePredict?.(globalBanModalCat !== null);
@@ -341,7 +352,7 @@ export function MetaLab({
             currentStep={currentStep}
             predictedNextPicks={blueNextPicks}
             predictedNextBans={blueNextBans}
-            onLockHero={lockHero}
+            onLockHero={handleLockHero}
             onOpenGlobalBanForTeam={() => setGlobalBanModalCat(blueCategoryKey)}
             onRemoveUsedHero={(heroName) => removeUsedHero(blueCategoryKey, heroName)}
           />
@@ -361,7 +372,7 @@ export function MetaLab({
             currentStep={currentStep}
             predictedNextPicks={redNextPicks}
             predictedNextBans={redNextBans}
-            onLockHero={lockHero}
+            onLockHero={handleLockHero}
             onOpenGlobalBanForTeam={() => setGlobalBanModalCat(redCategoryKey)}
             onRemoveUsedHero={(heroName) => removeUsedHero(redCategoryKey, heroName)}
           />
@@ -386,7 +397,7 @@ export function MetaLab({
               currentStep={currentStep}
               predictedNextPicks={blueNextPicks}
               predictedNextBans={blueNextBans}
-              onLockHero={lockHero}
+              onLockHero={handleLockHero}
               onOpenGlobalBanForTeam={() => setGlobalBanModalCat(blueCategoryKey)}
               onRemoveUsedHero={(heroName) => removeUsedHero(blueCategoryKey, heroName)}
             />
@@ -406,7 +417,7 @@ export function MetaLab({
               currentStep={currentStep}
               predictedNextPicks={redNextPicks}
               predictedNextBans={redNextBans}
-              onLockHero={lockHero}
+              onLockHero={handleLockHero}
               onOpenGlobalBanForTeam={() => setGlobalBanModalCat(redCategoryKey)}
               onRemoveUsedHero={(heroName) => removeUsedHero(redCategoryKey, heroName)}
             />
@@ -437,7 +448,7 @@ export function MetaLab({
               currentStep={currentStep}
               predictedNextPicks={blueNextPicks}
               predictedNextBans={blueNextBans}
-              onLockHero={lockHero}
+              onLockHero={handleLockHero}
               onOpenGlobalBanForTeam={() => setGlobalBanModalCat(blueCategoryKey)}
               onRemoveUsedHero={(heroName) => removeUsedHero(blueCategoryKey, heroName)}
             />
@@ -461,7 +472,7 @@ export function MetaLab({
               currentStep={currentStep}
               predictedNextPicks={redNextPicks}
               predictedNextBans={redNextBans}
-              onLockHero={lockHero}
+              onLockHero={handleLockHero}
               onOpenGlobalBanForTeam={() => setGlobalBanModalCat(redCategoryKey)}
               onRemoveUsedHero={(heroName) => removeUsedHero(redCategoryKey, heroName)}
             />
@@ -482,7 +493,7 @@ export function MetaLab({
                   isLoading={isLoading}
                   blueWinRate={blueWinRate}
                   winHistory={winHistory}
-                  onLockHero={lockHero}
+                  onLockHero={handleLockHero}
                 />
               </div>
             )}
@@ -503,7 +514,7 @@ export function MetaLab({
                 isLoading={isLoading}
                 blueWinRate={blueWinRate}
                 winHistory={winHistory}
-                onLockHero={lockHero}
+                onLockHero={handleLockHero}
               />
             </div>
 
@@ -527,7 +538,8 @@ export function MetaLab({
                 currentStep={currentStep}
                 isLoading={isLoading}
                 isHeroesLoading={isHeroesLoading}
-                onLockHero={lockHero}
+                laneResetKey={laneResetKey}
+                onLockHero={handleLockHero}
               />
             </div>
           </div>

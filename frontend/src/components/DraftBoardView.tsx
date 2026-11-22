@@ -170,6 +170,7 @@ export function DraftBoardView({
     onConfirm: () => void;
   } | null>(null);
   const [swapCount, setSwapCount] = useState(0);
+  const [laneResetKey, setLaneResetKey] = useState(0);
   const [lateHeroMap, setLateHeroMap] = useState<
     Record<string, { gameKey: string; reason: "late" | "autolock" }>
   >({});
@@ -313,9 +314,14 @@ export function DraftBoardView({
           return next;
         });
         setSlotEditor(null);
+        setLaneResetKey((k) => k + 1);
         return true;
       }
-      return handleLockHeroWithTimer(heroName);
+      const locked = handleLockHeroWithTimer(heroName);
+      if (locked !== false) {
+        setLaneResetKey((k) => k + 1);
+      }
+      return locked;
     },
     [editingSlot, editingHero, replaceHero, handleLockHeroWithTimer],
   );
@@ -1266,6 +1272,7 @@ export function DraftBoardView({
                 isHeroesLoading={isHeroesLoading}
                 compactFiltersOnShortScreens
                 replacingHero={editingSlot ? (editingHero ?? null) : null}
+                laneResetKey={laneResetKey}
                 replaceHeader={
                   editingSlot && editingHero ? (
                     <div

@@ -24,6 +24,7 @@ interface HeroGridProps {
   compactFiltersOnShortScreens?: boolean;
   replacingHero?: string | null;
   replaceHeader?: ReactNode;
+  laneResetKey?: number;
   onLockHero: (name: string) => void | boolean;
 }
 
@@ -47,13 +48,26 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
     compactFiltersOnShortScreens = false,
     replacingHero = null,
     replaceHeader = null,
+    laneResetKey = 0,
     onLockHero,
   },
   searchRef,
 ) {
   const { t } = useLanguage();
   const [query, setQuery] = useState("");
-  const [lane, setLane] = useState<string | null>(null);
+  const [laneState, setLaneState] = useState<{ key: number; value: string | null }>({
+    key: laneResetKey,
+    value: null,
+  });
+  const lane = laneState.key === laneResetKey ? laneState.value : null;
+  const setLane = (value: string | null) => setLaneState({ key: laneResetKey, value });
+
+  const lockHeroAndResetLane = (heroName: string, clearQuery = false) => {
+    if (onLockHero(heroName) === false) return false;
+    if (clearQuery) setQuery("");
+    setLane(null);
+    return true;
+  };
 
   const isBan = currentStep?.action === "ban";
   const isBlueTurn = currentStep?.side !== "red";
@@ -120,8 +134,8 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
                   e.stopPropagation();
                   if ((!replacingHero && isLoading) || !allowLock) return;
                   const first = filtered.find((h) => !unavailableHeroes.has(h.name));
-                  if (first && currentStep && onLockHero(first.name) !== false) {
-                    setQuery("");
+                  if (first && currentStep) {
+                    lockHeroAndResetLane(first.name, true);
                   }
                 }
               }}
@@ -209,7 +223,7 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
                 key={hero.name}
                 type="button"
                 disabled={disabled}
-                onClick={() => onLockHero(hero.name)}
+                onClick={() => lockHeroAndResetLane(hero.name)}
                 title={`${displayName(hero.name)} · ${hero.role} · ${primaryLane} · Tier ${hero.tier}${
                   lockedByGlobalBan
                     ? ` · GLOBAL BAN (${inUnivBan ? t("แบนร่วม") : isBan ? t("{0} เคยใช้แล้ว · ไม่ต้องแบน", opponentTeamName) : t("{0} ใช้แล้ว", actingTeamName)})`

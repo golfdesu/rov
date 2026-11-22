@@ -339,6 +339,7 @@ function PracticeRound({
   const { t } = useLanguage();
   const { startingSide, gameCount, showHints, previousEstimates } = meta;
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [laneResetKey, setLaneResetKey] = useState(0);
   const aiTurnStartedAt = useRef(0);
   const handledSignaturesRef = useRef<Set<string>>(new Set(historyEntries.map((item) => item.signature)));
   const playerTeam = startingSide === "blue" ? "A" : "B";
@@ -491,6 +492,7 @@ function PracticeRound({
   function handlePlayerLock(hero: string): boolean {
     if (!playerTurn || unavailableHeroes.has(hero)) return false;
     lockHero(hero, currentStepIndex);
+    setLaneResetKey((k) => k + 1);
     return true;
   }
 
@@ -971,6 +973,7 @@ function PracticeRound({
                     allowLock={playerTurn}
                     isLoading={showHints && isLoading}
                     isHeroesLoading={draft.isHeroesLoading}
+                    laneResetKey={laneResetKey}
                     onLockHero={handlePlayerLock}
                   />
                 </div>

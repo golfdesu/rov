@@ -396,12 +396,6 @@ export function TeamColumn({
             {isBlue ? "BLUE" : "RED"} · <span className="text-ink">{teamName}</span>
           </h2>
         </div>
-        {isMyTurn && (
-          <span className="shrink-0 border border-gold/50 bg-gold/10 px-1.5 py-0.5 font-display text-[10px] font-bold tracking-wider text-gold sm:px-2 sm:text-[11px]">
-            <span className="sm:hidden">NOW</span>
-            <span className="hidden sm:inline">ON THE CLOCK</span>
-          </span>
-        )}
       </div>
 
       {/* Ban slots */}
