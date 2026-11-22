@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov`) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `13758c4` (`main`: mobile UX density, GNN serving cache, multi-device sync merge/`clearedAt`, SQLite index/CTE, fail-closed admin, leak-free split, `compose.yaml`) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-OYcteBXS.js` (`665.66 kB`) + `dist-prod/assets/index-DyAYAAUJ.css` (`128.26 kB`), `dist-prod/index.html` (`2.96 kB`) |
+| **Git Base Commit on VM** | `8767742` (`main`: owner full-screen analytics dashboard `/#admin`, `GET /admin/users`, per-user usage tracking) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-D1d9Azcg.js` (`683.62 kB`) + `dist-prod/assets/index-Ds-wpNa7.css` (`128.58 kB`), `dist-prod/index.html` (`2.96 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-22 11:39 (UTC+7)` |
+| **Last Updated** | `2026-11-22 12:01 (UTC+7)` |
 
 ---
 
@@ -38,6 +38,17 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-22 12:01 (UTC+7) — Owner Full-Screen Analytics Dashboard (`/#admin`), `GET /admin/users` & Per-User Usage Tracking (`8767742`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `3292617` to `8767742` (`main`).
+- **Delta:**
+  - **Backend (`src/db.py`, `src/schemas.py`, `src/api.py`):** Added `user_usage_daily` table (`predict_count`, `draft_save_count`), `record_user_usage()`, SQL-aggregated `get_admin_users_report()`, and owner-only `GET /admin/users` (`404` for guests and non-admins).
+  - **Frontend (`AdminStatsModal.tsx`, `AdminDashboardView.tsx`, `App.tsx`, `types/auth.ts`):** Kept existing `AdminStatsModal` layout unchanged with a new `Dashboard` (`ExternalLink`) header link opening `/#admin` in a new tab; built full-screen `AdminDashboardView` with KPI summary, searchable/filterable/sortable Power Users leaderboard, unlinked Guest device leaderboard, and Cloudflare referer breakdown.
+- **Bundle Built:** `dist-prod/index.html` (`2.96 kB`), `dist-prod/assets/index-D1d9Azcg.js` (`683.62 kB`), `dist-prod/assets/index-Ds-wpNa7.css` (`128.58 kB`).
+- **Deploy Method:** `cd ~/rov/deploy && sudo docker compose up -d --build app` (`deploy_rov_db_data` untouched).
+- **Verification:**
+  - Local gates prior to push: `pytest -q --tb=short` (`139 passed`), `oxlint` (`0` warnings / `0` errors), `validate_gating.py` (`72/72` Golden Draft States, `3/3` Duel Benchmarks), and Playwright E2E verifying `Stats` modal -> new-tab `/#admin` popup with `0` runtime errors and no horizontal overflow.
+  - Live `https://minidraft.app/health` -> `200` (`{"status":"healthy","model_loaded":true}`), `/admin/stats` & `/admin/users` (unauthenticated) -> `404`, live HTML references `index-D1d9Azcg.js` & `index-Ds-wpNa7.css`, `get_admin_users_report()` returns `total_users: 893` and `top_guests: 50`.
 
 ### 📅 2026-11-22 11:39 (UTC+7) — Mobile UX Density, GNN Serving Cache, Multi-Device Sync Hardening & SQLite Indexing (`13758c4`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `113bde2` to `13758c4` (`main`), migrating `deploy/docker-compose.yml` -> `deploy/compose.yaml`.
