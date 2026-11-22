@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov`) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `8767742` (`main`: owner full-screen analytics dashboard `/#admin`, `GET /admin/users`, per-user usage tracking) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-D1d9Azcg.js` (`683.62 kB`) + `dist-prod/assets/index-Ds-wpNa7.css` (`128.58 kB`), `dist-prod/index.html` (`2.96 kB`) |
+| **Git Base Commit on VM** | `15ce12a` (`main`: expanded telemetry & stochastic/statistical analytics engine `src/analytics.py`, `GET /admin/analytics`, `POST /telemetry/event`) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-CG-lnUfb.js` (`696.73 kB`) + `dist-prod/assets/index-DKEIpV1d.css` (`128.77 kB`), `dist-prod/index.html` (`2.96 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-22 12:01 (UTC+7)` |
+| **Last Updated** | `2026-11-22 12:55 (UTC+7)` |
 
 ---
 
@@ -38,6 +38,12 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-22 12:55 (UTC+7) — Expanded Telemetry & Stochastic / Statistical Inference Engine (`15ce12a`)
+- **Pure-Python Stochastic & Statistical Engine (`src/analytics.py`)**: Added `build_statistical_analytics(conn, today_str)` computing Markov retention transitions, absorbing streak `E[L]`, survival curve, Bayesian `Beta(1, 3)` WTP segmentation + 95% Wilson CIs + Two-Proportion Z-tests + Spearman `rho`, Member-vs-Guest retention Relative Risk (`RR`), usage overdispersion (`Var/Mean`) + Gini + Pareto concentration, Gamma-Poisson next-day DAU/AI load forecast, Binomial AI Top-5 Trust Z-test, and piecewise-linear latency quantiles (`p50`/`p95`).
+- **Telemetry Schema & Endpoints (`src/db.py`, `src/schemas.py`, `src/api.py`)**: Added `site_events_daily`, migrated `daily_visits` (`predict_count`, `device_type`), added `POST /telemetry/event`, `X-Client-Id` CORS header + guest predict attribution on `POST /predict`, latency buckets, and owner-only `GET /admin/analytics` (`404` for guests/non-admins).
+- **Frontend Telemetry & Dashboard (`frontend/src/`)**: Wired `device_type`, `X-Client-Id` on `/predict`, fire-and-forget `/telemetry/event` tracking (`draft_complete`, `practice_complete`, `ai_pick`, feature usage), and full stochastic inference visualizations in `AdminDashboardView.tsx`.
+- **Verification & Live Rollout**: Passed `pytest` (`139 passed`), `ruff check/format`, `oxlint` (`0 warnings, 0 errors`), `tsc -b && vite build`, Playwright E2E, `audit_arch_perf.py`, and `validate_gating.py`. Deployed via `sudo docker compose up -d --build app` (`deploy_rov_db_data` preserved); `/health` healthy (`model_loaded: true`), `/admin/analytics` unauthenticated `404`, live HTML serving `index-CG-lnUfb.js` / `index-DKEIpV1d.css`.
 
 ### 📅 2026-11-22 12:01 (UTC+7) — Owner Full-Screen Analytics Dashboard (`/#admin`), `GET /admin/users` & Per-User Usage Tracking (`8767742`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `3292617` to `8767742` (`main`).
