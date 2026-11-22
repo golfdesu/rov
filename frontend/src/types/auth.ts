@@ -140,6 +140,49 @@ export interface AdminZTestResult {
   significant_95: boolean;
 }
 
+export interface KaplanMeierPoint {
+  day: number;
+  at_risk: number;
+  events: number;
+  survival_pct: number;
+  ci_low: number;
+  ci_high: number;
+}
+
+export interface MarkovMatrixRow {
+  from_state: string;
+  sample: number;
+  to_new_pct: number;
+  to_active_pct: number;
+  to_dormant_pct: number;
+}
+
+export interface BehavioralSignalItem {
+  key: string;
+  label: string;
+  rho: number;
+  p_value: number;
+  high_n: number;
+  high_wtp_pct: number;
+  low_n: number;
+  low_wtp_pct: number;
+  lift: number;
+}
+
+export interface GuardrailPowerSummary {
+  achieved_power_pct: number;
+  required_n_per_arm_mde10: number;
+  min_arm_n: number;
+  p_value?: number;
+  status: string;
+}
+
+export interface UserBtydScore {
+  p_alive_pct: number;
+  btyd_tier: string;
+  behavior_score: number;
+}
+
 export interface AdminAnalyticsResponse {
   generated_at_th: string;
   markov_retention: {
@@ -151,9 +194,32 @@ export interface AdminAnalyticsResponse {
       dormant_to_resurrect_pct: number;
       dormant_sample: number;
     };
+    matrix_3x3?: MarkovMatrixRow[];
+    steady_state_active_pct?: number;
+    steady_state_dormant_pct?: number;
+    expected_active_days_14d?: number;
     expected_active_streak_days: number;
     retention_half_life_days: number | null;
     survival_curve: { day: number; eligible: number; survived: number; pct: number }[];
+  };
+  kaplan_meier_survival?: {
+    overall: KaplanMeierPoint[];
+    member: KaplanMeierPoint[];
+    guest: KaplanMeierPoint[];
+  };
+  btyd_alive?: {
+    total_clients: number;
+    expected_alive_clients: number;
+    expected_7d_repeat_visits: number;
+    member_avg_p_alive_pct: number;
+    guest_avg_p_alive_pct: number;
+    segments: {
+      new_today: number;
+      active_core: number;
+      slipping: number;
+      dormant: number;
+    };
+    params: Record<string, number>;
   };
   bayesian_wtp: {
     prior: string;
@@ -234,4 +300,11 @@ export interface AdminAnalyticsResponse {
       practice_hints_off: number;
     };
   };
+  behavioral_signals?: BehavioralSignalItem[];
+  experiment_guardrails?: {
+    member_vs_guest_retention: GuardrailPowerSummary;
+    wtp_engaged_vs_casual: GuardrailPowerSummary;
+    latency_sla: { target_p95_ms: number; observed_p95_ms: number; status: string };
+  };
+  user_btyd_scores?: Record<string, UserBtydScore>;
 }

@@ -1901,7 +1901,14 @@ def test_pricing_survey_endpoint_and_deduplication(tmp_path, monkeypatch):
     assert an["latency"]["total_requests"] == 2
     assert 0.0 <= an["usage_distribution"]["gini_coefficient"] <= 1.0
     assert "transitions" in an["markov_retention"]
+    assert len(an["markov_retention"]["matrix_3x3"]) == 3
     assert "engaged" in an["bayesian_wtp"] and "casual" in an["bayesian_wtp"]
+    assert "overall" in an["kaplan_meier_survival"]
+    assert "segments" in an["btyd_alive"]
+    assert "expected_alive_clients" in an["btyd_alive"]
+    assert len(an["behavioral_signals"]) >= 5
+    assert "latency_sla" in an["experiment_guardrails"]
+    assert len(an["user_btyd_scores"]) == 3
 
 
 def test_daily_visit_telemetry_and_retention_stats(tmp_path, monkeypatch):

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 import sqlite3
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import Any
 
 
@@ -13,7 +13,7 @@ def _normal_cdf(z: float) -> float:
 
 
 def _wilson_ci(k: int, n: int, z: float = 1.959963984540054) -> tuple[float, float, float]:
-    """Return (rate_pct, ci_low_pct, ci_high_pct) using Wilson score interval."""
+    """Return (rate_pct, ci_low_pct, ci_high_pct) using Wilson score interval (Wilson 1927)."""
     if n <= 0:
         return (0.0, 0.0, 0.0)
     p = k / n
@@ -53,6 +53,52 @@ def _two_proportion_z_test(k1: int, n1: int, k2: int, n2: int) -> dict[str, Any]
         "z_stat": round(z, 2),
         "p_value": round(p_val, 4),
         "significant_95": p_val < 0.05,
+    }
+
+
+def _two_prop_power_and_required_n(
+    k1: int,
+    n1: int,
+    k2: int,
+    n2: int,
+    mde: float = 0.10,
+) -> dict[str, Any]:
+    """Compute achieved statistical power and required N/arm (Kohavi et al. 2009/2020)."""
+    z_alpha = 1.959963984540054
+    z_beta_target = 0.8416212335729143
+    if n1 <= 0 or n2 <= 0:
+        return {
+            "achieved_power_pct": 0.0,
+            "required_n_per_arm_mde10": 384,
+            "min_arm_n": min(n1, n2),
+            "status": "underpowered_do_not_peek",
+        }
+    p1 = max(1e-4, min(1.0 - 1e-4, k1 / n1))
+    p2 = max(1e-4, min(1.0 - 1e-4, k2 / n2))
+    p_bar = 0.5 * (p1 + p2)
+    se_diff = math.sqrt(p1 * (1.0 - p1) / n1 + p2 * (1.0 - p2) / n2)
+    delta_obs = abs(p1 - p2)
+    z_power = (delta_obs / se_diff - z_alpha) if se_diff > 1e-12 else -z_alpha
+    power_pct = round(max(0.0, min(1.0, _normal_cdf(z_power))) * 100.0, 1)
+
+    se_mde = math.sqrt(2.0 * p_bar * (1.0 - p_bar))
+    se_alt = math.sqrt(p1 * (1.0 - p1) + p2 * (1.0 - p2))
+    n_req = math.ceil(((z_alpha * se_mde + z_beta_target * se_alt) / max(0.01, mde)) ** 2)
+
+    z_test = _two_proportion_z_test(k1, n1, k2, n2)
+    if z_test["significant_95"]:
+        status = "reliable_significant" if power_pct >= 80.0 else "significant_moderate_power"
+    elif min(n1, n2) < n_req or power_pct < 80.0:
+        status = "underpowered_do_not_peek"
+    else:
+        status = "no_material_effect"
+
+    return {
+        "achieved_power_pct": power_pct,
+        "required_n_per_arm_mde10": int(n_req),
+        "min_arm_n": int(min(n1, n2)),
+        "p_value": z_test["p_value"],
+        "status": status,
     }
 
 
@@ -133,6 +179,7 @@ def _estimate_histogram_quantiles(buckets: dict[str, int]) -> tuple[float, float
 
 
 def _compute_markov_retention(client_dates: dict[str, set[str]], today_str: str) -> dict[str, Any]:
+    """Compute Discrete-Time Markov Chain transitions, steady state & finite-horizon expectation (Pfeifer & Carraway 2000)."""
     try:
         today_dt = date.fromisoformat(today_str)
     except ValueError:
@@ -146,7 +193,6 @@ def _compute_markov_retention(client_dates: dict[str, set[str]], today_str: str)
         min_dt = today_dt
 
     span_days = max(0, (today_dt - min_dt).days)
-    # Build observed 1-step daily transitions for d < today_dt
     new_stay = new_leave = 0
     ret_stay = ret_leave = 0
     dormant_resurrect = dormant_stay = 0
@@ -181,7 +227,6 @@ def _compute_markov_retention(client_dates: dict[str, set[str]], today_str: str)
                 else:
                     dormant_stay += 1
 
-    # Empirical probabilities with weak Jeffreys smoothing only for fundamental expectation stability
     n_new = new_stay + new_leave
     n_ret = ret_stay + ret_leave
     n_dorm = dormant_resurrect + dormant_stay
@@ -190,13 +235,52 @@ def _compute_markov_retention(client_dates: dict[str, set[str]], today_str: str)
     p_ret_ret = ret_stay / n_ret if n_ret > 0 else 0.0
     p_dorm_ret = dormant_resurrect / n_dorm if n_dorm > 0 else 0.0
 
-    # Absorbing 2-state chain over active streak states [New, Retained]: E[L] = 1 + p_new_ret / (1 - p_ret_ret)
+    # Absorbing active-streak duration: E[L] = 1 + p_new_ret / (1 - p_ret_ret)
     effective_p_ret = p_ret_ret if n_ret >= 3 else p_new_ret
     denom_churn = max(0.05, 1.0 - min(0.95, effective_p_ret))
     expected_streak_days = round(1.0 + p_new_ret / denom_churn, 2)
     half_life_days = round(math.log(0.5) / math.log(effective_p_ret), 2) if 0.0 < effective_p_ret < 1.0 else None
 
-    # Cohort Survival Curve S(k): % of clients observed >= k days ago who revisited on or after day k (or >= 2 visits)
+    # Steady-state equilibrium of ergodic {Active, Dormant} subchain
+    churn_prob = max(0.0, 1.0 - effective_p_ret)
+    denom_ss = churn_prob + p_dorm_ret
+    pi_active = (p_dorm_ret / denom_ss) if denom_ss > 1e-9 else 0.0
+
+    # 14-day finite-horizon expected active days starting from New on day 0: v_{t+1} = v_t @ P
+    # States: [Active, Dormant]; day 0 is Active = 1.0 (acquired), step 1 uses p_new_ret
+    exp_active_14d = 1.0
+    if n_new > 0:
+        p_act = p_new_ret
+        exp_active_14d += p_act
+        for _ in range(2, 14):
+            p_act = p_act * effective_p_ret + (1.0 - p_act) * p_dorm_ret
+            exp_active_14d += p_act
+
+    matrix_3x3 = [
+        {
+            "from_state": "New (D0)",
+            "sample": n_new,
+            "to_new_pct": 0.0,
+            "to_active_pct": round(p_new_ret * 100.0, 1),
+            "to_dormant_pct": round((1.0 - p_new_ret) * 100.0, 1) if n_new > 0 else 0.0,
+        },
+        {
+            "from_state": "Active (D1+)",
+            "sample": n_ret,
+            "to_new_pct": 0.0,
+            "to_active_pct": round(p_ret_ret * 100.0, 1),
+            "to_dormant_pct": round((1.0 - p_ret_ret) * 100.0, 1) if n_ret > 0 else 0.0,
+        },
+        {
+            "from_state": "Dormant",
+            "sample": n_dorm,
+            "to_new_pct": 0.0,
+            "to_active_pct": round(p_dorm_ret * 100.0, 1),
+            "to_dormant_pct": round((1.0 - p_dorm_ret) * 100.0, 1) if n_dorm > 0 else 0.0,
+        },
+    ]
+
+    # Cohort retention curve S(k): % of eligible clients observed revisiting >= day k
     max_k = min(7, span_days)
     survival_curve = []
     for k in range(max_k + 1):
@@ -225,10 +309,123 @@ def _compute_markov_retention(client_dates: dict[str, set[str]], today_str: str)
             "dormant_to_resurrect_pct": round(p_dorm_ret * 100.0, 1),
             "dormant_sample": n_dorm,
         },
+        "matrix_3x3": matrix_3x3,
+        "steady_state_active_pct": round(pi_active * 100.0, 1),
+        "steady_state_dormant_pct": round((1.0 - pi_active) * 100.0, 1),
+        "expected_active_days_14d": round(exp_active_14d, 2),
         "expected_active_streak_days": expected_streak_days,
         "retention_half_life_days": half_life_days,
         "survival_curve": survival_curve,
     }
+
+
+def _kaplan_meier_curve(dates_list: list[set[str]], today_dt: date, max_day: int = 14) -> list[dict[str, Any]]:
+    """Nonparametric Kaplan-Meier retention survival S(t) with Greenwood 95% CI (Kaplan & Meier 1958)."""
+    observations: list[tuple[int, bool]] = []
+    for days in dates_list:
+        if not days:
+            continue
+        try:
+            first_dt = date.fromisoformat(min(days))
+            last_dt = date.fromisoformat(max(days))
+        except ValueError:
+            continue
+        tenure = max(0, (today_dt - first_dt).days)
+        last_offset = max(0, (last_dt - first_dt).days)
+        trailing_silence = max(0, (today_dt - last_dt).days)
+        # Non-contractual right-censoring rule: silent <= 1 day is still under active observation (censored)
+        if trailing_silence >= 2:
+            observations.append((last_offset + 1, True))
+        else:
+            observations.append((tenure + 1, False))
+
+    if not observations:
+        return []
+
+    max_obs_day = max(t for t, _ in observations)
+    horizon = min(max_day, max(0, max_obs_day))
+    curve: list[dict[str, Any]] = []
+    s_t = 1.0
+    greenwood_sum = 0.0
+
+    for k in range(horizon + 1):
+        at_risk = sum(1 for t, _ in observations if t >= k)
+        events = sum(1 for t, is_evt in observations if is_evt and t == k)
+        if at_risk <= 0:
+            break
+        if events > 0:
+            s_t *= 1.0 - (events / at_risk)
+            if at_risk > events:
+                greenwood_sum += events / (at_risk * (at_risk - events))
+        se = s_t * math.sqrt(greenwood_sum) if greenwood_sum > 0.0 else 0.0
+        lo = max(0.0, s_t - 1.959963984540054 * se) * 100.0
+        hi = min(1.0, s_t + 1.959963984540054 * se) * 100.0
+        curve.append(
+            {
+                "day": k,
+                "at_risk": at_risk,
+                "events": events,
+                "survival_pct": round(s_t * 100.0, 1),
+                "ci_low": round(lo, 1),
+                "ci_high": round(hi, 1),
+            }
+        )
+    return curve
+
+
+def _calibrate_btyd_params(
+    client_dates: dict[str, set[str]], today_dt: date, p_ret_fallback: float
+) -> dict[str, float]:
+    """Calibrate BG/NBD-inspired empirical parameters via Method-of-Moments (Fader, Hardie & Lee 2005)."""
+    rates: list[float] = []
+    for days in client_dates.values():
+        if not days:
+            continue
+        try:
+            fs_dt = date.fromisoformat(min(days))
+        except ValueError:
+            continue
+        tenure = (today_dt - fs_dt).days
+        if tenure >= 1:
+            x = max(0, len(days) - 1)
+            rates.append(x / tenure)
+
+    mean_rate = (sum(rates) / len(rates)) if rates else 0.15
+    var_rate = (sum((r - mean_rate) ** 2 for r in rates) / max(1, len(rates) - 1)) if len(rates) > 1 else 0.05
+    if mean_rate > 1e-4 and var_rate > mean_rate * 1e-2:
+        r_shape = max(0.35, min(1.5, (mean_rate * mean_rate) / max(1e-4, var_rate)))
+    else:
+        r_shape = 0.65
+    alpha_scale = max(0.75, min(14.0, r_shape / max(0.08, mean_rate)))
+
+    churn_prob = max(0.15, min(0.92, 1.0 - p_ret_fallback))
+    a_bg = 1.0
+    b_bg = max(0.25, (1.0 - churn_prob) / churn_prob)
+    return {"r_shape": r_shape, "alpha_scale": alpha_scale, "a_bg": a_bg, "b_bg": b_bg}
+
+
+def _bg_nbd_p_alive(x: int, t_x: int, tenure: int, params: dict[str, float]) -> float:
+    """Compute P(Alive | x, t_x, T) using BG/NBD posterior hazard formulation (Fader et al. 2005)."""
+    if tenure <= 0:
+        return 1.0
+    r_shape = params["r_shape"]
+    alpha_scale = params["alpha_scale"]
+    a_bg = params["a_bg"]
+    b_bg = params["b_bg"]
+
+    if x <= 0:
+        ratio_zero = (alpha_scale / (alpha_scale + tenure)) ** r_shape
+        base_alive = 1.0 / (1.0 + a_bg / b_bg)
+        return max(0.01, min(0.99, ratio_zero * base_alive))
+
+    ratio = (alpha_scale + tenure) / (alpha_scale + max(0, t_x))
+    exponent = min(25.0, r_shape + x)
+    # Guard math.pow overflow for extreme ratios
+    log_term = exponent * math.log(max(1.0, ratio))
+    if log_term > 30.0:
+        return 0.0
+    hazard_factor = (a_bg / max(0.1, b_bg + x - 1.0)) * math.exp(log_term)
+    return max(0.0, min(1.0, 1.0 / (1.0 + hazard_factor)))
 
 
 def _gamma_poisson_forecast(daily_counts: list[int], alpha0: float = 2.0, beta0: float = 0.05) -> dict[str, Any]:
@@ -238,7 +435,6 @@ def _gamma_poisson_forecast(daily_counts: list[int], alpha0: float = 2.0, beta0:
     post_a = alpha0 + total
     post_b = beta0 + max(1, n)
     lam = post_a / post_b
-    # Predictive NegBin variance for 1 future day: lam + lam^2 / post_a
     pred_var = lam + (lam * lam) / max(1.0, post_a)
     pred_sd = math.sqrt(pred_var)
     lo = max(0, math.floor(lam - 1.96 * pred_sd))
@@ -251,22 +447,92 @@ def _gamma_poisson_forecast(daily_counts: list[int], alpha0: float = 2.0, beta0:
     }
 
 
+def _compute_behavioral_signals(user_records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Evaluate behavioral feature-to-WTP Spearman correlations & lifts (Sifa et al. 2015)."""
+    respondents = [r for r in user_records if r["willing"] is not None]
+    if not respondents:
+        return []
+
+    ys = [1.0 if r["willing"] else 0.0 for r in respondents]
+    specs = [
+        ("active_days", "Active Days (>= 2d)", lambda r: float(r["active_days"]), lambda r: r["active_days"] >= 2),
+        (
+            "predict_calls",
+            "AI Predict Calls (>= 5)",
+            lambda r: float(r["predict_calls"]),
+            lambda r: r["predict_calls"] >= 5,
+        ),
+        ("draft_games", "Saved Draft Games (>= 1)", lambda r: float(r["draft_games"]), lambda r: r["draft_games"] >= 1),
+        (
+            "practice_games",
+            "Practice vs AI (>= 1)",
+            lambda r: float(r["practice_games"]),
+            lambda r: r["practice_games"] >= 1,
+        ),
+        (
+            "oauth_linked",
+            "OAuth Linked (Google/Discord)",
+            lambda r: float(r["oauth_linked"]),
+            lambda r: r["oauth_linked"] == 1,
+        ),
+        ("tenure_days", "Account Age (>= 1d)", lambda r: float(r["tenure_days"]), lambda r: r["tenure_days"] >= 1),
+    ]
+
+    signals: list[dict[str, Any]] = []
+    for key, label, val_fn, split_fn in specs:
+        xs = [val_fn(r) for r in respondents]
+        sp = _spearman_rho(xs, ys)
+        hi_group = [r for r in respondents if split_fn(r)]
+        lo_group = [r for r in respondents if not split_fn(r)]
+        hi_pct = round(sum(1 for r in hi_group if r["willing"]) / len(hi_group) * 100.0, 1) if hi_group else 0.0
+        lo_pct = round(sum(1 for r in lo_group if r["willing"]) / len(lo_group) * 100.0, 1) if lo_group else 0.0
+        lift = round(hi_pct / lo_pct, 2) if hi_group and lo_group and lo_pct > 0.0 else 0.0
+        signals.append(
+            {
+                "key": key,
+                "label": label,
+                "rho": sp["rho"],
+                "p_value": sp["p_value"],
+                "high_n": len(hi_group),
+                "high_wtp_pct": hi_pct,
+                "low_n": len(lo_group),
+                "low_wtp_pct": lo_pct,
+                "lift": lift,
+            }
+        )
+    signals.sort(key=lambda s: abs(float(s["rho"])), reverse=True)
+    return signals
+
+
 def build_statistical_analytics(conn: sqlite3.Connection, today_str: str) -> dict[str, Any]:
     """Compute all probabilistic, stochastic, and statistical metrics from SQLite."""
-    # 1. Per-client daily_visits for Markov retention & Member-vs-Guest Relative Risk
+    try:
+        today_dt = date.fromisoformat(today_str)
+    except ValueError:
+        today_dt = date.today()
+
+    # 1. Per-client daily_visits for Markov retention, Kaplan-Meier, BTYD P(Alive) & Member-vs-Guest RR
     visit_rows = conn.execute("SELECT client_id, visit_date, user_id, predict_count FROM daily_visits").fetchall()
     client_dates: dict[str, set[str]] = {}
     client_is_member: dict[str, bool] = {}
+    user_visit_dates: dict[int, set[str]] = {}
     daily_dau_map: dict[str, int] = {}
+
     for r in visit_rows:
         cid = str(r["client_id"])
         vd = str(r["visit_date"])
         client_dates.setdefault(cid, set()).add(vd)
         if r["user_id"] is not None:
+            uid = int(r["user_id"])
             client_is_member[cid] = True
+            user_visit_dates.setdefault(uid, set()).add(vd)
         else:
             client_is_member.setdefault(cid, False)
         daily_dau_map[vd] = daily_dau_map.get(vd, 0) + 1
+
+    # Merge user_usage_daily dates into user_visit_dates so registered users' activity history is complete
+    for ur in conn.execute("SELECT user_id, usage_date FROM user_usage_daily").fetchall():
+        user_visit_dates.setdefault(int(ur["user_id"]), set()).add(str(ur["usage_date"]))
 
     markov_retention = _compute_markov_retention(client_dates, today_str)
 
@@ -298,7 +564,70 @@ def build_statistical_analytics(conn: sqlite3.Connection, today_str: str) -> dic
         "significant_95": z_rr["significant_95"],
     }
 
-    # 2. User usage & Bayesian WTP segmentation
+    # Kaplan-Meier nonparametric survival curves (Member vs Guest + Overall)
+    kaplan_meier_survival = {
+        "overall": _kaplan_meier_curve(list(client_dates.values()), today_dt),
+        "member": _kaplan_meier_curve([client_dates[cid] for cid in mem_clients], today_dt),
+        "guest": _kaplan_meier_curve([client_dates[cid] for cid in gst_clients], today_dt),
+    }
+
+    # BTYD P(Alive) segmentation across tracked clients (Fader, Hardie & Lee 2005, 2009)
+    p_ret_fallback = (
+        markov_retention["transitions"]["retained_to_active_pct"] / 100.0
+        if markov_retention["transitions"]["retained_sample"] >= 3
+        else markov_retention["transitions"]["new_to_active_pct"] / 100.0
+    )
+    btyd_params = _calibrate_btyd_params(client_dates, today_dt, p_ret_fallback=max(0.05, p_ret_fallback))
+    seg_counts = {"new_today": 0, "active_core": 0, "slipping": 0, "dormant": 0}
+    expected_alive_sum = 0.0
+    expected_7d_visits = 0.0
+    mem_alive_vals: list[float] = []
+    gst_alive_vals: list[float] = []
+
+    for cid, days in client_dates.items():
+        if not days:
+            continue
+        try:
+            fs_dt = date.fromisoformat(min(days))
+            ls_dt = date.fromisoformat(max(days))
+        except ValueError:
+            continue
+        tenure = max(0, (today_dt - fs_dt).days)
+        t_x = max(0, (ls_dt - fs_dt).days)
+        x = max(0, len(days) - 1)
+        p_alive = _bg_nbd_p_alive(x, t_x, tenure, btyd_params)
+        expected_alive_sum += p_alive
+        rate_i = (x + btyd_params["r_shape"]) / (tenure + btyd_params["alpha_scale"])
+        expected_7d_visits += p_alive * rate_i * 7.0
+        if client_is_member.get(cid):
+            mem_alive_vals.append(p_alive)
+        else:
+            gst_alive_vals.append(p_alive)
+
+        if tenure == 0:
+            seg_counts["new_today"] += 1
+        elif p_alive >= 0.70:
+            seg_counts["active_core"] += 1
+        elif p_alive >= 0.30:
+            seg_counts["slipping"] += 1
+        else:
+            seg_counts["dormant"] += 1
+
+    btyd_alive = {
+        "total_clients": len(client_dates),
+        "expected_alive_clients": round(expected_alive_sum, 1),
+        "expected_7d_repeat_visits": round(expected_7d_visits, 1),
+        "member_avg_p_alive_pct": round((sum(mem_alive_vals) / len(mem_alive_vals)) * 100.0, 1)
+        if mem_alive_vals
+        else 0.0,
+        "guest_avg_p_alive_pct": round((sum(gst_alive_vals) / len(gst_alive_vals)) * 100.0, 1)
+        if gst_alive_vals
+        else 0.0,
+        "segments": seg_counts,
+        "params": {k: round(v, 3) for k, v in btyd_params.items()},
+    }
+
+    # 2. User usage, Bayesian WTP segmentation, Behavioral Signals & per-user P(Alive)
     user_rows = conn.execute(
         """
         WITH visit_agg AS (
@@ -314,6 +643,8 @@ def build_statistical_analytics(conn: sqlite3.Connection, today_str: str) -> dic
         )
         SELECT
             u.id,
+            u.created_at,
+            EXISTS(SELECT 1 FROM user_oauth_accounts oa WHERE oa.user_id = u.id) AS oauth_linked,
             COALESCE(va.active_days, 0) AS active_days,
             COALESCE(ua.predict_calls, 0) AS predict_calls,
             COALESCE(json_array_length(json_extract(ds.payload_json, '$.seriesGames')), 0) AS draft_games,
@@ -344,17 +675,66 @@ def build_statistical_analytics(conn: sqlite3.Connection, today_str: str) -> dic
     spearman_x: list[float] = []
     spearman_y: list[float] = []
     games_per_user: list[float] = []
+    behavioral_records: list[dict[str, Any]] = []
+    user_btyd_scores: dict[str, dict[str, Any]] = {}
+    tz_th = timezone(timedelta(hours=7))
 
     for r in user_rows:
+        uid = int(r["id"])
         active_days = int(r["active_days"] or 0)
         predict_calls = int(r["predict_calls"] or 0)
-        total_games = int(r["draft_games"] or 0) + int(r["practice_games"] or 0)
+        draft_games = int(r["draft_games"] or 0)
+        practice_games = int(r["practice_games"] or 0)
+        total_games = draft_games + practice_games
+        oauth_linked = 1 if int(r["oauth_linked"] or 0) > 0 else 0
+        created_dt = datetime.fromtimestamp(int(r["created_at"] or 0), tz_th).date()
+        tenure_days = max(0, (today_dt - created_dt).days)
         games_per_user.append(float(total_games))
+
+        u_days = user_visit_dates.get(uid, set())
+        if u_days:
+            try:
+                u_first = date.fromisoformat(min(u_days))
+                u_last = date.fromisoformat(max(u_days))
+                u_tenure = max(tenure_days, (today_dt - u_first).days)
+                u_tx = max(0, (u_last - u_first).days)
+                u_x = max(0, len(u_days) - 1)
+            except ValueError:
+                u_tenure, u_tx, u_x = tenure_days, 0, max(0, active_days - 1)
+        else:
+            u_tenure, u_tx, u_x = tenure_days, 0, max(0, active_days - 1)
+
+        p_alive_u = _bg_nbd_p_alive(u_x, u_tx, u_tenure, btyd_params)
+        if u_tenure == 0 and u_x == 0:
+            tier = "New"
+        elif p_alive_u >= 0.70:
+            tier = "Core"
+        elif p_alive_u >= 0.30:
+            tier = "At-Risk"
+        else:
+            tier = "Dormant"
+
+        behavior_score = min(
+            100,
+            round(
+                min(40.0, math.log1p(active_days) * 20.0)
+                + min(30.0, math.log1p(total_games) * 14.0)
+                + min(25.0, math.log1p(predict_calls) * 7.0)
+                + oauth_linked * 5.0
+            ),
+        )
+        user_btyd_scores[str(uid)] = {
+            "p_alive_pct": round(p_alive_u * 100.0, 1),
+            "btyd_tier": tier,
+            "behavior_score": int(behavior_score),
+        }
 
         is_engaged = active_days >= 2 or total_games >= 1 or predict_calls >= 10
         choice = r["survey_choice"]
+        is_will_opt: bool | None = None
         if choice in {"willing", "not_willing"}:
             is_will = choice == "willing"
+            is_will_opt = is_will
             mem_n += 1
             if is_will:
                 mem_w += 1
@@ -376,6 +756,18 @@ def build_statistical_analytics(conn: sqlite3.Connection, today_str: str) -> dic
             eng_score = active_days * 3.0 + total_games * 2.0 + min(predict_calls, 50) * 0.2
             spearman_x.append(eng_score)
             spearman_y.append(1.0 if is_will else 0.0)
+
+        behavioral_records.append(
+            {
+                "active_days": active_days,
+                "predict_calls": predict_calls,
+                "draft_games": draft_games,
+                "practice_games": practice_games,
+                "tenure_days": tenure_days,
+                "oauth_linked": oauth_linked,
+                "willing": is_will_opt,
+            }
+        )
 
     def _seg_dict(k: int, n: int) -> dict[str, Any]:
         emp, lo, hi = _wilson_ci(k, n)
@@ -458,7 +850,6 @@ def build_statistical_analytics(conn: sqlite3.Connection, today_str: str) -> dic
         "predicts_next_day": _gamma_poisson_forecast(completed_pred_vals) if completed_pred_vals else None,
     }
 
-    # AI Adoption / Trust Rate vs random pick baseline (Top-5 random prob = 5/130 = 3.85%)
     t1 = totals.get("ai_adopt_top1", 0)
     t2_5 = totals.get("ai_adopt_top2_5", 0)
     t6_10 = totals.get("ai_adopt_top6_10", 0)
@@ -538,8 +929,21 @@ def build_statistical_analytics(conn: sqlite3.Connection, today_str: str) -> dic
         },
     }
 
+    behavioral_signals = _compute_behavioral_signals(behavioral_records)
+    experiment_guardrails = {
+        "member_vs_guest_retention": _two_prop_power_and_required_n(k_mem, n_mem, k_gst, n_gst, mde=0.10),
+        "wtp_engaged_vs_casual": _two_prop_power_and_required_n(eng_w, eng_n, cas_w, cas_n, mde=0.10),
+        "latency_sla": {
+            "target_p95_ms": 500.0,
+            "observed_p95_ms": p95_ms,
+            "status": "no_data" if lat_count == 0 else ("pass" if p95_ms <= 500.0 else "warn"),
+        },
+    }
+
     return {
         "markov_retention": markov_retention,
+        "kaplan_meier_survival": kaplan_meier_survival,
+        "btyd_alive": btyd_alive,
         "bayesian_wtp": bayesian_wtp,
         "member_vs_guest_retention": member_vs_guest_retention,
         "usage_distribution": usage_distribution,
@@ -548,4 +952,7 @@ def build_statistical_analytics(conn: sqlite3.Connection, today_str: str) -> dic
         "latency": latency,
         "guest_vs_member_predicts": guest_vs_member_predicts,
         "feature_usage": feature_usage,
+        "behavioral_signals": behavioral_signals,
+        "experiment_guardrails": experiment_guardrails,
+        "user_btyd_scores": user_btyd_scores,
     }

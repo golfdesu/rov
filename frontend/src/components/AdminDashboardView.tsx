@@ -3,12 +3,14 @@ import {
   ArrowLeft,
   ArrowUpDown,
   BarChart3,
+  BookOpen,
   Coins,
   Cpu,
   Globe,
   RefreshCw,
   Repeat,
   Search,
+  ShieldCheck,
   Sigma,
   Sparkles,
   Users,
@@ -21,6 +23,8 @@ import type {
   AdminStatsResponse,
   AdminUserActivityItem,
   AdminUsersResponse,
+  GuardrailPowerSummary,
+  KaplanMeierPoint,
 } from "../types/auth";
 
 interface AdminDashboardViewProps {
@@ -33,6 +37,7 @@ type SortColumn =
   | "saved_series_games"
   | "practice_games"
   | "predict_calls"
+  | "p_alive"
   | "last_activity"
   | "created_at";
 
@@ -43,6 +48,148 @@ function lastActivityKey(u: AdminUserActivityItem): string {
     [u.last_draft_save_th ?? "", u.last_practice_save_th ?? "", u.last_visit ?? "", u.created_at_th ?? ""]
       .sort()
       .reverse()[0] ?? ""
+  );
+}
+
+function PowerBadge({ summary }: { summary?: GuardrailPowerSummary }) {
+  if (!summary) return null;
+  let label = `Underpowered · Req n=${summary.required_n_per_arm_mde10}/arm`;
+  let cls = "border-gold/40 bg-gold/10 text-gold";
+  if (summary.status === "reliable_significant") {
+    label = `Powered Sig · ${summary.achieved_power_pct}% power`;
+    cls = "border-good/50 bg-good/15 text-good";
+  } else if (summary.status === "significant_moderate_power") {
+    label = `Sig (p=${summary.p_value ?? "-"}) · ${summary.achieved_power_pct}% power`;
+    cls = "border-blue/50 bg-blue/15 text-blue";
+  } else if (summary.status === "no_material_effect") {
+    label = `Powered No Effect · ${summary.achieved_power_pct}%`;
+    cls = "border-line-strong bg-panel-2 text-muted";
+  }
+  return <span className={`border px-1.5 py-0.5 font-mono text-[9px] font-bold ${cls}`}>{label}</span>;
+}
+
+function ConfidenceIntervalBar({
+  label,
+  ratePct,
+  ci,
+  bayesPct,
+  n,
+  willing,
+  accentClass = "bg-gold",
+}: {
+  label: string;
+  ratePct: number;
+  ci: [number, number];
+  bayesPct?: number;
+  n: number;
+  willing: number;
+  accentClass?: string;
+}) {
+  const lo = Math.max(0, Math.min(100, ci[0]));
+  const hi = Math.max(lo, Math.min(100, ci[1]));
+  const pt = Math.max(0, Math.min(100, ratePct));
+  return (
+    <div className="flex flex-col gap-1 border border-line bg-panel p-2 font-mono text-[10px]">
+      <div className="flex items-center justify-between gap-2">
+        <span className="font-bold text-ink">{label}</span>
+        <span className="text-muted">
+          <strong className="text-ink">{ratePct}%</strong> ({willing}/{n})
+          {bayesPct !== undefined && <span className="text-dim"> · Bayes {bayesPct}%</span>}
+        </span>
+      </div>
+      <div className="relative h-2.5 w-full bg-bg">
+        <div className="absolute top-1/2 h-1 -translate-y-1/2 bg-line-strong" style={{ left: `${lo}%`, width: `${Math.max(1.5, hi - lo)}%` }} />
+        <div
+          className={`absolute top-1/2 h-2.5 w-1.5 -translate-x-1/2 -translate-y-1/2 ${accentClass}`}
+          style={{ left: `${pt}%` }}
+        />
+      </div>
+      <div className="flex justify-between text-[9px] text-dim">
+        <span>0%</span>
+        <span>
+          Wilson 95% CI: [{lo}%, {hi}%]
+        </span>
+        <span>100%</span>
+      </div>
+    </div>
+  );
+}
+
+function KaplanMeierChart({
+  member,
+  guest,
+}: {
+  member: KaplanMeierPoint[];
+  guest: KaplanMeierPoint[];
+}) {
+  const maxDay = Math.max(
+    1,
+    member[member.length - 1]?.day ?? 0,
+    guest[guest.length - 1]?.day ?? 0,
+  );
+  const W = 440;
+  const H = 150;
+  const padL = 34;
+  const padR = 14;
+  const padT = 12;
+  const padB = 24;
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+
+  const toX = (day: number) => padL + (day / maxDay) * plotW;
+  const toY = (pct: number) => padT + ((100 - Math.max(0, Math.min(100, pct))) / 100) * plotH;
+
+  const buildPolyline = (pts: KaplanMeierPoint[]) =>
+    pts.map((p) => `${toX(p.day).toFixed(1)},${toY(p.survival_pct).toFixed(1)}`).join(" ");
+
+  const buildBand = (pts: KaplanMeierPoint[]) => {
+    if (pts.length < 2) return "";
+    const upper = pts.map((p) => `${toX(p.day).toFixed(1)},${toY(p.ci_high).toFixed(1)}`);
+    const lower = [...pts].reverse().map((p) => `${toX(p.day).toFixed(1)},${toY(p.ci_low).toFixed(1)}`);
+    return [...upper, ...lower].join(" ");
+  };
+
+  const dayTicks = Array.from({ length: maxDay + 1 }, (_, i) => i).filter(
+    (d) => maxDay <= 7 || d === 0 || d === maxDay || d % Math.ceil(maxDay / 5) === 0,
+  );
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-36 w-full select-none" role="img" aria-label="Kaplan-Meier Retention Survival Curve">
+      {[0, 25, 50, 75, 100].map((yVal) => {
+        const y = toY(yVal);
+        return (
+          <g key={yVal}>
+            <line x1={padL} y1={y} x2={W - padR} y2={y} stroke="rgba(255,255,255,0.08)" strokeDasharray="2 3" />
+            <text x={padL - 5} y={y + 3} textAnchor="end" fill="#8b96a8" fontSize="9" fontFamily="monospace">
+              {yVal}%
+            </text>
+          </g>
+        );
+      })}
+      {dayTicks.map((d) => {
+        const x = toX(d);
+        return (
+          <text key={d} x={x} y={H - 6} textAnchor="middle" fill="#8b96a8" fontSize="9" fontFamily="monospace">
+            D{d}
+          </text>
+        );
+      })}
+
+      {guest.length >= 2 && <polygon points={buildBand(guest)} fill="rgba(201,158,64,0.12)" />}
+      {member.length >= 2 && <polygon points={buildBand(member)} fill="rgba(56,152,236,0.14)" />}
+
+      {guest.length >= 2 && (
+        <polyline fill="none" stroke="#c99e40" strokeWidth="2" strokeDasharray="4 2" points={buildPolyline(guest)} />
+      )}
+      {member.length >= 2 && <polyline fill="none" stroke="#3898ec" strokeWidth="2.2" points={buildPolyline(member)} />}
+
+      {guest.map((p) => (
+        <circle key={`g-${p.day}`} cx={toX(p.day)} cy={toY(p.survival_pct)} r="2.6" fill="#c99e40" />
+      ))}
+      {member.map((p) => (
+        <circle key={`m-${p.day}`} cx={toX(p.day)} cy={toY(p.survival_pct)} r="2.8" fill="#3898ec" />
+      ))}
+    </svg>
   );
 }
 
@@ -122,6 +269,8 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
     }
   };
 
+  const userScores = useMemo(() => analytics?.user_btyd_scores ?? {}, [analytics]);
+
   const filteredUsers = useMemo(() => {
     const list = usersReport?.users ?? [];
     const q = query.trim().toLowerCase();
@@ -150,6 +299,10 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
         cmp = a.practice_games - b.practice_games || a.active_days - b.active_days;
       } else if (sortBy === "predict_calls") {
         cmp = a.predict_calls - b.predict_calls || a.saved_series_games - b.saved_series_games;
+      } else if (sortBy === "p_alive") {
+        const sa = userScores[String(a.id)]?.p_alive_pct ?? 0;
+        const sb = userScores[String(b.id)]?.p_alive_pct ?? 0;
+        cmp = sa - sb || (userScores[String(a.id)]?.behavior_score ?? 0) - (userScores[String(b.id)]?.behavior_score ?? 0);
       } else if (sortBy === "last_activity") {
         cmp = lastActivityKey(a).localeCompare(lastActivityKey(b));
       } else {
@@ -158,7 +311,7 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
       if (cmp === 0) cmp = a.id - b.id;
       return sortDesc ? -cmp : cmp;
     });
-  }, [usersReport, query, filterMode, sortBy, sortDesc]);
+  }, [usersReport, query, filterMode, sortBy, sortDesc, userScores]);
 
   const visibleUsers = showAllUsers ? filteredUsers : filteredUsers.slice(0, INITIAL_VISIBLE_USERS);
   const estimatedGuests =
@@ -178,6 +331,11 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
       <ArrowUpDown className="h-3 w-3 shrink-0" />
     </button>
   );
+
+  const btyd = analytics?.btyd_alive;
+  const btydTotal = Math.max(1, btyd?.total_clients ?? 1);
+  const kmMember = analytics?.kaplan_meier_survival?.member ?? [];
+  const kmGuest = analytics?.kaplan_meier_survival?.guest ?? [];
 
   return (
     <main className="mx-auto flex w-full max-w-[1680px] flex-1 flex-col gap-4 overflow-y-auto px-3 py-4 sm:px-6">
@@ -279,148 +437,307 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
         </section>
       )}
 
-      {/* Probability, Stochastic & Statistical Inference Section */}
+      {/* Probability, Stochastic & Research Analytics Section */}
       {analytics && (
         <section className="flex flex-col gap-3 border border-gold/35 bg-panel p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Sigma className="h-4 w-4 text-gold" />
               <h2 className="font-display text-sm font-bold tracking-wide text-ink sm:text-base">
-                STOCHASTIC, PROBABILITY & STATISTICAL INFERENCE ENGINE
+                RESEARCH-GRADE STOCHASTIC & STATISTICAL INFERENCE ENGINE
               </h2>
             </div>
             <span className="border border-gold/40 bg-gold/10 px-2 py-0.5 font-mono text-[10px] font-bold text-gold">
-              Markov · Beta-Binomial · Relative Risk · Gamma-Poisson
+              BG/NBD · Markov 3×3 · Kaplan-Meier · Wilson/Katz CI · Kohavi Power
             </span>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {/* 1. Markov Retention & Absorbing Streak */}
+          {/* Row 1: Pfeifer-Carraway Markov 3x3 + Wilson/Kohavi WTP + BTYD P(Alive) & Katz RR */}
+          <div className="grid grid-cols-1 gap-3 xl:grid-cols-3">
+            {/* 1. Pfeifer & Carraway 3x3 Markov Matrix */}
             <div className="flex flex-col gap-2 border border-line bg-bg/60 p-3.5">
-              <div className="flex items-center justify-between">
-                <span className="font-display text-xs font-bold text-good">1. Markov Chain Retention Process</span>
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-display text-xs font-bold text-good">
+                  1. Markov Migration Matrix (Pfeifer &amp; Carraway)
+                </span>
                 <span className="font-mono text-[10px] text-dim">
-                  E[L] = {analytics.markov_retention.expected_active_streak_days}d
+                  E[14d] = {analytics.markov_retention.expected_active_days_14d ?? analytics.markov_retention.expected_active_streak_days}d
                 </span>
               </div>
-              <div className="grid grid-cols-3 gap-1.5 font-mono text-[11px]">
-                <div className="border border-line bg-panel p-2">
-                  <div className="text-[10px] text-dim">New → Active</div>
-                  <div className="font-extrabold text-ink">
-                    {analytics.markov_retention.transitions.new_to_active_pct}%
-                  </div>
-                  <div className="text-[9px] text-dim">n={analytics.markov_retention.transitions.new_sample}</div>
-                </div>
-                <div className="border border-line bg-panel p-2">
-                  <div className="text-[10px] text-dim">Retain → Active</div>
-                  <div className="font-extrabold text-good">
-                    {analytics.markov_retention.transitions.retained_to_active_pct}%
-                  </div>
-                  <div className="text-[9px] text-dim">n={analytics.markov_retention.transitions.retained_sample}</div>
-                </div>
-                <div className="border border-line bg-panel p-2">
-                  <div className="text-[10px] text-dim">Dormant → Back</div>
-                  <div className="font-extrabold text-gold">
-                    {analytics.markov_retention.transitions.dormant_to_resurrect_pct}%
-                  </div>
-                  <div className="text-[9px] text-dim">n={analytics.markov_retention.transitions.dormant_sample}</div>
-                </div>
-              </div>
-              <div className="font-mono text-[10px] text-muted">
-                Half-Life:{" "}
-                <strong className="text-ink">
-                  {analytics.markov_retention.retention_half_life_days !== null
-                    ? `${analytics.markov_retention.retention_half_life_days} วัน`
-                    : "-"}
-                </strong>
-                {" · Survival S(t): "}
-                {analytics.markov_retention.survival_curve.map((s) => `D${s.day}:${s.pct}%`).join(" → ")}
+
+              {analytics.markov_retention.matrix_3x3 ? (
+                <table className="w-full border-collapse border border-line font-mono text-[10px]">
+                  <thead>
+                    <tr className="border-b border-line bg-panel text-muted">
+                      <th className="px-2 py-1 text-left">From State</th>
+                      <th className="px-2 py-1 text-right">n</th>
+                      <th className="px-2 py-1 text-right text-good">→ Active</th>
+                      <th className="px-2 py-1 text-right text-dim">→ Dormant</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-line">
+                    {analytics.markov_retention.matrix_3x3.map((row) => (
+                      <tr key={row.from_state} className="bg-panel/40">
+                        <td className="px-2 py-1 font-bold text-ink">{row.from_state}</td>
+                        <td className="px-2 py-1 text-right text-dim">{row.sample}</td>
+                        <td
+                          className="px-2 py-1 text-right font-bold text-good"
+                          style={{ backgroundColor: `rgba(74, 222, 128, ${Math.min(0.28, row.to_active_pct / 220)})` }}
+                        >
+                          {row.to_active_pct}%
+                        </td>
+                        <td
+                          className="px-2 py-1 text-right text-muted"
+                          style={{ backgroundColor: `rgba(255, 255, 255, ${Math.min(0.08, row.to_dormant_pct / 900)})` }}
+                        >
+                          {row.to_dormant_pct}%
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : null}
+
+              <div className="flex flex-wrap items-center justify-between gap-1 font-mono text-[10px] text-muted">
+                <span>
+                  Streak E[L]: <strong className="text-ink">{analytics.markov_retention.expected_active_streak_days}d</strong>
+                </span>
+                <span>
+                  Half-Life:{" "}
+                  <strong className="text-ink">
+                    {analytics.markov_retention.retention_half_life_days !== null
+                      ? `${analytics.markov_retention.retention_half_life_days}d`
+                      : "-"}
+                  </strong>
+                </span>
+                <span>
+                  Steady-State Active:{" "}
+                  <strong className="text-gold">{analytics.markov_retention.steady_state_active_pct ?? 0}%</strong>
+                </span>
               </div>
             </div>
 
-            {/* 2. Bayesian Beta-Binomial WTP Segmentation */}
+            {/* 2. Bayesian Beta-Binomial WTP + Wilson 95% CI Error Bars */}
             <div className="flex flex-col gap-2 border border-line bg-bg/60 p-3.5">
-              <div className="flex items-center justify-between">
-                <span className="font-display text-xs font-bold text-gold">2. Bayesian WTP (Beta-Binomial CI)</span>
-                <span className="font-mono text-[10px] text-dim">{analytics.bayesian_wtp.prior}</span>
+              <div className="flex flex-wrap items-center justify-between gap-1">
+                <span className="font-display text-xs font-bold text-gold">
+                  2. Bayesian WTP &amp; Wilson 95% CI (Wilson 1927)
+                </span>
+                <PowerBadge summary={analytics.experiment_guardrails?.wtp_engaged_vs_casual} />
               </div>
-              <div className="grid grid-cols-2 gap-1.5 font-mono text-[11px]">
-                <div className="border border-line bg-panel p-2">
-                  <div className="text-[10px] text-dim">Engaged Users (ใช้จริง)</div>
-                  <div className="font-extrabold text-good">
-                    {analytics.bayesian_wtp.engaged.empirical_pct}%{" "}
-                    <span className="text-[10px] font-normal text-muted">
-                      ({analytics.bayesian_wtp.engaged.willing}/{analytics.bayesian_wtp.engaged.n})
-                    </span>
-                  </div>
-                  <div className="text-[9px] text-dim">
-                    Bayes: {analytics.bayesian_wtp.engaged.bayes_posterior_pct}% · 95%CI [
-                    {analytics.bayesian_wtp.engaged.wilson_ci_95[0]}, {analytics.bayesian_wtp.engaged.wilson_ci_95[1]}]
-                  </div>
-                </div>
-                <div className="border border-line bg-panel p-2">
-                  <div className="text-[10px] text-dim">Casual / 1st Visit</div>
-                  <div className="font-extrabold text-ink">
-                    {analytics.bayesian_wtp.casual.empirical_pct}%{" "}
-                    <span className="text-[10px] font-normal text-muted">
-                      ({analytics.bayesian_wtp.casual.willing}/{analytics.bayesian_wtp.casual.n})
-                    </span>
-                  </div>
-                  <div className="text-[9px] text-dim">
-                    Bayes: {analytics.bayesian_wtp.casual.bayes_posterior_pct}% · 95%CI [
-                    {analytics.bayesian_wtp.casual.wilson_ci_95[0]}, {analytics.bayesian_wtp.casual.wilson_ci_95[1]}]
-                  </div>
-                </div>
-              </div>
+
+              <ConfidenceIntervalBar
+                label="Engaged Users (ใช้ซ้ำ / เล่นเกม)"
+                ratePct={analytics.bayesian_wtp.engaged.empirical_pct}
+                ci={analytics.bayesian_wtp.engaged.wilson_ci_95}
+                bayesPct={analytics.bayesian_wtp.engaged.bayes_posterior_pct}
+                n={analytics.bayesian_wtp.engaged.n}
+                willing={analytics.bayesian_wtp.engaged.willing}
+                accentClass="bg-good"
+              />
+              <ConfidenceIntervalBar
+                label="Casual / 1st Visit"
+                ratePct={analytics.bayesian_wtp.casual.empirical_pct}
+                ci={analytics.bayesian_wtp.casual.wilson_ci_95}
+                bayesPct={analytics.bayesian_wtp.casual.bayes_posterior_pct}
+                n={analytics.bayesian_wtp.casual.n}
+                willing={analytics.bayesian_wtp.casual.willing}
+                accentClass="bg-blue"
+              />
+
               <div className="font-mono text-[10px] text-muted">
-                Z-test (Engaged vs Casual): p={analytics.bayesian_wtp.engaged_vs_casual_test.p_value} · Spearman rho(usage,WTP)=
-                <strong className="text-ink">{analytics.bayesian_wtp.spearman_engagement_vs_wtp.rho}</strong> (p=
-                {analytics.bayesian_wtp.spearman_engagement_vs_wtp.p_value})
+                Z-test (Engaged vs Casual): p={analytics.bayesian_wtp.engaged_vs_casual_test.p_value} · Guests:{" "}
+                <strong className="text-ink">{analytics.bayesian_wtp.guests.empirical_pct}%</strong> (
+                {analytics.bayesian_wtp.guests.willing}/{analytics.bayesian_wtp.guests.n})
               </div>
             </div>
 
-            {/* 3. Member vs Guest Relative Risk + Usage Overdispersion & Gini */}
+            {/* 3. BTYD P(Alive) Cohorts + Katz Relative Risk & Gamma-Poisson */}
             <div className="flex flex-col gap-2 border border-line bg-bg/60 p-3.5">
-              <div className="flex items-center justify-between">
-                <span className="font-display text-xs font-bold text-blue">3. Relative Risk, Gini & Overdispersion</span>
-                <span className="font-mono text-[10px] text-dim">
-                  Var/Mean = {analytics.usage_distribution.dispersion_index}
+              <div className="flex flex-wrap items-center justify-between gap-1">
+                <span className="font-display text-xs font-bold text-blue">
+                  3. BTYD P(Alive) &amp; Katz Relative Risk
                 </span>
+                <PowerBadge summary={analytics.experiment_guardrails?.member_vs_guest_retention} />
               </div>
-              <div className="grid grid-cols-2 gap-1.5 font-mono text-[11px]">
+
+              {btyd && (
+                <div className="flex flex-col gap-1 border border-line bg-panel p-2 font-mono text-[10px]">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-ink">
+                      BG/NBD Expected Alive: <strong className="text-good">{btyd.expected_alive_clients}</strong> /{" "}
+                      {btyd.total_clients}
+                    </span>
+                    <span className="text-dim">7d repeat ~{btyd.expected_7d_repeat_visits}</span>
+                  </div>
+                  <div className="flex h-2.5 w-full overflow-hidden bg-bg">
+                    <div
+                      className="bg-blue"
+                      style={{ width: `${(btyd.segments.new_today / btydTotal) * 100}%` }}
+                      title={`New Today: ${btyd.segments.new_today}`}
+                    />
+                    <div
+                      className="bg-good"
+                      style={{ width: `${(btyd.segments.active_core / btydTotal) * 100}%` }}
+                      title={`Active Core (>=70%): ${btyd.segments.active_core}`}
+                    />
+                    <div
+                      className="bg-gold"
+                      style={{ width: `${(btyd.segments.slipping / btydTotal) * 100}%` }}
+                      title={`At-Risk (30-69%): ${btyd.segments.slipping}`}
+                    />
+                    <div
+                      className="bg-line-strong"
+                      style={{ width: `${(btyd.segments.dormant / btydTotal) * 100}%` }}
+                      title={`Dormant (<30%): ${btyd.segments.dormant}`}
+                    />
+                  </div>
+                  <div className="flex flex-wrap justify-between gap-x-2 text-[9px] text-dim">
+                    <span className="text-blue">New {btyd.segments.new_today}</span>
+                    <span className="text-good">Core {btyd.segments.active_core}</span>
+                    <span className="text-gold">At-Risk {btyd.segments.slipping}</span>
+                    <span>Dormant {btyd.segments.dormant}</span>
+                    <span>
+                      Avg Alive: Mem {btyd.member_avg_p_alive_pct}% / Gst {btyd.guest_avg_p_alive_pct}%
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-1.5 font-mono text-[10px]">
                 <div className="border border-line bg-panel p-2">
-                  <div className="text-[10px] text-dim">Return Risk: Member vs Guest</div>
-                  <div className="font-extrabold text-blue">RR = {analytics.member_vs_guest_retention.relative_risk}x</div>
+                  <div className="text-[9px] text-dim">Member vs Guest RR (Katz CI)</div>
+                  <div className="font-extrabold text-blue">
+                    RR = {analytics.member_vs_guest_retention.relative_risk}x{" "}
+                    <span className="text-[9px] font-normal text-muted">
+                      [{analytics.member_vs_guest_retention.rr_ci_95[0]}–{analytics.member_vs_guest_retention.rr_ci_95[1]}]
+                    </span>
+                  </div>
                   <div className="text-[9px] text-dim">
                     Mem {analytics.member_vs_guest_retention.member.rate_pct}% vs Guest{" "}
-                    {analytics.member_vs_guest_retention.guest.rate_pct}% (p=
-                    {analytics.member_vs_guest_retention.p_value})
+                    {analytics.member_vs_guest_retention.guest.rate_pct}% (p={analytics.member_vs_guest_retention.p_value})
                   </div>
                 </div>
                 <div className="border border-line bg-panel p-2">
-                  <div className="text-[10px] text-dim">Pareto Concentration</div>
-                  <div className="font-extrabold text-gold">Gini = {analytics.usage_distribution.gini_coefficient}</div>
+                  <div className="text-[9px] text-dim">Pareto &amp; Overdispersion</div>
+                  <div className="font-extrabold text-gold">
+                    Gini {analytics.usage_distribution.gini_coefficient} · Var/M {analytics.usage_distribution.dispersion_index}
+                  </div>
                   <div className="text-[9px] text-dim">
-                    Top 10% สร้าง {analytics.usage_distribution.top_10pct_share_pct}% เกมทั้งหมด
+                    Top10%={analytics.usage_distribution.top_10pct_share_pct}% · Next DAU{" "}
+                    <strong className="text-good">{analytics.load_forecast.dau_next_day.expected_next_day}</strong>
                   </div>
                 </div>
-              </div>
-              <div className="font-mono text-[10px] text-muted">
-                Regime: <strong className="text-ink">{analytics.usage_distribution.process_regime}</strong> · Gamma-Poisson Next-Day DAU:{" "}
-                <strong className="text-good">{analytics.load_forecast.dau_next_day.expected_next_day}</strong> [
-                {analytics.load_forecast.dau_next_day.ci_low}–{analytics.load_forecast.dau_next_day.ci_high}]
               </div>
             </div>
           </div>
 
-          {/* Feature Adoption, Guest vs Member Predicts, AI Trust & Latency */}
+          {/* Row 2: Kaplan-Meier Survival Chart + Sifa Behavioral Signals Matrix */}
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+            {/* 4. Kaplan-Meier Survival Plot */}
+            <div className="flex flex-col gap-2 border border-line bg-bg/60 p-3.5">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="font-display text-xs font-bold text-ink">
+                  4. Kaplan–Meier Survival S(t) (Right-Censored · 95% Greenwood Band)
+                </span>
+                <div className="flex items-center gap-3 font-mono text-[10px]">
+                  <span className="flex items-center gap-1 text-blue">
+                    <span className="inline-block h-1.5 w-3 bg-blue" /> Member ({kmMember[0]?.at_risk ?? 0})
+                  </span>
+                  <span className="flex items-center gap-1 text-gold">
+                    <span className="inline-block h-1.5 w-3 bg-gold" /> Guest ({kmGuest[0]?.at_risk ?? 0})
+                  </span>
+                </div>
+              </div>
+
+              <div className="border border-line bg-panel/70 px-2 pt-2 pb-1">
+                <KaplanMeierChart member={kmMember} guest={kmGuest} />
+              </div>
+
+              <div className="font-mono text-[10px] text-dim">
+                Cohort Retention ≥Dk:{" "}
+                {analytics.markov_retention.survival_curve.map((s) => `D${s.day}: ${s.pct}% (${s.survived}/${s.eligible})`).join(" · ")}
+              </div>
+            </div>
+
+            {/* 5. Sifa Behavioral Feature-to-WTP Signal Matrix */}
+            <div className="flex flex-col gap-2 border border-line bg-bg/60 p-3.5">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="font-display text-xs font-bold text-ink">
+                  5. Behavioral Feature-to-WTP Signal Matrix (Sifa et al. 2015)
+                </span>
+                <span className="font-mono text-[10px] text-dim">
+                  Global Spearman rho = {analytics.bayesian_wtp.spearman_engagement_vs_wtp.rho} (p=
+                  {analytics.bayesian_wtp.spearman_engagement_vs_wtp.p_value})
+                </span>
+              </div>
+
+              <div className="overflow-x-auto border border-line bg-panel/70">
+                <table className="w-full border-collapse font-mono text-[10px]">
+                  <thead>
+                    <tr className="border-b border-line bg-panel text-muted">
+                      <th className="px-2 py-1.5 text-left">Behavioral Feature</th>
+                      <th className="px-2 py-1.5 text-right">Spearman rho</th>
+                      <th className="px-2 py-1.5 text-right">p-value</th>
+                      <th className="px-2 py-1.5 text-right">High WTP%</th>
+                      <th className="px-2 py-1.5 text-right">Low WTP%</th>
+                      <th className="px-2 py-1.5 text-right">Lift</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-line">
+                    {(analytics.behavioral_signals ?? []).map((sig) => {
+                      const sigColor =
+                        sig.p_value < 0.05
+                          ? "font-bold text-good"
+                          : Math.abs(sig.rho) >= 0.1
+                            ? "text-gold"
+                            : "text-dim";
+                      return (
+                        <tr key={sig.key} className="hover:bg-panel-2/40">
+                          <td className="px-2 py-1 text-ink">{sig.label}</td>
+                          <td className={`px-2 py-1 text-right ${sigColor}`}>{sig.rho}</td>
+                          <td className="px-2 py-1 text-right text-muted">{sig.p_value}</td>
+                          <td className="px-2 py-1 text-right text-ink">
+                            {sig.high_wtp_pct}% <span className="text-[9px] text-dim">({sig.high_n})</span>
+                          </td>
+                          <td className="px-2 py-1 text-right text-dim">
+                            {sig.low_wtp_pct}% ({sig.low_n})
+                          </td>
+                          <td className="px-2 py-1 text-right font-bold text-gold">
+                            {sig.lift > 0 ? `${sig.lift}x` : "-"}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          {/* Row 3: Guardrails, AI Calls & Latency, AI Trust, Devices & Tools */}
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
             <div className="border border-line bg-bg/60 p-3 font-mono text-[11px]">
               <div className="mb-1.5 flex items-center justify-between font-display text-xs font-bold text-ink">
                 <span className="flex items-center gap-1.5">
-                  <Cpu className="h-3.5 w-3.5 text-gold" /> Guest vs Member AI Calls & Latency
+                  <Cpu className="h-3.5 w-3.5 text-gold" /> Guest vs Member AI Calls &amp; SLA
                 </span>
-                <span className="text-[10px] text-dim">{analytics.latency.total_requests} reqs</span>
+                <span
+                  className={`flex items-center gap-1 border px-1.5 py-0.5 font-mono text-[9px] font-bold ${
+                    analytics.experiment_guardrails?.latency_sla.status === "pass"
+                      ? "border-good/50 bg-good/15 text-good"
+                      : analytics.experiment_guardrails?.latency_sla.status === "warn"
+                        ? "border-red/50 bg-red/15 text-red"
+                        : "border-line bg-panel text-dim"
+                  }`}
+                >
+                  <ShieldCheck className="h-2.5 w-2.5" />
+                  {analytics.experiment_guardrails?.latency_sla.status === "pass"
+                    ? "SLA p95<=500ms OK"
+                    : analytics.experiment_guardrails?.latency_sla.status === "warn"
+                      ? "SLA WARN >500ms"
+                      : "Pending traffic"}
+                </span>
               </div>
               <div className="flex items-center justify-between text-muted">
                 <span>
@@ -433,8 +750,8 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                 </span>
               </div>
               <div className="mt-1.5 text-[10px] text-dim">
-                Mean: <strong className="text-ink">{analytics.latency.mean_ms} ms</strong> · p50:{" "}
-                <strong className="text-good">{analytics.latency.p50_ms} ms</strong> · p95:{" "}
+                Reqs: {analytics.latency.total_requests} · Mean: <strong className="text-ink">{analytics.latency.mean_ms} ms</strong> ·
+                p50: <strong className="text-good">{analytics.latency.p50_ms} ms</strong> · p95:{" "}
                 <strong className="text-gold">{analytics.latency.p95_ms} ms</strong>
               </div>
             </div>
@@ -467,7 +784,7 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
             <div className="border border-line bg-bg/60 p-3 font-mono text-[11px]">
               <div className="mb-1.5 flex items-center justify-between font-display text-xs font-bold text-ink">
                 <span className="flex items-center gap-1.5">
-                  <Activity className="h-3.5 w-3.5 text-blue" /> Completion, Devices & Tools
+                  <Activity className="h-3.5 w-3.5 text-blue" /> Completion, Devices &amp; Tools
                 </span>
                 <span className="text-[10px] text-dim">
                   18/18: {analytics.feature_usage.draft_completed_18}D / {analytics.feature_usage.practice_completed_18}P
@@ -489,6 +806,32 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
               </div>
             </div>
           </div>
+
+          {/* Collapsible Research Citations Drawer */}
+          <details className="border border-line bg-bg/40 px-3 py-2 font-mono text-[10px] text-muted">
+            <summary className="flex cursor-pointer items-center gap-1.5 font-display text-[11px] font-bold text-ink select-none hover:text-gold">
+              <BookOpen className="h-3.5 w-3.5 text-gold" />
+              <span>Research Methodology &amp; Academic References (คลิกเพื่อดูที่มาของสูตรทั้งหมด)</span>
+            </summary>
+            <div className="mt-2 grid grid-cols-1 gap-2 border-t border-line pt-2 md:grid-cols-2">
+              <div>
+                <strong className="text-ink">1. BTYD P(Alive) &amp; Gamma-Poisson (Fader, Hardie &amp; Lee 2005, 2009):</strong>{" "}
+                ใช้ความถี่ (x), recency (t_x) และ tenure (T) ประมาณโอกาสที่ผู้ใช้ยังคง active อยู่ vs เลิกใช้แบบ non-contractual
+              </div>
+              <div>
+                <strong className="text-ink">2. Markov Retention &amp; Expected Horizon (Pfeifer &amp; Carraway 2000):</strong>{" "}
+                ตาราง 3×3 คำนวณ Transition Matrix ข้ามสถานะ New / Active / Dormant และพยากรณ์จำนวนวันที่ active ในช่วง 14 วัน
+              </div>
+              <div>
+                <strong className="text-ink">3. Kaplan–Meier Survival (Kaplan &amp; Meier 1958):</strong>{" "}
+                เส้นรอดชีวิตแบบ nonparametric product-limit พร้อม right-censoring และช่วงความเชื่อมั่น 95% Greenwood
+              </div>
+              <div>
+                <strong className="text-ink">4. Wilson (1927), Katz (1978), Kohavi (2020) &amp; Sifa (2015):</strong>{" "}
+                Wilson CI สำหรับ sample เล็ก, Log Relative Risk CI, Kohavi Statistical Power / MDE Guardrails และ Feature-to-WTP signals
+              </div>
+            </div>
+          </details>
         </section>
       )}
 
@@ -541,7 +884,7 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
         </div>
 
         <div className="overflow-x-auto border border-line bg-bg/50">
-          <table className="w-full min-w-[900px] border-collapse text-left font-mono text-xs">
+          <table className="w-full min-w-[980px] border-collapse text-left font-mono text-xs">
             <thead>
               <tr className="border-b border-line bg-panel-2/70">
                 <th className="px-3 py-2 text-[11px] font-bold text-dim">#</th>
@@ -550,6 +893,7 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                 <th className="px-3 py-2 text-right">{sortHeaderBtn("saved_series_games", "Draft (เกม)")}</th>
                 <th className="px-3 py-2 text-right">{sortHeaderBtn("practice_games", "vs AI (เกม)")}</th>
                 <th className="px-3 py-2 text-right">{sortHeaderBtn("predict_calls", "เรียก AI")}</th>
+                <th className="px-3 py-2 text-right">{sortHeaderBtn("p_alive", "BTYD P(Alive)")}</th>
                 <th className="px-3 py-2 text-center text-[11px] font-bold text-muted">แบบสอบถาม</th>
                 <th className="px-3 py-2 text-right">{sortHeaderBtn("last_activity", "ใช้งานล่าสุด")}</th>
                 <th className="px-3 py-2 text-right">{sortHeaderBtn("created_at", "สมัครเมื่อ")}</th>
@@ -558,70 +902,93 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
             <tbody className="divide-y divide-line">
               {visibleUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-8 text-center text-dim">
+                  <td colSpan={10} className="px-4 py-8 text-center text-dim">
                     {loading ? "กำลังโหลดรายชื่อผู้ใช้..." : "ไม่พบบัญชีที่ตรงกับตัวกรอง"}
                   </td>
                 </tr>
               ) : (
-                visibleUsers.map((u, idx) => (
-                  <tr key={u.id} className="hover:bg-panel-2/40">
-                    <td className="px-3 py-2 text-dim">{idx + 1}</td>
-                    <td className="max-w-[300px] px-3 py-2">
-                      <div className="flex items-center gap-1.5">
-                        <span className="truncate font-bold text-gold">@{u.username}</span>
-                        <span className="shrink-0 border border-line bg-panel px-1 py-0 text-[9px] text-muted uppercase">
-                          {u.auth_provider}
+                visibleUsers.map((u, idx) => {
+                  const bScore = userScores[String(u.id)];
+                  const tierBadge =
+                    bScore?.btyd_tier === "Core"
+                      ? "text-good"
+                      : bScore?.btyd_tier === "At-Risk"
+                        ? "text-gold"
+                        : bScore?.btyd_tier === "New"
+                          ? "text-blue"
+                          : "text-dim";
+                  return (
+                    <tr key={u.id} className="hover:bg-panel-2/40">
+                      <td className="px-3 py-2 text-dim">{idx + 1}</td>
+                      <td className="max-w-[300px] px-3 py-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="truncate font-bold text-gold">@{u.username}</span>
+                          <span className="shrink-0 border border-line bg-panel px-1 py-0 text-[9px] text-muted uppercase">
+                            {u.auth_provider}
+                          </span>
+                        </div>
+                        <div className="truncate text-[11px] text-ink">{u.display_name}</div>
+                        {u.email && <div className="truncate text-[10px] text-dim">{u.email}</div>}
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        <span className={u.active_days >= 2 ? "font-extrabold text-good" : "text-ink"}>
+                          {u.active_days}
                         </span>
-                      </div>
-                      <div className="truncate text-[11px] text-ink">{u.display_name}</div>
-                      {u.email && <div className="truncate text-[10px] text-dim">{u.email}</div>}
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      <span className={u.active_days >= 2 ? "font-extrabold text-good" : "text-ink"}>
-                        {u.active_days}
-                      </span>
-                      {u.last_visit && <div className="text-[10px] text-dim">{u.last_visit.slice(5)}</div>}
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      <span className={u.saved_series_games > 0 ? "font-bold text-blue" : "text-dim"}>
-                        {u.saved_series_games}
-                      </span>
-                      {u.draft_step_index > 0 && (
-                        <div className="text-[10px] text-dim">step {u.draft_step_index}</div>
-                      )}
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      <span className={u.practice_games > 0 ? "font-bold text-gold" : "text-dim"}>
-                        {u.practice_games}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      <span className={u.predict_calls > 0 ? "font-bold text-ink" : "text-dim"}>
-                        {u.predict_calls.toLocaleString()}
-                      </span>
-                      {u.draft_save_calls > 0 && (
-                        <div className="text-[10px] text-dim">save {u.draft_save_calls}</div>
-                      )}
-                    </td>
-                    <td className="px-3 py-2 text-center">
-                      {u.survey_choice === "willing" ? (
-                        <span className="border border-good/40 bg-good/15 px-1.5 py-0.5 text-[10px] font-bold text-good">
-                          พร้อมจ่าย
+                        {u.last_visit && <div className="text-[10px] text-dim">{u.last_visit.slice(5)}</div>}
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        <span className={u.saved_series_games > 0 ? "font-bold text-blue" : "text-dim"}>
+                          {u.saved_series_games}
                         </span>
-                      ) : u.survey_choice === "not_willing" ? (
-                        <span className="border border-line-strong bg-panel-2 px-1.5 py-0.5 text-[10px] text-muted">
-                          ไม่พร้อม
+                        {u.draft_step_index > 0 && (
+                          <div className="text-[10px] text-dim">step {u.draft_step_index}</div>
+                        )}
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        <span className={u.practice_games > 0 ? "font-bold text-gold" : "text-dim"}>
+                          {u.practice_games}
                         </span>
-                      ) : (
-                        <span className="text-dim">-</span>
-                      )}
-                    </td>
-                    <td className="px-3 py-2 text-right text-[11px] text-muted">
-                      {lastActivityKey(u).slice(5, 16) || "-"}
-                    </td>
-                    <td className="px-3 py-2 text-right text-[11px] text-dim">{u.created_at_th.slice(5, 16)}</td>
-                  </tr>
-                ))
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        <span className={u.predict_calls > 0 ? "font-bold text-ink" : "text-dim"}>
+                          {u.predict_calls.toLocaleString()}
+                        </span>
+                        {u.draft_save_calls > 0 && (
+                          <div className="text-[10px] text-dim">save {u.draft_save_calls}</div>
+                        )}
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        {bScore ? (
+                          <>
+                            <div className={`font-bold ${tierBadge}`}>{bScore.p_alive_pct}%</div>
+                            <div className="text-[10px] text-dim">
+                              {bScore.btyd_tier} · S{bScore.behavior_score}
+                            </div>
+                          </>
+                        ) : (
+                          <span className="text-dim">-</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2 text-center">
+                        {u.survey_choice === "willing" ? (
+                          <span className="border border-good/40 bg-good/15 px-1.5 py-0.5 text-[10px] font-bold text-good">
+                            พร้อมจ่าย
+                          </span>
+                        ) : u.survey_choice === "not_willing" ? (
+                          <span className="border border-line-strong bg-panel-2 px-1.5 py-0.5 text-[10px] text-muted">
+                            ไม่พร้อม
+                          </span>
+                        ) : (
+                          <span className="text-dim">-</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2 text-right text-[11px] text-muted">
+                        {lastActivityKey(u).slice(5, 16) || "-"}
+                      </td>
+                      <td className="px-3 py-2 text-right text-[11px] text-dim">{u.created_at_th.slice(5, 16)}</td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

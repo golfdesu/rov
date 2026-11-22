@@ -27,6 +27,34 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-22 13:09 (UTC+7) — Research-Grade Analytics Dashboard Upgrade (`BG/NBD`, `Markov 3x3`, `Kaplan-Meier`, `Kohavi Power`, `Sifa Signals`)
+**Agent:** Antigravity CLI
+
+### ✅ Completed Work
+- **Research-Backed Stochastic Models (`src/analytics.py`, `src/schemas.py`):**
+  - **Fader, Hardie & Lee (2005, 2009) — BTYD `P(Alive)` & Customer Health Cohorts**: Calibrated BG/NBD-inspired parameters (`r_shape`, `alpha_scale`, `a_bg`, `b_bg`) via Method-of-Moments across tracked clients (`x`, `t_x`, `T`), computing expected alive clients, 7-day repeat visit expectation, Member vs Guest `P(Alive)`, segment counts (`new_today`, `active_core`, `slipping`, `dormant`), and per-user `user_btyd_scores` (`p_alive_pct`, `btyd_tier`, `behavior_score`).
+  - **Pfeifer & Carraway (2000) & Kaplan & Meier (1958)**: Added full 3x3 Markov Transition Matrix (`matrix_3x3`), steady-state equilibrium, 14-day finite-horizon expected active days, and nonparametric right-censored Kaplan-Meier retention survival curves `S(t)` with Greenwood 95% CIs comparing Member vs Guest cohorts.
+  - **Wilson (1927), Katz (1978), Kohavi et al. (2009, 2020) & Sifa et al. (2015)**: Added `experiment_guardrails` (`achieved_power_pct`, `required_n_per_arm_mde10`, latency `p95 <= 500 ms` SLA) and `behavioral_signals` computing Spearman `rho`, `p-value`, and Conversion Lift across 6 behavioral features vs WTP.
+- **Dashboard Visualizations (`frontend/src/components/AdminDashboardView.tsx`, `frontend/src/types/auth.ts`):**
+  - Added SVG Kaplan-Meier Survival Plot (Member vs Guest + 95% Greenwood band), 3x3 Pfeifer-Carraway Markov Transition heatmap, BTYD `P(Alive)` stacked cohort health bar, Wilson/Bayes 95% CI bars with Kohavi Power guardrail badges, Sifa Behavioral Feature-to-WTP signal table, sortable `BTYD P(Alive)` user leaderboard column, and collapsible Research Methodology & Academic References drawer.
+
+### 📁 Modified Files
+- `src/analytics.py`, `src/schemas.py`, `tests/test_api.py`
+- `frontend/src/types/auth.ts`, `frontend/src/components/AdminDashboardView.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check --fix .` & `ruff format .`: `All checks passed!`, `0` errors.
+- `pytest -q --tb=short`: `139 passed`.
+- Frontend: `oxlint` (`0 warnings, 0 errors`), `tsc -b && vite build` passed.
+- Playwright E2E (`/#admin` desktop + mobile): `PLAYWRIGHT RESEARCH DASHBOARD E2E: PASS`.
+- `audit_arch_perf.py --skip-bench`, `preflight_check.py`, `validate_gating.py` (`72/72` golden states, `3/3` duel benchmarks, skills sync `2 passed`): all passed.
+
+### ⚠️ Open Issues / Important Notes
+- Deploying to live production `minidraft.app` (`deploy_rov_db_data` preserved).
+
+---
+
 ## 📅 2026-11-22 12:52 (UTC+7) — Probabilistic/Stochastic Analytics Engine (`src/analytics.py`) & Full Feature Telemetry
 **Agent:** Antigravity CLI
 

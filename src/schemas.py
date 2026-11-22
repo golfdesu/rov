@@ -551,6 +551,8 @@ class AdminAnalyticsResponse(BaseModel):
     model_config = ConfigDict(extra="allow")
     generated_at_th: str
     markov_retention: dict[str, Any]
+    kaplan_meier_survival: dict[str, Any] = Field(default_factory=dict)
+    btyd_alive: dict[str, Any] = Field(default_factory=dict)
     bayesian_wtp: dict[str, Any]
     member_vs_guest_retention: dict[str, Any]
     usage_distribution: dict[str, Any]
@@ -559,6 +561,9 @@ class AdminAnalyticsResponse(BaseModel):
     latency: dict[str, Any]
     guest_vs_member_predicts: dict[str, Any]
     feature_usage: dict[str, Any]
+    behavioral_signals: list[dict[str, Any]] = Field(default_factory=list)
+    experiment_guardrails: dict[str, Any] = Field(default_factory=dict)
+    user_btyd_scores: dict[str, dict[str, Any]] = Field(default_factory=dict)
 
 
 class DailyVisitRequest(BaseModel):
