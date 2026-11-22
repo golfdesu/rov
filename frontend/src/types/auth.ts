@@ -113,6 +113,8 @@ export interface AdminGuestClientItem {
   active_days: number;
   first_visit?: string | null;
   last_visit?: string | null;
+  predict_calls: number;
+  device_type?: string | null;
 }
 
 export interface AdminUsersResponse {
@@ -120,4 +122,116 @@ export interface AdminUsersResponse {
   total_users: number;
   users: AdminUserActivityItem[];
   top_guest_clients: AdminGuestClientItem[];
+}
+
+export interface AdminWtpSegment {
+  n: number;
+  willing: number;
+  empirical_pct: number;
+  wilson_ci_95: [number, number];
+  bayes_posterior_pct: number;
+  bayes_sd_pct: number;
+}
+
+export interface AdminZTestResult {
+  diff_pct: number;
+  z_stat: number;
+  p_value: number;
+  significant_95: boolean;
+}
+
+export interface AdminAnalyticsResponse {
+  generated_at_th: string;
+  markov_retention: {
+    transitions: {
+      new_to_active_pct: number;
+      new_sample: number;
+      retained_to_active_pct: number;
+      retained_sample: number;
+      dormant_to_resurrect_pct: number;
+      dormant_sample: number;
+    };
+    expected_active_streak_days: number;
+    retention_half_life_days: number | null;
+    survival_curve: { day: number; eligible: number; survived: number; pct: number }[];
+  };
+  bayesian_wtp: {
+    prior: string;
+    engaged: AdminWtpSegment;
+    casual: AdminWtpSegment;
+    all_members: AdminWtpSegment;
+    guests: AdminWtpSegment;
+    engaged_vs_casual_test: AdminZTestResult;
+    willing_vs_not_willing_engaged_rate: AdminZTestResult & {
+      willing_engaged_pct: number;
+      not_willing_engaged_pct: number;
+    };
+    spearman_engagement_vs_wtp: { n: number; rho: number; p_value: number };
+  };
+  member_vs_guest_retention: {
+    member: { n: number; returning: number; rate_pct: number; ci_95: [number, number] };
+    guest: { n: number; returning: number; rate_pct: number; ci_95: [number, number] };
+    relative_risk: number;
+    rr_ci_95: [number, number];
+    p_value: number;
+    significant_95: boolean;
+  };
+  usage_distribution: {
+    total_users: number;
+    users_with_saved_games: number;
+    mean_games_per_user: number;
+    variance_games: number;
+    dispersion_index: number;
+    process_regime: string;
+    gini_coefficient: number;
+    top_10pct_share_pct: number;
+    top_20pct_share_pct: number;
+  };
+  load_forecast: {
+    dau_next_day: { observed_days: number; expected_next_day: number; ci_low: number; ci_high: number };
+    predicts_next_day: { observed_days: number; expected_next_day: number; ci_low: number; ci_high: number } | null;
+  };
+  ai_trust: {
+    total_logged_picks: number;
+    top1_count: number;
+    top2_5_count: number;
+    top6_10_count: number;
+    offmeta_count: number;
+    top1_pct: number;
+    top5_pct: number;
+    top5_wilson_ci_95: [number, number];
+    top5_bayes_posterior_pct: number;
+    top10_pct: number;
+    random_top5_baseline_pct: number;
+    binomial_z_vs_random: number;
+    p_value: number;
+  };
+  latency: {
+    total_requests: number;
+    mean_ms: number;
+    p50_ms: number;
+    p95_ms: number;
+    lookahead_count: number;
+    buckets: { lt_25ms: number; ms_25_100: number; ms_100_500: number; gt_500ms: number };
+  };
+  guest_vs_member_predicts: {
+    member: number;
+    guest: number;
+    total: number;
+    member_share_pct: number;
+    guest_share_pct: number;
+  };
+  feature_usage: {
+    draft_completed_18: number;
+    practice_completed_18: number;
+    devices: { mobile: number; desktop: number };
+    leagues: Record<string, number>;
+    practice_modes: Record<string, number>;
+    tools: {
+      timer_start: number;
+      pick_lane: number;
+      replace_hero: number;
+      practice_hints_off: number;
+    };
+  };
 }

@@ -27,6 +27,31 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-22 12:52 (UTC+7) — Probabilistic/Stochastic Analytics Engine (`src/analytics.py`) & Full Feature Telemetry
+**Agent:** Antigravity CLI
+
+### ✅ Completed Work
+- **Lightweight Telemetry Expansion (`src/db.py`, `src/schemas.py`, `src/api.py`, `frontend/src/utils/telemetry.ts`):**
+  - Added `site_events_daily` aggregate counter table and extended `daily_visits` with `predict_count` and `device_type` (`mobile` / `desktop`).
+  - Added `POST /telemetry/event` (allowlisted metrics, rate-limited) and `X-Client-Id` guest attribution on `POST /predict`, recording Member vs Guest AI call counts, `/predict` latency histogram buckets, 18/18 draft/practice completions, AI Trust adoption rank (`#1`, `#2–5`, `#6–10`, off-meta), leagues, BO modes, and tool usage.
+- **Probability, Stochastic & Statistical Inference Engine (`src/analytics.py`, `GET /admin/analytics`):**
+  - Implemented `build_statistical_analytics()` using pure Python `math`:
+    - **Discrete-Time Markov Chain Retention**: Daily transition rates (`New -> Active`, `Retain -> Active`, `Dormant -> Back`), absorbing expected active streak `E[L]`, retention half-life, and cohort survival curve `S(t)`.
+    - **Bayesian Beta-Binomial WTP Segmentation**: Segments Engaged vs Casual respondents (`Beta(1, 3)` prior, 95% Wilson CIs, Two-Proportion Z-tests, Spearman rank correlation `rho`).
+    - **Relative Risk & Usage Skewness**: Member vs Guest return `RR`, dispersion index (`Var/Mean`), Gini coefficient, Pareto Top-10% share, Gamma-Poisson next-day load forecast, Binomial Z-test for AI Top-5 Trust vs random (`5/130`), and p50/p95 latency quantiles.
+- **Dashboard Visualization (`frontend/src/components/AdminDashboardView.tsx`, `types/auth.ts`):**
+  - Integrated the **Stochastic, Probability & Statistical Inference** cards, AI Trust & Latency panels, and Guest AI call/device columns into `/#admin`.
+
+### 📁 Modified Files
+- `src/analytics.py` (new), `src/db.py`, `src/schemas.py`, `src/api.py`
+- `frontend/src/utils/telemetry.ts` (new), `frontend/src/api/client.ts`, `frontend/src/App.tsx`, `frontend/src/components/DraftBoardView.tsx`, `frontend/src/components/PracticeDraftView.tsx`, `frontend/src/components/AdminDashboardView.tsx`, `frontend/src/types/auth.ts`
+- `tests/test_api.py`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified with `ruff`, `oxlint`, `vite build`, full `pytest -q --tb=short`, `audit_arch_perf.py --skip-bench`, `preflight_check.py`, `validate_gating.py`, Playwright E2E on `/#admin`, and live deployment on `https://minidraft.app/`.
+
+---
+
 ## 📅 2026-11-22 11:54 (UTC+7) — Owner Full-Screen Analytics Dashboard (`/#admin`) & Per-User Usage Tracking
 **Agent:** Antigravity CLI
 

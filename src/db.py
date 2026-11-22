@@ -333,6 +333,16 @@ class UserDatabase:
 
                     CREATE INDEX IF NOT EXISTS idx_user_usage_daily_date
                         ON user_usage_daily(usage_date);
+
+                    CREATE TABLE IF NOT EXISTS site_events_daily (
+                        event_date TEXT NOT NULL,
+                        metric_key TEXT NOT NULL,
+                        count INTEGER NOT NULL DEFAULT 0,
+                        PRIMARY KEY (event_date, metric_key)
+                    );
+
+                    CREATE INDEX IF NOT EXISTS idx_site_events_daily_key
+                        ON site_events_daily(metric_key, event_date);
                     """
                 )
                 conn.execute("BEGIN IMMEDIATE")
@@ -356,6 +366,11 @@ class UserDatabase:
                         "CREATE INDEX IF NOT EXISTS idx_auth_sessions_user_created "
                         "ON auth_sessions(user_id, created_at)"
                     )
+                visit_cols = {str(r["name"]) for r in conn.execute("PRAGMA table_info(daily_visits)").fetchall()}
+                if "predict_count" not in visit_cols:
+                    conn.execute("ALTER TABLE daily_visits ADD COLUMN predict_count INTEGER NOT NULL DEFAULT 0")
+                if "device_type" not in visit_cols:
+                    conn.execute("ALTER TABLE daily_visits ADD COLUMN device_type TEXT")
                 conn.execute("CREATE INDEX IF NOT EXISTS idx_users_email ON users(email) WHERE email IS NOT NULL")
                 conn.execute(
                     """
@@ -951,6 +966,7 @@ class UserDatabase:
         *,
         client_id: str,
         user_id: int | None,
+        device_type: str | None = None,
         visit_date_override: str | None = None,
     ) -> str:
         """Record at most one visit row per client_id per UTC+7 calendar day."""
@@ -958,8 +974,13 @@ class UserDatabase:
         now = int(time.time())
         tz_th = timezone(timedelta(hours=7))
         today_str = visit_date_override or datetime.fromtimestamp(now, tz_th).strftime("%Y-%m-%d")
+        norm_device = device_type if device_type in {"mobile", "desktop"} else None
 
         with self._lock, self._connect() as conn:
+            already_today = conn.execute(
+                "SELECT 1 FROM daily_visits WHERE client_id = ? AND visit_date = ?",
+                (client_id, today_str),
+            ).fetchone()
             row = conn.execute(
                 "SELECT MIN(visit_date) AS first_seen FROM daily_visits WHERE client_id = ?",
                 (client_id,),
@@ -968,15 +989,127 @@ class UserDatabase:
             first_seen = min(existing_first, today_str) if existing_first else today_str
             conn.execute(
                 """
-                INSERT INTO daily_visits (client_id, visit_date, user_id, first_seen_date, created_at)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO daily_visits (client_id, visit_date, user_id, first_seen_date, created_at, device_type)
+                VALUES (?, ?, ?, ?, ?, ?)
                 ON CONFLICT(client_id, visit_date) DO UPDATE SET
-                    user_id = COALESCE(daily_visits.user_id, excluded.user_id)
+                    user_id = COALESCE(daily_visits.user_id, excluded.user_id),
+                    device_type = COALESCE(daily_visits.device_type, excluded.device_type)
                 """,
-                (client_id, today_str, user_id, first_seen, now),
+                (client_id, today_str, user_id, first_seen, now, norm_device),
             )
+            if already_today is None and norm_device is not None:
+                conn.execute(
+                    """
+                    INSERT INTO site_events_daily (event_date, metric_key, count)
+                    VALUES (?, ?, 1)
+                    ON CONFLICT(event_date, metric_key) DO UPDATE SET
+                        count = site_events_daily.count + 1
+                    """,
+                    (today_str, f"device_{norm_device}"),
+                )
             conn.commit()
         return today_str
+
+    def record_site_events(self, events: dict[str, int]) -> None:
+        """Batch-increment daily site_events_daily counters."""
+        clean = [(str(k), int(v)) for k, v in events.items() if int(v) > 0]
+        if not clean:
+            return
+        self.ensure_schema()
+        tz_th = timezone(timedelta(hours=7))
+        today_str = datetime.fromtimestamp(int(time.time()), tz_th).strftime("%Y-%m-%d")
+        with self._lock, self._connect() as conn:
+            conn.executemany(
+                """
+                INSERT INTO site_events_daily (event_date, metric_key, count)
+                VALUES (?, ?, ?)
+                ON CONFLICT(event_date, metric_key) DO UPDATE SET
+                    count = site_events_daily.count + excluded.count
+                """,
+                [(today_str, key, delta) for key, delta in clean],
+            )
+
+    def record_predict_telemetry(
+        self,
+        *,
+        user_id: int | None,
+        client_id: str | None,
+        elapsed_ms: int,
+        use_lookahead: bool,
+    ) -> None:
+        """Record member/guest prediction counts, latency histogram buckets, and per-client/user counters."""
+        self.ensure_schema()
+        now = int(time.time())
+        tz_th = timezone(timedelta(hours=7))
+        today_str = datetime.fromtimestamp(now, tz_th).strftime("%Y-%m-%d")
+        lat = max(0, int(elapsed_ms))
+        if lat < 25:
+            bucket = "lat_lt_25ms"
+        elif lat < 100:
+            bucket = "lat_25_100ms"
+        elif lat < 500:
+            bucket = "lat_100_500ms"
+        else:
+            bucket = "lat_gt_500ms"
+
+        events = [
+            (today_str, "predict_member" if user_id is not None else "predict_guest", 1),
+            (today_str, "predict_lat_count", 1),
+            (today_str, "predict_lat_sum_ms", lat),
+            (today_str, bucket, 1),
+        ]
+        if use_lookahead:
+            events.append((today_str, "predict_lookahead_count", 1))
+
+        valid_cid = (
+            client_id.strip() if client_id and re.fullmatch(r"^[a-zA-Z0-9_-]{8,64}$", client_id.strip()) else None
+        )
+        with self._lock, self._connect() as conn:
+            conn.executemany(
+                """
+                INSERT INTO site_events_daily (event_date, metric_key, count)
+                VALUES (?, ?, ?)
+                ON CONFLICT(event_date, metric_key) DO UPDATE SET
+                    count = site_events_daily.count + excluded.count
+                """,
+                events,
+            )
+            if user_id is not None:
+                conn.execute(
+                    """
+                    INSERT INTO user_usage_daily (user_id, usage_date, predict_count, draft_save_count, last_seen_at)
+                    VALUES (?, ?, 1, 0, ?)
+                    ON CONFLICT(user_id, usage_date) DO UPDATE SET
+                        predict_count = user_usage_daily.predict_count + 1,
+                        last_seen_at = MAX(user_usage_daily.last_seen_at, excluded.last_seen_at)
+                    """,
+                    (user_id, today_str, now),
+                )
+            elif valid_cid is not None:
+                conn.execute(
+                    """
+                    INSERT INTO daily_visits
+                        (client_id, visit_date, user_id, first_seen_date, created_at, predict_count)
+                    VALUES (?, ?, NULL, ?, ?, 1)
+                    ON CONFLICT(client_id, visit_date) DO UPDATE SET
+                        predict_count = daily_visits.predict_count + 1
+                    """,
+                    (valid_cid, today_str, today_str, now),
+                )
+
+    def get_admin_statistical_analytics(self) -> dict[str, Any]:
+        """Compute quantitative probability, stochastic & statistical inference analytics."""
+        from src.analytics import build_statistical_analytics
+
+        self.ensure_schema()
+        now = int(time.time())
+        tz_th = timezone(timedelta(hours=7))
+        now_dt = datetime.fromtimestamp(now, tz_th)
+        today_str = now_dt.strftime("%Y-%m-%d")
+        with self._lock, self._connect() as conn:
+            report = build_statistical_analytics(conn, today_str)
+        report["generated_at_th"] = now_dt.strftime("%Y-%m-%d %H:%M:%S")
+        return report
 
     def get_admin_stats(self) -> dict[str, Any]:
         self.ensure_schema()
@@ -1287,11 +1420,13 @@ class UserDatabase:
                     client_id,
                     COUNT(*) AS active_days,
                     MIN(visit_date) AS first_visit,
-                    MAX(visit_date) AS last_visit
+                    MAX(visit_date) AS last_visit,
+                    COALESCE(SUM(predict_count), 0) AS predict_calls,
+                    MAX(device_type) AS device_type
                 FROM daily_visits
                 WHERE user_id IS NULL
                 GROUP BY client_id
-                ORDER BY active_days DESC, last_visit DESC
+                ORDER BY active_days DESC, predict_calls DESC, last_visit DESC
                 LIMIT 50
                 """
             ).fetchall()
@@ -1329,6 +1464,8 @@ class UserDatabase:
                 "active_days": int(g["active_days"] or 0),
                 "first_visit": str(g["first_visit"]) if g["first_visit"] else None,
                 "last_visit": str(g["last_visit"]) if g["last_visit"] else None,
+                "predict_calls": int(g["predict_calls"] or 0),
+                "device_type": str(g["device_type"]) if g["device_type"] else None,
             }
             for g in guest_rows
         ]

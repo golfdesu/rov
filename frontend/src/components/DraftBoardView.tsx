@@ -31,6 +31,7 @@ import {
   resolveSeriesName,
 } from "../utils/draft";
 import { displayName } from "../utils/heroNames";
+import { aiAdoptionMetricForRank, type TelemetryMetricKey, trackTelemetryEvent } from "../utils/telemetry";
 import { AiPanel } from "./AiPanel";
 import { Alert } from "./Alert";
 import { ConfirmDialog } from "./ConfirmDialog";
@@ -256,6 +257,11 @@ export function DraftBoardView({
     onExpireAutoLock: handleAutoLockWithTimer,
   });
 
+  const recommendedRanks = useMemo(
+    () => new Map(assistantEnabled ? recommendations.slice(0, 10).map((r) => [r.hero_name, r.rank]) : []),
+    [assistantEnabled, recommendations],
+  );
+
   const handleLockHeroWithTimer = useCallback(
     (heroName: string) => {
       if (globalBanConflict) {
@@ -276,15 +282,30 @@ export function DraftBoardView({
           return next;
         });
       }
+      if (assistantEnabled && recommendations.length > 0) {
+        trackTelemetryEvent(aiAdoptionMetricForRank(recommendedRanks.get(heroName)));
+      }
       lockHero(heroName);
     },
-    [globalBanConflict, emphasizeGlobalBanConflict, unavailableHeroes, timer.enabled, timer.isExpired, currentGameKey, lockHero],
+    [
+      assistantEnabled,
+      recommendations.length,
+      recommendedRanks,
+      globalBanConflict,
+      emphasizeGlobalBanConflict,
+      unavailableHeroes,
+      timer.enabled,
+      timer.isExpired,
+      currentGameKey,
+      lockHero,
+    ],
   );
 
   const handleSelectOrLockHero = useCallback(
     (heroName: string) => {
       if (editingSlot && editingHero) {
         if (!replaceHero(editingSlot, heroName)) return false;
+        trackTelemetryEvent("feat_replace_hero");
         setLateHeroMap((prev) => {
           if (!prev[editingHero]) return prev;
           const next = { ...prev };
@@ -365,13 +386,15 @@ export function DraftBoardView({
     setGlobalBans(candidateState);
   };
 
-  const recommendedRanks = useMemo(
-    () => new Map(assistantEnabled ? recommendations.slice(0, 10).map((r) => [r.hero_name, r.rank]) : []),
-    [assistantEnabled, recommendations],
-  );
-
   const hasAnyAction = bluePicks.length + redPicks.length + blueBans.length + redBans.length > 0;
   const isDraftComplete = currentStep === null;
+  const prevDraftCompleteRef = useRef(isDraftComplete);
+  useEffect(() => {
+    if (!prevDraftCompleteRef.current && isDraftComplete) {
+      trackTelemetryEvent("draft_completed_18");
+    }
+    prevDraftCompleteRef.current = isDraftComplete;
+  }, [isDraftComplete]);
   const conflictCount = globalBanConflicts.length;
   const conflictCountLabel = conflictCount === 1 ? t("เหลือ 1 ช่อง") : t("เหลือ {0} ช่อง", conflictCount);
   const conflictMessage = globalBanConflict
@@ -793,7 +816,10 @@ export function DraftBoardView({
         currentStepIndex={currentStepIndex}
         totalSteps={totalSteps}
         league={league}
-        setLeague={setLeague}
+        setLeague={(nextLeague) => {
+          setLeague(nextLeague);
+          trackTelemetryEvent(`league_${nextLeague}` as TelemetryMetricKey);
+        }}
         assistantEnabled={assistantEnabled}
         onToggleAssistant={onToggleAssistant}
         timer={{
@@ -807,7 +833,10 @@ export function DraftBoardView({
           isWarning: timer.isWarning,
           isCritical: timer.isCritical,
           isExpired: timer.isExpired,
-          onToggleEnabled: timer.toggleEnabled,
+          onToggleEnabled: () => {
+            if (!timer.enabled) trackTelemetryEvent("feat_timer_start");
+            timer.toggleEnabled();
+          },
           onSetEnabled: timer.setEnabled,
           onTogglePaused: timer.togglePaused,
           onResetTurn: timer.resetTurnTimer,
@@ -927,6 +956,7 @@ export function DraftBoardView({
           unavailableHeroes={getUnavailableHeroesForSlot(slotEditor.slot)}
           onSelect={(hero) => {
             if (!replaceHero(slotEditor.slot, hero)) return false;
+            trackTelemetryEvent("feat_replace_hero");
             setLateHeroMap((prev) => {
               if (!prev[editingHero]) return prev;
               const next = { ...prev };
@@ -951,7 +981,10 @@ export function DraftBoardView({
               .filter((h) => h !== editingHero && pickLanes[h])
               .map((h) => [pickLanes[h] as LaneKey, h]),
           )}
-          onSelectLane={(lane) => setPickLane(editingHero, lane)}
+          onSelectLane={(lane) => {
+            trackTelemetryEvent("feat_pick_lane");
+            setPickLane(editingHero, lane);
+          }}
           onClose={closeSlotEditor}
         />
       )}

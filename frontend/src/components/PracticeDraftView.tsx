@@ -15,6 +15,7 @@ import {
   resolveSeriesName,
 } from "../utils/draft";
 import { displayName } from "../utils/heroNames";
+import { type TelemetryMetricKey, trackTelemetryEvent } from "../utils/telemetry";
 import {
   appendPracticeHistoryEntry,
   buildPracticeSignature,
@@ -410,6 +411,8 @@ function PracticeRound({
     });
     if (meta.recordedSignatures.includes(signature) || handledSignaturesRef.current.has(signature)) return;
     handledSignaturesRef.current.add(signature);
+    trackTelemetryEvent("practice_completed_18");
+    trackTelemetryEvent(`mode_bo${gameCount}` as TelemetryMetricKey);
     onUpdateMeta((prev) =>
       prev.recordedSignatures.includes(signature)
         ? prev
@@ -777,7 +780,10 @@ function PracticeRound({
                 aria-pressed={showHints}
                 aria-label={t("ตัวช่วย")}
                 title={t("ตัวช่วย")}
-                onClick={() => onUpdateMeta((prev) => ({ ...prev, showHints: !prev.showHints }))}
+                onClick={() => {
+                  if (showHints) trackTelemetryEvent("feat_practice_hints_off");
+                  onUpdateMeta((prev) => ({ ...prev, showHints: !prev.showHints }));
+                }}
                 className={`${HEADER_ACTION_CLASS} ${
                   showHints
                     ? "border-gold bg-gold/15 text-gold shadow-sm"

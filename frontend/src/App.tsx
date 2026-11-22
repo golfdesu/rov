@@ -635,7 +635,11 @@ export function App() {
     try {
       if (window.localStorage.getItem("minidraft_last_visit_ping_v1") === scopeKey) return;
       const clientId = getOrCreateSurveyClientId();
-      postJson<{ recorded: boolean; visit_date: string }>("/telemetry/visit", { client_id: clientId })
+      const deviceType = window.innerWidth < 768 ? "mobile" : "desktop";
+      postJson<{ recorded: boolean; visit_date: string }>("/telemetry/visit", {
+        client_id: clientId,
+        device_type: deviceType,
+      })
         .then(() => {
           try {
             window.localStorage.setItem("minidraft_last_visit_ping_v1", scopeKey);

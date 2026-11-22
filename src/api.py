@@ -38,6 +38,7 @@ from src.db import (
 )
 from src.predictor import RoVDraftPredictor
 from src.schemas import (
+    AdminAnalyticsResponse,
     AdminStatsResponse,
     AdminUsersResponse,
     AuthLoginRequest,
@@ -61,6 +62,8 @@ from src.schemas import (
     PracticeHistorySyncSchema,
     PricingSurveyRequest,
     PricingSurveyResponse,
+    TelemetryEventRequest,
+    TelemetryEventResponse,
     _canon_hero_key,
 )
 from src.search.draft_mcts import DRAFT_STEPS
@@ -105,7 +108,7 @@ app.add_middleware(
     allow_origins=config.cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization", "Accept", "X-Expected-User"],
+    allow_headers=["Content-Type", "Authorization", "Accept", "X-Expected-User", "X-Client-Id"],
 )
 
 _SECURITY_HEADERS = {
@@ -286,6 +289,7 @@ async def security_and_lockdown_middleware(request: Request, call_next):
             "/predict",
             "/combat/",
             "/survey/",
+            "/telemetry/",
             "/admin/",
         )
     ):
@@ -1327,6 +1331,7 @@ def clear_combat_builds(
 
 
 _telemetry_rate_limiter = RateLimiter(max_attempts=30, window_seconds=60)
+_telemetry_event_limiter = RateLimiter(max_attempts=120, window_seconds=60)
 
 
 @app.post("/telemetry/visit", response_model=DailyVisitResponse)
@@ -1342,8 +1347,23 @@ def record_daily_visit(
     visit_date = get_user_db().record_daily_visit(
         client_id=payload.client_id,
         user_id=user.id if user is not None else None,
+        device_type=payload.device_type,
     )
     return DailyVisitResponse(recorded=True, visit_date=visit_date)
+
+
+@app.post("/telemetry/event", response_model=TelemetryEventResponse)
+def record_telemetry_events(
+    payload: TelemetryEventRequest,
+    request: Request,
+):
+    """Record privacy-preserving aggregate feature & AI adoption telemetry."""
+    client_ip = _client_ip(request)
+    if not _telemetry_event_limiter.check_and_record(f"evt:{client_ip}"):
+        raise HTTPException(status_code=429, detail="Too many telemetry event requests")
+    if payload.events:
+        get_user_db().record_site_events(dict(payload.events))
+    return TelemetryEventResponse(recorded=True)
 
 
 @app.post("/survey/pricing", response_model=PricingSurveyResponse)
@@ -1543,11 +1563,20 @@ def get_admin_users(user: AuthUser | None = Depends(get_optional_user)):
     return AdminUsersResponse.model_validate(get_user_db().get_admin_users_report())
 
 
+@app.get("/admin/analytics", response_model=AdminAnalyticsResponse)
+def get_admin_analytics(user: AuthUser | None = Depends(get_optional_user)):
+    """Owner-only probabilistic, stochastic, and statistical analytics endpoint."""
+    if user is None or not config.is_admin_username(user.username):
+        raise HTTPException(status_code=404, detail="Not Found")
+    return AdminAnalyticsResponse.model_validate(get_user_db().get_admin_statistical_analytics())
+
+
 @app.post("/predict", response_model=DraftPredictionResponse)
 def predict_draft(
     request: DraftStateRequest,
     http_request: Request,
     user: AuthUser | None = Depends(get_optional_user),
+    x_client_id: str | None = Header(default=None, alias="X-Client-Id"),
 ):
     restricted_prod = config.is_production
     if restricted_prod:
@@ -1570,13 +1599,19 @@ def predict_draft(
                     "lookahead_depth": min(request.lookahead_depth, 2),
                 }
             )
+    t0 = time.perf_counter()
     try:
         result = predictor.predict(request)
     except (ValueError, KeyError, IndexError) as exc:
         detail = "Invalid draft request or unknown hero name" if restricted_prod else str(exc)
         raise HTTPException(status_code=422, detail=detail) from exc
-    if user is not None:
-        get_user_db().record_user_usage(user.id, predict_delta=1)
+    elapsed_ms = int((time.perf_counter() - t0) * 1000)
+    get_user_db().record_predict_telemetry(
+        user_id=user.id if user is not None else None,
+        client_id=x_client_id if user is None else None,
+        elapsed_ms=elapsed_ms,
+        use_lookahead=bool(request.use_lookahead),
+    )
     if restricted_prod:
         return result.model_copy(update={"architecture": "RoV Draft AI"})
     return result

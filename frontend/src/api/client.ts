@@ -1,3 +1,5 @@
+import { getStoredClientId } from "../utils/telemetry";
+
 /** Error thrown for non-2xx responses, carrying the server's `detail` message when present. */
 export class ApiError extends Error {
   readonly status: number;
@@ -60,9 +62,14 @@ export async function getJson<T>(url: string, signal?: AbortSignal): Promise<T> 
 }
 
 export async function postJson<T>(url: string, payload: unknown, signal?: AbortSignal): Promise<T> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (url.startsWith("/predict")) {
+    const cid = getStoredClientId();
+    if (cid) headers["X-Client-Id"] = cid;
+  }
   const res = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(payload),
     signal,
   });

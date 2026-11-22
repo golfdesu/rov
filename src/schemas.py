@@ -496,6 +496,8 @@ class AdminGuestClientSchema(BaseModel):
     active_days: int = 0
     first_visit: str | None = None
     last_visit: str | None = None
+    predict_calls: int = 0
+    device_type: str | None = None
 
 
 class AdminUsersResponse(BaseModel):
@@ -505,8 +507,63 @@ class AdminUsersResponse(BaseModel):
     top_guest_clients: list[AdminGuestClientSchema]
 
 
+TelemetryMetricKey = Literal[
+    "draft_completed_18",
+    "practice_completed_18",
+    "ai_adopt_top1",
+    "ai_adopt_top2_5",
+    "ai_adopt_top6_10",
+    "ai_adopt_offmeta",
+    "league_GLOBAL",
+    "league_RPL",
+    "league_GCS",
+    "league_AOG",
+    "league_INTL",
+    "mode_bo1",
+    "mode_bo3",
+    "mode_bo5",
+    "mode_bo7",
+    "feat_timer_start",
+    "feat_pick_lane",
+    "feat_replace_hero",
+    "feat_practice_hints_off",
+]
+
+
+class TelemetryEventRequest(BaseModel):
+    events: dict[TelemetryMetricKey, int] = Field(default_factory=dict, max_length=20)
+    client_id: str | None = Field(default=None, min_length=8, max_length=64, pattern=r"^[a-zA-Z0-9_-]+$")
+
+    @field_validator("events")
+    @classmethod
+    def validate_event_counts(cls, value: dict[TelemetryMetricKey, int]) -> dict[TelemetryMetricKey, int]:
+        for k, v in value.items():
+            if v < 1 or v > 50:
+                raise ValueError(f"Invalid event increment for {k}")
+        return value
+
+
+class TelemetryEventResponse(BaseModel):
+    recorded: bool
+
+
+class AdminAnalyticsResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    generated_at_th: str
+    markov_retention: dict[str, Any]
+    bayesian_wtp: dict[str, Any]
+    member_vs_guest_retention: dict[str, Any]
+    usage_distribution: dict[str, Any]
+    load_forecast: dict[str, Any]
+    ai_trust: dict[str, Any]
+    latency: dict[str, Any]
+    guest_vs_member_predicts: dict[str, Any]
+    feature_usage: dict[str, Any]
+
+
 class DailyVisitRequest(BaseModel):
     client_id: str = Field(..., min_length=8, max_length=64, pattern=r"^[a-zA-Z0-9_-]+$")
+    device_type: Literal["mobile", "desktop"] | None = None
 
 
 class DailyVisitResponse(BaseModel):

@@ -1821,11 +1821,13 @@ def test_pricing_survey_endpoint_and_deduplication(tmp_path, monkeypatch):
     assert rows[1][2] == "not_willing"
     assert rows[1][3] == 0
 
-    # Non-admin and Guest receive 404 on /admin/stats and /admin/users and is_admin=False
+    # Non-admin and Guest receive 404 on /admin/stats, /admin/users, and /admin/analytics and is_admin=False
     assert guest.get("/admin/stats").status_code == 404
     assert guest.get("/admin/users").status_code == 404
+    assert guest.get("/admin/analytics").status_code == 404
     assert user_a.get("/admin/stats").status_code == 404
     assert user_a.get("/admin/users").status_code == 404
+    assert user_a.get("/admin/analytics").status_code == 404
     assert me_a["is_admin"] is False
 
     # Fail-closed by default: even username "chayanin5392" has no admin rights unless ROV_ADMIN_USERNAMES configures it
@@ -1836,8 +1838,9 @@ def test_pricing_survey_endpoint_and_deduplication(tmp_path, monkeypatch):
     assert reg_owner.json()["is_admin"] is False
     assert owner.get("/admin/stats").status_code == 404
     assert owner.get("/admin/users").status_code == 404
+    assert owner.get("/admin/analytics").status_code == 404
 
-    # When configured via ROV_ADMIN_USERNAMES, owner receives is_admin=True and 200 on /admin/stats and /admin/users
+    # When configured via ROV_ADMIN_USERNAMES, owner receives is_admin=True and 200 on /admin/stats, /admin/users & /admin/analytics
     monkeypatch.setattr(config, "admin_usernames", ("chayanin5392",))
     assert owner.get("/auth/me").json()["is_admin"] is True
     assert user_a.put("/draft/session", json={"bluePicks": ["Hayate"], "updatedAt": 123456}).status_code == 200
@@ -1848,6 +1851,25 @@ def test_pricing_survey_endpoint_and_deduplication(tmp_path, monkeypatch):
         ).status_code
         == 200
     )
+    assert (
+        guest.post(
+            "/predict",
+            json={"mode": "pick", "side": "blue", "phase": 1, "ally_picks": ["Toro"]},
+            headers={"X-Client-Id": "cid_guest_001"},
+        ).status_code
+        == 200
+    )
+    assert (
+        guest.post(
+            "/telemetry/event",
+            json={
+                "events": {"draft_completed_18": 1, "ai_adopt_top1": 2, "league_RPL": 1},
+                "client_id": "cid_guest_001",
+            },
+        ).status_code
+        == 200
+    )
+    assert guest.post("/telemetry/event", json={"events": {"draft_completed_18": 999}}).status_code == 422
 
     stats_res = owner.get("/admin/stats")
     assert stats_res.status_code == 200
@@ -1867,6 +1889,19 @@ def test_pricing_survey_endpoint_and_deduplication(tmp_path, monkeypatch):
     assert by_name["survey_user_a"]["draft_save_calls"] == 1
     assert by_name["survey_user_a"]["survey_choice"] == "willing"
     assert by_name["survey_user_b"]["survey_choice"] == "not_willing"
+
+    analytics_res = owner.get("/admin/analytics")
+    assert analytics_res.status_code == 200
+    an = analytics_res.json()
+    assert an["guest_vs_member_predicts"]["member"] == 1
+    assert an["guest_vs_member_predicts"]["guest"] == 1
+    assert an["feature_usage"]["draft_completed_18"] == 1
+    assert an["feature_usage"]["leagues"]["RPL"] == 1
+    assert an["ai_trust"]["top1_count"] == 2
+    assert an["latency"]["total_requests"] == 2
+    assert 0.0 <= an["usage_distribution"]["gini_coefficient"] <= 1.0
+    assert "transitions" in an["markov_retention"]
+    assert "engaged" in an["bayesian_wtp"] and "casual" in an["bayesian_wtp"]
 
 
 def test_daily_visit_telemetry_and_retention_stats(tmp_path, monkeypatch):

@@ -1,39 +1,56 @@
 import {
+  Activity,
   ArrowLeft,
   ArrowUpDown,
   BarChart3,
   Coins,
+  Cpu,
   Globe,
   RefreshCw,
   Repeat,
   Search,
+  Sigma,
   Sparkles,
   Users,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ApiError, getJson } from "../api/client";
 import { useLanguage } from "../i18n/language";
-import type { AdminStatsResponse, AdminUserActivityItem, AdminUsersResponse } from "../types/auth";
+import type {
+  AdminAnalyticsResponse,
+  AdminStatsResponse,
+  AdminUserActivityItem,
+  AdminUsersResponse,
+} from "../types/auth";
 
 interface AdminDashboardViewProps {
   onBack: () => void;
 }
 
 type UserFilterMode = "all" | "returning" | "draft_saved" | "practice_played" | "willing" | "not_willing";
-type SortColumn = "active_days" | "saved_series_games" | "practice_games" | "predict_calls" | "last_activity" | "created_at";
+type SortColumn =
+  | "active_days"
+  | "saved_series_games"
+  | "practice_games"
+  | "predict_calls"
+  | "last_activity"
+  | "created_at";
 
 const INITIAL_VISIBLE_USERS = 50;
 
 function lastActivityKey(u: AdminUserActivityItem): string {
-  return [u.last_draft_save_th ?? "", u.last_practice_save_th ?? "", u.last_visit ?? "", u.created_at_th ?? ""]
-    .sort()
-    .reverse()[0] ?? "";
+  return (
+    [u.last_draft_save_th ?? "", u.last_practice_save_th ?? "", u.last_visit ?? "", u.created_at_th ?? ""]
+      .sort()
+      .reverse()[0] ?? ""
+  );
 }
 
 export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
   const { t } = useLanguage();
   const [stats, setStats] = useState<AdminStatsResponse | null>(null);
   const [usersReport, setUsersReport] = useState<AdminUsersResponse | null>(null);
+  const [analytics, setAnalytics] = useState<AdminAnalyticsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -47,16 +64,19 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
     setLoading(true);
     setError(null);
     try {
-      const [statsRes, usersRes] = await Promise.all([
+      const [statsRes, usersRes, analyticsRes] = await Promise.all([
         getJson<AdminStatsResponse>("/admin/stats"),
         getJson<AdminUsersResponse>("/admin/users"),
+        getJson<AdminAnalyticsResponse>("/admin/analytics"),
       ]);
       setStats(statsRes);
       setUsersReport(usersRes);
+      setAnalytics(analyticsRes);
     } catch (err) {
       if (err instanceof ApiError && (err.status === 401 || err.status === 404)) {
         setStats(null);
         setUsersReport(null);
+        setAnalytics(null);
       }
       setError(err instanceof Error ? err.message : "ไม่สามารถโหลดข้อมูล Dashboard ได้");
     } finally {
@@ -69,11 +89,13 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
     Promise.all([
       getJson<AdminStatsResponse>("/admin/stats", ctrl.signal),
       getJson<AdminUsersResponse>("/admin/users", ctrl.signal),
+      getJson<AdminAnalyticsResponse>("/admin/analytics", ctrl.signal),
     ])
-      .then(([statsRes, usersRes]) => {
+      .then(([statsRes, usersRes, analyticsRes]) => {
         if (ctrl.signal.aborted) return;
         setStats(statsRes);
         setUsersReport(usersRes);
+        setAnalytics(analyticsRes);
         setError(null);
       })
       .catch((err) => {
@@ -81,6 +103,7 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
         if (err instanceof ApiError && (err.status === 401 || err.status === 404)) {
           setStats(null);
           setUsersReport(null);
+          setAnalytics(null);
         }
         setError(err instanceof Error ? err.message : "ไม่สามารถโหลดข้อมูล Dashboard ได้");
       })
@@ -118,7 +141,9 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
     return [...matched].sort((a, b) => {
       let cmp = 0;
       if (sortBy === "active_days") {
-        cmp = a.active_days - b.active_days || a.saved_series_games + a.practice_games - (b.saved_series_games + b.practice_games);
+        cmp =
+          a.active_days - b.active_days ||
+          a.saved_series_games + a.practice_games - (b.saved_series_games + b.practice_games);
       } else if (sortBy === "saved_series_games") {
         cmp = a.saved_series_games - b.saved_series_games || a.active_days - b.active_days;
       } else if (sortBy === "practice_games") {
@@ -249,6 +274,219 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
             </div>
             <div className="mt-1 font-mono text-[11px] text-dim">
               สมาชิกพร้อม {stats.survey.willing_member} · Guest {stats.survey.willing_guest}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Probability, Stochastic & Statistical Inference Section */}
+      {analytics && (
+        <section className="flex flex-col gap-3 border border-gold/35 bg-panel p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Sigma className="h-4 w-4 text-gold" />
+              <h2 className="font-display text-sm font-bold tracking-wide text-ink sm:text-base">
+                STOCHASTIC, PROBABILITY & STATISTICAL INFERENCE ENGINE
+              </h2>
+            </div>
+            <span className="border border-gold/40 bg-gold/10 px-2 py-0.5 font-mono text-[10px] font-bold text-gold">
+              Markov · Beta-Binomial · Relative Risk · Gamma-Poisson
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {/* 1. Markov Retention & Absorbing Streak */}
+            <div className="flex flex-col gap-2 border border-line bg-bg/60 p-3.5">
+              <div className="flex items-center justify-between">
+                <span className="font-display text-xs font-bold text-good">1. Markov Chain Retention Process</span>
+                <span className="font-mono text-[10px] text-dim">
+                  E[L] = {analytics.markov_retention.expected_active_streak_days}d
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-1.5 font-mono text-[11px]">
+                <div className="border border-line bg-panel p-2">
+                  <div className="text-[10px] text-dim">New → Active</div>
+                  <div className="font-extrabold text-ink">
+                    {analytics.markov_retention.transitions.new_to_active_pct}%
+                  </div>
+                  <div className="text-[9px] text-dim">n={analytics.markov_retention.transitions.new_sample}</div>
+                </div>
+                <div className="border border-line bg-panel p-2">
+                  <div className="text-[10px] text-dim">Retain → Active</div>
+                  <div className="font-extrabold text-good">
+                    {analytics.markov_retention.transitions.retained_to_active_pct}%
+                  </div>
+                  <div className="text-[9px] text-dim">n={analytics.markov_retention.transitions.retained_sample}</div>
+                </div>
+                <div className="border border-line bg-panel p-2">
+                  <div className="text-[10px] text-dim">Dormant → Back</div>
+                  <div className="font-extrabold text-gold">
+                    {analytics.markov_retention.transitions.dormant_to_resurrect_pct}%
+                  </div>
+                  <div className="text-[9px] text-dim">n={analytics.markov_retention.transitions.dormant_sample}</div>
+                </div>
+              </div>
+              <div className="font-mono text-[10px] text-muted">
+                Half-Life:{" "}
+                <strong className="text-ink">
+                  {analytics.markov_retention.retention_half_life_days !== null
+                    ? `${analytics.markov_retention.retention_half_life_days} วัน`
+                    : "-"}
+                </strong>
+                {" · Survival S(t): "}
+                {analytics.markov_retention.survival_curve.map((s) => `D${s.day}:${s.pct}%`).join(" → ")}
+              </div>
+            </div>
+
+            {/* 2. Bayesian Beta-Binomial WTP Segmentation */}
+            <div className="flex flex-col gap-2 border border-line bg-bg/60 p-3.5">
+              <div className="flex items-center justify-between">
+                <span className="font-display text-xs font-bold text-gold">2. Bayesian WTP (Beta-Binomial CI)</span>
+                <span className="font-mono text-[10px] text-dim">{analytics.bayesian_wtp.prior}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-1.5 font-mono text-[11px]">
+                <div className="border border-line bg-panel p-2">
+                  <div className="text-[10px] text-dim">Engaged Users (ใช้จริง)</div>
+                  <div className="font-extrabold text-good">
+                    {analytics.bayesian_wtp.engaged.empirical_pct}%{" "}
+                    <span className="text-[10px] font-normal text-muted">
+                      ({analytics.bayesian_wtp.engaged.willing}/{analytics.bayesian_wtp.engaged.n})
+                    </span>
+                  </div>
+                  <div className="text-[9px] text-dim">
+                    Bayes: {analytics.bayesian_wtp.engaged.bayes_posterior_pct}% · 95%CI [
+                    {analytics.bayesian_wtp.engaged.wilson_ci_95[0]}, {analytics.bayesian_wtp.engaged.wilson_ci_95[1]}]
+                  </div>
+                </div>
+                <div className="border border-line bg-panel p-2">
+                  <div className="text-[10px] text-dim">Casual / 1st Visit</div>
+                  <div className="font-extrabold text-ink">
+                    {analytics.bayesian_wtp.casual.empirical_pct}%{" "}
+                    <span className="text-[10px] font-normal text-muted">
+                      ({analytics.bayesian_wtp.casual.willing}/{analytics.bayesian_wtp.casual.n})
+                    </span>
+                  </div>
+                  <div className="text-[9px] text-dim">
+                    Bayes: {analytics.bayesian_wtp.casual.bayes_posterior_pct}% · 95%CI [
+                    {analytics.bayesian_wtp.casual.wilson_ci_95[0]}, {analytics.bayesian_wtp.casual.wilson_ci_95[1]}]
+                  </div>
+                </div>
+              </div>
+              <div className="font-mono text-[10px] text-muted">
+                Z-test (Engaged vs Casual): p={analytics.bayesian_wtp.engaged_vs_casual_test.p_value} · Spearman rho(usage,WTP)=
+                <strong className="text-ink">{analytics.bayesian_wtp.spearman_engagement_vs_wtp.rho}</strong> (p=
+                {analytics.bayesian_wtp.spearman_engagement_vs_wtp.p_value})
+              </div>
+            </div>
+
+            {/* 3. Member vs Guest Relative Risk + Usage Overdispersion & Gini */}
+            <div className="flex flex-col gap-2 border border-line bg-bg/60 p-3.5">
+              <div className="flex items-center justify-between">
+                <span className="font-display text-xs font-bold text-blue">3. Relative Risk, Gini & Overdispersion</span>
+                <span className="font-mono text-[10px] text-dim">
+                  Var/Mean = {analytics.usage_distribution.dispersion_index}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-1.5 font-mono text-[11px]">
+                <div className="border border-line bg-panel p-2">
+                  <div className="text-[10px] text-dim">Return Risk: Member vs Guest</div>
+                  <div className="font-extrabold text-blue">RR = {analytics.member_vs_guest_retention.relative_risk}x</div>
+                  <div className="text-[9px] text-dim">
+                    Mem {analytics.member_vs_guest_retention.member.rate_pct}% vs Guest{" "}
+                    {analytics.member_vs_guest_retention.guest.rate_pct}% (p=
+                    {analytics.member_vs_guest_retention.p_value})
+                  </div>
+                </div>
+                <div className="border border-line bg-panel p-2">
+                  <div className="text-[10px] text-dim">Pareto Concentration</div>
+                  <div className="font-extrabold text-gold">Gini = {analytics.usage_distribution.gini_coefficient}</div>
+                  <div className="text-[9px] text-dim">
+                    Top 10% สร้าง {analytics.usage_distribution.top_10pct_share_pct}% เกมทั้งหมด
+                  </div>
+                </div>
+              </div>
+              <div className="font-mono text-[10px] text-muted">
+                Regime: <strong className="text-ink">{analytics.usage_distribution.process_regime}</strong> · Gamma-Poisson Next-Day DAU:{" "}
+                <strong className="text-good">{analytics.load_forecast.dau_next_day.expected_next_day}</strong> [
+                {analytics.load_forecast.dau_next_day.ci_low}–{analytics.load_forecast.dau_next_day.ci_high}]
+              </div>
+            </div>
+          </div>
+
+          {/* Feature Adoption, Guest vs Member Predicts, AI Trust & Latency */}
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+            <div className="border border-line bg-bg/60 p-3 font-mono text-[11px]">
+              <div className="mb-1.5 flex items-center justify-between font-display text-xs font-bold text-ink">
+                <span className="flex items-center gap-1.5">
+                  <Cpu className="h-3.5 w-3.5 text-gold" /> Guest vs Member AI Calls & Latency
+                </span>
+                <span className="text-[10px] text-dim">{analytics.latency.total_requests} reqs</span>
+              </div>
+              <div className="flex items-center justify-between text-muted">
+                <span>
+                  Member: <strong className="text-blue">{analytics.guest_vs_member_predicts.member}</strong> (
+                  {analytics.guest_vs_member_predicts.member_share_pct}%)
+                </span>
+                <span>
+                  Guest: <strong className="text-gold">{analytics.guest_vs_member_predicts.guest}</strong> (
+                  {analytics.guest_vs_member_predicts.guest_share_pct}%)
+                </span>
+              </div>
+              <div className="mt-1.5 text-[10px] text-dim">
+                Mean: <strong className="text-ink">{analytics.latency.mean_ms} ms</strong> · p50:{" "}
+                <strong className="text-good">{analytics.latency.p50_ms} ms</strong> · p95:{" "}
+                <strong className="text-gold">{analytics.latency.p95_ms} ms</strong>
+              </div>
+            </div>
+
+            <div className="border border-line bg-bg/60 p-3 font-mono text-[11px]">
+              <div className="mb-1.5 flex items-center justify-between font-display text-xs font-bold text-ink">
+                <span className="flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-good" /> AI Trust Rate (Adoption vs Random)
+                </span>
+                <span className="text-[10px] text-dim">{analytics.ai_trust.total_logged_picks} picks</span>
+              </div>
+              <div className="flex flex-wrap gap-x-3 gap-y-1 text-muted">
+                <span>
+                  #1: <strong className="text-good">{analytics.ai_trust.top1_pct}%</strong>
+                </span>
+                <span>
+                  #1–5: <strong className="text-gold">{analytics.ai_trust.top5_pct}%</strong>
+                </span>
+                <span>
+                  #1–10: <strong className="text-ink">{analytics.ai_trust.top10_pct}%</strong>
+                </span>
+              </div>
+              <div className="mt-1.5 text-[10px] text-dim">
+                Bayes Top-5: {analytics.ai_trust.top5_bayes_posterior_pct}% (Random=
+                {analytics.ai_trust.random_top5_baseline_pct}% · Z={analytics.ai_trust.binomial_z_vs_random}, p=
+                {analytics.ai_trust.p_value})
+              </div>
+            </div>
+
+            <div className="border border-line bg-bg/60 p-3 font-mono text-[11px]">
+              <div className="mb-1.5 flex items-center justify-between font-display text-xs font-bold text-ink">
+                <span className="flex items-center gap-1.5">
+                  <Activity className="h-3.5 w-3.5 text-blue" /> Completion, Devices & Tools
+                </span>
+                <span className="text-[10px] text-dim">
+                  18/18: {analytics.feature_usage.draft_completed_18}D / {analytics.feature_usage.practice_completed_18}P
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-x-2.5 gap-y-0.5 text-[10px] text-muted">
+                <span>
+                  Mobile {analytics.feature_usage.devices.mobile} / Desk {analytics.feature_usage.devices.desktop}
+                </span>
+                <span>· Timer {analytics.feature_usage.tools.timer_start}</span>
+                <span>· Lane {analytics.feature_usage.tools.pick_lane}</span>
+                <span>· Replace {analytics.feature_usage.tools.replace_hero}</span>
+              </div>
+              <div className="mt-1 text-[10px] text-dim">
+                Leagues:{" "}
+                {Object.entries(analytics.feature_usage.leagues)
+                  .map(([k, v]) => `${k}:${v}`)
+                  .join(" · ")}
+              </div>
             </div>
           </div>
         </section>
@@ -404,7 +642,7 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
         )}
       </section>
 
-      {/* Bottom 2 Columns: Returning Unlinked Guests + Cloudflare Sources / Retention Daily */}
+      {/* Bottom 2 Columns: Returning Unlinked Guests + Cloudflare Sources */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <section className="flex flex-col gap-2.5 border border-line bg-panel p-4">
           <h2 className="font-display text-sm font-bold tracking-wide text-ink">
@@ -415,17 +653,21 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
               <thead>
                 <tr className="border-b border-line bg-panel-2/70 text-[11px] text-muted">
                   <th className="px-3 py-2">Client ID</th>
+                  <th className="px-3 py-2 text-center">อุปกรณ์</th>
                   <th className="px-3 py-2 text-right">วันใช้งาน</th>
-                  <th className="px-3 py-2 text-right">ครั้งแรก</th>
+                  <th className="px-3 py-2 text-right">เรียก AI</th>
                   <th className="px-3 py-2 text-right">ล่าสุด</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
                 {(usersReport?.top_guest_clients ?? []).map((g) => (
                   <tr key={g.client_id} className="hover:bg-panel-2/40">
-                    <td className="px-3 py-1.5 text-ink">{g.client_id}</td>
+                    <td className="max-w-[200px] truncate px-3 py-1.5 text-ink">{g.client_id}</td>
+                    <td className="px-3 py-1.5 text-center text-[10px] text-dim">{g.device_type ?? "-"}</td>
                     <td className="px-3 py-1.5 text-right font-bold text-good">{g.active_days}</td>
-                    <td className="px-3 py-1.5 text-right text-dim">{g.first_visit?.slice(5) ?? "-"}</td>
+                    <td className="px-3 py-1.5 text-right font-bold text-gold">
+                      {(g.predict_calls ?? 0).toLocaleString()}
+                    </td>
                     <td className="px-3 py-1.5 text-right text-muted">{g.last_visit?.slice(5) ?? "-"}</td>
                   </tr>
                 ))}
