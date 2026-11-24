@@ -52,6 +52,20 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 
 ---
 
+## Pending Next-Deploy Task: One-off DB Timestamp Backfill
+
+Run during the next production deploy that ships the `YYYY-MM-DD HH:MM[:SS]` draft timestamp format (`frontend/src/utils/draft.ts`, `frontend/src/utils/scrimStats.ts`, `frontend/src/hooks/useDraft.ts`, `frontend/src/components/ScrimDashboardView.tsx`). Do **NOT** reset `/app/db/rov_app.db` and do **NOT** write script files into `~/rov` (preserve the VM sparse-checkout lock):
+
+- **Scope:** Update **all** existing games in `user_draft_states.payload_json` (`seriesGames[*].timestamp`) and `team_history.game_json` (`timestamp`) inside `/app/db/rov_app.db` (persistent volume `deploy_rov_db_data`) to `"2026-11-24 12:00"` (or the actual deploy date in `YYYY-MM-DD 12:00` ISO format so `recordedGameTime()` parses it cleanly, `len <= 32`).
+- **Execution Checklist (`docker exec -i deploy-app-1 python -` via stdin):**
+  1. Deploy updated code (`git pull` in `~/rov` + `cd ~/rov/deploy && sudo docker compose up -d --build app`) and verify `https://minidraft.app/health` returns `200`.
+  2. Run a read-only dry-run count across `user_draft_states` and `team_history` reporting total rows and total existing games to update (`timestamp != "2026-11-24 12:00"` or target `YYYY-MM-DD 12:00`).
+  3. Create an online SQLite backup (`/app/db/rov_app.db.bak-YYYYMMDD-HHMM`) using `sqlite3.Connection.backup()` and verify file size `> 0`.
+  4. Execute the atomic SQLite transaction updating every existing game's `timestamp` to `"2026-11-24 12:00"` (or deploy-day `YYYY-MM-DD 12:00` in UTC+7, enforcing `len(timestamp) <= 32`), and bumping `user_draft_states.updated_at` and `payload.updatedAt` (preserving ms/sec units) on modified rows so clients resync automatically.
+  5. Verify preserved table row counts (`users`, `user_draft_states`, `team_history`), JSON validity, 100% `len(timestamp) <= 32`, and `https://minidraft.app/health` = `200`; then remove this pending section and record the metrics under `Production Deploy & Hotfix History` below.
+
+---
+
 ## Production Deploy & Hotfix History
 
 ### 📅 2026-11-22 21:33 (UTC+7) — Remove Full `TeamColumn` Turn Badge & Auto-Reset `HeroGrid` Lane Filter to `ALL` (`4252991`)

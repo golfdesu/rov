@@ -135,6 +135,8 @@ class Config:
         self.discord_client_id: str = os.environ.get("ROV_DISCORD_CLIENT_ID", "").strip()
         self.discord_client_secret: str = os.environ.get("ROV_DISCORD_CLIENT_SECRET", "").strip()
         self.discord_redirect_uri: str = os.environ.get("ROV_DISCORD_REDIRECT_URI", "").strip()
+        self.stripe_secret_key = os.environ.get("STRIPE_SECRET_KEY", "").strip()
+        self.stripe_webhook_secret = os.environ.get("STRIPE_WEBHOOK_SECRET", "").strip()
 
         raw_admins = os.environ.get("ROV_ADMIN_USERNAMES", "").strip()
         self.admin_usernames: tuple[str, ...] = tuple(u.strip().lower() for u in raw_admins.split(",") if u.strip())
@@ -156,6 +158,14 @@ class Config:
     @property
     def is_production(self) -> bool:
         return self.env == "production"
+
+    @property
+    def stripe_sandbox_enabled(self) -> bool:
+        return (
+            self.env == "development"
+            and self.stripe_secret_key.startswith(("sk_test_", "rk_test_"))
+            and self.stripe_webhook_secret.startswith("whsec_")
+        )
 
     def resolve_frontend_dist(self) -> Path:
         override = os.environ.get("ROV_FRONTEND_DIST", "").strip()

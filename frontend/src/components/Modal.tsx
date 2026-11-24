@@ -21,6 +21,7 @@ interface ModalProps {
   mobileSheet?: boolean;
   /** Element to focus on open; defaults to the first focusable element */
   initialFocusRef?: RefObject<HTMLElement | null>;
+  dismissDisabled?: boolean;
   /** When true, plays the smooth exit (fade + scale-down) transition before unmounting */
   isClosing?: boolean;
   onClose: () => void;
@@ -33,12 +34,14 @@ export function Modal({
   className = "",
   mobileSheet = false,
   initialFocusRef,
+  dismissDisabled = false,
   isClosing = false,
   onClose,
   children,
 }: ModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
+  const dismissDisabledRef = useRef(dismissDisabled);
   const mouseDownTargetRef = useRef<EventTarget | null>(null);
   const [isEntered, setIsEntered] = useState(false);
   const [internalClosing, setInternalClosing] = useState(false);
@@ -46,7 +49,8 @@ export function Modal({
 
   useEffect(() => {
     onCloseRef.current = onClose;
-  }, [onClose]);
+    dismissDisabledRef.current = dismissDisabled;
+  }, [onClose, dismissDisabled]);
 
   const requestClose = useCallback((afterClose?: () => void) => {
     setInternalClosing(true);
@@ -96,7 +100,7 @@ export function Modal({
       if (e.key === "Escape") {
         e.preventDefault();
         e.stopPropagation();
-        requestClose();
+        if (!dismissDisabledRef.current) requestClose();
         return;
       }
 
@@ -138,7 +142,7 @@ export function Modal({
         mouseDownTargetRef.current = e.target;
       }}
       onClick={(e) => {
-        if (e.target === e.currentTarget && mouseDownTargetRef.current === e.currentTarget) {
+        if (!dismissDisabled && e.target === e.currentTarget && mouseDownTargetRef.current === e.currentTarget) {
           requestClose();
         }
       }}

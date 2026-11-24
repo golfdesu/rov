@@ -10,6 +10,7 @@ Acts as the Single Source of Truth (SSOT) engine for all dataset metrics:
    - docs/COMPETITORS.md
    - .agents/skills/rov-data-guardian/SKILL.md
    - .agents/skills/draft-screenshot-reader/SKILL.md
+   - .wikiskill/wiki/*.md
 4. Automatically mirrors .agents/skills/ to .claude/skills/.
 
 Usage:
@@ -403,6 +404,87 @@ def update_draft_screenshot_reader_md(content: str, m: dict) -> str:
     return content
 
 
+def update_wikiskill_arch_md(content: str, m: dict) -> str:
+    """Synchronize .wikiskill/wiki/system_architecture_and_data.md metrics."""
+    tot_h = str(m["total_heroes"])
+    tot_s = str(m["total_skills"])
+    tot_m = f"{m['total_matches']:,}"
+    train_m = f"{m['training_matches']:,}"
+    tpo_g = f"{m['tpo_games']:,}"
+    pct = f"{m['true_order_pct']:.1f}%"
+    m_2024 = str(m["matches_by_year"]["2024"])
+    syn_p = f"{m['synergy_pairs']:,}"
+    cnt_p = f"{m['counter_pairs']:,}"
+    arc_c = str(m["arcana_tier3"])
+    ench_c = str(m["enchantments"])
+
+    content = re.sub(
+        r"\d+ structured skills across \d+ heroes",
+        f"{tot_s} structured skills across {tot_h} heroes",
+        content,
+    )
+    content = re.sub(
+        r"\*\*\d+\s*/\s*\d+\s*heroes\*\*",
+        f"**{tot_h} / {tot_h} heroes**",
+        content,
+    )
+    content = re.sub(
+        r"\*\*\d+\s*skills\*\*",
+        f"**{tot_s} skills**",
+        content,
+    )
+    content = re.sub(
+        r"\*\*[0-9,]+\s*pro games\*\*",
+        f"**{tot_m} pro games**",
+        content,
+    )
+    content = re.sub(
+        r"\*\*[0-9,]+\s*games \(2025–2026 only\)\*\*; all \d+ games from 2024 excluded",
+        f"**{train_m} games (2025–2026 only)**; all {m_2024} games from 2024 excluded",
+        content,
+    )
+    content = re.sub(
+        r"\*\*[0-9,]+\s*games\*\* \(100% of 2026 games; \*\*[0-9.]+%\*\* of training set\)",
+        f"**{tpo_g} games** (100% of 2026 games; **{pct}** of training set)",
+        content,
+    )
+    content = re.sub(
+        r"\*\*[0-9,]+\*\* ally synergy pairs & \*\*[0-9,]+\*\* enemy counter pairs",
+        f"**{syn_p}** ally synergy pairs & **{cnt_p}** enemy counter pairs",
+        content,
+    )
+    content = re.sub(
+        r"\*\*\d+\*\* Tier-III Arcana & \*\*\d+\*\* Enchantments",
+        f"**{arc_c}** Tier-III Arcana & **{ench_c}** Enchantments",
+        content,
+    )
+    return content
+
+
+def update_wikiskill_invariants_md(content: str, m: dict) -> str:
+    """Synchronize .wikiskill/wiki/draft_invariants_and_pitfalls.md metrics."""
+    train_m = f"{m['training_matches']:,}"
+    m_2024 = str(m["matches_by_year"]["2024"])
+    m_2026 = f"{m['matches_by_year']['2026']:,}"
+
+    content = re.sub(
+        r"For all 2026 games \(`[0-9,]+` games\)",
+        f"For all 2026 games (`{m_2026}` games)",
+        content,
+    )
+    content = re.sub(
+        r"All \d+ games from 2024 contain",
+        f"All {m_2024} games from 2024 contain",
+        content,
+    )
+    content = re.sub(
+        r"curated 2025–2026 dataset \(`[0-9,]+` games\)",
+        f"curated 2025–2026 dataset (`{train_m}` games)",
+        content,
+    )
+    return content
+
+
 def _collect_skill_files(root_dir: Path) -> dict[Path, Path]:
     if not root_dir.exists():
         return {}
@@ -477,6 +559,14 @@ def sync_metadata(check: bool = False, quiet: bool = False) -> dict:
         (
             AGENTS_SKILLS_DIR / "draft-screenshot-reader" / "SKILL.md",
             update_draft_screenshot_reader_md,
+        ),
+        (
+            REPO_ROOT / ".wikiskill" / "wiki" / "system_architecture_and_data.md",
+            update_wikiskill_arch_md,
+        ),
+        (
+            REPO_ROOT / ".wikiskill" / "wiki" / "draft_invariants_and_pitfalls.md",
+            update_wikiskill_invariants_md,
         ),
     ]
 

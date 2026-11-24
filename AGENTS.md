@@ -61,6 +61,7 @@ Every AI agent (including fast models such as `3.8flash`) MUST strictly obey the
    - Before starting work, read the top entries of `CHANGELOG.md` to learn what previous agents already did.
    - Before touching or deploying to production (`20.2.210.230` / `minidraft.app`), read `docs/PRODUCTION_RELEASES.md` to check the live base commit, active VM hotfixes, dev-only exclusions, and the **Production VM Sparse-Checkout Invariant**; update it whenever a production release or hotfix is deployed. Never run `git pull` on the VM for docs/wiki/tests/scripts-only commits.
    - Before finishing any task that modified files, add a new entry at the TOP (date, time, agent, what was done, files, verification, open issues) following the format in that file.
+   - When adding new modules (`src/*.py`), SQLite tables (`src/db.py`), frontend views (`*View.tsx`), or architectural/deployment guardrails, update the relevant article in `.wikiskill/wiki/` (and `.wikiskill/traces/` for major experiments/releases). Numeric dataset metrics in `.wikiskill/wiki/` are auto-synced via `python scripts/sync_metadata.py`, and structural coverage is enforced by `python .wikiskill/skills/scripts/preflight_check.py`.
    - **STRICT English Requirement**: All entries in `CHANGELOG.md`, `docs/PRODUCTION_RELEASES.md`, skill documentation (`SKILL.md`), agent notes, and repository markdown files MUST be authored strictly in English to maximize token efficiency and prevent semantic loss across LLM context windows.
 
 10. **Off-Limits Folder (`data/vod_analytics/`)**:

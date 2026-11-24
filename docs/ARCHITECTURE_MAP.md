@@ -51,7 +51,7 @@ ROV/
 │   ├── PRODUCTION_RELEASES.md       # Live production (minidraft.app) commit snapshot, bundle ledger & deploy history
 │   ├── MECHANICAL_MATCHUP_DISCOVERY.md # 130x130 combat simulation matchup & counter-item flip report
 │   ├── COMPETITORS.md               # Competitive landscape vs other draft tools
-│   └── SUBSCRIPTION_ROADMAP.md      # Planned future monetization spec (Pro 50 THB / Team Pro 149 THB + PromptPay slip verification)
+│   └── SUBSCRIPTION_ROADMAP.md      # Planned tier pricing, prepaid passes, and Stripe PromptPay Checkout
 ├── data/
 │   ├── dataset_metadata.json        # Auto-generated SSOT metrics (matches, heroes, skills, true order %)
 │   ├── heroes_130_full.json         # Full 130 RoV heroes + skills + capability flags
@@ -106,6 +106,7 @@ ROV/
 │   │       ├── GlobalBanModal.tsx   # Bo1-Bo7 Team A/B used heroes & Universal Ban manager
 │   │       ├── PickLaneModal.tsx    # Manual in-game lane assignment override modal
 │   │       ├── AuthModal.tsx        # Login/Register + Google/Discord OAuth 2.0 PKCE modal & landing
+│   │       ├── BillingSandbox.tsx   # Profile checkout, payment status, and recent sandbox orders
 │   │       ├── lab/                 # Combat Lab (CombatLab, BuildEditor, SkillDamageTable, HeroSkillsModal, ItemCardModal, ArcanaBoard, EnchantmentBoard)
 │   │       ├── meta_lab/            # SOTA + Synergy/Counter Matrix sandbox (MetaLab.tsx)
 │   │       └── tierlist/            # Tournament Meta Tier List & hero inspector (TierListView.tsx)
@@ -130,6 +131,7 @@ ROV/
 │   ├── db.py                        # SQLite UserDatabase (users, auth_sessions, user_oauth_accounts, per-user draft/combat state, telemetry, RateLimiter)
 │   ├── analytics.py                 # Pure-Python probabilistic, stochastic & statistical inference engine (BG/NBD, Markov 3x3, Kaplan-Meier, Wilson/Katz, Kohavi, Sifa)
 │   ├── schemas.py                   # Pydantic V2 request/response validation schemas
+│   ├── billing.py                   # Prepaid pass prices, Stripe Sandbox Checkout, and order confirmation
 │   ├── predictor.py                 # Production OOP inference engine (RoVDraftPredictor)
 │   ├── search/
 │   │   └── draft_mcts.py            # DRAFT_STEPS, ModelInput/encode_batch/run_model, DraftMinimaxSearch lookahead

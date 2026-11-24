@@ -12,7 +12,7 @@ import {
   laneKey,
   reconstructDraftHistory,
   redUsedHeroes,
-  resolveSeriesName,
+  resolveSeriesKey,
 } from "../utils/draft";
 import { displayName } from "../utils/heroNames";
 import { type TelemetryMetricKey, trackTelemetryEvent } from "../utils/telemetry";
@@ -476,7 +476,7 @@ function PracticeRound({
   const bUsed = useMemo(() => blueUsedHeroes(draft.globalBans), [draft.globalBans]);
   const rUsed = useMemo(() => redUsedHeroes(draft.globalBans), [draft.globalBans]);
   const originMap = useMemo(
-    () => heroOriginGameMap(draft.seriesGames, resolveSeriesName(draft.globalBans)),
+    () => heroOriginGameMap(draft.seriesGames, resolveSeriesKey(draft.globalBans)),
     [draft.seriesGames, draft.globalBans],
   );
   const blueOriginGames = draft.globalBans.blueSideTeam === "A" ? originMap.teamAGameByHero : originMap.teamBGameByHero;

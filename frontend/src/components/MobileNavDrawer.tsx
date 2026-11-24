@@ -1,7 +1,7 @@
 import { StableButtonLabel } from "./StableButtonLabel";
 import { useLanguage } from "../i18n/language";
 import { LanguageSwitch } from "../i18n/LanguageProvider";
-import { BarChart3, Coffee, LogIn, LogOut, MessageSquare, User, X } from "lucide-react";
+import { BarChart3, Camera, Coffee, LogIn, LogOut, MessageSquare, User, Users, X } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { AuthUser, PricingSurveyChoice } from "../types/auth";
 import { accountLabel } from "../utils/auth";
@@ -20,12 +20,16 @@ interface MobileNavDrawerProps<T extends string> {
   activeTab: T;
   authUser: AuthUser | null;
   isAdmin?: boolean;
+  sandboxBilling?: boolean;
   surveyAnswered: boolean;
   surveyChoice?: PricingSurveyChoice | null;
   onSelectTab: (tab: T) => void;
   onOpenSurvey: () => void;
   onOpenDonate: () => void;
   onOpenAdminStats?: () => void;
+  onOpenHeroPools?: () => void;
+  onOpenScrimAnalytics?: () => void;
+  onOpenScreenshotImport?: () => void;
   onOpenAuth: () => void;
   onOpenProfile: () => void;
   onLogout: () => void;
@@ -38,12 +42,16 @@ export function MobileNavDrawer<T extends string>({
   activeTab,
   authUser,
   isAdmin = false,
+  sandboxBilling = false,
   surveyAnswered,
   surveyChoice,
   onSelectTab,
   onOpenSurvey,
   onOpenDonate,
   onOpenAdminStats,
+  onOpenHeroPools,
+  onOpenScrimAnalytics,
+  onOpenScreenshotImport,
   onOpenAuth,
   onOpenProfile,
   onLogout,
@@ -237,6 +245,44 @@ export function MobileNavDrawer<T extends string>({
               );
             })}
           </div>
+
+          {sandboxBilling && (onOpenHeroPools || onOpenScrimAnalytics || onOpenScreenshotImport) && (
+            <div className="flex flex-col gap-2">
+              <span className="font-mono text-[10px] font-semibold tracking-wider text-dim uppercase">
+                {t("เครื่องมือดราฟต์")}
+              </span>
+              {authUser && onOpenHeroPools && (
+                <button
+                  type="button"
+                  onClick={() => requestClose(onOpenHeroPools)}
+                  className="flex h-10 w-full items-center gap-2 border border-line-strong bg-panel-2 px-3 font-display text-xs font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold"
+                >
+                  <Users className="h-4 w-4 shrink-0 text-gold" />
+                  <span>Hero Pools</span>
+                </button>
+              )}
+              {onOpenScrimAnalytics && (
+                <button
+                  type="button"
+                  onClick={() => requestClose(onOpenScrimAnalytics)}
+                  className="flex h-10 w-full items-center gap-2 border border-gold/60 bg-gold/10 px-3 font-display text-xs font-bold text-gold transition-colors hover:bg-gold hover:text-bg"
+                >
+                  <BarChart3 className="h-4 w-4 shrink-0" />
+                  <span><StableButtonLabel message="วิเคราะห์สถิติซ้อมทีม" /></span>
+                </button>
+              )}
+              {onOpenScreenshotImport && (
+                <button
+                  type="button"
+                  onClick={() => requestClose(onOpenScreenshotImport)}
+                  className="flex h-10 w-full items-center gap-2 border border-line-strong bg-panel-2 px-3 font-display text-xs font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold"
+                >
+                  <Camera className="h-4 w-4 shrink-0 text-gold" />
+                  <span><StableButtonLabel message="นำเข้าดราฟต์จากภาพหน้าจอ" /></span>
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex flex-col gap-2">

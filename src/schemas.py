@@ -143,6 +143,28 @@ class DraftStateRequest(BaseModel):
         max_length=5,
         description="Optional manual lane overrides for opposing team's picked heroes",
     )
+    ally_pool: list[HeroStr] = Field(
+        default_factory=list,
+        max_length=130,
+        description="Optional acting team's Hero Pool for pick prioritization or strict pool filtering",
+    )
+    enemy_pool: list[HeroStr] = Field(
+        default_factory=list,
+        max_length=130,
+        description="Optional opponent's Hero Pool for target-ban prioritization",
+    )
+    pool_only: bool = Field(
+        default=False,
+        description="When true with available ally_pool (pick) or enemy_pool (ban) heroes, restrict recommendations strictly to that pool",
+    )
+    pool_mode: Literal["off", "low", "high"] | None = Field(
+        default=None,
+        description="Hero Pool influence mode: 'off' (pure meta), 'low' (mixture prior boost), 'high' (strict pool filter in pick/ban modes)",
+    )
+    ally_pool_lanes: dict[LaneKey, Annotated[list[HeroStr], Field(max_length=130)]] = Field(
+        default_factory=dict,
+        description="Optional acting team's 5-lane Hero Pool mapping so flex picks match the team's assigned lanes",
+    )
 
     @model_validator(mode="after")
     def validate_no_duplicate_or_overlapping_heroes(self) -> "DraftStateRequest":
@@ -363,24 +385,56 @@ class DraftHistoryItemSchema(BaseModel):
     redBans: list[ShortStr] = Field(default_factory=list, max_length=4)
 
 
-class GlobalBanStateSchema(BaseModel):
-    seriesName: ShortStr = Field(
-        default="", description="Optional custom or derived series matchup name e.g. BRU vs FS"
-    )
-    teamAName: ShortStr = "TEAM A"
-    teamBName: ShortStr = "TEAM B"
+class GlobalBanListsSchema(BaseModel):
     teamAUsed: list[ShortStr] = Field(default_factory=list, max_length=60)
     teamBUsed: list[ShortStr] = Field(default_factory=list, max_length=60)
     universalBans: list[ShortStr] = Field(default_factory=list, max_length=60)
+
+
+DraftGroupId = Annotated[str, Field(min_length=1, max_length=64, pattern=r"^[a-zA-Z0-9_-]+$")]
+DraftSeriesAnchor = Annotated[str, Field(max_length=132)]
+HistoryDisplayName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=64)]
+DraftHistoryNameTarget = Literal["tournament", "series", "game"]
+
+
+class TournamentRefSchema(BaseModel):
+    id: DraftGroupId
+    name: ShortStr
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value: str) -> str:
+        if not (name := value.strip()):
+            raise ValueError("Tournament name is required")
+        return name
+
+
+class GlobalBanStateSchema(GlobalBanListsSchema):
+    seriesName: DraftSeriesAnchor = Field(
+        default="", description="Optional custom or derived series matchup name e.g. BRU vs FS"
+    )
+    seriesId: DraftGroupId | None = None
+    seriesTitle: HistoryDisplayName | None = None
+    tournament: TournamentRefSchema | None = None
+    teamAName: ShortStr = "TEAM A"
+    teamBName: ShortStr = "TEAM B"
     blueSideTeam: Literal["A", "B"] = "A"
     gameNumber: int = Field(default=1, ge=1, le=7)
 
 
-class RecordedDraftGameSchema(BaseModel):
+class ArchivedDraftGameSchema(BaseModel):
+    """A saved snapshot whose pick and ban slots are preserved for history sync."""
+
     id: ShortStr
     gameNumber: int = Field(default=1, ge=1, le=7)
     timestamp: str = Field(max_length=32)
-    seriesName: ShortStr = Field(default="", description="Group or series matchup name e.g. BRU vs FS")
+    seriesName: DraftSeriesAnchor = Field(default="", description="Group or series matchup name e.g. BRU vs FS")
+    seriesId: DraftGroupId | None = None
+    seriesTitle: HistoryDisplayName | None = None
+    gameName: HistoryDisplayName | None = None
+    gameNameShared: bool = False
+    teamNamesShared: bool = False
+    tournament: TournamentRefSchema | None = None
     blueTeamName: ShortStr
     redTeamName: ShortStr
     blueSideTeam: Literal["A", "B"] = "A"
@@ -389,8 +443,24 @@ class RecordedDraftGameSchema(BaseModel):
     bluePicks: list[ShortStr] = Field(default_factory=list, max_length=5)
     redPicks: list[ShortStr] = Field(default_factory=list, max_length=5)
     pickLanes: PickLaneAssignments = Field(default_factory=dict)
+    globalBans: GlobalBanListsSchema | None = None
     blueWinRate: FinitePct = 50.0
     winner: Literal["A", "B"] | None = None
+
+
+class RecordedDraftGameSchema(ArchivedDraftGameSchema):
+    @model_validator(mode="after")
+    def validate_unique_game_heroes(self):
+        seen: set[str] = set()
+        for slot in (*self.blueBans, *self.redBans, *self.bluePicks, *self.redPicks):
+            raw = slot.strip()
+            if not raw:
+                continue
+            key = _canon_hero_key(raw)
+            if key in seen:
+                raise ValueError(f"Duplicate hero within draft game: {raw}")
+            seen.add(key)
+        return self
 
 
 class DraftSessionStateSchema(BaseModel):
@@ -407,7 +477,8 @@ class DraftSessionStateSchema(BaseModel):
     engine: Literal["sota"] = "sota"
     league: Literal["RPL", "AOG", "GCS", "INTL", "APL", "AIC", "GLOBAL"] = "GLOBAL"
     globalBans: GlobalBanStateSchema = Field(default_factory=GlobalBanStateSchema)
-    seriesGames: list[RecordedDraftGameSchema] = Field(default_factory=list, max_length=100)
+    fromTeamHistory: bool = False
+    seriesGames: list[ArchivedDraftGameSchema] = Field(default_factory=list, max_length=500)
     updatedAt: int = Field(
         default=0,
         ge=0,
@@ -449,6 +520,9 @@ class AuthUserSchema(BaseModel):
     display_label: str
     display_name_changes_remaining: int
     display_name_next_change_at: int | None = None
+    stripe_sandbox_enabled: bool = False
+    draft_history_limit: int | None = None
+    is_paid: bool = False
 
 
 class AuthStatusResponse(BaseModel):
@@ -459,6 +533,7 @@ class AuthStatusResponse(BaseModel):
     pricing_survey_answered: bool = False
     pricing_survey_choice: Literal["willing", "not_willing"] | None = None
     is_admin: bool = False
+    stripe_sandbox_enabled: bool = False
 
 
 class AdminStatsResponse(BaseModel):

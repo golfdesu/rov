@@ -27,6 +27,1593 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-24 09:59 (UTC+7) — Scrim Analytics Date Recording & Date-Preset Filter Fix
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- **Shared Date Formatting & Timestamp Persistence (`frontend/src/utils/draft.ts`, `frontend/src/hooks/useDraft.ts`, `frontend/src/components/ScreenshotImportModal.tsx`)**:
+  - Added shared `localCalendarDate()` and `formatRecordedTimestamp()` (`YYYY-MM-DD HH:MM[:SS]`) helpers in `frontend/src/utils/draft.ts`.
+  - Updated `createRecordedGame()`, `parseImportedDraftGames()` (fallback timestamp), and `ScreenshotImportModal` to record full local calendar dates alongside time instead of time-only strings (`max_length=32` schema compliant).
+- **Date Parsing & Custom Filter UX (`frontend/src/utils/scrimStats.ts`, `frontend/src/components/ScrimDashboardView.tsx`, `frontend/src/components/DraftHistoryModal.tsx`)**:
+  - Updated `recordedGameTime()` regex in `scrimStats.ts` (`import-(\d{13})(?:-\d+-g[1-7])?`) so JSON-imported games without explicit IDs (`import-<epoch>-<idx>-g<1-7>`) resolve their dates cleanly, handled multi-space timestamps (`/\s+-\s+/`, `/\s+/`), and re-exported `localCalendarDate` from `draft.ts` to eliminate duplicate logic.
+  - Pre-seeded scoped, loop-computed `dateFrom` / `dateTo` defaults when switching `<select>` (`datePreset`) to `"custom"` (clearing stale custom bounds on non-custom presets), scoped `undatedExcludedCount` by active team/opponent (`scopeMatchesTeam`), suppressed misleading `0`-game counts when `invalidDateRange` is true, and displayed both active scoped game count and excluded undated-game count side by side in the filter status bar.
+  - Added `shrink-0 whitespace-nowrap` to `grp.latestTimestamp` in `DraftHistoryModal.tsx` so full `YYYY-MM-DD HH:MM:SS` timestamps stay on one line.
+
+### 📁 Modified Files
+- `frontend/src/utils/draft.ts`
+- `frontend/src/utils/scrimStats.ts`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/ScreenshotImportModal.tsx`
+- `frontend/src/components/ScrimDashboardView.tsx`
+- `frontend/src/components/DraftHistoryModal.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint`: passed (`0` warnings, `0` errors across `78` files).
+- `npm --prefix frontend run build`: `tsc -b && vite build` passed (`dist/assets/index-CDD_xmsD.js` built in `1.08s`).
+- Playwright headless Chromium (`#analytics`): verified `all` (`4` games), `last7` (`2` games, matching both `<epoch>-g1` and `YYYY-MM-DD HH:MM:SS`), `last30` (`3` games, matching `import-<epoch>-0-g1`), and `custom` (auto-seeded `2026-11-14`..`2026-11-24`), with `0` console/page errors.
+
+---
+
+## 📅 2026-11-24 09:25 (UTC+7) — Draft Board Deep Bug Fix & Performance Optimization Audit (`/goal`)
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- **Backend Correctness & Inference Performance (`src/db.py`, `src/api.py`, `src/schemas.py`, `src/predictor.py`, `src/search/draft_mcts.py`)**:
+  - Fixed `DELETE /draft/session` failing silently when client clock exceeded server clock by storing a monotonic tombstone `max(now_ms, prev_ts + 1)` unconditionally and returning `updatedAt=tombstone_at`.
+  - Offloaded `record_user_usage` (`PUT /draft/session`) and `record_predict_telemetry` (`POST /predict`) to FastAPI `BackgroundTasks`.
+  - Added composite index `idx_hero_pools_owner_sort` on `hero_pools(owner_id, scope, tier, updated_at DESC, id DESC)`.
+  - Bounded `DraftStateRequest.ally_pool_lanes` inner lists to `max_length=130`.
+  - Precomputed `_lane_hero_mask` and vectorized `_apply_lane_filter()`, eliminated duplicate `resolve_heroes` and `find_matching_step` calls in `predict()`, passed `root_win_probs` + Hero Pool lanes into `search_lookahead_win_rates()` to skip the redundant root forward pass, and memoized `_needed_lanes_for_picks` per search call (`needed_cache`), cutting depth-2 lookahead median latency from 24.3 ms to 13.1 ms (and direct median from 12.2 ms to 7.1 ms) with zero golden drift.
+- **Draft Core, Hooks & Board Rendering (`useDraft.ts`, `DraftBoardView.tsx`, `ScoreBar.tsx`, `TeamColumn.tsx`, `HeroGrid.tsx`, `HeroPortrait.tsx`, `AiPanel.tsx`)**:
+  - Shared memoized `predictPayload`/`predictPayloadKey` across `/predict` and `PUT /draft/session` (fixing `useLookahead: true` blocking sync and eliminating duplicate full-history `JSON.stringify`), memoized `seriesWinningHeroes` and `serializedSyncState`, guarded `redo()` against `conflictingHero`, and memoized `replaceHero` and `getUnavailableHeroesForSlot`.
+  - Fixed double-pick timer auto-lock race (`isBusy` when prediction pending), suspended the turn timer whenever tabs/modals/confirm dialogs/timer settings are open, and fixed timer enable telemetry (`onToggleEnabled()`).
+  - Fixed Game 1..7 selector dead-click under `fromTeamHistory`, memoized all 7 unlock statuses, fixed series score flipping on side swap, guarded stale `slotEditor` state, throttled Hero Pool window-focus refreshes without wiping state on transient failure, and stabilized `TeamColumn` props.
+  - Wrapped `HeroPortrait`, `HeroGrid`, `TeamColumn`, and `AiPanel` in `React.memo`; precomputed hero sort metadata in `HeroGrid.tsx` and cleared search query on tile click; gated `AiPanel` lane filter pool on `!isBan`, fixed flex `fillsLane`, and added `POOL`/`ENEMY POOL` badges on `<lg` mobile/tablet cards.
+- **Draft Modals & Bundle Code-Splitting (`NewSeriesModal.tsx`, `PickLaneModal.tsx`, `GlobalBanModal.tsx`, `ScreenshotImportModal.tsx`, `DraftHistoryModal.tsx`, `HeroPoolsModal.tsx`, `ScrimAnalyticsModal.tsx`, `CreateTournamentDialog.tsx`, `App.tsx`, `englishMessages.ts`)**:
+  - `NewSeriesModal`: added inline error for whitespace-only tournament names and double-submit guard.
+  - `PickLaneModal`: disabled `AUTO` button when `defaultLane` is locked by another teammate.
+  - `GlobalBanModal`: cleared stale `limitNotice` on category switch/clear actions, unified `maxLength` (`32`), memoized sorted heroes and game unlock statuses.
+  - `ScreenshotImportModal`: blocked duplicate hero assignments, added slot clear (`X`) buttons, validated contiguous `CANONICAL_DRAFT_STEPS` prefix before loading, moved `URL.createObjectURL` out of state updater + reset file input, and removed 36-hero picker cap.
+  - `DraftHistoryModal`: chunked per-series `shareTeamSeries` calls into batches of 50, cleared `historySearch` when switching to Team History, synchronized Expand/Collapse All with tournament-bucketed order (`firstVisibleSeriesKey`), disabled invalid `AssignTournamentDialog` whitespace submits, added hero matching in export search, separated window-focus refresh + throttled while `teamBusy`, reused `teamGroups`/`personalGroups` for export, and precomputed series `aWins`/`bWins`.
+  - `HeroPoolsModal`: closed modal on `#plans` link click, disabled navigation while `busy`, added error/retry state on load failure, and memoized `activeLaneHeroSet`.
+  - `ScrimAnalyticsModal` & `CreateTournamentDialog`: case-insensitive team/opponent deduplication, validated `activeOpponent` fallback, team history loading/error states, removed unused computations, and memoized `CreateTournamentDialog` filters.
+  - Converted non-default tabs/views in `App.tsx` and the 9 Draft modals in `DraftBoardView.tsx` to `React.lazy(...)` + `<Suspense fallback={null}>`, cutting initial JS entry chunk from 1,151.29 kB to 452.54 kB (`-60.7%`).
+
+### 📁 Modified Files
+- `src/db.py`, `src/api.py`, `src/schemas.py`, `src/predictor.py`, `src/search/draft_mcts.py`, `tests/test_api.py`
+- `frontend/src/App.tsx`, `frontend/src/hooks/useDraft.ts`, `frontend/src/i18n/englishMessages.ts`
+- `frontend/src/components/{DraftBoardView,ScoreBar,TeamColumn,AiPanel,HeroGrid,HeroPortrait,NewSeriesModal,PickLaneModal,GlobalBanModal,ScreenshotImportModal,DraftHistoryModal,HeroPoolsModal,ScrimAnalyticsModal,CreateTournamentDialog}.tsx`
+
+### 🧪 Verification
+- `ruff check .` & `ruff format --check .`: all checks passed (138 files formatted).
+- `pytest -q --tb=short tests/test_api.py tests/test_model_pipeline.py tests/test_predictor_golden.py tests/test_rl_search.py tests/test_security.py`: **84 passed**.
+- `python .agents/skills/arch-perf-auditor/scripts/audit_arch_perf.py`: all 4 audits passed (`direct median=7.1 ms`, `depth-2 median=13.1 ms`).
+- `python .agents/skills/regression-guard/scripts/audit_regression_guard.py`: 72/72 golden states + 3/3 combat duels passed.
+- `npm --prefix frontend run lint` (`oxlint`): 0 warnings, 0 errors across 78 files.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): passed cleanly (`index-*.js = 452.54 kB`, gzip `130.90 kB`).
+- Playwright Chromium E2E against built `frontend/dist` + `uvicorn` (`1440x900` desktop & `375x812` mobile): lazy modals (`GlobalBanModal`, `DraftHistoryModal`, `HeroPoolsModal`, `ScreenshotImportModal`) opened cleanly, canonical prefix/duplicate/clear validation verified, 0 horizontal overflow, and 0 console/page errors.
+
+### ⚠️ Open Issues / Important Notes
+- Production static bundle (`VITE_DRAFT_ONLY=true` in `frontend/dist-prod/`) was not rebuilt in dev unless needed for deploy (`dist/` is freshly built and verified).
+
+---
+
+## 📅 2026-11-23 22:40 (UTC+7) — Remove WIN/SYN/CTR Metrics Footer from AI Recommendation Cards
+**Agent:** Antigravity / Gemini 4 Hydrogen
+
+### ✅ Completed Work
+- Removed the `WIN`, `SYN`, and `CTR` metrics footer blocks from both desktop (`lg+`) and mobile/tablet (`<lg`) AI recommendation cards in `frontend/src/components/AiPanel.tsx`, keeping the cleaner portrait, name, lane, trigger badge/role, and probability bar.
+- Removed the unused `win` local variable inside `shown.map` in `frontend/src/components/AiPanel.tsx`.
+
+### 📁 Modified Files
+- `frontend/src/components/AiPanel.tsx`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`: 0 warnings, 0 errors across 78 files).
+- `npm --prefix frontend run build` (`tsc -b && vite build`: passed cleanly).
+- Playwright Chromium verification on desktop (`1440x900`) and mobile (`375x812`): confirmed 5 AI recommendation cards render cleanly without `WIN`/`SYN`/`CTR` blocks (`has_metrics=False`), 0 horizontal overflow, and 0 console/page errors.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-23 22:36 (UTC+7) — Fix `POOL: HIGH` Filtering in Ban Mode and Empty-Turn Pool Toggle State
+**Agent:** Antigravity / Gemini 4 Hydrogen
+
+### ✅ Completed Work
+- Updated `src/predictor.py` and `src/schemas.py` so `pool_mode="high"` (and `pool_only=True`) strictly filters available `enemy_pool` target-ban candidates in `ban` mode as well as `ally_pool` missing-lane candidates in `pick` mode, with graceful fallback to pure meta when pool candidates are exhausted.
+- Updated `frontend/src/components/AiPanel.tsx` so `filterByAllyPool` (`POOL: HIGH`) also filters recommendations by `enemyPoolHeroes` during `ban` steps.
+- Updated `frontend/src/components/DraftBoardView.tsx`, `frontend/src/components/ScoreBar.tsx`, and `frontend/src/i18n/englishMessages.ts` to disable the `POOL` toggle with an explanatory tooltip (`เทิร์นนี้ ({0}) ยังไม่มี Hero Pool` / `ดราฟต์เสร็จสิ้นแล้ว`) when the active turn's target side has no Hero Pool or when the draft is complete.
+- Added regression assertions in `tests/test_api.py` covering `mode="ban"` + `pool_mode="high"` strict filtering and exhaustion fallback.
+
+### 📁 Modified Files
+- `src/predictor.py`
+- `src/schemas.py`
+- `tests/test_api.py`
+- `frontend/src/components/AiPanel.tsx`
+- `frontend/src/components/ScoreBar.tsx`
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+
+### 🧪 Verification
+- `ruff check .` and `ruff format` on modified Python files: 0 errors.
+- `pytest -q --tb=short tests/test_api.py`: 45 passed.
+- `npm --prefix frontend run lint` (`oxlint`: 0 warnings, 0 errors across 78 files) and `npm --prefix frontend run build` (`tsc -b && vite build`: passed cleanly).
+- Playwright Chromium end-to-end verification (`1440x900`) across `BAN` (`BRU` enemy pool), `PICK` (`TEAM A` without pool -> disabled), and `PICK` (`BRU` ally pool): confirmed `POOL (BRU): HIGH` restricts bans strictly to BRU's pool (`Toro`, `Lorion`, `Florentino`, `Hayate`, `Omen`), `OFF`/`LOW`/`HIGH` produce distinct expected recommendations, and 0 console/page errors occurred.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-23 22:26 (UTC+7) — Relocate Hero Pool Lane-Count Summary into TeamColumn Footers
+**Agent:** Antigravity / Gemini 4 Hydrogen
+
+### ✅ Completed Work
+- Removed the full-width Hero Pool lane-count strip from the top of the workspace in `frontend/src/components/DraftBoardView.tsx` (and cleaned up the now-unused `LANE_SHORT` import).
+- Computed per-side `poolLaneStats` (`{ lane, remaining, total }[]`) inside `makeTeamColumnProps` in `frontend/src/components/DraftBoardView.tsx` and passed it to `TeamColumn`.
+- Rendered each team's compact `POOL` lane-count badges inside the bottom Global Ban / team panel of `TeamColumn` (`variant="full"`) in `frontend/src/components/TeamColumn.tsx`, saving vertical space above the Draft Board while keeping remaining counts visible per side.
+- Added `"Hero Pool คงเหลือของ {0}": "Remaining Hero Pool for {0}"` to `frontend/src/i18n/englishMessages.ts`.
+
+### 📁 Modified Files
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/components/TeamColumn.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`: 0 warnings, 0 errors across 78 files).
+- `npm --prefix frontend run build` (`tsc -b && vite build`: passed cleanly).
+- Playwright Chromium verification on desktop (1440x900) and mobile Teams tab (375x812): confirmed top strip removed (`top_strip_count=0`), per-side `POOL` lane badges visible inside `TeamColumn`, 0 horizontal overflow, and 0 console/page errors.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-23 22:20 (UTC+7) — Label Assigned Tournament Action as Move Tournament
+**Agent:** Antigravity / Gemini 4 Hydrogen
+
+### ✅ Completed Work
+- Extracted `AssignTournamentButton` in `frontend/src/components/DraftHistoryModal.tsx` and updated both the button label and `AssignTournamentDialog` heading to display `ย้ายทัวร์นาเมนต์` (`Move tournament`) when a series already belongs to a tournament, and `จัดเข้าทัวร์นาเมนต์` (`Assign tournament`) when unassigned.
+- Added `"ย้ายทัวร์นาเมนต์": "Move tournament"` to `frontend/src/i18n/englishMessages.ts`.
+
+### 📁 Modified Files
+- `frontend/src/components/DraftHistoryModal.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): 0 warnings, 0 errors.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): Clean build.
+- Playwright Chromium verified `ย้ายทัวร์นาเมนต์` appears inside `RPL-winter-2026` and `จัดเข้าทัวร์นาเมนต์` appears under `No tournament`.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-23 22:13 (UTC+7) — Center Pick & Ban Portrait Rows in DraftHistoryModal
+**Agent:** Antigravity / Gemini 4 Hydrogen
+
+### ✅ Completed Work
+- Centered both the Pick portrait row and the Ban portrait row (`justify-center`) inside each Blue/Red card in `DraftHeroPreview` (`frontend/src/components/DraftHistoryModal.tsx`).
+
+### 📁 Modified Files
+- `frontend/src/components/DraftHistoryModal.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): 0 warnings, 0 errors.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): Clean build.
+- Playwright Chromium verified centered Pick and Ban rows on both desktop `1440x900` and mobile `375x812`.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-23 22:10 (UTC+7) — Enlarge Portrait-Only Pick & Ban Tiles Across All Breakpoints
+**Agent:** Antigravity / Gemini 4 Hydrogen
+
+### ✅ Completed Work
+- Updated `DraftHeroPreview` in `frontend/src/components/DraftHistoryModal.tsx` to display enlarged square hero portraits without inline text labels across all screen sizes (`36px` / `44px` / `48px` for picks and `28px` / `32px` / `36px` for bans, preserving hover `title` tooltips) so all 5 picks fit in one row on desktop and mobile.
+
+### 📁 Modified Files
+- `frontend/src/components/DraftHistoryModal.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): 0 warnings, 0 errors.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): Clean build.
+- Playwright Chromium verified both desktop `1440x900` and mobile `375x812` render 5 enlarged pick portraits in one row per side.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-23 22:08 (UTC+7) — Show Portrait-Only Pick Chips on Mobile in History Modal
+**Agent:** Antigravity / Gemini 4 Hydrogen
+
+### ✅ Completed Work
+- Updated `DraftHeroPreview` in `frontend/src/components/DraftHistoryModal.tsx` to hide hero name labels on `< sm` mobile viewports (`hidden sm:inline`), keep `32x32px` (`h-8 w-8`) square hero portraits in a single row per side, and preserve portrait + label chips on `sm+` screens.
+
+### 📁 Modified Files
+- `frontend/src/components/DraftHistoryModal.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): 0 warnings, 0 errors.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): Clean build.
+- Playwright Chromium verified mobile `375x812` renders 5 portrait-only pick tiles per side in one row, and desktop `1440x900` retains hero labels.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-23 22:04 (UTC+7) — Swap Import and Export Icons in History Modal
+**Agent:** Antigravity / Gemini 4 Hydrogen
+
+### ✅ Completed Work
+- Swapped icons in `frontend/src/components/DraftHistoryModal.tsx` so `นำเข้า JSON` (Import) uses `Download` (arrow into app) and `ส่งออก JSON` (Export, header and export picker modal) uses `Upload` (arrow out of app).
+
+### 📁 Modified Files
+- `frontend/src/components/DraftHistoryModal.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): 0 warnings, 0 errors.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): Clean build.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-23 21:59 (UTC+7) — Remove Redundant Continue Series Button From History Modal
+**Agent:** Antigravity / Gemini 4 Hydrogen
+
+### ✅ Completed Work
+- Removed the redundant `Continue Series` (`ดราฟต์ซีรีส์นี้ต่อ`) button from series headers in `frontend/src/components/DraftHistoryModal.tsx`, leaving per-game `Load Draft` (`โหลดขึ้นกระดาน`) which loads the game along with its series context and synced Global Bans.
+
+### 📁 Modified Files
+- `frontend/src/components/DraftHistoryModal.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): 0 warnings, 0 errors.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): Clean build.
+- Playwright Chromium verified History modal renders cleanly on desktop `1440x900` and mobile `375x812`.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-23 21:51 (UTC+7) — Simplify Game Card Header in DraftHistoryModal
+**Agent:** Antigravity / Gemini 4 Hydrogen
+
+### ✅ Completed Work
+- Removed the inline `blueWin% : redWin%` readout from game cards in `frontend/src/components/DraftHistoryModal.tsx` (win probability remains visible when loaded onto the draft board).
+- Removed the `WINNER:` text label inside the game winner selector, keeping only the gold `Trophy` icon and team buttons.
+
+### 📁 Modified Files
+- `frontend/src/components/DraftHistoryModal.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): 0 warnings, 0 errors.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): Clean build.
+- Playwright Chromium verified updated game cards on desktop `1440x900` and mobile `375x812`.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-23 21:49 (UTC+7) — Swap Load Draft Button Icon to Download
+**Agent:** Antigravity / Gemini 4 Hydrogen
+
+### ✅ Completed Work
+- Replaced `FolderOpen` with `Download` on the `โหลดขึ้นกระดาน` (`Load Draft`) button in `frontend/src/components/DraftHistoryModal.tsx`.
+
+### 📁 Modified Files
+- `frontend/src/components/DraftHistoryModal.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): 0 warnings, 0 errors.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): Clean build.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-23 21:48 (UTC+7) — Make Series Action Buttons Icon-Only on Mobile
+**Agent:** Antigravity / Gemini 4 Hydrogen
+
+### ✅ Completed Work
+- Made all series header action buttons (`Continue Series`, `Edit series`, `Assign tournament`, `Copy to Team`, `Delete Series`) uniform `32x32px` (`h-8 w-8`) icon-only buttons on mobile viewports in `frontend/src/components/DraftHistoryModal.tsx` and `frontend/src/components/RenameHistoryItemDialog.tsx`, preserving `aria-label` and `title` tooltips while restoring full labels on larger breakpoints.
+
+### 📁 Modified Files
+- `frontend/src/components/DraftHistoryModal.tsx`
+- `frontend/src/components/RenameHistoryItemDialog.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): 0 warnings, 0 errors.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): Clean build.
+- Playwright Chromium verified mobile `375x812` History modal renders all 5 series actions on a single compact icon-only row without wrapping.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-23 21:38 (UTC+7) — Redesign DraftHistoryModal With Tournament Containers & Compact Filter Strip
+**Agent:** Antigravity / Gemini 4 Hydrogen
+
+### ✅ Completed Work
+- **Compact 2-Row Navigation & Tournament Pill Strip (`frontend/src/components/DraftHistoryModal.tsx`)**: Consolidated the Personal/Team switcher, Tournament filter (interactive quick-filter pills with series counts when <= 5 tournaments, dropdown fallback for > 5, horizontal scroll on mobile), and `Create tournament` button into one compact bar above Search/Series controls.
+- **3-Tier Visual Hierarchy (`Tournament → Series → Game`)**: Wrapped series cards inside collapsible Tournament containers (`border-l-2 border-l-gold` + gold gradient header for named tournaments, muted container for `No tournament`), showing `N series · M games` badges (`Ns·Mg` compact on mobile), inline rename, and `+ New match` in that tournament across both Personal and Team History tabs.
+- **Compact Series Header & Footer**: Prioritized `Continue Series` (`ดราฟต์ซีรีส์นี้ต่อ`) and kept secondary series actions icon-compact on small screens; restored persistent count summary in the modal footer when team mode is available. Added English copy in `frontend/src/i18n/englishMessages.ts`.
+
+### 📁 Modified Files
+- `frontend/src/components/DraftHistoryModal.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): 0 warnings, 0 errors across 78 files.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): Clean TypeScript & Vite production build.
+- Playwright Chromium verification on `http://localhost:3000/` (`DraftHistoryModal`, 170 games across `RPL-winter-2026` + `No tournament`) at `1440x900` and `375x812`: verified 0 console/page errors, Tournament pill strip, collapsible Tournament container hierarchy, compact mobile header & actions, and zero modal overflow.
+
+### ⚠️ Open Issues / Important Notes
+- Vite build continues to report the pre-existing `> 500 kB` chunk size warning.
+
+---
+
+## 📅 2026-11-23 20:59 (UTC+7) — Clarify Winner vs Loser in All-Teams Same-Lane Matchups
+**Agent:** Antigravity / Gemini 4 Hydrogen
+
+### ✅ Completed Work
+- Required `m.wins > m.losses` for All-Teams `laneStrengths` in `frontend/src/utils/scrimStats.ts` so tied matchups are excluded.
+- Updated All-Teams and Team-mode Same-Lane Matchups in `frontend/src/components/ScrimDashboardView.tsx` to display `<Hero> ชนะทาง <Opponent>` (`beats`) and `<Hero> แพ้ทาง <Opponent>` (`loses to`) with explicit `W-L` records, and added `"ชนะทาง"` / `"แพ้ทาง"` to `frontend/src/i18n/englishMessages.ts`.
+
+### 📁 Modified Files
+- `frontend/src/utils/scrimStats.ts`
+- `frontend/src/components/ScrimDashboardView.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): 0 warnings, 0 errors.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): Clean build.
+- Playwright Chromium verified All-Teams Same-Lane Matchups render `<winner> ชนะ <loser>` with `WR% (W-L)` and 0 console/page errors.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-23 20:56 (UTC+7) — Default Scrim Analytics Team Filter to All Teams
+**Agent:** Antigravity / Gemini 4 Hydrogen
+
+### ✅ Completed Work
+- Changed the default `Team` selection in `frontend/src/components/ScrimDashboardView.tsx` from `defaultTeamName` (`teamAName` on the draft board) to `All teams` (`""`) on initial load, history source switch, and filter reset.
+- Removed the redundant `teamExplicit` flag; tournament switches continue to preserve a selected team if present in the target tournament and fall back to `All teams` otherwise.
+
+### 📁 Modified Files
+- `frontend/src/components/ScrimDashboardView.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): 0 warnings, 0 errors.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): Clean build.
+- Playwright Chromium verified initial load starts on `All teams` (`''`) even when `globalBans.teamAName` is `"BRU"`, preserves selected `FS`/`BRU` across tournaments containing them, and falls back to `All teams` when switching to a tournament without `ANK`.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-23 20:53 (UTC+7) — Preserve Selected Team Across Tournaments With All-Teams Fallback
+**Agent:** Antigravity / Gemini 4 Hydrogen
+
+### ✅ Completed Work
+- Updated tournament switching in `frontend/src/components/ScrimDashboardView.tsx` so the currently selected `Team` filter (`FS`, `BRU`, or `All teams`) is preserved when switching tournaments, instead of auto-overwriting the team selection.
+- Added automatic fallback to `All teams` (`""`) only when the selected team has no games in the newly chosen tournament.
+
+### 📁 Modified Files
+- `frontend/src/components/ScrimDashboardView.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): 0 warnings, 0 errors.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): Clean build.
+- Playwright Chromium verified: keeping `FS` and `BRU` across tournaments that include them, falling back to `All teams` when switching to a tournament without `ANK`, and keeping `All teams` when switching back to `All tournaments`.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-23 20:45 (UTC+7) — Restore Full Tournament Analytics, Filter Bar Alignment & Floating Section Popover
+**Agent:** Antigravity / Gemini 4 Hydrogen
+
+### ✅ Completed Work
+- **Full All-Teams & Tournament Analytics (`frontend/src/utils/scrimStats.ts`, `frontend/src/components/ScrimDashboardView.tsx`)**: Replaced the stripped-down `TournamentOverview` stub with `computeAllTeamsAnalytics()` and a complete 6-section All-Teams Dashboard (KPIs + Top Performing Team card, G1–G7 Blue vs Red split bars + clickable Team Standings to drill into any team, Phase 1/2 Pick Timing + Top Bans & Contest%, full 5-lane sortable/searchable Hero Table with Picks/Bans/Contest%/Bayes WR, Bradley-Terry Duos & Same-Lane Matchups, and Statistical Methods). Made `All teams` selectable across every tournament scope (`All tournaments`, `No tournament`, and specific tournaments).
+- **Unified Aligned Filter Bar & Floating Section Popover (`ScrimDashboardView.tsx`)**: Consolidated `Tournament`, `Team`, `Opponent`, `Series`, `Saved date`, and `Choose sections` into a single aligned toolbar with matching labels and control heights; converted `SectionPicker` into a floating `absolute` popover with outside-click and `Escape` dismissal so opening it never shifts the page layout.
+- **EWMA Chart & Filter Empty-State Polish**: Added right-axis margin in `EwmaSparkline` so the `50%` label no longer overlaps the latest data point; added `"Reset filters"` (`ล้างตัวกรอง`) and an undated-games notice when date filtering excludes games without calendar dates. Added English copy in `frontend/src/i18n/englishMessages.ts`.
+
+### 📁 Modified Files
+- `frontend/src/utils/scrimStats.ts`
+- `frontend/src/components/ScrimDashboardView.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): 0 warnings, 0 errors across 78 files.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): Clean TypeScript and Vite production build.
+- Playwright Chromium verification on `http://localhost:3000/#analytics` (170-game dev payload, desktop 1440x900 & mobile 375x812): verified 0 console/page errors, `0px` layout shift on `SectionPicker` open, full 6-section `RPL-winter-2026` All-Teams view, Team Standings drill-down into `BRU`, undated-game empty state + filter reset, and zero horizontal overflow on 375px mobile.
+
+### ⚠️ Open Issues / Important Notes
+- Vite build continues to report the pre-existing `> 500 kB` chunk size warning.
+
+---
+
+## 📅 2026-11-23 20:27 (UTC+7) — Open Tournament Analytics Across All Teams
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Selecting a tournament now starts on All teams. The series picker includes every series in the tournament, and users can still choose a specific team for its full scrim dashboard.
+- Added tournament-wide game and series totals, side results, and top picks and bans. Series and saved-date filters apply to these totals.
+
+### 📁 Modified Files
+- `frontend/src/components/ScrimDashboardView.tsx`, `frontend/src/utils/scrimStats.ts`, `frontend/src/i18n/englishMessages.ts`
+- `.wikiskill/wiki/system_architecture_and_data.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Passed frontend build and lint, Ruff, Git whitespace checks, and WikiSkill preflight.
+- Chromium with a read-only copy of dev history showed 73 games across 18 series for the full tournament and 16 games across 4 series for BRU. Verified disjoint matchups, side results, series and date filters, and Team History at 320px.
+
+### ⚠️ Open Issues / Important Notes
+- The frontend build reported the existing large-bundle warning.
+
+---
+
+## 📅 2026-11-23 20:13 (UTC+7) — Preserve Legacy Draft History During Sync
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Kept archived games with duplicate pick and ban entries readable and writable during personal draft sync. This allows renaming and continuing another series without rewriting historical slots.
+- Retained strict duplicate-hero checks for new Team History copies, including copies by source ID. Added a short message for structured sync validation errors.
+- Retried a newer browser snapshot automatically after startup finds an older server revision.
+
+### 📁 Modified Files
+- `src/{api,billing,db,schemas}.py`, `frontend/src/api/team.ts`, `frontend/src/hooks/useDraft.ts`, `frontend/src/i18n/englishMessages.ts`, `tests/test_billing.py`
+- `.wikiskill/wiki/system_architecture_and_data.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Passed 59 API and billing tests, frontend build and lint, Ruff, the fast architecture audit, and WikiSkill preflight.
+- Chromium with an isolated FastAPI database verified rename and continuation, unchanged legacy pick and ban slots, retry of a newer local revision, and the shorter validation message.
+- Restarted the dev API and verified its health and archived game schema.
+
+### ⚠️ Open Issues / Important Notes
+- The frontend build reported the existing large-bundle warning.
+
+---
+
+## 📅 2026-11-23 20:07 (UTC+7) — Combine Series, Game, and Team Name Editing
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Added one Edit series action to each series in Personal and Team History. The dialog edits the series title, shared game name, and Team A and Team B names.
+- Applied team names to saved and later games according to each game's side assignment. Preserved legacy series keys, Global Bans, and results. Shared edits validate all affected games and apply in one transaction.
+
+### 📁 Modified Files
+- `frontend/src/components/{DraftBoardView,DraftHistoryModal,RenameHistoryItemDialog}.tsx`, `frontend/src/api/team.ts`, `frontend/src/hooks/useDraft.ts`, `frontend/src/i18n/englishMessages.ts`, `frontend/src/types/draft.ts`, `frontend/src/utils/draft.ts`
+- `src/{api,billing,db,schemas}.py`, `tests/test_billing.py`, `.wikiskill/wiki/system_architecture_and_data.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Passed 58 API and billing tests, frontend build and lint, Ruff, the fast architecture audit, and WikiSkill preflight.
+- Chromium verified the editor at 320px, unchanged fields, legacy side swaps, and inheritance for a new game in the series. Verified one team request for the combined edit.
+- Restarted the dev API and verified the series edit endpoint and Stripe Sandbox configuration.
+
+### ⚠️ Open Issues / Important Notes
+- The frontend build reported the existing large-bundle warning.
+
+---
+
+## 📅 2026-11-23 19:58 (UTC+7) — Rename Every Game in a Series Together
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Replaced per-game rename buttons with a single Rename all games action in each series header in Personal and Team History.
+- Applies one name to all games in the series and later games. Clearing it leaves their original game numbers visible. Legacy per-game names stay until the series is edited.
+
+### 📁 Modified Files
+- `frontend/src/components/{DraftHistoryModal,RenameHistoryItemDialog}.tsx`, `frontend/src/hooks/useDraft.ts`, `frontend/src/i18n/englishMessages.ts`, `frontend/src/types/draft.ts`
+- `src/{db,schemas}.py`, `tests/test_billing.py`, `.wikiskill/wiki/system_architecture_and_data.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Passed 57 API and billing tests, frontend build and lint, Ruff, and WikiSkill preflight.
+- Chromium verified one rename action per series, same-series updates, later game inheritance, clearing the name, and separate Personal and Team History behavior.
+- Restarted the dev API and verified the updated draft schema.
+
+### ⚠️ Open Issues / Important Notes
+- The frontend build reported the existing large-bundle warning.
+
+---
+
+## 📅 2026-11-23 19:53 (UTC+7) — Rename Tournaments, Series, and Games in History
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Added rename actions to tournament headings, series headers, and game cards in Personal and Team History. A blank game name returns the card to its numbered label.
+- Preserved tournament and series identities, game numbers, draft data, results, and Global Bans. Shared renames validate permissions for all affected games. New shared copies use the current names.
+
+### 📁 Modified Files
+- `frontend/src/components/{DraftBoardView,DraftHistoryModal,GlobalBanModal,RenameHistoryItemDialog}.tsx`, `frontend/src/api/team.ts`, `frontend/src/hooks/useDraft.ts`, `frontend/src/i18n/englishMessages.ts`, `frontend/src/types/draft.ts`, `frontend/src/utils/draft.ts`
+- `src/{api,billing,db,schemas}.py`, `tests/test_billing.py`, `.wikiskill/wiki/system_architecture_and_data.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Passed 57 API and billing tests, frontend build and lint, Ruff, and the fast architecture audit.
+- Chromium verified all three rename actions in Personal and Team History, the 320px layout, Global Bans after a same-name legacy rename, and game name retention after editing and saving a draft again.
+- Restarted the dev API and verified the rename endpoint and Stripe Sandbox configuration.
+
+### ⚠️ Open Issues / Important Notes
+- The frontend build reported the existing large-bundle warning.
+
+---
+
+## 📅 2026-11-23 19:44 (UTC+7) — Create Tournaments from Saved Series
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Added Create tournament to Personal and Team History. Users name the tournament and select multiple saved series. History opens the new tournament after saving.
+- Kept all games in each selected series together and preserved their picks, bans, and results. Team assignments validate all selected series before writing them in one SQLite transaction.
+
+### 📁 Modified Files
+- `frontend/src/components/{CreateTournamentDialog,DraftHistoryModal,Modal}.tsx`, `frontend/src/api/team.ts`, `frontend/src/hooks/useDraft.ts`, `frontend/src/i18n/englishMessages.ts`
+- `src/{api,billing,db}.py`, `tests/test_billing.py`, `.wikiskill/wiki/system_architecture_and_data.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Passed 56 API and billing tests, frontend build and lint, Ruff, and Git whitespace checks.
+- Chromium verified personal tournament creation at 320px, same-name series isolation, and selection retention after a failed team request on desktop.
+- Restarted the local API and verified the batch endpoint and Stripe Sandbox configuration.
+
+### ⚠️ Open Issues / Important Notes
+- The frontend build reported the existing large-bundle warning.
+
+---
+
+## 📅 2026-11-23 19:39 (UTC+7) — Move Tournament to the Top of New Series
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Moved the tournament selector to the first row of the New Series form, before the teams and series name.
+
+### 📁 Modified Files
+- `frontend/src/components/NewSeriesModal.tsx`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Passed frontend build and lint and Ruff. Chromium verified field placement and inline tournament creation at 1280px, 375px, and 320px.
+
+### ⚠️ Open Issues / Important Notes
+- The frontend build reported the existing large-bundle warning.
+
+---
+
+## 📅 2026-11-23 19:37 (UTC+7) — Optional Tournaments for Draft Series
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Added an optional tournament above draft series and their games. New Series can select an existing tournament or create one inline. Starting from filtered history preselects that tournament.
+- Grouped personal and shared history by tournament and added whole-series assignment. Scrim Analytics filters by tournament before applying the selected series, date, and opponent filters.
+- Gave new series stable IDs to keep same-name rematches and their Global Bans separate. Existing games stay accessible under No tournament, and import, export, and team copies preserve tournament metadata.
+
+### 📁 Modified Files
+- `frontend/src/components/{DraftBoardView,DraftHistoryModal,GlobalBanModal,NewSeriesModal,PracticeDraftView,ScrimDashboardView,TournamentField}.tsx`, `frontend/src/components/meta_lab/MetaLab.tsx`
+- `frontend/src/api/team.ts`, `frontend/src/hooks/useDraft.ts`, `frontend/src/i18n/englishMessages.ts`, `frontend/src/types/draft.ts`, `frontend/src/utils/{draft,scrimStats}.ts`
+- `src/{api,billing,db,schemas}.py`, `tests/test_billing.py`, `.wikiskill/wiki/system_architecture_and_data.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Passed 56 API and billing tests, frontend build and lint, Ruff, the fast architecture audit, and WikiSkill preflight.
+- Headless Chromium verified same-name series separation, legacy assignment and JSON import, mobile Analytics, shared-history assignment, and creation from a filtered team tournament.
+- Restarted the local API and verified the dev frontend can reach it with Stripe Sandbox enabled.
+
+### ⚠️ Open Issues / Important Notes
+- Tournaments are stored with their draft or saved series. A tournament appears in history and Analytics when that source has saved games in it.
+
+---
+
+## 📅 2026-11-23 19:13 (UTC+7) — Select Multiple Series in Scrim Analytics
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Replaced the single series select with a checkbox dropdown. Analytics combines the selected series and applies the saved-date and opponent filters to those games.
+- Added a selection count and an All Series action. The picker supports touch, outside dismissal, and Escape with focus restoration.
+
+### 📁 Modified Files
+- `frontend/src/components/ScrimDashboardView.tsx`, `frontend/src/i18n/englishMessages.ts`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Passed frontend build and lint, Ruff, and Git whitespace checks.
+- Chromium verified multi-series totals, date and opponent intersections, Personal and Team History transitions, keyboard dismissal, and Thai touch interaction on a 320px viewport.
+
+### ⚠️ Open Issues / Important Notes
+- The frontend build reported the existing large-bundle warning.
+
+---
+
+## 📅 2026-11-23 19:06 (UTC+7) — Add Scrim Dashboard Filters and Section Preferences
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Added independent saved-date and series filters to Personal and Team Analytics. Date presets cover all dates, the last 7 or 30 calendar days, and inclusive custom dates. Selecting a series with all dates includes its undated games.
+- Added a dashboard section chooser with browser-persisted preferences and a Show All action.
+
+### 📁 Modified Files
+- `frontend/src/components/ScrimDashboardView.tsx`, `frontend/src/utils/scrimStats.ts`, `frontend/src/i18n/englishMessages.ts`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Passed frontend build and lint, Ruff, and Git whitespace checks.
+- Chromium fixtures verified late entry and legacy dates, inclusive date boundaries, combined filters, changes in history source, saved visibility after reload, and mobile widths of 320px and 375px. Verified the manual Violet lane selection regression again.
+
+### ⚠️ Open Issues / Important Notes
+- Series choices use existing history group names. Dates represent when a game was saved. The frontend build reported the existing large-bundle warning.
+
+---
+
+## 📅 2026-11-23 18:57 (UTC+7) — Correct Scrim Analytics Lane Filters
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Calculated hero games, wins, losses, and pick timing from the selected lane. Games without a recorded lane contribute to the overall view, and the existing FLEX threshold still applies across all of a hero's lanes.
+- Added the recorded-results count to the overall win rate and replaced the side comparison's confidence percentage with wording that reflects the available results.
+- Contained long team names on mobile and added separate loading, error with retry, and empty states for Team History.
+
+### 📁 Modified Files
+- `frontend/src/utils/scrimStats.ts`, `frontend/src/components/ScrimDashboardView.tsx`, `frontend/src/i18n/englishMessages.ts`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Passed frontend build and lint, Ruff, and Git whitespace checks.
+- Chromium verified changing Violet from ADL to MID on the board and saving before filtering Analytics. Fixture checks also covered FLEX, missing lane assignments, undecided games, the side summary, a 64-character team name on a 375px viewport, and Team History retry after HTTP 503.
+
+### ⚠️ Open Issues / Important Notes
+- The frontend build reported the existing large-bundle warning.
+
+---
+
+## 📅 2026-11-23 17:52 (UTC+7) — Strict Validation & Guardrails for Draft History JSON Import
+**Agent:** Antigravity / Gemini 4 Hydrogen
+
+### ✅ Completed Work
+- Hardened `parseImportedDraftGames()` in `frontend/src/hooks/useDraft.ts` and `handleImportFile()` in `frontend/src/components/DraftHistoryModal.tsx`: enforced a `2 MB` upload size limit, `<= 500` games per file, exact Backend schema bounds (`<= 5` picks, `<= 4` bans, `1..7` gameNumber, `0..100` blueWinRate, `1..64` team/id strings, `<= 32` timestamp, `<= 60` Global Ban lists), validated every hero against the 130-hero catalog (`heroMap`), and blocked duplicate heroes within a single game.
+- Added `validate_unique_game_heroes()` model validator on `RecordedDraftGameSchema` in `src/schemas.py` to reject duplicate in-game heroes at the API boundary (`422`), plus tests in `tests/test_billing.py`.
+- Added English translations for all validation errors in `frontend/src/i18n/englishMessages.ts`.
+
+### 📁 Modified Files
+- `src/schemas.py`
+- `tests/test_billing.py`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/DraftHistoryModal.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check --fix .` & `ruff format .`: Passed cleanly (`All checks passed!`).
+- `pytest -q --tb=short tests/test_billing.py tests/test_api.py`: All tests passed.
+- `npm --prefix frontend run lint` & `npm --prefix frontend run build`: 0 lint errors/warnings and clean production build.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-23 17:45 (UTC+7) — Require Confirmation Dialog Before Single-Game History Deletion
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Updated the single-game delete action in `frontend/src/components/DraftHistoryModal.tsx` (Personal History tab) to open `ConfirmDialog` showing the game number, matchup teams, and series group name before calling `onDeleteGame()`.
+- Added English translations in `frontend/src/i18n/englishMessages.ts`.
+
+### 📁 Modified Files
+- `frontend/src/components/DraftHistoryModal.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): 0 warnings and 0 errors.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): Clean production build.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-23 17:40 (UTC+7) — Success Popup Toast for History JSON Export & Import
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Added a portal toast popup (`createPortal(..., document.body)`, auto-dismissing after 4 seconds with manual close button) in `frontend/src/components/DraftHistoryModal.tsx` when exporting selected series to JSON or importing games from JSON into Personal or Shared Team History.
+- Added English translations in `frontend/src/i18n/englishMessages.ts` for `"ส่งออก JSON สำเร็จ"`, `"นำเข้า JSON สำเร็จ"`, and `"ส่งออกแล้ว {0} ซีรีส์ ({1} เกม)"`.
+
+### 📁 Modified Files
+- `frontend/src/components/DraftHistoryModal.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): 0 warnings and 0 errors.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): Clean production build.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-23 17:32 (UTC+7) — Series-Picker Export JSON & Import JSON in DraftHistoryModal
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Replaced direct all-history JSON download in `frontend/src/components/DraftHistoryModal.tsx` with a portal Export Series Picker modal (`เลือกซีรีส์ที่ต้องการส่งออก`) featuring per-series checkboxes, `เลือกทั้งหมด` / `ล้างการเลือก` toggle, search filter, selected series/game counts, and automatic single-series filename slugging for both Personal and Team history tabs.
+- Added `parseImportedDraftGames()` and `importSeriesGames()` in `frontend/src/hooks/useDraft.ts` (wired via `frontend/src/components/DraftBoardView.tsx`) plus a `นำเข้า JSON` upload button in `DraftHistoryModal.tsx` supporting both Personal History (quota check + duplicate skip) and Shared Team History (chunked atomic batch uploads via `shareTeamSeries`).
+- Added English translations for all new Export/Import UI strings in `frontend/src/i18n/englishMessages.ts`.
+
+### 📁 Modified Files
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/components/DraftHistoryModal.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): 0 warnings and 0 errors.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): Clean production build.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-23 15:43 (UTC+7) — Fix E2E QA & Edge-Case Bugs Across Combobox, Team Copy, Tooltips, Scrim Analytics & Modals
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- **NewSeriesModal (`frontend/src/components/NewSeriesModal.tsx`)**: Fixed `Escape` closing the parent modal (`e.preventDefault()` + `e.stopPropagation()`), switched closing logic to outside `pointerdown` so chevron-opened popovers never stick open, replaced `onMouseDown` handlers with `onClick` for touch-scroll and keyboard ergonomics, and allowed `Enter` to commit the top filtered pool when typing.
+- **Atomic Batch Series Copy Race Fix (`src/billing.py`, `src/db.py`, `src/api.py`, `frontend/src/api/team.ts`, `frontend/src/components/DraftHistoryModal.tsx`, `tests/test_billing.py`)**: Added optional fallback `games` list on `TeamSeriesCopyRequest` / `save_team_games()` so copying a series immediately after finishing a game never fails with `404 game_not_found` while debounced `PUT /draft/session` sync is pending.
+- **Pool Mode Tooltips (`frontend/src/components/ScoreBar.tsx`, `frontend/src/components/DraftBoardView.tsx`, `frontend/src/i18n/englishMessages.ts`)**: Corrected `LOW -> HIGH -> OFF -> LOW` cycle hint order and set `activeTeamName` strictly from the pool active on the current Ban/Pick turn without cross-side fallback.
+- **HeroPoolsModal (`frontend/src/components/HeroPoolsModal.tsx`)**: Added a loading placeholder while fetching pools, prevented `Enter` in the hero search box from submitting the edit form, and rendered `duplicate_team_name` copy skips via `Alert` instead of green notice text.
+- **Scrim Analytics (`frontend/src/utils/scrimStats.ts`, `frontend/src/components/ScrimDashboardView.tsx`)**: Merged team/opponent names case-insensitively, skipped mirror-matchup distortion, fixed `blueWinRate` scaling (`> 0` percentage), suppressed undecided `"G1–3 vs G4–7"` badges, and used neutral `text-dim` for undecided `"—"` cells.
+- **Guest Migration i18n & Survey Popup Deferral (`frontend/src/App.tsx`, `frontend/src/components/PricingSurveyModal.tsx`, `frontend/src/i18n/englishMessages.ts`)**: Localized Guest migration buttons (`ยืนยัน` / `ไม่ย้าย`) and deferred auto-opening the daily feedback survey while another modal dialog is open.
+
+### 📁 Modified Files
+- `src/billing.py`, `src/db.py`, `src/api.py`, `tests/test_billing.py`
+- `frontend/src/api/team.ts`, `frontend/src/App.tsx`, `frontend/src/components/DraftBoardView.tsx`, `frontend/src/components/DraftHistoryModal.tsx`, `frontend/src/components/HeroPoolsModal.tsx`, `frontend/src/components/NewSeriesModal.tsx`, `frontend/src/components/PricingSurveyModal.tsx`, `frontend/src/components/ScoreBar.tsx`, `frontend/src/components/ScrimDashboardView.tsx`, `frontend/src/utils/scrimStats.ts`, `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check --fix .` & `ruff format .`: Passed cleanly (`All checks passed!`).
+- `pytest -q --tb=short tests/test_billing.py`: All tests passed (`10 passed`).
+- `npm --prefix frontend run lint` & `npm --prefix frontend run build`: 0 lint errors/warnings and clean Vite production build.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-23 15:18 (UTC+7) — Searchable Hero Pool Combobox & Auto-Sync Hint in NewSeriesModal
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Replaced the `<select>` + `<datalist>` elements in `frontend/src/components/NewSeriesModal.tsx` with reusable searchable `TeamPoolCombobox` inputs featuring a scrollable bounded popover (`max-h-44`), real-time prefix/substring filtering while typing, `POOL` match badges, and a 1-line auto-sync discoverability hint below the team inputs.
+- Updated `frontend/src/i18n/englishMessages.ts` with English translations for the combobox header, empty search notice, and auto-sync hint.
+
+### 📁 Modified Files
+- `frontend/src/components/NewSeriesModal.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): 0 warnings and 0 errors.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): Clean production build.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-23 15:10 (UTC+7) — Compact Hero Pool Dropdown in NewSeriesModal
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Replaced the stacked wrapping Hero Pool chip buttons in `frontend/src/components/NewSeriesModal.tsx` with compact `<select>` dropdowns (`เลือกจาก Hero Pool ({0})…`) plus inline `POOL` match badges on the Team A/Team B labels, and increased team name input `maxLength` from `14` to `32` to align with Hero Pool names.
+- Added English translation for `"เลือกจาก Hero Pool ({0})…"` in `frontend/src/i18n/englishMessages.ts`.
+
+### 📁 Modified Files
+- `frontend/src/components/NewSeriesModal.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): 0 warnings and 0 errors.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): Clean production build.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-23 15:02 (UTC+7) — Support In-Place Hero Pool Renaming via `pool_id`
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Added optional `pool_id: int | None = Field(default=None, gt=0)` to `HeroPoolUpsertRequest` in `src/billing.py`, and updated `UserDatabase.upsert_hero_pool()` (`src/db.py`) and `src/api.py` so editing an existing Hero Pool with `pool_id` renames and updates that row in place (preserving ID, avoiding creating a duplicate pool, raising `404 pool_not_found` if missing, and raising `409 duplicate_team_name` if colliding with another pool's name).
+- Updated `saveHeroPool()` (`frontend/src/api/heroPools.ts`) and `handleSave()` (`frontend/src/components/HeroPoolsModal.tsx`) to pass `pool_id` when editing an existing Hero Pool.
+- Added in-place rename and rename-conflict test assertions in `tests/test_billing.py`.
+
+### 📁 Modified Files
+- `src/billing.py`
+- `src/db.py`
+- `src/api.py`
+- `frontend/src/api/heroPools.ts`
+- `frontend/src/components/HeroPoolsModal.tsx`
+- `tests/test_billing.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check --fix .` & `ruff format .`: Passed cleanly (`All checks passed!`).
+- `pytest -q --tb=short tests/test_billing.py`: All tests passed (`10 passed`).
+- `npm --prefix frontend run lint` & `npm --prefix frontend run build`: 0 lint errors/warnings and clean Vite production build.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-23 14:56 (UTC+7) — Copy Personal Hero Pool to Shared Team Pools
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Added a `คัดลอกเข้าทีม` (`Copy to Team`) button in `frontend/src/components/HeroPoolsModal.tsx` (View Mode of Personal Pools when the account belongs to a team), calling `saveHeroPool({ scope: "team", team_name, lanes, create_only: true })` to copy all 5 lanes non-destructively into Shared Team Pools without overwriting an existing team of the same name.
+- Added English translations in `frontend/src/i18n/englishMessages.ts` for `"คัดลอกเข้า Pool ร่วมทีม"`, `"คัดลอกเข้า Pool ร่วมทีมแล้ว"`, and `"มีทีมนี้ใน Pool ร่วมทีมแล้ว"`.
+
+### 📁 Modified Files
+- `frontend/src/components/HeroPoolsModal.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): 0 warnings and 0 errors.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): Clean production build.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-23 14:49 (UTC+7) — Exit Edit Mode on Hero Pool Save
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Added explicit View Mode vs Edit Mode state (`isEditing`) in `frontend/src/components/HeroPoolsModal.tsx`: existing Hero Pools open in a read-only 5-lane summary view with `แก้ไข` / `ลบ` actions, clicking `บันทึก Pool` exits edit mode back to the saved summary immediately, and `ยกเลิก` discards unsaved edits and returns to the summary view.
+- Updated `frontend/src/i18n/englishMessages.ts` with translations for `"{0} ฮีโร่"` and `"ยังไม่มีฮีโร่ในเลนนี้"`.
+
+### 📁 Modified Files
+- `frontend/src/components/HeroPoolsModal.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): 0 warnings and 0 errors.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): Clean production build.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-23 14:46 (UTC+7) — Prevent Duplicate Team Names When Creating Hero Pools
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Added optional `create_only: bool = False` to `HeroPoolUpsertRequest` in `src/billing.py`, enforced `ValueError("duplicate_team_name")` (HTTP `409`) in `UserDatabase.upsert_hero_pool()` (`src/db.py`) and `src/api.py` when creating a pool whose normalized team name already exists in the same scope, preserving backward-compatible updates when `create_only=False`.
+- Updated `frontend/src/components/HeroPoolsModal.tsx` to detect duplicate team names (case-insensitive) in the active tab, lock all hero grid buttons (`toggleHero`), `ล้างเลนนี้`, and `บันทึก Pool` until renamed, and display an inline alert with a shortcut button to open the existing pool instead.
+- Updated `frontend/src/api/heroPools.ts`, `frontend/src/i18n/englishMessages.ts`, and added duplicate-name assertions in `tests/test_billing.py`.
+
+### 📁 Modified Files
+- `src/billing.py`
+- `src/db.py`
+- `src/api.py`
+- `frontend/src/api/heroPools.ts`
+- `frontend/src/components/HeroPoolsModal.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `tests/test_billing.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check --fix .` & `ruff format .`: Passed cleanly (`All checks passed!`).
+- `pytest -q --tb=short tests/test_billing.py`: All tests passed (`10 passed`).
+- `npm --prefix frontend run lint` & `npm --prefix frontend run build`: 0 lint errors/warnings and clean Vite production build.
+
+### ⚠️ Open Issues / Important Notes
+- None.
+
+---
+
+## 📅 2026-11-23 14:42 (UTC+7) — Copy Whole Series to Team History (Batch Atomic API + Header Action)
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Added `TeamSeriesCopyRequest` and `TeamSeriesCopyResponse` in `src/billing.py`, atomic `UserDatabase.save_team_games()` in `src/db.py`, and `POST /billing/team/history/batch` in `src/api.py` to copy an entire series from personal history into shared team history in a single `BEGIN IMMEDIATE` transaction (skipping duplicates, pre-checking `TEAM_HISTORY_LIMIT`, and rolling back on missing games or quota overflow).
+- Added `shareTeamSeries()` in `frontend/src/api/team.ts` and moved the `คัดลอกเข้าทีม` action in `frontend/src/components/DraftHistoryModal.tsx` from individual game cards to each series group header (inserting Game 1..N in chronological order with translated copy/skip feedback), while keeping `saveSnapshot()` single-game direct team saving intact.
+- Updated English translations in `frontend/src/i18n/englishMessages.ts` and added `test_team_history_batch_series_copy_idempotent_and_atomic` in `tests/test_billing.py`.
+
+### 📁 Modified Files
+- `src/billing.py`
+- `src/db.py`
+- `src/api.py`
+- `frontend/src/api/team.ts`
+- `frontend/src/components/DraftHistoryModal.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `tests/test_billing.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check --fix .` & `ruff format .`: Passed cleanly (`All checks passed!`).
+- `pytest -q --tb=short tests/test_billing.py`: All tests passed (`10 passed`).
+- `npm --prefix frontend run lint` & `npm --prefix frontend run build`: 0 lint errors/warnings and clean Vite production build.
+
+### ⚠️ Open Issues / Important Notes
+- None. Kept `POST /billing/team/history` unchanged for direct current-board team snapshots (`saveSnapshot()`).
+
+---
+
+## 📅 2026-11-23 14:32 (UTC+7) — Upgrade Hero Pool Mode to 3 States (LOW / HIGH / OFF, Default LOW)
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Added `pool_mode: Literal["off", "low", "high"] | None` to `DraftStateRequest` in `src/schemas.py` and updated `src/predictor.py::predict` to support `"low"` (mixture prior boost over open-lane pool heroes), `"high"` (strict open-lane pool filtering with open-lane meta fallback), and `"off"` (pure pro meta ignoring Hero Pool weights/lanes), preserving backward compatibility with `pool_only`.
+- Replaced the boolean `filterByAllyPool` toggle with 3-state `PoolMode` (`"low"` default, cycling `LOW -> HIGH -> OFF`) across `frontend/src/utils/draft.ts`, `frontend/src/hooks/useDraft.ts`, `frontend/src/components/DraftBoardView.tsx`, and `frontend/src/components/ScoreBar.tsx` (gold `POOL: HIGH`, blue `POOL: LOW`, gray `POOL: OFF`).
+- Updated `frontend/src/i18n/englishMessages.ts` tooltips and added `pool_mode="off"` pure-meta parity assertions in `tests/test_api.py`.
+
+### 📁 Modified Files
+- `src/schemas.py`
+- `src/predictor.py`
+- `frontend/src/utils/draft.ts`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/components/ScoreBar.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `tests/test_api.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified via `ruff check --fix .`, `ruff format .`, `pytest -q --tb=short tests/test_predictor_golden.py tests/test_model_pipeline.py tests/test_api.py`, frontend `npm run lint`, `npm run build`, and `git diff --check`.
+
+---
+
+## 📅 2026-11-23 14:27 (UTC+7) — Fix Filled-Lane Recommendations with Hero Pools & Lane Scarcity
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Added `ally_pool_lanes` to `DraftStateRequest` in `src/schemas.py` and resolved per-pool lane assignments in `src/predictor.py` (`_resolve_pool_hero_lanes`, `_solve_flex_lane_assignment`, `_needed_lanes_for_picks`, `_apply_lane_filter`) so flex/custom-lane picks like `Bolt Baron (DS_Lane)`, `Sephera (Jungle)`, or `Rouie (Roam)` cover and match their pool-assigned lanes.
+- Fixed Hero Pool filtering (`pool_only=True`) and mixture boosting (`pool_only=False`) in `src/predictor.py` to restrict candidates to `needed_pool_ids` matching `target_needed_lanes`, returning strictly open-lane pool heroes when `< top_k` remain (never padding with filled-lane heroes) and gracefully falling back to open-lane meta heroes if zero pool heroes remain for missing lanes.
+- Wired `ally_pool_lanes` and `buildPoolHeroLaneMap` / `heroFitsLaneSet` across `frontend/src/utils/draft.ts`, `frontend/src/hooks/useDraft.ts`, `frontend/src/components/DraftBoardView.tsx`, `frontend/src/components/AiPanel.tsx`, and `frontend/src/components/HeroGrid.tsx` so Top-5 `ALL` suggestions and HeroGrid `#1..#10` badges strictly show missing-lane heroes whenever open lanes remain.
+- Added `test_pool_never_recommends_filled_lanes_and_respects_pool_lanes` in `tests/test_api.py`.
+
+### 📁 Modified Files
+- `src/schemas.py`
+- `src/predictor.py`
+- `frontend/src/utils/draft.ts`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/components/AiPanel.tsx`
+- `frontend/src/components/HeroGrid.tsx`
+- `tests/test_api.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified via `ruff check --fix .`, `ruff format .`, `pytest -q --tb=short tests/test_predictor_golden.py tests/test_model_pipeline.py tests/test_api.py`, frontend `npm run lint`, `npm run build`, and `git diff --check`.
+
+---
+
+## 📅 2026-11-23 14:12 (UTC+7) — Move POOL Mode Toggle Next to Assistant Button in ScoreBar
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Moved the Hero Pool mode toggle (`POOL`) from `AiPanel.tsx` into `ScoreBar.tsx` directly beside the `ตัวช่วย` (Assistant) button, matching its design and active/inactive state colors.
+- Passed `poolToggle` from `DraftBoardView.tsx` whenever either Blue or Red has a synced Hero Pool (keeping `filterByAllyPool` default `true`, and retaining `POOL` / `ENEMY POOL` badges on `AiPanel` cards).
+
+### 📁 Modified Files
+- `frontend/src/components/ScoreBar.tsx`
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/components/AiPanel.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified via `npm run lint` (`0 warnings, 0 errors`), `npm run build` (`tsc -b && vite build`), and `git diff --check`.
+
+---
+
+## 📅 2026-11-23 14:06 (UTC+7) — Remove Static Pro-Team Preset Buttons from NewSeriesModal
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Removed the hardcoded `POPULAR_TEAMS` quick-preset buttons (`BRU`, `BAC`, `FS`, `TLN`, `EA`, `KOG`, `HD`, `TEN`) from Team A and Team B in `frontend/src/components/NewSeriesModal.tsx`, keeping saved Hero Pool (`POOL`) shortcut chips and team inputs intact.
+
+### 📁 Modified Files
+- `frontend/src/components/NewSeriesModal.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified via `npm run lint` (`0 warnings, 0 errors`), `npm run build` (`tsc -b && vite build`), and `git diff --check`.
+
+---
+
+## 📅 2026-11-23 14:03 (UTC+7) — Add Pool-Aware AI Ranking (Mixture Prior + Strict Pool Mode Default ON)
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Extended `DraftStateRequest` in `src/schemas.py` with optional `ally_pool`, `enemy_pool`, and `pool_only` fields (leaving non-pool requests identical).
+- Added Hero Pool inference shaping in `src/predictor.py::RoVDraftPredictor.predict`:
+  - **Strict Pool Mode (`pool_only=True` in pick mode):** masks candidates strictly to available `ally_pool` heroes across all 130 heroes (and bypasses `_ensure_lane_quota` injection), falling back cleanly to meta recommendations if all pool heroes are unavailable.
+  - **Mixture Prior Boost (`pool_only=False` or ban mode):** mixes `0.75 * probs + 0.25 * pool_dist` (with `0.35` power compression over available pool heroes) so even off-meta comfort/signature heroes surface in Top-15 without distorting `win_probs`.
+- Wired `PredictPoolContext` through `frontend/src/utils/draft.ts`, `frontend/src/hooks/useDraft.ts`, `frontend/src/components/DraftBoardView.tsx`, and `frontend/src/components/AiPanel.tsx`, with `filterByAllyPool` defaulting to `true` (Pool mode ON by default) and fallback-safe client rendering.
+- Added English translations in `frontend/src/i18n/englishMessages.ts` and `test_predict_hero_pool_boost_and_strict_filter` in `tests/test_api.py`.
+
+### 📁 Modified Files
+- `src/schemas.py`
+- `src/predictor.py`
+- `frontend/src/utils/draft.ts`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/components/AiPanel.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `tests/test_api.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified via `ruff check --fix .`, `ruff format .`, `pytest -q --tb=short tests/test_predictor_golden.py tests/test_api.py`, frontend `npm run lint`, `npm run build`, and `git diff --check`.
+
+---
+
+## 📅 2026-11-23 13:35 (UTC+7) — Increase Paid & Shared Team Hero Pool Quotas to 50/50
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Increased `PAID_HERO_POOL_LIMIT` and `TEAM_HERO_POOL_LIMIT` from `25` to `50` in `src/db.py` (`50` personal pools for Pro/Duo/Team Pro, plus `50` shared team pools for Duo/Team Pro; Free remains `1` own-team pool).
+- Added explicit `personal_limit == 50` and `team_limit == 50` assertions in `tests/test_billing.py::test_hero_pools_limits_and_team_sharing`.
+- Updated the capability matrix and Section 10 in `docs/SUBSCRIPTION_ROADMAP.md` to reflect the `50/50` limits.
+
+### 📁 Modified Files
+- `src/db.py`
+- `tests/test_billing.py`
+- `docs/SUBSCRIPTION_ROADMAP.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified via `ruff check --fix .`, `ruff format .`, `pytest -q --tb=short tests/test_billing.py`, and `git diff --check`.
+
+---
+
+## 📅 2026-11-23 13:25 (UTC+7) — Add Probability of Superiority, Bo5/Bo7 Series Win Probability & AI Draft Edge
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Added `normalCdf`, `probGroup1BetterPct` / `probDominantPct`, `probSynergyPct`, `probThreatPct`, `probAdvantagePct`, exact alternating-side `computeSeriesWinProb` (Bo5 & Bo7), and AI `draftEdge` (`Wins Above Expected` from `blueWinRate`) to `frontend/src/utils/scrimStats.ts`.
+- Updated `frontend/src/components/ScrimDashboardView.tsx` to surface coach-friendly confidence percentages (`มั่นใจ XX%`, `เสริมจริง XX%`, `แพ้จริง XX%`) on cards while keeping raw `p-value` / `Z-score` values in hover tooltips, and added Bo5/Bo7 series win probability + Draft Edge (`+/- games`) KPI readouts.
+- Added English translations in `frontend/src/i18n/englishMessages.ts`.
+
+### 📁 Modified Files
+- `frontend/src/utils/scrimStats.ts`
+- `frontend/src/components/ScrimDashboardView.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified via `npm run lint` (`0 warnings, 0 errors`), `npm run build` (`tsc -b && vite build`), and `git diff --check`.
+
+---
+
+## 📅 2026-11-23 13:22 (UTC+7) — Upgrade Scrim Dashboard with Bradley-Terry, Empirical Bayes, Entropy & EWMA Analytics
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Created `frontend/src/utils/scrimStats.ts` implementing an esports statistical engine modeled after `exports/RoV_Pro_Draft_Intelligence_2026/RoV_Pro_Draft_Master_2026.xlsx` and `AdminDashboardView.tsx`:
+  - **Wilson (1927) 95% CI & Two-Proportion Z-Test** (`wilsonCi95`, `twoPropZTest`) for overall WR, Blue vs Red significance, G1–3 vs G4–7 comparison, and Head-to-Head opponents.
+  - **Empirical Bayes Shrinkage (`Prior k=8`) & Team Delta** (`bayesianWr`, `bayesianDeltaPct`) plus `B1` / `R5` pick counts and Flex lane badges (`flexLaneCount`) in the 5-lane hero performance table.
+  - **Bradley-Terry (1952) Synergy & Same-Lane Counter Lift + Co-Pick Lift + Protective Phase 2 Ban Lift** (`bradleyTerrySynergy`, `bradleyTerryCounter`).
+  - **Shannon Entropy Effective Hero Pool (`exp(H)`)**, **Weighted Linear G1–G7 Fatigue Slope**, and **EWMA Momentum (`alpha=0.15`)**.
+- Upgraded `frontend/src/components/ScrimDashboardView.tsx` with `CiRangeBar`, `EwmaSparkline`, plain-language coaching verdicts, Direct Same-Lane Matchups card, Predictive/Protective Phase 2 Ban strip, and a collapsible Deep Math & Citations reference `<details>` panel.
+- Added English translations in `frontend/src/i18n/englishMessages.ts`.
+
+### 📁 Modified Files
+- `frontend/src/utils/scrimStats.ts` (new)
+- `frontend/src/components/ScrimDashboardView.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified via `npm run lint` (`0 warnings, 0 errors`), `npm run build` (`tsc -b && vite build`), and `git diff --check`.
+
+---
+
+## 📅 2026-11-23 13:12 (UTC+7) — Clarify Phase 1 / Phase 2 Draft Timing Labels in Scrim Dashboard
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Replaced opaque `Phase 1%` / `Phase 1 vs Phase 2` labels in `frontend/src/components/ScrimDashboardView.tsx` with clearer draft-centric labels (`หยิบ Phase แรก` with explanatory tooltip, `จังหวะการหยิบ (3 ตัวแรก vs 2 ตัวท้าย)`, `หยิบเปิดก่อน / Priority (P1–P3)`, and `หยิบปิด / Counter (P4–P5)`).
+- Updated matching English translation keys in `frontend/src/i18n/englishMessages.ts`.
+
+### 📁 Modified Files
+- `frontend/src/components/ScrimDashboardView.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified via `npm run lint` (`0 warnings, 0 errors`), `npm run build` (`tsc -b && vite build`), and `git diff --check`.
+
+---
+
+## 📅 2026-11-23 13:07 (UTC+7) — Restore Two-Step Scrim Analytics Flow (Summary Modal -> New-Tab Dashboard)
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Restored the compact `ScrimAnalyticsModal` as the first view opened from the 3-bar drawer (`วิเคราะห์สถิติซ้อมทีม`) in `App.tsx` and `DraftBoardView.tsx`, matching the `Owner Stats` UX.
+- Added a `Dashboard` external-link button (`<a href="/#analytics" target="_blank" rel="noopener noreferrer">`) to `ScrimAnalyticsModal`'s header for paid users to open the full-page `ScrimDashboardView` in a new tab.
+- Kept the gold-accented button style in `MobileNavDrawer.tsx` with the updated `วิเคราะห์สถิติซ้อมทีม` label.
+
+### 📁 Modified Files
+- `frontend/src/components/ScrimAnalyticsModal.tsx`
+- `frontend/src/App.tsx`
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/components/MobileNavDrawer.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified via `npm run lint` (`0 warnings, 0 errors`), `npm run build` (`tsc -b && vite build`), and `git diff --check`.
+
+---
+
+## 📅 2026-11-23 13:02 (UTC+7) — Add Full-Page Deep Scrim Analytics Dashboard (`#analytics`)
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Created `frontend/src/components/ScrimDashboardView.tsx` (`#analytics` route), a full-page analytics dashboard styled after `AdminDashboardView` featuring Wilson 95% CI win-rate metrics, Blue/Red side splits, Hero Pool depth, a Game 1–7 Global Ban series progression bar chart, Phase 1 vs Phase 2 pick priority, Target Ban vs Own Ban breakdowns, a 5-lane sortable hero table, Top Ally Duos, Toughest Enemy Picks, and a clickable Head-to-Head opponents table.
+- Updated `MobileNavDrawer.tsx` so the `Dashboard วิเคราะห์ซ้อมทีม` button uses the same highlighted gold button design as `Owner Stats`, wired `#analytics` in `App.tsx`, and removed `ScrimAnalyticsModal` from `DraftBoardView.tsx`.
+- Registered `ScrimDashboardView` in `.wikiskill/wiki/system_architecture_and_data.md` and added English translations in `frontend/src/i18n/englishMessages.ts`.
+
+### 📁 Modified Files
+- `frontend/src/components/ScrimDashboardView.tsx`
+- `frontend/src/components/MobileNavDrawer.tsx`
+- `frontend/src/App.tsx`
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `.wikiskill/wiki/system_architecture_and_data.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Ran `ruff check .`, frontend `npm run lint` (`0 warnings, 0 errors`), `npm run build`, `preflight_check.py`, and `git diff --check`.
+
+---
+
+## 📅 2026-11-23 12:57 (UTC+7) — Redesign Draft History Series Filter and Collapsible Accordion
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Replaced the wrapping series chip wall in `frontend/src/components/DraftHistoryModal.tsx` with a single-row search bar (matching series, team, or hero names), series `<select>` dropdown, and Expand/Collapse All toggle.
+- Converted each series block into a collapsible accordion card showing game count and series score, expanding only the latest series by default when more than 3 series exist so 100+ series stay fast and scannable.
+
+### 📁 Modified Files
+- `frontend/src/components/DraftHistoryModal.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Ran `ruff check .`, frontend `npm run lint` (`0 warnings, 0 errors`), `npm run build`, and `git diff --check`.
+
+---
+
+## 📅 2026-11-23 12:40 (UTC+7) — Move Sandbox Draft Tool Actions Into the Hamburger Drawer
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Removed the `Pool`, `สถิติ`, and `นำเข้าภาพ` toolbar buttons from `DraftBoardView.tsx` to keep the Draft Board header uncluttered.
+- Added a dev-only **Draft Tools** (`เครื่องมือดราฟต์`) section inside `MobileNavDrawer.tsx` wired through `App.tsx` (`activeDraftTool`) so Hero Pools, Scrim Analytics, and Screenshot Draft Import open cleanly from the 3-bar menu on any tab.
+
+### 📁 Modified Files
+- `frontend/src/App.tsx`
+- `frontend/src/components/MobileNavDrawer.tsx`
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Ran `ruff check .`, frontend `npm run lint` (`0 warnings, 0 errors`), `npm run build`, and `git diff --check`.
+
+---
+
+## 📅 2026-11-23 09:30 (UTC+7) — Implement Dev Sandbox History Limits, Hero Pools Auto-Sync, Scrim Analytics, History Export, and Screenshot Import Shell
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- **Finalized Dev History Limits & JSON Export:** Set Sandbox history limits to 3 Guest games (`App.tsx`), 7 Free games (`FREE_HISTORY_LIMIT = 7` in `src/db.py`), and 500 paid games; added **Export JSON** to `DraftHistoryModal.tsx`.
+- **Hero Pools & Team-Name Auto-Sync:** Added `hero_pools` SQLite table, `/billing/hero-pools` API routes (`src/db.py`, `src/billing.py`, `src/api.py`, `src/schemas.py`), `HeroPoolsModal.tsx` (1 own-team pool for Free, multiple personal/opponent pools for Pro+, plus Shared Team Pools for Duo/Team Pro), case-insensitive team-name auto-sync & side-swap transfer, saved-team quick chips in `NewSeriesModal.tsx`, Global Ban remaining-pool counters, and AI Pool Filter/Highlight + Enemy Pool Ban badges in `AiPanel.tsx`.
+- **Scrim Analytics:** Added `ScrimAnalyticsModal.tsx` analyzing Personal History (Pro+) and Shared Team History (Duo/Team Pro) across overall/side/G1–G7 win rates, top picks by lane, most-banned heroes, and toughest enemy matchups.
+- **Screenshot Draft Import (Frontend Shell):** Added `ScreenshotImportModal.tsx` with PNG/JPG/WebP validation, preview, 18-slot review board, and load-to-board flow (pending calibration samples for backend CV).
+- **Docs & Tests:** Documented `hero_pools` in `.wikiskill/wiki/system_architecture_and_data.md`, aligned `BillingSandbox.tsx` and `englishMessages.ts`, and added `test_hero_pools_limits_and_team_sharing` in `tests/test_billing.py`.
+
+### 📁 Modified Files
+- `src/db.py`, `src/billing.py`, `src/schemas.py`, `src/api.py`
+- `frontend/src/api/client.ts`, `frontend/src/api/heroPools.ts`, `frontend/src/types/auth.ts`, `frontend/src/App.tsx`
+- `frontend/src/components/DraftBoardView.tsx`, `frontend/src/components/AiPanel.tsx`, `frontend/src/components/NewSeriesModal.tsx`, `frontend/src/components/DraftHistoryModal.tsx`, `frontend/src/components/BillingSandbox.tsx`
+- `frontend/src/components/HeroPoolsModal.tsx`, `frontend/src/components/ScrimAnalyticsModal.tsx`, `frontend/src/components/ScreenshotImportModal.tsx`, `frontend/src/i18n/englishMessages.ts`
+- `.wikiskill/wiki/system_architecture_and_data.md`, `tests/test_billing.py`, `tests/test_api.py`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Ran `ruff check --fix .`, `ruff format .`, `ruff check .`, `pytest -q --tb=short`, frontend `npm run lint` + `npm run build`, `preflight_check.py`, `audit_security.py`, and `audit_arch_perf.py`.
+
+### ⚠️ Open Issues / Important Notes
+- All monetization, Hero Pool, Scrim Analytics, and Screenshot Import controls remain strictly dev-only (`stripe_sandbox_enabled`); production `minidraft.app` and `dist-prod` are untouched.
+- Screenshot Draft Import frontend shell is ready; automated CV slot detection backend awaits real in-game Ban/Pick calibration screenshots.
+
+---
+
+## 📅 2026-11-23 09:18 (UTC+7) — Add Scrim Analytics and Screenshot Draft Import to Roadmap
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Added **Scrim Analytics** (Section 11) and **Screenshot Draft Import** (Section 12) to `docs/SUBSCRIPTION_ROADMAP.md`, updating the Section 1 Tier Matrix and Section 6 implementation touchpoints.
+- Documented local CPU computer-vision extraction (8 Bans + 10 Picks from in-game Ban/Pick screenshots against the 130 hero icons), 1-click Top-3 review, in-memory image disposal, and Personal/Team History analytics.
+
+### 📁 Modified Files
+- `docs/SUBSCRIPTION_ROADMAP.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Ran `git diff --check` to confirm clean formatting and whitespace.
+
+### ⚠️ Open Issues / Important Notes
+- Both features are specified in the roadmap for upcoming implementation.
+
+---
+
+## 📅 2026-11-23 09:10 (UTC+7) — Clarify Free Tier Hero Pool Limit as 1 Own-Team Pool
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Updated `docs/SUBSCRIPTION_ROADMAP.md` (Section 1 Tier Matrix and Section 10) to specify that Free accounts are limited to 1 own-team Hero Pool (no opponent scouting pools), while Pro, Duo, and Team Pro support multiple team and opponent pools.
+
+### 📁 Modified Files
+- `docs/SUBSCRIPTION_ROADMAP.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Ran `git diff --check` to confirm clean formatting and whitespace.
+
+### ⚠️ Open Issues / Important Notes
+- Documentation update only.
+
+---
+
+## 📅 2026-11-23 09:05 (UTC+7) — Add Hero Pools & Team-Name Auto-Sync to Subscription Roadmap
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Added **Hero Pools (Auto-Sync by Team Name)** to `docs/SUBSCRIPTION_ROADMAP.md` (Section 1 Tier Matrix, Section 6 implementation touchpoints, and new Section 10).
+- Specified case-insensitive team-name matching (`+ New Series` and Draft Board team headers), side-swap transfer, 5-lane organization, AI Filter/Highlight + opponent scouting integration, Global Ban remaining-pool counters, and Pro/Duo/Team Pro parity with Shared Team Pools for groups plus 1 preview pool for Free.
+
+### 📁 Modified Files
+- `docs/SUBSCRIPTION_ROADMAP.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Ran `git diff --check` to verify clean formatting and whitespace.
+
+### ⚠️ Open Issues / Important Notes
+- Specification added to roadmap; backend and frontend Hero Pool implementation remains planned.
+
+---
+
+## 📅 2026-11-23 08:41 (UTC+7) — Increase Planned Guest Draft History Limit to 3 Games (Bo3)
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Updated `docs/SUBSCRIPTION_ROADMAP.md` to raise the planned Guest saved draft history limit from 2 games to 3 games per browser (enough for one full Bo3 series), alongside the synced 7-game Free limit (one full Bo7 series).
+
+### 📁 Modified Files
+- `docs/SUBSCRIPTION_ROADMAP.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Ran `git diff --check` and verified zero remaining `2-game`, `2 games`, or `2 Guest` references in `docs/SUBSCRIPTION_ROADMAP.md`.
+
+### ⚠️ Open Issues / Important Notes
+- Documentation update only; the local Stripe Sandbox still uses the 10-game Guest and 50-game Free limits until rollout limits are applied.
+
+---
+
+## 📅 2026-11-23 08:37 (UTC+7) — Keep Cross-Device Cloud Sync Enabled for Free Accounts
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Updated `docs/SUBSCRIPTION_ROADMAP.md` so Free (Registered) accounts retain cross-device Cloud Sync via `/draft/session` with a 7-game personal history limit, keeping only Guest (2 games) browser-local.
+- Updated the Pro plan card's first benefit in `frontend/src/components/BillingSandbox.tsx` and `frontend/src/i18n/englishMessages.ts` to highlight 2 concurrent active devices alongside 500-game personal history and planned draft comparison.
+
+### 📁 Modified Files
+- `docs/SUBSCRIPTION_ROADMAP.md`
+- `frontend/src/components/BillingSandbox.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Ran `ruff check .`, `npm run lint`, `npm run build`, and `git diff --check`.
+
+### ⚠️ Open Issues / Important Notes
+- None for this documentation and plan-card update.
+
+---
+
+## 📅 2026-11-23 08:33 (UTC+7) — Prompt to Start a New Match After Saving Game 7
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Updated `recordGameToSeries` in `frontend/src/hooks/useDraft.ts` to return a `boolean` indicating whether the game snapshot was saved.
+- Added a post-save `ConfirmDialog` prompt in `frontend/src/components/DraftBoardView.tsx` whenever Game 7 is saved (from either `FinishGameModal` or `DraftHistoryModal`), recommending starting a new match with `OK` ("ตกลง", opening `NewSeriesModal`) and `Later` ("ภายหลัง", dismissing).
+- Added English translations for the prompt title, message, and buttons in `frontend/src/i18n/englishMessages.ts`.
+
+### 📁 Modified Files
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Ran `ruff check .`, `npm run lint`, `npm run build`, and `git diff --check`.
+
+### ⚠️ Open Issues / Important Notes
+- Dev frontend changes only (`frontend/dist` rebuilt; production `dist-prod` untouched as requested).
+
+---
+
+## 📅 2026-11-23 08:28 (UTC+7) — Keep Global Ban Unlocked Across All Tiers in Roadmap and Plan Card
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- Updated `docs/SUBSCRIPTION_ROADMAP.md` so Global Ban (Bo3 / Bo5 / Bo7) remains allowed across all tiers (bounded only by each tier's saved draft history capacity) and removed multi-game feature gating references.
+- Updated the Pro plan card benefits in `frontend/src/components/BillingSandbox.tsx` and `frontend/src/i18n/englishMessages.ts` to highlight cross-device draft history sync, 500-game personal history, and planned interactive draft comparison.
+
+### 📁 Modified Files
+- `docs/SUBSCRIPTION_ROADMAP.md`
+- `frontend/src/components/BillingSandbox.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Ran `ruff check .`, `npm run lint`, `npm run build`, and `git diff --check`.
+
+### ⚠️ Open Issues / Important Notes
+- None for this documentation and plan-card alignment.
+
+---
+
+## 📅 2026-11-23 08:13 (UTC+7) — Record Browser History Limits for Guest and Free
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Updated the subscription roadmap to use saved-game limits. Guest gets 2 games per browser and Free gets 7 per signed-in account in the current browser.
+- Recorded cross-device sync as a paid benefit and kept the Assistant available across all tiers when history is full.
+
+### 📁 Modified Files
+- `docs/SUBSCRIPTION_ROADMAP.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Checked the tier matrix, capacity rules, implementation notes, and rollout checks for consistency.
+
+### ⚠️ Open Issues / Important Notes
+- The new limits are planned. The current Sandbox still uses the 10-game Guest limit and the synced 50-game Free limit.
+
+---
+
+## 📅 2026-11-23 07:53 (UTC+7) — Share Saved Global Bans With Team Games
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Recorded the Global Ban lists with new game snapshots. Copies from Personal History carry the lists saved with the source game.
+- Added an expandable Global Ban preview to Team History cards. It shows both teams' used heroes and the series-wide bans in the saved side order.
+- Loaded team games with their saved game number and Global Ban lists. Opening and closing the Global Ban window preserves the saved game number, and personal series data stays separate from the preview.
+
+### 📁 Modified Files
+- `frontend/src/components/DraftHistoryModal.tsx`, `frontend/src/components/DraftBoardView.tsx`, `frontend/src/components/GlobalBanModal.tsx`, `frontend/src/hooks/useDraft.ts`, `frontend/src/types/draft.ts`, `frontend/src/i18n/englishMessages.ts`
+- `src/schemas.py`, `tests/test_billing.py`, `.wikiskill/wiki/system_architecture_and_data.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Passed 51 API and billing tests, frontend build and lint, Ruff, Git whitespace checks, the architecture audit with benchmarks skipped, and WikiSkill preflight.
+- Chromium fixtures verified mobile card expansion, a shared Game 3 with swapped sides, direct and personal saves, legacy data, reload, and preservation of the viewer's draft and history.
+- Restarted the local API, verified the updated game schema, and confirmed Stripe Sandbox through Vite.
+
+### ⚠️ Open Issues / Important Notes
+- Historical records without saved Global Ban data show an unavailable message. The frontend build reported the existing large-bundle warning.
+
+---
+
+## 📅 2026-11-23 07:36 (UTC+7) — Keep Team Previews Out of Personal History
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Marked games opened from Team History as previews in the synced draft session. Passive navigation preserves Personal History and keeps any parked personal draft for the same series and game. An explicit save can add the team draft to Personal History.
+- Added a Team History uploader dropdown with Everyone, one option per recorded uploader, and Unknown uploader for games without attribution.
+- Restarted the local development API and verified its updated session response through the Vite proxy with Stripe Sandbox enabled.
+
+### 📁 Modified Files
+- `frontend/src/components/DraftHistoryModal.tsx`, `frontend/src/components/DraftBoardView.tsx`, `frontend/src/hooks/useDraft.ts`, `frontend/src/types/draft.ts`, `frontend/src/i18n/englishMessages.ts`, `src/schemas.py`, `tests/test_api.py`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Passed 51 API and billing tests, including session round-trip and legacy payload coverage. Passed frontend build and lint, Ruff, Git whitespace checks, and the architecture audit with benchmarks skipped.
+- Chromium fixtures verified the mobile dropdown, reload and fresh-context hydration, opening personal history, switching games and series, starting a series, recovering a parked personal draft, and saving explicitly.
+
+### ⚠️ Open Issues / Important Notes
+- The frontend build reported the existing large-bundle warning.
+
+---
+
+## 📅 2026-11-23 07:27 (UTC+7) — Show Hero Previews in Team History
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Reused the Personal History hero preview in Team History. Each game card shows both sides, picked hero portraits and names, banned hero portraits, and pick and ban counts.
+- Stacked the side previews on mobile and placed them side by side on wider screens.
+
+### 📁 Modified Files
+- `frontend/src/components/DraftHistoryModal.tsx`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Passed frontend build and lint, Ruff checks, and Git whitespace checks.
+- Verified all 18 portraits in a complete game and the empty-pick state in a partial game with Chromium fixtures. Checked shared and personal previews, the Open Game action, and layout at 375px in Thai and 1280px in English.
+
+### ⚠️ Open Issues / Important Notes
+- The frontend build reported the existing large-bundle warning. The change is available in local development.
+
+---
+
+## 📅 2026-11-23 07:23 (UTC+7) — Refine Sandbox Team Management and Draft History
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Moved team management above billing in the profile. Showed occupied and open seats, separated pending invitations from members, and made the invite and accept actions easier to find.
+- Added a segmented history selector, save labels that name the selected destination, a visible copy action, and an empty state for shared history.
+
+### 📁 Modified Files
+- `frontend/src/components/TeamSandbox.tsx`, `frontend/src/components/ProfileView.tsx`, `frontend/src/components/DraftHistoryModal.tsx`, `frontend/src/i18n/englishMessages.ts`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Passed frontend build and lint, Ruff checks, and Git whitespace checks.
+- Verified Thai mobile and English desktop layouts in Chromium, including 320px and 375px mobile widths. Browser fixtures covered sending and accepting invitations, switching history, saving to team history, and copying a personal game.
+
+### ⚠️ Open Issues / Important Notes
+- The frontend build reported the existing large-bundle warning. UI changes are available locally in development.
+
+---
+
+## 📅 2026-11-23 07:10 (UTC+7) — Add Duo, Invitations, and Shared History in Stripe Sandbox
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Added Duo Checkout at the proposed Sandbox prices of THB 89 for 30 days and THB 209 for 90 days. Migrated existing billing tables in a transaction while preserving paid passes, orders, and payment IDs.
+- Added username invitations, acceptance, removal, and leaving for two-account Duo and five-account Team Pro. Shared access follows the owner's active pass.
+- Added Personal History and Team History to the Draft Board, direct saves to either destination, and idempotent copies that preserve the personal original. Sandbox limits are 10 local Guest games, 50 Free account games, 500 paid account games, and 500 games per shared history.
+- Updated the subscription roadmap and architecture wiki. The local app and Stripe webhook listener are running on port 8000.
+
+### 📁 Modified Files
+- `src/billing.py`, `src/api.py`, `src/db.py`, `src/schemas.py`, `tests/test_billing.py`
+- `frontend/src/App.tsx`, `frontend/src/api/client.ts`, `frontend/src/api/team.ts`, `frontend/src/types/auth.ts`, `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/BillingSandbox.tsx`, `frontend/src/components/ProfileView.tsx`, `frontend/src/components/TeamSandbox.tsx`, `frontend/src/components/DraftBoardView.tsx`, `frontend/src/components/DraftHistoryModal.tsx`, `frontend/src/i18n/englishMessages.ts`
+- `docs/SUBSCRIPTION_ROADMAP.md`, `.wikiskill/wiki/system_architecture_and_data.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Passed 62 billing, API, and security tests, including billing migration, seat limits, expired or revoked access, and history preservation at capacity.
+- Completed a real Stripe Sandbox THB 89 PromptPay simulation. Verified the signed webhook, invitation from one account and acceptance from a second account, direct Team History save and copy on a 375px viewport, and access revocation after removal.
+- Frontend build, lint, Ruff, the architecture and security audits, WikiSkill preflight, and local SQLite foreign-key verification passed.
+
+### ⚠️ Open Issues / Important Notes
+- Cross-tier transitions involving Duo wait until expiry during Sandbox testing. Assistant turn quotas, paid multi-game gating, and active-session limits remain rollout work.
+
+---
+
+## 📅 2026-11-22 22:02 (UTC+7) — Record Duo and Current Billing Roadmap
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Added the planned two-account Duo tier with proposed 30-day and 90-day prices, its invitation limit, and the shared history rules used by both group plans.
+- Updated the roadmap to reflect the existing Stripe Sandbox plans page, paid pass records, repeat purchase guard, and remaining work for Duo, invitations, and group access.
+
+### 📁 Modified Files
+- `docs/SUBSCRIPTION_ROADMAP.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Checked the pricing and savings calculations, compared confirmed prices with the Sandbox catalog, and verified membership limits and billing references.
+
+### ⚠️ Open Issues / Important Notes
+- Duo prices and plan transition rules await confirmation before implementation.
+
+---
+
+## 📅 2026-11-22 21:55 (UTC+7) — Refine the Sandbox Plans Page Design
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Reworked the MiniDraft plan cards around larger prices and prominently placed checkout buttons. Used gold for Pro and blue for Team Pro, with plan benefits grouped below the checkout action.
+- Added a sliding indicator to the shared 30-day and 90-day control, kept the price rows stable between terms, and placed the Sandbox status next to the payment method.
+
+### 📁 Modified Files
+- `frontend/src/components/BillingSandbox.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Frontend build, lint, and Ruff passed. Reviewed Thai mobile and English desktop layouts and verified keyboard term selection, reduced motion, price and savings updates, and the selected Stripe Checkout payload with test responses.
+
+---
+
+## 📅 2026-11-22 21:50 (UTC+7) — Add a Dedicated Sandbox Plans Page
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Added a signed-in Sandbox plans page linked from Profile. It shows eligible Pro and Team Pro cards with a shared 30-day and 90-day selector, total prices, savings, and planned benefits.
+- Kept the current tier, expiration, pending actions, and recent orders in Profile. The checkout button sends the selected tier and duration through the existing Stripe Sandbox flow.
+- Updated the Sandbox walkthrough in the subscription roadmap.
+
+### 📁 Modified Files
+- `frontend/src/App.tsx`, `frontend/src/components/BillingSandbox.tsx`, `frontend/src/i18n/englishMessages.ts`
+- `docs/SUBSCRIPTION_ROADMAP.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Frontend build, lint, and Ruff passed. Headless Chromium verified the Thai and English layouts, 375px and 390px mobile widths, desktop card alignment, keyboard duration selection, checkout request and redirect with test responses, and profile status and upgrade rules.
+
+---
+
+## 📅 2026-11-22 21:39 (UTC+7) — Prevent Repeat Purchases While a Pass Is Active
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Blocked repeat purchases of the active tier for both durations within the database transaction that reserves an order. The profile shows only eligible offers. Pro can upgrade to Team Pro, and both tiers become available again after expiry.
+- Updated the renewal policy in the roadmap and restarted the local Sandbox server on port 8000.
+
+### 📁 Modified Files
+- `src/db.py`, `src/api.py`, `tests/test_billing.py`
+- `frontend/src/components/BillingSandbox.tsx`, `frontend/src/i18n/englishMessages.ts`
+- `docs/SUBSCRIPTION_ROADMAP.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Passed 58 billing, API, and security tests. Verified that blocked requests create neither local orders nor Stripe Checkout Sessions.
+- Passed the architecture audit, Ruff, frontend build and lint, and the 375px profile walkthrough.
+
+---
+
+## 📅 2026-11-22 21:31 (UTC+7) — Hide Pass Options After Sandbox Payment
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Collapsed the pass picker whenever a confirmed pass is active. The profile displays the current pass and its expiry, with a separate renewal or upgrade disclosure.
+
+### 📁 Modified Files
+- `frontend/src/components/BillingSandbox.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified the pending-to-paid transition, keyboard access to renewal, Team Pro eligibility, and reappearance after expiry in headless Chromium at 375px. Frontend build, lint, and Ruff passed.
+
+---
+
 ## 📅 2026-11-22 21:30 (UTC+7) — Remove Full TeamColumn Turn Badge & Auto-Reset HeroGrid Lane Filter to ALL
 **Agent:** Antigravity / Gemini 3.1 Pro
 

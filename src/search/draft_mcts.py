@@ -371,6 +371,11 @@ class DraftMinimaxSearch:
         state: DraftSearchState,
         raw_probs: np.ndarray,
         branch_factor: int,
+        *,
+        root_side: int | None = None,
+        pool_hero_lanes: dict[str, set[str]] | None = None,
+        pool_lanes_by_id: dict[int, set[str]] | None = None,
+        needed_cache: dict[tuple[int, tuple[int, ...], tuple[tuple[str, str], ...]], set[str]] | None = None,
     ) -> tuple[np.ndarray, list[int]]:
         """Apply series winning boost + needed lane filter and extract top branch_factor actions."""
         p_next = raw_probs.copy()
@@ -385,15 +390,29 @@ class DraftMinimaxSearch:
 
         if state.action_type == 1:
             target_pick_ids = state.blue_picks if state.acting_side == 0 else state.red_picks
-            target_pick_lanes = dict(state.blue_pick_lanes if state.acting_side == 0 else state.red_pick_lanes)
-            target_pick_names = [self.predictor.hero_names[i] for i in target_pick_ids]
-            target_row = np.zeros(self.num_heroes, dtype=np.float32)
-            if target_pick_ids:
-                target_row[list(target_pick_ids)] = 1.0
-            needed_next = self.predictor._needed_lanes_for_picks(
-                target_pick_names, target_row, explicit_lanes=target_pick_lanes
+            raw_pick_lanes = state.blue_pick_lanes if state.acting_side == 0 else state.red_pick_lanes
+            use_root_pool = root_side is not None and state.acting_side == root_side and bool(pool_lanes_by_id)
+            cache_key = (state.acting_side, target_pick_ids, raw_pick_lanes)
+            if needed_cache is not None and cache_key in needed_cache:
+                needed_next = needed_cache[cache_key]
+            else:
+                target_pick_names = [self.predictor.hero_names[i] for i in target_pick_ids]
+                target_row = np.zeros(self.num_heroes, dtype=np.float32)
+                if target_pick_ids:
+                    target_row[list(target_pick_ids)] = 1.0
+                needed_next = self.predictor._needed_lanes_for_picks(
+                    target_pick_names,
+                    target_row,
+                    explicit_lanes=dict(raw_pick_lanes),
+                    pool_hero_lanes=pool_hero_lanes if use_root_pool else None,
+                )
+                if needed_cache is not None:
+                    needed_cache[cache_key] = needed_next
+            p_next = self.predictor._apply_lane_filter(
+                p_next,
+                needed_next,
+                pool_lanes_by_id=pool_lanes_by_id if use_root_pool else None,
             )
-            p_next = self.predictor._apply_lane_filter(p_next, needed_next)
 
         top_ids = np.argsort(p_next)[::-1][:branch_factor]
         filtered = [int(c) for c in top_ids if p_next[c] > 0]
@@ -405,6 +424,10 @@ class DraftMinimaxSearch:
         root_side: int,
         remaining_depth: int,
         branch_factor: int,
+        *,
+        pool_hero_lanes: dict[str, set[str]] | None = None,
+        pool_lanes_by_id: dict[int, set[str]] | None = None,
+        needed_cache: dict[tuple[int, tuple[int, ...], tuple[tuple[str, str], ...]], set[str]] | None = None,
     ) -> list[float]:
         """Batched recursive adversarial minimax/expectiminimax evaluation for depth >= 2."""
         probs_batch, win_batch = self.evaluate_batch(nodes)
@@ -412,7 +435,16 @@ class DraftMinimaxSearch:
         win_np = win_batch.cpu().numpy()
 
         node_actions: list[tuple[np.ndarray, list[int]]] = [
-            self._filtered_action_dist(st, probs_np[idx], branch_factor) for idx, st in enumerate(nodes)
+            self._filtered_action_dist(
+                st,
+                probs_np[idx],
+                branch_factor,
+                root_side=root_side,
+                pool_hero_lanes=pool_hero_lanes,
+                pool_lanes_by_id=pool_lanes_by_id,
+                needed_cache=needed_cache,
+            )
+            for idx, st in enumerate(nodes)
         ]
 
         if remaining_depth <= 1:
@@ -460,7 +492,17 @@ class DraftMinimaxSearch:
             child_slices.append((idx, start, len(expanded_actions)))
 
         child_vals = (
-            self._evaluate_frontier(child_nodes, root_side, remaining_depth - 1, sub_branch) if child_nodes else []
+            self._evaluate_frontier(
+                child_nodes,
+                root_side,
+                remaining_depth - 1,
+                sub_branch,
+                pool_hero_lanes=pool_hero_lanes,
+                pool_lanes_by_id=pool_lanes_by_id,
+                needed_cache=needed_cache,
+            )
+            if child_nodes
+            else []
         )
 
         out_vals: list[float] = []
@@ -494,6 +536,9 @@ class DraftMinimaxSearch:
         candidate_hero_indices: list[int],
         depth: int = 2,
         branch_factor: int = 5,
+        root_win_probs: np.ndarray | None = None,
+        pool_hero_lanes: dict[str, set[str]] | None = None,
+        pool_lanes_by_id: dict[int, set[str]] | None = None,
     ) -> dict[int, float]:
         """Perform adversarial Minimax / Expectiminimax lookahead for candidate actions.
 
@@ -502,6 +547,9 @@ class DraftMinimaxSearch:
             candidate_hero_indices: List of candidate actions to evaluate from root
             depth: Number of lookahead steps (1 = immediate value, 2..4 = multi-ply lookahead)
             branch_factor: Number of counter-actions to explore per branch
+            root_win_probs: Optional precomputed root value vector to skip redundant root inference
+            pool_hero_lanes: Optional Hero Pool lane assignments for root side consecutive picks
+            pool_lanes_by_id: Optional hero-id keyed Hero Pool lane assignments
 
         Returns:
             dict mapping hero_idx -> lookahead expected win rate percentage (0.0 to 100.0)
@@ -512,9 +560,12 @@ class DraftMinimaxSearch:
         if not candidate_hero_indices:
             return results
 
-        # 1. Base evaluation of root state
-        _root_probs, root_win = self.evaluate_batch([root_state])
-        root_w_np = root_win[0].cpu().numpy()
+        # 1. Base evaluation of root state (reuse root_win_probs when caller already ran forward pass)
+        if root_win_probs is not None:
+            root_w_np = root_win_probs
+        else:
+            _root_probs, root_win = self.evaluate_batch([root_state])
+            root_w_np = root_win[0].cpu().numpy()
 
         if depth <= 1 or root_state.is_last_step:
             for hid in candidate_hero_indices:
@@ -535,12 +586,17 @@ class DraftMinimaxSearch:
         if not child_states:
             return results
 
+        needed_cache: dict[tuple[int, tuple[int, ...], tuple[tuple[str, str], ...]], set[str]] = {}
+
         if depth >= 3:
             frontier_vals = self._evaluate_frontier(
                 child_states,
                 root_side=root_side,
                 remaining_depth=min(depth - 1, 3),
                 branch_factor=max(2, min(branch_factor, 4)),
+                pool_hero_lanes=pool_hero_lanes,
+                pool_lanes_by_id=pool_lanes_by_id,
+                needed_cache=needed_cache,
             )
             for hid, val in zip(valid_candidates, frontier_vals):
                 results[hid] = round(float(val * 100.0), 2)
@@ -552,7 +608,15 @@ class DraftMinimaxSearch:
 
         for idx, (hid, next_state) in enumerate(zip(valid_candidates, child_states)):
             next_acting_side = next_state.acting_side
-            p_next, counter_candidates = self._filtered_action_dist(next_state, c_probs_np[idx], branch_factor)
+            p_next, counter_candidates = self._filtered_action_dist(
+                next_state,
+                c_probs_np[idx],
+                branch_factor,
+                root_side=root_side,
+                pool_hero_lanes=pool_hero_lanes,
+                pool_lanes_by_id=pool_lanes_by_id,
+                needed_cache=needed_cache,
+            )
             w_next = c_win_np[idx]
 
             if not counter_candidates:

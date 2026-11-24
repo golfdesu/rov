@@ -1,10 +1,8 @@
 import { StableButtonLabel } from "./components/StableButtonLabel";
 import { type Message, translateMessage, useLanguage } from "./i18n/language";
 import { LogIn, Menu, User } from "lucide-react";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useId, useRef, useState } from "react";
 import { ApiError, getJson, postJson, putJson, setExpectedAuthUser, setSessionMismatchHandler } from "./api/client";
-import { AdminDashboardView } from "./components/AdminDashboardView";
-import { AdminStatsModal } from "./components/AdminStatsModal";
 import { AuthLanding, AuthModal } from "./components/AuthModal";
 import { DonateModal } from "./components/DonateModal";
 import { DraftBoardView } from "./components/DraftBoardView";
@@ -13,11 +11,34 @@ import { MiniDraftLogo } from "./components/MiniDraftLogo";
 import { MobileNavDrawer } from "./components/MobileNavDrawer";
 import { Modal } from "./components/Modal";
 import { PricingSurveyModal } from "./components/PricingSurveyModal";
-import { PracticeDraftView } from "./components/PracticeDraftView";
-import { ProfileView } from "./components/ProfileView";
-import { CombatLab } from "./components/lab/CombatLab";
-import { MetaLab } from "./components/meta_lab/MetaLab";
-import { TierListView } from "./components/tierlist/TierListView";
+
+const AdminDashboardView = lazy(() =>
+  import("./components/AdminDashboardView").then((m) => ({ default: m.AdminDashboardView })),
+);
+const AdminStatsModal = lazy(() =>
+  import("./components/AdminStatsModal").then((m) => ({ default: m.AdminStatsModal })),
+);
+const BillingSandbox = lazy(() =>
+  import("./components/BillingSandbox").then((m) => ({ default: m.BillingSandbox })),
+);
+const PracticeDraftView = lazy(() =>
+  import("./components/PracticeDraftView").then((m) => ({ default: m.PracticeDraftView })),
+);
+const ProfileView = lazy(() =>
+  import("./components/ProfileView").then((m) => ({ default: m.ProfileView })),
+);
+const ScrimDashboardView = lazy(() =>
+  import("./components/ScrimDashboardView").then((m) => ({ default: m.ScrimDashboardView })),
+);
+const CombatLab = lazy(() =>
+  import("./components/lab/CombatLab").then((m) => ({ default: m.CombatLab })),
+);
+const MetaLab = lazy(() =>
+  import("./components/meta_lab/MetaLab").then((m) => ({ default: m.MetaLab })),
+);
+const TierListView = lazy(() =>
+  import("./components/tierlist/TierListView").then((m) => ({ default: m.TierListView })),
+);
 import { mergeGuestIntoAccountSession, normalizeSessionPayload, useDraft } from "./hooks/useDraft";
 import type {
   AuthStatusResponse,
@@ -28,7 +49,8 @@ import type {
 import type { DraftSessionPayload } from "./types/draft";
 import { accountLabel, restorePreviewAccountStorage } from "./utils/auth";
 
-export type Tab = "draft" | "practice" | "tierlist" | "metalab" | "lab" | "profile" | "admin";
+export type Tab = "draft" | "practice" | "tierlist" | "metalab" | "lab" | "profile" | "plans" | "analytics" | "admin";
+export type DraftToolModal = "pools" | "analytics" | "import";
 
 const DRAFT_ONLY = import.meta.env.VITE_DRAFT_ONLY === "true";
 
@@ -47,7 +69,9 @@ const TABS: { key: Tab; label: string }[] = DRAFT_ONLY
 
 function initialTab(): Tab {
   if (window.location.hash === "#admin") return "admin";
+  if (window.location.hash === "#analytics") return "analytics";
   if (window.location.hash === "#profile") return "profile";
+  if (window.location.hash === "#plans") return "plans";
   if (window.location.hash === "#practice") return "practice";
   if (DRAFT_ONLY) return "draft";
   if (window.location.hash === "#tierlist") return "tierlist";
@@ -62,6 +86,9 @@ interface WorkspaceProps {
   authUser: AuthUser | null;
   isAdmin: boolean;
   authLoading: boolean;
+  sandboxBilling: boolean;
+  activeDraftTool: DraftToolModal | null;
+  onCloseDraftTool: () => void;
   surveyAnswered: boolean;
   disableShortcuts: boolean;
   onOpenAuthModal: () => void;
@@ -75,6 +102,9 @@ function Workspace({
   authUser,
   isAdmin,
   authLoading,
+  sandboxBilling,
+  activeDraftTool,
+  onCloseDraftTool,
   surveyAnswered,
   disableShortcuts,
   onOpenAuthModal,
@@ -88,9 +118,13 @@ function Workspace({
   const activeTabLabel = t(
     tab === "profile"
       ? "โปรไฟล์"
-      : tab === "admin"
-        ? "Dashboard สถิติระบบ"
-        : TABS.find((item) => item.key === tab)?.label ?? "Draft Board",
+      : tab === "plans"
+        ? "แพ็ก"
+        : tab === "analytics"
+          ? "Dashboard วิเคราะห์ซ้อมทีม"
+          : tab === "admin"
+            ? "Dashboard สถิติระบบ"
+            : TABS.find((item) => item.key === tab)?.label ?? "Draft Board",
   );
 
   // Unified Draft Machine isolated per user account (or local-only in Guest mode)
@@ -99,6 +133,7 @@ function Workspace({
     storageKey: `${DRAFT_STORAGE_PREFIX}:${scope}`,
     persistSession: isAuthenticated,
     enabled: tab === "draft" && assistantEnabled,
+    personalHistoryLimit: authUser?.draft_history_limit ?? (sandboxBilling && !authUser ? 3 : undefined),
   });
 
   return (
@@ -186,10 +221,22 @@ function Workspace({
       </nav>
 
       <ErrorBoundary resetKey={`${tab}:${scope}`}>
+        <Suspense fallback={null}>
         {tab === "admin" && isAdmin ? (
           <AdminDashboardView onBack={() => selectTab("draft")} />
+        ) : tab === "analytics" && sandboxBilling ? (
+          <ScrimDashboardView
+            personalGames={draft.seriesGames}
+            heroMap={draft.heroMap}
+            isPaid={Boolean(authUser?.is_paid)}
+            teamHistoryEnabled={Boolean(authUser?.stripe_sandbox_enabled)}
+            defaultTeamName={draft.globalBans.teamAName}
+            onBack={() => selectTab("draft")}
+          />
         ) : tab === "profile" && authUser ? (
           <ProfileView user={authUser} onSaveDisplayName={onSaveDisplayName} />
+        ) : tab === "plans" && authUser?.stripe_sandbox_enabled ? (
+          <BillingSandbox key={authUser.id} username={authUser.username} view="plans" />
         ) : tab === "practice" ? (
           <PracticeDraftView key={scope} scope={scope} persistSession={isAuthenticated} />
         ) : !DRAFT_ONLY && tab === "tierlist" ? (
@@ -218,12 +265,17 @@ function Workspace({
           <DraftBoardView
             key={`draft:${scope}`}
             draft={draft}
+            teamHistoryUsername={authUser?.stripe_sandbox_enabled ? authUser.username : undefined}
+            isPaidUser={Boolean(authUser?.is_paid)}
+            activeDraftTool={activeDraftTool}
+            onCloseDraftTool={onCloseDraftTool}
             isActiveTab={tab === "draft"}
             disableShortcuts={disableShortcuts}
             assistantEnabled={assistantEnabled}
             onToggleAssistant={() => setAssistantEnabled((prev) => !prev)}
           />
         )}
+        </Suspense>
       </ErrorBoundary>
     </div>
   );
@@ -439,6 +491,7 @@ export function App() {
   const authRefreshInFlightRef = useRef(false);
   const lastAuthCheckAtRef = useRef(0);
   const [authLoading, setAuthLoading] = useState(true);
+  const [sandboxBilling, setSandboxBilling] = useState(false);
   const [googleLoginEnabled, setGoogleLoginEnabled] = useState(false);
   const [discordLoginEnabled, setDiscordLoginEnabled] = useState(false);
   const [oauthError, setOauthError] = useState<string | null>(() => {
@@ -451,8 +504,12 @@ export function App() {
   const [adminStatsModalOpen, setAdminStatsModalOpen] = useState(false);
   const [isAdminUser, setIsAdminUser] = useState(false);
   const tab =
-    (requestedTab === "profile" && !authUser) || (requestedTab === "admin" && !isAdminUser) ? "draft" : requestedTab;
+    (requestedTab === "profile" && !authUser) ||
+    (requestedTab === "plans" && !authUser?.stripe_sandbox_enabled) ||
+    (requestedTab === "analytics" && !sandboxBilling) ||
+    (requestedTab === "admin" && !isAdminUser) ? "draft" : requestedTab;
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [activeDraftTool, setActiveDraftTool] = useState<DraftToolModal | null>(null);
   const [manualSurveyOpen, setManualSurveyOpen] = useState(false);
   const [surveyStateByScope, setSurveyStateByScope] = useState<Record<string, PricingSurveyStorage>>({});
   const [pricingSurveyAnsweredServer, setPricingSurveyAnsweredServer] = useState(false);
@@ -462,7 +519,21 @@ export function App() {
   const [pendingMigration, setPendingMigration] = useState<{ user: AuthUser; draft: PendingGuestDraft } | null>(null);
   const [migrationBusy, setMigrationBusy] = useState(false);
   const [migrationError, setMigrationError] = useState<Message | null>(null);
+  const [otherModalOpen, setOtherModalOpen] = useState(false);
   const migrationTitleId = useId();
+
+  useEffect(() => {
+    const checkDialogs = () => {
+      const hasOtherDialog = Array.from(
+        document.querySelectorAll('[role="dialog"][aria-modal="true"]'),
+      ).some((el) => !el.classList.contains("pricing-survey-modal"));
+      setOtherModalOpen(hasOtherDialog);
+    };
+    checkDialogs();
+    const observer = new MutationObserver(checkDialogs);
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
 
   const surveyScope = authUser ? `user:${authUser.username.toLowerCase()}` : "guest";
   const pricingSurveyState = surveyStateByScope[surveyScope] ?? loadPricingSurveyState(surveyScope);
@@ -539,6 +610,7 @@ export function App() {
       lastAuthCheckAtRef.current = now;
       try {
         const res = await getJson<AuthStatusResponse>("/auth/me", signal);
+        setSandboxBilling(Boolean(res.stripe_sandbox_enabled));
         setGoogleLoginEnabled(Boolean(res.google_login_enabled));
         setDiscordLoginEnabled(Boolean(res.discord_login_enabled));
         if (res.authenticated && res.user) {
@@ -564,6 +636,9 @@ export function App() {
             prev.display_label === user.display_label &&
             prev.display_name_changes_remaining === user.display_name_changes_remaining &&
             prev.display_name_next_change_at === user.display_name_next_change_at &&
+            prev.stripe_sandbox_enabled === user.stripe_sandbox_enabled &&
+            prev.draft_history_limit === user.draft_history_limit &&
+            prev.is_paid === user.is_paid &&
             prev.auth_provider === user.auth_provider
               ? prev : user
           ));
@@ -593,6 +668,7 @@ export function App() {
       .then((res) => {
         if (ctrl.signal.aborted) return;
         lastAuthCheckAtRef.current = Date.now();
+        setSandboxBilling(Boolean(res.stripe_sandbox_enabled));
         setGoogleLoginEnabled(Boolean(res.google_login_enabled));
         setDiscordLoginEnabled(Boolean(res.discord_login_enabled));
         if (res.authenticated && res.user) {
@@ -664,6 +740,7 @@ export function App() {
       setPricingSurveyChoiceServer(null);
       setIsAdminUser(false);
       setAdminStatsModalOpen(false);
+      setActiveDraftTool(null);
       setPendingMigration(null);
       setMigrationBusy(false);
       setMigrationError(null);
@@ -689,13 +766,18 @@ export function App() {
         void refreshAuthSession(undefined, false, true);
       }
     };
+    const onBillingChange = () => { void refreshAuthSession(undefined, false, true); };
     window.addEventListener("focus", onFocusOrVisible);
     document.addEventListener("visibilitychange", onFocusOrVisible);
     window.addEventListener("storage", onStorage);
+    window.addEventListener("billingchange", onBillingChange);
+    window.addEventListener("activepasschange", onBillingChange);
     return () => {
       window.removeEventListener("focus", onFocusOrVisible);
       document.removeEventListener("visibilitychange", onFocusOrVisible);
       window.removeEventListener("storage", onStorage);
+      window.removeEventListener("billingchange", onBillingChange);
+      window.removeEventListener("activepasschange", onBillingChange);
     };
   }, [authUser, refreshAuthSession]);
 
@@ -721,7 +803,10 @@ export function App() {
     } catch {
       // clear client state regardless
     }
-    if (requestedTab === "profile" || requestedTab === "admin" || window.location.hash === "#profile" || window.location.hash === "#admin") {
+    if (
+      requestedTab === "profile" || requestedTab === "plans" || requestedTab === "analytics" || requestedTab === "admin" ||
+      ["#profile", "#plans", "#analytics", "#admin"].includes(window.location.hash)
+    ) {
       setTab("draft");
       window.history.replaceState(null, "", "#");
     }
@@ -730,6 +815,7 @@ export function App() {
     setMobileDrawerOpen(false);
     setManualSurveyOpen(false);
     setAdminStatsModalOpen(false);
+    setActiveDraftTool(null);
     setIsAdminUser(false);
     setPricingSurveyAnsweredServer(false);
     setPricingSurveyChoiceServer(null);
@@ -777,7 +863,7 @@ export function App() {
       const existingAccount =
         localAccount && localAccount.updatedAt > remoteNormalized.updatedAt ? localAccount : remoteNormalized;
 
-      const merged = mergeGuestIntoAccountSession(draft.parsed, existingAccount);
+      const merged = mergeGuestIntoAccountSession(draft.parsed, existingAccount, user.draft_history_limit ?? undefined);
       const saved = await putJson<DraftSessionPayload>("/draft/session", merged);
 
       commitGuestDraftMigration(user.username, normalizeSessionPayload(saved ?? merged), draft.rawKey);
@@ -877,7 +963,13 @@ export function App() {
     !donateModalOpen &&
     !adminStatsModalOpen &&
     !mobileDrawerOpen &&
-    (manualSurveyOpen || autoSurveyOpen);
+    activeDraftTool === null &&
+    (manualSurveyOpen || (autoSurveyOpen && !otherModalOpen));
+
+  const openDraftTool = (tool: DraftToolModal) => {
+    selectTab("draft");
+    setActiveDraftTool(tool);
+  };
 
   const workspaceKey = authUser ? `user:${authUser.username}` : "guest";
 
@@ -890,6 +982,9 @@ export function App() {
         authUser={authUser}
         isAdmin={isAdminUser}
         authLoading={authLoading}
+        sandboxBilling={sandboxBilling}
+        activeDraftTool={activeDraftTool}
+        onCloseDraftTool={() => setActiveDraftTool(null)}
         surveyAnswered={surveyAnswered}
         disableShortcuts={
           authModalOpen ||
@@ -909,6 +1004,7 @@ export function App() {
           activeTab={tab}
           authUser={authUser}
           isAdmin={isAdminUser}
+          sandboxBilling={sandboxBilling}
           surveyAnswered={surveyAnswered}
           surveyChoice={effectiveSurveyChoice}
           onSelectTab={selectTab}
@@ -918,6 +1014,9 @@ export function App() {
           }}
           onOpenDonate={() => setDonateModalOpen(true)}
           onOpenAdminStats={() => setAdminStatsModalOpen(true)}
+          onOpenHeroPools={() => openDraftTool("pools")}
+          onOpenScrimAnalytics={() => openDraftTool("analytics")}
+          onOpenScreenshotImport={() => openDraftTool("import")}
           onOpenAuth={() => setAuthModalOpen(true)}
           onOpenProfile={() => { window.location.hash = "profile"; }}
           onLogout={() => void handleLogout()}
@@ -925,7 +1024,9 @@ export function App() {
         />
       )}
       {adminStatsModalOpen && isAdminUser && (
-        <AdminStatsModal onClose={() => setAdminStatsModalOpen(false)} />
+        <Suspense fallback={null}>
+          <AdminStatsModal onClose={() => setAdminStatsModalOpen(false)} />
+        </Suspense>
       )}
       {pricingSurveyOpen && (
         <PricingSurveyModal
@@ -980,8 +1081,8 @@ export function App() {
               <span className="font-mono font-bold text-gold">{accountLabel(pendingMigration.user)}</span> {t("หรือไม่?")}
             </p>
             <p className="text-[11px] text-dim sm:text-xs">
-              <strong className="text-ink">Confirm</strong> {t("= นำเข้าสู่บัญชีและรวมกับประวัติเดิม (ไม่ลบประวัติเก่า) ·")}{" "}
-              <strong className="text-ink">Ignore</strong> {t("= โหลดข้อมูลเดิมของบัญชี")}
+              <strong className="text-ink">{t("ยืนยัน")}</strong> {t("= นำเข้าสู่บัญชีและรวมกับประวัติเดิม (ไม่ลบประวัติเก่า) ·")}{" "}
+              <strong className="text-ink">{t("ไม่ย้าย")}</strong> {t("= โหลดข้อมูลเดิมของบัญชี")}
             </p>
             {migrationError && (
               <div className="border border-red/40 bg-red/10 px-3 py-2 text-[11px] text-red sm:text-xs">
@@ -996,7 +1097,7 @@ export function App() {
               onClick={handleIgnoreMigration}
               className="border border-line-strong bg-panel px-4 py-1.5 font-display text-xs font-semibold text-muted transition-colors hover:border-ink/40 hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Ignore
+              <StableButtonLabel message="ไม่ย้าย" />
             </button>
             <button
               type="button"
@@ -1004,7 +1105,7 @@ export function App() {
               onClick={() => void handleConfirmMigration()}
               className="border border-gold bg-gold px-4 py-1.5 font-display text-xs font-bold text-bg transition-colors hover:bg-gold/90 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <StableButtonLabel message={migrationBusy ? "กำลังรวมข้อมูล..." : "Confirm"} alternatives={["กำลังรวมข้อมูล...", "Confirm"]} />
+              <StableButtonLabel message={migrationBusy ? "กำลังรวมข้อมูล..." : "ยืนยัน"} alternatives={["กำลังรวมข้อมูล...", "ยืนยัน"]} />
             </button>
           </div>
         </Modal>

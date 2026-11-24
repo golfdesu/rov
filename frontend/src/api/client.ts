@@ -30,7 +30,9 @@ function buildSyncHeaders(url: string, extra?: Record<string, string>): Record<s
     expectedAuthUser &&
     (url.startsWith("/draft/session") ||
       url.startsWith("/draft/practice-history") ||
-      url.startsWith("/combat/builds"))
+      url.startsWith("/combat/builds") ||
+      url === "/billing" ||
+      url.startsWith("/billing/"))
   ) {
     headers["X-Expected-User"] = expectedAuthUser;
   }
@@ -62,7 +64,9 @@ export async function getJson<T>(url: string, signal?: AbortSignal): Promise<T> 
 }
 
 export async function postJson<T>(url: string, payload: unknown, signal?: AbortSignal): Promise<T> {
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const headers = url.startsWith("/billing/team")
+    ? buildSyncHeaders(url, { "Content-Type": "application/json" })
+    : { "Content-Type": "application/json" };
   if (url.startsWith("/predict")) {
     const cid = getStoredClientId();
     if (cid) headers["X-Client-Id"] = cid;

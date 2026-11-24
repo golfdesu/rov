@@ -8,7 +8,23 @@ import {
   type LeagueCode,
   type RecordedDraftGame,
   type RoleType,
+  type SeriesTeamNames,
+  type TournamentRef,
 } from "../types/draft";
+
+export function localCalendarDate(date: Date = new Date()): string {
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${String(date.getFullYear()).padStart(4, "0")}-${month}-${day}`;
+}
+
+export function formatRecordedTimestamp(date: Date = new Date(), withSeconds = true): string {
+  const hh = String(date.getHours()).padStart(2, "0");
+  const mm = String(date.getMinutes()).padStart(2, "0");
+  if (!withSeconds) return `${localCalendarDate(date)} ${hh}:${mm}`;
+  const ss = String(date.getSeconds()).padStart(2, "0");
+  return `${localCalendarDate(date)} ${hh}:${mm}:${ss}`;
+}
 
 export interface DraftState {
   bluePicks: string[];
@@ -123,15 +139,54 @@ export function missingLaneKeys(missingAllyLanes: string[]): Set<string> {
   return new Set(missingAllyLanes.map(laneKey));
 }
 
+export function buildPoolHeroLaneMap(
+  lanes?: Partial<Record<LaneKey, readonly string[]>>,
+): Map<string, Set<LaneKey>> {
+  const map = new Map<string, Set<LaneKey>>();
+  if (!lanes) return map;
+  for (const lane of LANE_CYCLE) {
+    for (const hero of lanes[lane] ?? []) {
+      let set = map.get(hero);
+      if (!set) {
+        set = new Set<LaneKey>();
+        map.set(hero, set);
+      }
+      set.add(lane);
+    }
+  }
+  return map;
+}
+
+export function heroFitsLaneSet(
+  heroName: string,
+  primaryLane: string | undefined,
+  targetLanes: Set<string>,
+  allyPoolHeroLanes?: Map<string, Set<LaneKey>>,
+): boolean {
+  if (targetLanes.size === 0 || targetLanes.size >= 5) return true;
+  const poolLanes = allyPoolHeroLanes?.get(heroName);
+  if (poolLanes && poolLanes.size > 0) {
+    for (const lane of poolLanes) {
+      if (targetLanes.has(lane)) return true;
+    }
+    return false;
+  }
+  return heroLanes(primaryLane).some((l) => targetLanes.has(l)) || targetLanes.has(laneKey(primaryLane));
+}
+
 /**
- * Moves heroes whose main pro lane fills a missing ally lane ahead of the rest, keeping the
- * model's order inside each group. No-op when every lane is still open (start of draft).
+ * Moves heroes whose main pro lane (or Hero Pool lane) fills a missing ally lane ahead of the rest,
+ * keeping the model's order inside each group. No-op when every lane is still open (start of draft).
  */
-export function prioritizeMissingLanes(recs: HeroRecommendation[], missingAllyLanes: string[]): HeroRecommendation[] {
+export function prioritizeMissingLanes(
+  recs: HeroRecommendation[],
+  missingAllyLanes: string[],
+  allyPoolHeroLanes?: Map<string, Set<LaneKey>>,
+): HeroRecommendation[] {
   const missing = missingLaneKeys(missingAllyLanes);
   if (missing.size === 0 || missing.size >= 5) return recs;
-  const fits = recs.filter((r) => missing.has(laneKey(r.primary_lane)));
-  const rest = recs.filter((r) => !missing.has(laneKey(r.primary_lane)));
+  const fits = recs.filter((r) => heroFitsLaneSet(r.hero_name, r.primary_lane, missing, allyPoolHeroLanes));
+  const rest = recs.filter((r) => !heroFitsLaneSet(r.hero_name, r.primary_lane, missing, allyPoolHeroLanes));
   return [...fits, ...rest].map((r, i) => ({ ...r, rank: i + 1 }));
 }
 
@@ -233,7 +288,7 @@ export function redTeamName(gb: GlobalBanState): string {
   return gb.blueSideTeam === "A" ? gb.teamBName : gb.teamAName;
 }
 
-export function resolveSeriesName(gb: GlobalBanState): string {
+export function resolveSeriesBaseName(gb: GlobalBanState): string {
   if (gb.seriesName && gb.seriesName.trim()) {
     return gb.seriesName.trim();
   }
@@ -242,7 +297,7 @@ export function resolveSeriesName(gb: GlobalBanState): string {
   return `${a} vs ${b}`;
 }
 
-export function getGameSeriesGroup(game: RecordedDraftGame): string {
+export function getGameSeriesBaseName(game: RecordedDraftGame): string {
   if (game.seriesName && game.seriesName.trim()) {
     return game.seriesName.trim();
   }
@@ -258,6 +313,67 @@ export function getGameSeriesGroup(game: RecordedDraftGame): string {
   return `${sorted[0]} vs ${sorted[1]}`;
 }
 
+export function getRecordedTeamNames(game: RecordedDraftGame): SeriesTeamNames {
+  return game.blueSideTeam === "B"
+    ? { teamAName: game.redTeamName, teamBName: game.blueTeamName }
+    : { teamAName: game.blueTeamName, teamBName: game.redTeamName };
+}
+
+export function setRecordedTeamNames(game: RecordedDraftGame, teams: SeriesTeamNames): RecordedDraftGame {
+  const { teamAName, teamBName } = teams;
+  return {
+    ...game,
+    seriesName: game.seriesId ? game.seriesName : getGameSeriesBaseName(game),
+    blueTeamName: game.blueSideTeam === "B" ? teamBName : teamAName,
+    redTeamName: game.blueSideTeam === "B" ? teamAName : teamBName,
+    teamNamesShared: true,
+  };
+}
+
+export const MAX_SERIES_ANCHOR_LENGTH = 132;
+export const DRAFT_GROUP_ID = /^[a-zA-Z0-9_-]{1,64}$/;
+
+export function normalizeHistoryName(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const name = value.trim();
+  return name.length && name.length <= 64 ? name : null;
+}
+
+export function resolveSeriesName(gb: GlobalBanState): string {
+  return gb.seriesTitle?.trim() || resolveSeriesBaseName(gb);
+}
+
+export function getGameSeriesGroup(game: RecordedDraftGame): string {
+  return game.seriesTitle?.trim() || getGameSeriesBaseName(game);
+}
+
+export function createDraftGroupId(): string {
+  return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+export function normalizeTournament(value: unknown): TournamentRef | null {
+  if (!value || typeof value !== "object" || !("id" in value) || !("name" in value)) return null;
+  const { id, name } = value;
+  if (typeof id !== "string" || !DRAFT_GROUP_ID.test(id) || typeof name !== "string" || name.length > 64) return null;
+  return name.trim() ? { id, name: name.trim() } : null;
+}
+
+export function getGameSeriesKey(game: RecordedDraftGame): string {
+  return game.seriesId ? `id:${game.seriesId}` : `name:${getGameSeriesBaseName(game)}`;
+}
+
+export function resolveSeriesKey(globalBans: GlobalBanState): string {
+  return globalBans.seriesId ? `id:${globalBans.seriesId}` : `name:${resolveSeriesBaseName(globalBans)}`;
+}
+
+export function listTournaments(games: readonly RecordedDraftGame[]): TournamentRef[] {
+  const tournaments = new Map<string, TournamentRef>();
+  for (const { tournament } of games) {
+    if (tournament && !tournaments.has(tournament.id)) tournaments.set(tournament.id, tournament);
+  }
+  return [...tournaments.values()].sort((a, b) => a.name.localeCompare(b.name));
+}
+
 /**
  * Computes the series win count for Team A and Team B in the specified series group.
  */
@@ -268,7 +384,7 @@ export function getSeriesScore(
   let aWins = 0;
   let bWins = 0;
   for (const g of seriesGames) {
-    if (getGameSeriesGroup(g) !== groupName) continue;
+    if (getGameSeriesKey(g) !== groupName) continue;
     if (g.winner === "A") aWins++;
     else if (g.winner === "B") bWins++;
   }
@@ -286,7 +402,7 @@ export function getSeriesWinningHeroes(
 ): string[] {
   const winners = new Set<string>();
   for (const g of seriesGames) {
-    if (getGameSeriesGroup(g) !== groupName || g.gameNumber >= currentGameNumber || !g.winner) continue;
+    if (getGameSeriesKey(g) !== groupName || g.gameNumber >= currentGameNumber || !g.winner) continue;
     const winningPicks =
       g.winner === g.blueSideTeam ? g.bluePicks : g.redPicks;
     for (const h of winningPicks) {
@@ -307,7 +423,7 @@ export function heroOriginGameMap(
   const teamAGameByHero: Record<string, number> = {};
   const teamBGameByHero: Record<string, number> = {};
   const groupGames = seriesGames
-    .filter((g) => getGameSeriesGroup(g) === groupName)
+    .filter((g) => getGameSeriesKey(g) === groupName)
     .sort((a, b) => a.gameNumber - b.gameNumber);
 
   for (const g of groupGames) {
@@ -349,10 +465,10 @@ export function getGameUnlockStatus(
   seriesGames: RecordedDraftGame[],
   groupOverride?: string,
 ): GameUnlockStatus {
-  const currentGroup = groupOverride ?? resolveSeriesName(globalBans);
+  const currentGroup = groupOverride ?? resolveSeriesKey(globalBans);
   const completedNumbers = new Set(
     seriesGames
-      .filter((g) => getGameSeriesGroup(g) === currentGroup && g.bluePicks.length >= 5 && g.redPicks.length >= 5)
+      .filter((g) => getGameSeriesKey(g) === currentGroup && g.bluePicks.length >= 5 && g.redPicks.length >= 5)
       .map((g) => g.gameNumber),
   );
 
@@ -424,9 +540,9 @@ export function syncSeriesGlobalBans(
   removedGames: RecordedDraftGame[] = [],
   groupOverride?: string,
 ): { teamAUsed: string[]; teamBUsed: string[] } {
-  const currentGroup = groupOverride ?? resolveSeriesName(prev);
+  const currentGroup = groupOverride ?? resolveSeriesKey(prev);
   const groupGames = nextSeriesGames
-    .filter((g) => getGameSeriesGroup(g) === currentGroup)
+    .filter((g) => getGameSeriesKey(g) === currentGroup)
     .sort((a, b) => a.gameNumber - b.gameNumber);
 
   const removedA = new Set<string>();
@@ -609,6 +725,15 @@ export function reconstructDraftHistory(draft: DraftState): {
   return { stepIndex, history };
 }
 
+export type PoolMode = "high" | "low" | "off";
+
+export interface PredictPoolContext {
+  allyPool: readonly string[];
+  enemyPool: readonly string[];
+  poolMode: PoolMode;
+  allyPoolLanes?: Partial<Record<LaneKey, readonly string[]>>;
+}
+
 /** Builds the /predict request for a draft step; past the last step it asks for the final blue win rate. */
 export function buildPredictPayload(
   stepIndex: number,
@@ -619,6 +744,7 @@ export function buildPredictPayload(
   league: LeagueCode = "GLOBAL",
   seriesWinningHeroes: readonly string[] = [],
   pickLanes: Record<string, LaneKey> = {},
+  poolContext?: PredictPoolContext,
 ) {
   const gbState: GlobalBanState = Array.isArray(globalBans)
     ? { ...EMPTY_GLOBAL_BANS, universalBans: [...globalBans] }
@@ -668,6 +794,19 @@ export function buildPredictPayload(
   const isBlue = step.side === "blue";
   const allyPicks = isBlue ? state.bluePicks : state.redPicks;
   const enemyPicks = isBlue ? state.redPicks : state.bluePicks;
+  const poolActive = Boolean(poolContext && poolContext.poolMode !== "off");
+  const sortedAllyPool = poolActive && poolContext ? [...poolContext.allyPool].sort() : [];
+  const sortedEnemyPool = poolActive && poolContext ? [...poolContext.enemyPool].sort() : [];
+  const normalizedPoolLanes: Partial<Record<LaneKey, string[]>> = {};
+  if (poolActive && poolContext?.allyPoolLanes) {
+    for (const lane of LANE_CYCLE) {
+      const list = poolContext.allyPoolLanes[lane];
+      if (list && list.length > 0) {
+        normalizedPoolLanes[lane] = [...new Set(list)].sort();
+      }
+    }
+  }
+  const hasPoolHint = sortedAllyPool.length > 0 || sortedEnemyPool.length > 0 || Object.keys(normalizedPoolLanes).length > 0;
   return {
     mode: step.action,
     side: step.side,
@@ -686,5 +825,14 @@ export function buildPredictPayload(
     series_winning_heroes: sortedWinningHeroes,
     ally_pick_lanes: pickLaneOverridesFor(allyPicks, pickLanes),
     enemy_pick_lanes: pickLaneOverridesFor(enemyPicks, pickLanes),
+    ...(poolActive && hasPoolHint && poolContext
+      ? {
+          ally_pool: sortedAllyPool,
+          enemy_pool: sortedEnemyPool,
+          pool_only: poolContext.poolMode === "high",
+          pool_mode: poolContext.poolMode,
+          ally_pool_lanes: normalizedPoolLanes,
+        }
+      : {}),
   };
 }

@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { Hero } from "../types/draft";
 import { displayName } from "../utils/heroNames";
 import { getHeroFallbackImage } from "../utils/imageFallback";
@@ -10,7 +11,12 @@ interface HeroPortraitProps {
   position?: string;
 }
 
-export function HeroPortrait({ name, hero, className = "", position = "50% 20%" }: HeroPortraitProps) {
+export const HeroPortrait = memo(function HeroPortrait({
+  name,
+  hero,
+  className = "",
+  position = "50% 20%",
+}: HeroPortraitProps) {
   return (
     <img
       src={hero?.image_url || getHeroFallbackImage(displayName(name))}
@@ -26,4 +32,4 @@ export function HeroPortrait({ name, hero, className = "", position = "50% 20%" 
       }}
     />
   );
-}
+});

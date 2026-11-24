@@ -1,10 +1,11 @@
 import { StableButtonLabel } from "./StableButtonLabel";
 import { useLanguage } from "../i18n/language";
-import { Globe, Pause, Play, Redo2, RotateCcw, Sparkles, Timer, TimerReset, Undo2, Volume2, VolumeX, X, Zap } from "lucide-react";
+import { Globe, Pause, Play, Redo2, RotateCcw, Sparkles, Timer, TimerReset, Undo2, Users, Volume2, VolumeX, X, Zap } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { isLocalTestHost, TIMER_PRESETS, type TimerPresetId } from "../hooks/useDraftTimer";
 import { type DraftStep, type LeagueCode } from "../types/draft";
+import { type PoolMode } from "../utils/draft";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { Modal } from "./Modal";
 
@@ -66,7 +67,14 @@ interface ScoreBarProps {
   setLeague?: (v: LeagueCode) => void;
   assistantEnabled?: boolean;
   onToggleAssistant?: () => void;
+  poolToggle?: {
+    mode: PoolMode;
+    activeTeamName?: string;
+    disabled?: boolean;
+    onCycle: () => void;
+  };
   timer?: DraftTimerControlProps;
+  onTimerSettingsOpenChange?: (open: boolean) => void;
   onUndo: () => void;
   onRedo?: () => void;
   onReset: () => void;
@@ -91,7 +99,9 @@ export function ScoreBar({
   setLeague,
   assistantEnabled = true,
   onToggleAssistant,
+  poolToggle,
   timer,
+  onTimerSettingsOpenChange,
   onUndo,
   onRedo,
   onReset,
@@ -105,20 +115,27 @@ export function ScoreBar({
   const headerRef = useRef<HTMLElement>(null);
   const restoreTimerFocusRef = useRef(false);
 
-  function closeTimerSettings() {
-    restoreTimerFocusRef.current = true;
-    setTimerSettingsOpen(false);
+  function setSettingsOpen(open: boolean) {
+    setTimerSettingsOpen(open);
+    onTimerSettingsOpenChange?.(open);
   }
 
+  function closeTimerSettings() {
+    restoreTimerFocusRef.current = true;
+    setSettingsOpen(false);
+  }
+
+  const isTimerSettingsModalOpen = Boolean(timerSettingsOpen && timer && currentStep);
+
   useEffect(() => {
-    if (timerSettingsOpen || !restoreTimerFocusRef.current) return;
+    if (isTimerSettingsModalOpen || !restoreTimerFocusRef.current) return;
     restoreTimerFocusRef.current = false;
     if (document.activeElement !== document.body) return;
     // Turning the timer off removes the clock that opened settings.
     const controls = headerRef.current?.querySelectorAll<HTMLButtonElement>("[data-timer-entry]");
     if (!controls) return;
     Array.from(controls).find((control) => control.getClientRects().length > 0)?.focus({ preventScroll: true });
-  }, [timerSettingsOpen]);
+  }, [isTimerSettingsModalOpen]);
 
   const safeBlue = Number.isFinite(blueWinRate) ? blueWinRate : 50.0;
   const blue = Math.min(Math.max(safeBlue, 0), 100);
@@ -161,7 +178,7 @@ export function ScoreBar({
         <button
           type="button"
           data-timer-entry
-          onClick={() => timer.onSetEnabled(true)}
+          onClick={() => timer.onToggleEnabled()}
           title={t("เปิดระบบจับเวลาต่อเทิร์น (Turn Timer)")}
           aria-label={t("เปิดจับเวลาดราฟต์")}
           className={`inline-flex ${btnH} min-w-7 shrink-0 items-center justify-center gap-1 border border-line-strong bg-panel px-2 font-mono text-[10.5px] font-bold text-muted transition-colors hover:border-gold/60 hover:text-gold sm:text-[11px]`}
@@ -280,7 +297,7 @@ export function ScoreBar({
           <button
             type="button"
             data-timer-entry
-            onClick={() => setTimerSettingsOpen(true)}
+            onClick={() => setSettingsOpen(true)}
             title={t("ตั้งค่าเวลาจับดราฟต์ / เสียง / Auto-Lock")}
             aria-label={t("ตั้งค่าตัวจับเวลา")}
             className="group flex min-h-7 min-w-[68px] shrink-0 cursor-pointer flex-col items-center justify-center justify-self-center px-1.5 transition-opacity sm:min-h-8 sm:min-w-[88px] sm:px-2.5"
@@ -456,6 +473,47 @@ export function ScoreBar({
               <StableButtonLabel message="ตัวช่วย" className="hidden sm:inline-grid" />
             </button>
           )}
+          {poolToggle && (
+            <button
+              type="button"
+              disabled={poolToggle.disabled}
+              onClick={poolToggle.onCycle}
+              aria-label={`${poolToggle.activeTeamName ? `POOL (${poolToggle.activeTeamName})` : "POOL"}: ${poolToggle.mode.toUpperCase()}`}
+              aria-pressed={!poolToggle.disabled && poolToggle.mode !== "off"}
+              title={
+                poolToggle.disabled
+                  ? poolToggle.activeTeamName
+                    ? t("เทิร์นนี้ ({0}) ยังไม่มี Hero Pool", poolToggle.activeTeamName)
+                    : t("ดราฟต์เสร็จสิ้นแล้ว")
+                  : poolToggle.mode === "high"
+                    ? poolToggle.activeTeamName
+                      ? t("โหมด POOL: HIGH — แนะนำเฉพาะฮีโร่ใน Pool ของ {0} (คลิกเพื่อเปลี่ยนเป็น OFF)", poolToggle.activeTeamName)
+                      : t("โหมด POOL: HIGH — แนะนำเฉพาะฮีโร่ใน Pool (คลิกเพื่อเปลี่ยนเป็น OFF)")
+                    : poolToggle.mode === "low"
+                      ? poolToggle.activeTeamName
+                        ? t("โหมด POOL: LOW — แนะนำทุกฮีโร่ + ดันตัวใน Pool ของ {0} (คลิกเพื่อเปลี่ยนเป็น HIGH)", poolToggle.activeTeamName)
+                        : t("โหมด POOL: LOW — แนะนำทุกฮีโร่ + ดันตัวใน Pool (คลิกเพื่อเปลี่ยนเป็น HIGH)")
+                      : poolToggle.activeTeamName
+                        ? t("โหมด POOL: OFF — แนะนำตามเมต้าล้วน ไม่นำ Pool ของ {0} มาคำนวณ (คลิกเพื่อเปลี่ยนเป็น LOW)", poolToggle.activeTeamName)
+                        : t("โหมด POOL: OFF — แนะนำตามเมต้าล้วน ไม่นำ Pool มาคำนวณ (คลิกเพื่อเปลี่ยนเป็น LOW)")
+              }
+              className={`inline-flex h-8 min-w-8 items-center justify-center gap-1 border px-1.5 font-display text-xs font-semibold whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:opacity-45 sm:h-8.5 sm:px-2.5 ${
+                poolToggle.mode === "high"
+                  ? "border-gold bg-gold/15 text-gold shadow-sm"
+                  : poolToggle.mode === "low"
+                    ? "border-blue/70 bg-blue/15 text-blue shadow-sm"
+                    : "border-line-strong bg-panel text-muted hover:border-gold/50 hover:text-ink"
+              }`}
+            >
+              <Users className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <span className="font-mono text-[10px] font-bold sm:hidden">
+                {poolToggle.mode === "high" ? "H" : poolToggle.mode === "low" ? "L" : "OFF"}
+              </span>
+              <span className="hidden sm:inline">
+                {`POOL: ${poolToggle.mode.toUpperCase()}`}
+              </span>
+            </button>
+          )}
           <button
             type="button"
             onClick={onUndo}
@@ -502,7 +560,7 @@ export function ScoreBar({
         </div>
       </div>
 
-      {timerSettingsOpen &&
+      {isTimerSettingsModalOpen &&
         timer &&
         typeof document !== "undefined" &&
         createPortal(

@@ -8,6 +8,7 @@ import math
 import posixpath
 import re
 import secrets
+import sqlite3
 import threading
 import time
 import uuid
@@ -17,7 +18,8 @@ from urllib.parse import urlencode, urlparse
 
 import httpx
 import pandas as pd
-from fastapi import Cookie, Depends, FastAPI, Header, HTTPException, Query, Request, Response
+import stripe
+from fastapi import BackgroundTasks, Cookie, Depends, FastAPI, Header, HTTPException, Query, Request, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -25,7 +27,37 @@ from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, Red
 from fastapi.staticfiles import StaticFiles
 from google.auth.transport import requests as google_auth_requests
 from google.oauth2 import id_token as google_id_token
+from pydantic import ValidationError
+from starlette.concurrency import run_in_threadpool
 
+from src.billing import (
+    BILLING_EVENT_TYPES,
+    PRICE_SATANG,
+    BillingOrder,
+    BillingPackage,
+    BillingPass,
+    BillingSummary,
+    CancelCheckoutRequest,
+    CheckoutRequest,
+    CheckoutResponse,
+    HeroPoolItem,
+    HeroPoolOverview,
+    HeroPoolUpsertRequest,
+    HistorySeriesEdit,
+    TeamGame,
+    TeamGameRequest,
+    TeamHistoryRename,
+    TeamInviteRequest,
+    TeamOverview,
+    TeamSeriesCopyRequest,
+    TeamSeriesCopyResponse,
+    TeamTournamentAssignment,
+    TeamTournamentBatchAssignment,
+    apply_checkout_result,
+    checkout_session,
+    hosted_checkout_url,
+    make_stripe_client,
+)
 from src.combat_calculator import DEFAULT_ITEM_ALIASES, Build, get_engine
 from src.config import config
 from src.db import (
@@ -35,6 +67,7 @@ from src.db import (
     DisplayNameCooldownError,
     RateLimiter,
     UserDatabase,
+    billing_purchase_block,
 )
 from src.predictor import RoVDraftPredictor
 from src.schemas import (
@@ -140,6 +173,7 @@ _PROD_BLOCKED_PREFIXES = (
     "/items/",
     "/enchantments/",
     "/skills/",
+    "/billing/",
 )
 _PROD_BLOCKED_EXACT = frozenset(
     {
@@ -291,6 +325,7 @@ async def security_and_lockdown_middleware(request: Request, call_next):
             "/survey/",
             "/telemetry/",
             "/admin/",
+            "/billing",
         )
     ):
         response.headers.setdefault("Cache-Control", "no-store")
@@ -523,6 +558,8 @@ _account_login_limiter = RateLimiter(max_attempts=20, window_seconds=300)
 _global_reg_limiter = RateLimiter(max_attempts=40, window_seconds=3600)
 _predict_rate_limiter = RateLimiter(max_attempts=120, window_seconds=60)
 _survey_rate_limiter = RateLimiter(max_attempts=10, window_seconds=60)
+_billing_rate_limiter = RateLimiter(max_attempts=12, window_seconds=60)
+_team_rate_limiter = RateLimiter(max_attempts=40, window_seconds=60)
 _scrypt_semaphore = threading.BoundedSemaphore(4)
 
 
@@ -643,6 +680,9 @@ def _to_user_schema(user: AuthUser) -> AuthUserSchema:
         display_label=user.display_label,
         display_name_changes_remaining=user.display_name_changes_remaining,
         display_name_next_change_at=user.display_name_next_change_at,
+        stripe_sandbox_enabled=config.stripe_sandbox_enabled,
+        draft_history_limit=get_user_db().personal_history_limit(user.id) if config.stripe_sandbox_enabled else None,
+        is_paid=get_user_db().is_paid_user(user.id) if config.stripe_sandbox_enabled else False,
     )
 
 
@@ -767,6 +807,7 @@ def _auth_status_response(user: AuthUser | None) -> AuthStatusResponse:
         pricing_survey_answered=survey_choice is not None,
         pricing_survey_choice=survey_choice,  # type: ignore[arg-type]
         is_admin=config.is_admin_username(user.username) if user is not None else False,
+        stripe_sandbox_enabled=config.stripe_sandbox_enabled,
     )
 
 
@@ -1162,6 +1203,302 @@ def _verify_expected_user(user: AuthUser | None, expected_user: str | None) -> N
         raise HTTPException(status_code=409, detail="Active account changed in another session")
 
 
+def require_stripe_sandbox() -> None:
+    if not config.stripe_sandbox_enabled:
+        raise HTTPException(status_code=404, detail="Not Found")
+
+
+def _billing_request_origin(request: Request) -> str:
+    origin = _extract_origin(request.headers.get("origin", str(request.base_url)))
+    if (
+        not origin
+        or urlparse(origin).hostname not in {"localhost", "127.0.0.1", "::1"}
+        or origin not in config.cors_origins
+    ):
+        raise HTTPException(status_code=403, detail="Invalid checkout origin")
+    return origin
+
+
+@app.get("/billing", response_model=BillingSummary, dependencies=[Depends(require_stripe_sandbox)])
+def billing_summary(
+    user: AuthUser = Depends(get_required_user), x_expected_user: str | None = Header(default=None)
+) -> BillingSummary:
+    _verify_expected_user(user, x_expected_user)
+    active_pass, orders = get_user_db().billing_summary(user.id)
+    current = BillingPass(**dict(active_pass)) if active_pass else None
+    return BillingSummary(
+        packages=[
+            BillingPackage(tier=tier, days=days, amount=amount)
+            for (tier, days), amount in PRICE_SATANG.items()
+            if (current is None or current.is_owner)
+            and billing_purchase_block(current.tier if current else None, tier) is None
+        ],
+        active_pass=current,
+        orders=[BillingOrder(**dict(order)) for order in orders],
+    )
+
+
+@app.post("/billing/checkout", response_model=CheckoutResponse, dependencies=[Depends(require_stripe_sandbox)])
+def start_billing_checkout(
+    body: CheckoutRequest, request: Request, user: AuthUser = Depends(get_required_user)
+) -> CheckoutResponse:
+    origin = _billing_request_origin(request)
+    _verify_expected_user(user, body.expected_username)
+    if not _billing_rate_limiter.check_and_record(f"billing:{user.id}"):
+        raise HTTPException(status_code=429, detail="Too many checkout requests")
+    db = get_user_db()
+    try:
+        order = db.reserve_billing_order(user.id, body.tier, body.days, PRICE_SATANG[(body.tier, body.days)], origin)
+        session = checkout_session(make_stripe_client(config.stripe_secret_key), db, order)
+        if session.status != "open":
+            apply_checkout_result(db, session, "")
+            return CheckoutResponse(url=None)
+        return CheckoutResponse(url=hosted_checkout_url(session))
+    except stripe.StripeError as error:
+        logger.warning("Sandbox checkout failed (%s)", type(error).__name__)
+        raise HTTPException(status_code=502, detail="Stripe checkout unavailable") from error
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+
+
+@app.post("/billing/orders/{order_id}/cancel", status_code=204, dependencies=[Depends(require_stripe_sandbox)])
+def cancel_billing_checkout(
+    order_id: str, body: CancelCheckoutRequest, request: Request, user: AuthUser = Depends(get_required_user)
+) -> None:
+    _billing_request_origin(request)
+    _verify_expected_user(user, body.expected_username)
+    if not _billing_rate_limiter.check_and_record(f"billing:{user.id}"):
+        raise HTTPException(status_code=429, detail="Too many checkout requests")
+    db = get_user_db()
+    order = db.get_billing_order(user.id, order_id)
+    if order is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if order["status"] != "pending":
+        return
+    client = make_stripe_client(config.stripe_secret_key)
+    try:
+        session = checkout_session(client, db, order)
+        if session.status == "open":
+            try:
+                session = client.v1.checkout.sessions.expire(session.id)
+            except stripe.InvalidRequestError:
+                # A payment can complete between retrieval and expiration.
+                session = client.v1.checkout.sessions.retrieve(session.id)
+        apply_checkout_result(db, session, "")
+    except stripe.StripeError as error:
+        logger.warning("Sandbox checkout cancellation failed (%s)", type(error).__name__)
+        raise HTTPException(status_code=502, detail="Stripe checkout unavailable") from error
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+    if session.status == "open" or (session.status == "complete" and session.payment_status != "paid"):
+        raise HTTPException(status_code=409, detail="checkout_pending")
+
+
+@app.post("/billing/webhook", status_code=204, dependencies=[Depends(require_stripe_sandbox)])
+async def billing_webhook(request: Request, stripe_signature: str = Header(default="")) -> None:
+    payload = await request.body()
+    try:
+        event = stripe.Webhook.construct_event(payload, stripe_signature, config.stripe_webhook_secret)
+        if event.type in BILLING_EVENT_TYPES:
+            await run_in_threadpool(apply_checkout_result, get_user_db(), event.data.object, event.type)
+    except (ValueError, sqlite3.IntegrityError, stripe.SignatureVerificationError) as error:
+        logger.warning("Rejected sandbox checkout event (%s)", type(error).__name__)
+        raise HTTPException(status_code=400, detail="Invalid Stripe event") from error
+
+
+def _require_team_user(
+    request: Request,
+    user: AuthUser = Depends(get_required_user),
+    x_expected_user: str | None = Header(default=None),
+) -> AuthUser:
+    _verify_expected_user(user, x_expected_user)
+    if request.method != "GET":
+        _billing_request_origin(request)
+        if not _team_rate_limiter.check_and_record(f"team:{user.id}"):
+            raise HTTPException(status_code=429, detail="Too many team requests")
+    return user
+
+
+@app.get("/billing/team", response_model=TeamOverview, dependencies=[Depends(require_stripe_sandbox)])
+def team_overview(user: AuthUser = Depends(_require_team_user)) -> dict:
+    return get_user_db().team_overview(user.id)
+
+
+@app.post("/billing/team/invite", status_code=204, dependencies=[Depends(require_stripe_sandbox)])
+def team_invite(body: TeamInviteRequest, user: AuthUser = Depends(_require_team_user)) -> None:
+    try:
+        get_user_db().invite_team_member(user.id, body.username)
+    except PermissionError as error:
+        raise HTTPException(status_code=403, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+
+
+@app.post("/billing/team/history", status_code=204, dependencies=[Depends(require_stripe_sandbox)])
+def save_team_history(body: TeamGameRequest, user: AuthUser = Depends(_require_team_user)) -> None:
+    try:
+        get_user_db().save_team_game(
+            user.id, body.owner_id, body.tier, body.source_id, body.game.model_dump() if body.game else None
+        )
+    except PermissionError as error:
+        raise HTTPException(status_code=403, detail=str(error)) from error
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except ValidationError as error:
+        raise HTTPException(status_code=422, detail="invalid_team_game") from error
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+
+
+@app.post(
+    "/billing/team/history/batch",
+    response_model=TeamSeriesCopyResponse,
+    dependencies=[Depends(require_stripe_sandbox)],
+)
+def save_team_history_batch(
+    body: TeamSeriesCopyRequest, user: AuthUser = Depends(_require_team_user)
+) -> dict[str, int]:
+    try:
+        return get_user_db().save_team_games(
+            user.id,
+            body.owner_id,
+            body.tier,
+            body.source_ids,
+            [game.model_dump() for game in body.games] if body.games else None,
+        )
+    except PermissionError as error:
+        raise HTTPException(status_code=403, detail=str(error)) from error
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except ValidationError as error:
+        raise HTTPException(status_code=422, detail="invalid_team_game") from error
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+
+
+@app.get("/billing/team/history", response_model=list[TeamGame], dependencies=[Depends(require_stripe_sandbox)])
+def team_history(user: AuthUser = Depends(_require_team_user)) -> list[dict]:
+    try:
+        return get_user_db().team_history(user.id)
+    except PermissionError as error:
+        raise HTTPException(status_code=403, detail=str(error)) from error
+
+
+def _assign_team_history_tournament(user: AuthUser, game_ids: list[int], body: TeamTournamentAssignment) -> None:
+    try:
+        get_user_db().assign_team_series_tournaments(
+            user.id, game_ids, body.tournament.model_dump() if body.tournament else None
+        )
+    except PermissionError as error:
+        raise HTTPException(status_code=403, detail=str(error)) from error
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+
+
+@app.put("/billing/team/history/tournament", status_code=204, dependencies=[Depends(require_stripe_sandbox)])
+def assign_team_history_tournament(
+    body: TeamTournamentBatchAssignment, user: AuthUser = Depends(_require_team_user)
+) -> None:
+    _assign_team_history_tournament(user, body.game_ids, body)
+
+
+@app.put("/billing/team/history/{game_id}/tournament", status_code=204, dependencies=[Depends(require_stripe_sandbox)])
+def assign_team_series_tournament(
+    game_id: int, body: TeamTournamentAssignment, user: AuthUser = Depends(_require_team_user)
+) -> None:
+    _assign_team_history_tournament(user, [game_id], body)
+
+
+@app.delete("/billing/team/history/{game_id}", status_code=204, dependencies=[Depends(require_stripe_sandbox)])
+def delete_team_history(game_id: int, user: AuthUser = Depends(_require_team_user)) -> None:
+    try:
+        get_user_db().delete_team_game(user.id, game_id)
+    except PermissionError as error:
+        raise HTTPException(status_code=403, detail=str(error)) from error
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+
+
+@app.put("/billing/team/history/{game_id}/name", status_code=204, dependencies=[Depends(require_stripe_sandbox)])
+def rename_team_history_item(
+    game_id: int, body: TeamHistoryRename, user: AuthUser = Depends(_require_team_user)
+) -> None:
+    try:
+        get_user_db().rename_team_history_item(user.id, game_id, body.target, body.name)
+    except PermissionError as error:
+        raise HTTPException(status_code=403, detail=str(error)) from error
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+
+
+@app.put("/billing/team/history/{game_id}/series", status_code=204, dependencies=[Depends(require_stripe_sandbox)])
+def edit_team_history_series(
+    game_id: int, body: HistorySeriesEdit, user: AuthUser = Depends(_require_team_user)
+) -> None:
+    try:
+        get_user_db().edit_team_history_series(user.id, game_id, body.model_dump(exclude_unset=True))
+    except PermissionError as error:
+        raise HTTPException(status_code=403, detail=str(error)) from error
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+
+
+@app.post("/billing/team/{action}/{account_id}", status_code=204, dependencies=[Depends(require_stripe_sandbox)])
+def update_team(
+    action: Literal["accept", "decline", "revoke", "remove", "leave"],
+    account_id: int,
+    user: AuthUser = Depends(_require_team_user),
+) -> None:
+    db = get_user_db()
+    try:
+        if action in ("accept", "decline"):
+            db.respond_to_team_invite(user.id, account_id, accept=action == "accept")
+        elif action == "leave":
+            db.leave_team(user.id, account_id)
+        else:
+            db.manage_team_member(user.id, account_id, revoke_invite=action == "revoke")
+    except PermissionError as error:
+        raise HTTPException(status_code=403, detail=str(error)) from error
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+
+
+@app.get("/billing/hero-pools", response_model=HeroPoolOverview, dependencies=[Depends(require_stripe_sandbox)])
+def list_hero_pools(user: AuthUser = Depends(_require_team_user)) -> dict:
+    return get_user_db().list_hero_pools(user.id)
+
+
+@app.put("/billing/hero-pools", response_model=HeroPoolItem, dependencies=[Depends(require_stripe_sandbox)])
+def upsert_hero_pool(body: HeroPoolUpsertRequest, user: AuthUser = Depends(_require_team_user)) -> dict:
+    try:
+        return get_user_db().upsert_hero_pool(
+            user.id,
+            body.scope,
+            body.team_name,
+            dict(body.lanes),
+            create_only=body.create_only,
+            pool_id=body.pool_id,
+        )
+    except PermissionError as error:
+        raise HTTPException(status_code=403, detail=str(error)) from error
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+
+
+@app.delete("/billing/hero-pools/{pool_id}", status_code=204, dependencies=[Depends(require_stripe_sandbox)])
+def delete_hero_pool(pool_id: int, user: AuthUser = Depends(_require_team_user)) -> None:
+    try:
+        get_user_db().delete_hero_pool(user.id, pool_id)
+    except PermissionError as error:
+        raise HTTPException(status_code=403, detail=str(error)) from error
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+
+
 @app.get("/draft/session", response_model=DraftSessionStateSchema)
 def get_draft_session(
     user: AuthUser | None = Depends(get_optional_user),
@@ -1196,15 +1533,23 @@ def get_draft_session(
 @app.put("/draft/session", response_model=DraftSessionStateSchema)
 def save_draft_session(
     session: DraftSessionStateSchema,
+    background_tasks: BackgroundTasks,
     user: AuthUser | None = Depends(get_optional_user),
     x_expected_user: str | None = Header(default=None, alias="X-Expected-User"),
 ):
     _verify_expected_user(user, x_expected_user)
     session = session.model_copy(update={"engine": "sota"})
+    if not config.stripe_sandbox_enabled and len(session.seriesGames) > 100:
+        raise HTTPException(status_code=422, detail="Too many saved games")
     if user is not None:
         dumped = session.model_dump()
-        stored = get_user_db().save_user_draft_state(user.id, dumped, int(session.updatedAt or 0))
-        get_user_db().record_user_usage(user.id, draft_save_delta=1)
+        try:
+            stored = get_user_db().save_user_draft_state(
+                user.id, dumped, int(session.updatedAt or 0), limit_draft_history=config.stripe_sandbox_enabled
+            )
+        except ValueError as error:
+            raise HTTPException(status_code=422, detail=str(error)) from error
+        background_tasks.add_task(get_user_db().record_user_usage, user.id, draft_save_delta=1)
         return DraftSessionStateSchema.model_validate(stored)
 
     if config.is_production:
@@ -1238,8 +1583,8 @@ def clear_draft_session(
 ):
     _verify_expected_user(user, x_expected_user)
     if user is not None:
-        get_user_db().clear_user_draft_state(user.id)
-        return DraftSessionStateSchema()
+        tombstone_at = get_user_db().clear_user_draft_state(user.id)
+        return DraftSessionStateSchema(updatedAt=tombstone_at)
 
     if config.is_production:
         return DraftSessionStateSchema()
@@ -1575,6 +1920,7 @@ def get_admin_analytics(user: AuthUser | None = Depends(get_optional_user)):
 def predict_draft(
     request: DraftStateRequest,
     http_request: Request,
+    background_tasks: BackgroundTasks,
     user: AuthUser | None = Depends(get_optional_user),
     x_client_id: str | None = Header(default=None, alias="X-Client-Id"),
 ):
@@ -1606,7 +1952,8 @@ def predict_draft(
         detail = "Invalid draft request or unknown hero name" if restricted_prod else str(exc)
         raise HTTPException(status_code=422, detail=detail) from exc
     elapsed_ms = int((time.perf_counter() - t0) * 1000)
-    get_user_db().record_predict_telemetry(
+    background_tasks.add_task(
+        get_user_db().record_predict_telemetry,
         user_id=user.id if user is not None else None,
         client_id=x_client_id if user is None else None,
         elapsed_ms=elapsed_ms,

@@ -1,7 +1,7 @@
 import { useLanguage } from "../i18n/language";
 import { Search, X } from "lucide-react";
-import { forwardRef, type ReactNode, useMemo, useState } from "react";
-import type { DraftStep, Hero } from "../types/draft";
+import { forwardRef, memo, type ReactNode, useMemo, useState } from "react";
+import type { DraftStep, Hero, LaneKey } from "../types/draft";
 import { LANE_SHORT, TIER_STYLE, heroLanes, laneKey, missingLaneKeys } from "../utils/draft";
 import { displayName, matchesHeroQuery } from "../utils/heroNames";
 import { HeroPortrait } from "./HeroPortrait";
@@ -17,6 +17,7 @@ interface HeroGridProps {
   redTeamName?: string;
   recommendedRanks: Map<string, number>;
   missingAllyLanes: string[];
+  allyPoolHeroLanes?: Map<string, Set<LaneKey>>;
   currentStep: DraftStep | null;
   allowLock?: boolean;
   isLoading?: boolean;
@@ -29,8 +30,10 @@ interface HeroGridProps {
 }
 
 const LANE_KEYS = Object.keys(LANE_SHORT);
+const HERO_COLLATOR = new Intl.Collator(undefined, { sensitivity: "base" });
 
-export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function HeroGrid(
+export const HeroGrid = memo(
+  forwardRef<HTMLInputElement, HeroGridProps>(function HeroGrid(
   {
     heroes,
     unavailableHeroes,
@@ -41,6 +44,7 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
     redTeamName = "RED",
     recommendedRanks,
     missingAllyLanes,
+    allyPoolHeroLanes,
     currentStep,
     allowLock = true,
     isLoading = false,
@@ -83,21 +87,63 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
   const heroPrimaryLane = (h: Hero) =>
     laneKey(h.main_pro_lane && h.main_pro_lane !== "Unpicked" ? h.main_pro_lane : h.lane);
 
+  const parsedHeroMeta = useMemo(
+    () =>
+      new Map(
+        heroes.map((h) => [
+          h.name,
+          {
+            primaryLane: laneKey(h.main_pro_lane && h.main_pro_lane !== "Unpicked" ? h.main_pro_lane : h.lane),
+            lanes: heroLanes(h.lane),
+            label: displayName(h.name),
+          },
+        ]),
+      ),
+    [heroes],
+  );
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    // AI sort: available first, then AI rank, then heroes filling a missing lane, then name
-    const score = (h: Hero) => {
-      if (unavailableHeroes.has(h.name)) return 3000;
-      const rank = recommendedRanks.get(h.name);
-      if (rank) return rank;
-      const fills = heroLanes(h.lane).some((l) => missing.has(l)) || missing.has(heroPrimaryLane(h));
-      return fills ? 1000 : 2000;
-    };
-    return heroes
-      .filter((h) => !q || matchesHeroQuery(h.name, q))
-      .filter((h) => !lane || heroLanes(h.lane).includes(lane) || heroPrimaryLane(h) === lane)
-      .sort((a, b) => score(a) - score(b) || displayName(a.name).localeCompare(displayName(b.name)));
-  }, [heroes, query, lane, unavailableHeroes, recommendedRanks, missing]);
+    // Precompute sort keys once per hero instead of splitting lane strings inside .sort()
+    const scores = new Map<string, number>();
+    const list: Hero[] = [];
+    for (const h of heroes) {
+      if (q && !matchesHeroQuery(h.name, q)) continue;
+      const meta = parsedHeroMeta.get(h.name);
+      const poolSet = allyPoolHeroLanes?.get(h.name);
+      if (
+        lane &&
+        !poolSet?.has(lane as LaneKey) &&
+        !(meta ? meta.lanes.includes(lane) : heroLanes(h.lane).includes(lane)) &&
+        (meta ? meta.primaryLane : heroPrimaryLane(h)) !== lane
+      ) {
+        continue;
+      }
+      let score: number;
+      if (unavailableHeroes.has(h.name)) {
+        score = 3000;
+      } else {
+        const rank = recommendedRanks.get(h.name);
+        if (rank) {
+          score = rank;
+        } else {
+          const fills =
+            poolSet && poolSet.size > 0
+              ? Array.from(poolSet).some((l) => missing.has(l))
+              : (meta ? meta.lanes : heroLanes(h.lane)).some((l) => missing.has(l)) ||
+                missing.has(meta ? meta.primaryLane : heroPrimaryLane(h));
+          score = fills ? 1000 : 2000;
+        }
+      }
+      scores.set(h.name, score);
+      list.push(h);
+    }
+    return list.sort(
+      (a, b) =>
+        (scores.get(a.name) ?? 2000) - (scores.get(b.name) ?? 2000) ||
+        HERO_COLLATOR.compare(parsedHeroMeta.get(a.name)?.label ?? a.name, parsedHeroMeta.get(b.name)?.label ?? b.name),
+    );
+  }, [heroes, parsedHeroMeta, query, lane, unavailableHeroes, recommendedRanks, missing, allyPoolHeroLanes]);
   const chip = (active: boolean) =>
     `h-6 shrink-0 border px-2 font-display text-[10px] font-semibold tracking-wide transition-colors sm:h-6.5 sm:px-2.5 sm:text-[11px] ${
       active ? "border-gold/60 bg-gold/10 text-gold" : "border-line text-muted hover:border-line-strong hover:text-ink"
@@ -214,8 +260,15 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
             const usedByOpponentOnly = !isBan && !taken && opponentTeamUsed && !actingTeamUsed;
 
             const rank = recommendedRanks.get(hero.name);
-            const primaryLane = heroPrimaryLane(hero);
-            const fillsLane = !taken && (heroLanes(hero.lane).some((l) => missing.has(l)) || missing.has(primaryLane));
+            const meta = parsedHeroMeta.get(hero.name);
+            const primaryLane = meta ? meta.primaryLane : heroPrimaryLane(hero);
+            const lanesList = meta ? meta.lanes : heroLanes(hero.lane);
+            const heroPoolSet = allyPoolHeroLanes?.get(hero.name);
+            const fillsLane =
+              !taken &&
+              (heroPoolSet && heroPoolSet.size > 0
+                ? Array.from(heroPoolSet).some((l) => missing.has(l))
+                : lanesList.some((l) => missing.has(l)) || missing.has(primaryLane));
             const disabled = taken || !currentStep || !allowLock;
             const isReplacingCurrent = Boolean(replacingHero && hero.name === replacingHero);
             return (
@@ -223,7 +276,7 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
                 key={hero.name}
                 type="button"
                 disabled={disabled}
-                onClick={() => lockHeroAndResetLane(hero.name)}
+                onClick={() => lockHeroAndResetLane(hero.name, true)}
                 title={`${displayName(hero.name)} · ${hero.role} · ${primaryLane} · Tier ${hero.tier}${
                   lockedByGlobalBan
                     ? ` · GLOBAL BAN (${inUnivBan ? t("แบนร่วม") : isBan ? t("{0} เคยใช้แล้ว · ไม่ต้องแบน", opponentTeamName) : t("{0} ใช้แล้ว", actingTeamName)})`
@@ -330,4 +383,5 @@ export const HeroGrid = forwardRef<HTMLInputElement, HeroGridProps>(function Her
       </div>
     </section>
   );
-});
+  }),
+);

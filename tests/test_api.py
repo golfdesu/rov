@@ -341,6 +341,7 @@ def test_draft_session_persistence_endpoints(tmp_path, monkeypatch):
     assert r_init.status_code == 200
     assert r_init.json()["stepIndex"] == 0
     assert r_init.json()["bluePicks"] == []
+    assert r_init.json()["fromTeamHistory"] is False
 
     # 2. PUT saves active board, global bans, and recorded series games to disk
     payload = {
@@ -362,6 +363,7 @@ def test_draft_session_persistence_endpoints(tmp_path, monkeypatch):
         "winHistory": [50.0, 51.2, 49.8, 52.1, 54.5],
         "blueWinRate": 54.5,
         "useLookahead": True,
+        "fromTeamHistory": True,
         "globalBans": {
             "seriesName": "BAC vs BRU",
             "teamAName": "BAC",
@@ -401,6 +403,7 @@ def test_draft_session_persistence_endpoints(tmp_path, monkeypatch):
     saved = r_get.json()
     assert saved["stepIndex"] == 5
     assert saved["bluePicks"] == ["Rouie"]
+    assert saved["fromTeamHistory"] is True
     assert saved["pickLanes"] == {"Rouie": "Mid"}
     assert saved["globalBans"]["teamAName"] == "BAC"
     assert saved["globalBans"]["seriesName"] == "BAC vs BRU"
@@ -413,8 +416,11 @@ def test_draft_session_persistence_endpoints(tmp_path, monkeypatch):
 
     # 4. Old records load with automatic lanes and keep their recorded picks.
     del payload["seriesGames"][0]["pickLanes"]
+    del payload["fromTeamHistory"]
     temp_session_file.write_text(json.dumps(payload), encoding="utf-8")
-    legacy_game = client.get("/draft/session").json()["seriesGames"][0]
+    legacy_state = client.get("/draft/session").json()
+    assert legacy_state["fromTeamHistory"] is False
+    legacy_game = legacy_state["seriesGames"][0]
     assert legacy_game["pickLanes"] == {}
     assert legacy_game["bluePicks"] == payload["seriesGames"][0]["bluePicks"]
 
@@ -1017,6 +1023,7 @@ def test_multi_user_auth_and_database_isolation(tmp_path, monkeypatch):
     from src.config import config
 
     monkeypatch.setattr(config.paths, "app_db_path", tmp_path / "rov_test.db")
+    monkeypatch.setattr(config, "stripe_secret_key", "")
 
     client_a = TestClient(app)
     client_b = TestClient(app)
@@ -2088,3 +2095,311 @@ def test_practice_merge_older_client_clock_bumps_server_revision(tmp_path):
     )
     assert {e["id"] for e in merged["entries"]} == {"p-a", "p-b"}
     assert merged["updatedAt"] > first["updatedAt"]
+
+
+def test_predict_hero_pool_boost_and_strict_filter():
+    off_meta_pool = ["Zanis", "Veera", "Butterfly"]
+
+    # 1. Baseline without pool: off-meta heroes do not appear in Top 15
+    base_res = client.post(
+        "/predict",
+        json={"mode": "pick", "side": "blue", "phase": 1, "top_k": 15},
+    )
+    assert base_res.status_code == 200
+    base_recs = base_res.json()["recommendations"]
+    base_names = [r["hero_name"] for r in base_recs]
+    assert not (set(off_meta_pool) & set(base_names[:10]))
+
+    # 2. Option A (pool_only=False): mixture prior lifts off-meta pool heroes into Top 15 without displacing #1 meta
+    boosted_res = client.post(
+        "/predict",
+        json={
+            "mode": "pick",
+            "side": "blue",
+            "phase": 1,
+            "top_k": 15,
+            "ally_pool": off_meta_pool,
+            "pool_only": False,
+        },
+    )
+    assert boosted_res.status_code == 200
+    boosted_recs = boosted_res.json()["recommendations"]
+    boosted_names = {r["hero_name"] for r in boosted_recs}
+    assert set(off_meta_pool).issubset(boosted_names)
+    assert boosted_recs[0]["hero_name"] == base_recs[0]["hero_name"]
+
+    # 3. Option A in ban mode: enemy_pool surfaces off-meta signature picks for target banning
+    ban_res = client.post(
+        "/predict",
+        json={
+            "mode": "ban",
+            "side": "blue",
+            "phase": 1,
+            "top_k": 15,
+            "enemy_pool": off_meta_pool,
+            "pool_only": False,
+        },
+    )
+    assert ban_res.status_code == 200
+    ban_names = {r["hero_name"] for r in ban_res.json()["recommendations"]}
+    assert set(off_meta_pool).issubset(ban_names)
+
+    # 4. Option B (pool_only=True): strictly returns available ally_pool heroes, falling back if exhausted
+    strict_res = client.post(
+        "/predict",
+        json={
+            "mode": "pick",
+            "side": "blue",
+            "phase": 1,
+            "top_k": 10,
+            "ally_pool": ["Zanis", "Veera"],
+            "pool_only": True,
+        },
+    )
+    assert strict_res.status_code == 200
+    strict_names = [r["hero_name"] for r in strict_res.json()["recommendations"]]
+    assert set(strict_names) == {"Zanis", "Veera"}
+
+    exhausted_res = client.post(
+        "/predict",
+        json={
+            "mode": "pick",
+            "side": "blue",
+            "phase": 1,
+            "ally_bans": ["Zanis"],
+            "enemy_bans": ["Veera"],
+            "top_k": 5,
+            "ally_pool": ["Zanis", "Veera"],
+            "pool_only": True,
+        },
+    )
+    assert exhausted_res.status_code == 200
+    assert len(exhausted_res.json()["recommendations"]) == 5
+
+
+def test_pool_never_recommends_filled_lanes_and_respects_pool_lanes():
+    bru_lanes = {
+        "DS_Lane": ["Bijan", "Bolt Baron", "Omen", "Charlotte"],
+        "Jungle": ["Amily", "Sephera", "Max", "Paine"],
+        "Mid": ["Aya", "Heino", "Mganga", "Natalya"],
+        "Dragon_Lane": ["Moren", "Laville", "Slimz", "Celica"],
+        "Roam": ["Roxie", "Omega", "Ormarr", "Helen"],
+    }
+    bru_flat = [h for hs in bru_lanes.values() for h in hs]
+
+    # 1. Partial Roam-only deficit with <5 Roam heroes in pool: MUST NOT pad rank #5 with filled lanes
+    res_pick5 = client.post(
+        "/predict",
+        json={
+            "mode": "pick",
+            "side": "blue",
+            "phase": 2,
+            "ally_picks": ["Omen", "Paine", "Heino", "Laville"],
+            "enemy_picks": ["Hayate", "Thane", "Krixi", "Aoi", "Yena"],
+            "top_k": 50,
+            "ally_pool": bru_flat,
+            "ally_pool_lanes": bru_lanes,
+            "pool_only": True,
+        },
+    )
+    assert res_pick5.status_code == 200
+    d5 = res_pick5.json()
+    assert d5["missing_ally_lanes"] == ["Roam (โรมมิ่ง)"]
+    rec5 = [r["hero_name"] for r in d5["recommendations"]]
+    assert set(rec5) == {"Roxie", "Omega", "Ormarr", "Helen"}
+
+    # 2. All Roam heroes in pool are banned/unavailable: MUST fall back to open-lane Roam meta heroes, not filled DS/Mid
+    res_exhausted_lane = client.post(
+        "/predict",
+        json={
+            "mode": "pick",
+            "side": "blue",
+            "phase": 2,
+            "ally_picks": ["Omen", "Paine", "Heino", "Laville"],
+            "enemy_picks": ["Hayate", "Thane", "Krixi", "Aoi", "Yena"],
+            "ally_bans": ["Roxie", "Omega"],
+            "enemy_bans": ["Ormarr", "Helen"],
+            "top_k": 10,
+            "ally_pool": bru_flat,
+            "ally_pool_lanes": bru_lanes,
+            "pool_only": True,
+        },
+    )
+    assert res_exhausted_lane.status_code == 200
+    assert all(r["primary_lane"] == "Roam" for r in res_exhausted_lane.json()["recommendations"])
+
+    # 3. Custom Hero Pool lane mapping: Aya (Mid) picked + DS/ADL/Roam picked -> Sephera (Jungle in pool) is still eligible
+    res_flex_pool = client.post(
+        "/predict",
+        json={
+            "mode": "pick",
+            "side": "blue",
+            "phase": 2,
+            "ally_picks": ["Omen", "Aya", "Laville", "Helen"],
+            "enemy_picks": ["Hayate", "Thane", "Krixi", "Aoi", "Yena"],
+            "top_k": 50,
+            "ally_pool": bru_flat,
+            "ally_pool_lanes": bru_lanes,
+            "pool_only": True,
+        },
+    )
+    assert res_flex_pool.status_code == 200
+    d_flex = res_flex_pool.json()
+    assert d_flex["missing_ally_lanes"] == ["Jungle (ป่า)"]
+    assert set(r["hero_name"] for r in d_flex["recommendations"]) == {"Amily", "Sephera", "Max", "Paine"}
+
+    # 4. Option A (pool_only=False): filled-lane pool hero (Veera Mid when Krixi already picked) must NOT enter Top 5
+    res_opt_a = client.post(
+        "/predict",
+        json={
+            "mode": "pick",
+            "side": "blue",
+            "phase": 1,
+            "ally_picks": ["Krixi", "Nakroth", "Hayate", "Florentino"],
+            "enemy_picks": ["Omen", "Keera", "Iggy", "Violet", "Thane"],
+            "top_k": 50,
+            "ally_pool": ["Veera", "Iggy", "Raz", "Krizzix"],
+            "pool_only": False,
+        },
+    )
+    assert res_opt_a.status_code == 200
+    top5_opt_a = [r["hero_name"] for r in res_opt_a.json()["recommendations"][:5]]
+    assert "Veera" not in top5_opt_a and "Iggy" not in top5_opt_a
+
+    # 5. Rouie saved in Roam pool + Krixi (Mid) -> both Mid & Roam marked covered
+    res_rouie = client.post(
+        "/predict",
+        json={
+            "mode": "pick",
+            "side": "blue",
+            "phase": 1,
+            "ally_picks": ["Rouie", "Krixi"],
+            "enemy_picks": ["Hayate", "Thane"],
+            "top_k": 10,
+            "ally_pool": ["Rouie", "Krixi", "Florentino", "Nakroth", "Elsu"],
+            "ally_pool_lanes": {
+                "Roam": ["Rouie"],
+                "Mid": ["Krixi"],
+                "DS_Lane": ["Florentino"],
+                "Jungle": ["Nakroth"],
+                "Dragon_Lane": ["Elsu"],
+            },
+            "pool_only": True,
+        },
+    )
+    assert res_rouie.status_code == 200
+    d_rouie = res_rouie.json()
+    assert set(d_rouie["missing_ally_lanes"]) == {"DS_Lane (ออฟเลน)", "Jungle (ป่า)", "Dragon_Lane (แครี่)"}
+    assert set(r["hero_name"] for r in d_rouie["recommendations"]) == {"Florentino", "Nakroth", "Elsu"}
+
+    # 6. pool_mode='off' produces exact pure-meta recommendations identical to omitting Hero Pool fields
+    pure_base = client.post(
+        "/predict",
+        json={
+            "mode": "pick",
+            "side": "blue",
+            "phase": 1,
+            "ally_picks": ["Rouie"],
+            "enemy_picks": ["Hayate", "Thane"],
+            "top_k": 10,
+        },
+    ).json()
+    off_mode = client.post(
+        "/predict",
+        json={
+            "mode": "pick",
+            "side": "blue",
+            "phase": 1,
+            "ally_picks": ["Rouie"],
+            "enemy_picks": ["Hayate", "Thane"],
+            "top_k": 10,
+            "ally_pool": bru_flat,
+            "ally_pool_lanes": bru_lanes,
+            "pool_mode": "off",
+        },
+    ).json()
+    assert off_mode["missing_ally_lanes"] == pure_base["missing_ally_lanes"]
+    assert [(r["hero_name"], r["probability_pct"]) for r in off_mode["recommendations"]] == [
+        (r["hero_name"], r["probability_pct"]) for r in pure_base["recommendations"]
+    ]
+
+    # 7. pool_mode='high' in ban mode restricts strictly to available enemy_pool heroes, with graceful fallback if exhausted
+    ban_high = client.post(
+        "/predict",
+        json={
+            "mode": "ban",
+            "side": "blue",
+            "phase": 1,
+            "top_k": 10,
+            "enemy_pool": ["Toro", "Lorion", "Florentino"],
+            "pool_mode": "high",
+        },
+    )
+    assert ban_high.status_code == 200
+    assert {r["hero_name"] for r in ban_high.json()["recommendations"]} == {"Toro", "Lorion", "Florentino"}
+
+    ban_high_exhausted = client.post(
+        "/predict",
+        json={
+            "mode": "ban",
+            "side": "blue",
+            "phase": 1,
+            "ally_bans": ["Toro", "Lorion"],
+            "enemy_bans": ["Florentino"],
+            "top_k": 5,
+            "enemy_pool": ["Toro", "Lorion", "Florentino"],
+            "pool_mode": "high",
+        },
+    )
+    assert ban_high_exhausted.status_code == 200
+    assert len(ban_high_exhausted.json()["recommendations"]) == 5
+
+
+def test_draft_session_delete_beats_future_client_clock(tmp_path, monkeypatch):
+    import time
+
+    from src.config import config
+
+    monkeypatch.setattr(config.paths, "app_db_path", tmp_path / "clock_skew.db")
+    monkeypatch.setattr("src.api._user_db", None)
+
+    skew_client = TestClient(app)
+    assert (
+        skew_client.post(
+            "/auth/register", json={"username": "skewuser", "password": "CorrectHorseBattery!99"}
+        ).status_code
+        == 201
+    )
+    future_ts = int(time.time() * 1000) + 86_400_000
+    put_res = skew_client.put(
+        "/draft/session",
+        json={
+            "stepIndex": 1,
+            "blueBans": ["Toro"],
+            "updatedAt": future_ts,
+        },
+    )
+    assert put_res.status_code == 200
+    assert put_res.json()["blueBans"] == ["Toro"]
+
+    del_res = skew_client.delete("/draft/session")
+    assert del_res.status_code == 200
+    assert del_res.json()["updatedAt"] > future_ts
+
+    get_res = skew_client.get("/draft/session")
+    assert get_res.status_code == 200
+    assert get_res.json()["blueBans"] == []
+    assert get_res.json()["updatedAt"] == del_res.json()["updatedAt"]
+
+
+def test_ally_pool_lanes_inner_list_bounded():
+    res = client.post(
+        "/predict",
+        json={
+            "mode": "pick",
+            "side": "blue",
+            "phase": 1,
+            "ally_pool_lanes": {"Mid": [f"Hero{i}" for i in range(131)]},
+        },
+    )
+    assert res.status_code == 422

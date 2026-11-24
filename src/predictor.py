@@ -118,6 +118,9 @@ class RoVDraftPredictor:
         stats = self.stats_df.loc[self.hero_names]
         self._main_lane: list[str] = [str(v) for v in stats["main_pro_lane"]]
         self._lane_key: list[str] = [lane.split(" ")[0] for lane in self._main_lane]
+        self._lane_hero_mask: dict[str, np.ndarray] = {
+            lk: np.array([h_lk == lk for h_lk in self._lane_key], dtype=np.bool_) for lk in LANE_KEYS
+        }
         role_aliases = {"Warrior": "Fighter", "Marksman": "Carry"}
         self._primary_role: list[str] = [role_aliases.get(str(v), str(v)) for v in heroes["primary_role"]]
         self._capabilities: list[list[str]] = []
@@ -522,7 +525,22 @@ class RoVDraftPredictor:
                 used_lanes.add(lane)
         return resolved
 
-    def _solve_flex_lane_assignment(self, picks: list[str], explicit_lanes: dict[str, str] | None = None) -> set[str]:
+    def _resolve_pool_hero_lanes(self, raw_pool_lanes: dict[str, list[str]] | None) -> dict[str, set[str]]:
+        """Map canonical hero name -> set of lane keys assigned in the team's Hero Pool."""
+        out: dict[str, set[str]] = {}
+        for lane, raw_heroes in (raw_pool_lanes or {}).items():
+            if lane not in ALL_LANE_KEYS or not raw_heroes:
+                continue
+            for hero in self.resolve_heroes(raw_heroes):
+                out.setdefault(hero, set()).add(lane)
+        return out
+
+    def _solve_flex_lane_assignment(
+        self,
+        picks: list[str],
+        explicit_lanes: dict[str, str] | None = None,
+        pool_hero_lanes: dict[str, set[str]] | None = None,
+    ) -> set[str]:
         """Assign picked heroes to distinct lanes maximizing coverage then log-probability."""
         explicit = explicit_lanes or {}
         covered: set[str] = {explicit[h] for h in picks if h in explicit and explicit[h] in ALL_LANE_KEYS}
@@ -535,13 +553,16 @@ class RoVDraftPredictor:
         for h in auto_picks:
             hid = self.hero_to_id[h]
             primary = self._lane_key[hid]
+            pool_lanes = (pool_hero_lanes or {}).get(h)
             cands: list[tuple[str, float]] = []
             for lane_idx, lane_key in enumerate(LANE_KEYS):
                 if lane_key in covered:
                     continue
                 prob = float(lane_probs[hid, lane_idx])
-                if lane_key == primary or prob >= FLEX_MIN_LANE_PROB:
-                    score = math.log(max(prob, 1e-4)) + (1e-3 if lane_key == primary else 0.0)
+                in_pool_lane = bool(pool_lanes and lane_key in pool_lanes)
+                if in_pool_lane or lane_key == primary or prob >= FLEX_MIN_LANE_PROB:
+                    eff_prob = max(prob, 0.35 if in_pool_lane else 1e-4)
+                    score = math.log(eff_prob) + (0.5 if in_pool_lane else 0.0) + (1e-3 if lane_key == primary else 0.0)
                     cands.append((lane_key, score))
             cands.sort(key=lambda item: item[1], reverse=True)
             options_per_hero.append(cands)
@@ -579,18 +600,25 @@ class RoVDraftPredictor:
         picks: list[str],
         pick_vec_row: np.ndarray | None = None,
         explicit_lanes: dict[str, str] | None = None,
+        pool_hero_lanes: dict[str, set[str]] | None = None,
     ) -> set[str]:
-        """Return the set of lane keys still needed by a team given flex + manual lane coverage."""
+        """Return the set of lane keys still needed by a team given flex, Hero Pool, and manual lane coverage."""
         if not picks:
             return set(ALL_LANE_KEYS)
         explicit = explicit_lanes or {}
-        covered_lanes = self._solve_flex_lane_assignment(picks, explicit)
-        if explicit or pick_vec_row is None:
+        has_pool_override = bool(pool_hero_lanes and any(h in pool_hero_lanes for h in picks))
+        covered_lanes = self._solve_flex_lane_assignment(picks, explicit, pool_hero_lanes=pool_hero_lanes)
+        if explicit or has_pool_override or pick_vec_row is None:
             lane_cov = np.zeros(len(LANE_KEYS), dtype=np.float32)
             lane_probs = self.ckpt["lane_probs"]
             for h in picks:
                 if h in explicit and explicit[h] in _LANE_INDEX:
                     lane_cov[_LANE_INDEX[explicit[h]]] += 1.0
+                elif pool_hero_lanes and h in pool_hero_lanes:
+                    valid_pool_lanes = [lk for lk in pool_hero_lanes[h] if lk in _LANE_INDEX]
+                    share = 1.0 / len(valid_pool_lanes) if valid_pool_lanes else 0.0
+                    for lk in valid_pool_lanes:
+                        lane_cov[_LANE_INDEX[lk]] += share
                 else:
                     lane_cov += lane_probs[self.hero_to_id[h]]
         else:
@@ -608,14 +636,24 @@ class RoVDraftPredictor:
         probs: np.ndarray,
         needed_lanes: set[str],
         penalty: float = 0.05,
+        pool_lanes_by_id: dict[int, set[str]] | None = None,
     ) -> np.ndarray:
-        """Down-weight heroes whose primary lane is not in `needed_lanes` and re-normalize."""
+        """Down-weight heroes whose primary (or Hero Pool) lane is not in `needed_lanes` and re-normalize."""
         if not needed_lanes or len(needed_lanes) >= len(ALL_LANE_KEYS):
             return probs
-        filtered = probs.copy()
-        for idx, lk in enumerate(self._lane_key):
-            if lk not in needed_lanes:
-                filtered[idx] *= penalty
+        mask_map = getattr(self, "_lane_hero_mask", None)
+        if mask_map is not None:
+            keep = np.zeros(len(self._lane_key), dtype=np.bool_)
+            for lk in needed_lanes:
+                mask = mask_map.get(lk)
+                if mask is not None:
+                    keep |= mask
+        else:
+            keep = np.array([lk in needed_lanes for lk in self._lane_key], dtype=np.bool_)
+        if pool_lanes_by_id:
+            for idx, p_lanes in pool_lanes_by_id.items():
+                keep[idx] = bool(p_lanes & needed_lanes)
+        filtered = np.where(keep, probs, probs * penalty)
         total = float(filtered.sum())
         if total > 0:
             filtered = filtered / total * float(probs.sum())
@@ -986,6 +1024,9 @@ class RoVDraftPredictor:
             len(blue_bans),
             len(red_bans),
         )
+        win_heroes_resolved = (
+            list(dict.fromkeys(self.resolve_heroes(req.series_winning_heroes))) if req.series_winning_heroes else []
+        )
         main_input = self._model_input(
             ally_picks,
             enemy_picks,
@@ -1003,7 +1044,7 @@ class RoVDraftPredictor:
             teams,
             {"blue": blue_effective_gb, "red": red_effective_gb},
             league=req.league,
-            series_winning_heroes=req.series_winning_heroes,
+            series_winning_heroes=win_heroes_resolved,
             pick_lanes_by_side=pick_lanes_by_side,
         )
         ap_row, ep_row, unavail_row = arrays[0][0], arrays[1][0], arrays[4][0]
@@ -1029,9 +1070,38 @@ class RoVDraftPredictor:
             acting_final_win = (1.0 - red_final_win) if req.side == "blue" else red_final_win
             win_probs = np.full(len(self.hero_names), acting_final_win, dtype=np.float32)
 
-        ally_needed_lanes = self._needed_lanes_for_picks(ally_picks, ap_row, explicit_lanes=ally_pick_lanes)
+        has_pool_input = bool(req.ally_pool or req.enemy_pool or req.ally_pool_lanes)
+        if req.pool_mode is not None:
+            effective_pool_mode = req.pool_mode
+        elif req.pool_only:
+            effective_pool_mode = "high"
+        elif has_pool_input:
+            effective_pool_mode = "low"
+        else:
+            effective_pool_mode = "off"
+
+        pool_hero_lanes = (
+            self._resolve_pool_hero_lanes(req.ally_pool_lanes)
+            if (req.mode == "pick" and effective_pool_mode != "off")
+            else {}
+        )
+        pool_lanes_by_id = {self.hero_to_id[h]: lanes for h, lanes in pool_hero_lanes.items() if h in self.hero_to_id}
+
+        ally_needed_lanes = self._needed_lanes_for_picks(
+            ally_picks,
+            ap_row,
+            explicit_lanes=ally_pick_lanes,
+            pool_hero_lanes=pool_hero_lanes,
+        )
         enemy_needed_lanes = self._needed_lanes_for_picks(enemy_picks, ep_row, explicit_lanes=enemy_pick_lanes)
         target_needed_lanes = ally_needed_lanes if req.mode == "pick" else enemy_needed_lanes
+
+        def hero_fits_needed_lanes(h_idx: int) -> bool:
+            if not target_needed_lanes or len(target_needed_lanes) >= len(ALL_LANE_KEYS):
+                return True
+            if req.mode == "pick" and h_idx in pool_lanes_by_id:
+                return bool(pool_lanes_by_id[h_idx] & target_needed_lanes)
+            return self._lane_key[h_idx] in target_needed_lanes
 
         # Outcome-weighted policy modulation:
         # 1. Weight pick policy by predicted win-value advantage so outdraft/comfort-trap picks are penalized
@@ -1040,8 +1110,8 @@ class RoVDraftPredictor:
             probs = probs * np.exp(0.60 * win_adv)
 
         # 2. In-series winner adaptation boost (steal-pick / target-ban heroes that won earlier games in the series)
-        if req.series_winning_heroes:
-            for h_win in set(self.resolve_heroes(req.series_winning_heroes)):
+        if win_heroes_resolved:
+            for h_win in win_heroes_resolved:
                 h_id = self.hero_to_id[h_win]
                 if not unavail_row[h_id]:
                     probs[h_id] *= 1.12
@@ -1050,10 +1120,60 @@ class RoVDraftPredictor:
         if total_p > 0:
             probs = probs / total_p
 
-        probs = self._apply_lane_filter(probs, target_needed_lanes)
+        probs = self._apply_lane_filter(
+            probs,
+            target_needed_lanes,
+            pool_lanes_by_id=pool_lanes_by_id if req.mode == "pick" else None,
+        )
+
+        # 3. Hero Pool prioritization (HIGH = strict pool filter in pick/ban mode, LOW = mixture prior boost, OFF = pure meta)
+        raw_pool = req.ally_pool if req.mode == "pick" else req.enemy_pool
+        pool_only_active = False
+        active_pool_ids: list[int] = []
+        if effective_pool_mode != "off" and (raw_pool or (req.mode == "pick" and pool_lanes_by_id)):
+            resolved_pool = self.resolve_heroes(raw_pool) if raw_pool else []
+            ordered_ids = [self.hero_to_id[h] for h in dict.fromkeys(resolved_pool)]
+            if req.mode == "pick":
+                for h_id in pool_lanes_by_id:
+                    if h_id not in ordered_ids:
+                        ordered_ids.append(h_id)
+            active_pool_ids = [h_id for h_id in ordered_ids if not unavail_row[h_id]]
+
+        needed_pool_ids = (
+            [h_id for h_id in active_pool_ids if hero_fits_needed_lanes(h_id)]
+            if req.mode == "pick" and target_needed_lanes
+            else active_pool_ids
+        )
+
+        if effective_pool_mode != "off" and active_pool_ids:
+            if effective_pool_mode == "high":
+                # Pick mode: restrict strictly to pool heroes fitting a missing lane (graceful open-lane fallback).
+                # Ban mode: restrict strictly to available enemy_pool target-ban candidates.
+                strict_ids = needed_pool_ids if req.mode == "pick" else active_pool_ids
+                if strict_ids:
+                    pool_only_active = True
+                    masked = np.zeros_like(probs)
+                    for h_id in strict_ids:
+                        masked[h_id] = max(float(probs[h_id]), 1e-9)
+                    masked_total = float(masked.sum())
+                    if masked_total > 0:
+                        probs = masked / masked_total
+            else:
+                boost_ids = needed_pool_ids if (req.mode == "pick" and target_needed_lanes) else active_pool_ids
+                if boost_ids:
+                    pool_dist = np.zeros_like(probs)
+                    for h_id in boost_ids:
+                        pool_dist[h_id] = max(float(probs[h_id]), 1e-9) ** 0.35
+                    pool_total = float(pool_dist.sum())
+                    if pool_total > 0:
+                        pool_dist = pool_dist / pool_total
+                        probs = 0.75 * probs + 0.25 * pool_dist
+                        mixed_total = float(probs.sum())
+                        if mixed_total > 0:
+                            probs = probs / mixed_total
 
         def is_needed_lane(h_idx: int) -> int:
-            return int(not target_needed_lanes or self._lane_key[h_idx] in target_needed_lanes)
+            return int(hero_fits_needed_lanes(h_idx))
 
         missing_lanes = [label for label in LANE_LABELS if label.split(" ")[0] in ally_needed_lanes]
 
@@ -1083,15 +1203,6 @@ class RoVDraftPredictor:
             b_b = tuple(ids[h] for h in blue_bans)
             r_b = tuple(ids[h] for h in red_bans)
 
-            step_idx = self.search_engine.find_matching_step(
-                side_val,
-                act_type,
-                req.phase,
-                len(b_p),
-                len(r_p),
-                len(b_b),
-                len(r_b),
-            )
             root_state = DraftSearchState(
                 blue_picks=b_p,
                 red_picks=r_p,
@@ -1100,7 +1211,7 @@ class RoVDraftPredictor:
                 global_bans=tuple(ids[h] for h in global_bans),
                 blue_global_bans=tuple(ids[h] for h in blue_gb),
                 red_global_bans=tuple(ids[h] for h in red_gb),
-                series_winning_heroes=tuple(ids[h] for h in set(self.resolve_heroes(req.series_winning_heroes))),
+                series_winning_heroes=tuple(ids[h] for h in win_heroes_resolved if h in ids),
                 blue_pick_lanes=tuple(sorted(pick_lanes_by_side["blue"].items())),
                 red_pick_lanes=tuple(sorted(pick_lanes_by_side["red"].items())),
                 step_idx=step_idx,
@@ -1112,6 +1223,9 @@ class RoVDraftPredictor:
                 search_pool,
                 depth=req.lookahead_depth,
                 branch_factor=5,
+                root_win_probs=win_probs,
+                pool_hero_lanes=pool_hero_lanes if req.mode == "pick" else None,
+                pool_lanes_by_id=pool_lanes_by_id if req.mode == "pick" else None,
             )
 
             # Re-rank candidates by blending policy prior and adversarial lookahead win rate,
@@ -1126,7 +1240,8 @@ class RoVDraftPredictor:
         else:
             top_indices = avail_sorted[: req.top_k]
 
-        top_indices = self._ensure_lane_quota(top_indices, avail_sorted, req.top_k)
+        if not pool_only_active:
+            top_indices = self._ensure_lane_quota(top_indices, avail_sorted, req.top_k)
 
         recs: list[HeroRecommendation] = []
         for rank_idx, h_idx in enumerate(top_indices, start=1):

@@ -1,9 +1,9 @@
 import { useLanguage } from "../i18n/language";
 import { StableButtonLabel } from "./StableButtonLabel";
 import { Flame, Loader2, Sparkles, Trophy } from "lucide-react";
-import { useState } from "react";
-import type { DraftStep, Hero, HeroRecommendation } from "../types/draft";
-import { LANE_SHORT, laneKey, missingLaneKeys } from "../utils/draft";
+import { memo, useMemo, useState } from "react";
+import type { DraftStep, Hero, HeroRecommendation, LaneKey } from "../types/draft";
+import { LANE_SHORT, heroFitsLaneSet, heroLanes, laneKey, missingLaneKeys } from "../utils/draft";
 import { displayName } from "../utils/heroNames";
 import { HeroPortrait } from "./HeroPortrait";
 import { LaneIcon } from "./LaneIcon";
@@ -29,6 +29,12 @@ interface AiPanelProps {
   allowLock?: boolean;
   onLockHero: (name: string) => void;
   variant?: "full" | "ribbon";
+  allyPoolName?: string;
+  allyPoolHeroes?: Set<string>;
+  allyPoolHeroLanes?: Map<string, Set<LaneKey>>;
+  enemyPoolName?: string;
+  enemyPoolHeroes?: Set<string>;
+  filterByAllyPool?: boolean;
 }
 
 function Sparkline({ values }: { values: number[] }) {
@@ -52,7 +58,7 @@ function Sparkline({ values }: { values: number[] }) {
   );
 }
 
-export function AiPanel({
+export const AiPanel = memo(function AiPanel({
   recommendations,
   banUnlockedHeroes = [],
   missingAllyLanes,
@@ -64,6 +70,12 @@ export function AiPanel({
   allowLock = true,
   onLockHero,
   variant = "full",
+  allyPoolName,
+  allyPoolHeroes,
+  allyPoolHeroLanes,
+  enemyPoolName,
+  enemyPoolHeroes,
+  filterByAllyPool = false,
 }: AiPanelProps) {
   const { t } = useLanguage();
   const [laneFilterState, setLaneFilterState] = useState<{ step: number | undefined; lane: string }>({
@@ -80,6 +92,56 @@ export function AiPanel({
       };
     });
   };
+
+  const isBan = currentStep?.action === "ban";
+  const sideText = currentStep?.side === "blue" ? "text-blue" : "text-red";
+  const missing = useMemo(
+    () => (isBan ? new Set<string>() : missingLaneKeys(missingAllyLanes)),
+    [isBan, missingAllyLanes],
+  );
+  const effectivePickPoolLanes = isBan ? undefined : allyPoolHeroLanes;
+
+  const { shown, maxProb } = useMemo(() => {
+    const targetPoolHeroes = isBan ? enemyPoolHeroes : allyPoolHeroes;
+    const poolMatches =
+      filterByAllyPool && targetPoolHeroes && targetPoolHeroes.size > 0
+        ? recommendations.filter((r) => targetPoolHeroes.has(r.hero_name))
+        : [];
+    const poolFiltered = poolMatches.length > 0 ? poolMatches : recommendations;
+    let filteredRecs: HeroRecommendation[];
+    if (selectedLane === "ALL") {
+      const missingMatches =
+        !isBan && missing.size > 0 && missing.size < 5
+          ? poolFiltered.filter((r) => heroFitsLaneSet(r.hero_name, r.primary_lane, missing, effectivePickPoolLanes))
+          : poolFiltered;
+      const baseList = missingMatches.length > 0 ? missingMatches : poolFiltered;
+      filteredRecs = baseList.map((r, i) => ({ ...r, rank: i + 1 }));
+    } else {
+      filteredRecs = poolFiltered
+        .filter((r) => {
+          if (effectivePickPoolLanes?.get(r.hero_name)?.has(selectedLane as LaneKey)) return true;
+          if (laneKey(r.primary_lane) === selectedLane) return true;
+          const h = heroMap.get(r.hero_name);
+          return Boolean(h && heroLanes(h.lane).includes(selectedLane));
+        })
+        .map((r, i) => ({ ...r, rank: i + 1 }));
+    }
+    const nextShown = filteredRecs.slice(0, 5);
+    return {
+      shown: nextShown,
+      maxProb: Math.max(...nextShown.map((r) => r.probability_pct), 1),
+    };
+  }, [
+    isBan,
+    enemyPoolHeroes,
+    allyPoolHeroes,
+    filterByAllyPool,
+    recommendations,
+    selectedLane,
+    missing,
+    effectivePickPoolLanes,
+    heroMap,
+  ]);
 
   if (!currentStep) {
     const blueWins = blueWinRate >= 50;
@@ -115,18 +177,6 @@ export function AiPanel({
     );
   }
 
-  const isBan = currentStep.action === "ban";
-  const sideText = currentStep.side === "blue" ? "text-blue" : "text-red";
-  const missing = isBan ? new Set<string>() : missingLaneKeys(missingAllyLanes);
-  const filteredRecs =
-    selectedLane === "ALL"
-      ? recommendations
-      : recommendations
-          .filter((r) => laneKey(r.primary_lane) === selectedLane)
-          .map((r, i) => ({ ...r, rank: i + 1 }));
-  const shown = filteredRecs.slice(0, 5);
-  const maxProb = Math.max(...shown.map((r) => r.probability_pct), 1);
-
   if (variant === "ribbon") {
     return (
       <section className="flex shrink-0 items-center gap-1.5 border border-line bg-panel px-2 py-1">
@@ -155,7 +205,11 @@ export function AiPanel({
                 const hero = heroMap.get(rec.hero_name);
                 const win = rec.lookahead_win_rate_pct ?? rec.predicted_win_rate_pct;
                 const lane = laneKey(rec.primary_lane);
-                const fillsLane = missing.size < 5 && missing.has(lane);
+                const fillsLane =
+                  !isBan &&
+                  missing.size > 0 &&
+                  missing.size < 5 &&
+                  heroFitsLaneSet(rec.hero_name, rec.primary_lane, missing, effectivePickPoolLanes);
                 return (
                   <button
                     type="button"
@@ -180,6 +234,16 @@ export function AiPanel({
                     <span className="max-w-[68px] truncate font-display text-[10.5px] font-bold text-ink">
                       {displayName(rec.hero_name)}
                     </span>
+                    {!isBan && allyPoolHeroes?.has(rec.hero_name) && (
+                      <span className="border border-gold/60 bg-gold/15 px-1 font-mono text-[8px] font-bold text-gold">
+                        POOL
+                      </span>
+                    )}
+                    {isBan && enemyPoolHeroes?.has(rec.hero_name) && (
+                      <span className="border border-red/60 bg-red/15 px-1 font-mono text-[8px] font-bold text-red">
+                        {enemyPoolName ? enemyPoolName : "TARGET"}
+                      </span>
+                    )}
                     <span
                       className={`font-mono text-[9px] font-semibold ${
                         fillsLane || win >= 50 ? "text-good" : "text-muted"
@@ -313,9 +377,12 @@ export function AiPanel({
         )}
         {shown.map((rec, idx) => {
           const hero = heroMap.get(rec.hero_name);
-          const win = rec.lookahead_win_rate_pct ?? rec.predicted_win_rate_pct;
           const lane = laneKey(rec.primary_lane);
-          const fillsLane = missing.size < 5 && missing.has(lane);
+          const fillsLane =
+            !isBan &&
+            missing.size > 0 &&
+            missing.size < 5 &&
+            heroFitsLaneSet(rec.hero_name, rec.primary_lane, missing, effectivePickPoolLanes);
           const triggerNames = (rec.triggered_by ?? []).map(displayName);
           const triggerTitle =
             rec.trigger_reason === "counter"
@@ -352,7 +419,7 @@ export function AiPanel({
                   idx === 0 ? "bg-gold/[0.04]" : ""
                 }`}
               >
-                {/* 1. Desktop Layout (lg+): Vertical Stack, Full-Width Trigger Badge & 2-Tier Metrics */}
+                {/* 1. Desktop Layout (lg+): Vertical Stack, Full-Width Trigger Badge & Probability Bar */}
                 <div className="hidden w-full min-w-0 flex-col items-center gap-1 lg:flex xl:gap-1.5">
                   {/* Portrait + Rank */}
                   <div
@@ -387,6 +454,16 @@ export function AiPanel({
                   </div>
 
                   {/* Full-width Trigger Badge */}
+                  {!isBan && allyPoolHeroes?.has(rec.hero_name) && (
+                    <span className="w-full truncate border border-gold/60 bg-gold/10 px-1 py-0.2 text-center font-mono text-[8.5px] font-bold text-gold">
+                      POOL{allyPoolName ? ` · ${allyPoolName}` : ""}
+                    </span>
+                  )}
+                  {isBan && enemyPoolHeroes?.has(rec.hero_name) && (
+                    <span className="w-full truncate border border-red/60 bg-red/10 px-1 py-0.2 text-center font-mono text-[8.5px] font-bold text-red">
+                      ENEMY POOL{enemyPoolName ? ` · ${enemyPoolName}` : ""}
+                    </span>
+                  )}
                   {triggerNames.length > 0 ? (
                     <div className="w-full min-w-0" title={triggerTitle}>
                       <span
@@ -411,48 +488,10 @@ export function AiPanel({
                       {rec.probability_pct.toFixed(0)}%
                     </span>
                   </div>
-
-                  {/* 2-Tier Metrics: Tier 1 = WIN, Tier 2 = SYN & CTR (prevents overflow at 1024px) */}
-                  <div className="flex w-full min-w-0 flex-col gap-0.5 border-t border-line/60 pt-0.5 xl:pt-1">
-                    <div className="flex w-full items-baseline justify-between gap-1">
-                      <span className="font-display text-[8.5px] tracking-wider text-dim">WIN</span>
-                      <span
-                        className={`font-mono text-[11px] font-bold tabular-nums xl:text-xs ${
-                          win >= 50 ? "text-good" : "text-ink"
-                        }`}
-                      >
-                        {win.toFixed(1)}%
-                      </span>
-                    </div>
-                    <div className="flex w-full min-w-0 items-center justify-between gap-1 font-mono text-[9.5px] tabular-nums xl:text-[10.5px]">
-                      <span className="truncate">
-                        <span className="font-display text-[8px] text-dim">SYN </span>
-                        <span
-                          className={
-                            rec.synergy_edge_pct > 0 ? "text-good" : rec.synergy_edge_pct < 0 ? "text-red" : "text-dim"
-                          }
-                        >
-                          {rec.synergy_edge_pct > 0 ? "+" : ""}
-                          {rec.synergy_edge_pct.toFixed(1)}
-                        </span>
-                      </span>
-                      <span className="truncate">
-                        <span className="font-display text-[8px] text-dim">CTR </span>
-                        <span
-                          className={
-                            rec.counter_edge_pct > 0 ? "text-good" : rec.counter_edge_pct < 0 ? "text-red" : "text-dim"
-                          }
-                        >
-                          {rec.counter_edge_pct > 0 ? "+" : ""}
-                          {rec.counter_edge_pct.toFixed(1)}
-                        </span>
-                      </span>
-                    </div>
-                  </div>
                 </div>
 
-                {/* 2. Mobile & Tablet Layout (<lg): Horizontal Row with Stacked Right Metrics */}
-                <div className="flex w-full min-w-0 items-center justify-between gap-2.5 lg:hidden">
+                {/* 2. Mobile & Tablet Layout (<lg): Horizontal Row */}
+                <div className="flex w-full min-w-0 items-center gap-2.5 lg:hidden">
                   <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-2.5">
                     <span className={`w-3.5 shrink-0 font-mono text-xs font-bold sm:w-4 sm:text-sm ${idx === 0 ? "text-gold" : "text-dim"}`}>
                       {rec.rank}
@@ -470,6 +509,16 @@ export function AiPanel({
                         <span className="truncate font-display text-sm font-bold leading-tight tracking-wide sm:text-base">
                           {displayName(rec.hero_name)}
                         </span>
+                        {!isBan && allyPoolHeroes?.has(rec.hero_name) && (
+                          <span className="shrink-0 border border-gold/60 bg-gold/10 px-1 font-mono text-[8.5px] font-bold text-gold">
+                            POOL
+                          </span>
+                        )}
+                        {isBan && enemyPoolHeroes?.has(rec.hero_name) && (
+                          <span className="shrink-0 border border-red/60 bg-red/10 px-1 font-mono text-[8.5px] font-bold text-red">
+                            {enemyPoolName ? enemyPoolName : "TARGET"}
+                          </span>
+                        )}
                         <span
                           className={`inline-flex shrink-0 items-center gap-1 font-mono text-[9.5px] font-bold sm:text-[10px] ${
                             fillsLane ? "border border-good/50 bg-good/10 p-0.5 text-good sm:px-1 sm:py-0" : "text-muted"
@@ -512,45 +561,6 @@ export function AiPanel({
                       </div>
                     </div>
                   </div>
-
-                  {/* Right Stacked Metrics (WIN on top, SYN · CTR below) */}
-                  <div className="flex shrink-0 flex-col items-end justify-center gap-0.5 text-right">
-                    <div className="flex items-baseline gap-1">
-                      <span className="font-display text-[9px] tracking-wider text-dim">WIN</span>
-                      <span
-                        className={`font-mono text-xs font-bold tabular-nums sm:text-sm ${
-                          win >= 50 ? "text-good" : "text-ink"
-                        }`}
-                      >
-                        {win.toFixed(1)}%
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1 font-mono text-[10px] tabular-nums sm:text-[10.5px]">
-                      <span>
-                        <span className="font-display text-[8px] text-dim">SYN </span>
-                        <span
-                          className={
-                            rec.synergy_edge_pct > 0 ? "text-good" : rec.synergy_edge_pct < 0 ? "text-red" : "text-dim"
-                          }
-                        >
-                          {rec.synergy_edge_pct > 0 ? "+" : ""}
-                          {rec.synergy_edge_pct.toFixed(1)}
-                        </span>
-                      </span>
-                      <span className="text-line-strong">·</span>
-                      <span>
-                        <span className="font-display text-[8px] text-dim">CTR </span>
-                        <span
-                          className={
-                            rec.counter_edge_pct > 0 ? "text-good" : rec.counter_edge_pct < 0 ? "text-red" : "text-dim"
-                          }
-                        >
-                          {rec.counter_edge_pct > 0 ? "+" : ""}
-                          {rec.counter_edge_pct.toFixed(1)}
-                        </span>
-                      </span>
-                    </div>
-                  </div>
                 </div>
               </button>
             </li>
@@ -569,4 +579,4 @@ export function AiPanel({
       )}
     </section>
   );
-}
+});

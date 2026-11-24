@@ -12,7 +12,7 @@ import {
   heroOriginGameMap,
   redTeamName,
   redUsedHeroes,
-  resolveSeriesName,
+  resolveSeriesKey,
 } from "../../utils/draft";
 import { displayName } from "../../utils/heroNames";
 import { Alert } from "../Alert";
@@ -136,7 +136,7 @@ export function MetaLab({
   const redCategoryKey: GlobalBanCategoryKey = globalBans.blueSideTeam === "A" ? "teamBUsed" : "teamAUsed";
 
   const originMap = useMemo(
-    () => heroOriginGameMap(seriesGames, resolveSeriesName(globalBans)),
+    () => heroOriginGameMap(seriesGames, resolveSeriesKey(globalBans)),
     [seriesGames, globalBans],
   );
   const blueOriginGames = globalBans.blueSideTeam === "A" ? originMap.teamAGameByHero : originMap.teamBGameByHero;

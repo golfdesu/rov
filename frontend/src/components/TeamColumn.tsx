@@ -1,7 +1,7 @@
 import { StableButtonLabel } from "./StableButtonLabel";
 import { useLanguage } from "../i18n/language";
 import { Ban, ClockAlert, Layers, Plus, X } from "lucide-react";
-import type { KeyboardEvent } from "react";
+import { type KeyboardEvent, memo } from "react";
 import type { DraftStep, Hero, HeroRecommendation, LaneKey } from "../types/draft";
 import { type DraftSlot, LANE_SHORT, laneKey } from "../utils/draft";
 import { displayName } from "../utils/heroNames";
@@ -23,6 +23,7 @@ interface TeamColumnProps {
   usedHeroOriginGames?: Record<string, number>;
   rawUsedCount?: number;
   gameNumber?: number;
+  poolLaneStats?: { lane: LaneKey; remaining: number; total: number }[];
   heroMap: Map<string, Hero>;
   currentStep: DraftStep | null;
   predictedNextPicks?: HeroRecommendation[];
@@ -64,7 +65,7 @@ function ConflictOutline() {
   );
 }
 
-export function TeamColumn({
+export const TeamColumn = memo(function TeamColumn({
   side,
   teamName,
   picks,
@@ -79,6 +80,7 @@ export function TeamColumn({
   usedHeroOriginGames = {},
   rawUsedCount = 0,
   gameNumber = 1,
+  poolLaneStats = [],
   heroMap,
   currentStep,
   predictedNextPicks = [],
@@ -698,116 +700,144 @@ export function TeamColumn({
         })}
       </div>
 
-      {/* On-Board Global Ban */}
-      {(onOpenGlobalBanForTeam || gameNumber > 1 || usedHeroes.length > 0) && <div
-        className={`flex shrink-0 flex-col overflow-hidden border bg-panel/90 p-1.5 sm:p-2 ${
-          isBlue ? "border-blue/35" : "border-red/35"
-        }`}
-      >
-        <div className="mb-1.5 flex min-w-0 items-center justify-between gap-1.5">
-          <div className="flex min-w-0 flex-1 items-center gap-1 sm:gap-1.5">
-            <Layers className={`h-3.5 w-3.5 shrink-0 ${accent}`} />
-            <span className="truncate font-display text-[10px] font-bold tracking-wide text-ink sm:text-[11px]">
-              <span className="xl:hidden">GLOBAL BAN</span>
-              <span className="hidden xl:inline">GLOBAL BAN · {teamName}</span>
-            </span>
-            <span
-              className={`shrink-0 px-1 py-0.5 font-mono text-[9px] font-bold sm:px-1.5 sm:text-[10px] ${
-                usedHeroes.length > 0
-                  ? isBlue
-                    ? "bg-blue/20 text-blue"
-                    : "bg-red/20 text-red"
-                  : "bg-panel-2 text-dim"
-              }`}
-            >
-              {usedHeroes.length}
-            </span>
-          </div>
-
-          {onOpenGlobalBanForTeam && (
-            <button
-              type="button"
-              disabled={isReplaceLocked}
-              onClick={onOpenGlobalBanForTeam}
-              className={`flex min-h-6 shrink-0 items-center gap-1 border px-1.5 py-0.5 font-display text-[10px] font-bold tracking-wide transition-colors disabled:cursor-not-allowed disabled:opacity-45 sm:px-2 ${
-                isBlue
-                  ? "border-blue/50 bg-blue/10 text-blue hover:bg-blue hover:text-ink"
-                  : "border-red/50 bg-red/10 text-red hover:bg-red hover:text-ink"
-              }`}
-            >
-              <Plus className="h-3 w-3 shrink-0" />
-              <span className="hidden xl:inline"><StableButtonLabel message="เลือกตัวที่เคยใช้" /></span>
-              <span className="xl:hidden"><StableButtonLabel message="เลือก" /></span>
-            </button>
-          )}
-        </div>
-
-        {gameNumber === 7 ? (
-          <div className="truncate border border-gold/40 bg-gold/10 px-1.5 py-1 text-center font-display text-[10px] font-semibold text-gold sm:text-[11px]">
-            <span className="xl:hidden">{t("G7 ULTIMATE · ปลดล็อก (")}{rawUsedCount})</span>
-            <span className="hidden xl:inline">{t("GAME 7 ULTIMATE BATTLE · ปลดล็อก (")}{rawUsedCount})</span>
-          </div>
-        ) : usedHeroes.length === 0 ? (
-          onOpenGlobalBanForTeam ? (
-            <button
-              type="button"
-              disabled={isReplaceLocked}
-              onClick={onOpenGlobalBanForTeam}
-              className="flex w-full min-w-0 items-center justify-center gap-1 border border-dashed border-line px-1.5 py-1.5 text-[10px] text-dim transition-colors hover:border-line-strong hover:bg-panel-2/50 hover:text-ink disabled:cursor-not-allowed disabled:opacity-45 sm:text-[11px]"
-            >
-              <Plus className="h-3 w-3 shrink-0" />
-              <span className="truncate"><StableButtonLabel message="เลือกฮีโร่ที่" /> {teamName} <StableButtonLabel message="ใช้แล้ว" /></span>
-            </button>
-          ) : (
-            <div className="flex w-full min-w-0 items-center justify-center border border-dashed border-line px-1.5 py-1.5 text-[10px] text-dim sm:text-[11px]">
-              <span className="truncate">{t("ไม่มีตัวที่เลือก")}</span>
-            </div>
-          )
-        ) : (
-          <div className="flex max-h-[76px] flex-wrap gap-1 overflow-y-auto pr-0.5">
-            {usedHeroes.map((name) => {
-              const hero = heroMap.get(name);
-              const originGame = usedHeroOriginGames[name];
-              if (!onRemoveUsedHero) {
-                return (
-                  <div
-                    key={name}
-                    title={`${displayName(name)} (${teamName}${originGame ? ` · Game ${originGame}` : ""})`}
-                    className="flex max-w-full items-center gap-1 border border-line-strong bg-bg py-0.5 pr-1.5 pl-0.5 text-[10px] text-muted sm:text-[11px]"
-                  >
-                    <div className="h-4.5 w-4.5 shrink-0 overflow-hidden sm:h-5 sm:w-5">
-                      <HeroPortrait name={name} hero={hero} className="grayscale" />
-                    </div>
-                    <span className="max-w-[56px] truncate font-medium sm:max-w-[68px]">{displayName(name)}</span>
-                    {originGame !== undefined && (
-                      <span className="shrink-0 font-mono text-[9px] font-bold text-gold/80">G{originGame}</span>
-                    )}
+      {/* On-Board Global Ban & Hero Pool Summary */}
+      {(onOpenGlobalBanForTeam || gameNumber > 1 || usedHeroes.length > 0 || poolLaneStats.length > 0) && (() => {
+        const showGlobalBanSection = Boolean(onOpenGlobalBanForTeam || gameNumber > 1 || usedHeroes.length > 0);
+        return (
+          <div
+            className={`flex shrink-0 flex-col overflow-hidden border bg-panel/90 p-1.5 sm:p-2 ${
+              isBlue ? "border-blue/35" : "border-red/35"
+            }`}
+          >
+            {showGlobalBanSection && (
+              <>
+                <div className="mb-1.5 flex min-w-0 items-center justify-between gap-1.5">
+                  <div className="flex min-w-0 flex-1 items-center gap-1 sm:gap-1.5">
+                    <Layers className={`h-3.5 w-3.5 shrink-0 ${accent}`} />
+                    <span className="truncate font-display text-[10px] font-bold tracking-wide text-ink sm:text-[11px]">
+                      <span className="xl:hidden">GLOBAL BAN</span>
+                      <span className="hidden xl:inline">GLOBAL BAN · {teamName}</span>
+                    </span>
+                    <span
+                      className={`shrink-0 px-1 py-0.5 font-mono text-[9px] font-bold sm:px-1.5 sm:text-[10px] ${
+                        usedHeroes.length > 0
+                          ? isBlue
+                            ? "bg-blue/20 text-blue"
+                            : "bg-red/20 text-red"
+                          : "bg-panel-2 text-dim"
+                      }`}
+                    >
+                      {usedHeroes.length}
+                    </span>
                   </div>
-                );
-              }
-              return (
-                <button
-                  key={name}
-                  type="button"
-                  disabled={isReplaceLocked}
-                  onClick={() => onRemoveUsedHero(name)}
-                  title={t("{0} ({1} ใช้แล้ว{2} — คลิกเพื่อนำออก)", displayName(name), teamName, originGame ? t("ใน Game {0}", originGame) : "")}
-                  className="group flex max-w-full items-center gap-1 border border-line-strong bg-bg py-0.5 pr-1.5 pl-0.5 text-[10px] text-muted transition-colors hover:border-red/60 hover:bg-red/10 hover:text-ink disabled:cursor-not-allowed disabled:opacity-45 sm:text-[11px]"
-                >
-                  <div className="h-4.5 w-4.5 shrink-0 overflow-hidden sm:h-5 sm:w-5">
-                    <HeroPortrait name={name} hero={hero} className="grayscale group-hover:grayscale-0" />
-                  </div>
-                  <span className="max-w-[56px] truncate font-medium sm:max-w-[68px]">{displayName(name)}</span>
-                  {originGame !== undefined && (
-                    <span className="shrink-0 font-mono text-[9px] font-bold text-gold/80">G{originGame}</span>
+
+                  {onOpenGlobalBanForTeam && (
+                    <button
+                      type="button"
+                      disabled={isReplaceLocked}
+                      onClick={onOpenGlobalBanForTeam}
+                      className={`flex min-h-6 shrink-0 items-center gap-1 border px-1.5 py-0.5 font-display text-[10px] font-bold tracking-wide transition-colors disabled:cursor-not-allowed disabled:opacity-45 sm:px-2 ${
+                        isBlue
+                          ? "border-blue/50 bg-blue/10 text-blue hover:bg-blue hover:text-ink"
+                          : "border-red/50 bg-red/10 text-red hover:bg-red hover:text-ink"
+                      }`}
+                    >
+                      <Plus className="h-3 w-3 shrink-0" />
+                      <span className="hidden xl:inline"><StableButtonLabel message="เลือกตัวที่เคยใช้" /></span>
+                      <span className="xl:hidden"><StableButtonLabel message="เลือก" /></span>
+                    </button>
                   )}
-                  <X className="h-2.5 w-2.5 shrink-0 text-dim group-hover:text-red" />
-                </button>
-              );
-            })}
+                </div>
+
+                {gameNumber === 7 ? (
+                  <div className="truncate border border-gold/40 bg-gold/10 px-1.5 py-1 text-center font-display text-[10px] font-semibold text-gold sm:text-[11px]">
+                    <span className="xl:hidden">{t("G7 ULTIMATE · ปลดล็อก (")}{rawUsedCount})</span>
+                    <span className="hidden xl:inline">{t("GAME 7 ULTIMATE BATTLE · ปลดล็อก (")}{rawUsedCount})</span>
+                  </div>
+                ) : usedHeroes.length === 0 ? (
+                  onOpenGlobalBanForTeam ? (
+                    <button
+                      type="button"
+                      disabled={isReplaceLocked}
+                      onClick={onOpenGlobalBanForTeam}
+                      className="flex w-full min-w-0 items-center justify-center gap-1 border border-dashed border-line px-1.5 py-1.5 text-[10px] text-dim transition-colors hover:border-line-strong hover:bg-panel-2/50 hover:text-ink disabled:cursor-not-allowed disabled:opacity-45 sm:text-[11px]"
+                    >
+                      <Plus className="h-3 w-3 shrink-0" />
+                      <span className="truncate"><StableButtonLabel message="เลือกฮีโร่ที่" /> {teamName} <StableButtonLabel message="ใช้แล้ว" /></span>
+                    </button>
+                  ) : (
+                    <div className="flex w-full min-w-0 items-center justify-center border border-dashed border-line px-1.5 py-1.5 text-[10px] text-dim sm:text-[11px]">
+                      <span className="truncate">{t("ไม่มีตัวที่เลือก")}</span>
+                    </div>
+                  )
+                ) : (
+                  <div className="flex max-h-[76px] flex-wrap gap-1 overflow-y-auto pr-0.5">
+                    {usedHeroes.map((name) => {
+                      const hero = heroMap.get(name);
+                      const originGame = usedHeroOriginGames[name];
+                      if (!onRemoveUsedHero) {
+                        return (
+                          <div
+                            key={name}
+                            title={`${displayName(name)} (${teamName}${originGame ? ` · Game ${originGame}` : ""})`}
+                            className="flex max-w-full items-center gap-1 border border-line-strong bg-bg py-0.5 pr-1.5 pl-0.5 text-[10px] text-muted sm:text-[11px]"
+                          >
+                            <div className="h-4.5 w-4.5 shrink-0 overflow-hidden sm:h-5 sm:w-5">
+                              <HeroPortrait name={name} hero={hero} className="grayscale" />
+                            </div>
+                            <span className="max-w-[56px] truncate font-medium sm:max-w-[68px]">{displayName(name)}</span>
+                            {originGame !== undefined && (
+                              <span className="shrink-0 font-mono text-[9px] font-bold text-gold/80">G{originGame}</span>
+                            )}
+                          </div>
+                        );
+                      }
+                      return (
+                        <button
+                          key={name}
+                          type="button"
+                          disabled={isReplaceLocked}
+                          onClick={() => onRemoveUsedHero(name)}
+                          title={t("{0} ({1} ใช้แล้ว{2} — คลิกเพื่อนำออก)", displayName(name), teamName, originGame ? t("ใน Game {0}", originGame) : "")}
+                          className="group flex max-w-full items-center gap-1 border border-line-strong bg-bg py-0.5 pr-1.5 pl-0.5 text-[10px] text-muted transition-colors hover:border-red/60 hover:bg-red/10 hover:text-ink disabled:cursor-not-allowed disabled:opacity-45 sm:text-[11px]"
+                        >
+                          <div className="h-4.5 w-4.5 shrink-0 overflow-hidden sm:h-5 sm:w-5">
+                            <HeroPortrait name={name} hero={hero} className="grayscale group-hover:grayscale-0" />
+                          </div>
+                          <span className="max-w-[56px] truncate font-medium sm:max-w-[68px]">{displayName(name)}</span>
+                          {originGame !== undefined && (
+                            <span className="shrink-0 font-mono text-[9px] font-bold text-gold/80">G{originGame}</span>
+                          )}
+                          <X className="h-2.5 w-2.5 shrink-0 text-dim group-hover:text-red" />
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
+            )}
+
+            {poolLaneStats.length > 0 && (
+              <div
+                title={t("Hero Pool คงเหลือของ {0}", teamName)}
+                className={`flex flex-wrap items-center gap-1 ${showGlobalBanSection ? "mt-1.5 border-t border-gold/25 pt-1.5" : ""}`}
+              >
+                <span className="font-mono text-[9px] font-bold tracking-wider text-gold">POOL</span>
+                {poolLaneStats.map(({ lane, remaining, total }) => (
+                  <span
+                    key={lane}
+                    className={`border px-1 py-0.5 font-mono text-[9.5px] leading-none ${
+                      remaining <= 1 ? "border-red/60 bg-red/10 text-red" : "border-line bg-bg text-ink"
+                    }`}
+                  >
+                    {LANE_SHORT[lane]?.en ?? lane} {remaining}/{total}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>}
+        );
+      })()}
     </section>
   );
-}
+});

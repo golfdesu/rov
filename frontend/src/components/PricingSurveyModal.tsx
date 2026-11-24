@@ -76,7 +76,7 @@ export function PricingSurveyModal({
   return (
     <Modal
       labelledBy={titleId}
-      className="max-w-sm border-gold/40"
+      className="max-w-sm border-gold/40 pricing-survey-modal"
       isClosing={isClosing}
       onClose={busy || isClosing ? () => {} : handleRequestSnooze}
     >

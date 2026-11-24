@@ -8,7 +8,8 @@ import {
   getGameUnlockStatus,
   getMaxUnlockedGame,
   heroOriginGameMap,
-  resolveSeriesName,
+  resolveSeriesBaseName,
+  resolveSeriesKey,
   ROLES,
   syncSeriesGlobalBans,
 } from "../utils/draft";
@@ -23,6 +24,7 @@ interface GlobalBanModalProps {
   heroMap: Map<string, Hero>;
   globalBans: GlobalBanState;
   seriesGames?: RecordedDraftGame[];
+  fromTeamHistory?: boolean;
   activeBoardHeroes?: ReadonlySet<string>;
   initialCategory?: GlobalBanCategoryKey;
   onChange: (next: GlobalBanState) => void;
@@ -43,11 +45,15 @@ const MAX_TEAM_GLOBAL_BANS = 30;
 const MAX_UNIVERSAL_BANS = 20;
 const MAX_EFFECTIVE_MASKED_BANS = 40;
 
+const TEAM_NAME_MAX_LENGTH = 32;
+const HERO_COLLATOR = new Intl.Collator(undefined, { sensitivity: "base" });
+
 export function GlobalBanModal({
   heroes,
   heroMap,
   globalBans,
   seriesGames = [],
+  fromTeamHistory = false,
   activeBoardHeroes,
   initialCategory = "teamAUsed",
   onChange,
@@ -69,7 +75,7 @@ export function GlobalBanModal({
   const redNameValue = globalBans[redTeamNameField];
 
   const originMap = useMemo(
-    () => heroOriginGameMap(seriesGames, resolveSeriesName(globalBans)),
+    () => heroOriginGameMap(seriesGames, resolveSeriesKey(globalBans)),
     [seriesGames, globalBans],
   );
 
@@ -128,12 +134,22 @@ export function GlobalBanModal({
   const totalCount =
     globalBans.teamAUsed.length + globalBans.teamBUsed.length + globalBans.universalBans.length;
 
+  const sortedHeroes = useMemo(
+    () => [...heroes].sort((a, b) => HERO_COLLATOR.compare(displayName(a.name), displayName(b.name))),
+    [heroes],
+  );
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return heroes
-      .filter((h) => (!q || matchesHeroQuery(h.name, q)) && (!role || h.role === role))
-      .sort((a, b) => displayName(a.name).localeCompare(displayName(b.name)));
-  }, [heroes, query, role]);
+    return sortedHeroes.filter((h) => (!q || matchesHeroQuery(h.name, q)) && (!role || h.role === role));
+  }, [sortedHeroes, query, role]);
+
+  const gameUnlockStatuses = useMemo(
+    () => [1, 2, 3, 4, 5, 6, 7].map((g) => getGameUnlockStatus(g, globalBans, seriesGames)),
+    [globalBans, seriesGames],
+  );
+  const currentUnlockStatus = gameUnlockStatuses[globalBans.gameNumber - 1] ?? gameUnlockStatuses[0];
+  const maxUnlockedGame = useMemo(() => getMaxUnlockedGame(globalBans, seriesGames), [globalBans, seriesGames]);
 
   const toggleHero = (heroName: string) => {
     const list = globalBans[activeCategory];
@@ -170,6 +186,7 @@ export function GlobalBanModal({
   };
 
   const clearCategory = (key: GlobalBanCategoryKey) => {
+    setLimitNotice(null);
     onChange({
       ...globalBans,
       [key]: [],
@@ -184,15 +201,23 @@ export function GlobalBanModal({
   };
 
   const clearAll = () => {
+    setLimitNotice(null);
     const targetGame = globalBans.gameNumber;
     const clearedBase: GlobalBanState = {
       ...EMPTY_GLOBAL_BANS,
       seriesName: globalBans.seriesName,
+      seriesTitle: globalBans.seriesTitle,
+      seriesId: globalBans.seriesId,
+      tournament: globalBans.tournament,
       teamAName: globalBans.teamAName,
       teamBName: globalBans.teamBName,
       blueSideTeam: globalBans.blueSideTeam,
       gameNumber: targetGame,
     };
+    if (fromTeamHistory) {
+      onChange(clearedBase);
+      return;
+    }
     const syncedForCurrent = syncSeriesGlobalBans(clearedBase, seriesGames, targetGame, []);
     const candidateState: GlobalBanState = {
       ...clearedBase,
@@ -226,7 +251,7 @@ export function GlobalBanModal({
       normalized.teamAName !== globalBans.teamAName || normalized.teamBName !== globalBans.teamBName;
 
     const currentStatus = getGameUnlockStatus(normalized.gameNumber, normalized, seriesGames);
-    if (!currentStatus.isUnlocked) {
+    if (!fromTeamHistory && !currentStatus.isUnlocked) {
       const maxUnlocked = getMaxUnlockedGame(normalized, seriesGames);
       if (onSelectGameNumber) {
         onSelectGameNumber(maxUnlocked, normalized, false);
@@ -241,7 +266,7 @@ export function GlobalBanModal({
 
   const handleTeamNameChange = (field: "teamAName" | "teamBName", value: string) => {
     const anchorSeries =
-      !globalBans.seriesName && seriesGames.length > 0 ? resolveSeriesName(globalBans) : globalBans.seriesName;
+      !globalBans.seriesName && seriesGames.length > 0 ? resolveSeriesBaseName(globalBans) : globalBans.seriesName;
     onChange({
       ...globalBans,
       ...(anchorSeries !== undefined ? { seriesName: anchorSeries } : {}),
@@ -310,7 +335,7 @@ export function GlobalBanModal({
                     onChange({ ...globalBans, [blueTeamNameField]: fallback });
                   }
                 }}
-                maxLength={14}
+                maxLength={TEAM_NAME_MAX_LENGTH}
                 aria-label={t("ชื่อทีมฝั่ง Blue")}
                 className="h-7 min-w-0 flex-1 border border-line bg-bg px-1.5 font-display text-xs font-bold text-ink focus:border-blue focus:outline-none sm:w-28 sm:flex-none sm:px-2"
               />
@@ -341,7 +366,7 @@ export function GlobalBanModal({
                     onChange({ ...globalBans, [redTeamNameField]: fallback });
                   }
                 }}
-                maxLength={14}
+                maxLength={TEAM_NAME_MAX_LENGTH}
                 aria-label={t("ชื่อทีมฝั่ง Red")}
                 className="h-7 min-w-0 flex-1 border border-line bg-bg px-1.5 font-display text-xs font-bold text-ink focus:border-red focus:outline-none sm:w-28 sm:flex-none sm:px-2"
               />
@@ -351,10 +376,12 @@ export function GlobalBanModal({
               <span className="shrink-0 font-mono text-[10px] font-bold text-muted">SERIES:</span>
               <input
                 type="text"
-                value={globalBans.seriesName ?? ""}
+                value={globalBans.seriesTitle ?? globalBans.seriesName ?? ""}
                 placeholder={`${globalBans.teamAName} vs ${globalBans.teamBName}`}
-                onChange={(e) => onChange({ ...globalBans, seriesName: e.target.value })}
-                maxLength={24}
+                onChange={(e) => onChange(globalBans.seriesTitle != null
+                  ? { ...globalBans, seriesTitle: e.target.value }
+                  : { ...globalBans, seriesName: e.target.value })}
+                maxLength={64}
                 title={t("ชื่อกลุ่มหรือชื่อซีรีส์ (เช่น BRU vs FS หรือปล่อยว่างเพื่อใช้ชื่อทีมอัตโนมัติ)")}
                 aria-label={t("ชื่อกลุ่มซีรีส์")}
                 className="h-7 min-w-0 flex-1 border border-line bg-bg px-2 font-display text-xs text-ink placeholder:text-dim focus:border-gold focus:outline-none sm:w-32 sm:flex-none"
@@ -364,10 +391,10 @@ export function GlobalBanModal({
 
           <div className="flex items-center gap-1 overflow-x-auto">
             <span className="mr-1 shrink-0 font-mono text-[10px] text-muted sm:text-[11px]">GAME:</span>
-            {[1, 2, 3, 4, 5, 6, 7].map((g) => {
-              const unlockStatus = getGameUnlockStatus(g, globalBans, seriesGames);
-              const isUnlocked = unlockStatus.isUnlocked;
+            {[1, 2, 3, 4, 5, 6, 7].map((g, idx) => {
+              const unlockStatus = gameUnlockStatuses[idx];
               const isCurrent = globalBans.gameNumber === g;
+              const isUnlocked = unlockStatus.isUnlocked || (fromTeamHistory && isCurrent);
 
               let buttonTitle = `Game ${g}`;
               if (!isUnlocked) {
@@ -415,7 +442,10 @@ export function GlobalBanModal({
               <button
                 key={cat.key}
                 type="button"
-                onClick={() => setActiveCategory(cat.key)}
+                onClick={() => {
+                  setActiveCategory(cat.key);
+                  setLimitNotice(null);
+                }}
                 className={`flex min-w-0 items-center justify-between gap-1 border px-2 py-1 text-left transition-all sm:px-3 sm:py-2 ${
                   isActive ? cat.activeTabClass : "border-line bg-panel text-muted hover:border-line-strong hover:text-ink"
                 }`}
@@ -444,16 +474,11 @@ export function GlobalBanModal({
 
         {/* Active Category Selected Heroes Bar */}
         <div className="shrink-0 border-b border-line bg-panel-2/40 px-3 py-1.5 sm:px-4 sm:py-2.5">
-          {(() => {
-            const unlockStatus = getGameUnlockStatus(globalBans.gameNumber, globalBans, seriesGames);
-            if (globalBans.gameNumber <= 1 || unlockStatus.isUnlocked) return null;
-            const targetGame = getMaxUnlockedGame(globalBans, seriesGames);
-            return (
-              <div className="mb-1.5 border border-gold/50 bg-gold/10 px-2.5 py-1 text-[11px] font-medium text-gold sm:mb-2">
-                {t("จำนวนฮีโร่ไม่ถึงเกณฑ์ Game")} {globalBans.gameNumber} {t("(ต้องการฝั่งละ")} {unlockStatus.requiredCount} {t("ตัว) — เมื่อปิดหน้าต่างจะบันทึกกระดานปัจจุบันและย้อนกลับไป Game")} {targetGame}
-              </div>
-            );
-          })()}
+          {!fromTeamHistory && globalBans.gameNumber > 1 && !currentUnlockStatus.isUnlocked && (
+            <div className="mb-1.5 border border-gold/50 bg-gold/10 px-2.5 py-1 text-[11px] font-medium text-gold sm:mb-2">
+              {t("จำนวนฮีโร่ไม่ถึงเกณฑ์ Game")} {globalBans.gameNumber} {t("(ต้องการฝั่งละ")} {currentUnlockStatus.requiredCount} {t("ตัว) — เมื่อปิดหน้าต่างจะบันทึกกระดานปัจจุบันและย้อนกลับไป Game")} {maxUnlockedGame}
+            </div>
+          )}
           {limitNotice && (
             <div className="mb-1.5 border border-red/50 bg-red/10 px-2.5 py-1 text-[11px] font-medium text-red sm:mb-2">
               {limitNotice}
@@ -489,12 +514,13 @@ export function GlobalBanModal({
                     : activeCategory === "teamBUsed"
                       ? originMap.teamBGameByHero[name]
                       : undefined;
+                const origin = originGame ? t(" (เลือกใช้ใน Game {0})", originGame) : fromTeamHistory ? "" : t(" (เพิ่มด้วยตัวเอง)");
                 return (
                   <button
                     key={name}
                     type="button"
                     onClick={() => toggleHero(name)}
-                    title={t("คลิกเพื่อลบ {0}{1}", displayName(name), originGame ? t(" (เลือกใช้ใน Game {0})", originGame) : t(" (เพิ่มด้วยตัวเอง)"))}
+                    title={t("คลิกเพื่อลบ {0}{1}", displayName(name), origin)}
                     className="group flex items-center gap-1 border border-line-strong bg-bg py-0.5 pr-1.5 pl-0.5 text-[11px] text-ink transition-colors hover:border-red/60 hover:bg-red/10 sm:gap-1.5 sm:pr-2 sm:pl-1 sm:text-xs"
                   >
                     <div className="h-5 w-5 shrink-0 overflow-hidden sm:h-6 sm:w-6">

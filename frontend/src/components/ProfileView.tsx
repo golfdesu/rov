@@ -5,6 +5,8 @@ import { useLanguage } from "../i18n/language";
 import type { AuthUser } from "../types/auth";
 import { accountLabel } from "../utils/auth";
 import { Alert } from "./Alert";
+import { BillingSandbox } from "./BillingSandbox";
+import { TeamSandbox } from "./TeamSandbox";
 import { StableButtonLabel } from "./StableButtonLabel";
 
 interface ProfileViewProps {
@@ -187,6 +189,12 @@ export function ProfileView({ user, onSaveDisplayName }: ProfileViewProps) {
             <p className="break-all font-mono text-sm font-semibold text-ink">{user.username}</p>
           </div>
         </section>
+        {user.stripe_sandbox_enabled && (
+          <>
+            <TeamSandbox key={`team-${user.id}`} currentUsername={user.username} />
+            <BillingSandbox key={`billing-${user.id}`} username={user.username} />
+          </>
+        )}
       </div>
     </main>
   );

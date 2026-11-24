@@ -69,13 +69,35 @@ export interface DraftHistoryItem {
 
 export type TeamId = "A" | "B";
 
-export interface GlobalBanState {
-  seriesName?: string;
+export interface TournamentRef {
+  id: string;
+  name: string;
+}
+
+export interface SeriesTeamNames {
   teamAName: string;
   teamBName: string;
+}
+
+export interface HistorySeriesEdit {
+  seriesTitle?: string;
+  gameName?: string | null;
+  teams?: SeriesTeamNames;
+}
+
+export interface GlobalBanLists {
   teamAUsed: string[];
   teamBUsed: string[];
   universalBans: string[];
+}
+
+export interface GlobalBanState extends GlobalBanLists {
+  seriesName?: string;
+  seriesTitle?: string | null;
+  seriesId?: string | null;
+  tournament?: TournamentRef | null;
+  teamAName: string;
+  teamBName: string;
   blueSideTeam: TeamId;
   gameNumber: number;
 }
@@ -85,6 +107,12 @@ export interface RecordedDraftGame {
   gameNumber: number;
   timestamp: string;
   seriesName?: string;
+  seriesTitle?: string | null;
+  gameName?: string | null;
+  gameNameShared?: boolean;
+  teamNamesShared?: boolean;
+  seriesId?: string | null;
+  tournament?: TournamentRef | null;
   blueTeamName: string;
   redTeamName: string;
   blueSideTeam: TeamId;
@@ -93,6 +121,7 @@ export interface RecordedDraftGame {
   bluePicks: string[];
   redPicks: string[];
   pickLanes?: Record<string, LaneKey>;
+  globalBans?: GlobalBanLists | null;
   blueWinRate: number;
   winner?: TeamId;
 }
@@ -111,6 +140,7 @@ export interface DraftSessionPayload {
   engine?: "sota";
   league?: LeagueCode;
   globalBans: GlobalBanState;
+  fromTeamHistory?: boolean;
   seriesGames: RecordedDraftGame[];
   updatedAt: number;
 }

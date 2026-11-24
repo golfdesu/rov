@@ -103,6 +103,49 @@ def _check_production_params() -> list[str]:
     return errors
 
 
+def _check_wikiskill_coverage() -> list[str]:
+    """Verify structural artifacts (modules, DB tables, UI views, VM lock) are covered in .wikiskill/wiki/."""
+    errors: list[str] = []
+    wiki_dir = REPO_ROOT / ".wikiskill" / "wiki"
+    if not wiki_dir.exists():
+        return ["Missing .wikiskill/wiki/ directory."]
+
+    wiki_corpus = "\n".join(p.read_text(encoding="utf-8") for p in sorted(wiki_dir.glob("*.md")))
+
+    src_dir = REPO_ROOT / "src"
+    if src_dir.exists():
+        for fpath in sorted(src_dir.glob("*.py")):
+            if fpath.name != "__init__.py" and fpath.name not in wiki_corpus:
+                errors.append(
+                    f"[WikiSkill Coverage] New module 'src/{fpath.name}' is not documented in .wikiskill/wiki/*.md."
+                )
+
+    db_path = REPO_ROOT / "src" / "db.py"
+    if db_path.exists():
+        db_text = db_path.read_text(encoding="utf-8")
+        for tbl in re.findall(r"CREATE TABLE IF NOT EXISTS (\w+)", db_text):
+            if tbl not in wiki_corpus:
+                errors.append(
+                    f"[WikiSkill Coverage] SQLite table '{tbl}' in src/db.py is not documented in .wikiskill/wiki/*.md."
+                )
+
+    frontend_src = REPO_ROOT / "frontend" / "src"
+    if frontend_src.exists():
+        for fpath in sorted(frontend_src.rglob("*View.tsx")):
+            if fpath.stem not in wiki_corpus:
+                errors.append(
+                    f"[WikiSkill Coverage] Frontend view '{fpath.name}' is not documented in .wikiskill/wiki/*.md."
+                )
+
+    prod_wiki = wiki_dir / "production_deployment_and_ui.md"
+    if not prod_wiki.exists() or "sparse-checkout" not in prod_wiki.read_text(encoding="utf-8"):
+        errors.append(
+            "[WikiSkill Coverage] Production VM 'sparse-checkout' invariant missing from .wikiskill/wiki/production_deployment_and_ui.md."
+        )
+
+    return errors
+
+
 def main() -> int:
     """Run all preflight guardrail scans and report pass/fail status."""
     print("=" * 70)
@@ -112,8 +155,9 @@ def main() -> int:
     py_errors, warnings, num_py = _scan_python_files()
     sb_errors, num_sb = _scan_sbatch_files()
     cfg_errors = _check_production_params()
+    wk_errors = _check_wikiskill_coverage()
 
-    errors = py_errors + sb_errors + cfg_errors
+    errors = py_errors + sb_errors + cfg_errors + wk_errors
     print(f"Scanned {num_py} Python files, {num_sb} SLURM scripts, and production config.\n")
 
     if errors:

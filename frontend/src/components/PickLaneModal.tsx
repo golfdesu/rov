@@ -35,6 +35,10 @@ export function PickLaneModal({
     hero?.main_pro_lane && hero.main_pro_lane !== "Unpicked" ? hero.main_pro_lane : hero?.lane,
   );
   const defaultShort = LANE_SHORT[defaultLane];
+  const defaultLockedBy = Object.hasOwn(LANE_SHORT, defaultLane)
+    ? lockedByLane[defaultLane as LaneKey]
+    : undefined;
+  const isDefaultTaken = Boolean(defaultLockedBy && defaultLockedBy !== heroName);
 
   return (
     <Modal labelledBy="pick-lane-title" className="sm:max-w-sm" mobileSheet onClose={onClose}>
@@ -75,11 +79,19 @@ export function PickLaneModal({
       <div className="flex flex-col gap-2 p-4">
         <button
           type="button"
+          disabled={isDefaultTaken}
           onClick={() => handleSelect(undefined)}
+          title={
+            isDefaultTaken && defaultLockedBy
+              ? t("ตำแหน่งนี้ถูกล็อกให้ {0} แล้ว", displayName(defaultLockedBy))
+              : undefined
+          }
           className={`flex min-h-[44px] w-full items-center justify-between gap-2 border px-3 py-2 text-left transition-colors ${
-            !currentLane
-              ? "border-gold/70 bg-gold/15 text-gold"
-              : "border-line bg-bg/60 text-ink hover:border-line-strong hover:bg-panel-2"
+            isDefaultTaken
+              ? "cursor-not-allowed border-line/60 bg-bg/40 text-dim opacity-55"
+              : !currentLane
+                ? "border-gold/70 bg-gold/15 text-gold"
+                : "border-line bg-bg/60 text-ink hover:border-line-strong hover:bg-panel-2"
           }`}
         >
           <div className="flex items-center gap-2.5">
@@ -89,11 +101,19 @@ export function PickLaneModal({
             <div>
               <div className="font-mono text-xs font-bold tracking-wide">AUTO</div>
               <div className="text-xs text-muted">
-                <StableButtonLabel message={defaultShort ? ["ค่าเริ่มต้น ({0})", defaultShort.en] : "ค่าอัตโนมัติ"} />
+                <StableButtonLabel
+                  message={
+                    isDefaultTaken && defaultLockedBy
+                      ? ["ล็อก: {0}", displayName(defaultLockedBy)]
+                      : defaultShort
+                        ? ["ค่าเริ่มต้น ({0})", defaultShort.en]
+                        : "ค่าอัตโนมัติ"
+                  }
+                />
               </div>
             </div>
           </div>
-          {!currentLane && <span className="font-mono text-[10px] font-bold text-gold">ACTIVE</span>}
+          {!currentLane && !isDefaultTaken && <span className="font-mono text-[10px] font-bold text-gold">ACTIVE</span>}
         </button>
 
         <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">

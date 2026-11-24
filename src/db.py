@@ -16,7 +16,12 @@ from contextlib import contextmanager
 from dataclasses import dataclass, replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+from src.schemas import RecordedDraftGameSchema
+
+if TYPE_CHECKING:
+    from src.schemas import DraftHistoryNameTarget
 
 USERNAME_RE = re.compile(r"^[a-zA-Z0-9_.-]{3,32}$")
 SESSION_COOKIE_NAME = "rov_session"
@@ -24,6 +29,44 @@ SESSION_TTL_SECONDS = 30 * 24 * 60 * 60  # 30 days (> 15-day open window)
 MAX_USERS_DEFAULT = 2000
 DISPLAY_NAME_FREE_CHANGES = 3
 DISPLAY_NAME_COOLDOWN_SECONDS = 14 * 24 * 60 * 60
+GROUP_CAPACITY = {"duo": 2, "team_pro": 5}
+TEAM_HISTORY_LIMIT = 500
+FREE_HISTORY_LIMIT = 7
+PAID_HISTORY_LIMIT = 500
+FREE_HERO_POOL_LIMIT = 1
+PAID_HERO_POOL_LIMIT = 50
+TEAM_HERO_POOL_LIMIT = 50
+HERO_POOL_LANES = ("DS_Lane", "Jungle", "Mid", "Dragon_Lane", "Roam")
+BILLING_TABLES = {
+    "billing_passes": """
+        user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        tier TEXT NOT NULL CHECK(tier IN ('pro', 'duo', 'team_pro')),
+        expires_at INTEGER NOT NULL
+    """,
+    "billing_orders": """
+        id TEXT PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+        tier TEXT NOT NULL CHECK(tier IN ('pro', 'duo', 'team_pro')),
+        days INTEGER NOT NULL CHECK(days IN (30, 90)),
+        amount INTEGER NOT NULL CHECK(amount > 0),
+        return_origin TEXT NOT NULL,
+        created_at INTEGER NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'paid', 'closed')),
+        stripe_session_id TEXT UNIQUE,
+        stripe_payment_id TEXT UNIQUE,
+        paid_at INTEGER
+    """,
+}
+
+
+def billing_purchase_block(active_tier: str | None, requested_tier: str) -> str | None:
+    if active_tier == requested_tier:
+        return "pass_active"
+    if active_tier == "team_pro":
+        return "team_active"
+    if active_tier is not None and (active_tier == "duo" or requested_tier == "duo"):
+        return "duo_transition"
+    return None
 
 
 def normalize_username(username: str) -> str:
@@ -343,9 +386,50 @@ class UserDatabase:
 
                     CREATE INDEX IF NOT EXISTS idx_site_events_daily_key
                         ON site_events_daily(metric_key, event_date);
+
+                    CREATE TABLE IF NOT EXISTS team_memberships (
+                        user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+                        owner_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                        tier TEXT NOT NULL CHECK(tier IN ('duo', 'team_pro')),
+                        CHECK(user_id <> owner_id)
+                    );
+                    CREATE INDEX IF NOT EXISTS idx_team_members_owner ON team_memberships(owner_id, tier);
+                    CREATE TABLE IF NOT EXISTS team_invites (
+                        owner_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                        tier TEXT NOT NULL CHECK(tier IN ('duo', 'team_pro')),
+                        expires_at INTEGER NOT NULL,
+                        PRIMARY KEY(owner_id, user_id),
+                        CHECK(user_id <> owner_id)
+                    );
+                    CREATE INDEX IF NOT EXISTS idx_team_invites_user ON team_invites(user_id);
+                    CREATE TABLE IF NOT EXISTS team_history (
+                        id INTEGER PRIMARY KEY,
+                        owner_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                        tier TEXT NOT NULL CHECK(tier IN ('duo', 'team_pro')),
+                        author_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                        source_id TEXT NOT NULL,
+                        game_json TEXT NOT NULL,
+                        UNIQUE(owner_id, tier, author_id, source_id)
+                    );
+                    CREATE INDEX IF NOT EXISTS idx_team_history_owner ON team_history(owner_id, tier, id DESC);
+                    CREATE TABLE IF NOT EXISTS hero_pools (
+                        id INTEGER PRIMARY KEY,
+                        owner_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                        scope TEXT NOT NULL CHECK(scope IN ('personal', 'team')),
+                        tier TEXT NOT NULL DEFAULT '' CHECK(tier IN ('', 'duo', 'team_pro')),
+                        team_name TEXT NOT NULL,
+                        normalized_name TEXT NOT NULL,
+                        lanes_json TEXT NOT NULL,
+                        updated_at INTEGER NOT NULL,
+                        UNIQUE(owner_id, scope, tier, normalized_name)
+                    );
+                    CREATE INDEX IF NOT EXISTS idx_hero_pools_owner ON hero_pools(owner_id, scope, tier, updated_at DESC);
+                    CREATE INDEX IF NOT EXISTS idx_hero_pools_owner_sort ON hero_pools(owner_id, scope, tier, updated_at DESC, id DESC);
                     """
                 )
                 conn.execute("BEGIN IMMEDIATE")
+                self._ensure_billing_schema(conn)
                 cols = {str(r["name"]) for r in conn.execute("PRAGMA table_info(users)").fetchall()}
                 if "google_sub" not in cols:
                     conn.execute("ALTER TABLE users ADD COLUMN google_sub TEXT")
@@ -382,6 +466,24 @@ class UserDatabase:
                 )
             self._initialized_path = self.db_path
 
+    @staticmethod
+    def _ensure_billing_schema(conn: sqlite3.Connection) -> None:
+        for table, definition in BILLING_TABLES.items():
+            source = conn.execute("SELECT sql FROM sqlite_master WHERE name = ?", (table,)).fetchone()
+            if source is None:
+                conn.execute(f"CREATE TABLE {table} ({definition})")
+            elif "'duo'" not in source["sql"]:
+                conn.execute(f"ALTER TABLE {table} RENAME TO {table}_previous")
+                conn.execute(f"CREATE TABLE {table} ({definition})")
+                conn.execute(f"INSERT INTO {table} SELECT * FROM {table}_previous")
+                conn.execute(f"DROP TABLE {table}_previous")
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_billing_orders_user_created ON billing_orders(user_id, created_at DESC, id DESC)"
+        )
+        conn.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_billing_orders_pending ON billing_orders(user_id) WHERE status = 'pending'"
+        )
+
     def _prune_stale_if_full(self, conn: sqlite3.Connection, now: int) -> None:
         count_row = conn.execute("SELECT COUNT(*) AS cnt FROM users").fetchone()
         if count_row and int(count_row["cnt"]) >= self.max_users:
@@ -399,15 +501,809 @@ class UserDatabase:
                       AND NOT EXISTS (SELECT 1 FROM user_draft_states d WHERE d.user_id = u.id)
                       AND NOT EXISTS (SELECT 1 FROM user_combat_builds c WHERE c.user_id = u.id)
                       AND NOT EXISTS (SELECT 1 FROM user_practice_histories p WHERE p.user_id = u.id)
+                      AND NOT EXISTS (SELECT 1 FROM billing_orders o WHERE o.user_id = u.id)
+                      AND NOT EXISTS (SELECT 1 FROM team_memberships m WHERE m.user_id = u.id AND EXISTS (
+                          SELECT 1 FROM billing_passes b
+                          WHERE b.user_id = m.owner_id AND b.tier = m.tier AND b.expires_at > ?
+                      ))
                     ORDER BY u.created_at ASC
                     LIMIT 100
                 )
                 """,
-                (stale_cutoff, now),
+                (stale_cutoff, now, now),
             )
             count_row = conn.execute("SELECT COUNT(*) AS cnt FROM users").fetchone()
         if count_row and int(count_row["cnt"]) >= self.max_users:
             raise RuntimeError("User registration limit reached on this server")
+
+    def billing_summary(self, user_id: int) -> tuple[sqlite3.Row | None, list[sqlite3.Row]]:
+        self.ensure_schema()
+        with self._connect() as conn:
+            conn.execute("BEGIN")
+            now = int(time.time())
+            active_pass = self._active_team(conn, user_id, now)
+            if active_pass is None:
+                active_pass = conn.execute(
+                    "SELECT tier, expires_at FROM billing_passes WHERE user_id = ? AND expires_at > ?",
+                    (user_id, now),
+                ).fetchone()
+            orders = conn.execute(
+                """
+                SELECT id, tier, days, amount, status, paid_at
+                FROM billing_orders WHERE user_id = ?
+                ORDER BY created_at DESC, id DESC LIMIT 10
+                """,
+                (user_id,),
+            ).fetchall()
+        return active_pass, orders
+
+    def reserve_billing_order(self, user_id: int, tier: str, days: int, amount: int, origin: str) -> sqlite3.Row:
+        self.ensure_schema()
+        with self._connect() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            now = int(time.time())
+            team = self._active_team(conn, user_id, now)
+            if team is not None and not team["is_owner"]:
+                raise ValueError("group_member")
+            active_pass = conn.execute(
+                "SELECT tier FROM billing_passes WHERE user_id = ? AND expires_at > ?", (user_id, now)
+            ).fetchone()
+            block = billing_purchase_block(active_pass["tier"] if active_pass else None, tier)
+            if block:
+                raise ValueError(block)
+            pending = conn.execute(
+                "SELECT * FROM billing_orders WHERE user_id = ? AND status = 'pending'", (user_id,)
+            ).fetchone()
+            if pending:
+                if (pending["tier"], pending["days"]) != (tier, days):
+                    raise ValueError("pending_order")
+                return pending
+            order_id = secrets.token_hex(16)
+            return conn.execute(
+                """
+                INSERT INTO billing_orders (id, user_id, tier, days, amount, return_origin, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING *
+                """,
+                (order_id, user_id, tier, days, amount, origin, now),
+            ).fetchone()
+
+    def get_billing_order(self, user_id: int, order_id: str) -> sqlite3.Row | None:
+        self.ensure_schema()
+        with self._connect() as conn:
+            return conn.execute(
+                "SELECT * FROM billing_orders WHERE id = ? AND user_id = ?", (order_id, user_id)
+            ).fetchone()
+
+    def attach_billing_session(self, order_id: str, session_id: str) -> None:
+        with self._connect() as conn:
+            if not conn.execute(
+                """
+                UPDATE billing_orders SET stripe_session_id = ?
+                WHERE id = ? AND (stripe_session_id IS NULL OR stripe_session_id = ?)
+                """,
+                (session_id, order_id, session_id),
+            ).rowcount:
+                raise ValueError("checkout_session_mismatch")
+
+    def close_uncreated_billing_order(self, order_id: str) -> None:
+        with self._connect() as conn:
+            conn.execute(
+                "UPDATE billing_orders SET status = 'closed' WHERE id = ? AND status = 'pending' AND stripe_session_id IS NULL",
+                (order_id,),
+            )
+
+    def settle_billing_order(self, order_id: str, session_id: str, amount: int, payment_id: str | None) -> None:
+        self.ensure_schema()
+        with self._connect() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            order = conn.execute("SELECT * FROM billing_orders WHERE id = ?", (order_id,)).fetchone()
+            if order is None:
+                return  # The signing endpoint can also receive events from other sandbox apps.
+            if order["amount"] != amount or order["stripe_session_id"] not in (None, session_id):
+                raise ValueError("checkout_order_mismatch")
+            if order["status"] != "pending":
+                return
+            if payment_id is None:
+                conn.execute(
+                    "UPDATE billing_orders SET status = 'closed', stripe_session_id = ? WHERE id = ?",
+                    (session_id, order_id),
+                )
+                return
+
+            now = int(time.time())
+            conn.execute(
+                """
+                UPDATE billing_orders
+                SET status = 'paid', stripe_session_id = ?, stripe_payment_id = ?, paid_at = ? WHERE id = ?
+                """,
+                (session_id, payment_id, now, order_id),
+            )
+            current = conn.execute(
+                "SELECT tier, expires_at FROM billing_passes WHERE user_id = ?", (order["user_id"],)
+            ).fetchone()
+            tier = order["tier"]
+            day = 24 * 60 * 60
+            expires_at = now + order["days"] * day
+            if current and current["expires_at"] > now:
+                if current["tier"] == tier:
+                    # Honor already-paid renewals from Checkout sessions issued before the purchase rule changed.
+                    expires_at = current["expires_at"] + order["days"] * day
+                elif tier == "team_pro":
+                    remaining_days = (current["expires_at"] - now) // day
+                    expires_at += remaining_days // 3 * day
+                else:
+                    raise ValueError("team_active")
+            conn.execute(
+                """
+                INSERT INTO billing_passes (user_id, tier, expires_at) VALUES (?, ?, ?)
+                ON CONFLICT(user_id) DO UPDATE SET tier = excluded.tier, expires_at = excluded.expires_at
+                """,
+                (order["user_id"], tier, expires_at),
+            )
+
+    @staticmethod
+    def _active_team(conn: sqlite3.Connection, user_id: int, now: int) -> sqlite3.Row | None:
+        return conn.execute(
+            """
+            SELECT b.user_id AS owner_id, u.username AS owner_username, b.tier, b.expires_at, 1 AS is_owner
+            FROM billing_passes b JOIN users u ON u.id = b.user_id
+            WHERE b.user_id = ? AND b.tier IN ('duo', 'team_pro') AND b.expires_at > ?
+            UNION ALL
+            SELECT b.user_id, u.username, b.tier, b.expires_at, 0
+            FROM team_memberships m JOIN billing_passes b ON b.user_id = m.owner_id AND b.tier = m.tier
+            JOIN users u ON u.id = b.user_id WHERE m.user_id = ? AND b.expires_at > ?
+            LIMIT 1
+            """,
+            (user_id, now, user_id, now),
+        ).fetchone()
+
+    @classmethod
+    def _is_paid_user(cls, conn: sqlite3.Connection, user_id: int, now: int) -> bool:
+        own_pass = conn.execute(
+            "SELECT 1 FROM billing_passes WHERE user_id = ? AND expires_at > ?", (user_id, now)
+        ).fetchone()
+        return bool(own_pass or cls._active_team(conn, user_id, now))
+
+    def is_paid_user(self, user_id: int) -> bool:
+        self.ensure_schema()
+        with self._connect() as conn:
+            return self._is_paid_user(conn, user_id, int(time.time()))
+
+    @classmethod
+    def _personal_history_limit(cls, conn: sqlite3.Connection, user_id: int) -> int:
+        return PAID_HISTORY_LIMIT if cls._is_paid_user(conn, user_id, int(time.time())) else FREE_HISTORY_LIMIT
+
+    def personal_history_limit(self, user_id: int) -> int:
+        self.ensure_schema()
+        with self._connect() as conn:
+            return self._personal_history_limit(conn, user_id)
+
+    @staticmethod
+    def _team_member_count(conn: sqlite3.Connection, team: sqlite3.Row) -> int:
+        return (
+            1
+            + conn.execute(
+                "SELECT COUNT(*) FROM team_memberships WHERE owner_id = ? AND tier = ?",
+                (team["owner_id"], team["tier"]),
+            ).fetchone()[0]
+        )
+
+    def team_overview(self, user_id: int) -> dict:
+        self.ensure_schema()
+        with self._connect() as conn:
+            conn.execute("BEGIN")
+            now = int(time.time())
+            team = self._active_team(conn, user_id, now)
+            received = conn.execute(
+                """
+                SELECT i.owner_id, u.username AS owner_username, i.tier
+                FROM team_invites i JOIN users u ON u.id = i.owner_id
+                JOIN billing_passes b ON b.user_id = i.owner_id AND b.tier = i.tier
+                WHERE i.user_id = ? AND i.expires_at > ? AND b.expires_at > ?
+                ORDER BY i.expires_at
+                """,
+                (user_id, now, now),
+            ).fetchall()
+            if team is None:
+                return {"team": None, "received": [dict(row) for row in received]}
+            owner_id, tier = team["owner_id"], team["tier"]
+            members = conn.execute(
+                """
+                SELECT u.id, u.username FROM team_memberships m JOIN users u ON u.id = m.user_id
+                WHERE m.owner_id = ? AND m.tier = ? ORDER BY u.username
+                """,
+                (owner_id, tier),
+            ).fetchall()
+            sent = (
+                conn.execute(
+                    """
+                    SELECT u.id, u.username FROM team_invites i JOIN users u ON u.id = i.user_id
+                    WHERE i.owner_id = ? AND i.tier = ? AND i.expires_at > ? ORDER BY u.username
+                    """,
+                    (owner_id, tier, now),
+                ).fetchall()
+                if team["is_owner"]
+                else []
+            )
+        return {
+            "team": {
+                **dict(team),
+                "capacity": GROUP_CAPACITY[tier],
+                "members": [{"id": owner_id, "username": team["owner_username"]}, *map(dict, members)],
+                "sent": list(map(dict, sent)),
+            },
+            "received": list(map(dict, received)),
+        }
+
+    def invite_team_member(self, owner_id: int, username: str) -> None:
+        self.ensure_schema()
+        username = normalize_username(username)
+        with self._connect() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            now = int(time.time())
+            team = self._active_team(conn, owner_id, now)
+            if team is None or not team["is_owner"]:
+                raise PermissionError("owner_required")
+            target = conn.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone()
+            if target is None or target["id"] == owner_id:
+                raise ValueError("invite_unavailable")
+            member_id, tier = target["id"], team["tier"]
+            if self._active_team(conn, member_id, now) is not None:
+                raise ValueError("already_in_group")
+            pending = conn.execute(
+                """
+                SELECT COUNT(*) FROM team_invites WHERE owner_id = ? AND tier = ? AND expires_at > ? AND user_id <> ?
+                """,
+                (owner_id, tier, now, member_id),
+            ).fetchone()[0]
+            if self._team_member_count(conn, team) + pending >= GROUP_CAPACITY[tier]:
+                raise ValueError("team_full")
+            conn.execute(
+                """
+                INSERT INTO team_invites(owner_id, user_id, tier, expires_at) VALUES (?, ?, ?, ?)
+                ON CONFLICT(owner_id, user_id)
+                DO UPDATE SET tier = excluded.tier, expires_at = excluded.expires_at
+                """,
+                (owner_id, member_id, tier, team["expires_at"]),
+            )
+
+    def respond_to_team_invite(self, user_id: int, owner_id: int, accept: bool) -> None:
+        self.ensure_schema()
+        with self._connect() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            now = int(time.time())
+            if accept:
+                team = self._active_team(conn, owner_id, now)
+                invite = conn.execute(
+                    "SELECT tier FROM team_invites WHERE owner_id = ? AND user_id = ? AND expires_at > ?",
+                    (owner_id, user_id, now),
+                ).fetchone()
+                current = self._active_team(conn, user_id, now)
+                if current and current["owner_id"] == owner_id and not current["is_owner"]:
+                    return
+                if not invite or not team or not team["is_owner"] or invite["tier"] != team["tier"]:
+                    raise LookupError("invite_unavailable")
+                if current:
+                    raise ValueError("already_in_group")
+                if conn.execute(
+                    "SELECT 1 FROM billing_orders WHERE user_id = ? AND status = 'pending'", (user_id,)
+                ).fetchone():
+                    raise ValueError("pending_order")
+                if self._team_member_count(conn, team) >= GROUP_CAPACITY[team["tier"]]:
+                    raise ValueError("team_full")
+                conn.execute(
+                    """
+                    INSERT INTO team_memberships(user_id, owner_id, tier) VALUES (?, ?, ?)
+                    ON CONFLICT(user_id) DO UPDATE SET owner_id = excluded.owner_id, tier = excluded.tier
+                    """,
+                    (user_id, owner_id, team["tier"]),
+                )
+            conn.execute("DELETE FROM team_invites WHERE owner_id = ? AND user_id = ?", (owner_id, user_id))
+
+    def manage_team_member(self, owner_id: int, member_id: int, *, revoke_invite: bool) -> None:
+        self.ensure_schema()
+        with self._connect() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            team = self._active_team(conn, owner_id, int(time.time()))
+            if team is None or not team["is_owner"]:
+                raise PermissionError("owner_required")
+            table = "team_invites" if revoke_invite else "team_memberships"
+            conn.execute(
+                f"DELETE FROM {table} WHERE owner_id = ? AND tier = ? AND user_id = ?",
+                (owner_id, team["tier"], member_id),
+            )
+
+    def leave_team(self, user_id: int, owner_id: int) -> None:
+        self.ensure_schema()
+        with self._connect() as conn:
+            conn.execute("DELETE FROM team_memberships WHERE user_id = ? AND owner_id = ?", (user_id, owner_id))
+
+    def team_history(self, user_id: int) -> list[dict]:
+        self.ensure_schema()
+        with self._connect() as conn:
+            conn.execute("BEGIN")
+            team = self._active_team(conn, user_id, int(time.time()))
+            if team is None:
+                raise PermissionError("membership_required")
+            rows = conn.execute(
+                """
+                SELECT h.id, h.game_json, u.username AS author
+                FROM team_history h LEFT JOIN users u ON u.id = h.author_id
+                WHERE h.owner_id = ? AND h.tier = ? ORDER BY h.id DESC
+                """,
+                (team["owner_id"], team["tier"]),
+            ).fetchall()
+        return [{"id": row["id"], "game": json.loads(row["game_json"]), "author": row["author"]} for row in rows]
+
+    @staticmethod
+    def _series_key(game: dict) -> tuple[str, str]:
+        if series_id := game.get("seriesId"):
+            return "id", series_id
+        if name := (game.get("seriesName") or "").strip():
+            return "name", name
+        blue = (game.get("blueTeamName") or "").strip() or "BLUE"
+        red = (game.get("redTeamName") or "").strip() or "RED"
+        return "name", f"{red} vs {blue}" if game.get("blueSideTeam") == "B" else f"{blue} vs {red}"
+
+    @staticmethod
+    def _recorded_team_names(game: dict) -> dict[str, str]:
+        if game.get("blueSideTeam") == "B":
+            return {"teamAName": game["redTeamName"], "teamBName": game["blueTeamName"]}
+        return {"teamAName": game["blueTeamName"], "teamBName": game["redTeamName"]}
+
+    @classmethod
+    def _set_recorded_team_names(cls, game: dict, teams: dict[str, str]) -> dict:
+        swapped = game.get("blueSideTeam") == "B"
+        anchored = {} if game.get("seriesId") else {"seriesName": cls._series_key(game)[1]}
+        return {
+            **game,
+            **anchored,
+            "blueTeamName": teams["teamBName" if swapped else "teamAName"],
+            "redTeamName": teams["teamAName" if swapped else "teamBName"],
+            "teamNamesShared": True,
+        }
+
+    @staticmethod
+    def _team_group_rows(conn: sqlite3.Connection, owner_id: int, tier: str) -> list[sqlite3.Row]:
+        return conn.execute(
+            "SELECT id, author_id, game_json FROM team_history WHERE owner_id = ? AND tier = ? ORDER BY id",
+            (owner_id, tier),
+        ).fetchall()
+
+    @classmethod
+    def _team_history_metadata(
+        cls, conn: sqlite3.Connection, owner_id: int, tier: str
+    ) -> tuple[dict[tuple[str, str], dict], dict[str, dict], dict[tuple[str, str], dict[str, str]]]:
+        series: dict[tuple[str, str], dict] = {}
+        tournaments: dict[str, dict] = {}
+        teams: dict[tuple[str, str], dict[str, str]] = {}
+        for row in cls._team_group_rows(conn, owner_id, tier):
+            game = json.loads(row["game_json"])
+            tournament = game.get("tournament")
+            key = cls._series_key(game)
+            metadata = series.setdefault(key, {"tournament": tournament, "seriesTitle": game.get("seriesTitle")})
+            if game.get("gameNameShared"):
+                metadata.update(gameNameShared=True)
+                metadata.setdefault("gameName", game.get("gameName"))
+            if tournament:
+                tournaments.setdefault(tournament["id"], tournament)
+            if game.get("teamNamesShared"):
+                teams.setdefault(key, cls._recorded_team_names(game))
+        return series, tournaments, teams
+
+    @classmethod
+    def _apply_team_history_metadata(
+        cls,
+        game: dict,
+        series: dict[tuple[str, str], dict],
+        tournaments: dict[str, dict],
+        teams: dict[tuple[str, str], dict[str, str]],
+    ) -> dict:
+        key = cls._series_key(game)
+        if key not in series:
+            series[key] = {"tournament": game.get("tournament"), "seriesTitle": game.get("seriesTitle")}
+            if game.get("gameNameShared"):
+                series[key].update(gameNameShared=True, gameName=game.get("gameName"))
+            if game.get("teamNamesShared"):
+                teams[key] = cls._recorded_team_names(game)
+        metadata = series[key]
+        tournament = metadata["tournament"]
+        if tournament:
+            tournament = tournaments.setdefault(tournament["id"], tournament)
+        saved = {**game, "gameNameShared": False, "teamNamesShared": False, **metadata, "tournament": tournament}
+        return cls._set_recorded_team_names(saved, teams[key]) if key in teams else saved
+
+    def _read_team_history_for_edit(self, conn: sqlite3.Connection, user_id: int) -> tuple[bool, dict]:
+        team = self._active_team(conn, user_id, int(time.time()))
+        if team is None:
+            raise PermissionError("membership_required")
+        games = {
+            row["id"]: (row["author_id"], json.loads(row["game_json"]))
+            for row in self._team_group_rows(conn, team["owner_id"], team["tier"])
+        }
+        return team["is_owner"], games
+
+    def assign_team_series_tournaments(self, user_id: int, game_ids: list[int], tournament: dict | None) -> None:
+        self.ensure_schema()
+        with self._connect() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            is_owner, games = self._read_team_history_for_edit(conn, user_id)
+            if any(game_id not in games for game_id in game_ids):
+                raise LookupError("game_not_found")
+            if tournament:
+                tournament = next(
+                    (
+                        existing
+                        for _, game in games.values()
+                        if (existing := game.get("tournament")) and existing["id"] == tournament["id"]
+                    ),
+                    tournament,
+                )
+            series_keys = {self._series_key(games[game_id][1]) for game_id in game_ids}
+            updates = []
+            for game_id, (author_id, game) in games.items():
+                if self._series_key(game) not in series_keys:
+                    continue
+                if not is_owner and author_id != user_id:
+                    raise PermissionError("owner_required")
+                game["tournament"] = tournament
+                updates.append((json.dumps(game, ensure_ascii=False, allow_nan=False), game_id))
+            conn.executemany("UPDATE team_history SET game_json = ? WHERE id = ?", updates)
+
+    def rename_team_history_item(
+        self, user_id: int, game_id: int, target: DraftHistoryNameTarget, name: str | None
+    ) -> None:
+        if target != "tournament":
+            field = "seriesTitle" if target == "series" else "gameName"
+            self.edit_team_history_series(user_id, game_id, {field: name})
+            return
+        self.ensure_schema()
+        with self._connect() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            is_owner, games = self._read_team_history_for_edit(conn, user_id)
+            if game_id not in games:
+                raise LookupError("game_not_found")
+            anchor = games[game_id][1]
+            tournament = anchor.get("tournament")
+            if not tournament:
+                raise LookupError("game_not_found")
+            tournament_id = tournament["id"]
+            matching_ids = [
+                row_id
+                for row_id, (_, game) in games.items()
+                if (game.get("tournament") or {}).get("id") == tournament_id
+            ]
+            changes = {"tournament": {"id": tournament_id, "name": name}}
+            if not is_owner and any(games[row_id][0] != user_id for row_id in matching_ids):
+                raise PermissionError("owner_required")
+            updates = [
+                (json.dumps({**games[row_id][1], **changes}, ensure_ascii=False, allow_nan=False), row_id)
+                for row_id in matching_ids
+            ]
+            conn.executemany("UPDATE team_history SET game_json = ? WHERE id = ?", updates)
+
+    def edit_team_history_series(self, user_id: int, game_id: int, edit: dict) -> None:
+        changes = {field: edit[field] for field in ("seriesTitle", "gameName") if field in edit}
+        if "gameName" in changes:
+            changes["gameNameShared"] = True
+        teams = edit.get("teams")
+        self.ensure_schema()
+        with self._connect() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            is_owner, games = self._read_team_history_for_edit(conn, user_id)
+            if game_id not in games:
+                raise LookupError("game_not_found")
+            key = self._series_key(games[game_id][1])
+            updates = []
+            for row_id, (author_id, game) in games.items():
+                if self._series_key(game) != key:
+                    continue
+                if not is_owner and author_id != user_id:
+                    raise PermissionError("owner_required")
+                updated = {**game, **changes}
+                if teams:
+                    updated = self._set_recorded_team_names(updated, teams)
+                updates.append((json.dumps(updated, ensure_ascii=False, allow_nan=False), row_id))
+            conn.executemany("UPDATE team_history SET game_json = ? WHERE id = ?", updates)
+
+    def save_team_game(self, user_id: int, owner_id: int, tier: str, game_id: str, game: dict | None = None) -> int:
+        self.ensure_schema()
+        with self._connect() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            team = self._active_team(conn, user_id, int(time.time()))
+            if team is None or (team["owner_id"], team["tier"]) != (owner_id, tier):
+                raise PermissionError("membership_required")
+            existing = conn.execute(
+                "SELECT id FROM team_history WHERE owner_id = ? AND tier = ? AND author_id = ? AND source_id = ?",
+                (owner_id, tier, user_id, game_id),
+            ).fetchone()
+            if existing:
+                return existing["id"]
+            if (
+                conn.execute(
+                    "SELECT COUNT(*) FROM team_history WHERE owner_id = ? AND tier = ?", (owner_id, tier)
+                ).fetchone()[0]
+                >= TEAM_HISTORY_LIMIT
+            ):
+                raise ValueError("history_full")
+            if game is None:
+                saved = conn.execute(
+                    "SELECT payload_json FROM user_draft_states WHERE user_id = ?", (user_id,)
+                ).fetchone()
+                state = (_safe_json_loads(saved["payload_json"]) or {}) if saved else {}
+                game = next((item for item in state.get("seriesGames", []) if item.get("id") == game_id), None)
+                if game is None:
+                    raise LookupError("game_not_found")
+                game = RecordedDraftGameSchema.model_validate(game).model_dump()
+            metadata = self._team_history_metadata(conn, owner_id, tier)
+            game = self._apply_team_history_metadata(game, *metadata)
+            return conn.execute(
+                """
+                INSERT INTO team_history(owner_id, tier, author_id, source_id, game_json)
+                VALUES (?, ?, ?, ?, ?) RETURNING id
+                """,
+                (owner_id, tier, user_id, game_id, json.dumps(game, ensure_ascii=False, allow_nan=False)),
+            ).fetchone()["id"]
+
+    def save_team_games(
+        self,
+        user_id: int,
+        owner_id: int,
+        tier: str,
+        game_ids: list[str],
+        games: list[dict] | None = None,
+    ) -> dict[str, int]:
+        """Atomically copy an ordered batch of personal series games into shared team history."""
+        unique_ids = list(dict.fromkeys(game_ids))
+        if not unique_ids:
+            return {"copied": 0, "skipped": 0}
+        provided_by_id = {
+            item["id"]: item for item in (games or ()) if isinstance(item, dict) and isinstance(item.get("id"), str)
+        }
+        self.ensure_schema()
+        with self._connect() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            team = self._active_team(conn, user_id, int(time.time()))
+            if team is None or (team["owner_id"], team["tier"]) != (owner_id, tier):
+                raise PermissionError("membership_required")
+            placeholders = ",".join("?" for _ in unique_ids)
+            existing_rows = conn.execute(
+                f"""
+                SELECT source_id FROM team_history
+                WHERE owner_id = ? AND tier = ? AND author_id = ? AND source_id IN ({placeholders})
+                """,
+                (owner_id, tier, user_id, *unique_ids),
+            ).fetchall()
+            existing_ids = {row["source_id"] for row in existing_rows}
+            pending_ids = [gid for gid in unique_ids if gid not in existing_ids]
+            if not pending_ids:
+                return {"copied": 0, "skipped": len(unique_ids)}
+            current_count = conn.execute(
+                "SELECT COUNT(*) FROM team_history WHERE owner_id = ? AND tier = ?", (owner_id, tier)
+            ).fetchone()[0]
+            if current_count + len(pending_ids) > TEAM_HISTORY_LIMIT:
+                raise ValueError("history_full")
+            saved = conn.execute("SELECT payload_json FROM user_draft_states WHERE user_id = ?", (user_id,)).fetchone()
+            state = (_safe_json_loads(saved["payload_json"]) or {}) if saved else {}
+            by_id = {
+                item["id"]: item
+                for item in state.get("seriesGames", [])
+                if isinstance(item, dict) and isinstance(item.get("id"), str)
+            }
+            games_to_insert: list[tuple[str, str]] = []
+            metadata = self._team_history_metadata(conn, owner_id, tier)
+            for gid in pending_ids:
+                if stored_game := by_id.get(gid):
+                    game = RecordedDraftGameSchema.model_validate(stored_game).model_dump()
+                else:
+                    game = provided_by_id.get(gid)
+                    if game is None:
+                        raise LookupError("game_not_found")
+                game = self._apply_team_history_metadata(game, *metadata)
+                games_to_insert.append((gid, json.dumps(game, ensure_ascii=False, allow_nan=False)))
+            conn.executemany(
+                """
+                INSERT INTO team_history(owner_id, tier, author_id, source_id, game_json)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                [(owner_id, tier, user_id, gid, payload) for gid, payload in games_to_insert],
+            )
+        return {"copied": len(pending_ids), "skipped": len(unique_ids) - len(pending_ids)}
+
+    def delete_team_game(self, user_id: int, game_id: int) -> None:
+        self.ensure_schema()
+        with self._connect() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            team = self._active_team(conn, user_id, int(time.time()))
+            if team is None:
+                raise PermissionError("membership_required")
+            if not conn.execute(
+                """
+                DELETE FROM team_history WHERE id = ? AND owner_id = ? AND tier = ? AND (author_id = ? OR ?)
+                """,
+                (game_id, team["owner_id"], team["tier"], user_id, team["is_owner"]),
+            ).rowcount:
+                raise LookupError("game_not_found")
+
+    @staticmethod
+    def _sanitize_pool_lanes(lanes: dict[str, list[str]]) -> dict[str, list[str]]:
+        sanitized: dict[str, list[str]] = {}
+        for lane in HERO_POOL_LANES:
+            seen: set[str] = set()
+            clean: list[str] = []
+            for raw_hero in lanes.get(lane, ()):
+                hero = str(raw_hero).strip()
+                if not hero or hero in seen:
+                    continue
+                seen.add(hero)
+                clean.append(hero)
+                if len(clean) >= 60:
+                    break
+            sanitized[lane] = clean
+        return sanitized
+
+    @staticmethod
+    def _row_to_hero_pool(row: sqlite3.Row) -> dict:
+        raw_lanes = _safe_json_loads(str(row["lanes_json"])) or {}
+        lanes = {lane: list(raw_lanes.get(lane, [])) for lane in HERO_POOL_LANES}
+        return {
+            "id": int(row["id"]),
+            "scope": str(row["scope"]),
+            "team_name": str(row["team_name"]),
+            "lanes": lanes,
+            "updated_at": int(row["updated_at"]),
+        }
+
+    def list_hero_pools(self, user_id: int) -> dict:
+        self.ensure_schema()
+        with self._connect() as conn:
+            conn.execute("BEGIN")
+            now = int(time.time())
+            is_paid = self._is_paid_user(conn, user_id, now)
+            team = self._active_team(conn, user_id, now)
+            personal_rows = conn.execute(
+                """
+                SELECT id, scope, team_name, lanes_json, updated_at
+                FROM hero_pools
+                WHERE owner_id = ? AND scope = 'personal' AND tier = ''
+                ORDER BY updated_at DESC, id DESC
+                """,
+                (user_id,),
+            ).fetchall()
+            team_rows = (
+                conn.execute(
+                    """
+                    SELECT id, scope, team_name, lanes_json, updated_at
+                    FROM hero_pools
+                    WHERE owner_id = ? AND scope = 'team' AND tier = ?
+                    ORDER BY updated_at DESC, id DESC
+                    """,
+                    (team["owner_id"], team["tier"]),
+                ).fetchall()
+                if team is not None
+                else []
+            )
+        return {
+            "personal": [self._row_to_hero_pool(row) for row in personal_rows],
+            "team": [self._row_to_hero_pool(row) for row in team_rows],
+            "personal_limit": PAID_HERO_POOL_LIMIT if is_paid else FREE_HERO_POOL_LIMIT,
+            "team_limit": TEAM_HERO_POOL_LIMIT if team is not None else 0,
+            "is_paid": is_paid,
+            "team_tier": str(team["tier"]) if team is not None else None,
+        }
+
+    def upsert_hero_pool(
+        self,
+        user_id: int,
+        scope: str,
+        team_name: str,
+        lanes: dict[str, list[str]],
+        create_only: bool = False,
+        pool_id: int | None = None,
+    ) -> dict:
+        clean_name = team_name.strip()
+        if not clean_name or len(clean_name) > 32:
+            raise ValueError("invalid_team_name")
+        norm = clean_name.casefold()
+        clean_lanes = self._sanitize_pool_lanes(lanes)
+        encoded_lanes = json.dumps(clean_lanes, ensure_ascii=False, allow_nan=False)
+        self.ensure_schema()
+        with self._connect() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            now = int(time.time())
+            if scope == "personal":
+                owner_id = user_id
+                tier = ""
+                limit = PAID_HERO_POOL_LIMIT if self._is_paid_user(conn, user_id, now) else FREE_HERO_POOL_LIMIT
+            elif scope == "team":
+                team = self._active_team(conn, user_id, now)
+                if team is None:
+                    raise PermissionError("membership_required")
+                owner_id = int(team["owner_id"])
+                tier = str(team["tier"])
+                limit = TEAM_HERO_POOL_LIMIT
+            else:
+                raise ValueError("invalid_scope")
+            if pool_id is not None:
+                target = conn.execute(
+                    "SELECT id FROM hero_pools WHERE id = ? AND owner_id = ? AND scope = ? AND tier = ?",
+                    (pool_id, owner_id, scope, tier),
+                ).fetchone()
+                if target is None:
+                    raise LookupError("pool_not_found")
+                conflict = conn.execute(
+                    """
+                    SELECT id FROM hero_pools
+                    WHERE owner_id = ? AND scope = ? AND tier = ? AND normalized_name = ? AND id != ?
+                    """,
+                    (owner_id, scope, tier, norm, pool_id),
+                ).fetchone()
+                if conflict is not None:
+                    raise ValueError("duplicate_team_name")
+                row = conn.execute(
+                    """
+                    UPDATE hero_pools
+                    SET team_name = ?, normalized_name = ?, lanes_json = ?, updated_at = ?
+                    WHERE id = ?
+                    RETURNING id, scope, team_name, lanes_json, updated_at
+                    """,
+                    (clean_name, norm, encoded_lanes, now, pool_id),
+                ).fetchone()
+                return self._row_to_hero_pool(row)
+            exists = conn.execute(
+                """
+                SELECT id FROM hero_pools
+                WHERE owner_id = ? AND scope = ? AND tier = ? AND normalized_name = ?
+                """,
+                (owner_id, scope, tier, norm),
+            ).fetchone()
+            if exists is not None and create_only:
+                raise ValueError("duplicate_team_name")
+            if exists is None:
+                count = int(
+                    conn.execute(
+                        "SELECT COUNT(*) FROM hero_pools WHERE owner_id = ? AND scope = ? AND tier = ?",
+                        (owner_id, scope, tier),
+                    ).fetchone()[0]
+                )
+                if count >= limit:
+                    raise ValueError("pool_limit_reached")
+            row = conn.execute(
+                """
+                INSERT INTO hero_pools(owner_id, scope, tier, team_name, normalized_name, lanes_json, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(owner_id, scope, tier, normalized_name)
+                DO UPDATE SET
+                    team_name = excluded.team_name,
+                    lanes_json = excluded.lanes_json,
+                    updated_at = excluded.updated_at
+                RETURNING id, scope, team_name, lanes_json, updated_at
+                """,
+                (owner_id, scope, tier, clean_name, norm, encoded_lanes, now),
+            ).fetchone()
+            return self._row_to_hero_pool(row)
+
+    def delete_hero_pool(self, user_id: int, pool_id: int) -> None:
+        self.ensure_schema()
+        with self._connect() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            row = conn.execute(
+                "SELECT id, owner_id, scope, tier FROM hero_pools WHERE id = ?",
+                (pool_id,),
+            ).fetchone()
+            if row is None:
+                raise LookupError("pool_not_found")
+            if row["scope"] == "personal":
+                if int(row["owner_id"]) != user_id:
+                    raise LookupError("pool_not_found")
+            else:
+                team = self._active_team(conn, user_id, int(time.time()))
+                if team is None or (int(team["owner_id"]), str(team["tier"])) != (
+                    int(row["owner_id"]),
+                    str(row["tier"]),
+                ):
+                    raise PermissionError("membership_required")
+            conn.execute("DELETE FROM hero_pools WHERE id = ?", (pool_id,))
 
     def register_user(
         self,
@@ -724,12 +1620,21 @@ class UserDatabase:
             return None
         return _safe_json_loads(str(row["payload_json"]))
 
-    def _save_user_json_state(self, table: str, user_id: int, payload: dict, updated_at: int) -> dict:
+    def _save_user_json_state(
+        self, table: str, user_id: int, payload: dict, updated_at: int, *, limit_draft_history: bool = False
+    ) -> dict:
         if table not in self._USER_STATE_TABLES:
             raise ValueError(f"Unsupported user state table: {table}")
         encoded = json.dumps(payload, ensure_ascii=False, allow_nan=False)
         self.ensure_schema()
         with self._lock, self._connect() as conn:
+            if limit_draft_history:
+                conn.execute("BEGIN IMMEDIATE")
+                previous = conn.execute(
+                    "SELECT payload_json, updated_at FROM user_draft_states WHERE user_id = ?", (user_id,)
+                ).fetchone()
+                if previous is None or updated_at >= previous["updated_at"]:
+                    self._check_history_capacity(conn, user_id, payload, previous)
             conn.execute(
                 f"""
                 INSERT INTO {table} (user_id, payload_json, updated_at)
@@ -751,19 +1656,59 @@ class UserDatabase:
                 return parsed
         return payload
 
-    def _clear_user_json_state(self, table: str, user_id: int) -> None:
-        # Store an empty tombstone with current timestamp so stale offline clients cannot resurrect cleared state.
-        tombstone_at = int(time.time() * 1000)
-        self._save_user_json_state(table, user_id, {"updatedAt": tombstone_at}, tombstone_at)
+    @classmethod
+    def _check_history_capacity(
+        cls, conn: sqlite3.Connection, user_id: int, payload: dict, previous: sqlite3.Row | None
+    ) -> None:
+        games = payload.get("seriesGames", [])
+        if len(games) <= cls._personal_history_limit(conn, user_id):
+            return
+        stored = (_safe_json_loads(previous["payload_json"]) or {}) if previous else {}
+
+        def game_slot(game: dict) -> tuple[str, str, int]:
+            kind, key = cls._series_key(game)
+            return kind, key.casefold() if kind == "name" else key, game.get("gameNumber", 1)
+
+        stored_games = stored.get("seriesGames", [])
+        known_slots = {game_slot(game) for game in stored_games}
+        if len(games) > len(stored_games) or any(game_slot(game) not in known_slots for game in games):
+            raise ValueError("history_full")
+
+    def _clear_user_json_state(self, table: str, user_id: int) -> int:
+        # Store a tombstone strictly newer than any stored updated_at so clock-skewed writes cannot survive delete.
+        if table not in self._USER_STATE_TABLES:
+            raise ValueError(f"Unsupported user state table: {table}")
+        self.ensure_schema()
+        with self._lock, self._connect() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            existing = conn.execute(f"SELECT updated_at FROM {table} WHERE user_id = ?", (user_id,)).fetchone()
+            prev_ts = int(existing["updated_at"]) if existing is not None else 0
+            tombstone_at = max(int(time.time() * 1000), prev_ts + 1)
+            encoded = json.dumps({"updatedAt": tombstone_at}, ensure_ascii=False, allow_nan=False)
+            conn.execute(
+                f"""
+                INSERT INTO {table} (user_id, payload_json, updated_at)
+                VALUES (?, ?, ?)
+                ON CONFLICT(user_id) DO UPDATE SET
+                    payload_json = excluded.payload_json,
+                    updated_at = excluded.updated_at
+                """,
+                (user_id, encoded, tombstone_at),
+            )
+        return tombstone_at
 
     def get_user_draft_state(self, user_id: int) -> dict | None:
         return self._get_user_json_state("user_draft_states", user_id)
 
-    def save_user_draft_state(self, user_id: int, payload: dict, updated_at: int) -> dict:
-        return self._save_user_json_state("user_draft_states", user_id, payload, updated_at)
+    def save_user_draft_state(
+        self, user_id: int, payload: dict, updated_at: int, *, limit_draft_history: bool = False
+    ) -> dict:
+        return self._save_user_json_state(
+            "user_draft_states", user_id, payload, updated_at, limit_draft_history=limit_draft_history
+        )
 
-    def clear_user_draft_state(self, user_id: int) -> None:
-        self._clear_user_json_state("user_draft_states", user_id)
+    def clear_user_draft_state(self, user_id: int) -> int:
+        return self._clear_user_json_state("user_draft_states", user_id)
 
     def get_user_combat_builds(self, user_id: int) -> dict | None:
         return self._get_user_json_state("user_combat_builds", user_id)
