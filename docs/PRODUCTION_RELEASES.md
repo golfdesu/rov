@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `19b890d` (`main`: add User Guide modal and active paid/promo pass tracker in admin dashboard) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-DYeWCBhA.js` (`484.58 kB`) + `dist-prod/assets/index-DTk0A1yx.css` (`114.24 kB`), `dist-prod/index.html` (`3.12 kB`) |
+| **Git Base Commit on VM** | `eb65d1f` (`main`: clarify 10-hero draft wording in User Guide modal) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-USZYtqjX.js` (`484.58 kB`) + `dist-prod/assets/index-DTk0A1yx.css` (`114.24 kB`), `dist-prod/index.html` (`3.12 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-25 15:38 (UTC+7)` |
+| **Last Updated** | `2026-11-25 15:53 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,11 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-25 15:53 (UTC+7) — Clarify 10-Hero Draft Wording in User Guide (`eb65d1f`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `19b890d` to `eb65d1f` (`main`, 19-path sparse-checkout intact).
+- **Summary (`UserGuideModal.tsx`, `englishMessages.ts`):** Updated the Save Match Guide copy from `18 steps` to `10 heroes` so players clearly see they can save once all 10 heroes are drafted.
+- **Bundle Built:** `dist-prod/index.html` (`3.12 kB`), `dist-prod/assets/index-USZYtqjX.js` (`484.58 kB`), `dist-prod/assets/index-DTk0A1yx.css` (`114.24 kB`).
 
 ### 📅 2026-11-25 15:38 (UTC+7) — User Guide Modal & Admin Paid/Promo Pass Tracker (`19b890d`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `27167b8` to `19b890d` (`main`, 19-path sparse-checkout intact).
