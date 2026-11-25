@@ -579,13 +579,14 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
           </div>
 
           <div className="max-h-80 overflow-auto border border-line bg-bg/50">
-            <table className="w-full min-w-[680px] border-collapse text-left font-mono text-xs sm:text-sm">
+            <table className="w-full min-w-[780px] border-collapse text-left font-mono text-xs sm:text-sm">
               <thead>
                 <tr className="border-b border-line bg-panel-2/70 text-muted">
                   <th className="px-3 py-2 text-xs font-bold text-dim">#</th>
                   <th className="px-3 py-2 text-xs font-bold">บัญชี</th>
                   <th className="px-3 py-2 text-xs font-bold">แพ็ก</th>
                   <th className="px-3 py-2 text-xs font-bold">ประเภท</th>
+                  <th className="px-3 py-2 text-right text-xs font-bold">ซื้อ / รับสิทธิ์ (เวลาไทย)</th>
                   <th className="px-3 py-2 text-right text-xs font-bold">หมดอายุ (เวลาไทย)</th>
                 </tr>
               </thead>
@@ -600,7 +601,7 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                   if (list.length === 0) {
                     return (
                       <tr>
-                        <td colSpan={5} className="px-4 py-6 text-center text-dim">
+                        <td colSpan={6} className="px-4 py-6 text-center text-dim">
                           ยังไม่มีผู้ใช้ที่มีสิทธิ์กำลังใช้งาน
                         </td>
                       </tr>
@@ -643,6 +644,18 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                               {`ทีม @${item.team_owner_username}`}
                             </span>
                           )}
+                        </div>
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        <div className="font-bold text-ink">{item.acquired_at_th ?? item.claimed_at_th ?? "-"}</div>
+                        <div className="text-[11px] text-dim">
+                          {item.source === "paid"
+                            ? "ชำระเงิน"
+                            : item.source === "promo_free"
+                              ? "กดรับฟรี"
+                              : item.source === "team_member"
+                                ? "สิทธิ์ทีม"
+                                : "กำหนดเอง"}
                         </div>
                       </td>
                       <td className="px-3 py-2 text-right">

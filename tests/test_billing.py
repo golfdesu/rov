@@ -1266,13 +1266,16 @@ def test_admin_stats_and_users_include_paid_and_promo_passes(sandbox, monkeypatc
     assert by_name["paid_duo_buyer"]["source"] == "paid"
     assert by_name["paid_duo_buyer"]["paid_amount_thb"] == 109.0
     assert by_name["paid_duo_buyer"]["days_left"] >= 29
+    assert by_name["paid_duo_buyer"]["acquired_at_th"]
     assert by_name["biz_member_admin"]["tier"] == "team_pro"
     assert by_name["biz_member_admin"]["source"] == "team_member"
     assert by_name["biz_member_admin"]["team_owner_username"] == "biz_owner_admin"
     assert by_name["biz_member_admin"]["paid_amount_thb"] == 0.0
+    assert by_name["biz_member_admin"]["acquired_at_th"] is None
     assert by_name[USERNAME]["tier"] == "pro"
     assert by_name[USERNAME]["source"] == "promo_free"
     assert by_name[USERNAME]["days_left"] >= 9
+    assert by_name[USERNAME]["acquired_at_th"]
 
     users_res = client.get("/admin/users")
     assert users_res.status_code == 200

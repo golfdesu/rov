@@ -79,6 +79,8 @@ export interface AdminActivePassItem {
   expires_at: number;
   expires_at_th: string;
   days_left: number;
+  acquired_at?: number | null;
+  acquired_at_th?: string | null;
   claimed_at_th?: string | null;
   team_owner_username?: string | null;
   team_tier?: string | null;

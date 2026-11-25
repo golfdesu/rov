@@ -2423,7 +2423,8 @@ class UserDatabase:
                     SELECT
                         user_id,
                         COUNT(*) AS paid_orders,
-                        COALESCE(SUM(amount), 0) AS paid_amount_satang
+                        COALESCE(SUM(amount), 0) AS paid_amount_satang,
+                        MAX(paid_at) AS last_paid_at
                     FROM billing_orders
                     WHERE status = 'paid'
                     GROUP BY user_id
@@ -2444,6 +2445,7 @@ class UserDatabase:
                     u.email,
                     COALESCE(po.paid_orders, 0) AS paid_orders,
                     COALESCE(po.paid_amount_satang, 0) AS paid_amount_satang,
+                    po.last_paid_at,
                     pr.promo_claimed_at
                 FROM billing_passes bp
                 JOIN users u ON u.id = bp.user_id
@@ -2480,6 +2482,7 @@ class UserDatabase:
                 tier_code = str(pr["tier"])
                 expires_at = int(pr["expires_at"])
                 paid_orders_cnt = int(pr["paid_orders"] or 0)
+                last_paid_at = int(pr["last_paid_at"]) if pr["last_paid_at"] else None
                 promo_claimed_at = int(pr["promo_claimed_at"]) if pr["promo_claimed_at"] else None
                 if paid_orders_cnt > 0:
                     source = "paid"
@@ -2493,6 +2496,9 @@ class UserDatabase:
                     active_manual_users += 1
                 active_by_tier[tier_code] = active_by_tier.get(tier_code, 0) + 1
                 days_left = max(0, (expires_at - now + 86399) // 86400)
+                acquired_at = (
+                    last_paid_at if source == "paid" else (promo_claimed_at if source == "promo_free" else None)
+                )
                 item = {
                     "user_id": uid,
                     "username": str(pr["username"]),
@@ -2505,6 +2511,10 @@ class UserDatabase:
                     "expires_at": expires_at,
                     "expires_at_th": datetime.fromtimestamp(expires_at, tz_th).strftime("%Y-%m-%d %H:%M"),
                     "days_left": days_left,
+                    "acquired_at": acquired_at,
+                    "acquired_at_th": (
+                        datetime.fromtimestamp(acquired_at, tz_th).strftime("%Y-%m-%d %H:%M") if acquired_at else None
+                    ),
                     "claimed_at_th": (
                         datetime.fromtimestamp(promo_claimed_at, tz_th).strftime("%Y-%m-%d %H:%M")
                         if promo_claimed_at
@@ -2559,6 +2569,8 @@ class UserDatabase:
                         "expires_at": expires_at,
                         "expires_at_th": datetime.fromtimestamp(expires_at, tz_th).strftime("%Y-%m-%d %H:%M"),
                         "days_left": days_left,
+                        "acquired_at": None,
+                        "acquired_at_th": None,
                         "claimed_at_th": None,
                         "team_owner_username": owner_username,
                         "team_tier": tier_code,
@@ -2567,7 +2579,12 @@ class UserDatabase:
 
             source_rank = {"paid": 0, "team_member": 1, "manual": 2, "promo_free": 3}
             active_passes.sort(
-                key=lambda item: (source_rank.get(item["source"], 4), -int(item["expires_at"]), int(item["user_id"]))
+                key=lambda item: (
+                    source_rank.get(item["source"], 4),
+                    -int(item["acquired_at"] or 0),
+                    -int(item["expires_at"]),
+                    int(item["user_id"]),
+                )
             )
 
         return {
