@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, Check, CreditCard, Crosshair, Users, UsersRound } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, CreditCard, Crosshair, Gift, Users, UsersRound } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { ApiError, getJson, postJson } from "../api/client";
 import { useLanguage } from "../i18n/language";
@@ -24,6 +24,8 @@ interface BillingSummary {
   packages: PrepaidPass[];
   active_pass: { tier: Tier; expires_at: number; is_owner: boolean } | null;
   orders: BillingOrder[];
+  promo_claimable?: boolean;
+  promo_expires_at?: number | null;
 }
 
 interface TierDetails {
@@ -41,14 +43,14 @@ interface TierDetails {
 const tierNames: Record<Tier, string> = { pro: "Pro", duo: "Duo", team_pro: "Business" };
 const tierDetails: Record<Tier, TierDetails> = {
   pro: {
-    description: "สำหรับคนดราฟต์คนเดียว",
+    description: "สำหรับ 1 บัญชี",
     seats: 1,
     badge: "ยอดนิยม",
     badgeClass: "border-gold/50 bg-gold/15 text-gold",
     benefits: [
-      "Hero Pools ส่วนตัว 50 ชุด + ซิงก์ชื่อทีม",
-      "Scrim Analytics วิเคราะห์สถิติซ้อมทีม",
-      "ประวัติส่วนตัว 500 เกม + นำเข้า/ส่งออก JSON",
+      "ประวัติส่วนตัว 500 เกม",
+      "Hero Pools ส่วนตัว 50 ชุด",
+      "สถิติซ้อมทีมจากข้อมูลตัวเอง",
     ],
     Icon: Crosshair,
     cardClass: "border-gold/50 from-gold/12 ring-1 ring-gold/25",
@@ -59,9 +61,9 @@ const tierDetails: Record<Tier, TierDetails> = {
     description: "สำหรับ 2 บัญชี",
     seats: 2,
     benefits: [
-      "สิทธิ์ Pro ครบทุกฟีเจอร์สำหรับทั้ง 2 บัญชี",
-      "ประวัติส่วนตัวคนละ 500 เกม + Scrim Analytics",
-      "Hero Pools ส่วนตัวคนละ 50 ชุด + เชิญเพื่อนผ่านโปรไฟล์",
+      "สิทธิ์ Pro ครบทุกฟีเจอร์สำหรับ 2 บัญชี",
+      "ชวนเพื่อนเข้ากลุ่ม 1 คนผ่านหน้าโปรไฟล์",
+      "แยกประวัติและ Hero Pools ส่วนตัวคนละชุด",
     ],
     Icon: Users,
     cardClass: "border-good/30 from-good/10",
@@ -75,8 +77,8 @@ const tierDetails: Record<Tier, TierDetails> = {
     badgeClass: "border-blue/50 bg-blue/15 text-blue",
     benefits: [
       "สิทธิ์ Pro ครบทุกฟีเจอร์สูงสุด 5 บัญชี",
-      "แชร์ประวัติทีมร่วมกัน 500 เกม + ทัวร์นาเมนต์",
-      "แชร์ Hero Pools ทีม 50 ชุด + จัดการสมาชิกทีม",
+      "แชร์ประวัติทีมร่วมกัน 500 เกม + วิเคราะห์สถิติทีม",
+      "แชร์ Hero Pools ทีม 50 ชุด + จัดการสมาชิก",
     ],
     Icon: UsersRound,
     cardClass: "border-blue/35 from-blue/10",
@@ -84,7 +86,7 @@ const tierDetails: Record<Tier, TierDetails> = {
     actionClass: "border-blue/60 bg-blue/15 text-blue enabled:hover:bg-blue enabled:hover:text-bg",
   },
 };
-const comparisonRows: readonly { feature: string; free: string | null; pro: string | null; duo: string; team_pro: string }[] = [
+const comparisonRows: readonly { feature: string; free: string | null; pro: string | null; duo: string | null; team_pro: string }[] = [
   {
     feature: "Draft Board + AI + Global Ban",
     free: "✓",
@@ -93,25 +95,39 @@ const comparisonRows: readonly { feature: string; free: string | null; pro: stri
     team_pro: "✓",
   },
   {
-    feature: "ประวัติการดราฟต์ส่วนตัว",
-    free: "21 เกม",
-    pro: "500 เกม",
-    duo: "500 เกม",
-    team_pro: "500 เกม",
+    feature: "จำนวนบัญชี",
+    free: "1",
+    pro: "1",
+    duo: "2",
+    team_pro: "สูงสุด 5",
   },
   {
-    feature: "Hero Pools",
+    feature: "ประวัติส่วนตัว",
+    free: "14 เกม",
+    pro: "500 เกม",
+    duo: "คนละ 500 เกม",
+    team_pro: "คนละ 500 เกม",
+  },
+  {
+    feature: "Hero Pools ส่วนตัว",
     free: "2 ชุด",
     pro: "50 ชุด",
     duo: "คนละ 50 ชุด",
-    team_pro: "ส่วนตัว 50 + ทีม 50 ชุด",
+    team_pro: "คนละ 50 ชุด",
   },
   {
-    feature: "Scrim Analytics & ประวัติทีม",
+    feature: "สถิติซ้อมทีม",
+    free: "โหมดตัวอย่าง",
+    pro: "ข้อมูลตัวเอง",
+    duo: "ข้อมูลตัวเอง",
+    team_pro: "ข้อมูลตัวเอง & ทีม",
+  },
+  {
+    feature: "พื้นที่แชร์ร่วมกันในทีม",
     free: null,
-    pro: "ส่วนตัว",
-    duo: "ส่วนตัว (2 บัญชี)",
-    team_pro: "ทีม 5 คน (500 เกม)",
+    pro: null,
+    duo: null,
+    team_pro: "500 เกม · 50 ชุด",
   },
 ];
 const passDurations = [30, 90] as const;
@@ -137,8 +153,9 @@ export function BillingSandbox({
   const headingRef = useRef<HTMLHeadingElement>(null);
   const [summary, setSummary] = useState<BillingSummary | null>(null);
   const [duration, setDuration] = useState<PrepaidPass["days"]>(30);
-  const [processing, setProcessing] = useState<Tier | "cancel" | null>(null);
+  const [processing, setProcessing] = useState<Tier | "cancel" | "promo" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [promoClaimedUntil, setPromoClaimedUntil] = useState<number | null>(null);
   const [refresh, setRefresh] = useState(0);
   const [showAllOrders, setShowAllOrders] = useState(false);
   const busy = processing !== null;
@@ -238,6 +255,32 @@ export function BillingSandbox({
     }
   }
 
+  async function claimPromo() {
+    setProcessing("promo");
+    setError(null);
+    setPromoClaimedUntil(null);
+    try {
+      const claimed = await postJson<{ tier: Tier; expires_at: number }>("/billing/promo/claim", {
+        expected_username: username,
+      });
+      setPromoClaimedUntil(claimed.expires_at);
+      window.dispatchEvent(new Event("activepasschange"));
+    } catch (err) {
+      const detail = err instanceof ApiError ? err.detail : null;
+      const message = detail === "promo_ended"
+        ? "หมดเวลารับสิทธิ์ Pro ฟรีแล้ว"
+        : detail === "promo_already_claimed"
+          ? "บัญชีนี้รับสิทธิ์ Pro ฟรีไปแล้ว"
+          : detail === "pass_active"
+            ? "บัญชีนี้มีแพ็กที่ใช้งานอยู่แล้ว"
+            : "รับสิทธิ์ไม่สำเร็จ ลองอีกครั้ง";
+      setError(message);
+    } finally {
+      setRefresh((value) => value + 1);
+      setProcessing(null);
+    }
+  }
+
   function passLabel(pass: PrepaidPass) {
     return t("{0} · {1} วัน", tierNames[pass.tier], pass.days);
   }
@@ -311,7 +354,7 @@ export function BillingSandbox({
               {t("เลือกแพ็ก MiniDraft")}
             </h1>
             <p className="flex flex-wrap justify-center gap-x-2 text-sm text-muted sm:text-base">
-              <span>{t("จ่ายครั้งเดียวผ่าน PromptPay")}</span>
+              <span>{t("ชำระผ่าน PromptPay · ไม่ต่ออายุอัตโนมัติ")}</span>
               {!livemode && (
                 <>
                   <span aria-hidden="true">·</span>
@@ -457,7 +500,7 @@ export function BillingSandbox({
                             {row.pro === null ? <span className="text-dim">—</span> : row.pro === "✓" ? <span className="font-bold text-good">✓</span> : t(row.pro)}
                           </td>
                           <td className="px-3 py-2.5 font-mono text-ink">
-                            {row.duo === "✓" ? <span className="font-bold text-good">✓</span> : t(row.duo)}
+                            {row.duo === null ? <span className="text-dim">—</span> : row.duo === "✓" ? <span className="font-bold text-good">✓</span> : t(row.duo)}
                           </td>
                           <td className="py-2.5 pl-3 font-mono text-ink">
                             {row.team_pro === "✓" ? <span className="font-bold text-good">✓</span> : t(row.team_pro)}
@@ -470,7 +513,7 @@ export function BillingSandbox({
               </section>
 
               <p className="text-center text-xs text-muted">
-                {t("จ่ายครั้งเดียว ไม่ต่ออายุอัตโนมัติ · หมดอายุแล้วกลับเป็น Free โดยประวัติและข้อมูลไม่หาย")}
+                {t("เมื่อหมดอายุจะกลับเป็นแพ็ก Free โดยประวัติและข้อมูลทั้งหมดไม่หาย")}
               </p>
             </>
           ) : (
@@ -513,6 +556,35 @@ export function BillingSandbox({
         </div>
       )}
       {paymentNotice}
+      {promoClaimedUntil !== null && (
+        <p role="status" className="text-xs font-semibold text-good">
+          {t("รับสิทธิ์ Pro ฟรีเรียบร้อยแล้ว ใช้งานได้ถึง {0}", dateFormat.format(promoClaimedUntil * 1000))}
+        </p>
+      )}
+      {summary?.promo_claimable && summary.promo_expires_at && (
+        <div className="space-y-2.5 border border-gold/50 bg-gold/10 p-3.5">
+          <div className="flex items-start gap-2.5">
+            <Gift className="mt-0.5 size-4 shrink-0 text-gold" aria-hidden="true" />
+            <div className="min-w-0 flex-1 space-y-1">
+              <p className="font-display text-sm font-bold text-gold">{t("รับสิทธิ์ Pro ฟรี")}</p>
+              <p className="text-xs leading-relaxed text-ink">
+                {t(
+                  "ปลดล็อกประวัติ 500 เกม, Hero Pools 50 ชุด และสถิติซ้อมทีมฟรี (หมดอายุ {0} โดยข้อมูลไม่หาย)",
+                  dateFormat.format(summary.promo_expires_at * 1000),
+                )}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            disabled={busy}
+            className={`${primaryAction} w-full sm:w-auto`}
+            onClick={() => void claimPromo()}
+          >
+            <span>{processing === "promo" ? t("กำลังรับสิทธิ์…") : t("รับสิทธิ์ Pro ฟรี")}</span>
+          </button>
+        </div>
+      )}
       {!pending && (packages.length > 0 ? (
         <a href="#plans" className={`${actionClass} w-full gap-2 border-gold/60 text-gold hover:bg-gold/10 sm:w-auto`}>
           <StableButtonLabel message={activePass ? "จัดการ / เปลี่ยนแพ็ก" : "ดูแพ็ก"} alternatives={["จัดการ / เปลี่ยนแพ็ก", "ดูแพ็ก"]} />

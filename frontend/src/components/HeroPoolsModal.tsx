@@ -257,17 +257,17 @@ export function HeroPoolsModal({
   const totalHeroesCount = POOL_LANES.reduce((acc, l) => acc + (lanes[l]?.length ?? 0), 0);
 
   return (
-    <Modal labelledBy={titleId} className="max-w-4xl overflow-hidden" onClose={onClose}>
+    <Modal labelledBy={titleId} mobileSheet className="h-[92dvh] max-w-4xl overflow-hidden md:h-[85dvh]" onClose={onClose}>
       {(requestClose) => (
         <>
-          <div className="flex shrink-0 items-center justify-between gap-2 border-b border-line px-4 py-3">
+          <div className="flex shrink-0 items-center justify-between gap-2 border-b border-line px-3 py-2 sm:px-4 sm:py-3">
             <div className="flex min-w-0 items-center gap-2">
               <Users className="h-4 w-4 shrink-0 text-gold" />
               <div className="min-w-0">
                 <h2 id={titleId} className="font-display text-sm font-bold tracking-wider text-ink sm:text-base">
                   {t("Hero Pools")}
                 </h2>
-                <p className="text-[11px] text-dim">
+                <p className="hidden text-[11px] text-dim sm:block">
                   {t("ตั้งชื่อทีมให้ตรงกับกระดานดราฟต์เพื่อซิงก์ทั้ง 5 เลน")}
                 </p>
               </div>
@@ -282,7 +282,7 @@ export function HeroPoolsModal({
             </button>
           </div>
 
-          <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-line bg-panel-2/60 px-4 py-2">
+          <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-line bg-panel-2/60 px-3 py-1.5 sm:px-4 sm:py-2">
             <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
@@ -334,10 +334,10 @@ export function HeroPoolsModal({
             </p>
           )}
 
-          <div className="grid min-h-0 flex-1 overflow-y-auto md:grid-cols-[220px_1fr] md:overflow-hidden">
-            {/* Saved teams list */}
-            <aside className="border-b border-line bg-bg/50 p-3 md:min-h-0 md:overflow-y-auto md:border-r md:border-b-0">
-              <div className="mb-2 flex items-center justify-between gap-2">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:grid md:grid-cols-[220px_1fr]">
+            {/* Saved teams list (compact horizontal strip on mobile, 220px sidebar on desktop) */}
+            <aside className="shrink-0 border-b border-line bg-bg/50 px-3 py-2 md:min-h-0 md:overflow-y-auto md:border-r md:border-b-0 md:p-3">
+              <div className="mb-1.5 flex items-center justify-between gap-2 md:mb-2">
                 <span className="font-mono text-[11px] font-bold text-muted">{t("ทีมที่บันทึกไว้")}</span>
                 <button
                   type="button"
@@ -358,23 +358,23 @@ export function HeroPoolsModal({
               {currentList.length === 0 ? (
                 <p className="text-xs text-dim">{t("ยังไม่มี Hero Pool ในหมวดนี้")}</p>
               ) : (
-                <ul className="space-y-1.5">
+                <ul className="flex gap-1.5 overflow-x-auto pb-0.5 md:flex-col md:gap-0 md:space-y-1.5 md:overflow-x-visible md:pb-0">
                   {currentList.map((pool) => {
                     const count = POOL_LANES.reduce((sum, lane) => sum + (pool.lanes[lane]?.length ?? 0), 0);
                     const active = selectedId === pool.id;
                     return (
-                      <li key={pool.id}>
+                      <li key={pool.id} className="shrink-0 md:shrink">
                         <button
                           type="button"
                           disabled={busy}
                           onClick={() => loadPool(pool)}
-                          className={`flex w-full items-center justify-between gap-2 border px-2.5 py-2 text-left text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                          className={`flex min-h-8 items-center justify-between gap-1.5 border px-2.5 py-1 text-left text-xs whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:opacity-50 md:w-full md:py-2 ${
                             active
                               ? "border-gold bg-gold/10 font-bold text-gold"
                               : "border-line bg-panel text-ink hover:border-line-strong"
                           }`}
                         >
-                          <span className="truncate font-display">{pool.team_name}</span>
+                          <span className="max-w-[110px] truncate font-display md:max-w-none">{pool.team_name}</span>
                           <span className="shrink-0 font-mono text-[10px] text-muted">{count}</span>
                         </button>
                       </li>
@@ -386,11 +386,11 @@ export function HeroPoolsModal({
 
             {/* View / Editor */}
             {overview === null && !error ? (
-              <div className="flex min-h-[240px] items-center justify-center p-4 text-xs text-muted" role="status">
+              <div className="flex min-h-[240px] flex-1 items-center justify-center p-4 text-xs text-muted" role="status">
                 {t("กำลังโหลด…")}
               </div>
             ) : overview === null && error ? (
-              <div className="flex min-h-[240px] flex-col items-center justify-center gap-3 p-4 text-center">
+              <div className="flex min-h-[240px] flex-1 flex-col items-center justify-center gap-3 p-4 text-center">
                 <p className="text-xs text-muted">{t("โหลดข้อมูลไม่สำเร็จ")}</p>
                 <button
                   type="button"
@@ -404,7 +404,7 @@ export function HeroPoolsModal({
                 </button>
               </div>
             ) : !isEditing && typeof selectedId === "number" ? (
-              <div className="flex min-w-0 flex-col gap-3 p-4">
+              <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-3 overflow-y-auto p-3 sm:p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3">
                   <div className="flex min-w-0 items-center gap-2">
                     <h3 className="truncate font-display text-base font-bold text-ink">{teamName}</h3>
@@ -488,10 +488,10 @@ export function HeroPoolsModal({
                 </div>
               </div>
             ) : (
-            <form onSubmit={handleSave} className="flex min-h-0 min-w-0 flex-col md:overflow-hidden">
-              <div className="flex min-h-0 flex-1 flex-col gap-3 p-4 md:overflow-hidden">
+            <form onSubmit={handleSave} className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+              <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden p-3 sm:gap-3 sm:p-4">
               <div className="flex shrink-0 flex-wrap items-end gap-2">
-                <label className="min-w-[180px] flex-1 text-xs text-muted">
+                <label className="min-w-0 flex-1 text-xs text-muted">
                   <span className="mb-1 block font-semibold">{t("ชื่อทีม")}</span>
                   <input
                     type="text"
@@ -501,7 +501,7 @@ export function HeroPoolsModal({
                     aria-invalid={isDuplicateName}
                     onChange={(e) => setTeamName(e.target.value)}
                     placeholder={t("เช่น BRU, FS, MY TEAM")}
-                    className={`min-h-9 w-full border bg-bg px-2.5 font-display text-sm font-bold text-ink focus:outline-none ${
+                    className={`min-h-9 w-full border bg-bg px-2.5 font-display text-base font-bold text-ink focus:outline-none sm:text-sm ${
                       isDuplicateName ? "border-red focus:border-red" : "border-line-strong focus:border-gold"
                     }`}
                   />
@@ -541,8 +541,8 @@ export function HeroPoolsModal({
                 </div>
               )}
 
-              {/* Lane tabs */}
-              <div className="flex shrink-0 flex-wrap gap-1.5 border-b border-line pb-2">
+              {/* Lane tabs (single 5-column row on mobile, flex wrap on sm+) */}
+              <div className="grid shrink-0 grid-cols-5 gap-1 border-b border-line pb-2 sm:flex sm:flex-wrap sm:gap-1.5">
                 {POOL_LANES.map((lane) => {
                   const isCurrent = activeLane === lane;
                   const count = lanes[lane]?.length ?? 0;
@@ -551,13 +551,13 @@ export function HeroPoolsModal({
                       key={lane}
                       type="button"
                       onClick={() => setActiveLane(lane)}
-                      className={`inline-flex min-h-8 items-center gap-1.5 border px-2.5 font-mono text-xs font-bold transition-colors ${
+                      className={`inline-flex min-h-8 min-w-0 items-center justify-center gap-0.5 border px-1 font-mono text-[11px] font-bold transition-colors sm:gap-1.5 sm:px-2.5 sm:text-xs ${
                         isCurrent
                           ? "border-gold bg-gold text-bg"
                           : "border-line bg-bg text-muted hover:border-line-strong hover:text-ink"
                       }`}
                     >
-                      <LaneIcon lane={lane} className="size-3.5" />
+                      <LaneIcon lane={lane} className="hidden size-3.5 shrink-0 sm:inline-block" />
                       <span>{LANE_SHORT[lane]?.en ?? lane}</span>
                       <span className={isCurrent ? "text-bg/80" : "text-gold"}>({count})</span>
                     </button>
@@ -567,7 +567,7 @@ export function HeroPoolsModal({
 
               {/* Selected chips strip (stable — avoids jumping grid tiles on click) */}
               {activeLaneHeroes.length > 0 && (
-                <div className="flex max-h-20 shrink-0 flex-wrap gap-1 overflow-y-auto border border-line bg-bg/50 p-1.5">
+                <div className="flex max-h-14 shrink-0 flex-wrap gap-1 overflow-y-auto border border-line bg-bg/50 p-1.5 sm:max-h-20">
                   {activeLaneHeroes.map((heroName) => (
                     <button
                       key={heroName}
@@ -589,7 +589,7 @@ export function HeroPoolsModal({
 
               {/* Search & clear */}
               <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
-                <div className="relative min-w-[180px] flex-1">
+                <div className="relative min-w-0 flex-1">
                   <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-dim" />
                   <input
                     type="text"
@@ -599,7 +599,7 @@ export function HeroPoolsModal({
                       if (e.key === "Enter") e.preventDefault();
                     }}
                     placeholder={t("ค้นหาฮีโร่ในเลนนี้…")}
-                    className="min-h-8 w-full border border-line bg-bg pr-2.5 pl-8 text-xs text-ink focus:border-gold focus:outline-none"
+                    className="min-h-8 w-full border border-line bg-bg pr-2.5 pl-8 text-base text-ink focus:border-gold focus:outline-none sm:text-xs"
                   />
                 </div>
                 {activeLaneHeroes.length > 0 && (
@@ -615,7 +615,7 @@ export function HeroPoolsModal({
               </div>
 
               {/* Hero grid */}
-              <div className="grid min-h-[180px] grid-cols-4 gap-1.5 pr-1 sm:grid-cols-6 md:min-h-0 md:flex-1 md:overflow-y-auto lg:grid-cols-7">
+              <div className="grid min-h-0 flex-1 content-start grid-cols-4 gap-1.5 overflow-y-auto pr-1 sm:grid-cols-6 lg:grid-cols-7">
                 {filteredHeroes.map((hero) => {
                   const selected = activeLaneHeroSet.has(hero.name);
                   return (
@@ -646,7 +646,7 @@ export function HeroPoolsModal({
               </div>
 
               {/* Sticky Footer Bar for Save / Cancel */}
-              <div className="flex shrink-0 items-center justify-end gap-2 border-t border-line bg-bg/80 px-4 py-2.5">
+              <div className="flex shrink-0 items-center justify-end gap-2 border-t border-line bg-bg/90 px-3 py-2 sm:px-4 sm:py-2.5">
                 {(typeof selectedId === "number" || currentList.length > 0) && (
                   <button
                     type="button"

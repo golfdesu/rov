@@ -72,6 +72,12 @@ class BillingSummary(BaseModel):
     packages: list[BillingPackage]
     active_pass: BillingPass | None
     orders: list[BillingOrder]
+    promo_claimable: bool = False
+    promo_expires_at: int | None = None
+
+
+class PromoClaimRequest(BaseModel):
+    expected_username: str
 
 
 class CheckoutResponse(BaseModel):

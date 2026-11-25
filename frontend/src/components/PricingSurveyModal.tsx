@@ -1,6 +1,6 @@
 import { StableButtonLabel } from "./StableButtonLabel";
 import { useLanguage } from "../i18n/language";
-import { ArrowRight, BarChart3, Check, Megaphone, Send, Sparkles, X } from "lucide-react";
+import { ArrowRight, BarChart3, Check, Gift, Megaphone, Send, Sparkles, X } from "lucide-react";
 import { type FormEvent, useId, useState } from "react";
 import { Modal } from "./Modal";
 
@@ -13,6 +13,9 @@ interface PricingSurveyModalProps {
   onAcknowledge: () => void;
   onSnooze: () => void;
   onOpenAnalytics?: () => void;
+  freePromoUntil?: number | null;
+  isAuthenticated?: boolean;
+  onOpenPromoProfile?: () => void;
 }
 
 const UPDATE_HIGHLIGHTS = [
@@ -21,8 +24,8 @@ const UPDATE_HIGHLIGHTS = [
     detail: "วิเคราะห์ Pick/Ban, Matchups, คอมโบ, ความลึก Hero Pool 4 แท็บ และส่งออกรายงาน A4",
   },
   {
-    title: "จัดทัวร์นาเมนต์ & ประวัติฟรี 21 เกม",
-    detail: "แยกบันทึกประวัติตามทัวร์นาเมนต์ ตั้งชื่อซีรีส์ และขยายโควตาบันทึกฟรีเป็น 21 เกม",
+    title: "จัดทัวร์นาเมนต์ & ประวัติฟรี 14 เกม",
+    detail: "แยกบันทึกประวัติตามทัวร์นาเมนต์ ตั้งชื่อซีรีส์ และบันทึกประวัติฟรีได้ 14 เกม",
   },
   {
     title: "ระบบทีม & Hero Pool",
@@ -44,15 +47,26 @@ export function PricingSurveyModal({
   onAcknowledge,
   onSnooze,
   onOpenAnalytics,
+  freePromoUntil,
+  isAuthenticated = false,
+  onOpenPromoProfile,
 }: PricingSurveyModalProps) {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const titleId = useId();
   const [message, setMessage] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
   const [closing, setClosing] = useState(false);
+  const [openedAt] = useState(Date.now);
 
   const trimmedLength = message.trim().length;
   const locked = busy || closing;
+  const hasFreeProPromo = Boolean(freePromoUntil && freePromoUntil * 1000 > openedAt);
+  const promoExpiryText = freePromoUntil
+    ? new Intl.DateTimeFormat(language === "th" ? "th-TH" : "en-GB", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }).format(freePromoUntil * 1000)
+    : "";
 
   const handleSubmit = async (e: FormEvent, requestClose: (afterClose?: () => void) => void) => {
     e.preventDefault();
@@ -117,6 +131,43 @@ export function PricingSurveyModal({
                 </span>
               )}
             </div>
+
+            {hasFreeProPromo && (
+              <div className="flex flex-col gap-2 border border-gold/50 bg-gold/10 p-3">
+                <div className="flex items-start gap-2">
+                  <Gift className="mt-0.5 h-4 w-4 shrink-0 text-gold" aria-hidden="true" />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-display text-xs font-bold text-gold sm:text-sm">
+                      {t("แจกสิทธิ์ Pro ฟรี")}
+                    </p>
+                    <p className="mt-0.5 text-xs leading-relaxed text-ink">
+                      {t("กดรับสิทธิ์ได้ที่หน้าโปรไฟล์ เพื่อลองใช้ประวัติ 500 เกม, Hero Pools 50 ชุด และสถิติซ้อมทีมฟรี (หมดอายุ {0})", promoExpiryText)}
+                    </p>
+                  </div>
+                </div>
+                {onOpenPromoProfile && (
+                  <button
+                    type="button"
+                    disabled={locked}
+                    onClick={() => {
+                      if (locked) return;
+                      setClosing(true);
+                      requestClose(() => {
+                        onAcknowledge();
+                        onOpenPromoProfile();
+                      });
+                    }}
+                    className="inline-flex min-h-9 w-full items-center justify-between gap-2 border border-gold bg-gold px-3 py-1.5 font-display text-xs font-bold text-bg transition-colors hover:bg-gold/90 disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm"
+                  >
+                    <StableButtonLabel
+                      message={isAuthenticated ? "ไปรับ Pro ฟรีที่หน้าโปรไฟล์" : "เข้าสู่ระบบเพื่อรับ Pro ฟรี"}
+                      alternatives={["ไปรับ Pro ฟรีที่หน้าโปรไฟล์", "เข้าสู่ระบบเพื่อรับ Pro ฟรี"]}
+                    />
+                    <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  </button>
+                )}
+              </div>
+            )}
 
             <ul className="flex flex-col gap-2 border border-line bg-panel-2/60 p-3 text-xs leading-relaxed sm:text-[13px]">
               {UPDATE_HIGHLIGHTS.map((item) => (

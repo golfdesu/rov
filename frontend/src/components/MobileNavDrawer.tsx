@@ -28,7 +28,6 @@ interface MobileNavDrawerProps<T extends string> {
   onOpenDonate: () => void;
   onOpenAdminStats?: () => void;
   onOpenHeroPools?: () => void;
-  onOpenAnalyticsDashboard?: () => void;
   onOpenPlans?: () => void;
   onOpenAuth: () => void;
   onOpenProfile: () => void;
@@ -50,7 +49,6 @@ export function MobileNavDrawer<T extends string>({
   onOpenDonate,
   onOpenAdminStats,
   onOpenHeroPools,
-  onOpenAnalyticsDashboard,
   onOpenPlans,
   onOpenAuth,
   onOpenProfile,
@@ -209,15 +207,18 @@ export function MobileNavDrawer<T extends string>({
           <div className="border border-line bg-bg/60 p-3">
             {authUser ? (
               <div className="flex flex-col gap-2.5">
+                <div className="flex min-h-7 min-w-0 items-center gap-2 text-xs text-ink">
+                  <User className="h-4 w-4 shrink-0 text-gold" />
+                  <span className="min-w-0 flex-1 truncate font-mono font-bold">{accountName}</span>
+                </div>
                 <button
                   type="button"
                   aria-label={t("เปิดโปรไฟล์ของ {0}", accountName)}
                   onClick={() => requestClose(onOpenProfile)}
-                  className="flex min-h-8 min-w-0 items-center gap-2 text-left text-xs text-ink transition-colors hover:text-gold focus-visible:outline-2 focus-visible:outline-gold"
+                  className="inline-flex min-h-9 w-full items-center justify-center gap-1.5 border border-line-strong bg-panel-2 px-3 py-1.5 font-display text-xs font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold"
                 >
-                  <User className="h-4 w-4 shrink-0 text-gold" />
-                  <span className="min-w-0 flex-1 truncate font-mono font-bold">{accountName}</span>
-                  <span className="shrink-0 text-muted">{t("โปรไฟล์")}</span>
+                  <User className="h-3.5 w-3.5 shrink-0 text-gold" />
+                  <span><StableButtonLabel message="โปรไฟล์" /></span>
                 </button>
                 {authUser.stripe_sandbox_enabled && onOpenPlans && (
                   <button
@@ -253,31 +254,19 @@ export function MobileNavDrawer<T extends string>({
             )}
           </div>
 
-          {sandboxBilling && (onOpenHeroPools || onOpenAnalyticsDashboard) && (
+          {sandboxBilling && authUser && onOpenHeroPools && (
             <div className="flex flex-col gap-2">
               <span className="font-mono text-[10px] font-semibold tracking-wider text-dim uppercase">
                 {t("เครื่องมือดราฟต์")}
               </span>
-              {authUser && onOpenHeroPools && (
-                <button
-                  type="button"
-                  onClick={() => requestClose(onOpenHeroPools)}
-                  className="flex min-h-10 w-full items-center gap-2 border border-line-strong bg-panel-2 px-3 py-1.5 text-left font-display text-xs font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold"
-                >
-                  <Users className="h-4 w-4 shrink-0 text-gold" />
-                  <span>{t("Hero Pools")}</span>
-                </button>
-              )}
-              {onOpenAnalyticsDashboard && (
-                <button
-                  type="button"
-                  onClick={() => requestClose(onOpenAnalyticsDashboard)}
-                  className="flex min-h-10 w-full items-center gap-2 border border-line-strong bg-panel-2 px-3 py-1.5 text-left font-display text-xs font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold"
-                >
-                  <BarChart3 className="h-4 w-4 shrink-0 text-gold" />
-                  <StableButtonLabel message="สถิติซ้อมทีม" className="inline-grid text-left" />
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => requestClose(onOpenHeroPools)}
+                className="flex min-h-10 w-full items-center gap-2 border border-line-strong bg-panel-2 px-3 py-1.5 text-left font-display text-xs font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold"
+              >
+                <Users className="h-4 w-4 shrink-0 text-gold" />
+                <span>{t("Hero Pools")}</span>
+              </button>
             </div>
           )}
 

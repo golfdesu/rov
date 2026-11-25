@@ -44,6 +44,7 @@ from src.billing import (
     HeroPoolOverview,
     HeroPoolUpsertRequest,
     HistorySeriesEdit,
+    PromoClaimRequest,
     TeamGame,
     TeamGameRequest,
     TeamHistoryRename,
@@ -817,7 +818,14 @@ def _resolve_oauth_redirect_uri(request: Request, provider: str, explicit_uri: s
 
 
 def _auth_status_response(user: AuthUser | None) -> AuthStatusResponse:
-    survey_choice = get_user_db().get_pricing_survey_choice(user.id) if user is not None else None
+    db = get_user_db()
+    survey_choice = db.get_pricing_survey_choice(user.id) if user is not None else None
+    promo_until = config.free_promo_until_ts if config.free_promo_active else None
+    show_promo_until = (
+        promo_until
+        if promo_until is not None and (user is None or db.can_claim_free_pro_promo(user.id, promo_until))
+        else None
+    )
     return AuthStatusResponse(
         authenticated=user is not None,
         user=_to_user_schema(user) if user is not None else None,
@@ -828,6 +836,7 @@ def _auth_status_response(user: AuthUser | None) -> AuthStatusResponse:
         is_admin=config.is_admin_username(user.username) if user is not None else False,
         stripe_sandbox_enabled=config.billing_enabled,
         stripe_livemode=config.stripe_livemode,
+        free_promo_until=show_promo_until,
     )
 
 
@@ -1260,8 +1269,11 @@ def billing_summary(
     user: AuthUser = Depends(get_required_user), x_expected_user: str | None = Header(default=None)
 ) -> BillingSummary:
     _verify_expected_user(user, x_expected_user)
-    active_pass, orders = get_user_db().billing_summary(user.id)
+    db = get_user_db()
+    active_pass, orders = db.billing_summary(user.id)
     current = BillingPass(**dict(active_pass)) if active_pass else None
+    promo_until = config.free_promo_until_ts if config.free_promo_active else None
+    promo_claimable = db.can_claim_free_pro_promo(user.id, promo_until)
     return BillingSummary(
         packages=[
             BillingPackage(tier=tier, days=days, amount=amount)
@@ -1271,7 +1283,24 @@ def billing_summary(
         ],
         active_pass=current,
         orders=[BillingOrder(**dict(order)) for order in orders],
+        promo_claimable=promo_claimable,
+        promo_expires_at=promo_until if promo_claimable else None,
     )
+
+
+@app.post("/billing/promo/claim", response_model=BillingPass, dependencies=[Depends(require_stripe_sandbox)])
+def claim_free_pro_promo(body: PromoClaimRequest, user: AuthUser = Depends(get_required_user)) -> BillingPass:
+    _verify_expected_user(user, body.expected_username)
+    if not _billing_rate_limiter.check_and_record(f"billing:{user.id}"):
+        raise HTTPException(status_code=429, detail="Too many checkout requests")
+    promo_until = config.free_promo_until_ts if config.free_promo_active else None
+    try:
+        claimed = get_user_db().claim_free_pro_promo(user.id, promo_until)
+    except ValueError as error:
+        reason = str(error)
+        status_code = 410 if reason == "promo_ended" else 409
+        raise HTTPException(status_code=status_code, detail=reason) from error
+    return BillingPass(**claimed)
 
 
 @app.post("/billing/checkout", response_model=CheckoutResponse, dependencies=[Depends(require_stripe_sandbox)])

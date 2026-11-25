@@ -1,6 +1,6 @@
 import { Check, Mail, UserRound, UserRoundPlus, UsersRound } from "lucide-react";
 import { type FormEvent, useEffect, useId, useState } from "react";
-import { postJson } from "../api/client";
+import { ApiError, postJson } from "../api/client";
 import { getTeam, groupName, teamErrorMessage, teamPath, type TeamOverview } from "../api/team";
 import { type Message, translateMessage, useLanguage } from "../i18n/language";
 import { Alert } from "./Alert";
@@ -48,7 +48,11 @@ export function TeamSandbox({ currentUsername }: { currentUsername: string }) {
       if (path === "invite") setInviteUsername("");
       if (success) setNotice(success);
     } catch (error) {
-      setError(teamErrorMessage(error));
+      if (path === "invite" && error instanceof ApiError && error.detail === "invite_unavailable") {
+        setError("ไม่พบผู้ใช้นี้");
+      } else {
+        setError(teamErrorMessage(error));
+      }
     } finally {
       setRevision((value) => value + 1);
       window.dispatchEvent(new Event("billingchange"));

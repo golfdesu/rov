@@ -24,6 +24,7 @@ export interface AuthStatusResponse {
   is_admin?: boolean;
   stripe_sandbox_enabled?: boolean;
   stripe_livemode?: boolean;
+  free_promo_until?: number | null;
 }
 
 export type PricingSurveyChoice = "willing" | "not_willing";

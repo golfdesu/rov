@@ -23,6 +23,7 @@ services:
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
       - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET:-}
       - ROV_STRIPE_LIVE_ENABLED=${ROV_STRIPE_LIVE_ENABLED:-true}
+      - ROV_FREE_PROMO_UNTIL=${ROV_FREE_PROMO_UNTIL:-2026-12-07T00:00:00+07:00}
     volumes:
       - rov_db_data:/app/db
     expose:

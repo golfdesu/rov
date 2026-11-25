@@ -1,4 +1,6 @@
 import os
+import time
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -143,6 +145,7 @@ class Config:
             "no",
             "off",
         }
+        self.free_promo_until: str = os.environ.get("ROV_FREE_PROMO_UNTIL", "2026-12-07T00:00:00+07:00").strip()
 
         raw_admins = os.environ.get("ROV_ADMIN_USERNAMES", "").strip()
         self.admin_usernames: tuple[str, ...] = tuple(u.strip().lower() for u in raw_admins.split(",") if u.strip())
@@ -186,6 +189,26 @@ class Config:
     @property
     def stripe_sandbox_enabled(self) -> bool:
         return self.billing_enabled
+
+    @property
+    def free_promo_until_ts(self) -> int | None:
+        raw = self.free_promo_until
+        if not raw or raw.lower() in {"0", "false", "no", "off", "none"}:
+            return None
+        if raw.isdigit():
+            return int(raw)
+        try:
+            dt = datetime.fromisoformat(raw)
+        except ValueError:
+            return None
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone(timedelta(hours=7)))
+        return int(dt.timestamp())
+
+    @property
+    def free_promo_active(self) -> bool:
+        ts = self.free_promo_until_ts
+        return bool(self.billing_enabled and ts is not None and int(time.time()) < ts)
 
     def resolve_frontend_dist(self) -> Path:
         override = os.environ.get("ROV_FRONTEND_DIST", "").strip()

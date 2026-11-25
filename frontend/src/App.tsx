@@ -47,6 +47,12 @@ const TABS: { key: Tab; label: string }[] = [
   { key: "practice", label: "ฝึกดราฟต์ vs AI" },
 ];
 
+const ANALYTICS_TAB: { key: Tab; label: string } = { key: "analytics", label: "สถิติซ้อมทีม" };
+
+function visibleTabs(sandboxBilling: boolean): { key: Tab; label: string }[] {
+  return sandboxBilling ? [...TABS, ANALYTICS_TAB] : TABS;
+}
+
 function initialTab(): Tab {
   if (window.location.hash === "#admin") return "admin";
   if (window.location.hash === "#analytics") return "analytics";
@@ -139,7 +145,7 @@ function Workspace({
               <ChevronDown className="h-3 w-3 shrink-0 text-dim" aria-hidden="true" />
             </button>
             <div className="hidden min-w-0 flex-1 items-center gap-1 overflow-x-auto lg:flex">
-              {TABS.map((item) => (
+              {visibleTabs(sandboxBilling).map((item) => (
                 <button
                   type="button"
                   key={item.key}
@@ -444,6 +450,7 @@ export function App() {
   const lastAuthCheckAtRef = useRef(0);
   const [authLoading, setAuthLoading] = useState(true);
   const [sandboxBilling, setSandboxBilling] = useState(false);
+  const [freePromoUntil, setFreePromoUntil] = useState<number | null>(null);
   const [googleLoginEnabled, setGoogleLoginEnabled] = useState(false);
   const [discordLoginEnabled, setDiscordLoginEnabled] = useState(false);
   const [oauthError, setOauthError] = useState<string | null>(() => {
@@ -559,6 +566,7 @@ export function App() {
       try {
         const res = await getJson<AuthStatusResponse>("/auth/me", signal);
         setSandboxBilling(Boolean(res.stripe_sandbox_enabled));
+        setFreePromoUntil(res.free_promo_until ?? null);
         setGoogleLoginEnabled(Boolean(res.google_login_enabled));
         setDiscordLoginEnabled(Boolean(res.discord_login_enabled));
         if (res.authenticated && res.user) {
@@ -614,6 +622,7 @@ export function App() {
         if (ctrl.signal.aborted) return;
         lastAuthCheckAtRef.current = Date.now();
         setSandboxBilling(Boolean(res.stripe_sandbox_enabled));
+        setFreePromoUntil(res.free_promo_until ?? null);
         setGoogleLoginEnabled(Boolean(res.google_login_enabled));
         setDiscordLoginEnabled(Boolean(res.discord_login_enabled));
         if (res.authenticated && res.user) {
@@ -956,7 +965,7 @@ export function App() {
       />
       {mobileDrawerOpen && (
         <MobileNavDrawer
-          tabs={TABS}
+          tabs={visibleTabs(sandboxBilling)}
           activeTab={tab}
           authUser={authUser}
           isAdmin={isAdminUser}
@@ -971,7 +980,6 @@ export function App() {
           onOpenDonate={() => setDonateModalOpen(true)}
           onOpenAdminStats={() => setAdminStatsModalOpen(true)}
           onOpenHeroPools={() => openDraftTool("pools")}
-          onOpenAnalyticsDashboard={() => selectTab("analytics")}
           onOpenPlans={() => selectTab("plans")}
           onOpenAuth={() => setAuthModalOpen(true)}
           onOpenProfile={() => { window.location.hash = "profile"; }}
@@ -994,6 +1002,13 @@ export function App() {
           onAcknowledge={handleAcknowledgeAnnouncement}
           onSnooze={handleSnoozeSurvey}
           onOpenAnalytics={sandboxBilling ? () => selectTab("analytics") : undefined}
+          freePromoUntil={authUser?.is_paid ? null : freePromoUntil}
+          isAuthenticated={authUser !== null}
+          onOpenPromoProfile={
+            sandboxBilling
+              ? (authUser ? () => selectTab("profile") : () => setAuthModalOpen(true))
+              : undefined
+          }
         />
       )}
       {donateModalOpen && <DonateModal onClose={() => setDonateModalOpen(false)} />}

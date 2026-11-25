@@ -537,6 +537,7 @@ class AuthStatusResponse(BaseModel):
     is_admin: bool = False
     stripe_sandbox_enabled: bool = False
     stripe_livemode: bool = False
+    free_promo_until: int | None = None
 
 
 class AdminStatsResponse(BaseModel):

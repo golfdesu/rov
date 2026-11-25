@@ -325,7 +325,7 @@ def test_duo_checkout_invitation_and_shared_history(sandbox):
     assert client.get("/billing/team/history").status_code == 403
     assert client.post("/billing/team/history", headers=ORIGIN, json=body).status_code == 403
     assert client.get("/draft/session").json()["seriesGames"][0]["id"] == game["id"]
-    assert client.get("/auth/me").json()["user"]["draft_history_limit"] == 21
+    assert client.get("/auth/me").json()["user"]["draft_history_limit"] == 14
 
 
 def test_team_pro_seats_capacity_and_expiry(sandbox, monkeypatch):
@@ -383,18 +383,18 @@ def test_duo_schema_migrates_existing_billing_rows(tmp_path, monkeypatch):
 
 def test_sandbox_personal_history_preserves_existing_games_at_capacity(sandbox):
     client, _, db, user = sandbox
-    games = [draft_game(str(number)) for number in range(22)]
-    assert client.put("/draft/session", json={"seriesGames": games[:21], "updatedAt": 1}).status_code == 200
+    games = [draft_game(str(number)) for number in range(15)]
+    assert client.put("/draft/session", json={"seriesGames": games[:14], "updatedAt": 1}).status_code == 200
     full = client.put("/draft/session", json={"seriesGames": games, "updatedAt": 2})
     assert full.status_code == 422 and full.json()["detail"] == "history_full"
-    assert len(client.get("/draft/session").json()["seriesGames"]) == 21
+    assert len(client.get("/draft/session").json()["seriesGames"]) == 14
     order = db.reserve_billing_order(user.id, "pro", 30, 5900, ORIGIN["Origin"])
     db.settle_billing_order(order["id"], "cs_test_pro", 5900, "pi_pro")
     assert client.put("/draft/session", json={"seriesGames": games, "updatedAt": 3}).status_code == 200
     with db._connect() as conn:
         conn.execute("UPDATE billing_passes SET expires_at = ? WHERE user_id = ?", (int(time.time()), user.id))
     updated = client.put("/draft/session", json={"seriesGames": games, "updatedAt": 4, "stepIndex": 1})
-    assert updated.status_code == 200 and len(updated.json()["seriesGames"]) == 22
+    assert updated.status_code == 200 and len(updated.json()["seriesGames"]) == 15
     again = client.put("/draft/session", json={"seriesGames": [*games, draft_game("new")], "updatedAt": 5})
     assert again.status_code == 422
     assert client.put("/draft/session", json={"seriesGames": games[1:], "updatedAt": 6}).status_code == 200
@@ -1142,3 +1142,64 @@ def test_cancel_uncreated_order_and_normalized_cors_origin(tmp_path, monkeypatch
         assert cancel_res.status_code == 204
         after = client.get("/billing").json()
         assert after["orders"][0]["status"] == "closed"
+
+
+def test_free_pro_promo_claim_and_expiry(sandbox, monkeypatch):
+    client, _, db, user = sandbox
+    future_ts = int(time.time()) + 5 * 86400
+    monkeypatch.setattr(api.config, "free_promo_until", str(future_ts))
+
+    me = client.get("/auth/me").json()
+    assert me["free_promo_until"] == future_ts
+    assert me["user"]["is_paid"] is False
+    assert me["user"]["draft_history_limit"] == 14
+
+    summary = client.get("/billing").json()
+    assert summary["promo_claimable"] is True
+    assert summary["promo_expires_at"] == future_ts
+
+    claimed = client.post("/billing/promo/claim", headers=ORIGIN, json={"expected_username": USERNAME})
+    assert claimed.status_code == 200
+    assert claimed.json()["tier"] == "pro"
+    assert claimed.json()["expires_at"] == future_ts
+
+    after_me_status = client.get("/auth/me").json()
+    assert after_me_status["free_promo_until"] is None
+    after_me = after_me_status["user"]
+    assert after_me["is_paid"] is True
+    assert after_me["draft_history_limit"] == 500
+    assert client.get("/billing").json()["promo_claimable"] is False
+
+    # Cannot claim twice
+    dup = client.post("/billing/promo/claim", headers=ORIGIN, json={"expected_username": USERNAME})
+    assert dup.status_code == 409 and dup.json()["detail"] == "promo_already_claimed"
+
+    # Paid user cannot claim over existing active pass
+    paid_user = db.register_user("already_paid", "test-password", display_name="Paid")
+    order = db.reserve_billing_order(paid_user.id, "pro", 30, 5900, ORIGIN["Origin"])
+    db.settle_billing_order(order["id"], "cs_test_paid_promo", 5900, "pi_paid_promo")
+    client.cookies.set(SESSION_COOKIE_NAME, db.create_session(paid_user.id))
+    assert client.get("/billing").json()["promo_claimable"] is False
+    over = client.post("/billing/promo/claim", headers=ORIGIN, json={"expected_username": "already_paid"})
+    assert over.status_code == 409 and over.json()["detail"] == "pass_active"
+
+    # Save > 14 games & > 2 hero pools on promo user, then expire promo and verify data stays intact
+    client.cookies.set(SESSION_COOKIE_NAME, db.create_session(user.id))
+    games = [draft_game(f"promo-g-{i}") for i in range(16)]
+    assert client.put("/draft/session", json={"seriesGames": games, "updatedAt": 1}).status_code == 200
+    for idx in range(3):
+        db.upsert_hero_pool(user.id, "personal", f"Team-{idx}", {"DS_Lane": ["Florentino"]})
+
+    monkeypatch.setattr(api.config, "free_promo_until", str(int(time.time()) - 10))
+    with db._connect() as conn:
+        conn.execute("UPDATE billing_passes SET expires_at = ? WHERE user_id = ?", (int(time.time()) - 10, user.id))
+
+    expired_me = client.get("/auth/me").json()
+    assert expired_me["free_promo_until"] is None
+    assert expired_me["user"]["is_paid"] is False
+    assert expired_me["user"]["draft_history_limit"] == 14
+    assert len(client.get("/draft/session").json()["seriesGames"]) == 16
+    assert len(db.list_hero_pools(user.id)["personal"]) == 3
+
+    ended = client.post("/billing/promo/claim", headers=ORIGIN, json={"expected_username": USERNAME})
+    assert ended.status_code == 410 and ended.json()["detail"] == "promo_ended"

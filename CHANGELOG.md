@@ -27,6 +27,58 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-25 12:36 (UTC+7) — Streamline Plans, Expose Scrim Analytics Tab & Add Claimable Free Pro Promo
+**Agent:** Antigravity Agent
+
+### ✅ Completed Work
+- **Top Navigation Bar (`App.tsx`, `MobileNavDrawer.tsx`):** Promoted `สถิติซ้อมทีม` (`#analytics`) into the top navigation bar next to `ฝึกดราฟต์ vs AI` and removed the duplicate entry from the Drawer's Draft Tools section.
+- **Scrim Analytics Tabs (`ScrimDashboardView.tsx`):** Right-aligned the 4 analytics category tabs on `sm+` screens (`sm:justify-end`) while keeping the 2-column mobile grid.
+- **Hero Pools Mobile Sheet & Team Invite UX (`HeroPoolsModal.tsx`, `TeamSandbox.tsx`, `englishMessages.ts`):** Compacted `HeroPoolsModal` mobile sheet layout (`16px` inputs, horizontal saved-team strip, 5-column lane row, internal hero grid scrolling, pinned footer) and displayed `"ไม่พบผู้ใช้นี้"` (`"User not found"`) when inviting a nonexistent username.
+- **Free Tier Cap & `#plans` Copy (`src/db.py`, `BillingSandbox.tsx`, `DraftBoardView.tsx`, `PricingSurveyModal.tsx`):** Adjusted Free tier personal history limit from `21` back to `14` games and removed redundant copy across Pro/Duo/Business cards and the comparison table.
+- **Claimable Free Pro Promo (`src/config.py`, `src/db.py`, `src/billing.py`, `src/schemas.py`, `src/api.py`, `deploy/compose.yaml`, `PricingSurveyModal.tsx`, `BillingSandbox.tsx`, `App.tsx`, `auth.ts`):** Added `ROV_FREE_PROMO_UNTIL` (default `2026-12-07T00:00:00+07:00`), `promo_claims` table, `POST /billing/promo/claim`, a profile claim card with dynamic expiry formatting, and a promo banner in the Update Announcement modal linking straight to Profile (automatically hidden once claimed or paid).
+- **Drawer Profile Button & Scrim EN i18n (`MobileNavDrawer.tsx`, `ScrimDashboardView.tsx`, `englishMessages.ts`):** Added an explicit Profile button above Plans in the account menu and added missing EN translations for Phase 1/2 openers/closers in Scrim Analytics.
+
+### 📁 Modified Files
+- `src/config.py`, `src/db.py`, `src/billing.py`, `src/schemas.py`, `src/api.py`, `deploy/compose.yaml`
+- `frontend/src/App.tsx`, `frontend/src/types/auth.ts`, `frontend/src/components/MobileNavDrawer.tsx`, `frontend/src/components/HeroPoolsModal.tsx`, `frontend/src/components/TeamSandbox.tsx`, `frontend/src/components/ScrimDashboardView.tsx`, `frontend/src/components/BillingSandbox.tsx`, `frontend/src/components/DraftBoardView.tsx`, `frontend/src/components/PricingSurveyModal.tsx`, `frontend/src/i18n/englishMessages.ts`
+- `tests/test_billing.py`, `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff`, `pytest -q --tb=short tests/test_billing.py tests/test_api.py`, `oxlint`, `npm run build`, `npm run build:prod`, `audit_copy_i18n.py`, `audit_ux_ui.py` (executed post-edit; see final session report).
+
+---
+
+## 📅 2026-11-25 12:03 (UTC+7) — Show Clear "User not found" Message on Failed Team Invite
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Updated `frontend/src/components/TeamSandbox.tsx` to display `"ไม่พบผู้ใช้นี้"` (`"User not found"`) when inviting an unknown/self username returns `invite_unavailable`, while keeping `"คำเชิญไม่พร้อมใช้งาน"` for expired/revoked invite acceptance.
+- Added EN translation in `frontend/src/i18n/englishMessages.ts`.
+
+### 📁 Modified Files
+- `frontend/src/components/TeamSandbox.tsx`, `frontend/src/i18n/englishMessages.ts`, `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint && npm --prefix frontend run build && npm --prefix frontend run build:prod`
+- `audit_copy_i18n.py`, `inspect_frontend_e2e.py`.
+
+---
+
+## 📅 2026-11-25 11:58 (UTC+7) — Redesign HeroPoolsModal Mobile Layout With Horizontal Team Strip & Pinned Footer
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Updated `frontend/src/components/HeroPoolsModal.tsx` with `mobileSheet`, bounded `h-[92dvh] md:h-[85dvh]` container, compact horizontal scrollable saved-team strip on mobile (preserving the 220px sidebar on `md+`), single-row 5-column lane tabs (`grid-cols-5`), internal scrolling hero grid (`min-h-0 flex-1 overflow-y-auto`), `16px` mobile inputs to avoid iOS zoom, and a pinned Save/Cancel footer bar always reachable on mobile.
+
+### 📁 Modified Files
+- `frontend/src/components/HeroPoolsModal.tsx`, `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint && npm --prefix frontend run build && npm --prefix frontend run build:prod`
+- `audit_copy_i18n.py`, `inspect_frontend_e2e.py`, `audit_ux_ui.py`, plus Playwright `375x667` layout & scroll verification on `HeroPoolsModal`.
+
+---
+
 ## 📅 2026-11-25 11:46 (UTC+7) — Unify Scrim Analytics Default to Sample League + VGD for All Users
 **Agent:** Antigravity
 

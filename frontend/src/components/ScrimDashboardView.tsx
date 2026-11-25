@@ -782,7 +782,7 @@ function ScrimTabBar({
     <div
       role="tablist"
       aria-label={t("หมวดวิเคราะห์สถิติ")}
-      className="grid grid-cols-2 gap-1.5 border-b border-line pb-2 sm:flex sm:flex-wrap"
+      className="grid grid-cols-2 gap-1.5 border-b border-line pb-2 sm:flex sm:flex-wrap sm:justify-end"
     >
       {SCRIM_TABS.map(([tabKey, tabLabel]) => {
         const selected = activeTab === tabKey;

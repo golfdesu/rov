@@ -1550,7 +1550,7 @@ export function DraftBoardView({
                 </p>
                 <p className="mx-auto max-w-md text-xs text-muted">
                   {!isAuthenticated
-                    ? t("เข้าสู่ระบบฟรีเพื่อปลดล็อก 21 เกม + ซิงก์ข้ามอุปกรณ์ หรืออัปเกรดเพื่อเก็บ 500 เกม")
+                    ? t("เข้าสู่ระบบฟรีเพื่อปลดล็อก 14 เกม + ซิงก์ข้ามอุปกรณ์ หรืออัปเกรดเพื่อเก็บ 500 เกม")
                     : t("อัปเกรดเป็น Pro, Duo หรือ Business เพื่อเก็บ 500 เกม, Hero Pools 50 ชุด และ Scrim Analytics")}
                 </p>
                 <div className="flex flex-wrap items-center justify-center gap-2.5 pt-1">

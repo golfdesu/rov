@@ -31,7 +31,7 @@ DISPLAY_NAME_FREE_CHANGES = 3
 DISPLAY_NAME_COOLDOWN_SECONDS = 14 * 24 * 60 * 60
 GROUP_CAPACITY = {"duo": 2, "team_pro": 5}
 TEAM_HISTORY_LIMIT = 500
-FREE_HISTORY_LIMIT = 21
+FREE_HISTORY_LIMIT = 14
 PAID_HISTORY_LIMIT = 500
 FREE_HERO_POOL_LIMIT = 2
 PAID_HERO_POOL_LIMIT = 50
@@ -499,6 +499,16 @@ class UserDatabase:
         conn.execute(
             "CREATE UNIQUE INDEX IF NOT EXISTS idx_billing_orders_pending ON billing_orders(user_id) WHERE status = 'pending'"
         )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS promo_claims (
+                user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                promo_key TEXT NOT NULL,
+                claimed_at INTEGER NOT NULL,
+                PRIMARY KEY (user_id, promo_key)
+            )
+            """
+        )
 
     def _prune_stale_if_full(self, conn: sqlite3.Connection, now: int) -> None:
         count_row = conn.execute("SELECT COUNT(*) AS cnt FROM users").fetchone()
@@ -531,6 +541,51 @@ class UserDatabase:
             count_row = conn.execute("SELECT COUNT(*) AS cnt FROM users").fetchone()
         if count_row and int(count_row["cnt"]) >= self.max_users:
             raise RuntimeError("User registration limit reached on this server")
+
+    def can_claim_free_pro_promo(self, user_id: int, expires_at: int | None) -> bool:
+        now = int(time.time())
+        if expires_at is None or now >= expires_at:
+            return False
+        promo_key = f"free_pro_{expires_at}"
+        self.ensure_schema()
+        with self._connect() as conn:
+            if self._is_paid_user(conn, user_id, now):
+                return False
+            claimed = conn.execute(
+                "SELECT 1 FROM promo_claims WHERE user_id = ? AND promo_key = ?", (user_id, promo_key)
+            ).fetchone()
+            return claimed is None
+
+    def claim_free_pro_promo(self, user_id: int, expires_at: int | None) -> dict:
+        now = int(time.time())
+        if expires_at is None or now >= expires_at:
+            raise ValueError("promo_ended")
+        promo_key = f"free_pro_{expires_at}"
+        self.ensure_schema()
+        with self._connect() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            claimed = conn.execute(
+                "SELECT 1 FROM promo_claims WHERE user_id = ? AND promo_key = ?", (user_id, promo_key)
+            ).fetchone()
+            if claimed is not None:
+                raise ValueError("promo_already_claimed")
+            if self._is_paid_user(conn, user_id, now):
+                raise ValueError("pass_active")
+            conn.execute(
+                "INSERT INTO promo_claims(user_id, promo_key, claimed_at) VALUES (?, ?, ?)",
+                (user_id, promo_key, now),
+            )
+            conn.execute(
+                """
+                INSERT INTO billing_passes(user_id, tier, expires_at)
+                VALUES (?, 'pro', ?)
+                ON CONFLICT(user_id) DO UPDATE SET
+                    tier = 'pro',
+                    expires_at = excluded.expires_at
+                """,
+                (user_id, expires_at),
+            )
+            return {"tier": "pro", "expires_at": expires_at, "is_owner": True}
 
     def billing_summary(self, user_id: int) -> tuple[sqlite3.Row | None, list[sqlite3.Row]]:
         self.ensure_schema()
