@@ -27,6 +27,25 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-25 22:32 (UTC+7) — Block Repeat Pro Purchases While Active, Keep Duo & Business Upgrades
+**Agent:** Antigravity Agent
+
+### ✅ Completed Work
+- **Backend Guard Ordering (`src/db.py`):** Placed `active_tier == requested_tier` (`pass_active`) ahead of `active_tier == "pro"` in `billing_purchase_block()` so active `pro` users must wait until expiry to renew `pro`, while still allowing `pro -> duo` (`remaining_days // 2` bonus) and `pro -> team_pro` (`remaining_days // 3` bonus).
+- **Plans UI & i18n (`frontend/src/components/BillingSandbox.tsx`, `frontend/src/i18n/englishMessages.ts`):** Updated the active-Pro `#plans` notice and upgrade button copy to display both `Duo` and `Business` upgrade cards clearly.
+- **Tests (`tests/test_billing.py`):** Updated billing unit/API assertions to verify `409 pass_active` on repeat `pro` checkout and `pro -> duo` upgrade bonus calculation.
+
+### 📁 Modified Files
+- `src/db.py`, `tests/test_billing.py`
+- `frontend/src/components/BillingSandbox.tsx`, `frontend/src/i18n/englishMessages.ts`
+- `docs/PRODUCTION_RELEASES.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified locally with `ruff check/format`, `pytest -q --tb=short tests/test_billing.py` (`18 passed`), `oxlint` (`0` warnings, `0` errors), `vite build`, `build:prod`, and `audit_copy_i18n.py` (`[PASS]`, 100% EN coverage).
+- Verified live production deploy (`a05845b` on `20.2.210.230`) with `https://minidraft.app/health` (`200`), active bundle (`index-CLeU6ehA.js`), and SQLite DB integrity (`users: 1026`, `promo_claims: 24`, `billing_orders: 5`, `billing_passes: 25`).
+
+---
+
 ## 📅 2026-11-25 22:19 (UTC+7) — Allow Pro Users to Extend Pro or Upgrade to Duo on Plans Page
 **Agent:** Antigravity Agent
 
