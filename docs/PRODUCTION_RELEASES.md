@@ -13,12 +13,12 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | :--- | :--- |
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
-| **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `4252991` (`main`: remove full TeamColumn turn badge and auto-reset HeroGrid lane filter to ALL) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-B-WaLS7p.js` (`714.67 kB`) + `dist-prod/assets/index-7UEaMoXV.css` (`129.60 kB`), `dist-prod/index.html` (`2.96 kB`) |
+| **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
+| **Git Base Commit on VM** | `947cfd9` (`main`: streamline plans, promote scrim analytics tab, add profile button and Dec 7 free pro promo) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-5Swasnsa.js` + `dist-prod/assets/index-lnmJj0ei.css`, `dist-prod/index.html` |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-24 10:38 (UTC+7)` |
+| **Last Updated** | `2026-11-25 13:24 (UTC+7)` |
 
 ---
 
@@ -52,21 +52,24 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 
 ---
 
-## Pending Next-Deploy Task: One-off DB Timestamp Backfill
-
-Existing games on production as of `2026-11-24 10:38 (UTC+7)` (`504 / 504` games across `220` modified `user_draft_states` rows) were backfilled in-place to `"2026-11-24 10:00"`. During the next production code deploy that ships the `YYYY-MM-DD HH:MM[:SS]` client timestamp writer (`3404194`+, `frontend/src/utils/draft.ts`, `frontend/src/utils/scrimStats.ts`, `frontend/src/hooks/useDraft.ts`, `frontend/src/components/ScrimDashboardView.tsx`), run one final catch-up pass only for newly saved games created between `2026-11-24 10:38 (UTC+7)` and the deploy timestamp (if still missing `YYYY-MM-DD`). Do **NOT** reset `/app/db/rov_app.db` and do **NOT** write script files into `~/rov` (preserve the VM sparse-checkout lock):
-
-- **Scope:** Update any remaining undated games (`not timestamp.startswith(YYYY-MM-DD)`) in `user_draft_states.payload_json` (`seriesGames[*].timestamp`) and `team_history.game_json` (`timestamp`) inside `/app/db/rov_app.db` (persistent volume `deploy_rov_db_data`).
-- **Execution Checklist (`docker exec -i deploy-app-1 python -` via stdin):**
-  1. Deploy updated code (`git pull` in `~/rov` + `cd ~/rov/deploy && sudo docker compose up -d --build app`) and verify `https://minidraft.app/health` returns `200`.
-  2. Run a read-only dry-run count across `user_draft_states` and `team_history` reporting total rows and undated catch-up games (`!YYYY-MM-DD`).
-  3. Create an online SQLite backup (`/app/db/rov_app.db.bak-YYYYMMDD-HHMM`) using `sqlite3.Connection.backup()` and verify file size `> 0`.
-  4. Execute the atomic SQLite transaction updating remaining undated games (converting epochs in **UTC+7** or setting deploy-day `YYYY-MM-DD HH:MM`, enforcing `len(timestamp) <= 32`), and bumping `user_draft_states.updated_at` and `payload.updatedAt` (preserving ms/sec units) on modified rows so clients resync automatically.
-  5. Verify preserved table row counts (`users`, `user_draft_states`, `team_history`), JSON validity, 100% `len(timestamp) <= 32`, and `https://minidraft.app/health` = `200`; then remove this pending section and record the metrics under `Production Deploy & Hotfix History` below.
-
----
-
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-25 13:24 (UTC+7) — Live PromptPay Billing, Free Pro Promo (until `2026-12-07`), Scrim Analytics, Hero Pools & Feedback Inbox (`947cfd9`)
+- **Base Commit:** Fast-forwarded `~/rov` (sparse-checkout intact across all 19 paths) cleanly from `4252991` to `947cfd9` (`main`).
+- **Live Config (`~/rov/deploy/.env` & `deploy/compose.yaml`):** Configured live `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `ROV_STRIPE_LIVE_ENABLED=true`, and `ROV_FREE_PROMO_UNTIL=2026-12-07T00:00:00+07:00`.
+- **Deployed Delta:**
+  - **Claimable Free Pro Promo until Dec 7, 2026 (`src/config.py`, `src/db.py`, `src/billing.py`, `src/api.py`, `PricingSurveyModal.tsx`, `BillingSandbox.tsx`):** Added `promo_claims` table, `POST /billing/promo/claim`, profile claim card with dynamic expiry formatting, and promo banner inside the Update Announcement modal (auto-hidden once claimed or paid).
+  - **Live PromptPay Billing, Teams, Hero Pools & Free 14-Game Cap (`BillingSandbox.tsx`, `TeamSandbox.tsx`, `HeroPoolsModal.tsx`, `src/db.py`):** Enabled live prepaid passes (`Pro` 59/139, `Duo` 109/259, `Business` 239/569 THB), Guest (3) / Free (14) / Paid (500) personal history caps, 5-lane Hero Pools (Free 2 / Paid 50 + Team 50), team invite `"User not found"` feedback, mobile Hero Pools sheet layout, and streamlined `#plans` copy.
+  - **Scrim Analytics Top Tab, Sample League & PDF (`ScrimDashboardView.tsx`, `src/sample_analytics.py`, `App.tsx`, `MobileNavDrawer.tsx`):** Promoted `สถิติซ้อมทีม` (`#analytics`) into the top nav bar next to `ฝึกดราฟต์ vs AI`, right-aligned category tabs on `sm+`, unified Guest/Free sample dataset (`SAMPLE LEAGUE 2026` / `VGD`), and added explicit `Profile` button above `Plans` in `MobileNavDrawer`.
+  - **Update Announcement + Text Feedback + Admin Inbox (`PricingSurveyModal.tsx`, `AdminDashboardView.tsx`, `AdminStatsModal.tsx`, `src/api.py`, `src/db.py`):** Added rate-limited `POST /feedback` -> `user_feedback` table and fail-closed owner-only `GET /admin/feedback`; archived deferred Screenshot Import (`docs/archive/screenshot_draft_import/`) and unused Meta/Combat Lab UI (`docs/archive/meta_and_combat_labs/`).
+  - **Catch-Up DB Timestamp Backfill:** Created online SQLite backup `/app/db/rov_app.db.bak-20261125-1323` (`4,243,456` bytes) via `sqlite3.Connection.backup()`; updated `26` remaining undated games across `14` `user_draft_states` rows (`517` total games across `939` rows; `0` undated left, `bad_len=0`, `mismatched=0`).
+- **Bundle Built:** `dist-prod/index.html`, `dist-prod/assets/index-5Swasnsa.js`, `dist-prod/assets/index-lnmJj0ei.css`.
+- **Deploy Method:** `cd ~/rov/deploy && sudo docker compose up -d --build app` (`deploy_rov_db_data`, `deploy-caddy-1`, `rov-cloudflared` untouched).
+- **Verification:**
+  - Pre-deploy: 3 parallel Playwright QA agents (`0` P0/P1 bugs), `pytest -q --tb=short` (`163 passed`), `ruff` clean, `oxlint` (`0` warnings / `0` errors across `64` files), `vite build` & `build:prod` clean, `audit_copy_i18n.py` (`[PASS]`, 100% EN coverage), `audit_ux_ui.py` (`[PASS]`), `preflight_check.py` (`[OK]`).
+  - Live (`https://minidraft.app/`): `/health` -> `200 {"status":"healthy","model_loaded":true}`, `/auth/me` -> `stripe_sandbox_enabled: true`, `stripe_livemode: true`, `free_promo_until: 1796576400` (`2026-12-07 00:00:00+07:00`), `/admin/feedback` unauthenticated -> `404`; Playwright live smoke check passed with `0` console/page errors and `0` horizontal overflow on Desktop (`1280x800`) & Mobile (`375x667`).
+  - Persistent DB (`/app/db/rov_app.db`) intact: `users: 987`, `user_oauth_accounts: 937`, `user_draft_states: 939`, `user_practice_histories: 43`, `team_history: 0`, `promo_claims: 0`, `user_feedback: 0`, `daily_visits: 1488`.
+- **VM Sync Note:** Docs-only commit recording this release is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
 
 ### 📅 2026-11-24 10:38 (UTC+7) — Production DB-Only One-off Timestamp Backfill (`"2026-11-24 10:00"`, Base Commit Unchanged `4252991`)
 - **Action**: Executed DB-only in-place timestamp backfill on live `/app/db/rov_app.db` via `docker exec -i deploy-app-1 python -` stdin (no `git push`, no `git pull` on VM, no container rebuild; sparse-checkout intact).
