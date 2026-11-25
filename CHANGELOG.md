@@ -27,6 +27,22 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-25 22:05 (UTC+7) — Direct Lane Selector on Pick Click with Replace Hero Action
+**Agent:** Antigravity Agent
+
+### ✅ Completed Work
+- **Direct Lane Selector Flow (`frontend/src/components/PickLaneModal.tsx`, `frontend/src/components/DraftBoardView.tsx`):** Updated Pick slot clicks on the draft board to open `PickLaneModal` directly instead of routing through the intermediate `DraftPickActions` chooser, and added a `"เปลี่ยนฮีโร่"` (`Replace Hero`) button in the `PickLaneModal` footer that transitions straight into hero replacement mode.
+
+### 📁 Modified Files
+- `frontend/src/components/PickLaneModal.tsx`, `frontend/src/components/DraftBoardView.tsx`
+- `docs/PRODUCTION_RELEASES.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified locally with `npm --prefix frontend run lint` (`0` warnings, `0` errors), `npm --prefix frontend run build`, `npm --prefix frontend run build:prod`, and `audit_copy_i18n.py` (`[PASS]`, 100% EN coverage).
+- Verified live production deploy (`a321a9d` on `20.2.210.230`) with `https://minidraft.app/health` (`200`), active bundle (`index-u27y8avV.js`), and SQLite DB integrity (`users: 1025`, `promo_claims: 23`, `billing_passes: 24`).
+
+---
+
 ## 📅 2026-11-25 21:33 (UTC+7) — Free Pro Promo Badge in Navbar & Plans View
 **Agent:** Antigravity Agent
 
