@@ -60,6 +60,8 @@ BILLING_TABLES = {
 
 
 def billing_purchase_block(active_tier: str | None, requested_tier: str) -> str | None:
+    if active_tier == "pro":
+        return None
     if active_tier == requested_tier:
         return "pass_active"
     if active_tier == "team_pro":
@@ -697,8 +699,10 @@ class UserDatabase:
             expires_at = now + order["days"] * day
             if current and current["expires_at"] > now:
                 if current["tier"] == tier:
-                    # Honor already-paid renewals from Checkout sessions issued before the purchase rule changed.
                     expires_at = current["expires_at"] + order["days"] * day
+                elif current["tier"] == "pro" and tier == "duo":
+                    remaining_days = (current["expires_at"] - now) // day
+                    expires_at += remaining_days // 2 * day
                 elif tier == "team_pro":
                     remaining_days = (current["expires_at"] - now) // day
                     expires_at += remaining_days // 3 * day

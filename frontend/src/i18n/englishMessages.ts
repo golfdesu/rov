@@ -1985,4 +1985,7 @@ export const englishMessages: Readonly<Record<string, string>> = {
   "เข้าใจแล้ว": "Got It",
   "รับ Pro ฟรีถึง {0}": "Free Pro until {0}",
   "กดรับเลย": "Claim now",
+  "เติม Pro เพื่อบวกวันต่อท้ายวันหมดอายุเดิม หรืออัปเกรดเป็น Duo/Business โดยแปลงวัน Pro ที่เหลือเป็นวันโบนัส": "Extend Pro to stack days onto your current expiry, or upgrade to Duo/Business with remaining Pro days converted to bonus days.",
+  "เติมวัน {0}": "Extend {0}",
+  "อัปเกรดเป็น {0}": "Upgrade to {0}",
 };

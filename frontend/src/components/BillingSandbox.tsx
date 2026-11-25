@@ -395,6 +395,11 @@ export function BillingSandbox({
           )}
           {summary && !pending && (packages.length > 0 ? (
             <>
+              {activePass?.tier === "pro" && (
+                <p className="mx-auto max-w-2xl border border-line-strong bg-panel px-4 py-2 text-center text-xs text-muted">
+                  {t("เติม Pro เพื่อบวกวันต่อท้ายวันหมดอายุเดิม หรืออัปเกรดเป็น Duo/Business โดยแปลงวัน Pro ที่เหลือเป็นวันโบนัส")}
+                </p>
+              )}
               <fieldset
                 className="relative mx-auto grid w-full max-w-72 grid-cols-2 border border-line-strong bg-bg/75 p-1"
                 disabled={busy}
@@ -487,7 +492,15 @@ export function BillingSandbox({
                         className={`${actionClass} mt-3 w-full gap-2 transition-colors ${details.actionClass}`}
                         onClick={() => void checkout(pass)}
                       >
-                        <span>{processing === pass.tier ? t("กำลังเปิดหน้าชำระเงิน…") : t("เลือก {0}", name)}</span>
+                        <span>
+                          {processing === pass.tier
+                            ? t("กำลังเปิดหน้าชำระเงิน…")
+                            : isCurrentTier
+                              ? t("เติมวัน {0}", name)
+                              : activePass?.tier === "pro"
+                                ? t("อัปเกรดเป็น {0}", name)
+                                : t("เลือก {0}", name)}
+                        </span>
                         <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
                       </button>
                       <ul className="mt-4 space-y-2 border-t border-line-strong/70 pt-3 text-sm text-ink sm:mt-5 sm:pt-4">
