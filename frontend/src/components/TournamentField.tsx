@@ -28,7 +28,7 @@ export function TournamentField({
             onChange(id === NEW_TOURNAMENT ? { id: createDraftGroupId(), name: "" } : options.find((option) => option.id === id) ?? null);
           }}
         >
-          <option value="">{t("ไม่สังกัดทัวร์นาเมนต์")}</option>
+          <option value="">{t("ไม่มีทัวร์นาเมนต์")}</option>
           {options.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
           <option value={NEW_TOURNAMENT}>{t("สร้างทัวร์นาเมนต์ใหม่")}</option>
         </select>

@@ -17,7 +17,7 @@ export function LevelSweep({ sweep, currentLevel, color }: LevelSweepProps) {
       <div className="mb-2 flex flex-wrap items-baseline justify-between gap-1">
         <h3 className="font-display text-[11px] font-semibold tracking-[0.18em] text-muted">{t("คอมโบตามเลเวล")}</h3>
         <span className="text-[10px] text-dim">
-          {killLevel ? t("คอมโบเดียวฆ่าได้ตั้งแต่ Lv.{0}", killLevel) : t("คอมโบเดียวยังฆ่าไม่ได้ทุกเลเวล")}
+          {killLevel ? t("คอมโบเดียวฆ่าได้ Lv.{0}", killLevel) : t("คอมโบเดียวยังปิดไม่ลง")}
         </span>
       </div>
       <div className="relative flex h-20 items-end gap-0.5">

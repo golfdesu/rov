@@ -3,7 +3,7 @@ import { ApiError, getJson, postJson, putJson } from "./client";
 
 export const teamPath = "/billing/team";
 export type GroupTier = "duo" | "team_pro";
-export const groupName: Record<GroupTier, string> = { duo: "Duo", team_pro: "Team Pro" };
+export const groupName: Record<GroupTier, string> = { duo: "Duo", team_pro: "Business" };
 
 interface TeamAccount {
   id: number;
@@ -79,7 +79,7 @@ export function editTeamHistorySeries(gameId: number, edit: HistorySeriesEdit) {
 }
 
 const teamErrors: Record<string, string> = {
-  already_in_group: "บัญชีนี้อยู่ในกลุ่มแล้ว",
+  already_in_group: "ผู้ใช้นี้อยู่ในทีมอื่นแล้ว",
   game_not_found: "ยังไม่พบเกมในประวัติที่ซิงก์ ลองอีกครั้ง",
   history_full: "ประวัติทีมเต็มแล้ว ลบเกมเดิมก่อนบันทึก",
   invite_unavailable: "คำเชิญไม่พร้อมใช้งาน",

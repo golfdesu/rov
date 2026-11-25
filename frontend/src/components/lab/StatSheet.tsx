@@ -64,21 +64,21 @@ export function StatSheet({ stats, effectiveHp }: StatSheetProps) {
       </table>
       {s.cooldown_reduction_uncapped > s.cooldown_reduction && (
         <p className="mt-2 text-[10px] text-gold">
-          {t("ลดคูลดาวน์เกินเพดาน 40% (รวม")} {fmt(s.cooldown_reduction_uncapped)}{t("%) ส่วนที่เกินเสียเปล่า")}
+          {t("CDR เกินเพดาน 40% (รวม")} {fmt(s.cooldown_reduction_uncapped)}{t("%)")}
         </p>
       )}
       {stats.enchantments_unmodeled.length > 0 && (
         <p className="mt-1 text-[10px] text-dim">
-          {t("พลังแฝงที่ยังไม่คิดตัวเลข:")} {stats.enchantments_unmodeled.join(", ")}
+          {t("พลังแฝงที่ยังไม่คำนวณ:")} {stats.enchantments_unmodeled.join(", ")}
         </p>
       )}
       {stats.items_missing_price.length > 0 && (
-        <p className="mt-1 text-[10px] text-dim">{t("ไอเทมไม่มีข้อมูลราคา:")} {stats.items_missing_price.join(", ")}</p>
+        <p className="mt-1 text-[10px] text-dim">{t("ไม่มีข้อมูลราคา:")} {stats.items_missing_price.join(", ")}</p>
       )}
       {stats.item_warnings && stats.item_warnings.length > 0 && (
         <div className="mt-2 rounded border border-gold/35 bg-gold/10 px-2.5 py-1.5 text-[10px] text-gold">
           {stats.item_warnings.map((w, i) => (
-            <p key={i}>• {w}</p>
+            <p key={i} className="break-words">• {t(w)}</p>
           ))}
         </div>
       )}

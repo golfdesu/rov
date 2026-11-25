@@ -44,13 +44,13 @@ const LANE_FILTERS: { key: LaneFilter; label: string; th: string }[] = [
 ];
 
 const ROLE_FILTERS: { key: RoleFilter; label: string }[] = [
-  { key: "ALL", label: "All Roles (ทุกสาย)" },
-  { key: "Fighter", label: "Fighter (ไฟต์เตอร์)" },
-  { key: "Assassin", label: "Assassin (แอสซาซิน)" },
-  { key: "Mage", label: "Mage (เมจ)" },
-  { key: "Carry", label: "Carry (แครี่)" },
-  { key: "Support", label: "Support (ซัพพอร์ต)" },
-  { key: "Tank", label: "Tank (แทงค์)" },
+  { key: "ALL", label: "ทุกสาย" },
+  { key: "Fighter", label: "ไฟต์เตอร์" },
+  { key: "Assassin", label: "แอสซาซิน" },
+  { key: "Mage", label: "เมจ" },
+  { key: "Carry", label: "แครี่" },
+  { key: "Support", label: "ซัพพอร์ต" },
+  { key: "Tank", label: "แทงค์" },
 ];
 
 const TIER_ORDER: Record<string, number> = {
@@ -67,35 +67,35 @@ const TIER_META: Record<
 > = {
   "S+": {
     label: "S+",
-    title: "GOD TIER / MUST BAN-PICK (PRESENCE ≥ 45%)",
+    title: "ตัวท็อป · Presence ≥ 45%",
     badge: "bg-red-500/20 text-red-300 border-red-500/50 shadow-[0_0_12px_rgba(239,68,68,0.25)]",
     border: "border-red-500/30",
     glow: "bg-gradient-to-r from-red-950/40 via-red-900/10 to-transparent",
   },
   S: {
     label: "S",
-    title: "TIER 1 / META DECIDERS (PRESENCE ≥ 25%)",
+    title: "เมต้าหลัก · Presence ≥ 25%",
     badge: "bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-[0_0_12px_rgba(245,158,11,0.25)]",
     border: "border-amber-500/30",
     glow: "bg-gradient-to-r from-amber-950/40 via-amber-900/10 to-transparent",
   },
   A: {
     label: "A",
-    title: "TIER 2 / CORE VIABLE (PRESENCE ≥ 12%)",
+    title: "ใช้งานได้ดี · Presence ≥ 12%",
     badge: "bg-blue-500/20 text-blue-300 border-blue-500/50",
     border: "border-blue-500/30",
     glow: "bg-gradient-to-r from-blue-950/40 via-blue-900/10 to-transparent",
   },
   B: {
     label: "B",
-    title: "TIER 3 / SITUATIONAL & COUNTER (PRESENCE ≥ 4%)",
+    title: "หยิบตามสถานการณ์ · Presence ≥ 4%",
     badge: "bg-emerald-500/20 text-emerald-300 border-emerald-500/50",
     border: "border-emerald-500/30",
     glow: "bg-gradient-to-r from-emerald-950/40 via-emerald-900/10 to-transparent",
   },
   C: {
     label: "C",
-    title: "TIER 4 / NICHE OR OFF-META (PRESENCE < 4%)",
+    title: "ตัวเฉพาะทาง · Presence < 4%",
     badge: "bg-zinc-700/30 text-zinc-400 border-zinc-600/40",
     border: "border-zinc-800/80",
     glow: "bg-gradient-to-r from-zinc-900/40 via-zinc-900/10 to-transparent",
@@ -238,20 +238,20 @@ export function TierListView({ heroes, disableShortcuts = false }: TierListViewP
           {/* Row 1: Title, Quick Search & View Toggle */}
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <h1 className="font-display text-lg font-bold tracking-wider text-ink sm:text-xl">
                   META TIER LIST 2026
                 </h1>
                 <span className="rounded border border-gold/40 bg-gold/10 px-1.5 py-0.5 text-[10px] font-semibold text-gold">
-                  EXCEL MASTER SYNCED
+                  {t("สถิติแข่งจริง")}
                 </span>
               </div>
               <p className="text-xs text-muted">
-                Authoritative Tier List & Pro Draft Statistics directly synced with RoV Pro Draft Master 2026
+                {t("จัดอันดับและสถิติฮีโร่จากข้อมูลแข่งจริง")}
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {/* Search Box */}
               <div className="relative w-44 sm:w-64">
                 <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-dim" />
@@ -292,12 +292,12 @@ export function TierListView({ heroes, disableShortcuts = false }: TierListViewP
                   }`}
                 >
                   <LayoutGrid className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Board</span>
+                  <span className="hidden sm:inline">{t("บอร์ด")}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setViewMode("table")}
-                  title="Table Data View (Excel Style)"
+                  title={t("มุมมองตาราง")}
                   className={`flex items-center gap-1.5 rounded px-2.5 py-1 text-xs font-medium transition-colors ${
                     viewMode === "table"
                       ? "bg-gold/20 text-gold"
@@ -305,7 +305,7 @@ export function TierListView({ heroes, disableShortcuts = false }: TierListViewP
                   }`}
                 >
                   <TableIcon className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Table</span>
+                  <span className="hidden sm:inline">{t("ตาราง")}</span>
                 </button>
               </div>
             </div>
@@ -330,8 +330,7 @@ export function TierListView({ heroes, disableShortcuts = false }: TierListViewP
                       : "border-line bg-panel text-muted hover:border-line-strong hover:text-ink"
                   }`}
                 >
-                  {f.label}
-                  <span lang="th" aria-hidden={language === "en"} className={`ml-1 text-[10px] font-normal text-dim ${language === "en" ? "invisible" : ""}`}>({f.th})</span>
+                  {language === "th" ? f.th : f.label}
                 </button>
               ))}
 
@@ -363,7 +362,7 @@ export function TierListView({ heroes, disableShortcuts = false }: TierListViewP
               >
                 {LANE_FILTERS.map((f) => (
                   <option key={f.key} value={f.key}>
-                    {language === "th" ? f.label + " (" + f.th + ")" : f.label}
+                    {language === "th" ? f.th : f.label}
                   </option>
                 ))}
               </select>
@@ -388,7 +387,7 @@ export function TierListView({ heroes, disableShortcuts = false }: TierListViewP
                   aria-label={t("กรองตามสายอาชีพ")}
                   value={selectedRole}
                   onChange={(e) => setSelectedRole(e.target.value as RoleFilter)}
-                  className="h-7 w-32 rounded border border-line bg-bg px-2 text-xs font-medium text-ink focus:border-gold focus:outline-none"
+                  className="h-7 min-w-[7.5rem] rounded border border-line bg-bg px-2 text-xs font-medium text-ink focus:border-gold focus:outline-none"
                 >
                   {ROLE_FILTERS.map((r) => (
                     <option key={r.key} value={r.key}>
@@ -434,12 +433,12 @@ export function TierListView({ heroes, disableShortcuts = false }: TierListViewP
                         >
                           {tierKey}
                         </span>
-                        <span className="text-[10px] font-bold tracking-wider text-muted uppercase">
-                          {tierMeta.title}
+                        <span className="text-[10px] font-bold tracking-wider text-muted">
+                          {t(tierMeta.title)}
                         </span>
                       </div>
                       <span className="font-mono text-xs text-dim">
-                        {list.length} {list.length === 1 ? "Hero" : "Heroes"}
+                        {t("{0} ตัว", list.length)}
                       </span>
                     </div>
 
@@ -497,10 +496,10 @@ export function TierListView({ heroes, disableShortcuts = false }: TierListViewP
                                   selectedLane !== "ALL" &&
                                   h.main_pro_lane?.toLowerCase() !== selectedLane.toLowerCase() ? (
                                     <span className="font-semibold text-purple-400">
-                                      Flex ({h.main_pro_lane})
+                                      Flex ({(h.main_pro_lane || "").replace(/_/g, " ")})
                                     </span>
                                   ) : (
-                                    h.main_pro_lane || h.lane
+                                    (h.main_pro_lane || h.lane || "").replace(/_/g, " ")
                                   )}
                                 </div>
                               </div>
@@ -635,7 +634,7 @@ export function TierListView({ heroes, disableShortcuts = false }: TierListViewP
                           <td className="px-3 py-2.5 font-sans text-xs text-dim">
                             <div className="flex items-center gap-1.5">
                               <span className="rounded bg-panel-2 px-1.5 py-0.5 font-medium text-ink/80">
-                                {h.main_pro_lane || h.lane}
+                                {(h.main_pro_lane || h.lane || "").replace(/_/g, " ")}
                               </span>
                               {includeFlex &&
                                 selectedLane !== "ALL" &&
@@ -742,7 +741,7 @@ export function TierListView({ heroes, disableShortcuts = false }: TierListViewP
           </div>
 
           {/* Pro Stats Grid */}
-          <div className="mt-4 grid grid-cols-4 gap-2 rounded border border-line bg-bg p-3 text-center font-mono">
+          <div className="mt-4 grid grid-cols-2 gap-2 rounded border border-line bg-bg p-3 text-center font-mono sm:grid-cols-4">
             <div>
               <div className="text-[9px] font-semibold text-dim uppercase">PRESENCE</div>
               <div className="mt-1 text-sm font-bold text-ink">
@@ -780,9 +779,9 @@ export function TierListView({ heroes, disableShortcuts = false }: TierListViewP
           {/* Games Count */}
           {(typeof inspectHero.total_picks === "number" || typeof inspectHero.total_bans === "number") && (
             <div className="mt-2 flex items-center justify-between rounded border border-line/60 bg-panel-2/40 px-3 py-1.5 font-mono text-[11px] text-muted">
-              <span>Pro Games (2026):</span>
+              <span>{t("สถิติแข่ง (2026):")}</span>
               <span className="font-semibold text-ink">
-                {inspectHero.total_picks ?? 0} Picks / {inspectHero.total_bans ?? 0} Bans
+                {t("หยิบ {0} / แบน {1}", inspectHero.total_picks ?? 0, inspectHero.total_bans ?? 0)}
               </span>
             </div>
           )}
@@ -792,7 +791,7 @@ export function TierListView({ heroes, disableShortcuts = false }: TierListViewP
             <div className="mt-3 rounded border border-gold/30 bg-gold/5 p-3">
               <div className="flex items-center gap-1.5 text-xs font-semibold text-gold">
                 <Info className="h-3.5 w-3.5" />
-                <span>Meta Tuning Rationale:</span>
+                <span>{t("หมายเหตุเมต้า:")}</span>
               </div>
               <p className="mt-1 text-xs text-ink/90 leading-relaxed">
                 {inspectHero.tier_reason}

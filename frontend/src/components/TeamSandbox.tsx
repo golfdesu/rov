@@ -10,7 +10,7 @@ import { StableButtonLabel } from "./StableButtonLabel";
 const controlClass = "inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 border px-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-gold disabled:opacity-50";
 const primaryControl = `${controlClass} border-gold bg-gold text-bg enabled:hover:bg-gold/90`;
 const secondaryControl = `${controlClass} border-line-strong text-muted enabled:hover:bg-panel-2 enabled:hover:text-ink`;
-const removalControl = `${controlClass} border-transparent text-muted enabled:hover:border-red/40 enabled:hover:bg-red/10 enabled:hover:text-red`;
+const removalControl = `${controlClass} border-red/35 bg-red/5 text-red/90 enabled:hover:border-red enabled:hover:bg-red/15 enabled:hover:text-red`;
 
 export function TeamSandbox({ currentUsername }: { currentUsername: string }) {
   const { t } = useLanguage();
@@ -96,12 +96,10 @@ export function TeamSandbox({ currentUsername }: { currentUsername: string }) {
                   : index < seatsUsed ? "bg-gold/70" : "bg-line-strong"}`} />
               ))}
             </div>
-            {team.is_owner && (
-              <div className="mt-2 flex flex-wrap justify-between gap-x-2 text-xs text-muted">
-                <span>{t("ว่าง {0} ที่นั่ง", Math.max(0, team.capacity - seatsUsed))}</span>
-                {team.sent.length > 0 && <span className="text-gold">{t("รอตอบรับ {0} คน", team.sent.length)}</span>}
-              </div>
-            )}
+            <div className="mt-2 flex flex-wrap justify-between gap-x-2 text-xs text-muted">
+              <span>{t("ว่าง {0} ที่นั่ง", Math.max(0, team.capacity - seatsUsed))}</span>
+              {team.sent.length > 0 && <span className="text-gold">{t("รอตอบรับ {0} คน", team.sent.length)}</span>}
+            </div>
           </>
         )}
       </header>
@@ -128,32 +126,40 @@ export function TeamSandbox({ currentUsername }: { currentUsername: string }) {
                       <StableButtonLabel message="ปฏิเสธ" />
                     </button>
                   </div>
+                  {Boolean(team) && (
+                    <p className="text-xs text-muted">{t("ต้องออกจากทีมปัจจุบันก่อนจึงจะรับคำเชิญได้")}</p>
+                  )}
                 </li>
               ))}
             </ul>
           </div>
         )}
-        {team?.is_owner && seatsUsed < team.capacity && (
+        {team?.is_owner && (seatsUsed < team.capacity ? (
           <form className="flex flex-wrap items-end gap-2" onSubmit={invite}>
-            <label className="min-w-36 flex-1 text-sm font-semibold text-ink">
+            <label className="min-w-40 flex-1 text-sm font-semibold text-ink">
               <span className="mb-1.5 block">{t("ชื่อผู้ใช้ที่จะเชิญ")}</span>
               <input
-                className="min-h-10 w-full border border-line-strong bg-bg px-2.5 text-base font-normal text-ink focus:border-gold/60"
+                className="min-h-10 w-full border border-line-strong bg-bg px-2.5 text-base font-normal text-ink placeholder:text-dim focus:border-gold/60"
                 autoCapitalize="none"
                 spellCheck={false}
                 maxLength={33}
                 autoComplete="off"
+                placeholder="@username"
                 value={inviteUsername}
                 onChange={(event) => setInviteUsername(event.target.value)}
                 required
               />
             </label>
-            <button type="submit" className={primaryControl} disabled={busy || !inviteUsername.trim().replace(/^@/, "")}>
+            <button type="submit" className={`${primaryControl} w-full sm:w-auto`} disabled={busy || !inviteUsername.trim().replace(/^@/, "")}>
               <UserRoundPlus className="size-4 shrink-0" aria-hidden="true" />
               <StableButtonLabel message="เชิญสมาชิก" />
             </button>
           </form>
-        )}
+        ) : (
+          <p className="border border-line bg-bg/60 px-3 py-2 text-xs text-muted">
+            {t("ที่นั่งเต็มแล้ว ({0}/{1}) — ยกเลิกคำเชิญหรือนำสมาชิกออกก่อนเชิญเพิ่ม", seatsUsed, team.capacity)}
+          </p>
+        ))}
         {team && (
           <div className="space-y-2">
             <h3 className="text-sm font-semibold text-ink">{t("สมาชิกทีม")}</h3>
@@ -185,7 +191,7 @@ export function TeamSandbox({ currentUsername }: { currentUsername: string }) {
             </ul>
             {!team.is_owner && (
               <button type="button" className={removalControl} disabled={busy} onClick={() => setConfirmation({
-                path: `leave/${team.owner_id}`, message: "ออกจากทีมแล้วจะเข้าใช้ประวัติทีมไม่ได้",
+                path: `leave/${team.owner_id}`, message: "ออกจากทีมใช่ไหม? คุณจะเข้าดูประวัติและ Hero Pool ของทีมไม่ได้",
               })}>
                 <StableButtonLabel message="ออกจากทีม" />
               </button>
@@ -214,6 +220,7 @@ export function TeamSandbox({ currentUsername }: { currentUsername: string }) {
           message={translateMessage(t, confirmation.message)}
           confirmLabel="ยืนยัน"
           cancelLabel="ยกเลิก"
+          tone="danger"
           onCancel={() => setConfirmation(null)}
           onConfirm={() => {
             void update(confirmation.path, {});

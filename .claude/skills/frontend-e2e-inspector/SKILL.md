@@ -19,14 +19,21 @@ Use this skill to autonomously test, verify, and audit the React 19 + Tailwind C
 # 1. Lint & build production bundle
 cd frontend && npm run lint && npm run build && cd ..
 
-# 2. Run fast E2E asset & static endpoint health audit
+# 2. Static UI copy, AI-slop, i18n coverage & nowrap-menu audit
+python .agents/skills/frontend-e2e-inspector/scripts/audit_copy_i18n.py
+
+# 3. Run fast E2E asset & static endpoint health audit
 python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py
 
-# 3. Run full Playwright UX/UI, mobile ergonomics & side-lock gate
+# 4. Run full Playwright UX/UI, open-menu overflow, EN-leak & side-lock gate
 python .agents/skills/frontend-e2e-inspector/scripts/audit_ux_ui.py
 ```
 
 What each script verifies:
+- `audit_copy_i18n.py`:
+  - **100% EN Dictionary Coverage**: Ensures every `t(...)`, `<StableButtonLabel>`, and localized map key exists in `frontend/src/i18n/englishMessages.ts` (`0` missing keys).
+  - **Anti-Slop & Path Leak Check**: Flags banned statistical jargon (`Wilson (1927)`, `Empirical Bayes`, `Bradley-Terry`, `Linear Interpolation`), hype filler (`100% In-Game`, `(Excel Style)`), leaked asset paths (`heroes/`), and split `<StableButtonLabel>` fragments ending in `(` or `:`.
+  - **Inherited Nowrap Menu Guard**: Verifies `role="menu"` and `top-full` popovers inside `whitespace-nowrap` containers reset `whitespace-normal`.
 - `inspect_frontend_e2e.py`:
   - **Bundle Integrity**: Confirms `index.html` and compiled CSS/JS chunks exist and serve via FastAPI.
   - **Avatar Catalog**: Verifies all 130 hero square icons in `frontend/public/avatars/`.
@@ -78,6 +85,7 @@ When conducting live UI walkthroughs or checking layout regressions, use the **P
 5. **No Native Dialogs & Portal Layering**: Never call `window.confirm()`, `window.alert()`, or `window.prompt()`. Use [`ConfirmDialog`](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/src/components/ConfirmDialog.tsx) via `createPortal(..., document.body)` so blurred headers or chamfered modals never trap pointer events.
 6. **Mobile Modal & Compact Card Discipline**: Never auto-focus text inputs on touch open; use unified scroll bodies on `< sm` (`max-h-[92dvh]`) so footers stay on screen; keep `< sm` `variant="compact"` hero slots portrait-only (`hidden sm:block` on text/gradient overlays).
 7. **Manual-Only Side Switching**: Never auto-swap `blueSideTeam` when recording winners, deleting games, switching series, or changing game numbers (`G1..G7`). Side swaps occur strictly via explicit user click on Swap Sides or when loading an existing historical game snapshot.
+8. **Anti-Slop Copy, i18n & Popover Wrapping**: Keep 1 language per label (no `ไทย (English)` pairs), sync all keys to `frontend/src/i18n/englishMessages.ts`, never split `<StableButtonLabel>` mid-sentence, never put `line-clamp-1` on multi-stat cards, always add `min-w-0` on scrolling grid items, and always set `whitespace-normal` + viewport-safe bounds on `role="menu"` / `top-full` popovers inside `whitespace-nowrap` toolbars.
 
 ---
 

@@ -1,6 +1,6 @@
 import { StableButtonLabel } from "./StableButtonLabel";
 import { useLanguage } from "../i18n/language";
-import { ChevronDown, PlusCircle, Swords, Users, X } from "lucide-react";
+import { ChevronDown, Info, PlusCircle, Swords, Users, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import type { TournamentRef } from "../types/draft";
 import { normalizeTournament } from "../utils/draft";
@@ -244,30 +244,31 @@ export function NewSeriesModal({
         return (
           <>
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
-        <div className="flex items-center gap-2.5">
-          <Swords className="h-4 w-4 text-gold" />
-          <div>
+      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-line px-5 py-3.5">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <Swords className="h-4 w-4 shrink-0 text-gold" />
+          <div className="min-w-0">
             <h2 id={titleId} className="font-display text-sm font-bold tracking-wider text-ink">
-              {t("เริ่มซีรีส์ / แมตช์ใหม่ (NEW SERIES)")}
+              {t("เริ่มซีรีส์ใหม่")}
             </h2>
             <p className="text-[11px] text-dim">
-              {t("สร้างคู่แข่งขันใหม่ — เริ่ม Game 1 สะอาดเอี่ยม และแยกประวัติออกจากแมตช์เดิม")}
-              {currentSeriesName && <span className="text-muted"> {t("(แมตช์ปัจจุบัน:")} {currentSeriesName})</span>}
+              {t("ตั้งคู่แข่งใหม่ เริ่ม Game 1 โดยแยกประวัติจากซีรีส์เดิม")}
+              {currentSeriesName && <span className="text-muted"> ({currentSeriesName})</span>}
             </p>
           </div>
         </div>
         <button
           type="button"
           onClick={() => requestClose()}
-          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-dim transition-colors hover:bg-panel-2 hover:text-ink"
+          className="inline-flex h-8 w-8 shrink-0 items-center justify-center text-dim transition-colors hover:bg-panel-2 hover:text-ink"
           aria-label={t("ปิด")}
         >
           <X size={18} />
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-5">
+      <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+        <div className="flex-1 space-y-4 overflow-y-auto p-5">
         <TournamentField
           options={tournamentOptions}
           value={tournament}
@@ -281,15 +282,16 @@ export function NewSeriesModal({
         )}
 
         {hasCurrentActions && (
-          <div className="border border-gold/40 bg-gold/10 px-3 py-2 text-[11px] leading-relaxed text-gold">
-            💡 <strong>{t("หมายเหตุ:")}</strong> {t("มีฮีโร่ที่ดราฟต์ค้างอยู่ในกระดานปัจจุบัน")}
-            {currentSeriesName ? t(" ของ {0}", currentSeriesName) : ""} {t("ระบบจะ")}{" "}
-            <strong>{t("บันทึกเก็บเข้าประวัติแมตช์เดิมให้อัตโนมัติ")}</strong> {t("ก่อนเริ่มแมตช์ใหม่")}
+          <div className="flex items-start gap-2 border border-gold/40 bg-gold/10 px-3 py-2 text-[11px] leading-relaxed text-gold">
+            <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            <div>
+              {t("ดราฟต์ที่ค้างอยู่จะถูกบันทึกเข้าซีรีส์เดิมอัตโนมัติ")}
+            </div>
           </div>
         )}
 
         {/* Team Inputs */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <TeamPoolCombobox
             id="new-series-team-a"
             label={t("ทีม A (เริ่มต้นฝั่ง BLUE)")}
@@ -321,20 +323,17 @@ export function NewSeriesModal({
               POOL
             </span>
             <span>
-              {t(
-                "ซิงก์ Hero Pool อัตโนมัติเมื่อชื่อทีมตรงกัน — พิมพ์ค้นหาหรือกดลูกศรเพื่อเลือก ({0} ทีม)",
-                savedPoolTeamNames.length,
-              )}
+              {t("พิมพ์หรือเลือกทีมเพื่อซิงก์ Hero Pool ({0} ทีม)", savedPoolTeamNames.length)}
             </span>
           </p>
         )}
 
         {/* Custom Series Name */}
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="new-series-name" className="flex items-center justify-between font-display text-xs font-medium text-muted">
+          <label htmlFor="new-series-name" className="flex flex-wrap items-center justify-between gap-1 font-display text-xs font-medium text-muted">
             <span className="flex items-center gap-1">
               <Users className="h-3.5 w-3.5 text-gold" />
-              <span>{t("ชื่อกลุ่ม / ชื่อซีรีส์ (ไม่บังคับ)")}</span>
+              <span>{t("ชื่อซีรีส์ (ไม่บังคับ)")}</span>
             </span>
             <span className="font-mono text-[10px] text-dim">
               {t("ค่าเริ่มต้น:")} {teamA.trim() || "A"} vs {teamB.trim() || "B"}
@@ -347,40 +346,34 @@ export function NewSeriesModal({
             onChange={(e) => setCustomSeries(e.target.value)}
             placeholder={t("เช่น {0} vs {1} (Playoffs)", teamA || "TEAM A", teamB || "TEAM B")}
             maxLength={64}
-            className="h-8 border border-line bg-bg px-3 font-display text-xs text-ink placeholder:text-dim focus:border-gold focus:outline-none"
+            className="h-9 border border-line bg-bg px-3 font-display text-xs text-ink placeholder:text-dim focus:border-gold focus:outline-none"
           />
         </div>
 
         {/* Summary Card */}
         <div className="border border-line bg-panel-2/50 p-3">
-          <div className="text-[11px] text-dim">{t("แมตช์ใหม่ที่จะเริ่ม:")}</div>
+          <div className="text-[11px] text-dim">{t("ซีรีส์ที่จะเริ่ม:")}</div>
           <div className="mt-0.5 font-display text-sm font-bold text-gold">{currentPreview}</div>
           {tournament?.name.trim() && <p className="mt-0.5 break-words text-xs text-muted">{tournament.name.trim()}</p>}
-          <div className="mt-1 flex items-center gap-2 text-[11px] text-muted">
-            <span>{t("กระดาน: GAME 1")}</span>
-            <span>•</span>
-            <span>{t("สถิติ Global Ban: รีเซ็ตเป็น 0 ฮีโร่")}</span>
-            <span>•</span>
-            <span>{t("ประวัติแมตช์เดิม: ยังอยู่ครบ")}</span>
-          </div>
+        </div>
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-2.5 pt-2">
+        <div className="flex shrink-0 items-center justify-end gap-2.5 border-t border-line bg-bg/80 px-5 py-3">
           <button
             type="button"
             onClick={() => requestClose()}
-            className="h-9 px-3.5 font-display text-xs font-semibold text-muted transition-colors hover:text-ink"
+            className="inline-flex min-h-9 items-center border border-line-strong bg-panel px-3.5 font-display text-xs font-semibold text-muted transition-colors hover:border-ink/40 hover:text-ink"
           >
             <StableButtonLabel message="ยกเลิก" />
           </button>
           <button
             type="submit"
             disabled={submitting}
-            className="flex h-9 items-center gap-1.5 border border-gold bg-gold px-4 font-display text-xs font-bold tracking-wider text-bg shadow-sm transition-colors hover:bg-gold/90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex min-h-9 items-center gap-1.5 border border-gold bg-gold px-4 font-display text-xs font-bold tracking-wider text-bg shadow-sm transition-colors hover:bg-gold/90 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <PlusCircle className="h-4 w-4" />
-            <span><StableButtonLabel message="สร้างแมตช์ใหม่ และเริ่มดราฟต์" /></span>
+            <PlusCircle className="h-4 w-4 shrink-0" />
+            <span><StableButtonLabel message="เริ่มซีรีส์ใหม่" /></span>
           </button>
         </div>
       </form>

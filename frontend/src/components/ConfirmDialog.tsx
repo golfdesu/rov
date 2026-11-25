@@ -19,8 +19,8 @@ interface ConfirmDialogProps {
 export function ConfirmDialog({
   title,
   message,
-  confirmLabel = "Confirm",
-  cancelLabel = "Cancel",
+  confirmLabel = "ยืนยัน",
+  cancelLabel = "ยกเลิก",
   tone = "gold",
   onConfirm,
   onCancel,
@@ -47,7 +47,7 @@ export function ConfirmDialog({
           >
             <AlertTriangle className="h-4 w-4" />
           </div>
-          <h2 id={titleId} className="font-display text-sm font-bold text-ink">
+          <h2 id={titleId} className="font-display text-sm font-bold break-words text-ink">
             {title}
           </h2>
         </div>
@@ -55,7 +55,7 @@ export function ConfirmDialog({
           type="button"
           onClick={() => requestClose()}
           aria-label={t("ปิด")}
-          className="min-h-7 min-w-7 rounded p-1 text-dim transition-colors hover:bg-panel-2 hover:text-ink"
+          className="min-h-7 min-w-7 shrink-0 rounded p-1 text-dim transition-colors hover:bg-panel-2 hover:text-ink"
         >
           <X className="h-4 w-4" />
         </button>
@@ -65,18 +65,18 @@ export function ConfirmDialog({
         <p className="whitespace-pre-line text-xs leading-relaxed text-muted sm:text-[13px]">{message}</p>
       </div>
 
-      <div className="flex items-center justify-end gap-2.5 border-t border-line bg-bg/70 px-5 py-3">
+      <div className="flex flex-wrap items-center justify-end gap-2.5 border-t border-line bg-bg/70 px-5 py-3">
         <button
           type="button"
           onClick={() => requestClose()}
-          className="h-9 border border-line-strong bg-panel px-4 font-display text-xs font-semibold text-muted transition-colors hover:border-ink/40 hover:text-ink"
+          className="min-h-9 border border-line-strong bg-panel px-4 py-1.5 font-display text-xs font-semibold text-muted transition-colors hover:border-ink/40 hover:text-ink"
         >
           <StableButtonLabel message={cancelLabel} />
         </button>
         <button
           type="button"
           onClick={onConfirm}
-          className={`h-9 px-4 font-display text-xs font-bold transition-colors ${
+          className={`min-h-9 px-4 py-1.5 font-display text-xs font-bold transition-colors ${
             isDanger
               ? "border border-red bg-red text-ink hover:bg-red/90"
               : "border border-gold bg-gold text-bg hover:bg-gold/90"

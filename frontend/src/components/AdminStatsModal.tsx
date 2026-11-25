@@ -94,10 +94,10 @@ export function AdminStatsModal({ onClose }: AdminStatsModalProps) {
               <BarChart3 className="h-4 w-4 shrink-0 text-gold" />
               <div className="min-w-0">
                 <h2 id={titleId} className="truncate font-display text-sm font-bold tracking-wider text-ink sm:text-base">
-                  {t("OWNER ANALYTICS · สถิติระบบ")}
+                  {t("สถิติระบบ")}
                 </h2>
                 {data && (
-                  <p className="font-mono text-[10px] text-dim sm:text-[11px]">
+                  <p className="truncate font-mono text-[10px] text-dim sm:text-[11px]">
                     {t("อัปเดตล่าสุด:")} {data.generated_at_th} (UTC+7)
                   </p>
                 )}
@@ -118,10 +118,11 @@ export function AdminStatsModal({ onClose }: AdminStatsModalProps) {
                 type="button"
                 disabled={loading}
                 onClick={() => void handleRefresh()}
+                aria-label={t("รีเฟรช")}
                 className="inline-flex h-8 items-center gap-1.5 border border-line-strong bg-panel-2 px-2.5 font-display text-xs font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold disabled:opacity-50"
               >
                 <RefreshCw className={`h-3.5 w-3.5 text-gold ${loading ? "animate-spin" : ""}`} />
-                <span className="hidden sm:inline">Refresh</span>
+                <span className="hidden sm:inline">{t("รีเฟรช")}</span>
               </button>
               <button
                 type="button"
@@ -155,10 +156,10 @@ export function AdminStatsModal({ onClose }: AdminStatsModalProps) {
                     <div className="flex items-center gap-2">
                       <Coins className="h-4 w-4 text-gold" />
                       <h3 className="font-display text-xs font-bold tracking-wide text-ink sm:text-sm">
-                        {t("ผลสำรวจความพร้อมจ่ายรายเดือน (คลิกการ์ดเพื่อกรองรายชื่อ)")}
+                        {t("ผลสำรวจความพร้อมจ่าย")}
                       </h3>
                     </div>
-                    <span className="border border-gold/50 bg-gold/10 px-2 py-0.5 font-mono text-xs font-bold text-gold">
+                    <span className="border border-gold/50 bg-gold/10 px-2 py-0.5 font-mono text-xs font-bold whitespace-nowrap text-gold">
                       {t("รวม")} {data.survey.total.toLocaleString()} {t("คน")}
                     </span>
                   </div>
@@ -180,10 +181,10 @@ export function AdminStatsModal({ onClose }: AdminStatsModalProps) {
                           : "border-good/40 bg-good/10 hover:border-good/80"
                       }`}
                     >
-                      <div className="flex items-baseline justify-between">
-                        <span className="font-display text-xs font-bold text-good"><StableButtonLabel message="พร้อมจ่าย (Willing)" /></span>
-                        <span className="font-mono text-sm font-extrabold text-good">
-                          {data.survey.willing_total.toLocaleString()} <StableButtonLabel message="คน (" />{data.survey.willing_pct}%)
+                      <div className="flex items-baseline justify-between gap-2">
+                        <span className="font-display text-xs font-bold text-good"><StableButtonLabel message="พร้อมจ่าย" /></span>
+                        <span className="font-mono text-sm font-extrabold whitespace-nowrap text-good">
+                          {t("{0} คน ({1}%)", data.survey.willing_total.toLocaleString(), data.survey.willing_pct)}
                         </span>
                       </div>
                       <div className="mt-1 font-mono text-[11px] text-muted">
@@ -201,10 +202,10 @@ export function AdminStatsModal({ onClose }: AdminStatsModalProps) {
                           : "border-line-strong bg-bg/70 hover:border-ink/40"
                       }`}
                     >
-                      <div className="flex items-baseline justify-between">
-                        <span className="font-display text-xs font-bold text-muted"><StableButtonLabel message="ไม่พร้อม (Not Willing)" /></span>
-                        <span className="font-mono text-sm font-extrabold text-ink">
-                          {data.survey.not_willing_total.toLocaleString()} <StableButtonLabel message="คน (" />{notWillingPct}%)
+                      <div className="flex items-baseline justify-between gap-2">
+                        <span className="font-display text-xs font-bold text-muted"><StableButtonLabel message="ไม่พร้อม" /></span>
+                        <span className="font-mono text-sm font-extrabold whitespace-nowrap text-ink">
+                          {t("{0} คน ({1}%)", data.survey.not_willing_total.toLocaleString(), notWillingPct)}
                         </span>
                       </div>
                       <div className="mt-1 font-mono text-[11px] text-muted">
@@ -219,47 +220,47 @@ export function AdminStatsModal({ onClose }: AdminStatsModalProps) {
                 <section className="flex flex-col gap-2.5 border border-line bg-panel-2/30 p-3.5">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <h3 className="font-display text-xs font-bold tracking-wide text-ink sm:text-sm">
-                      {t("รายชื่อผู้ตอบแบบสอบถาม (")}{filteredVotes.length.toLocaleString()} {t("รายการ)")}
+                      {t("ผู้ตอบแบบสอบถาม ({0})", filteredVotes.length.toLocaleString())}
                     </h3>
 
                     <div className="flex flex-wrap items-center gap-1.5">
                       <button
                         type="button"
                         onClick={() => setChoiceFilter("all")}
-                        className={`h-7 border px-2 font-display text-[11px] font-semibold transition-colors ${
+                        className={`min-h-7 border px-2 py-0.5 font-display text-[11px] font-semibold whitespace-nowrap transition-colors ${
                           choiceFilter === "all"
                             ? "border-gold bg-gold text-bg font-bold"
                             : "border-line-strong bg-bg text-muted hover:text-ink"
                         }`}
                       >
-                        <StableButtonLabel message="ทั้งหมด (" />{data.survey.total})
+                        {t("ทั้งหมด ({0})", data.survey.total)}
                       </button>
                       <button
                         type="button"
                         onClick={() => setChoiceFilter("willing")}
-                        className={`h-7 border px-2 font-display text-[11px] font-semibold transition-colors ${
+                        className={`min-h-7 border px-2 py-0.5 font-display text-[11px] font-semibold whitespace-nowrap transition-colors ${
                           choiceFilter === "willing"
                             ? "border-good bg-good text-bg font-bold"
                             : "border-good/40 bg-good/10 text-good hover:border-good"
                         }`}
                       >
-                        <StableButtonLabel message="พร้อมจ่าย (" />{data.survey.willing_total})
+                        {t("พร้อมจ่าย ({0})", data.survey.willing_total)}
                       </button>
                       <button
                         type="button"
                         onClick={() => setChoiceFilter("not_willing")}
-                        className={`h-7 border px-2 font-display text-[11px] font-semibold transition-colors ${
+                        className={`min-h-7 border px-2 py-0.5 font-display text-[11px] font-semibold whitespace-nowrap transition-colors ${
                           choiceFilter === "not_willing"
                             ? "border-ink bg-ink text-bg font-bold"
                             : "border-line-strong bg-bg text-muted hover:text-ink"
                         }`}
                       >
-                        <StableButtonLabel message="ไม่พร้อม (" />{data.survey.not_willing_total})
+                        {t("ไม่พร้อม ({0})", data.survey.not_willing_total)}
                       </button>
                       <button
                         type="button"
                         onClick={() => setMembersOnly((v) => !v)}
-                        className={`h-7 border px-2 font-display text-[11px] font-semibold transition-colors ${
+                        className={`min-h-7 border px-2 py-0.5 font-display text-[11px] font-semibold whitespace-nowrap transition-colors ${
                           membersOnly
                             ? "border-blue bg-blue/20 text-blue font-bold"
                             : "border-line-strong bg-bg text-muted hover:text-ink"
@@ -303,7 +304,7 @@ export function AdminStatsModal({ onClose }: AdminStatsModalProps) {
                                 )}
                               </div>
                             ) : (
-                              <span className="text-muted">{t("Guest (ไม่ได้ล็อกอิน)")}</span>
+                              <span className="text-muted">Guest</span>
                             )}
                           </div>
                           <span className="shrink-0 text-[10px] text-dim">{item.updated_at_th.slice(5)}</span>
@@ -319,7 +320,7 @@ export function AdminStatsModal({ onClose }: AdminStatsModalProps) {
                     <div className="flex items-center gap-2">
                       <Users className="h-4 w-4 text-blue" />
                       <h3 className="font-display text-xs font-bold tracking-wide text-ink sm:text-sm">
-                        {t("ฐานข้อมูลสมาชิก (SQLite Users)")}
+                        {t("บัญชีสมาชิก")}
                       </h3>
                     </div>
                     <span className="font-mono text-xs font-bold text-good">
@@ -376,7 +377,7 @@ export function AdminStatsModal({ onClose }: AdminStatsModalProps) {
                       <div className="flex items-center gap-2">
                         <Globe className="h-4 w-4 text-gold" />
                         <h3 className="font-display text-xs font-bold tracking-wide text-ink sm:text-sm">
-                          {t("ผู้เข้าชมทั้งหมด & Guest (Cloudflare Analytics)")}
+                          {t("ผู้เข้าชม (Cloudflare)")}
                         </h3>
                       </div>
                       <span className="font-mono text-[10px] text-dim">Cache 60s</span>
@@ -384,20 +385,20 @@ export function AdminStatsModal({ onClose }: AdminStatsModalProps) {
 
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                       <div className="border border-line bg-bg/60 p-2.5">
-                        <div className="font-mono text-[10px] text-dim">{t("วันนี้ (Uniques / Visits)")}</div>
+                        <div className="font-mono text-[10px] text-dim">{t("วันนี้ (คน / ครั้ง)")}</div>
                         <div className="mt-0.5 font-mono text-sm font-extrabold text-gold">
                           {data.cloudflare.today_uniques.toLocaleString()} {t("คน /")}{" "}
-                          {data.cloudflare.today_rum_visits.toLocaleString()} visits
+                          {data.cloudflare.today_rum_visits.toLocaleString()} {t("ครั้ง")}
                         </div>
                       </div>
                       <div className="border border-line bg-bg/60 p-2.5">
-                        <div className="font-mono text-[10px] text-dim">{t("สะสมทั้งหมด (Uniques)")}</div>
+                        <div className="font-mono text-[10px] text-dim">{t("ผู้เข้าชมสะสม")}</div>
                         <div className="mt-0.5 font-mono text-sm font-extrabold text-ink">
                           {data.cloudflare.total_uniques.toLocaleString()} {t("คน")}
                         </div>
                       </div>
                       <div className="col-span-2 border border-line bg-bg/60 p-2.5 sm:col-span-1">
-                        <div className="font-mono text-[10px] text-dim">{t("ส่วนต่าง Guest (ไม่ได้สมัคร)")}</div>
+                        <div className="font-mono text-[10px] text-dim">{t("Guest โดยประมาณ")}</div>
                         <div className="mt-0.5 font-mono text-sm font-extrabold text-ink">
                           {estimatedGuests !== null ? t("~{0} คน", estimatedGuests.toLocaleString()) : "-"}
                         </div>
@@ -415,7 +416,7 @@ export function AdminStatsModal({ onClose }: AdminStatsModalProps) {
                         <div className="border border-line bg-bg/60 p-2.5">
                           <div className="flex flex-wrap items-center justify-between gap-2 pb-2">
                             <span className="font-mono text-[11px] font-bold text-ink">
-                              {t("ช่องทางที่คนกดเข้ามา (Top Sources)")}
+                              {t("ช่องทางเข้าเว็บ")}
                             </span>
                             <div className="flex items-center gap-1">
                               <button
@@ -484,7 +485,7 @@ export function AdminStatsModal({ onClose }: AdminStatsModalProps) {
                       <div className="flex items-center gap-2">
                         <Repeat className="h-4 w-4 text-good" />
                         <h3 className="font-display text-xs font-bold tracking-wide text-ink sm:text-sm">
-                          {t("คนกลับมาใช้ซ้ำ (Retention & Returning Users)")}
+                          {t("การกลับมาใช้ซ้ำ")}
                         </h3>
                       </div>
                       <span className="font-mono text-[10px] text-dim">
@@ -494,7 +495,7 @@ export function AdminStatsModal({ onClose }: AdminStatsModalProps) {
 
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                       <div className="border border-line bg-bg/60 p-2.5">
-                        <div className="font-mono text-[10px] text-dim">{t("วันนี้ (ใหม่ / กลับมาซ้ำ)")}</div>
+                        <div className="font-mono text-[10px] text-dim">{t("วันนี้ (ใหม่ / ซ้ำ)")}</div>
                         <div className="mt-0.5 font-mono text-sm font-extrabold text-ink">
                           {data.retention.today_dau.toLocaleString()} {t("คน")}
                         </div>
@@ -506,9 +507,11 @@ export function AdminStatsModal({ onClose }: AdminStatsModalProps) {
                       <div className="border border-line bg-bg/60 p-2.5">
                         <div className="font-mono text-[10px] text-dim">{t("กลับมาใช้ซ้ำ (7 วันล่าสุด)")}</div>
                         <div className="mt-0.5 font-mono text-sm font-extrabold text-good">
-                          {(data.retention.active_returning_7d ?? data.retention.returning_clients).toLocaleString()}{" "}
-                          {t("เครื่อง (")}
-                          {data.retention.active_returning_7d_pct ?? data.retention.returning_pct}%)
+                          {t(
+                            "{0} เครื่อง ({1}%)",
+                            (data.retention.active_returning_7d ?? data.retention.returning_clients).toLocaleString(),
+                            data.retention.active_returning_7d_pct ?? data.retention.returning_pct,
+                          )}
                         </div>
                         <div className="mt-0.5 font-mono text-[10px] text-muted">
                           {t(

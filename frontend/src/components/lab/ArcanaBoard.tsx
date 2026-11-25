@@ -18,24 +18,24 @@ const COLOR_CONFIG: Record<
   { label: string; tag: string; border: string; bg: string; activeTab: string; ring: string }
 > = {
   Red: {
-    label: "รูนสีแดง",
-    tag: "พลังโจมตี / พลังเวท / คริติคอล",
+    label: "รูนแดง",
+    tag: "ATK · AP · คริ",
     border: "border-red/40",
     bg: "bg-red/10",
     activeTab: "border-red bg-red/20 text-red font-bold",
     ring: "ring-red/50",
   },
   Purple: {
-    label: "รูนสีม่วง",
-    tag: "พลังชีวิต / ดูดเลือด / ความเร็ว",
+    label: "รูนม่วง",
+    tag: "HP · ดูดเลือด · วิ่งไว",
     border: "border-purple-400/40",
     bg: "bg-purple-500/10",
     activeTab: "border-purple-400 bg-purple-500/20 text-purple-300 font-bold",
     ring: "ring-purple-400/50",
   },
   Green: {
-    label: "รูนสีเขียว",
-    tag: "ลดคูลดาวน์ / เจาะเกราะ / เจาะเวท",
+    label: "รูนเขียว",
+    tag: "CDR · เจาะเกราะ",
     border: "border-emerald-400/40",
     bg: "bg-emerald-500/10",
     activeTab: "border-emerald-400 bg-emerald-500/20 text-emerald-300 font-bold",
@@ -44,21 +44,21 @@ const COLOR_CONFIG: Record<
 };
 
 const STAT_NAMES_TH: Record<string, string> = {
-  attack_damage: "พลังโจมตี",
-  ability_power: "พลังเวท",
+  attack_damage: "โจมตี",
+  ability_power: "เวท",
   armor: "เกราะ",
   magic_defense: "ต้านเวท",
   max_hp: "HP",
-  critical_chance_pct: "คริติคอล",
+  critical_chance_pct: "คริ",
   critical_damage_pct: "ดาเมจคริ",
-  attack_speed_pct: "ความเร็วโจมตี",
-  movement_speed_pct: "ความเร็วเคลื่อนที่",
-  cooldown_reduction_pct: "ลดคูลดาวน์",
+  attack_speed_pct: "ตีเร็ว",
+  movement_speed_pct: "วิ่งไว",
+  cooldown_reduction_pct: "CDR",
   armor_pierce: "เจาะเกราะ",
   magic_pierce: "เจาะเวท",
   life_steal_pct: "ดูดเลือด",
-  magic_life_steal_pct: "เวทแวมไพร์",
-  hp_regen_5s: "ฟื้นฟู HP/5วิ",
+  magic_life_steal_pct: "ดูดเลือดเวท",
+  hp_regen_5s: "ฟื้นฟู/5วิ",
 };
 
 function formatArcanaStat(t: Translate, key: string, val: number): string {
@@ -133,9 +133,8 @@ export function ArcanaBoard({ arcana, chosen, maxPerColor, onChange }: ArcanaBoa
       {/* Header & Total Counter */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line/60 pb-2">
         <div className="flex items-center gap-2">
-          <span className="font-display text-xs font-bold tracking-wider text-ink"><StableButtonLabel message="รูน (Tier 3 Arcana)" /></span>
           <span className="rounded bg-panel-2 px-2 py-0.5 font-mono text-[11px] font-semibold text-muted">
-            <StableButtonLabel message="รวม" /> {totalUsed} / {maxTotal} <StableButtonLabel message="เม็ด" />
+            {totalUsed} / {maxTotal} {t("เม็ด")}
           </span>
         </div>
         <div className="flex shrink-0 items-center gap-2 whitespace-nowrap">
@@ -175,13 +174,13 @@ export function ArcanaBoard({ arcana, chosen, maxPerColor, onChange }: ArcanaBoa
                   : "border-line/60 bg-bg/40 text-muted hover:border-line hover:text-ink"
               }`}
             >
-              <div className="flex items-center gap-1.5">
+              <div className="flex flex-wrap items-center justify-center gap-1">
                 <span className="font-semibold"><StableButtonLabel message={cfg.label} /></span>
                 <span className="font-mono text-[11px] font-bold">
                   ({count}/{maxPerColor})
                 </span>
               </div>
-              <span className="text-[9px] text-dim line-clamp-1"><StableButtonLabel message={cfg.tag} /></span>
+              <span className="text-center text-[9px] leading-tight text-dim">{t(cfg.tag)}</span>
             </button>
           );
         })}
@@ -225,7 +224,7 @@ export function ArcanaBoard({ arcana, chosen, maxPerColor, onChange }: ArcanaBoa
                     {language === "th" && a.name_th ? `${a.name_th} (${a.name})` : a.name}
                   </span>
                 </div>
-                <div className="text-[10px] font-medium leading-tight text-gold line-clamp-1">
+                <div className="text-[10px] font-medium leading-snug text-gold break-words">
                   {statsStr}
                 </div>
               </div>

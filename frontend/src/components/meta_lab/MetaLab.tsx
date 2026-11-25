@@ -181,7 +181,7 @@ export function MetaLab({
     if (globalBans.gameNumber > 1 && !statusAfter.isUnlocked) {
       const maxUnlocked = getMaxUnlockedGame(candidate, seriesGames);
       const ok = window.confirm(
-        t("การลบ {0} จะทำให้จำนวน Global Ban ไม่ครบตามเงื่อนไขของ Game {1} (ต้องมีอย่างน้อยฝั่งละ {2} ตัว)\n\nระบบจะย้อนกลับไปยัง Game {3} อัตโนมัติ ยืนยันหรือไม่?", displayName(heroName), globalBans.gameNumber, statusAfter.requiredCount, maxUnlocked),
+        t("หากลบ {0} จะมีฮีโร่ไม่ถึงเกณฑ์ Game {1} (อย่างน้อยฝั่งละ {2} ตัว)\n\nระบบจะย้อนไป Game {3} ยืนยันไหม?", displayName(heroName), globalBans.gameNumber, statusAfter.requiredCount, maxUnlocked),
       );
       if (!ok) return;
       selectGameNumber(maxUnlocked, candidate);
@@ -241,19 +241,16 @@ export function MetaLab({
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <span className="font-display text-xs font-bold tracking-wide text-ink sm:text-sm">
-                  SOTA + Matrix Sandbox
-                </span>
-                <span className="shrink-0 border border-gold/40 bg-gold/10 px-1.5 py-0.5 font-mono text-[9px] font-bold text-gold uppercase">
-                  Simulation
+                  {t("ห้องซ้อมดราฟต์")}
                 </span>
               </div>
               <p className="truncate font-mono text-[10px] text-muted sm:text-xs">
-                {t("จำลองสถานการณ์ดราฟต์ด้วยโมเดล SOTA ร่วมกับ Synergy / Counter Matrix")}{totalMatches ? t(" ({0} เกม)", totalMatches.toLocaleString()) : ""}
+                {t("ดราฟต์เทียบสถิติ Synergy / Counter จากข้อมูลแข่งจริง")}{totalMatches ? t(" ({0} เกม)", totalMatches.toLocaleString()) : ""}
               </p>
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
             {importNotification && (
               <span className="animate-fade-in font-display text-xs font-semibold text-good">
                 {importNotification}
@@ -265,8 +262,8 @@ export function MetaLab({
               onClick={handleImport}
               title={
                 hasMainPicks
-                  ? t("คัดลอกฮีโร่ที่เลือกและแบนจากหน้าดราฟต์หลักมาทดสอบด้วยระบบสถิติ Matrix")
-                  : t("หน้าดราฟต์หลักยังไม่มีการเลือกฮีโร่")
+                  ? t("ดึงดราฟต์จากกระดานหลักมาทดสอบ")
+                  : t("กระดานหลักยังไม่มีการเลือกฮีโร่")
               }
               className="flex h-7.5 items-center gap-1.5 border border-gold/60 bg-gold/10 px-2.5 font-display text-xs font-bold text-gold transition-colors hover:bg-gold hover:text-bg disabled:pointer-events-none disabled:opacity-40"
             >
@@ -569,8 +566,8 @@ export function MetaLab({
                 : "border border-line text-muted hover:text-ink"
             }`}
           >
-            <Sparkles className="h-3 w-3" />
-            <span><StableButtonLabel message="สถิติแนะนำ" /></span>
+            <Sparkles className="h-3 w-3 shrink-0" />
+            <span><StableButtonLabel message="AI" /></span>
             {recommendations.length > 0 && (
               <span className="ml-1 bg-gold px-1 font-mono text-[9px] font-bold text-bg">
                 {recommendations.length}

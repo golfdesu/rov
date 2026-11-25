@@ -394,7 +394,7 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
 
       {/* Top KPI Cards */}
       {stats && (
-        <section className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
+        <section className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
           <div className="border border-line bg-panel p-4">
             <div className="flex items-center justify-between text-xs text-muted sm:text-sm">
               <span className="font-display font-bold">สมาชิกทั้งหมด</span>
@@ -470,12 +470,9 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
             <div className="flex items-center gap-2">
               <Sigma className="h-5 w-5 text-gold" />
               <h2 className="font-display text-base font-bold tracking-wide text-ink sm:text-lg">
-                สรุปวิเคราะห์พฤติกรรมผู้ใช้ &amp; ความแม่นยำ AI (แปลผลให้อ่านง่าย)
+                พฤติกรรมผู้ใช้ &amp; ประสิทธิภาพ AI
               </h2>
             </div>
-            <span className="border border-gold/40 bg-gold/10 px-2.5 py-0.5 font-mono text-xs font-bold text-gold">
-              วิเคราะห์จากข้อมูลใช้งานจริง
-            </span>
           </div>
 
           {/* Row 1: 3 Core Plain-Thai Insight Cards */}
@@ -495,7 +492,8 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
               </div>
 
               {analytics.markov_retention.matrix_3x3 ? (
-                <table className="w-full border-collapse border border-line font-mono text-xs sm:text-sm">
+                <div className="overflow-x-auto">
+                <table className="w-full min-w-[320px] border-collapse border border-line font-mono text-xs sm:text-sm">
                   <thead>
                     <tr className="border-b border-line bg-panel text-muted">
                       <th className="px-2.5 py-2 text-left">กลุ่มผู้ใช้เดิม</th>
@@ -527,10 +525,11 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                     ))}
                   </tbody>
                 </table>
+                </div>
               ) : null}
 
               <div className="border-l-2 border-good/60 bg-panel/60 px-3 py-2 font-mono text-xs leading-relaxed text-ink sm:text-sm">
-                <strong className="text-good">สรุปให้:</strong> คนเข้าวันแรก 100 คน จะกลับมาพรุ่งนี้ ~
+                <strong className="text-good">สรุป:</strong> คนเข้าวันแรก 100 คน จะกลับมาพรุ่งนี้ ~
                 {Math.round(analytics.markov_retention.transitions.new_to_active_pct)} คน · แต่ถ้ากลับมาแล้ว โอกาสใช้ต่อจะเพิ่มเป็น{" "}
                 <strong className="text-good">{analytics.markov_retention.transitions.retained_to_active_pct}%</strong>{" "}
                 (ระยะยาวเหลือแอคทีฟ ~{analytics.markov_retention.steady_state_active_pct ?? 0}%)
@@ -566,10 +565,10 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
               />
 
               <div className="border-l-2 border-gold/60 bg-panel/60 px-3 py-2 font-mono text-xs leading-relaxed text-ink sm:text-sm">
-                <strong className="text-gold">สรุปให้:</strong>{" "}
+                <strong className="text-gold">สรุป:</strong>{" "}
                 {analytics.bayesian_wtp.engaged_vs_casual_test.significant_95
                   ? `กลุ่มใช้จริงพร้อมจ่ายสูงกว่าขาจรอย่างชัดเจน (+${analytics.bayesian_wtp.engaged_vs_casual_test.diff_pct}%)`
-                  : `ตอนนี้ผลต่างกันยังไม่ชัดเจนทางสถิติ (p=${analytics.bayesian_wtp.engaged_vs_casual_test.p_value}) ยังสรุปไม่ได้ว่าใช้เยอะแล้วอยากจ่ายเพิ่ม · ฝั่งไม่ล็อกอินพร้อมจ่าย ${analytics.bayesian_wtp.guests.empirical_pct}%`}
+                  : `ผลต่างยังไม่ชัดเจนทางสถิติ (p=${analytics.bayesian_wtp.engaged_vs_casual_test.p_value}) · Guest พร้อมจ่าย ${analytics.bayesian_wtp.guests.empirical_pct}%`}
               </div>
             </div>
 
@@ -832,7 +831,7 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
           <details className="border border-line bg-bg/40 px-3.5 py-2.5 font-mono text-xs leading-relaxed text-muted">
             <summary className="flex cursor-pointer items-center gap-2 font-display text-xs font-bold text-ink select-none hover:text-gold sm:text-sm">
               <BookOpen className="h-4 w-4 text-gold" />
-              <span>อ้างอิงทฤษฎี &amp; สูตรเบื้องหลังทั้งหมด (คลิกเปิดดูได้ถ้าสนใจเชิงลึก)</span>
+              <span>วิธีคำนวณ &amp; ทฤษฎีอ้างอิง</span>
             </summary>
             <div className="mt-2.5 grid grid-cols-1 gap-3 border-t border-line pt-2.5 md:grid-cols-2">
               <div>
@@ -1075,7 +1074,7 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
           <section className="flex flex-col gap-3 border border-line bg-panel p-4">
             <div className="flex items-center justify-between gap-2">
               <h2 className="font-display text-sm font-bold tracking-wide text-ink sm:text-base">
-                ช่องทางที่คนกดเข้ามา (Top Sources)
+                ช่องทางเข้าเว็บ
               </h2>
               <div className="flex items-center gap-1.5">
                 <button

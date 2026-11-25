@@ -64,11 +64,11 @@ export function SocketItem({
             e.stopPropagation();
             onClear();
           }}
-          className="absolute -right-1 -top-1 grid h-4 w-4 place-items-center rounded-full bg-red text-bg shadow opacity-100 transition-opacity focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
+          className="absolute -right-1.5 -top-1.5 grid h-6 w-6 place-items-center rounded-full bg-red text-bg shadow opacity-100 transition-opacity focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
           title={t("ลบ {0}", name)}
           aria-label={t("ลบ {0}", name)}
         >
-          <X size={10} />
+          <X size={11} />
         </button>
       </div>
       <span className="mt-1 max-w-[65px] truncate text-center text-[10px] font-medium text-ink">

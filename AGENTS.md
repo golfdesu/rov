@@ -6,177 +6,102 @@ Shared agent rules are imported below:
 
 ---
 
-## Session Quick Start (Read First — Critical for All AI Agents)
+## Session Quick Start (Read First)
 
-Welcome to the **RoV (Arena of Valor) Pro Draft Intelligence** repository (`https://github.com/golfdesu/rov.git`).
-This repository follows Big Tech Machine Learning Engineering standards (modeled after `../MLE_zero_to_hero`, `../../Practice/hyperparameter_tuning`, and `../../Practice/model`).
+Repository: **RoV Pro Draft Intelligence** (`https://github.com/golfdesu/rov.git`).
 
 ### Current System Status
 | Component | Status & Verified Metrics |
 | :--- | :--- |
-| **Hero & Skill Database** | **130 / 130 Heroes** (`data/heroes_130_full.json`, `data/heroes_130_summary.csv`, `data/hero_skills_full.json`) up to **Evita** (Oct 2026), **Tamyn** (Jul 2026), and **Flowborn (Marksman & Mage)**, each with `>= 4` skills, 100% numerical cooldowns/mana arrays, base damage, and AD/AP/HP scaling. |
-| **Pro Match Archive** | **4,352 Complete Pro Games** (`data/matches_draft_full.json`) from RPL, APL, AIC, AOG, and GCS (2024–2026) with Global Ban Pick tracking and **0 unmapped hero names**. |
+| **Hero & Skill Database** | **130 / 130 Heroes** (`data/heroes_130_full.json`, `data/heroes_130_summary.csv`, `data/hero_skills_full.json`) up to **Evita** (Oct 2026), **Tamyn** (Jul 2026), and **Flowborn (MM & Mage)**, each `>= 4` skills with numerical cooldown/mana, base damage, and AD/AP/HP scaling. |
+| **Pro Match Archive** | **4,352 Complete Pro Games** (`data/matches_draft_full.json`) across RPL, APL, AIC, AOG, GCS (2024–2026) with Global Ban tracking and **0 unmapped hero names**. |
 | **Curated Training Dataset** | **3,535 Games (2025–2026)** (`data/matches_training.json`). All 817 games from 2024 are strictly excluded to remove legacy meta noise; includes all 1,833 games from 2026 with 100% verified true pick order. **True Pick Order coverage = 51.9%** (1,833 / 3,535 games). |
-| **Draft Web UI** | React 19 + Vite + Tailwind 4 broadcast-style draft board (`frontend/`), served by FastAPI from `frontend/dist` (dev) or `frontend/dist-prod` (`VITE_DRAFT_ONLY=true` in production). 130 / 130 square hero icons (`frontend/public/avatars/`), Thai display names (Arthur -> Mortos, Brunhilda -> Celica, Richter -> Riktor), plus Guest/Account portal (Username/Password + Google & Discord OAuth 2.0 PKCE, `/privacy`, `logo.png`). |
-| **SOTA Architecture** | `RoVDraftGNNTransformer` (`src/train_sota_model.py`): Multi-Relational Hero GNN (`adj_copick`, `adj_synergy`, `adj_counter`, `adj_countered_by`) + Sequence Transformer + Bounded Neural Temperature Gate + Dual Policy & Win-Value Heads. |
-| **H100 Optuna HPO** | Completed 80 Policy-Focused Trials on ERAWAN HPC (`best_params/sota_rov_top5_trials.json`, `configs/selected_production_params.json`, 37-dim hero features, 90d recency decay, Global Ban context). |
-| **Champion Performance** | (Selector output, 2026-11-20) **Served checkpoint Val Loss = `2.81796`**, WinAcc = `51.69%` \| **HPO Rank #1 & Safest (Trial #31) Val = `2.76992`**, Gap = `+0.15773`, Top-1 = `24.70%`, Top-5 = `61.92%`, WinAcc = `51.18%`, Params = `2,606,112` (130 heroes, 3,535 games from 2025 through Nov 17, 2026 AIC Wildcard, 90d recency decay). Always re-quote from the selector script (rule 12). |
+| **Draft Web UI** | React 19 + Vite + Tailwind 4 (`frontend/`), served by FastAPI via `frontend/dist` (dev) or `frontend/dist-prod` (`VITE_DRAFT_ONLY=true` prod); 130 square icons (`frontend/public/avatars/`), Thai canonical names, Guest/Account portal (Username/Password, Google/Discord OAuth 2.0 PKCE, `/privacy`, `logo.png`). |
+| **SOTA Architecture** | `RoVDraftGNNTransformer` (`src/train_sota_model.py`): Multi-Relational Hero GNN (`adj_copick`, `adj_synergy`, `adj_counter`, `adj_countered_by`) + Transformer + Bounded Neural Temperature Gate + Policy & Win Heads. |
+| **H100 Optuna HPO** | 80 Policy-Focused Trials on ERAWAN HPC (`best_params/sota_rov_top5_trials.json`, `configs/selected_production_params.json`, 37-dim hero features, 90d recency decay, Global Ban context). |
+| **Champion Performance** | (Selector 2026-11-20) **Served Val Loss = `2.81796`**, WinAcc = `51.69%` \| **HPO Rank #1 & Safest (Trial #31) Val = `2.76992`**, Gap = `+0.15773`, Top-1 = `24.70%`, Top-5 = `61.92%`, WinAcc = `51.18%`, `2,606,112` params. Always re-quote from the selector script (Rule 12). |
 
 ---
 
 ## 1. Hard Constraints & Anti-Bug Guardrails (NON-NEGOTIABLE)
 
-Every AI agent (including fast models such as `3.8flash`) MUST strictly obey these invariants:
+Every AI agent (including fast models like `3.8flash`) MUST strictly obey these invariants:
 
-1. **Liquipedia Pick Ordering Trap (`t1h1..t1h5`)**:
-   - In Liquipedia match data, `t1b1..t1b4` are chronological Bans (Phase 1 = `b1, b2`, Phase 2 = `b3, b4`).
-   - However, `t1h1..t1h5` are ordered by the **5 in-game lanes** (`h1 = DS_Lane`, `h2 = Jungle`, `h3 = Mid`, `h4 = Dragon_Lane`, `h5 = Roam`), **NOT** chronological pick order!
-   - Always use `order_team_picks_by_draft_logic()` in `src/train_sota_model.py` to reconstruct Phase 1 (`P1..P3`) vs Phase 2 (`P4..P5`) pick sequences.
-2. **Data Augmentation Invariant (`augment_factor`)**:
-   - **NEVER** set `augment_factor > 2` or shuffle picks across Phase 1 and Phase 2 boundaries. Doing so causes severe overfitting (`Val Loss > 4.30`).
-   - In production and H100 HPO, `augment_factor = 1` won all Top 5 ranks.
-3. **Model Capacity & Architecture Guardrail (Locked SOTA)**:
-   - Verified on 50 HPO Trials (NVIDIA H100, 2026-10-30): Production architecture is strictly locked to **`d_model = 256`**, **`num_layers = 1`**, and **`nhead = 4`** (`head_dim = 64`, 2.47M parameters).
-   - Sequence length is short (`<= 17` tokens); 1 Transformer layer provides 100% global receptive field across all draft turns. Deeper networks (`num_layers >= 3`) degrade generalization.
-   - For resource-constrained or edge CPU inference, the parsimonious compact candidate is locked to **`d_model = 128`**, **`num_layers = 1`**, and **`nhead = 4`** (643K parameters).
-4. **ERAWAN HPC (`compute4` H100) Rules**:
-   - Partition MUST be `#SBATCH --partition=gpu-h100` with `#SBATCH --gres=gpu:1`.
-   - **NEVER** call `torch.compile()` (Rocky Linux on `compute4` lacks `Python.h` headers).
-   - Always use `GPUTensorBatcher` and vectorized `evaluate_sota_model()` (zero per-sample `.item()` loops on GPU).
-5. **CLI Argument Naming (`predict_draft_cli.py`)**:
-   - The CLI flag for action type is `--mode pick` or `--mode ban` (NOT `--action`).
-6. **Code Quality & Automatic Linting Protocol (Ruff)**:
-   - Whenever any code is written, updated, or refactored, the AI agent **MUST** autonomously run `ruff check --fix .` and `ruff format .` to maintain zero lint errors and consistent formatting before completing any task.
-   - For frontend changes, also run `npm run build` and `npm run lint` in `frontend/`.
-7. **Hero Canonical Names (Thai Server Default)**:
-   - The API, data, and model use official Thai server hero names (`Mortos`, `Celica`, `Riktor`, `Kaine`, `Stuart`, `Helen`) as the canonical default across all files (`data/`, `models/`, `src/`, `frontend/`). Legacy Global/Liquipedia aliases (`Arthur -> Mortos`, `Brunhilda -> Celica`, `Richter -> Riktor`) are automatically normalized in `src/scrape_matches.py` and `src/predictor.py`.
-   - Regenerate hero icons only with `python scripts/fetch_hero_icons.py` (keeps filenames in sync with `frontend/public/hero_images.json`).
-
-8. **Combat Calculator Data Gaps (`src/combat_calculator.py`)**:
-   - Mitigation is `600 / (600 + max(0, (def - flat_pierce) * (1 - pct_pierce)))`; pierce is parsed from item passive text.
-   - Only enchantments in `ENCHANTMENT_EFFECTS` affect numbers; values are parsed from descriptions and pending in-game verification. Never invent values for the rest.
-   - `hero_level_stats.json` lacks attack speed/mana; base attack rate is assumed `BASE_ATTACKS_PER_SEC = 1.0`.
-
-9. **Cross-Session Changelog (`CHANGELOG.md`), Production Log (`docs/PRODUCTION_RELEASES.md`) & English Documentation Invariant**:
-   - Before starting work, read the top entries of `CHANGELOG.md` to learn what previous agents already did.
-   - Before touching or deploying to production (`20.2.210.230` / `minidraft.app`), read `docs/PRODUCTION_RELEASES.md` to check the live base commit, active VM hotfixes, dev-only exclusions, and the **Production VM Sparse-Checkout Invariant**; update it whenever a production release or hotfix is deployed. Never run `git pull` on the VM for docs/wiki/tests/scripts-only commits.
-   - Before finishing any task that modified files, add a new entry at the TOP (date, time, agent, what was done, files, verification, open issues) following the format in that file.
-   - When adding new modules (`src/*.py`), SQLite tables (`src/db.py`), frontend views (`*View.tsx`), or architectural/deployment guardrails, update the relevant article in `.wikiskill/wiki/` (and `.wikiskill/traces/` for major experiments/releases). Numeric dataset metrics in `.wikiskill/wiki/` are auto-synced via `python scripts/sync_metadata.py`, and structural coverage is enforced by `python .wikiskill/skills/scripts/preflight_check.py`.
-   - **STRICT English Requirement**: All entries in `CHANGELOG.md`, `docs/PRODUCTION_RELEASES.md`, skill documentation (`SKILL.md`), agent notes, and repository markdown files MUST be authored strictly in English to maximize token efficiency and prevent semantic loss across LLM context windows.
-
-10. **Off-Limits Folder (`data/vod_analytics/`)**:
-    - This is the owner's paused WIP (VOD minimap rotation tracking).
-    - **NEVER** read, modify, delete, move, clean up, or propose work on anything inside `data/vod_analytics/` unless the user explicitly mentions it first in the current session.
-    - Do not "tidy" its large files (`*.mp4`, frame dumps); they are intentional and gitignored.
-
-11. **Reading True Ban/Pick Order from Draft Screenshots (`data/draft_screenshots/`)**:
-    - Screenshots are captured at the moment the LAST hero is locked, before players swap heroes into lanes. The on-screen slot order IS the true chronological order. Never treat them as in-game HUD / lane order.
-    - **Liquipedia Lane Order vs Pre-Swap Broadcast Trap**: Liquipedia lists picks strictly by in-game lane (`h1 = DS_Lane`, `h2 = Jungle`, `h3 = Mid`, `h4 = Abyssal Dragon`, `h5 = Roam`). This uniquely distinguishes roles (e.g. when picking 2 tanks, `h1` is Offlane like Skud/Taara and `h5` is Support like Toro/Thane). However, screenshots are captured BEFORE hero swap: players pick high-priority heroes for teammates regardless of physical seat. **NEVER** bind the player name under a screen slot to their Liquipedia `h1..h5` lane! Screen slots represent ONLY pick sequence (`B1..B5` / `R1..R5`).
-    - Layout: `data/draft_screenshots/<tournament>/week<N>/<year>_w<week>_d<day>_m<match>_g<game>_<season>_<league>_<teamA>_vs_<teamB>.png`, e.g. `2026_rpl_winter/week1/2026_w1_d1_m1_g1_win_rpl_kog_vs_bru.png` = RPL 2026 Winter, week 1, day 1, match 1, game 1. Tournaments use subfolders such as `2026_rpl_winter/` and `2026_rpl_summer/` (`<year>_<league>_<season>`). Team codes are lowercase (`kog`, `bru`, `gjc`, `hd`, `ten`, `fs`, `bac`, `ea`, `slx`).
-    - **Canonical Match Team Naming Invariant**: In all screenshot filenames for a given series/match, `<teamA>_vs_<teamB>` MUST remain constant across all games of that match (anchored on Game 1's team order, e.g. `bru_vs_fs` for all G1–G5). NEVER swap team order across games when sides swap (do not use `fs_vs_bru`).
-    - **Canonical Team Codes**: Saigon Phantom is strictly `sgp` (never `sp`), Supernova is `spn`.
-    - Filenames are only a hint. Identify each game by its 10 picked heroes against `data/matches_draft_full.json` (every game's 10-hero set is unique) plus the on-screen title. Unnamed captures (e.g. `Screenshot <date> <time>.png`) must be identified this way, then renamed and moved into the right `<tournament>/week<N>/` folder.
-    - Store results in `data/true_pick_order.json` (`series_id` + `game_number`, `blue_picks`/`red_picks` in true order, `source` = `screenshot`/`manual`, `screenshot` = path relative to `data/draft_screenshots/`). Liquipedia ban order is already chronological; do not "fix" it from the mirrored right side.
-    - **Left side (first pick / blue)**: picks and bans read left -> right.
-    - **Right side (second pick / red)**: picks and bans read right -> left (mirrored).
-    - Teams swap sides between games. Find blue/red per game in `data/matches_draft_full.json` by `series_id` + `game_number`, never assume from the filename.
-    - Pick turn order: B1 | R1 R2 | B2 B3 | R3 | (phase-2 bans) | R4 | B4 B5 | R5.
-    - Identify heroes by comparing against `frontend/public/avatars/` (via `frontend/public/hero_images.json`). The hero set must match Liquipedia exactly. If it does not match, flag it instead of guessing. Safe elimination is only allowed when 4 slots are visually certain and only 1 hidden slot remains.
-
-12. **Skills Live in `.agents/skills/` (Mirrored to `.claude/skills/`)**:
-    - Edit skills only in `.agents/skills/`, then copy them over with `cp -r .agents/skills/. .claude/skills/`. `tests/test_skills_sync.py` fails if the two differ.
-    - Quote model metrics from `python .agents/skills/hpo-parsimony-selector/scripts/select_parsimonious_params.py`, not from the status table above. As of 2026-11-18 the table was re-synced to the selector output (served checkpoint val_loss 2.76695; `configs/selected_production_params.json` = Trial #00 rank #1 & safest, updated 2026-11-18).
-    - Every skill ends with a **Related Skills** section. When adding or renaming a skill, update the Related Skills sections of its neighbors and the skill list in Section 2 below.
-
-13. **Curated Training Dataset & 2024 Exclusion Invariant (`data/matches_training.json`)**:
-    - `data/matches_draft_full.json` (4,352 games) is the historical archival repository (2024–2026).
-    - **STRICTLY FORBIDDEN to train the production model on 2024 data**. All 817 games from 2024 are excluded because legacy meta noise and obsolete hero priorities (e.g., pre-rework Wonder Woman, obsolete 2024 Erin dynamics) degrade model performance on the current meta.
-    - The active training dataset is `data/matches_training.json` containing **3,535 games strictly from 2025–2026** (1,702 from 2025 + 1,833 from 2026, through the AOG 2026 Winter Finals on Nov 7, 2026) with **51.9% True Pick Order coverage** (1,833 / 3,535 games = 100% of 2026 games, verified from broadcast screenshots).
-    - `src/train_sota_model.py` automatically defaults to `data/matches_training.json` whenever it exists.
-    - Regenerate the training set only with (reproduces the current file exactly; add `--max-date YYYY-MM-DD` only for a deliberate hold-out):
-      `python src/build_training_dataset.py --min-year 2025`
-
-14. **Hero Status, Skills & Item Data Provenance Invariant (User In-Game Screenshots as Ground Truth)**:
-    - **Single Source of Ground Truth**: The exact numerical stats for hero level scalings (Lv. 1 to Lv. 15 in `data/hero_level_stats.*`, `data/hero_status_lv1.json`, `data/hero_status_lv15.json`), structured skill attributes, cooldowns, scalings (`data/hero_skills_full.json`, 534 skills), and item attributes (`data/items.json`, 114 items) originate directly from **the project owner's manual in-game screenshots** stored in `heroes/*/skill/` (566 screenshots), `heroes/*/status/` (268 screenshots), and `item/*/` (159 screenshots).
-    - **Web Scraping Limitation**: External web sources (such as Liquipedia or AoV Fandom) were only used as an initial rough English text skeleton. Online wikis are notoriously outdated, riddled with incorrect numbers, and out of sync with the official Thai server client.
-    - **Strict Agent Truthfulness Rule**: In all sessions, whenever an AI agent is asked where hero stats, level scaling, skills, or items came from, the agent **MUST ALWAYS tell the truth**: they were manually captured in-game by the project owner through screenshots, which served as the definitive ground truth to correct and override external wikis. Never attribute these numbers to automated web scrapers.
-
-15. **Open Free Launch, Multi-Provider OAuth & Secret Hygiene**:
-    - `minidraft.app` is currently **100% free for all users** (do NOT add paywalls or prediction quotas unless the owner explicitly initiates the future monetization phase documented in `docs/SUBSCRIPTION_ROADMAP.md`).
-    - Multi-user accounts and per-user draft/combat state live in SQLite (`src/db.py` -> `data/rov_app.db` locally or `ROV_DB_PATH=/app/db/rov_app.db` in Docker), supporting Username/Password (`scrypt`) plus optional Google and Discord OAuth 2.0 + PKCE (`user_oauth_accounts`).
-    - OAuth credentials (`ROV_GOOGLE_*`, `ROV_DISCORD_*`) and raw client JSON files MUST stay strictly inside gitignored `.env` and `.secrets/` — never commit secrets or tracked `*env*` filenames (`tests/test_security.py::test_no_secrets_in_tracked_files`).
-    - **Production VM Sparse-Checkout Lock (`~/rov` on `20.2.210.230`)**: The production VM uses `git sparse-checkout --no-cone` restricted strictly to production build/runtime files (`/Dockerfile`, `/.dockerignore`, `/requirements.txt`, `/deploy/**`, `/configs/**`, `/src/**`, `/frontend/**`, `/models/sota_draft_gnn_transformer.pt`, and the 11 serving `/data/*` files). **STRICTLY FORBIDDEN** to run `git sparse-checkout disable`, check out or `scp`/`rsync` non-production files (`tests/`, `scripts/`, `docs/`, `.wikiskill/`, `.agents/`, `.claude/`, `best_params/`, `models/archive/`, `models/*heuristic*`, `data/draft_screenshots/`, or non-serving `data/*`) onto the VM, or run `git pull` on the VM when only docs/tests/scripts changed.
+1. **Liquipedia Pick Ordering Trap (`t1h1..t1h5`)**: `t1b1..t1b4` are chronological Bans (`Phase 1 = b1,b2`, `Phase 2 = b3,b4`), but `t1h1..t1h5` are in-game lanes (`DS_Lane, Jungle, Mid, Dragon_Lane, Roam`), NOT pick order. Always use `order_team_picks_by_draft_logic()` in `src/train_sota_model.py` for Phase 1 (`P1..P3`) vs Phase 2 (`P4..P5`).
+2. **Data Augmentation Invariant (`augment_factor`)**: **NEVER** set `augment_factor > 2` or shuffle across Phase 1/2 (`Val Loss > 4.30`). Production & H100 HPO use `augment_factor = 1`.
+3. **Locked SOTA Capacity**: Production architecture is locked to **`d_model = 256`, `num_layers = 1`, `nhead = 4`** (`head_dim = 64`, 2.47M params; sequence `<= 17` tokens, `>= 3` layers overfit). Edge CPU candidate is **`d_model = 128`, `num_layers = 1`, `nhead = 4`** (643K params).
+4. **ERAWAN HPC (`compute4` H100)**: Require `#SBATCH --partition=gpu-h100` and `#SBATCH --gres=gpu:1`. **NEVER** call `torch.compile()` (no `Python.h`). Always use `GPUTensorBatcher` + vectorized `evaluate_sota_model()` (zero `.item()` loops).
+5. **CLI Flag Naming (`predict_draft_cli.py`)**: Action flag is `--mode pick` or `--mode ban` (NOT `--action`).
+6. **Linting & Frontend Rules**: Autonomously run `ruff check --fix .` and `ruff format .` after Python edits; for `frontend/` changes follow scoped `frontend/AGENTS.md` and run `npm run lint && npm run build`.
+7. **Hero Canonical Names (Thai Server Default)**: Canonical default across `data/`, `models/`, `src/`, `frontend/` is Thai server naming (`Mortos`, `Celica`, `Riktor`, `Kaine`, `Stuart`, `Helen`). Aliases (`Arthur->Mortos`, `Brunhilda->Celica`, `Richter->Riktor`) normalize in `src/scrape_matches.py` and `src/predictor.py`. Regenerate icons only via `python scripts/fetch_hero_icons.py` (`frontend/public/hero_images.json`).
+8. **Combat Calculator (`src/combat_calculator.py`)**: Mitigation is `600 / (600 + max(0, (def - flat_pierce) * (1 - pct_pierce)))`; only `ENCHANTMENT_EFFECTS` entries affect stats (never invent unverified values); base attack speed assumes `BASE_ATTACKS_PER_SEC = 1.0`.
+9. **Changelog, Production Log, WikiSkill & English Docs**:
+   - Read top entries of `CHANGELOG.md` before starting; prepend an entry at the TOP before finishing.
+   - Before touching/deploying to `20.2.210.230` / `minidraft.app`, read `docs/PRODUCTION_RELEASES.md` and update it on release/hotfix; **never** run `git pull` on the VM for docs/wiki/tests/scripts-only commits.
+   - Update `.wikiskill/wiki/` (and `.wikiskill/traces/` for major changes) when adding modules/tables/views; sync metrics via `python scripts/sync_metadata.py` and verify via `python .wikiskill/skills/scripts/preflight_check.py`.
+   - **STRICT English Requirement**: All markdown docs, `CHANGELOG.md`, `docs/PRODUCTION_RELEASES.md`, and `SKILL.md` MUST be strictly in English.
+10. **Off-Limits Folder (`data/vod_analytics/`)**: **NEVER** read, modify, delete, move, tidy, or propose work in `data/vod_analytics/` unless explicitly requested by the user in the current session.
+11. **Reading Draft Screenshots (`data/draft_screenshots/`)**:
+    - Captured at last hero lock BEFORE lane swaps: on-screen order is chronological (`B1..B5` / `R1..R5`), NOT HUD/lane order (`h1..h5`). **NEVER** bind player name under a screen slot to their Liquipedia `h1..h5` lane.
+    - Path layout: `<tournament>/week<N>/<year>_w<week>_d<day>_m<match>_g<game>_<season>_<league>_<teamA>_vs_<teamB>.png` (e.g. `2026_rpl_winter/week1/2026_w1_d1_m1_g1_win_rpl_kog_vs_bru.png`), lowercase team codes (`kog`, `bru`, `gjc`, `hd`, `ten`, `fs`, `bac`, `ea`, `slx`). **Keep `<teamA>_vs_<teamB>` identical across G1–G5** (anchored on Game 1, never swap on side switch). Saigon Phantom = `sgp` (never `sp`), Supernova = `spn`.
+    - Identify games by 10-hero set in `data/matches_draft_full.json` (+ screen title) and resolve blue/red per `series_id` + `game_number` there (never assume from filename). Rename unnamed captures into the matching folder.
+    - Store in `data/true_pick_order.json` (`series_id`, `game_number`, `blue_picks`, `red_picks`, `source`, relative `screenshot`). Do not rewrite Liquipedia chronological bans.
+    - **Left (Blue)** reads L->R; **Right (Red)** reads R->L (mirrored). Pick order: `B1 | R1 R2 | B2 B3 | R3 | (bans) | R4 | B4 B5 | R5`.
+    - Verify portraits against `frontend/public/avatars/` (`frontend/public/hero_images.json`); hero set must match Liquipedia (flag mismatches; safe elimination only if 4 slots certain & 1 hidden).
+12. **Skills Mirror & Metric Quoting**: Edit skills only in `.agents/skills/`, then mirror via `cp -r .agents/skills/. .claude/skills/` (`tests/test_skills_sync.py` enforces parity). End every skill with `**Related Skills**` (updating neighbors & Section 2 on additions). Always quote model metrics from `python .agents/skills/hpo-parsimony-selector/scripts/select_parsimonious_params.py`.
+13. **Curated Training Dataset (`data/matches_training.json`)**: `data/matches_draft_full.json` (4,352 games) is archival (2024–2026). **STRICTLY FORBIDDEN to train production on 2024 data**: All 817 games from 2024 are excluded due to legacy meta noise. `data/matches_training.json` is active, containing **3,535 games strictly from 2025–2026** (1,702 from 2025 + 1,833 from 2026, through Nov 7, 2026 AOG Winter Finals) with **51.9% True Pick Order coverage** (1,833 / 3,535 games = 100% of 2026 games, verified from broadcast screenshots) — auto-loaded by `src/train_sota_model.py`. Regenerate only via `python src/build_training_dataset.py --min-year 2025`.
+14. **Hero/Skill/Item Data Provenance (In-Game Screenshots Ground Truth)**: Exact hero level scalings (`data/hero_level_stats.*`, `hero_status_lv1.json`, `hero_status_lv15.json`), skills (`data/hero_skills_full.json`, 534 skills), and items (`data/items.json`, 114 items) come directly from **owner-captured in-game screenshots** (`heroes/*/skill/` 566, `heroes/*/status/` 268, `item/*/` 159). External wikis (Liquipedia/Fandom) were only a rough EN skeleton and are outdated; **always tell the truth** that these numbers come from owner in-game screenshots, never web scrapers.
+15. **Open Free Launch, OAuth, Secrets & VM Sparse-Checkout Lock**:
+    - `minidraft.app` is **100% free** (no paywalls/quotas unless owner initiates `docs/SUBSCRIPTION_ROADMAP.md`). Auth/state live in SQLite (`src/db.py` -> `data/rov_app.db` or `/app/db/rov_app.db`): `scrypt` Username/Password + Google & Discord OAuth 2.0 PKCE (`user_oauth_accounts`). Secrets (`ROV_GOOGLE_*`, `ROV_DISCORD_*`, JSON) stay in gitignored `.env` / `.secrets/` (`test_no_secrets_in_tracked_files`).
+    - **Production VM Lock (`~/rov` on `20.2.210.230`)**: Uses `git sparse-checkout --no-cone` limited to `/Dockerfile`, `/.dockerignore`, `/requirements.txt`, `/deploy/**`, `/configs/**`, `/src/**`, `/frontend/**`, `/models/sota_draft_gnn_transformer.pt`, and the 11 serving `/data/*` files. **STRICTLY FORBIDDEN** to disable sparse-checkout, copy non-prod files (`tests/`, `scripts/`, `docs/`, `.wikiskill/`, `.agents/`, `.claude/`, `best_params/`, `models/archive/`, `models/*heuristic*`, `data/draft_screenshots/`), or `git pull` on VM for non-prod commits.
 
 ---
 
 ## 2. Repository Structure & Architecture
 
-> **Full File-by-File Map**: Read **[`docs/ARCHITECTURE_MAP.md`](file:///C:/Users/chaya/Documents/Program/Project/ROV/docs/ARCHITECTURE_MAP.md)** for the complete directory tree across `src/`, `frontend/src/`, `data/`, `scripts/`, `scripts/archive/`, `tests/`, `deploy/`, and `.agents/skills/` (kept compact here so `AGENTS.md` never truncates in agent context windows).
+> Full directory map: [`docs/ARCHITECTURE_MAP.md`](file:///C:/Users/chaya/Documents/Program/Project/ROV/docs/ARCHITECTURE_MAP.md).
 
 | Path | Purpose |
 | :--- | :--- |
-| `AGENTS.md` / `CHANGELOG.md` / `DESIGN.md` | Master agent rules, cross-session work log (read top entries first, prepend on finish), and UI design system |
-| `docs/PRODUCTION_RELEASES.md` | Live production (`minidraft.app`) state, VM hotfix ledger, dev-only exclusions, and deploy history |
-| `docs/ARCHITECTURE_MAP.md` | Complete file-by-file repository & architecture map (read when locating files) |
-| `.agents/skills/` (mirrored to `.claude/skills/`) | 10 workspace skills: `rov-data-guardian`, `hpo-parsimony-selector`, `erawan-hpc-ops`, `rov-draft-serving`, `draft-screenshot-reader`, `security-audit`, `frontend-e2e-inspector`, `moba-meta-intel`, `regression-guard`, `arch-perf-auditor` |
-| `.wikiskill/` | 3-Layer LLM Wiki (Google Research WikiSkill): `.wikiskill/wiki/INDEX.md`, operational traces (`.wikiskill/traces/`), and preflight/gating validators (`.wikiskill/skills/scripts/`) |
-| `src/` | FastAPI (`api.py`), SQLite auth/state (`db.py`), Pydantic schemas (`schemas.py`), config (`config.py`), SOTA predictor (`predictor.py`, `search/draft_mcts.py`), Combat Engine (`combat_calculator.py`, `skill_mechanics.py`), SOTA trainer & HPO (`train_sota_model.py`, `hpo_sota_optuna.py`), data builders & scrapers |
-| `frontend/` | React 19 + TypeScript + Vite + Tailwind 4 draft board (`DraftBoardView`), Combat Lab (`components/lab/`), Matrix Sandbox (`meta_lab/`), Tier List (`tierlist/`), and OAuth/Account portal (`dist/` dev, `dist-prod/` prod) |
-| `data/` | 130 heroes, 534 skills, 114 items, 30 T3 arcana, 33 enchantments, 4,340 pro games (`matches_draft_full.json`), 3,523 curated 2025–2026 training games (`matches_training.json`), 1,821 screenshot pick orders (`true_pick_order.json`), 130x130 combat matchups (`mechanical_matchups_130x130.csv`, `counter_item_flips.csv`) |
-| `models/` & `configs/` & `best_params/` | Served `sota_draft_gnn_transformer.pt` checkpoint, `selected_production_params.json`, and H100 Optuna HPO trials |
-| `scripts/` (`+ scripts/archive/`) | Active pipelines (`discover_mechanical_matchups.py`, `sync_metadata.py`, `simulate_draft_selfplay.py`, `fetch_*`, `build_*`) + archived one-off patch scripts |
-| `deploy/` & `Dockerfile` | Production multi-stage Docker build, `compose.yaml`, and `Caddyfile` reverse proxy |
-| `tests/` | Full Pytest suite (`test_data_integrity.py`, `test_model_pipeline.py`, `test_api.py`, `test_combat_calculator.py`, `test_predictor_golden.py`, `test_rl_search.py`, `test_security.py`, `test_skills_sync.py`) |
+| `AGENTS.md` / `frontend/AGENTS.md` / `CHANGELOG.md` / `DESIGN.md` | Root & scoped agent rules, work log, UI design spec |
+| `docs/PRODUCTION_RELEASES.md` / `docs/ARCHITECTURE_MAP.md` | Prod state & VM hotfix ledger; full file map |
+| `.agents/skills/` (mirrored to `.claude/skills/`) | 10 skills: `rov-data-guardian`, `hpo-parsimony-selector`, `erawan-hpc-ops`, `rov-draft-serving`, `draft-screenshot-reader`, `security-audit`, `frontend-e2e-inspector`, `moba-meta-intel`, `regression-guard`, `arch-perf-auditor` |
+| `.wikiskill/` | LLM Wiki (`wiki/INDEX.md`, `traces/`, `skills/scripts/`) |
+| `src/` | FastAPI (`api.py`, `db.py`, `schemas.py`, `config.py`), Predictor/MCTS (`predictor.py`, `search/draft_mcts.py`), Combat Engine (`combat_calculator.py`, `skill_mechanics.py`), Trainer/HPO (`train_sota_model.py`, `hpo_sota_optuna.py`), scrapers/builders |
+| `frontend/` | React 19 + TS + Vite + Tailwind 4 UI (`DraftBoardView`, `components/lab/`, `meta_lab/`, `tierlist/`, OAuth/Accounts; `dist/`, `dist-prod/`) |
+| `data/` & `models/` & `configs/` & `best_params/` | 130 heroes, 534 skills, 114 items, 30 arcana, 33 enchantments, 4,352 pro games, 3,535 training games, `true_pick_order.json`, 130x130 matchups; served checkpoint, `selected_production_params.json`, HPO trials |
+| `scripts/` (`+ scripts/archive/`), `deploy/`, `Dockerfile`, `tests/` | Pipelines (`discover_mechanical_matchups.py`, `sync_metadata.py`, `simulate_draft_selfplay.py`), Docker/Caddy prod configs, Pytest suite |
 
 ---
 
 ## 3. Common Development & Verification Commands
 
 ```bash
-# 1. Run all automated tests (Data + Model + FastAPI)
+# 1. Automated tests & data/HPO/meta/regression/security/perf audits
 pytest -v
-
-# 2. Run Data Guardian integrity check
 python .agents/skills/rov-data-guardian/scripts/audit_rov_data.py
-
-# 3. Inspect Top-5 HPO Parsimony & Safety Leaderboard
 python .agents/skills/hpo-parsimony-selector/scripts/select_parsimonious_params.py
-
-# 4. Run CLI draft demo scenarios
-python src/predict_draft_cli.py --demo
-
-# 5. Train SOTA model with Safest HPO candidate (Rank #2) or Compact candidate (Rank #1)
-python src/train_sota_model.py --preset h100 --use-safest
-python src/train_sota_model.py --preset h100 --top-rank 1
-
-# 6. Build the web UI, then start FastAPI (UI at http://localhost:8000)
-cd frontend && npm install && npm run build && cd ..
-uvicorn src.api:app --reload --port 8000
-
-# 6b. Frontend dev server with hot reload (http://localhost:3000, proxies API to :8000)
-cd frontend && npm run dev
-
-# 7. Lint and format check (Autonomous verification)
-ruff check --fix .
-ruff format .
-
-# 8. Regression guard: 72 golden draft states + 3 combat duel benchmarks
 python .agents/skills/regression-guard/scripts/audit_regression_guard.py
-
-# 9. Frontend bundle, avatar, and media endpoint audit (after npm run build)
-python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py
-
-# 10. Security audit (path traversal, pickle safety, input bounds, secrets)
 python .agents/skills/security-audit/scripts/audit_security.py
-
-# 11. Patch-aware meta intelligence (tier list with hero_tier_overrides.json, emerging heroes)
+python .agents/skills/arch-perf-auditor/scripts/audit_arch_perf.py
 python .agents/skills/moba-meta-intel/scripts/query_meta_intel.py --tier-list --top 25
 python .agents/skills/moba-meta-intel/scripts/query_meta_intel.py --emerging --top 15
-
-# 12. WikiSkill preflight scan & regression gating (.wikiskill/)
 python .wikiskill/skills/scripts/preflight_check.py
 python .wikiskill/skills/scripts/validate_gating.py
 
-# 13. Architecture, DSA & best-practice audit (SQLite EXPLAIN QUERY PLAN, GNN cache, ML leak check)
-python .agents/skills/arch-perf-auditor/scripts/audit_arch_perf.py
+# 2. CLI demo & SOTA training
+python src/predict_draft_cli.py --demo
+python src/train_sota_model.py --preset h100 --use-safest
+python src/train_sota_model.py --preset h100 --top-rank 1
+
+# 3. Backend / Frontend servers & QA
+cd frontend && npm install && npm run lint && npm run build && cd ..
+uvicorn src.api:app --reload --port 8000     # http://localhost:8000
+cd frontend && npm run dev                   # http://localhost:3000 (hot reload)
+python .agents/skills/frontend-e2e-inspector/scripts/audit_copy_i18n.py
+python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py
+python .agents/skills/frontend-e2e-inspector/scripts/audit_ux_ui.py
+
+# 4. Python lint & format (Autonomous verification)
+ruff check --fix . && ruff format .
 ```

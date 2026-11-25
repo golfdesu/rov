@@ -35,7 +35,7 @@ export interface TimerPresetOption {
 export const TIMER_PRESETS: readonly TimerPresetOption[] = [
   {
     id: "pro",
-    label: "RoV (Ban 40s / Pick 60s)",
+    label: "RoV (40s/60s)",
     shortLabel: "40/60s",
     description: "Ban 40 วินาที · Pick 60 วินาที",
   },

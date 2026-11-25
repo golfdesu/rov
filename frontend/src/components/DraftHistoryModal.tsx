@@ -10,11 +10,13 @@ import {
   FolderOpen,
   History,
   Layers,
+  Lock,
   PlusCircle,
   RotateCcw,
   Search,
   Trash2,
   Trophy,
+  Unlock,
   Upload,
   UserRound,
   UsersRound,
@@ -45,6 +47,7 @@ interface DraftHistoryModalProps {
   heroMap: Map<string, Hero>;
   hasCurrentDraftActions: boolean;
   onSaveCurrentSnapshot: () => boolean;
+  onHistoryFullUpgrade?: () => void;
   teamHistoryUsername?: string;
   currentDraftSnapshot?: () => RecordedDraftGame;
   personalHistoryLimit?: number;
@@ -55,6 +58,7 @@ interface DraftHistoryModalProps {
   onSwitchSeries?: (groupName: string) => void;
   onLoadGame: (game: RecordedDraftGame, source: "personal" | "team") => void;
   onSetGameWinner?: (id: string, winner?: TeamId) => void;
+  onToggleGameLock?: (id: string) => void;
   onImportGames?: (
     games: RecordedDraftGame[],
   ) => { imported: number; skipped: number; remaining?: number; error?: "history_full" };
@@ -338,6 +342,7 @@ export function DraftHistoryModal({
   heroMap,
   hasCurrentDraftActions,
   onSaveCurrentSnapshot,
+  onHistoryFullUpgrade,
   teamHistoryUsername,
   currentDraftSnapshot,
   personalHistoryLimit,
@@ -347,6 +352,7 @@ export function DraftHistoryModal({
   onEditSeries,
   onLoadGame,
   onSetGameWinner,
+  onToggleGameLock,
   onImportGames,
   onDeleteGame,
   onDeleteGroup,
@@ -441,16 +447,29 @@ export function DraftHistoryModal({
     }
     return restricted;
   }, [team, teamGames, teamHistoryUsername]);
-  const displayedTeamGroups = useMemo(() => teamGroups
-    .filter((group) => activeTournament === ALL_TOURNAMENTS || (group.tournament?.id ?? "") === activeTournament)
-    .map((group) => ({
-      ...group,
-      visibleItems: activeUploader
-        ? group.items.filter(({ author }) => (author ?? UNKNOWN_UPLOADER) === activeUploader)
-        : group.items,
-    }))
-    .filter(({ visibleItems }) => visibleItems.length > 0),
-  [activeTournament, activeUploader, teamGroups]);
+  const displayedTeamGroups = useMemo(() => {
+    const q = historySearch.trim().toLowerCase();
+    return teamGroups
+      .filter((group) => activeTournament === ALL_TOURNAMENTS || (group.tournament?.id ?? "") === activeTournament)
+      .map((group) => {
+        const groupMatches = !q || group.name.toLowerCase().includes(q) || group.tournament?.name.toLowerCase().includes(q);
+        return {
+          ...group,
+          visibleItems: group.items.filter(({ author, game }) => {
+            if (activeUploader && (author ?? UNKNOWN_UPLOADER) !== activeUploader) return false;
+            if (groupMatches) return true;
+            if (game.gameName?.toLowerCase().includes(q) || game.blueTeamName.toLowerCase().includes(q) || game.redTeamName.toLowerCase().includes(q)) return true;
+            return (
+              game.bluePicks.some((h) => h.toLowerCase().includes(q) || displayName(h).toLowerCase().includes(q)) ||
+              game.redPicks.some((h) => h.toLowerCase().includes(q) || displayName(h).toLowerCase().includes(q)) ||
+              game.blueBans.some((h) => h.toLowerCase().includes(q) || displayName(h).toLowerCase().includes(q)) ||
+              game.redBans.some((h) => h.toLowerCase().includes(q) || displayName(h).toLowerCase().includes(q))
+            );
+          }),
+        };
+      })
+      .filter(({ visibleItems }) => visibleItems.length > 0);
+  }, [activeTournament, activeUploader, teamGroups, historySearch]);
   const historyLimit = personalHistoryLimit ?? MAX_SERIES_GAMES;
   const [confirmState, setConfirmState] = useState<{
     title: string;
@@ -464,7 +483,7 @@ export function DraftHistoryModal({
     const ctrl = new AbortController();
     getTeam(ctrl.signal)
       .then(({ team }) => {
-        if (!ctrl.signal.aborted) setTeam(team);
+        if (!ctrl.signal.aborted) setTeam(team?.tier === "team_pro" ? team : null);
       })
       .catch(() => {
         // Keep previously loaded team state on transient network failure.
@@ -557,7 +576,13 @@ export function DraftHistoryModal({
 
   function saveSnapshot() {
     if (!showTeamHistory || !team || !currentDraftSnapshot) {
-      setTeamError(onSaveCurrentSnapshot() ? null : t("ประวัติส่วนตัวเต็มแล้ว ลบเกมเดิมก่อนบันทึก"));
+      const saved = onSaveCurrentSnapshot();
+      if (!saved && games.length >= historyLimit && onHistoryFullUpgrade) {
+        setTeamError(null);
+        onHistoryFullUpgrade();
+        return;
+      }
+      setTeamError(saved ? null : t("ประวัติส่วนตัวเต็มแล้ว ลบเกมเดิมก่อนบันทึก"));
       return;
     }
     const game = teamSnapshot.current ?? currentDraftSnapshot();
@@ -788,22 +813,19 @@ export function DraftHistoryModal({
             <div className="min-w-0">
               <h2 id={titleId} ref={titleRef} tabIndex={-1} className="flex flex-wrap items-center gap-1.5 font-display text-xs font-bold tracking-wider text-ink sm:gap-2 sm:text-sm lg:text-base">
                 <span>
-                  DRAFT HISTORY{!team && <span className="hidden sm:inline"> {t("& SERIES · ประวัติการดราฟต์แยกตามกลุ่มซีรีส์")}</span>}
+                  {t("ประวัติดราฟต์")}
                 </span>
-                <span className="border border-gold/60 bg-gold/15 px-1.5 py-0.5 font-mono text-[10px] font-bold text-gold sm:px-2 sm:text-xs lg:text-[13px]">
+                <span className="border border-line-strong bg-panel-2 px-1.5 py-0.5 font-mono text-[10px] font-bold tabular-nums text-ink sm:px-2 sm:text-xs lg:text-[13px]">
                   {showTeamHistory ? `${teamGames?.length ?? "—"}/500` : `${games.length}/${historyLimit}`}
                 </span>
               </h2>
-              {!showTeamHistory && personalHistoryLimit === undefined && <p className="hidden text-[11px] text-dim sm:block lg:text-xs">
-                {t("ระบบจัดกลุ่มตามคู่แข่งขัน (เช่น BRU vs FS) อัตโนมัติ — บันทึกสูงสุด")} {MAX_SERIES_GAMES} {t("เกมล่าสุด (หากเกินจะลบเกมเก่าสุดอัตโนมัติ)")}
-              </p>}
             </div>
           </div>
 
           <button
             type="button"
             onClick={() => requestClose()}
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-dim transition-colors hover:bg-panel-2 hover:text-ink sm:hidden"
+            className="inline-flex h-8 w-8 shrink-0 items-center justify-center text-dim transition-colors hover:bg-panel-2 hover:text-ink sm:hidden"
             aria-label={t("ปิด")}
           >
             <X size={18} />
@@ -819,7 +841,7 @@ export function DraftHistoryModal({
               className="flex h-7 items-center gap-1 border border-gold bg-gold px-2 font-display text-[10px] font-bold tracking-wide whitespace-nowrap text-bg transition-colors hover:bg-gold/90 sm:h-8 sm:gap-1.5 sm:px-2.5 sm:text-[11px] lg:px-3 lg:text-xs"
             >
               <PlusCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-              <span><StableButtonLabel message="+ แมตช์ใหม่" /></span>
+              <span><StableButtonLabel message="แมตช์ใหม่" /></span>
             </button>
           )}
           {hasCurrentDraftActions && (
@@ -831,9 +853,9 @@ export function DraftHistoryModal({
               }}
               disabled={teamBusy}
               title={t("บันทึกกระดานดราฟต์ปัจจุบันเก็บเข้าประวัติโดยไม่ล้างกระดาน")}
-              className="flex h-7 items-center gap-1 border border-gold/60 bg-gold/10 px-2 font-display text-[10px] font-bold tracking-wide whitespace-nowrap text-gold transition-colors hover:bg-gold hover:text-bg sm:h-8 sm:gap-1.5 sm:px-2.5 sm:text-[11px] lg:px-3 lg:text-xs"
+              className="flex h-7 items-center gap-1 border border-line-strong bg-panel-2 px-2 font-display text-[10px] font-bold tracking-wide whitespace-nowrap text-ink transition-colors hover:border-gold/60 hover:text-gold sm:h-8 sm:gap-1.5 sm:px-2.5 sm:text-[11px] lg:px-3 lg:text-xs"
             >
-              <BookmarkPlus className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+              <BookmarkPlus className="h-3 w-3 text-gold sm:h-3.5 sm:w-3.5" />
               {team ? (
                 <StableButtonLabel
                   message={showTeamHistory ? "บันทึกเข้าทีม" : "บันทึกส่วนตัว"}
@@ -880,7 +902,8 @@ export function DraftHistoryModal({
           </button>
           {!showTeamHistory && <button
             type="button"
-            disabled={games.length === 0}
+            disabled={games.length === 0 || games.some((g) => Boolean(g.locked))}
+            title={games.some((g) => Boolean(g.locked)) ? t("มีเกมที่ถูกล็อกอยู่ในระบบ ปลดล็อกก่อนล้างทั้งหมด") : undefined}
             onClick={() =>
               setConfirmState({
                 title: t("รีเซ็ตประวัติทั้งซีรีส์?"),
@@ -893,7 +916,7 @@ export function DraftHistoryModal({
                 },
               })
             }
-            className="flex h-7 items-center gap-1 border border-red/40 bg-red/10 px-2 font-display text-[11px] font-semibold tracking-wide whitespace-nowrap text-red transition-colors hover:bg-red hover:text-ink disabled:pointer-events-none disabled:opacity-35 sm:h-8 sm:gap-1.5 sm:px-2.5 lg:px-3 lg:text-xs"
+            className="flex h-7 items-center gap-1 border border-red/40 bg-red/10 px-2 font-display text-[11px] font-semibold tracking-wide whitespace-nowrap text-red transition-colors hover:bg-red hover:text-bg disabled:pointer-events-none disabled:opacity-35 sm:h-8 sm:gap-1.5 sm:px-2.5 lg:px-3 lg:text-xs"
           >
             <RotateCcw className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             <span className="sm:hidden"><StableButtonLabel message="รีเซ็ตทั้งหมด" /></span>
@@ -902,7 +925,7 @@ export function DraftHistoryModal({
           <button
             type="button"
             onClick={() => requestClose()}
-            className="hidden h-8 w-8 shrink-0 items-center justify-center rounded text-dim transition-colors hover:bg-panel-2 hover:text-ink sm:inline-flex"
+            className="hidden h-8 w-8 shrink-0 items-center justify-center text-dim transition-colors hover:bg-panel-2 hover:text-ink sm:inline-flex"
             aria-label={t("ปิด")}
           >
             <X size={18} />
@@ -910,6 +933,7 @@ export function DraftHistoryModal({
         </div>
       </div>
 
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto sm:overflow-hidden">
       {(team || tournaments.length > 0 || tournamentChoices.length > 0) && (
         <div className="flex shrink-0 flex-col gap-2 border-b border-line bg-panel/70 px-3 py-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-4">
           <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 sm:flex-1 sm:justify-start">
@@ -927,7 +951,6 @@ export function DraftHistoryModal({
                         setDestination(option);
                         setTournamentFilter(ALL_TOURNAMENTS);
                         setSelectedGroup("ALL");
-                        if (option === "team") setHistorySearch("");
                       }}
                       className="inline-flex min-h-8 items-center justify-center gap-1.5 border border-transparent px-2.5 font-display text-xs font-semibold text-muted transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-gold aria-pressed:border-gold/40 aria-pressed:bg-gold/10 aria-pressed:text-gold"
                     >
@@ -981,7 +1004,7 @@ export function DraftHistoryModal({
                         className="inline-flex min-h-8 max-w-[200px] shrink-0 items-center gap-1.5 border border-line bg-bg px-2.5 font-display text-xs font-semibold whitespace-nowrap text-muted transition-colors hover:border-line-strong hover:text-ink aria-pressed:border-gold aria-pressed:bg-gold/15 aria-pressed:text-gold"
                       >
                         {isNamed && <Trophy className="size-3 shrink-0 text-gold" aria-hidden="true" />}
-                        <span className="truncate">{bucket.tournament?.name ?? t("ไม่สังกัดทัวร์นาเมนต์")}</span>
+                        <span className="truncate">{bucket.tournament?.name ?? t("ไม่มีทัวร์นาเมนต์")}</span>
                         <span className="shrink-0 font-mono text-[10px] opacity-80">{bucket.groups.length}</span>
                       </button>
                     );
@@ -1000,7 +1023,7 @@ export function DraftHistoryModal({
                     }}
                   >
                     <option value={ALL_TOURNAMENTS}>{t("ทุกทัวร์นาเมนต์")}</option>
-                    <option value="">{t("ไม่สังกัดทัวร์นาเมนต์")}</option>
+                    <option value="">{t("ไม่มีทัวร์นาเมนต์")}</option>
                     {tournaments.map(({ id, name }) => <option key={id} value={id}>{name}</option>)}
                   </select>
                 </label>
@@ -1043,8 +1066,33 @@ export function DraftHistoryModal({
       )}
       {teamError && <Alert className="m-2">{teamError}</Alert>}
       {teamNotice && <p role="status" className="px-3 py-2 text-sm text-good">{teamNotice}</p>}
+      {showTeamHistory && teamGames && teamGames.length > 0 && (
+        <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-line bg-panel-2/60 px-3 py-1.5 sm:px-4 sm:py-2">
+          <div className="relative min-w-[160px] flex-1">
+            <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-dim" aria-hidden="true" />
+            <input
+              type="text"
+              value={historySearch}
+              onChange={(e) => setHistorySearch(e.target.value)}
+              placeholder={t("ค้นหาแมตช์ / ทีม / ฮีโร่…")}
+              aria-label={t("ค้นหาแมตช์ / ทีม / ฮีโร่…")}
+              className="h-8 w-full border border-line-strong bg-bg pr-8 pl-8 text-base text-ink placeholder:text-dim focus:border-gold focus:outline-none sm:text-xs"
+            />
+            {historySearch && (
+              <button
+                type="button"
+                onClick={() => setHistorySearch("")}
+                aria-label={t("ล้างคำค้นหา")}
+                className="absolute top-1/2 right-0.5 grid size-7 -translate-y-1/2 place-items-center text-dim hover:text-ink"
+              >
+                <X className="size-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
       {showTeamHistory ? (
-        <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-4">
+        <div className="min-h-[240px] p-3 sm:min-h-0 sm:flex-1 sm:overflow-y-auto sm:p-4">
           {teamGames === null && !teamError && <p role="status">{t("กำลังโหลด…")}</p>}
           {teamGames?.length === 0 && (
             <div className="flex flex-col items-center gap-2 border border-dashed border-line px-4 py-8 text-center">
@@ -1083,7 +1131,7 @@ export function DraftHistoryModal({
                         ? <Trophy className="size-4 shrink-0 text-gold" aria-hidden="true" />
                         : <Layers className="size-3.5 shrink-0 text-muted" aria-hidden="true" />}
                       <h3 className={`min-w-0 truncate font-display text-xs font-extrabold tracking-wide sm:text-sm ${isNamed ? "text-gold" : "text-muted"}`}>
-                        {bucket.tournament?.name ?? t("ไม่สังกัดทัวร์นาเมนต์")}
+                        {bucket.tournament?.name ?? t("ไม่มีทัวร์นาเมนต์")}
                       </h3>
                       <span className="shrink-0 border border-line bg-bg/80 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-ink sm:px-2">
                         <span className="sm:hidden">{bucket.groups.length}s·{bucket.gameCount}g</span>
@@ -1193,14 +1241,14 @@ export function DraftHistoryModal({
               onChange={(e) => setHistorySearch(e.target.value)}
               placeholder={t("ค้นหาแมตช์ / ทีม / ฮีโร่…")}
               aria-label={t("ค้นหาแมตช์ / ทีม / ฮีโร่…")}
-              className="h-8 w-full border border-line-strong bg-bg pr-7 pl-8 text-xs text-ink placeholder:text-dim focus:border-gold focus:outline-none"
+              className="h-8 w-full border border-line-strong bg-bg pr-8 pl-8 text-base text-ink placeholder:text-dim focus:border-gold focus:outline-none sm:text-xs"
             />
             {historySearch && (
               <button
                 type="button"
                 onClick={() => setHistorySearch("")}
-                aria-label={t("ปิด")}
-                className="absolute top-1/2 right-1.5 -translate-y-1/2 rounded p-0.5 text-dim hover:text-ink"
+                aria-label={t("ล้างคำค้นหา")}
+                className="absolute top-1/2 right-0.5 grid size-7 -translate-y-1/2 place-items-center text-dim hover:text-ink"
               >
                 <X className="size-3.5" />
               </button>
@@ -1212,7 +1260,7 @@ export function DraftHistoryModal({
             <select
               value={activeGroup}
               onChange={(e) => setSelectedGroup(e.target.value)}
-              aria-label={t("GROUP / แมตช์:")}
+              aria-label={t("เลือกซีรีส์")}
               className="h-8 max-w-[210px] border border-line-strong bg-bg px-2 font-display text-xs font-semibold text-ink focus:border-gold focus:outline-none sm:max-w-[260px]"
             >
               <option value="ALL">{t("ทั้งหมด ({0} เกม · {1} ซีรีส์)", totalPersonalGamesCount, groups.length)}</option>
@@ -1243,13 +1291,13 @@ export function DraftHistoryModal({
       )}
 
       {/* Saved Games List Grouped by Tournament -> Series */}
-      <div className="min-h-0 flex-1 overflow-y-auto p-2.5 sm:p-4">
+      <div className="min-h-[240px] p-2.5 sm:min-h-0 sm:flex-1 sm:overflow-y-auto sm:p-4">
         {games.length === 0 ? (
           <div className="flex h-52 flex-col items-center justify-center gap-2 border border-dashed border-line bg-bg/40 p-6 text-center text-dim">
             <History className="h-7 w-7 text-muted/60 lg:h-8 lg:w-8" />
             <p className="font-display text-sm font-semibold text-muted lg:text-base">{t("ยังไม่มีประวัติเกมที่บันทึกไว้ในระบบ")}</p>
             <p className="max-w-md text-xs text-dim lg:max-w-lg lg:text-sm">
-              {t("เมื่อกดปุ่ม “จบเกมนี้ → บันทึก Global Ban” หรือกด “บันทึกกระดานปัจจุบัน” รายละเอียดการแบนและเลือกฮีโร่จะถูกจัดกลุ่มตามคู่แข่งขัน (เช่น BRU vs FS) และเก็บรักษาไว้อย่างถาวร")}
+              {t("กด “บันทึกผล” หลังจบดราฟต์ หรือกด “บันทึกกระดานปัจจุบัน” เพื่อเก็บเกมไว้ที่นี่")}
             </p>
           </div>
         ) : displayedGroups.length === 0 ? (
@@ -1400,6 +1448,7 @@ export function DraftHistoryModal({
                                   )}
                                   <button
                                     type="button"
+                                    disabled={grp.items.some((g) => Boolean(g.locked))}
                                     onClick={() =>
                                       setConfirmState({
                                         title: t("ลบประวัติกลุ่ม \"{0}\"?", grp.name),
@@ -1411,9 +1460,14 @@ export function DraftHistoryModal({
                                         },
                                       })
                                     }
-                                    title={t("ลบประวัติเฉพาะกลุ่ม {0}", grp.name)}
+                                    title={t(
+                                      grp.items.some((g) => Boolean(g.locked))
+                                        ? "มีเกมที่ถูกล็อกอยู่ในซีรีส์นี้ ปลดล็อกก่อนลบ"
+                                        : "ลบประวัติเฉพาะกลุ่ม {0}",
+                                      grp.name,
+                                    )}
                                     aria-label={t("ลบประวัติเฉพาะกลุ่ม {0}", grp.name)}
-                                    className="inline-flex h-8 w-8 items-center justify-center gap-1 border border-red/40 bg-bg font-display text-xs font-semibold text-red transition-colors hover:bg-red hover:text-ink xl:w-auto xl:px-2"
+                                    className="inline-flex h-8 w-8 items-center justify-center gap-1 border border-red/40 bg-bg font-display text-xs font-semibold text-red transition-colors enabled:hover:bg-red enabled:hover:text-ink disabled:cursor-not-allowed disabled:opacity-35 xl:w-auto xl:px-2"
                                   >
                                     <Trash2 className="size-3.5 shrink-0" aria-hidden="true" />
                                     <span className="hidden xl:inline"><StableButtonLabel message="ลบเฉพาะกลุ่มนี้" /></span>
@@ -1426,15 +1480,20 @@ export function DraftHistoryModal({
                                 {grp.items.map((g) => {
                                   const blueTeamId: TeamId = g.blueSideTeam;
                                   const redTeamId: TeamId = g.blueSideTeam === "A" ? "B" : "A";
+                                  const isGameLocked = Boolean(g.locked);
                                   return (
                                     <div
                                       key={g.id}
-                                      className="flex flex-col gap-2.5 border border-line bg-panel-2/60 p-3 transition-colors hover:border-line-strong"
+                                      className={`flex flex-col gap-2.5 border p-3 transition-colors ${
+                                        isGameLocked
+                                          ? "border-gold/35 bg-panel-2/75"
+                                          : "border-line bg-panel-2/60 hover:border-line-strong"
+                                      }`}
                                     >
                                       {/* Top Bar: Game Number, Teams, Winner, Actions */}
                                       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-2">
                                         <div className="flex flex-wrap items-center gap-2">
-                                          <span className="border border-gold/60 bg-gold/15 px-2 py-0.5 font-mono text-xs font-bold text-gold lg:text-sm">
+                                          <span className="border border-line-strong bg-panel-2 px-2 py-0.5 font-mono text-xs font-bold tabular-nums text-ink lg:text-sm">
                                             GAME {g.gameNumber}
                                           </span>
                                           {g.gameName && <span className="min-w-0 font-display text-xs font-bold break-words text-ink lg:text-sm">{g.gameName}</span>}
@@ -1446,45 +1505,64 @@ export function DraftHistoryModal({
                                             {g.timestamp}
                                           </span>
                                           {onSetGameWinner && (
-                                            <div title="WINNER" className="inline-flex items-center gap-1 border border-line bg-bg px-1.5 py-0.5 lg:px-2">
+                                            <div title={isGameLocked ? t("ปลดล็อกเกมนี้ก่อนเปลี่ยนผู้ชนะ") : "WINNER"} className="inline-flex items-center gap-1 border border-line bg-bg px-1.5 py-0.5 lg:px-2">
                                               <Trophy className="h-3 w-3 text-gold lg:h-3.5 lg:w-3.5" aria-hidden="true" />
                                               <button
                                                 type="button"
+                                                disabled={isGameLocked}
                                                 onClick={() =>
                                                   onSetGameWinner(g.id, g.winner === blueTeamId ? undefined : blueTeamId)
                                                 }
-                                                className={`inline-flex min-h-6 min-w-7 items-center justify-center px-1.5 py-0.5 font-display text-[10px] font-bold transition-colors lg:px-2 lg:text-xs ${
+                                                className={`inline-flex min-h-6 min-w-7 max-w-[96px] items-center justify-center px-1.5 py-0.5 font-display text-[10px] font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50 lg:px-2 lg:text-xs ${
                                                   g.winner === blueTeamId
                                                     ? "bg-blue text-bg"
-                                                    : "text-blue hover:bg-blue/15"
+                                                    : "text-blue enabled:hover:bg-blue/15"
                                                 }`}
                                               >
-                                                {g.blueTeamName}
+                                                <span className="truncate">{g.blueTeamName}</span>
                                               </button>
                                               <button
                                                 type="button"
+                                                disabled={isGameLocked}
                                                 onClick={() =>
                                                   onSetGameWinner(g.id, g.winner === redTeamId ? undefined : redTeamId)
                                                 }
-                                                className={`inline-flex min-h-6 min-w-7 items-center justify-center px-1.5 py-0.5 font-display text-[10px] font-bold transition-colors lg:px-2 lg:text-xs ${
+                                                className={`inline-flex min-h-6 min-w-7 max-w-[96px] items-center justify-center px-1.5 py-0.5 font-display text-[10px] font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50 lg:px-2 lg:text-xs ${
                                                   g.winner === redTeamId
                                                     ? "bg-red text-bg"
-                                                    : "text-red hover:bg-red/15"
+                                                    : "text-red enabled:hover:bg-red/15"
                                                 }`}
                                               >
-                                                {g.redTeamName}
+                                                <span className="truncate">{g.redTeamName}</span>
                                               </button>
                                             </div>
                                           )}
                                         </div>
 
                                         <div className="flex flex-wrap items-center gap-2">
+                                          {onToggleGameLock && (
+                                            <button
+                                              type="button"
+                                              onClick={() => onToggleGameLock(g.id)}
+                                              aria-pressed={isGameLocked}
+                                              aria-label={t(isGameLocked ? "ปลดล็อกเกมที่ {0}" : "ล็อกเกมที่ {0}", g.gameNumber)}
+                                              title={t(isGameLocked ? "ปลดล็อกเกมนี้ (แก้ไขได้)" : "ล็อกเกมนี้ (อ่านอย่างเดียว)")}
+                                              className={`flex h-7 w-7 items-center justify-center border transition-colors lg:h-8 lg:w-8 ${
+                                                isGameLocked
+                                                  ? "border-gold/60 bg-gold/15 text-gold hover:bg-gold/25"
+                                                  : "border-line bg-bg text-dim hover:border-gold/50 hover:text-gold"
+                                              }`}
+                                            >
+                                              {isGameLocked ? <Lock className="h-3.5 w-3.5 lg:h-4 lg:w-4" /> : <Unlock className="h-3.5 w-3.5 lg:h-4 lg:w-4" />}
+                                            </button>
+                                          )}
                                           <button
                                             type="button"
                                             onClick={() => {
                                               onLoadGame(g, "personal");
                                               requestClose();
                                             }}
+                                            title={t(isGameLocked ? "โหลดขึ้นกระดานแบบอ่านอย่างเดียว (เกมนี้ถูกล็อกไว้)" : "โหลดเกมนี้ขึ้นกระดาน")}
                                             className="flex h-7 items-center gap-1 border border-gold/60 bg-gold/15 px-2.5 font-display text-[11px] font-bold text-gold transition-colors hover:bg-gold hover:text-bg lg:h-8 lg:px-3 lg:text-xs"
                                           >
                                             <Download className="h-3 w-3 lg:h-3.5 lg:w-3.5" aria-hidden="true" />
@@ -1492,6 +1570,7 @@ export function DraftHistoryModal({
                                           </button>
                                           <button
                                             type="button"
+                                            disabled={isGameLocked}
                                             onClick={() =>
                                               setConfirmState({
                                                 title: t("ลบเกมที่ {0}?", g.gameNumber),
@@ -1509,9 +1588,9 @@ export function DraftHistoryModal({
                                                 },
                                               })
                                             }
-                                            title={t("ลบเกมนี้")}
+                                            title={t(isGameLocked ? "ปลดล็อกเกมนี้ก่อนลบ" : "ลบเกมนี้")}
                                             aria-label={t("ลบเกมที่ {0}", g.gameNumber)}
-                                            className="flex h-7 w-7 items-center justify-center border border-line bg-bg text-dim transition-colors hover:border-red/50 hover:text-red lg:h-8 lg:w-8"
+                                            className="flex h-7 w-7 items-center justify-center border border-line bg-bg text-dim transition-colors enabled:hover:border-red/50 enabled:hover:text-red disabled:pointer-events-none disabled:opacity-35 lg:h-8 lg:w-8"
                                           >
                                             <Trash2 className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
                                           </button>
@@ -1536,6 +1615,7 @@ export function DraftHistoryModal({
       </div>
         </>
       )}
+      </div>
 
       {/* Footer */}
       <div className="flex shrink-0 items-center justify-between gap-2 border-t border-line bg-bg px-3 py-2 sm:px-4 sm:py-2.5">
@@ -1548,23 +1628,17 @@ export function DraftHistoryModal({
             `${games.length}/${historyLimit}`
           ) : (
             <>
-              <span className="sm:hidden">{t("บันทึกอัตโนมัติ ·")} </span>
-              <span className="hidden sm:inline">{t("บันทึกอัตโนมัติ (สูงสุด")} {MAX_SERIES_GAMES} {t("เกมล่าสุด · ปัจจุบัน")} </span>
+              <span className="hidden sm:inline">{t("เก็บสูงสุด {0} เกมล่าสุด", MAX_SERIES_GAMES)} · </span>
               <strong className={games.length >= MAX_SERIES_GAMES - 10 ? "text-gold" : "text-ink"}>
                 {games.length}/{MAX_SERIES_GAMES}
               </strong>
-              <span className="hidden sm:inline">
-                {games.length >= MAX_SERIES_GAMES ? t(" — ครบโควตาแล้ว เกมใหม่จะทับรายการเก่าสุด") : ""})
-              </span>
             </>
           )}
         </span>
         <button
           type="button"
           onClick={() => requestClose()}
-          className={`ml-auto shrink-0 border px-3 py-1.5 font-display text-xs font-bold tracking-wider whitespace-nowrap transition-colors sm:px-4 lg:text-sm ${team
-            ? "border-line-strong text-muted hover:bg-panel-2 hover:text-ink"
-            : "border-gold bg-gold text-bg hover:bg-gold/90"}`}
+          className="ml-auto shrink-0 border border-line-strong bg-panel-2 px-3 py-1.5 font-display text-xs font-bold tracking-wider whitespace-nowrap text-ink transition-colors hover:border-gold/50 hover:text-gold sm:px-4 lg:text-sm"
         >
           <StableButtonLabel message="ปิดหน้าต่าง" />
         </button>
@@ -1708,7 +1782,7 @@ export function DraftHistoryModal({
                             </span>
                             <span className="shrink-0 font-mono text-[11px] text-dim">
                               {t("{0} เกม", grp.count)}
-                              {grp.latestTimestamp ? ` · ${grp.latestTimestamp}` : ""}
+                              {grp.latestTimestamp && <span className="hidden sm:inline"> · {grp.latestTimestamp}</span>}
                             </span>
                           </label>
                         );

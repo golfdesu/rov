@@ -80,8 +80,8 @@ export function PricingSurveyModal({
       isClosing={isClosing}
       onClose={busy || isClosing ? () => {} : handleRequestSnooze}
     >
-      <div className="flex shrink-0 items-center justify-between border-b border-line px-4 py-3 sm:px-5">
-        <div className="flex items-center gap-2">
+      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-line px-4 py-3 sm:px-5">
+        <div className="flex min-w-0 items-center gap-2">
           <Coins className="h-4 w-4 shrink-0 text-gold" />
           <h2 id={titleId} className="font-display text-sm font-bold tracking-wider text-ink sm:text-base">
             {t("สำรวจความคิดเห็น MINIDRAFT")}
@@ -100,11 +100,11 @@ export function PricingSurveyModal({
 
       <div className="flex shrink-0 flex-col gap-3.5 p-4 sm:p-5">
         <div className="inline-flex w-fit items-center border border-gold/40 bg-gold/10 px-2.5 py-1 font-mono text-[11px] font-bold text-gold">
-          {t("เปิดให้ใช้งานฟรีถึง 30/11/2026")}
+          {t("ใช้งานฟรีถึง 30 พ.ย. 2026")}
         </div>
 
         <p className="text-sm font-medium leading-relaxed text-ink sm:text-base">
-          {t("หากในอนาคตเว็บมีการเก็บค่าบริการรายเดือนเพื่อช่วยดูแลค่าเซิร์ฟเวอร์และพัฒนาต่อ คุณพร้อมจะจ่ายหรือไม่?")}
+          {t("ถ้าอนาคตมีแพ็กรายเดือนเพื่อช่วยค่าเซิร์ฟเวอร์และพัฒนาเว็บต่อ คุณพร้อมสนับสนุนไหม?")}
         </p>
 
         {alreadyAnswered ? (
@@ -121,7 +121,7 @@ export function PricingSurveyModal({
           </div>
         ) : (
           <p className="text-xs leading-relaxed text-muted sm:text-[13px]">
-            {t("คำตอบของคุณจะช่วยให้ผู้พัฒนาวางแผนการเปิดให้บริการต่อได้อย่างเหมาะสม (ตอบครั้งเดียว จะไม่แสดงซ้ำอีก)")}
+            {t("ถามครั้งเดียว จะไม่แสดงซ้ำอีก")}
           </p>
         )}
 
@@ -136,7 +136,7 @@ export function PricingSurveyModal({
             type="button"
             disabled={busy || isClosing}
             onClick={() => void handleChoiceClick("willing")}
-            className={`inline-flex h-10 items-center justify-center gap-1.5 border px-3 font-display text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+            className={`inline-flex min-h-10 items-center justify-center gap-1.5 border px-3 py-2 font-display text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
               currentChoice === "willing"
                 ? "border-gold bg-gold text-bg ring-2 ring-gold/40"
                 : "border-gold bg-gold text-bg hover:bg-gold/90"
@@ -149,7 +149,7 @@ export function PricingSurveyModal({
             type="button"
             disabled={busy || isClosing}
             onClick={() => void handleChoiceClick("not_willing")}
-            className={`inline-flex h-10 items-center justify-center border px-3 font-display text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+            className={`inline-flex min-h-10 items-center justify-center border px-3 py-2 font-display text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
               currentChoice === "not_willing"
                 ? "border-gold/70 bg-panel-2 text-gold"
                 : "border-line-strong bg-panel-2 text-ink hover:border-ink/40 hover:bg-panel"
@@ -163,7 +163,7 @@ export function PricingSurveyModal({
           type="button"
           disabled={busy || isClosing}
           onClick={handleRequestSnooze}
-          className="inline-flex h-9 w-full items-center justify-center border border-line bg-transparent px-3 font-display text-xs font-medium text-muted transition-colors hover:border-line-strong hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex min-h-9 w-full items-center justify-center border border-line bg-transparent px-3 py-1.5 font-display text-xs font-medium text-muted transition-colors hover:border-line-strong hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
         >
           <StableButtonLabel message={alreadyAnswered ? "ปิด" : "ภายหลัง (ไว้ถามใหม่พรุ่งนี้)"} alternatives={["ปิด", "ภายหลัง (ไว้ถามใหม่พรุ่งนี้)"]} />
         </button>

@@ -100,7 +100,7 @@ function ItemPicker({
           autoFocus
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder={t("ค้นหาไอเทม (ไม่พิมพ์ = เฉพาะชิ้นสำเร็จ)")}
+          placeholder={t("ค้นหาไอเทม")}
           className="min-w-0 flex-1 border border-line bg-bg px-2 py-1 text-xs"
         />
         <button type="button" onClick={onClose} className="px-2 text-muted hover:text-ink" aria-label={t("ปิด")}>
@@ -365,21 +365,21 @@ export function BuildPanel({
                         e.stopPropagation();
                         setItem(i, null);
                       }}
-                      className="absolute -right-1 -top-1 grid h-4 w-4 place-items-center bg-red text-bg"
+                      className="absolute -right-1.5 -top-1.5 grid h-6 w-6 place-items-center bg-red text-bg"
                     >
-                      <X size={10} />
+                      <X size={11} />
                     </button>
                     <button
                       type="button"
                       aria-label={t("ดูการ์ด {0}", item.name)}
-                      title={t("ดูภาพการ์ดในเกม: {0}", item.name)}
+                      title={item.name}
                       onClick={(e) => {
                         e.stopPropagation();
                         setInspectingItem(item.name);
                       }}
-                      className="absolute -left-1 -bottom-1 grid h-4 w-4 place-items-center rounded-xs bg-gold/90 text-bg shadow hover:bg-gold"
+                      className="absolute -left-1.5 -bottom-1.5 grid h-6 w-6 place-items-center rounded-xs bg-gold/90 text-bg shadow hover:bg-gold"
                     >
-                      <Info size={10} />
+                      <Info size={11} />
                     </button>
                   </>
                 )}
@@ -418,7 +418,7 @@ export function BuildPanel({
       )}
 
       {/* Arcana Board */}
-      <Section title={t("รูน (Tier 3 Arcana)")}>
+      <Section title={t("รูน Tier 3")}>
         <ArcanaBoard
           arcana={catalog.arcana}
           chosen={build.arcana}

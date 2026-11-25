@@ -292,30 +292,40 @@ def test_duo_checkout_invitation_and_shared_history(sandbox):
         == 200
     )
     body = {"owner_id": owner.id, "tier": "duo", "source_id": game["id"]}
-    assert client.post("/billing/team/history", headers=ORIGIN, json=body).status_code == 204
-    assert client.post("/billing/team/history", headers=ORIGIN, json=body).status_code == 204
-    direct_bans = {"teamAUsed": ["Violet"], "teamBUsed": ["Elsu"], "universalBans": []}
-    direct_game = {**draft_game("shared-game"), "globalBans": direct_bans}
-    direct = {**body, "source_id": direct_game["id"], "game": direct_game}
-    assert client.post("/billing/team/history", headers=ORIGIN, json=direct).status_code == 204
+    assert client.post("/billing/team/history", headers=ORIGIN, json=body).status_code == 403
+    assert client.get("/billing/team/history").status_code == 403
     assert (
-        client.post("/billing/team/history", headers=ORIGIN, json={**body, "source_id": legacy_game["id"]}).status_code
-        == 204
+        client.post(
+            "/billing/team/history/batch",
+            headers=ORIGIN,
+            json={"owner_id": owner.id, "tier": "duo", "source_ids": [game["id"]]},
+        ).status_code
+        == 403
     )
+    assert client.delete("/billing/team/history/1", headers=ORIGIN).status_code == 403
     assert len(client.get("/draft/session").json()["seriesGames"]) == 2
     sign_in(owner)
-    shared = {entry["game"]["id"]: entry["game"] for entry in client.get("/billing/team/history").json()}
-    assert len(shared) == 3
-    assert shared[game["id"]]["globalBans"] == copied_bans
-    assert shared[game["id"]]["gameNumber"] == 3 and shared[game["id"]]["blueSideTeam"] == "B"
-    assert shared[direct_game["id"]]["globalBans"] == direct_bans
-    assert shared[legacy_game["id"]]["globalBans"] is None
+    assert client.get("/billing/team/history").status_code == 403
+    assert client.post("/billing/team/history", headers=ORIGIN, json=body).status_code == 403
+    assert (
+        client.post(
+            "/billing/team/history",
+            headers=ORIGIN,
+            json={
+                **body,
+                "source_id": "shared-game",
+                "tier": "team_pro",
+                "game": {**draft_game("shared-game"), "globalBans": copied_bans},
+            },
+        ).status_code
+        == 403
+    )
     assert client.post(f"/billing/team/remove/{member.id}", headers=ORIGIN).status_code == 204
     sign_in(member)
     assert client.get("/billing/team/history").status_code == 403
     assert client.post("/billing/team/history", headers=ORIGIN, json=body).status_code == 403
     assert client.get("/draft/session").json()["seriesGames"][0]["id"] == game["id"]
-    assert client.get("/auth/me").json()["user"]["draft_history_limit"] == 7
+    assert client.get("/auth/me").json()["user"]["draft_history_limit"] == 21
 
 
 def test_team_pro_seats_capacity_and_expiry(sandbox, monkeypatch):
@@ -373,18 +383,18 @@ def test_duo_schema_migrates_existing_billing_rows(tmp_path, monkeypatch):
 
 def test_sandbox_personal_history_preserves_existing_games_at_capacity(sandbox):
     client, _, db, user = sandbox
-    games = [draft_game(str(number)) for number in range(8)]
-    assert client.put("/draft/session", json={"seriesGames": games[:7], "updatedAt": 1}).status_code == 200
+    games = [draft_game(str(number)) for number in range(22)]
+    assert client.put("/draft/session", json={"seriesGames": games[:21], "updatedAt": 1}).status_code == 200
     full = client.put("/draft/session", json={"seriesGames": games, "updatedAt": 2})
     assert full.status_code == 422 and full.json()["detail"] == "history_full"
-    assert len(client.get("/draft/session").json()["seriesGames"]) == 7
+    assert len(client.get("/draft/session").json()["seriesGames"]) == 21
     order = db.reserve_billing_order(user.id, "pro", 30, 4900, ORIGIN["Origin"])
     db.settle_billing_order(order["id"], "cs_test_pro", 4900, "pi_pro")
     assert client.put("/draft/session", json={"seriesGames": games, "updatedAt": 3}).status_code == 200
     with db._connect() as conn:
         conn.execute("UPDATE billing_passes SET expires_at = ? WHERE user_id = ?", (int(time.time()), user.id))
     updated = client.put("/draft/session", json={"seriesGames": games, "updatedAt": 4, "stepIndex": 1})
-    assert updated.status_code == 200 and len(updated.json()["seriesGames"]) == 8
+    assert updated.status_code == 200 and len(updated.json()["seriesGames"]) == 22
     again = client.put("/draft/session", json={"seriesGames": [*games, draft_game("new")], "updatedAt": 5})
     assert again.status_code == 422
     assert client.put("/draft/session", json={"seriesGames": games[1:], "updatedAt": 6}).status_code == 200
@@ -407,13 +417,19 @@ def test_hero_pools_limits_and_team_sharing(sandbox, monkeypatch):
         json={"scope": "personal", "team_name": "bru", "lanes": {"Mid": ["Liliana"]}},
     )
     assert upd_res.status_code == 200 and upd_res.json()["id"] == free_res.json()["id"]
-    # Second distinct team pool is blocked on Free
+    # Second distinct team pool succeeds within the 2-pool Free limit; third is blocked
     second_free = client.put(
         "/billing/hero-pools",
         headers=ORIGIN,
         json={"scope": "personal", "team_name": "FS", "lanes": {"Mid": ["Krixi"]}},
     )
-    assert second_free.status_code == 409 and second_free.json()["detail"] == "pool_limit_reached"
+    assert second_free.status_code == 200
+    third_free = client.put(
+        "/billing/hero-pools",
+        headers=ORIGIN,
+        json={"scope": "personal", "team_name": "HD", "lanes": {"Mid": ["Tulen"]}},
+    )
+    assert third_free.status_code == 409 and third_free.json()["detail"] == "pool_limit_reached"
     assert (
         client.put(
             "/billing/hero-pools",
@@ -423,7 +439,7 @@ def test_hero_pools_limits_and_team_sharing(sandbox, monkeypatch):
         == 403
     )
 
-    # Upgrade owner to Duo and invite member
+    # Upgrade owner to Duo and invite member (personal 50 pools each, no shared team pools)
     order = db.reserve_billing_order(owner.id, "duo", 30, 8900, ORIGIN["Origin"])
     db.settle_billing_order(order["id"], "cs_test_duo_pool", 8900, "pi_duo_pool")
     db.invite_team_member(owner.id, member.username)
@@ -431,7 +447,8 @@ def test_hero_pools_limits_and_team_sharing(sandbox, monkeypatch):
     assert client.get("/auth/me").json()["user"]["is_paid"] is True
     paid_overview = client.get("/billing/hero-pools").json()
     assert paid_overview["personal_limit"] == 50
-    assert paid_overview["team_limit"] == 50
+    assert paid_overview["team_limit"] == 0
+    assert paid_overview["team_tier"] is None
     assert (
         client.put(
             "/billing/hero-pools",
@@ -440,6 +457,47 @@ def test_hero_pools_limits_and_team_sharing(sandbox, monkeypatch):
         ).status_code
         == 200
     )
+    assert (
+        client.put(
+            "/billing/hero-pools",
+            headers=ORIGIN,
+            json={"scope": "team", "team_name": "Team A", "lanes": {"DS_Lane": ["Florentino"]}},
+        ).status_code
+        == 403
+    )
+    client.cookies.set(SESSION_COOKIE_NAME, db.create_session(member.id))
+    assert client.get("/billing/hero-pools").json()["personal_limit"] == 50
+    assert client.get("/billing/hero-pools").json()["team_limit"] == 0
+    assert (
+        client.put(
+            "/billing/hero-pools",
+            headers=ORIGIN,
+            json={"scope": "team", "team_name": "Team A", "lanes": {"DS_Lane": ["Omen"]}},
+        ).status_code
+        == 403
+    )
+
+    # Team Pro grants 50 shared team Hero Pools across the team owner and accepted members
+    team_owner = db.register_user("team_pool_owner", "test-password", display_name="Team Owner")
+    team_member = db.register_user("team_pool_member", "test-password", display_name="Team Member")
+    t_order = db.reserve_billing_order(team_owner.id, "team_pro", 30, 19900, ORIGIN["Origin"])
+    db.settle_billing_order(t_order["id"], "cs_test_team_pool", 19900, "pi_team_pool")
+    db.invite_team_member(team_owner.id, team_member.username)
+    db.respond_to_team_invite(team_member.id, team_owner.id, True)
+
+    client.cookies.set(SESSION_COOKIE_NAME, db.create_session(team_owner.id))
+    assert (
+        client.put(
+            "/billing/hero-pools",
+            headers=ORIGIN,
+            json={"scope": "personal", "team_name": "FS", "lanes": {"Roam": ["Toro"]}},
+        ).status_code
+        == 200
+    )
+    team_overview = client.get("/billing/hero-pools").json()
+    assert team_overview["personal_limit"] == 50
+    assert team_overview["team_limit"] == 50
+    assert team_overview["team_tier"] == "team_pro"
     shared = client.put(
         "/billing/hero-pools",
         headers=ORIGIN,
@@ -497,7 +555,7 @@ def test_hero_pools_limits_and_team_sharing(sandbox, monkeypatch):
     assert rename_conflict.status_code == 409 and rename_conflict.json()["detail"] == "duplicate_team_name"
 
     # Member can read & update shared team pool, and loses access when removed
-    client.cookies.set(SESSION_COOKIE_NAME, db.create_session(member.id))
+    client.cookies.set(SESSION_COOKIE_NAME, db.create_session(team_member.id))
     assert client.get("/billing/hero-pools").json()["team"][0]["team_name"] == "Team A"
     assert (
         client.put(
@@ -507,7 +565,7 @@ def test_hero_pools_limits_and_team_sharing(sandbox, monkeypatch):
         ).status_code
         == 200
     )
-    db.manage_team_member(owner.id, member.id, revoke_invite=False)
+    db.manage_team_member(team_owner.id, team_member.id, revoke_invite=False)
     assert client.get("/billing/hero-pools").json()["team"] == []
     assert client.delete(f"/billing/hero-pools/{pool_id}", headers=ORIGIN).status_code == 403
 

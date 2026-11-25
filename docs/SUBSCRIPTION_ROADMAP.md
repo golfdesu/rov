@@ -1,7 +1,7 @@
 # MiniDraft Future Monetization & Subscription Roadmap
 
 > [!NOTE]
-> **Status:** `minidraft.app` remains in its free launch. Development supports Stripe Sandbox purchases of Pro, Duo, and Team Pro, group invitations, and Draft Board history limits. The Sandbox uses the proposed Duo prices.
+> **Status:** `minidraft.app` remains in its free launch. Development supports Stripe Sandbox purchases of Pro, Duo, and Business (`team_pro`), group invitations, and Draft Board history limits. The Sandbox uses the proposed Duo prices.
 
 This roadmap records the freemium design from the 2026-11-16 review and subsequent product decisions.
 
@@ -11,16 +11,16 @@ This roadmap records the freemium design from the 2026-11-16 review and subseque
 
 Production remains focused on the **Draft Board** (`VITE_DRAFT_ONLY=true`; Meta Tier List, MetaLab, and Combat Lab stay dev-only unless explicitly opened later).
 
-| Capability | Guest (Not Logged In) | Free (Registered) | Pro | Duo | Team Pro |
+| Capability | Guest (Not Logged In) | Free (Registered) | Pro | Duo | Business (`team_pro`) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Manual Draft Board (Single Game)** | Allowed | Allowed | Allowed | Allowed | Allowed |
 | **Assistant Predictions (`/predict`)** | Allowed | Allowed | Allowed | Allowed per member | Allowed per member |
 | **Interactive Draft Comparison (Planned)** | — | — | Included | Included per member | Included per member |
-| **Hero Pools (Auto-Sync by Team Name)** | — | **1 own-team pool** | **50 personal pools** | **50 personal + 50 shared team pools** | **50 personal + 50 shared team pools** |
-| **Scrim Analytics (Planned)** | — | — | Personal (500 games) | Personal + Team (500 games) | Personal + Team (500 games) |
+| **Hero Pools (Auto-Sync by Team Name)** | — | **2 personal/team pools** | **50 personal pools** | **50 personal pools per member** | **50 personal + 50 shared team pools** |
+| **Scrim Analytics (Planned)** | — | — | Personal (500 games) | Personal (500 games per member) | Personal + Team (500 games) |
 | **Screenshot Draft Import (Planned)** | — | — | Included | Included per member | Included per member |
 | **Global Ban (Bo3 / Bo5 / Bo7)** | Allowed | Allowed | Allowed | Allowed per member | Allowed per member |
-| **Saved Draft History** | **3 games per browser** | **7 games per account** | **500 games per account** | **500 personal games per member + 500 shared games per group** | **500 personal games per member + 500 shared games per team** |
+| **Saved Draft History** | **3 games per browser** | **21 games per account** | **500 games per account** | **500 personal games per member** | **500 personal games per member + 500 shared games per team** |
 | **Cloud Sync (`/draft/session`)** | Browser storage only | Synced across devices | Synced across devices | Synced across devices | Synced across devices |
 | **Team Membership** | — | — | — | **Up to 2 accounts, including the owner** | **Up to 5 accounts, including the owner** |
 | **Signed-In Sessions** | — | 2 per account | Multiple devices | Multiple devices per member | Multiple devices per member |
@@ -32,7 +32,7 @@ Production remains focused on the **Draft Board** (`VITE_DRAFT_ONLY=true`; Meta 
 | :--- | ---: | ---: | ---: | :--- |
 | **Pro** | 49 THB | 119 THB | 28 THB (19.0%) | Confirmed |
 | **Duo** | 89 THB | 209 THB | 58 THB (21.7%) | Sandbox proposal |
-| **Team Pro** | 199 THB | 469 THB | 128 THB (21.4%) | Confirmed |
+| **Business (`team_pro`)** | 199 THB | 469 THB | 128 THB (21.4%) | Confirmed |
 
 The 90-day passes target about 20% savings and use prices ending in 9. Both durations include the same tier benefits. After the pass expires, the user can renew with another one-time payment.
 
@@ -54,10 +54,10 @@ During Sandbox testing, accounts can buy Duo after their current paid pass expir
 
 ## 3. Duo and Team Pro Membership & Shared History
 
-1. The owner pays once for the group and occupies one member slot. Duo owners can invite one other account. Team Pro owners can invite up to four other accounts. Owners invite by username and manage removals. Each invitee accepts from their own account.
-2. Both plans use the same shared history model. When saving a new draft, members choose **Personal History** or **Team History**. Personal History is private to the account and holds up to 500 games per member. Team History holds 500 games total for the group and is visible to its members.
-3. A member can use **Copy to Team History** on a saved personal game. A successful copy uses one slot in Team History and leaves the original in Personal History. If Team History is full, the copy is blocked and the original remains available.
-4. If a member leaves or is removed, access to Team History ends. Their personal drafts remain available under the account's current plan, including the originals of games they copied to the team.
+1. The owner pays once for the group and occupies one member slot. Duo owners can invite one other account so both receive full personal Pro entitlements (500 personal games, 50 personal Hero Pools, personal Scrim Analytics). Team Pro owners can invite up to four other accounts and unlock shared Team History + shared Team Hero Pools. Owners invite by username and manage removals. Each invitee accepts from their own account.
+2. Personal History is private to each account and holds up to 500 games per member. Team Pro additionally includes Shared Team History (500 games total for the group, visible to active members).
+3. A Team Pro member can use **Copy to Team History** on a saved personal game. A successful copy uses one slot in Team History and leaves the original in Personal History. If Team History is full, the copy is blocked and the original remains available.
+4. If a member leaves or is removed, access to Team History (Team Pro) and group-granted Pro entitlements ends. Their personal drafts remain available under the account's current plan, including the originals of games they copied to the team.
 
 ---
 
@@ -172,7 +172,7 @@ Pro, Duo, and Team Pro share the same Hero Pool capabilities so solo coaches, du
    - **Ally Pool (Pick Turns):** Supports **Filter mode** (restricting AI recommendations to heroes in the team's pool for remaining open lanes) and **Highlight mode** (showing standard meta recommendations with `POOL` badges so coaches can compare meta picks against comfort picks).
    - **Enemy Pool (Ban Turns & Scouting):** Syncing an opponent's saved team pool flags high-priority opponent signature picks during Ban phases and informs planned Interactive Draft Comparison.
    - **Global Ban Pool Tracker:** Displays the number of remaining unbanned pool heroes per lane across Bo3 / Bo5 / Bo7 games so teams can spot shallow lanes before pool exhaustion.
-3. **Personal vs. Shared Team Pools:** Pro, Duo, and Team Pro can store up to **50 personal/opponent team pools**. Duo and Team Pro additionally support up to **50 Shared Team Pools** visible and editable by active group members (following the same membership and access-revocation rules as Team History). Free accounts are limited to **1 own-team pool** (no opponent scouting pools).
+3. **Personal vs. Shared Team Pools:** Pro, Duo, and Team Pro can store up to **50 personal/opponent team pools** per account. Team Pro additionally supports up to **50 Shared Team Pools** visible and editable by active group members (following the same membership and access-revocation rules as Team History). Free accounts are limited to **1 own-team pool** (no opponent scouting pools).
 
 ---
 
@@ -180,7 +180,7 @@ Pro, Duo, and Team Pro share the same Hero Pool capabilities so solo coaches, du
 
 1. **Zero-Friction Calculation:** Computes actionable team and individual analytics directly from saved draft records (`bluePicks`, `redPicks`, `blueBans`, `redBans`, `winner`, `pickLanes`, `gameNumber`, `seriesName`) with no external game-client integration required.
 2. **Core Metrics & Filters:** Overall win rate, Blue vs. Red side win rate, Game 1–7 performance, most-picked heroes and per-lane win rates, most-banned heroes (by and against the team), lowest-win-rate enemy matchups, and opponent/series filters.
-3. **Tier Scope:** Pro analyzes Personal History (up to 500 games). Duo and Team Pro analyze both Personal History and Shared Team History (up to 500 games). Live multi-user scrim rooms are intentionally excluded because RoV drafts occur inside the mobile game client.
+3. **Tier Scope:** Pro and Duo analyze Personal History (up to 500 games per member). Team Pro analyzes both Personal History and Shared Team History (up to 500 games). Live multi-user scrim rooms are intentionally excluded because RoV drafts occur inside the mobile game client.
 
 ---
 

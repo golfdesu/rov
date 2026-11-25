@@ -37,11 +37,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return (
       <div role="alert" className="m-4 border border-red/40 bg-red/10 p-4 text-sm text-red">
         <p className="font-semibold">{t("เกิดข้อผิดพลาดในส่วนนี้")}</p>
-        <p className="mt-1 font-mono text-xs text-muted">{this.state.error.message}</p>
+        <p className="mt-1 font-mono text-xs break-words text-muted">{this.state.error.message}</p>
         <button
           type="button"
           onClick={() => this.setState({ error: null })}
-          className="mt-3 border border-line-strong px-3 py-1 text-xs text-ink hover:bg-panel-2"
+          className="mt-3 inline-flex min-h-8 items-center border border-line-strong px-3 py-1 text-xs text-ink hover:bg-panel-2"
         >
           <StableButtonLabel message="ลองใหม่" />
         </button>

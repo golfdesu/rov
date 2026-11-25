@@ -1,7 +1,11 @@
 import { type ReactNode, type RefObject, useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 const FOCUSABLE = "a[href], button, input, select, textarea, [tabindex]";
 const MODAL = '[role="dialog"][aria-modal="true"]';
+
+let activeModalScrollLocks = 0;
+let savedBodyOverflow = "";
 
 function isVisible(element: HTMLElement): boolean {
   return element.getClientRects().length > 0 && window.getComputedStyle(element).visibility === "visible";
@@ -81,12 +85,22 @@ export function Modal({
     const panel = panelRef.current;
     if (!panel) return;
     const previouslyFocused = document.activeElement as HTMLElement | null;
-    const prevOverflow = document.body.style.overflow;
+    if (activeModalScrollLocks === 0) {
+      savedBodyOverflow = document.body.style.overflow;
+    }
+    activeModalScrollLocks += 1;
     document.body.style.overflow = "hidden";
+    const isCoarsePointer =
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(pointer: coarse)").matches;
     const preferred = initialFocusRef?.current;
-    const initialTarget = preferred && panel.contains(preferred) && isVisible(preferred) && !preferred.matches(":disabled")
-      ? preferred
-      : getTabStops(panel)[0] ?? panel;
+    const candidate =
+      preferred && panel.contains(preferred) && isVisible(preferred) && !preferred.matches(":disabled")
+        ? preferred
+        : getTabStops(panel)[0] ?? panel;
+    const isTextEntry = candidate.tagName === "INPUT" || candidate.tagName === "TEXTAREA";
+    const initialTarget = isCoarsePointer && isTextEntry ? panel : candidate;
     initialTarget.focus({ preventScroll: true });
     const rafId = window.requestAnimationFrame(() => {
       setIsEntered(true);
@@ -124,14 +138,16 @@ export function Modal({
     return () => {
       window.cancelAnimationFrame(rafId);
       window.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = prevOverflow;
+      activeModalScrollLocks = Math.max(0, activeModalScrollLocks - 1);
+      if (activeModalScrollLocks === 0) {
+        document.body.style.overflow = savedBodyOverflow;
+      }
       previouslyFocused?.focus();
     };
   }, [initialFocusRef, requestClose]);
 
   const show = isEntered && !isClosing && !internalClosing;
-
-  return (
+  const content = (
     <div
       className={`fixed inset-0 z-50 flex justify-center bg-black/80 backdrop-blur-sm transition-opacity duration-200 ease-out motion-reduce:transition-none ${
         mobileSheet ? "items-end sm:items-center sm:p-3" : "items-center p-3"
@@ -153,7 +169,7 @@ export function Modal({
         aria-modal="true"
         aria-labelledby={labelledBy}
         tabIndex={-1}
-        className={`flex max-h-[92dvh] w-full flex-col overflow-y-auto rounded-lg border border-line bg-panel shadow-2xl outline-none transition-all duration-200 ease-out motion-reduce:transition-none clip-chamfer ${
+        className={`flex max-h-[92dvh] w-full flex-col overflow-y-auto border border-line bg-panel shadow-2xl outline-none transition-all duration-200 ease-out motion-reduce:transition-none clip-chamfer ${
           show ? "translate-y-0 scale-100 opacity-100" : `translate-y-2 opacity-0 ${mobileSheet ? "sm:scale-95" : "scale-95"}`
         } ${mobileSheet ? "max-sm:rounded-b-none max-sm:rounded-t-xl max-sm:pb-[env(safe-area-inset-bottom)] max-sm:[clip-path:none]" : ""} ${className}`}
         onClick={(e) => e.stopPropagation()}
@@ -162,4 +178,7 @@ export function Modal({
       </div>
     </div>
   );
+
+  if (typeof document === "undefined") return content;
+  return createPortal(content, document.body);
 }

@@ -165,6 +165,7 @@ export interface ScrimAnalyticsSummary {
   protectiveBans: ProtectiveBanStat[];
   topDuos: DuoStat[];
   toughestEnemies: EnemyThreatStat[];
+  favorableEnemies: EnemyThreatStat[];
   laneStrengths: LaneMatchupStat[];
   laneWeaknesses: LaneMatchupStat[];
   opponentRows: OpponentRow[];
@@ -479,8 +480,7 @@ function computeDuosFromRaw(
         coPickLift,
       };
     })
-    .sort((a, b) => b.synergyLiftPct - a.synergyLiftPct || b.zScore - a.zScore || b.games - a.games)
-    .slice(0, 8);
+    .sort((a, b) => b.synergyLiftPct - a.synergyLiftPct || b.zScore - a.zScore || b.games - a.games);
 }
 
 function computeLaneMatchupsFromRaw(
@@ -851,7 +851,7 @@ export function computeScrimAnalytics(
     enemyWrLookup.set(e.hero, enemyBayWr);
   }
 
-  const toughestEnemies: EnemyThreatStat[] = Array.from(rawEnemy.values())
+  const enemyMatchups: EnemyThreatStat[] = Array.from(rawEnemy.values())
     .filter((e) => e.wins + e.losses >= minEnemyGames)
     .map((e) => {
       const eDecided = e.wins + e.losses;
@@ -869,9 +869,15 @@ export function computeScrimAnalytics(
         zScore,
         probThreatPct: clamp(normalCdf(-zScore) * 100, 0, 100),
       };
-    })
-    .sort((a, b) => a.threatDeltaPct - b.threatDeltaPct || a.zScore - b.zScore || b.games - a.games)
-    .slice(0, 8);
+    });
+
+  const toughestEnemies = enemyMatchups
+    .filter((e) => e.threatDeltaPct < 0)
+    .sort((a, b) => a.threatDeltaPct - b.threatDeltaPct || a.zScore - b.zScore || b.games - a.games);
+
+  const favorableEnemies = enemyMatchups
+    .filter((e) => e.threatDeltaPct > 0)
+    .sort((a, b) => b.threatDeltaPct - a.threatDeltaPct || b.zScore - a.zScore || b.games - a.games);
 
   // Direct Same-Lane Counter Matchups (Bradley-Terry)
   const laneMatchups = computeLaneMatchupsFromRaw(
@@ -885,13 +891,11 @@ export function computeScrimAnalytics(
 
   const laneStrengths = laneMatchups
     .filter((m) => m.counterLiftPct > 0.5)
-    .sort((a, b) => b.counterLiftPct - a.counterLiftPct || b.zScore - a.zScore)
-    .slice(0, 6);
+    .sort((a, b) => b.counterLiftPct - a.counterLiftPct || b.zScore - a.zScore);
 
   const laneWeaknesses = laneMatchups
     .filter((m) => m.counterLiftPct < -0.5)
-    .sort((a, b) => a.counterLiftPct - b.counterLiftPct || a.zScore - b.zScore)
-    .slice(0, 6);
+    .sort((a, b) => a.counterLiftPct - b.counterLiftPct || a.zScore - b.zScore);
 
   // Protective / Reactive Phase 2 Bans (Opponent bans B in Phase 2 after we pick A in Phase 1)
   const protectiveBans: ProtectiveBanStat[] = Array.from(reactiveBanPairs.values())
@@ -908,8 +912,7 @@ export function computeScrimAnalytics(
       };
     })
     .filter((p) => p.banLift >= 1.05)
-    .sort((a, b) => b.coCount - a.coCount || b.banLift - a.banLift)
-    .slice(0, 6);
+    .sort((a, b) => b.coCount - a.coCount || b.banLift - a.banLift);
 
   // Opponent Head-to-Head with Wilson CI + Two-Prop Test vs Rest of Schedule
   let allH2hWins = 0;
@@ -998,17 +1001,16 @@ export function computeScrimAnalytics(
     allyList,
     phase1Top: [...allyList]
       .filter((h) => h.phase1Count > 0)
-      .sort((a, b) => b.phase1Count - a.phase1Count || b.bayesianWr - a.bayesianWr)
-      .slice(0, 5),
+      .sort((a, b) => b.phase1Count - a.phase1Count || b.bayesianWr - a.bayesianWr),
     phase2Top: [...allyList]
       .filter((h) => h.phase2Count > 0)
-      .sort((a, b) => b.phase2Count - a.phase2Count || b.bayesianWr - a.bayesianWr)
-      .slice(0, 5),
-    bansAgainstUs: Array.from(bansAgainstUs.values()).sort((a, b) => b.total - a.total).slice(0, 6),
-    bansByUs: Array.from(bansByUs.values()).sort((a, b) => b.total - a.total).slice(0, 6),
+      .sort((a, b) => b.phase2Count - a.phase2Count || b.bayesianWr - a.bayesianWr),
+    bansAgainstUs: Array.from(bansAgainstUs.values()).sort((a, b) => b.total - a.total),
+    bansByUs: Array.from(bansByUs.values()).sort((a, b) => b.total - a.total),
     protectiveBans,
     topDuos,
     toughestEnemies,
+    favorableEnemies,
     laneStrengths,
     laneWeaknesses,
     opponentRows,
@@ -1239,8 +1241,7 @@ export function computeAllTeamsAnalytics(games: readonly RecordedDraftGame[]): A
   const topDuos = computeDuosFromRaw(rawDuos, heroWrLookup, heroGamesLookup, total * 2, prior, minDuoGames);
   const laneStrengths = computeLaneMatchupsFromRaw(rawLaneMatchups, heroWrLookup, heroWrLookup, prior, prior, priorK)
     .filter((m) => m.counterLiftPct > 0.5 && m.wins > m.losses)
-    .sort((a, b) => b.counterLiftPct - a.counterLiftPct || b.zScore - a.zScore)
-    .slice(0, 8);
+    .sort((a, b) => b.counterLiftPct - a.counterLiftPct || b.zScore - a.zScore);
 
   const zScore = decided > 0 ? (blueWins - 0.5 * decided) / Math.sqrt(0.25 * decided) : 0;
   const pValue = decided > 0 ? Math.min(1, Math.max(0, erfcApprox(Math.abs(zScore) / Math.SQRT2))) : 1;
@@ -1271,17 +1272,14 @@ export function computeAllTeamsAnalytics(games: readonly RecordedDraftGame[]): A
     heroList,
     phase1Top: [...heroList]
       .filter((h) => h.phase1Count > 0)
-      .sort((a, b) => b.phase1Count - a.phase1Count || b.bayesianWr - a.bayesianWr)
-      .slice(0, 5),
+      .sort((a, b) => b.phase1Count - a.phase1Count || b.bayesianWr - a.bayesianWr),
     phase2Top: [...heroList]
       .filter((h) => h.phase2Count > 0)
-      .sort((a, b) => b.phase2Count - a.phase2Count || b.bayesianWr - a.bayesianWr)
-      .slice(0, 5),
-    topBans: Array.from(rawBans.values()).sort((a, b) => b.total - a.total).slice(0, 6),
+      .sort((a, b) => b.phase2Count - a.phase2Count || b.bayesianWr - a.bayesianWr),
+    topBans: Array.from(rawBans.values()).sort((a, b) => b.total - a.total),
     topContested: [...heroList]
       .filter((h) => h.contestCount > 0)
-      .sort((a, b) => b.contestCount - a.contestCount || b.games - a.games)
-      .slice(0, 6),
+      .sort((a, b) => b.contestCount - a.contestCount || b.games - a.games),
     topDuos,
     laneStrengths,
   };

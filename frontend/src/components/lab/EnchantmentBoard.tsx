@@ -212,7 +212,7 @@ export function EnchantmentBoard({
           <div className="flex items-center gap-2">
             <Sparkles size={14} className="text-gold" />
             <span className="font-display text-xs font-bold tracking-wider text-ink">
-              {t("ผังพลังแฝง 5 ช่อง (In-Game Sockets)")}
+              {t("ผังพลังแฝง 5 ช่อง")}
             </span>
           </div>
           <button
@@ -242,9 +242,9 @@ export function EnchantmentBoard({
               }}
               className="mb-1.5 flex w-full items-center justify-between text-left"
             >
-              <span className="font-display text-[11px] font-bold text-gold"><StableButtonLabel message="สายหลัก (Primary)" /></span>
+              <span className="font-display text-[11px] font-bold text-gold"><StableButtonLabel message="สายหลัก" /></span>
               <span className="text-[10px] font-medium text-muted">
-                <StableButtonLabel message={primaryFaction ? FACTION_INFO[primaryFaction]?.nameTh ?? primaryFaction : "⚠️ ยังไม่เลือกฝ่าย"} />
+                <StableButtonLabel message={primaryFaction ? FACTION_INFO[primaryFaction]?.nameTh ?? primaryFaction : "ยังไม่เลือกฝ่าย"} />
               </span>
             </button>
 
@@ -305,11 +305,11 @@ export function EnchantmentBoard({
               className="mb-1.5 flex w-full items-center justify-between text-left disabled:cursor-not-allowed"
             >
               <div className="flex items-center gap-1.5">
-                <span className="font-display text-[11px] font-bold text-blue"><StableButtonLabel message="สายรอง (Secondary)" /></span>
+                <span className="font-display text-[11px] font-bold text-blue"><StableButtonLabel message="สายรอง" /></span>
                 {!primaryFaction && <Lock size={11} className="text-muted" />}
               </div>
               <span className="text-[10px] font-medium text-muted">
-                <StableButtonLabel message={!primaryFaction ? "🔒 ต้องเลือกสายหลักก่อน" : secondaryEnchantments.length > 0 ? ["{0} / 2 ชิ้น", secondaryEnchantments.length] : "ว่าง (แตะเพื่อเลือก)"} alternatives={["🔒 ต้องเลือกสายหลักก่อน", ["{0} / 2 ชิ้น", secondaryEnchantments.length], "ว่าง (แตะเพื่อเลือก)"]} />
+                <StableButtonLabel message={!primaryFaction ? "ต้องเลือกสายหลักก่อน" : secondaryEnchantments.length > 0 ? ["{0} / 2 ชิ้น", secondaryEnchantments.length] : "ว่าง (แตะเลือก)"} alternatives={["ต้องเลือกสายหลักก่อน", ["{0} / 2 ชิ้น", secondaryEnchantments.length], "ว่าง (แตะเลือก)"]} />
               </span>
             </button>
 
@@ -340,9 +340,9 @@ export function EnchantmentBoard({
         /* STEP 1: Select Primary Faction First */
         <div className="flex flex-col gap-3 rounded-lg border border-gold/40 bg-gold/5 p-4">
           <div>
-            <h4 className="font-display text-xs font-bold text-gold">{t("ขั้นตอนที่ 1: เลือกฝ่ายพลังแฝงหลัก (Primary Faction)")}</h4>
+            <h4 className="font-display text-xs font-bold text-gold">{t("ขั้น 1: เลือกฝ่ายพลังแฝงหลัก")}</h4>
             <p className="mt-0.5 text-[11px] text-muted">
-              {t("กรุณาเลือกฝ่ายหลักของฮีโร่ก่อน เพื่อเปิดใช้งานผังพลังแฝงหลัก Tier I, II, III และปลดล็อคสายรอง")}
+              {t("เลือกฝ่ายหลักก่อนเพื่อตั้งค่า Tier I–III และสายรอง")}
             </p>
           </div>
 
@@ -497,7 +497,7 @@ export function EnchantmentBoard({
               onClick={() => setActiveTab("secondary")}
               className="flex items-center gap-1.5 rounded border border-blue/40 bg-blue/10 px-3 py-1.5 text-xs font-bold text-blue hover:bg-blue/20"
             >
-              <span><StableButtonLabel message="ไปตั้งค่าสายรอง (Secondary)" /></span>
+              <span><StableButtonLabel message="ตั้งค่าสายรอง" /></span>
               <span>→</span>
             </button>
           </div>
@@ -507,11 +507,11 @@ export function EnchantmentBoard({
         <div className="flex flex-col gap-3">
           <div className="rounded-lg border border-blue/40 bg-blue/10 p-2.5 text-xs">
             <div className="flex items-center gap-1.5 font-bold text-blue">
-              <span>{t("💡 กติกาสายรอง (Secondary Enchants):")}</span>
+              <span>{t("กติกาสายรอง:")}</span>
             </div>
             <p className="mt-1 text-[11px] leading-relaxed text-muted">
-              {t("สามารถเลือก")} <span className="font-semibold text-ink">{t("ขั้น 1 + ขั้น 2 จากสายเดียวกัน")}</span> {t("หรือ")}{" "}
-              <span className="font-semibold text-ink">{t("เลือกขั้น 1 จำนวน 2 ชิ้นจากคนละสายได้")}</span> {t("(แตะสลับแท็บฝ่ายด้านล่างเพื่อเลือกขั้น 1 คนละสี)")}
+              {t("เลือก")} <span className="font-semibold text-ink">{t("ขั้น 1 + ขั้น 2 จากสายเดียวกัน")}</span> {t("หรือ")}{" "}
+              <span className="font-semibold text-ink">{t("ขั้น 1 สองชิ้นจากคนละสายได้")}</span>
             </p>
           </div>
 
@@ -656,7 +656,7 @@ export function EnchantmentBoard({
               onClick={() => setActiveTab("primary")}
               className="text-xs text-muted hover:text-ink underline underline-offset-2"
             >
-              <StableButtonLabel message="← กลับไปดูสายหลัก (Primary)" />
+              <StableButtonLabel message="← กลับสายหลัก" />
             </button>
           </div>
         </div>

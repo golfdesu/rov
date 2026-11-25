@@ -58,3 +58,9 @@ Dark esports broadcast style for the draft board in `frontend/`. Tokens live in 
 - **Mobile Modal Ergonomics:** Never auto-focus text inputs (`initialFocusRef` on search) when opening modals on touch devices; pin the `X` close button top-right on `< sm`; use a unified vertical scroll body on `< sm` (`max-h-[92dvh]`) so mobile toolbars never crush lists (`>= 200px`) or push footer actions off-screen.
 - **Compact Cards & Zero Horizontal Overflow:** On `< sm` (`375px–639px`), hide picked/ghost hero text overlays inside `variant="compact"` slots (`hidden sm:block`) to preserve square portraits and lane badges, and keep `scrollWidth <= clientWidth` across `375x667`, `390x844`, `768x1024`, and `1280x800`.
 - **Explicit Side Control:** Side switching (`blueSideTeam`) is strictly manual via the Swap Sides action (or loading an existing historical game recorded on the opposite side). Recording a game winner or advancing/switching games (`G1..G7`) MUST NEVER auto-swap sides behind the user's back.
+
+## UI Copy, i18n & Text-Wrapping Standards
+
+- **One-Language Natural Labels:** Default UI strings use idiomatic Thai without parenthetical English glosses (`ไทย (English)`), hype modifiers, academic stat labels, or internal asset paths; `src/i18n/englishMessages.ts` must cover 100% of active `t(...)` and `StableButtonLabel` keys (`0` missing keys).
+- **Dropdown & Popover Wrapping (`whitespace-nowrap` Trap):** Any popover or `role="menu"` rendered inside a `whitespace-nowrap` toolbar must reset wrapping with `whitespace-normal`, constrain inner text with `max-w-full break-words`, and stay inside mobile (`375px`) bounds.
+- **No Metric Truncation:** Use `min-w-0` on responsive grid/flex tracks hosting scrolling strips (`G1–G7`, hero tables) and wrap multi-stat cards (Arcana stats, duel assumptions) cleanly instead of `line-clamp-1`.

@@ -171,9 +171,9 @@ export function ScreenshotImportModal({
                       setSlotHero(group, idx, null);
                       setActiveSlot({ group, index: idx });
                     }}
-                    className="absolute -top-1 -right-1 grid size-4 place-items-center border border-line-strong bg-panel text-dim hover:border-red hover:text-red"
+                    className="absolute -top-1.5 -right-1.5 grid size-6 place-items-center border border-line-strong bg-panel text-dim hover:border-red hover:text-red"
                   >
-                    <X className="size-2.5" />
+                    <X className="size-3" />
                   </button>
                 )}
               </div>
@@ -189,17 +189,17 @@ export function ScreenshotImportModal({
       {(requestClose) => (
         <>
           <div className="flex shrink-0 items-center justify-between gap-2 border-b border-line px-4 py-3">
-            <div className="flex items-center gap-2">
-              <Camera className="h-4 w-4 text-gold" />
-              <h2 id={titleId} className="font-display text-sm font-bold tracking-wider text-ink sm:text-base">
-                {t("นำเข้าดราฟต์จากภาพหน้าจอ (SCREENSHOT IMPORT)")}
+            <div className="flex min-w-0 items-center gap-2">
+              <Camera className="h-4 w-4 shrink-0 text-gold" />
+              <h2 id={titleId} className="truncate font-display text-sm font-bold tracking-wider text-ink sm:text-base">
+                {t("นำเข้าดราฟต์จากภาพหน้าจอ")}
               </h2>
             </div>
             <button
               type="button"
               onClick={() => requestClose()}
               aria-label={t("ปิด")}
-              className="inline-flex h-8 w-8 items-center justify-center rounded text-dim hover:bg-panel-2 hover:text-ink"
+              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-dim hover:bg-panel-2 hover:text-ink"
             >
               <X size={18} />
             </button>
@@ -208,7 +208,7 @@ export function ScreenshotImportModal({
           <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
             {!isPaid && (
               <Alert tone="warning">
-                {t("ฟีเจอร์นี้ออกแบบสำหรับแพ็ก Pro, Duo และ Team Pro")}{" "}
+                {t("สำหรับแพ็ก Pro, Duo และ Business")}{" "}
                 <a href="#plans" onClick={() => requestClose()} className="font-bold underline">
                   {t("ดูแพ็ก")}
                 </a>
@@ -235,7 +235,7 @@ export function ScreenshotImportModal({
                     <img src={previewUrl} alt={t("ภาพหน้าจอดราฟต์ที่เลือก")} className="max-h-52 w-full object-contain" />
                     <p className="flex items-center gap-1.5 text-[11px] text-gold">
                       <Sparkles className="size-3.5 shrink-0" />
-                      <span>{t("พร้อมเชื่อมต่อระบบอ่านภาพอัตโนมัติ (รอตัวอย่างภาพจริงสำหรับจูนพิกัด) — ตอนนี้เลือกฮีโร่ตรวจแก้ด้านขวาได้เลย")}</span>
+                      <span>{t("ดูภาพเทียบแล้วเลือกฮีโร่ลงช่องด้านขวาตามลำดับดราฟต์")}</span>
                     </p>
                   </div>
                 )}
@@ -302,7 +302,7 @@ export function ScreenshotImportModal({
                 </div>
                 {prefixGapLabel && (
                   <Alert tone="warning">
-                    {t("กรุณากรอกช่องดราฟต์ตามลำดับ (เริ่มจาก {0}) ก่อนโหลดขึ้นกระดาน", prefixGapLabel)}
+                    {t("เลือกฮีโร่ตามลำดับเทิร์นให้ครบก่อน (ขาดช่อง {0})", prefixGapLabel)}
                   </Alert>
                 )}
               </div>

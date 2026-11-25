@@ -1,7 +1,7 @@
-import { ArrowLeft, ArrowRight, Check, Crosshair, Users, UsersRound } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, CreditCard, Crosshair, Users, UsersRound } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { ApiError, getJson, postJson } from "../api/client";
-import { type Message, useLanguage } from "../i18n/language";
+import { useLanguage } from "../i18n/language";
 import { Alert } from "./Alert";
 import { StableButtonLabel } from "./StableButtonLabel";
 
@@ -26,33 +26,94 @@ interface BillingSummary {
   orders: BillingOrder[];
 }
 
-const tierNames: Record<Tier, string> = { pro: "Pro", duo: "Duo", team_pro: "Team Pro" };
-const tierDetails = {
+interface TierDetails {
+  description: string;
+  seats: 1 | 2 | 5;
+  badge?: string;
+  badgeClass?: string;
+  benefits: readonly string[];
+  Icon: typeof Crosshair;
+  cardClass: string;
+  iconClass: string;
+  actionClass: string;
+}
+
+const tierNames: Record<Tier, string> = { pro: "Pro", duo: "Duo", team_pro: "Business" };
+const tierDetails: Record<Tier, TierDetails> = {
   pro: {
     description: "สำหรับคนดราฟต์คนเดียว",
-    benefits: ["ฟีเจอร์ Hero Pools + ซิงก์ตามชื่อทีม", "Scrim Analytics วิเคราะห์สถิติ", "ประวัติส่วนตัว 500 เกม"],
+    seats: 1,
+    badge: "ยอดนิยม",
+    badgeClass: "border-gold/50 bg-gold/15 text-gold",
+    benefits: [
+      "Hero Pools ส่วนตัว 50 ชุด + ซิงก์ชื่อทีม",
+      "Scrim Analytics วิเคราะห์สถิติซ้อมทีม",
+      "ประวัติส่วนตัว 500 เกม + นำเข้า/ส่งออก JSON",
+    ],
     Icon: Crosshair,
-    cardClass: "border-gold/30 from-gold/10",
-    iconClass: "border-gold/30 bg-gold/10 text-gold",
+    cardClass: "border-gold/50 from-gold/12 ring-1 ring-gold/25",
+    iconClass: "border-gold/35 bg-gold/15 text-gold",
     actionClass: "border-gold bg-gold text-bg enabled:hover:bg-gold/90",
   },
   duo: {
     description: "สำหรับ 2 บัญชี",
-    benefits: ["สิทธิ์ Pro สำหรับสมาชิกทีม", "ประวัติทีมร่วมกัน 500 เกม"],
+    seats: 2,
+    benefits: [
+      "สิทธิ์ Pro ครบทุกฟีเจอร์สำหรับทั้ง 2 บัญชี",
+      "ประวัติส่วนตัวคนละ 500 เกม + Scrim Analytics",
+      "Hero Pools ส่วนตัวคนละ 50 ชุด + เชิญเพื่อนผ่านโปรไฟล์",
+    ],
     Icon: Users,
     cardClass: "border-good/30 from-good/10",
     iconClass: "border-good/30 bg-good/10 text-good",
-    actionClass: "border-good bg-good text-bg enabled:hover:bg-good/90",
+    actionClass: "border-good/60 bg-good/15 text-good enabled:hover:bg-good enabled:hover:text-bg",
   },
   team_pro: {
     description: "สำหรับทีมสูงสุด 5 บัญชี",
-    benefits: ["สิทธิ์ Pro สำหรับสมาชิกทีม", "ประวัติทีมร่วมกัน 500 เกม"],
+    seats: 5,
+    badge: "คุ้มสุดต่อคน",
+    badgeClass: "border-blue/50 bg-blue/15 text-blue",
+    benefits: [
+      "สิทธิ์ Pro ครบทุกฟีเจอร์สูงสุด 5 บัญชี",
+      "แชร์ประวัติทีมร่วมกัน 500 เกม + ทัวร์นาเมนต์",
+      "แชร์ Hero Pools ทีม 50 ชุด + จัดการสมาชิกทีม",
+    ],
     Icon: UsersRound,
-    cardClass: "border-blue/30 from-blue/10",
+    cardClass: "border-blue/35 from-blue/10",
     iconClass: "border-blue/30 bg-blue/10 text-blue",
-    actionClass: "border-blue bg-blue text-bg enabled:hover:bg-blue/90",
+    actionClass: "border-blue/60 bg-blue/15 text-blue enabled:hover:bg-blue enabled:hover:text-bg",
   },
 };
+const comparisonRows: readonly { feature: string; free: string | null; pro: string | null; duo: string; team_pro: string }[] = [
+  {
+    feature: "Draft Board + AI + Global Ban",
+    free: "✓",
+    pro: "✓",
+    duo: "✓",
+    team_pro: "✓",
+  },
+  {
+    feature: "ประวัติการดราฟต์ส่วนตัว",
+    free: "21 เกม",
+    pro: "500 เกม",
+    duo: "500 เกม",
+    team_pro: "500 เกม",
+  },
+  {
+    feature: "Hero Pools",
+    free: "2 ชุด",
+    pro: "50 ชุด",
+    duo: "คนละ 50 ชุด",
+    team_pro: "ส่วนตัว 50 + ทีม 50 ชุด",
+  },
+  {
+    feature: "Scrim Analytics & ประวัติทีม",
+    free: null,
+    pro: "ส่วนตัว",
+    duo: "ส่วนตัว (2 บัญชี)",
+    team_pro: "ทีม 5 คน (500 เกม)",
+  },
+];
 const passDurations = [30, 90] as const;
 const statusMessages: Record<OrderStatus, string> = {
   pending: "รอชำระเงิน",
@@ -71,11 +132,19 @@ export function BillingSandbox({ username, view = "profile" }: { username: strin
   const [processing, setProcessing] = useState<Tier | "cancel" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refresh, setRefresh] = useState(0);
+  const [showAllOrders, setShowAllOrders] = useState(false);
   const busy = processing !== null;
   const pending = summary?.orders.find((order) => order.status === "pending");
   const activePass = summary?.active_pass;
   const packages = summary?.packages ?? [];
   const visiblePackages = packages.filter((pass) => pass.days === duration);
+  const maxSavingsPct = packages.reduce((best, pass) => {
+    if (pass.days !== 90) return best;
+    const monthly = packages.find((candidate) => candidate.tier === pass.tier && candidate.days === 30);
+    if (!monthly || monthly.amount <= 0) return best;
+    const pct = Math.round(((monthly.amount * 3 - pass.amount) / (monthly.amount * 3)) * 100);
+    return Math.max(best, pct);
+  }, 0);
   const canResume = pending && packages.some((pass) => pass.tier === pending.tier && pass.days === pending.days);
   const dateFormat = new Intl.DateTimeFormat(language === "th" ? "th-TH" : "en-GB", {
     dateStyle: "medium",
@@ -243,7 +312,7 @@ export function BillingSandbox({ username, view = "profile" }: { username: strin
           {summary && !pending && (packages.length > 0 ? (
             <>
               <fieldset
-                className="relative mx-auto grid w-full max-w-64 grid-cols-2 border border-line-strong bg-bg/75 p-1"
+                className="relative mx-auto grid w-full max-w-72 grid-cols-2 border border-line-strong bg-bg/75 p-1"
                 disabled={busy}
               >
                 <legend className="sr-only">{t("ระยะเวลาแพ็ก")}</legend>
@@ -260,8 +329,13 @@ export function BillingSandbox({ username, view = "profile" }: { username: strin
                       checked={duration === days}
                       onChange={() => setDuration(days)}
                     />
-                    <span className="flex min-h-10 items-center justify-center px-2 text-sm font-semibold text-muted hover:text-ink peer-checked:text-gold peer-focus-visible:outline-2 peer-focus-visible:outline-gold peer-disabled:opacity-50">
-                      <StableButtonLabel message={["{0} วัน", days]} />
+                    <span className="flex min-h-10 items-center justify-center gap-1.5 px-2 text-sm font-semibold text-muted hover:text-ink peer-checked:text-gold peer-focus-visible:outline-2 peer-focus-visible:outline-gold peer-disabled:opacity-50">
+                      <span>{t("{0} วัน", days)}</span>
+                      {days === 90 && maxSavingsPct > 0 && (
+                        <span className="border border-good/40 bg-good/15 px-1.5 py-0.5 font-mono text-[10px] leading-none font-bold text-good">
+                          -{maxSavingsPct}%
+                        </span>
+                      )}
                     </span>
                   </label>
                 ))}
@@ -275,39 +349,61 @@ export function BillingSandbox({ username, view = "profile" }: { username: strin
                   const Icon = details.Icon;
                   const monthly = packages.find((candidate) => candidate.tier === pass.tier && candidate.days === 30);
                   const savings = monthly && pass.days === 90 ? (monthly.amount * 3 - pass.amount) / 100 : 0;
-                  const selectLabel: Message = ["เลือก {0}", name];
+                  const perSeatMonthly = details.seats > 1
+                    ? Math.round(pass.amount / 100 / details.seats / (pass.days / 30))
+                    : 0;
+                  const isCurrentTier = activePass?.tier === pass.tier;
                   return (
                     <article
                       key={pass.tier}
                       aria-labelledby={`${sectionId}-${pass.tier}`}
                       className={`flex min-w-0 flex-col border bg-panel bg-linear-to-b to-transparent p-4 shadow-[0_16px_36px_-24px_#000] sm:p-6 ${details.cardClass}`}
                     >
-                      <div className="flex items-center gap-3">
-                        <div className={`clip-chamfer-sm grid size-10 shrink-0 place-items-center border ${details.iconClass}`}>
-                          <Icon className="size-5" aria-hidden="true" />
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <div className={`clip-chamfer-sm grid size-10 shrink-0 place-items-center border ${details.iconClass}`}>
+                            <Icon className="size-5" aria-hidden="true" />
+                          </div>
+                          <div className="min-w-0">
+                            <h2 id={`${sectionId}-${pass.tier}`} className="font-display text-xl leading-tight font-bold text-ink sm:text-2xl">{name}</h2>
+                            <p className="text-sm text-muted">{t(details.description)}</p>
+                          </div>
                         </div>
-                        <div className="min-w-0">
-                          <h2 id={`${sectionId}-${pass.tier}`} className="font-display text-xl leading-tight font-bold text-ink sm:text-2xl">{name}</h2>
-                          <p className="text-sm text-muted">{t(details.description)}</p>
+                        <div className="flex shrink-0 flex-col items-end gap-1">
+                          {isCurrentTier && (
+                            <span className="border border-good/50 bg-good/15 px-2 py-0.5 font-display text-[11px] font-bold tracking-wide whitespace-nowrap text-good">
+                              {t("ใช้อยู่")}
+                            </span>
+                          )}
+                          {details.badge && !isCurrentTier && (
+                            <span className={`border px-2 py-0.5 font-display text-[11px] font-bold tracking-wide whitespace-nowrap ${details.badgeClass ?? ""}`}>
+                              {t(details.badge)}
+                            </span>
+                          )}
                         </div>
                       </div>
                       <p className="mt-4 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 sm:mt-5">
                         <span className="font-mono text-3xl leading-none font-bold tracking-tight text-ink tabular-nums sm:text-4xl">{pass.amount / 100}</span>
                         <span className="text-sm text-muted">{t("บาท")} / {t("{0} วัน", pass.days)}</span>
                       </p>
-                      <p className="mt-1 min-h-5 text-xs leading-5 font-semibold text-good">
-                        {savings > 0 && t("ประหยัด {0} บาท", savings)}
+                      <p className="mt-1.5 flex min-h-5 flex-wrap items-center gap-x-2 text-xs leading-5">
+                        {savings > 0 && (
+                          <span className="font-semibold text-good">{t("ประหยัด {0} บาท", savings)}</span>
+                        )}
+                        {savings > 0 && perSeatMonthly > 0 && (
+                          <span aria-hidden="true" className="text-dim">·</span>
+                        )}
+                        {perSeatMonthly > 0 && (
+                          <span className="font-mono text-muted">{t("เฉลี่ย ~{0} บาท/คน/30 วัน", perSeatMonthly)}</span>
+                        )}
                       </p>
                       <button
                         type="button"
                         disabled={busy}
-                        className={`${actionClass} mt-2 w-full gap-2 ${details.actionClass}`}
+                        className={`${actionClass} mt-3 w-full gap-2 transition-colors ${details.actionClass}`}
                         onClick={() => void checkout(pass)}
                       >
-                        <StableButtonLabel
-                          message={processing === pass.tier ? "กำลังเปิดหน้าชำระเงิน…" : selectLabel}
-                          alternatives={[selectLabel, "กำลังเปิดหน้าชำระเงิน…"]}
-                        />
+                        <span>{processing === pass.tier ? t("กำลังเปิดหน้าชำระเงิน…") : t("เลือก {0}", name)}</span>
                         <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
                       </button>
                       <ul className="mt-4 space-y-2 border-t border-line-strong/70 pt-3 text-sm text-ink sm:mt-5 sm:pt-4">
@@ -322,7 +418,48 @@ export function BillingSandbox({ username, view = "profile" }: { username: strin
                   );
                 })}
               </div>
-              <p className="text-center text-xs text-muted">{t("รายละเอียดแพ็กตามแผนเปิดขาย")}</p>
+
+              <section aria-labelledby={`${sectionId}-compare`} className="border border-line bg-panel/70 p-4 sm:p-5">
+                <h2 id={`${sectionId}-compare`} className="mb-3 font-display text-sm font-bold tracking-wide text-ink">
+                  {t("เทียบสิทธิ์แต่ละแพ็ก")}
+                </h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[540px] border-collapse text-left text-xs sm:text-sm">
+                    <thead>
+                      <tr className="border-b border-line-strong text-muted">
+                        <th className="sticky left-0 z-10 bg-panel py-2 pr-3 font-display font-semibold">{t("ฟีเจอร์")}</th>
+                        <th className="px-3 py-2 font-display font-semibold">Free</th>
+                        <th className="px-3 py-2 font-display font-bold text-gold">Pro</th>
+                        <th className="px-3 py-2 font-display font-bold text-good">Duo</th>
+                        <th className="py-2 pl-3 font-display font-bold text-blue">Business</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-line/70">
+                      {comparisonRows.map((row) => (
+                        <tr key={row.feature}>
+                          <td className="sticky left-0 z-10 bg-panel py-2.5 pr-3 font-medium text-ink">{t(row.feature)}</td>
+                          <td className="px-3 py-2.5 font-mono text-muted">
+                            {row.free === null ? <span className="text-dim">—</span> : row.free === "✓" ? <span className="font-bold text-good">✓</span> : t(row.free)}
+                          </td>
+                          <td className="px-3 py-2.5 font-mono text-ink">
+                            {row.pro === null ? <span className="text-dim">—</span> : row.pro === "✓" ? <span className="font-bold text-good">✓</span> : t(row.pro)}
+                          </td>
+                          <td className="px-3 py-2.5 font-mono text-ink">
+                            {row.duo === "✓" ? <span className="font-bold text-good">✓</span> : t(row.duo)}
+                          </td>
+                          <td className="py-2.5 pl-3 font-mono text-ink">
+                            {row.team_pro === "✓" ? <span className="font-bold text-good">✓</span> : t(row.team_pro)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              <p className="text-center text-xs text-muted">
+                {t("จ่ายครั้งเดียว ไม่ต่ออายุอัตโนมัติ · หมดอายุแล้วกลับเป็น Free โดยประวัติและข้อมูลไม่หาย")}
+              </p>
             </>
           ) : (
             <p role="status" className="border border-line bg-panel p-4 text-sm text-muted">
@@ -335,17 +472,25 @@ export function BillingSandbox({ username, view = "profile" }: { username: strin
   }
 
   return (
-    <section aria-labelledby={`${sectionId}-heading`} className="space-y-4 border border-line bg-panel p-4 sm:p-5">
-      <header className="flex flex-wrap items-center justify-between gap-2">
-        <h2 id={`${sectionId}-heading`} className="font-display text-lg font-bold text-ink">
-          {t("แพ็กและการชำระเงิน")}
-        </h2>
-        <span className="text-xs text-muted">Stripe Sandbox</span>
+    <section aria-labelledby={`${sectionId}-heading`} className="border border-line bg-panel">
+      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-linear-to-r from-good/10 to-transparent p-4 sm:p-5">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="clip-chamfer-sm grid size-10 shrink-0 place-items-center border border-good/35 bg-good/10 text-good">
+            <CreditCard className="size-5" aria-hidden="true" />
+          </div>
+          <h2 id={`${sectionId}-heading`} className="font-display text-lg font-bold text-ink">
+            {t("แพ็กและการชำระเงิน")}
+          </h2>
+        </div>
+        <span className="border border-line-strong bg-panel-2 px-2 py-0.5 font-mono text-[11px] text-muted">
+          {t("โหมดทดสอบ")}
+        </span>
       </header>
+      <div className="space-y-4 p-4 sm:p-5">
       {summary && (
         <div aria-live="polite" className="space-y-1">
           <p className="text-xs text-muted">{t("แพ็กปัจจุบัน")}</p>
-          <p className="font-display font-bold text-ink">{activePass ? tierNames[activePass.tier] : "Free"}</p>
+          <p className="font-display text-base font-bold text-ink">{activePass ? tierNames[activePass.tier] : "Free"}</p>
           {activePass && (
             <p className="text-sm font-semibold text-good">
               {t("ใช้ได้ถึง {0}", dateFormat.format(activePass.expires_at * 1000))}
@@ -354,27 +499,46 @@ export function BillingSandbox({ username, view = "profile" }: { username: strin
         </div>
       )}
       {paymentNotice}
-      {!pending && packages.length > 0 && (
-        <a href="#plans" className={`${actionClass} gap-2 border-gold/60 text-gold hover:bg-gold/10`}>
-          <StableButtonLabel message={activePass ? "อัปเกรดเป็น Team Pro" : "ดูแพ็ก"} alternatives={["อัปเกรดเป็น Team Pro", "ดูแพ็ก"]} />
+      {!pending && (packages.length > 0 ? (
+        <a href="#plans" className={`${actionClass} w-full gap-2 border-gold/60 text-gold hover:bg-gold/10 sm:w-auto`}>
+          <StableButtonLabel message={activePass ? "จัดการ / เปลี่ยนแพ็ก" : "ดูแพ็ก"} alternatives={["จัดการ / เปลี่ยนแพ็ก", "ดูแพ็ก"]} />
           <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
         </a>
-      )}
-      {summary?.orders.some((order) => order.status !== "pending") && (
+      ) : activePass && (
+        <p className="text-xs text-muted">{t("ต่ออายุหรือเปลี่ยนแพ็กได้อีกครั้งหลังหมดอายุ")}</p>
+      ))}
+      {summary?.orders.some((order) => order.status !== "pending") && (() => {
+        const completedOrders = summary.orders.filter((order) => order.status !== "pending");
+        const visibleOrders = showAllOrders ? completedOrders : completedOrders.slice(0, 5);
+        return (
         <div className="border-t border-line pt-3">
           <h3 className="text-sm font-semibold text-ink">{t("รายการล่าสุด")}</h3>
           <ul aria-label={t("รายการล่าสุด")} className="divide-y divide-line">
-            {summary.orders.filter((order) => order.status !== "pending").map((order) => (
-              <li key={order.id} className="flex flex-wrap justify-between gap-x-3 gap-y-1 py-2 text-xs text-muted">
-                <span>{passLabel(order)} · {t("{0} บาท", order.amount / 100)}</span>
-                <span className={order.status === "paid" ? "text-good" : undefined}>
-                  {t(statusMessages[order.status])}{order.paid_at ? ` · ${dateFormat.format(order.paid_at * 1000)}` : ""}
+            {visibleOrders.map((order) => (
+              <li key={order.id} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-2 text-xs text-muted">
+                <span className="font-mono tabular-nums">{passLabel(order)} · {t("{0} บาท", order.amount / 100)}</span>
+                <span className="flex items-center gap-1.5 font-mono tabular-nums">
+                  <span className={`border px-1.5 py-0.5 text-[10px] font-semibold ${order.status === "paid" ? "border-good/40 bg-good/10 text-good" : "border-line bg-bg text-dim"}`}>
+                    {t(statusMessages[order.status])}
+                  </span>
+                  {order.paid_at && <span>{dateFormat.format(order.paid_at * 1000)}</span>}
                 </span>
               </li>
             ))}
           </ul>
+          {completedOrders.length > 5 && (
+            <button
+              type="button"
+              onClick={() => setShowAllOrders((prev) => !prev)}
+              className="mt-2 inline-flex min-h-7 items-center border border-line-strong bg-panel-2 px-2.5 text-xs font-semibold text-ink hover:border-gold/50 hover:text-gold"
+            >
+              {showAllOrders ? t("ย่อรายการ") : t("ดูทั้งหมด ({0})", completedOrders.length)}
+            </button>
+          )}
         </div>
-      )}
+        );
+      })()}
+      </div>
     </section>
   );
 }

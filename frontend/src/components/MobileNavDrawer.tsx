@@ -1,7 +1,7 @@
 import { StableButtonLabel } from "./StableButtonLabel";
 import { useLanguage } from "../i18n/language";
 import { LanguageSwitch } from "../i18n/LanguageProvider";
-import { BarChart3, Camera, Coffee, LogIn, LogOut, MessageSquare, User, Users, X } from "lucide-react";
+import { BarChart3, Camera, Coffee, Crown, LogIn, LogOut, MessageSquare, User, Users, X } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { AuthUser, PricingSurveyChoice } from "../types/auth";
 import { accountLabel } from "../utils/auth";
@@ -28,7 +28,8 @@ interface MobileNavDrawerProps<T extends string> {
   onOpenDonate: () => void;
   onOpenAdminStats?: () => void;
   onOpenHeroPools?: () => void;
-  onOpenScrimAnalytics?: () => void;
+  onOpenAnalyticsDashboard?: () => void;
+  onOpenPlans?: () => void;
   onOpenScreenshotImport?: () => void;
   onOpenAuth: () => void;
   onOpenProfile: () => void;
@@ -50,7 +51,8 @@ export function MobileNavDrawer<T extends string>({
   onOpenDonate,
   onOpenAdminStats,
   onOpenHeroPools,
-  onOpenScrimAnalytics,
+  onOpenAnalyticsDashboard,
+  onOpenPlans,
   onOpenScreenshotImport,
   onOpenAuth,
   onOpenProfile,
@@ -173,53 +175,14 @@ export function MobileNavDrawer<T extends string>({
             type="button"
             onClick={() => requestClose()}
             aria-label={t("ปิดเมนู")}
-            className="inline-flex h-8 w-8 items-center justify-center rounded text-dim transition-colors hover:bg-panel-2 hover:text-ink"
+            className="inline-flex h-8 w-8 items-center justify-center text-dim transition-colors hover:bg-panel-2 hover:text-ink"
           >
             <X size={18} />
           </button>
         </div>
 
         <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
-          <LanguageSwitch />
-          {/* Account Section */}
-          <div className="border border-line bg-bg/60 p-3">
-            {authUser ? (
-              <div className="flex flex-col gap-2.5">
-                <button
-                  type="button"
-                  aria-label={t("เปิดโปรไฟล์ของ {0}", accountName)}
-                  onClick={() => requestClose(onOpenProfile)}
-                  className="flex min-h-8 min-w-0 items-center gap-2 text-left text-xs text-good transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-good"
-                >
-                  <User className="h-4 w-4 shrink-0" />
-                  <span className="max-w-[200px] truncate font-mono font-bold">{accountName}</span>
-                  <span className="ml-auto text-muted">{t("โปรไฟล์")}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => requestClose(onLogout)}
-                  className="inline-flex h-9 w-full items-center justify-center gap-1.5 border border-line-strong bg-panel-2 px-3 font-display text-xs font-semibold text-muted transition-colors hover:border-red/60 hover:text-red"
-                >
-                  <LogOut className="h-3.5 w-3.5 shrink-0" />
-                  <span><StableButtonLabel message="ออกจากระบบ" /></span>
-                </button>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-2">
-                <span className="font-mono text-[11px] text-muted">{t("กำลังใช้งานในโหมด Guest (บันทึกในเครื่องนี้)")}</span>
-                <button
-                  type="button"
-                  onClick={() => requestClose(onOpenAuth)}
-                  className="inline-flex h-9 w-full items-center justify-center gap-1.5 border border-gold/60 bg-gold/10 px-3 font-display text-xs font-bold text-gold transition-colors hover:bg-gold hover:text-bg"
-                >
-                  <LogIn className="h-3.5 w-3.5 shrink-0" />
-                  <span><StableButtonLabel message="เข้าสู่ระบบ / สมัครสมาชิก" /></span>
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Mode Navigation (hidden on lg+ because desktop navbar already lists tabs) */}
+          {/* Mode Navigation first for instant mobile/tablet thumb reach */}
           <div className="flex flex-col gap-1.5 lg:hidden">
             <span className="font-mono text-[10px] font-semibold tracking-wider text-dim uppercase">{t("โหมดใช้งาน")}</span>
             {tabs.map((item) => {
@@ -233,20 +196,68 @@ export function MobileNavDrawer<T extends string>({
                     onSelectTab(item.key);
                     requestClose();
                   }}
-                  className={`flex h-10 w-full items-center justify-between border px-3 font-display text-xs font-semibold transition-colors ${
+                  className={`flex min-h-10 w-full items-center justify-between border px-3 py-1.5 font-display text-xs font-semibold transition-colors ${
                     active
                       ? "border-gold/60 bg-gold/10 text-gold"
                       : "border-line bg-panel-2/60 text-ink hover:border-line-strong"
                   }`}
                 >
                   <span>{t(item.label)}</span>
-                  {active && <span className="font-mono text-[10px]">ACTIVE</span>}
                 </button>
               );
             })}
           </div>
 
-          {sandboxBilling && (onOpenHeroPools || onOpenScrimAnalytics || onOpenScreenshotImport) && (
+          <LanguageSwitch />
+          {/* Account Section */}
+          <div className="border border-line bg-bg/60 p-3">
+            {authUser ? (
+              <div className="flex flex-col gap-2.5">
+                <button
+                  type="button"
+                  aria-label={t("เปิดโปรไฟล์ของ {0}", accountName)}
+                  onClick={() => requestClose(onOpenProfile)}
+                  className="flex min-h-8 min-w-0 items-center gap-2 text-left text-xs text-ink transition-colors hover:text-gold focus-visible:outline-2 focus-visible:outline-gold"
+                >
+                  <User className="h-4 w-4 shrink-0 text-gold" />
+                  <span className="min-w-0 flex-1 truncate font-mono font-bold">{accountName}</span>
+                  <span className="shrink-0 text-muted">{t("โปรไฟล์")}</span>
+                </button>
+                {authUser.stripe_sandbox_enabled && onOpenPlans && (
+                  <button
+                    type="button"
+                    onClick={() => requestClose(onOpenPlans)}
+                    className="inline-flex min-h-9 w-full items-center justify-center gap-1.5 border border-line-strong bg-panel-2 px-3 py-1.5 font-display text-xs font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold"
+                  >
+                    <Crown className="h-3.5 w-3.5 shrink-0 text-gold" />
+                    <span><StableButtonLabel message="แพ็กเกจ & สิทธิ์ใช้งาน" /></span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => requestClose(onLogout)}
+                  className="inline-flex min-h-9 w-full items-center justify-center gap-1.5 border border-line-strong bg-panel-2 px-3 py-1.5 font-display text-xs font-semibold text-muted transition-colors hover:border-red/60 hover:text-red"
+                >
+                  <LogOut className="h-3.5 w-3.5 shrink-0" />
+                  <span><StableButtonLabel message="ออกจากระบบ" /></span>
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <span className="font-mono text-[11px] text-muted">{t("โหมด Guest · บันทึกในเครื่องนี้")}</span>
+                <button
+                  type="button"
+                  onClick={() => requestClose(onOpenAuth)}
+                  className="inline-flex min-h-9 w-full items-center justify-center gap-1.5 border border-gold/60 bg-gold/10 px-3 py-1.5 font-display text-xs font-bold text-gold transition-colors hover:bg-gold hover:text-bg"
+                >
+                  <LogIn className="h-3.5 w-3.5 shrink-0" />
+                  <span><StableButtonLabel message="เข้าสู่ระบบ / สมัครสมาชิก" /></span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {sandboxBilling && (onOpenHeroPools || onOpenAnalyticsDashboard || onOpenScreenshotImport) && (
             <div className="flex flex-col gap-2">
               <span className="font-mono text-[10px] font-semibold tracking-wider text-dim uppercase">
                 {t("เครื่องมือดราฟต์")}
@@ -255,30 +266,30 @@ export function MobileNavDrawer<T extends string>({
                 <button
                   type="button"
                   onClick={() => requestClose(onOpenHeroPools)}
-                  className="flex h-10 w-full items-center gap-2 border border-line-strong bg-panel-2 px-3 font-display text-xs font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold"
+                  className="flex min-h-10 w-full items-center gap-2 border border-line-strong bg-panel-2 px-3 py-1.5 text-left font-display text-xs font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold"
                 >
                   <Users className="h-4 w-4 shrink-0 text-gold" />
-                  <span>Hero Pools</span>
+                  <span>{t("Hero Pools")}</span>
                 </button>
               )}
-              {onOpenScrimAnalytics && (
+              {onOpenAnalyticsDashboard && (
                 <button
                   type="button"
-                  onClick={() => requestClose(onOpenScrimAnalytics)}
-                  className="flex h-10 w-full items-center gap-2 border border-gold/60 bg-gold/10 px-3 font-display text-xs font-bold text-gold transition-colors hover:bg-gold hover:text-bg"
+                  onClick={() => requestClose(onOpenAnalyticsDashboard)}
+                  className="flex min-h-10 w-full items-center gap-2 border border-line-strong bg-panel-2 px-3 py-1.5 text-left font-display text-xs font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold"
                 >
-                  <BarChart3 className="h-4 w-4 shrink-0" />
-                  <span><StableButtonLabel message="วิเคราะห์สถิติซ้อมทีม" /></span>
+                  <BarChart3 className="h-4 w-4 shrink-0 text-gold" />
+                  <StableButtonLabel message="สถิติซ้อมทีม" className="inline-grid text-left" />
                 </button>
               )}
               {onOpenScreenshotImport && (
                 <button
                   type="button"
                   onClick={() => requestClose(onOpenScreenshotImport)}
-                  className="flex h-10 w-full items-center gap-2 border border-line-strong bg-panel-2 px-3 font-display text-xs font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold"
+                  className="flex min-h-10 w-full items-center gap-2 border border-line-strong bg-panel-2 px-3 py-1.5 text-left font-display text-xs font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold"
                 >
                   <Camera className="h-4 w-4 shrink-0 text-gold" />
-                  <span><StableButtonLabel message="นำเข้าดราฟต์จากภาพหน้าจอ" /></span>
+                  <StableButtonLabel message="นำเข้าดราฟต์จากภาพหน้าจอ" className="inline-grid text-left" />
                 </button>
               )}
             </div>
@@ -293,11 +304,11 @@ export function MobileNavDrawer<T extends string>({
               type="button"
               title={t(surveyTooltipMessage)}
               onClick={() => requestClose(onOpenSurvey)}
-              className="flex h-10 w-full items-center justify-between gap-2 border border-line-strong bg-panel-2 px-3 font-display text-xs font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold"
+              className="flex min-h-10 w-full items-center justify-between gap-2 border border-line-strong bg-panel-2 px-3 py-1.5 text-left font-display text-xs font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold"
             >
               <span className="flex min-w-0 items-center gap-2">
                 <MessageSquare className="h-4 w-4 shrink-0 text-gold" />
-                <StableButtonLabel message="แบบสอบถาม" className="inline-grid items-center whitespace-nowrap" />
+                <StableButtonLabel message="แบบสอบถาม" className="inline-grid items-center text-left whitespace-nowrap" />
               </span>
               <span
                 className={`shrink-0 font-mono text-[10px] whitespace-nowrap ${surveyAnswered ? "text-good" : "text-gold"}`}
@@ -313,27 +324,27 @@ export function MobileNavDrawer<T extends string>({
             <button
               type="button"
               onClick={() => requestClose(onOpenDonate)}
-              className="flex h-10 w-full items-center gap-2 border border-line-strong bg-panel-2 px-3 font-display text-xs font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold"
+              className="flex min-h-10 w-full items-center gap-2 border border-line-strong bg-panel-2 px-3 py-1.5 text-left font-display text-xs font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold"
             >
               <Coffee className="h-4 w-4 shrink-0 text-gold" />
-              <span>Donate (PromptPay QR)</span>
+              <StableButtonLabel message="สนับสนุนผู้พัฒนา" className="inline-grid text-left" />
             </button>
 
             {isAdmin && onOpenAdminStats && (
               <button
                 type="button"
                 onClick={() => requestClose(onOpenAdminStats)}
-                className="flex h-10 w-full items-center gap-2 border border-gold/60 bg-gold/10 px-3 font-display text-xs font-bold text-gold transition-colors hover:bg-gold hover:text-bg"
+                className="flex min-h-10 w-full items-center gap-2 border border-line-strong bg-panel-2 px-3 py-1.5 text-left font-display text-xs font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold"
               >
-                <BarChart3 className="h-4 w-4 shrink-0" />
-                <span><StableButtonLabel message="สถิติระบบ (Owner Stats)" /></span>
+                <BarChart3 className="h-4 w-4 shrink-0 text-gold" />
+                <StableButtonLabel message="สถิติระบบ" className="inline-grid text-left" />
               </button>
             )}
           </div>
         </div>
 
-        <div className="shrink-0 border-t border-line bg-gold/10 px-4 py-2.5 text-center font-mono text-[11px] font-bold text-gold">
-          {t("ให้บริการฟรีถึง 30/11/2026")}
+        <div className="shrink-0 border-t border-line bg-bg/80 px-4 py-2.5 text-center font-mono text-[11px] font-medium text-muted">
+          {t("ใช้งานฟรีถึง 30 พ.ย. 2026")}
         </div>
       </div>
     </div>

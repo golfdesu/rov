@@ -2403,3 +2403,36 @@ def test_ally_pool_lanes_inner_list_bounded():
         },
     )
     assert res.status_code == 422
+
+
+def test_sample_scrim_analytics_aggregated_no_raw_leak():
+    res_all = client.get("/analytics/sample")
+    assert res_all.status_code == 200
+    data_all = res_all.json()
+    assert data_all["totalGames"] == 291
+    assert data_all["scopedGameCount"] == 291
+    assert data_all["allStats"]["total"] == 291
+    assert data_all["allStats"]["seriesCount"] == 76
+    assert len(data_all["teamNames"]) == 9
+    assert data_all["stats"] is None
+    assert len(data_all["advanced"]["positionalPools"]) == 5
+
+    raw_text_all = json.dumps(data_all)
+    for forbidden in ("bluePicks", "redPicks", "blueBans", "redBans", "pickLanes", "seriesGames"):
+        assert forbidden not in raw_text_all
+
+    res_team = client.get("/analytics/sample", params={"team": "VGD", "date_preset": "last30"})
+    assert res_team.status_code == 200
+    data_team = res_team.json()
+    assert data_team["focusTeam"] == "VGD"
+    assert data_team["stats"]["total"] > 0
+    assert data_team["allStats"] is None
+    assert len(data_team["opponents"]) == 8
+    raw_text_team = json.dumps(data_team)
+    for forbidden in ("bluePicks", "redPicks", "blueBans", "redBans", "pickLanes", "seriesGames"):
+        assert forbidden not in raw_text_team
+
+    res_bad = client.get("/analytics/sample", params={"team": "NONEXISTENT"})
+    assert res_bad.status_code == 422
+    res_bad_preset = client.get("/analytics/sample", params={"date_preset": "custom"})
+    assert res_bad_preset.status_code == 422

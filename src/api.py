@@ -70,6 +70,7 @@ from src.db import (
     billing_purchase_block,
 )
 from src.predictor import RoVDraftPredictor
+from src.sample_analytics import get_sample_analytics
 from src.schemas import (
     AdminAnalyticsResponse,
     AdminStatsResponse,
@@ -560,6 +561,7 @@ _predict_rate_limiter = RateLimiter(max_attempts=120, window_seconds=60)
 _survey_rate_limiter = RateLimiter(max_attempts=10, window_seconds=60)
 _billing_rate_limiter = RateLimiter(max_attempts=12, window_seconds=60)
 _team_rate_limiter = RateLimiter(max_attempts=40, window_seconds=60)
+_sample_analytics_limiter = RateLimiter(max_attempts=60, window_seconds=60)
 _scrypt_semaphore = threading.BoundedSemaphore(4)
 
 
@@ -2152,6 +2154,31 @@ def get_item_screenshots(item_name: str, _guard: None = Depends(require_developm
         "details": details,
         "pages_info": pages_info,
     }
+
+
+@app.get("/analytics/sample")
+def get_sample_scrim_analytics(
+    request: Request,
+    response: Response,
+    team: str = Query(default="", max_length=32),
+    opponent: str = Query(default="ALL", max_length=32),
+    date_preset: Literal["all", "last7", "last30"] = Query(default="all"),
+    period_mode: Literal["split_half", "last7_vs_prev"] = Query(default="split_half"),
+):
+    """Return aggregated analytics for the anonymized RPL 2026 Summer sample without exposing raw drafts."""
+    if not _sample_analytics_limiter.check_and_record(f"sample:{_client_ip(request)}"):
+        raise HTTPException(status_code=429, detail="Too many analytics requests. Please slow down.")
+    try:
+        payload = get_sample_analytics(
+            team=team,
+            opponent=opponent,
+            date_preset=date_preset,
+            period_mode=period_mode,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    response.headers["Cache-Control"] = "public, max-age=300"
+    return payload
 
 
 # Serve hero & item in-game screenshot media directly

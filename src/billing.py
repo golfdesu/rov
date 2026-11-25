@@ -28,7 +28,7 @@ PRICE_SATANG: dict[tuple[Tier, PassDays], int] = {
     ("team_pro", 30): 19900,
     ("team_pro", 90): 46900,
 }
-TIER_NAMES = {"pro": "Pro", "duo": "Duo", "team_pro": "Team Pro"}
+TIER_NAMES = {"pro": "Pro", "duo": "Duo", "team_pro": "Business"}
 BILLING_EVENT_TYPES = frozenset(
     {
         "checkout.session.completed",

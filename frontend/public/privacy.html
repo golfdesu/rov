@@ -34,6 +34,7 @@
       }
       header {
         display: flex;
+        flex-wrap: wrap;
         align-items: center;
         justify-content: space-between;
         gap: 12px;
@@ -90,6 +91,7 @@
       li {
         color: var(--muted);
         font-size: 14.5px;
+        overflow-wrap: break-word;
       }
       ul {
         margin: 8px 0;
@@ -101,6 +103,7 @@
         padding: 1px 5px;
         border-radius: 3px;
         font-size: 13px;
+        overflow-wrap: break-word;
       }
     </style>
   </head>
@@ -111,51 +114,50 @@
           <img src="/logo.png" alt="MiniDraft Logo" />
           <div>MINI<span>DRAFT</span></div>
         </a>
-        <a class="back" href="/">← กลับหน้าหลัก (Back to App)</a>
+        <a class="back" href="/">← Back to App</a>
       </header>
 
       <main class="card">
-        <h1>Privacy Policy — นโยบายความเป็นส่วนตัว</h1>
-        <p class="updated">Last updated: November 16, 2026 · Service: MiniDraft (https://minidraft.app)</p>
+        <h1>Privacy Policy</h1>
+        <p class="updated">Last updated: November 16, 2026 · MiniDraft (https://minidraft.app)</p>
 
         <p>
-          MiniDraft is an independent RoV (Arena of Valor) draft simulation and analytics web application. We value your
-          privacy and collect only the minimum information required to run the draft workspace and optional account sync.
+          MiniDraft is an independent RoV (Arena of Valor) draft simulator and analytics web app. We collect only the
+          minimum information needed to run the draft workspace and optional account sync.
         </p>
 
-        <h2>1. Information We Collect (ข้อมูลที่เราจัดเก็บ)</h2>
+        <h2>1. Information We Collect</h2>
         <ul>
           <li>
-            <strong>Guest Mode:</strong> You can use the draft board without creating an account. Draft state in Guest
-            mode is stored locally in your browser's <code>localStorage</code> and is not linked to an identity.
+            <strong>Guest Mode:</strong> You can use the draft board without signing in. Guest drafts stay in your
+            browser's <code>localStorage</code> and are not tied to your identity.
           </li>
           <li>
-            <strong>Account Sign-In (Username or Google Sign-In):</strong> If you sign in with Google, we request only
-            standard <code>openid</code>, <code>email</code>, and <code>profile</code> scopes to receive your Google
-            subject identifier, verified email address, and display name. We do not access your Gmail inbox, Drive,
-            contacts, or any other Google service.
+            <strong>Account Sign-In (Username, Google, or Discord):</strong> If you sign in with Google or Discord, we
+            request only basic profile scopes (<code>openid</code>, <code>email</code>, and <code>profile</code> for
+            Google; identity/email for Discord). We never access your messages, inbox, or files.
           </li>
           <li>
-            <strong>Saved Draft Data:</strong> When signed in, your active draft board and Global Ban series history are
-            saved in our application database so you can sync across your devices.
+            <strong>Saved Draft Data:</strong> When signed in, your draft boards, Global Ban history, and Combat Lab
+            builds are saved so you can sync across devices.
           </li>
           <li>
-            <strong>Security &amp; Rate Limiting:</strong> Standard HTTP session cookies (<code>rov_session</code>,
-            HttpOnly) and short-lived in-memory rate-limit counters are used solely to protect login and API stability.
+            <strong>Security &amp; Rate Limiting:</strong> Standard session cookies (<code>rov_session</code>,
+            HttpOnly) and short-lived rate-limit counters protect login and API stability.
           </li>
         </ul>
 
-        <h2>2. How We Use &amp; Share Data (การใช้และการเปิดเผยข้อมูล)</h2>
+        <h2>2. How We Use &amp; Share Data</h2>
         <ul>
-          <li>Your account details are used strictly for authentication, session management, and cross-device sync.</li>
+          <li>Your account details are used strictly for sign-in, session security, and cross-device sync.</li>
           <li>We do <strong>not</strong> sell, rent, or share your email or personal data with third parties or advertisers.</li>
         </ul>
 
-        <h2>3. Data Retention &amp; Deletion (การเก็บรักษาและขอลบข้อมูล)</h2>
+        <h2>3. Data Retention &amp; Deletion</h2>
         <p>
-          Your account and synced draft history are retained while your account remains active. You may request deletion
-          of your account and all associated data at any time by contacting the site administrator via the support email
-          listed on the MiniDraft Google Sign-In consent screen.
+          Your account and synced draft history remain stored while your account is active. You may request deletion of
+          your account and all associated data anytime via the support email shown on the MiniDraft sign-in consent
+          screen.
         </p>
 
         <h2>4. Disclaimer</h2>

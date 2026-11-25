@@ -126,18 +126,18 @@ export function PracticeHistoryModal({
           {entries.length > 0 && (
             <dl className="grid shrink-0 grid-cols-3 gap-2 border-b border-line bg-bg/70 px-3 py-2.5 sm:px-4">
               <div className="border border-line bg-panel px-2.5 py-1.5">
-                <dt className="truncate font-mono text-[10px] text-dim">{t("จำนวนเกมที่บันทึก")}</dt>
+                <dt className="truncate font-mono text-[10px] text-dim">{t("เกมที่เล่น")}</dt>
                 <dd className="font-mono text-sm font-bold text-ink tabular-nums sm:text-base">{stats.total}</dd>
               </div>
               <div className="border border-line bg-panel px-2.5 py-1.5">
-                <dt className="truncate font-mono text-[10px] text-dim">{t("โอกาสชนะ ≥ 50%")}</dt>
+                <dt className="truncate font-mono text-[10px] text-dim">{t("ได้เปรียบ")}</dt>
                 <dd className="font-mono text-sm font-bold text-good tabular-nums sm:text-base">
                   {stats.favoured}/{stats.total}{" "}
                   <span className="text-[11px] text-muted">({stats.favouredPct.toFixed(0)}%)</span>
                 </dd>
               </div>
               <div className="border border-line bg-panel px-2.5 py-1.5">
-                <dt className="truncate font-mono text-[10px] text-dim">{t("Win% เฉลี่ยฝั่งคุณ")}</dt>
+                <dt className="truncate font-mono text-[10px] text-dim">{t("Win% เฉลี่ย")}</dt>
                 <dd
                   className={`font-mono text-sm font-bold tabular-nums sm:text-base ${
                     stats.avgWin >= 50 ? "text-gold" : "text-ink"
@@ -234,11 +234,11 @@ export function PracticeHistoryModal({
                     {/* Blue & Red 5v5 Heroes */}
                     <div className="mt-2.5 grid grid-cols-1 gap-2 sm:grid-cols-2">
                       <div className="border border-blue/25 bg-bg/60 p-2">
-                        <div className="mb-1.5 flex items-center justify-between text-[11px]">
-                          <span className="font-display font-bold text-blue">
+                        <div className="mb-1.5 flex items-center justify-between gap-2 text-[11px]">
+                          <span className="shrink-0 font-display font-bold text-blue">
                             BLUE · {blueLabel}
                           </span>
-                          <span className="font-mono text-[10px] text-dim">
+                          <span className="min-w-0 truncate font-mono text-[10px] text-dim">
                             {entry.blueBans.map((b) => displayName(b)).join(", ")}
                           </span>
                         </div>
@@ -257,11 +257,11 @@ export function PracticeHistoryModal({
                       </div>
 
                       <div className="border border-red/25 bg-bg/60 p-2">
-                        <div className="mb-1.5 flex items-center justify-between text-[11px]">
-                          <span className="font-display font-bold text-red">
+                        <div className="mb-1.5 flex items-center justify-between gap-2 text-[11px]">
+                          <span className="shrink-0 font-display font-bold text-red">
                             RED · {redLabel}
                           </span>
-                          <span className="font-mono text-[10px] text-dim">
+                          <span className="min-w-0 truncate font-mono text-[10px] text-dim">
                             {entry.redBans.map((b) => displayName(b)).join(", ")}
                           </span>
                         </div>

@@ -1,6 +1,6 @@
 import { useLanguage } from "../i18n/language";
 import { StableButtonLabel } from "./StableButtonLabel";
-import { Flame, Loader2, Sparkles, Trophy } from "lucide-react";
+import { Flame, Link2, Loader2, Shield, Sparkles, Swords, Trophy, Zap } from "lucide-react";
 import { memo, useMemo, useState } from "react";
 import type { DraftStep, Hero, HeroRecommendation, LaneKey } from "../types/draft";
 import { LANE_SHORT, heroFitsLaneSet, heroLanes, laneKey, missingLaneKeys } from "../utils/draft";
@@ -10,11 +10,11 @@ import { LaneIcon } from "./LaneIcon";
 
 const LANE_FILTER_TABS = [
   { key: "ALL", short: "ALL", label: "ALL" },
-  { key: "DS_Lane", short: "DSL", label: "DSL ออฟ" },
-  { key: "Jungle", short: "JGL", label: "JGL ป่า" },
-  { key: "Mid", short: "MID", label: "MID กลาง" },
-  { key: "Dragon_Lane", short: "ADL", label: "ADL แครี่" },
-  { key: "Roam", short: "SUP", label: "SUP โรม" },
+  { key: "DS_Lane", short: "DSL", label: "DSL" },
+  { key: "Jungle", short: "JGL", label: "JGL" },
+  { key: "Mid", short: "MID", label: "MID" },
+  { key: "Dragon_Lane", short: "ADL", label: "ADL" },
+  { key: "Roam", short: "SUP", label: "SUP" },
 ] as const;
 
 interface AiPanelProps {
@@ -152,7 +152,7 @@ export const AiPanel = memo(function AiPanel({
             <Trophy className={`h-4 w-4 ${blueWins ? "text-blue" : "text-red"}`} />
             <span className="font-display text-xs font-bold tracking-wider text-gold">DRAFT COMPLETE</span>
           </div>
-          <div className={`font-mono text-xs font-bold ${blueWins ? "text-blue" : "text-red"}`}>
+          <div className={`font-mono text-xs font-bold tabular-nums ${blueWins ? "text-blue" : "text-red"}`}>
             {blueWins ? "BLUE" : "RED"} FAVOURED ({(blueWins ? blueWinRate : 100 - blueWinRate).toFixed(1)}%)
           </div>
         </section>
@@ -164,7 +164,7 @@ export const AiPanel = memo(function AiPanel({
           <Trophy className={`h-7 w-7 shrink-0 ${blueWins ? "text-blue" : "text-red"}`} />
           <div className="text-left">
             <div className="font-display text-[10px] font-semibold tracking-[0.2em] text-muted">DRAFT COMPLETE</div>
-            <div className={`font-display text-xl font-bold sm:text-2xl ${blueWins ? "text-blue" : "text-red"}`}>
+            <div className={`font-mono text-xl font-bold tabular-nums sm:text-2xl ${blueWins ? "text-blue" : "text-red"}`}>
               {blueWins ? "BLUE" : "RED"} FAVOURED ·{" "}
               {(blueWins ? blueWinRate : 100 - blueWinRate).toFixed(1)}%
             </div>
@@ -240,16 +240,19 @@ export const AiPanel = memo(function AiPanel({
                       </span>
                     )}
                     {isBan && enemyPoolHeroes?.has(rec.hero_name) && (
-                      <span className="border border-red/60 bg-red/15 px-1 font-mono text-[8px] font-bold text-red">
+                      <span
+                        title={enemyPoolName ? `${enemyPoolName}` : undefined}
+                        className="max-w-[72px] truncate border border-red/60 bg-red/15 px-1 font-mono text-[8px] font-bold text-red"
+                      >
                         {enemyPoolName ? enemyPoolName : "TARGET"}
                       </span>
                     )}
                     <span
-                      className={`font-mono text-[9px] font-semibold ${
+                      className={`font-mono text-[9px] font-semibold tabular-nums ${
                         fillsLane || win >= 50 ? "text-good" : "text-muted"
                       }`}
                     >
-                      {win.toFixed(0)}%
+                      {win.toFixed(0)}% WR
                     </span>
                   </button>
                 );
@@ -263,7 +266,7 @@ export const AiPanel = memo(function AiPanel({
                   className="flex h-7 shrink-0 items-center gap-1 border border-gold/50 bg-gold/10 px-1.5 font-display text-[10px] font-bold text-gold disabled:cursor-not-allowed"
                 >
                   <Flame className="h-3 w-3 shrink-0" />
-                  <span>{displayName(u.hero_name)}</span>
+                  <span className="max-w-[96px] truncate">{displayName(u.hero_name)}</span>
                 </button>
               ))}
             </>
@@ -302,9 +305,9 @@ export const AiPanel = memo(function AiPanel({
                       ? t("แสดงคำแนะนำทุกตำแหน่ง")
                       : t("กรองเฉพาะตำแหน่ง {0}{1}", t(tab.label), isMissing ? t(" (เลนที่ทีมยังขาด)") : "")
                   }
-                  className={`border h-8 sm:h-7 px-3 sm:px-2 font-mono text-xs sm:text-[10px] font-bold transition-colors touch-manipulation inline-flex items-center justify-center gap-1 shrink-0 ${
+                  className={`border h-8 sm:h-7 px-2.5 sm:px-1.5 font-mono text-xs sm:text-[10px] font-bold transition-colors touch-manipulation inline-flex items-center justify-center gap-1 shrink-0 ${
                     active
-                      ? "border-gold bg-gold text-bg shadow-sm"
+                      ? "border-ink/55 bg-panel-2 text-ink shadow-sm"
                       : isMissing
                         ? "border-good/60 bg-good/10 text-good hover:bg-good/20"
                         : "border-line bg-bg text-muted hover:border-line-strong hover:text-ink"
@@ -312,17 +315,15 @@ export const AiPanel = memo(function AiPanel({
                 >
                   {tab.key !== "ALL" && <LaneIcon lane={tab.key} className="h-3.5 w-3.5 sm:h-3 sm:w-3" />}
                   <span className={tab.key === "ALL" ? undefined : "hidden sm:inline"}>
-                    {tab.key !== "ALL" && <span aria-hidden="true" className={isMissing && !active ? "" : "invisible"}>+</span>}
                     <StableButtonLabel message={tab.label} />
                   </span>
+                  {isMissing && !active && (
+                    <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-good" />
+                  )}
                 </button>
               );
             })}
           </div>
-
-          <span className="hidden font-mono text-[10px] text-dim 2xl:inline">
-            POLICY HEAD
-          </span>
         </div>
       </div>
 
@@ -331,7 +332,7 @@ export const AiPanel = memo(function AiPanel({
         <div className="flex shrink-0 flex-nowrap items-center gap-1.5 overflow-x-auto border-b border-line bg-gold/5 px-2.5 py-1 sm:gap-2 xl:px-3.5">
           <span className="flex shrink-0 items-center gap-1 text-[10px] font-semibold text-gold sm:text-[11px]">
             <Flame className="h-3.5 w-3.5 shrink-0" />
-            {t("ตัวปลดล็อก:")}
+            {t("ตัวหลุดแบน:")}
           </span>
           {banUnlockedHeroes.slice(0, 4).map((u) => {
             const triggers = (u.triggered_by ?? []).map(displayName).join(", ");
@@ -342,9 +343,9 @@ export const AiPanel = memo(function AiPanel({
                 disabled={!allowLock}
                 onClick={() => onLockHero(u.hero_name)}
                 title={triggers ? t("เก่งขึ้นเพราะแบน {0}", triggers) : undefined}
-                className="flex shrink-0 items-center gap-1.5 border border-gold/40 bg-panel px-1.5 py-0.5 text-left transition-colors enabled:hover:border-gold enabled:hover:bg-panel-2 disabled:cursor-not-allowed xl:px-2"
+                className="flex min-h-7 shrink-0 items-center gap-1.5 border border-gold/40 bg-panel px-2 py-1 text-left transition-colors enabled:hover:border-gold enabled:hover:bg-panel-2 disabled:cursor-not-allowed"
               >
-                <div className="h-4 w-4 shrink-0 overflow-hidden xl:h-4.5 xl:w-4.5">
+                <div className="h-4.5 w-4.5 shrink-0 overflow-hidden">
                   <HeroPortrait name={u.hero_name} hero={heroMap.get(u.hero_name)} />
                 </div>
                 <span className="font-display text-[11px] font-bold whitespace-nowrap text-ink">
@@ -390,17 +391,26 @@ export const AiPanel = memo(function AiPanel({
               : rec.trigger_reason === "combo"
                 ? t("คอมโบกับ {0}", triggerNames.join(", "))
                 : isBan || rec.trigger_reason === "protect"
-                  ? t("ปกป้อง {0}", triggerNames.join(", "))
-                  : t("ปลดล็อกจากการแบน {0}", triggerNames.join(", "));
+                  ? t("เซฟ {0}", triggerNames.join(", "))
+                  : t("ไร้ตัวแก้จากการแบน {0}", triggerNames.join(", "));
 
           const triggerBadgeText =
             rec.trigger_reason === "counter"
-              ? t("⚔️ แก้ {0}", triggerNames.join(", "))
+              ? t("ชนะทาง {0}", triggerNames.join(", "))
               : rec.trigger_reason === "combo"
-                ? t("🤝 คู่ {0}", triggerNames.join(", "))
+                ? t("คู่ {0}", triggerNames.join(", "))
                 : isBan || rec.trigger_reason === "protect"
-                  ? t("🛡️ ป้อง {0}", triggerNames.join(", "))
-                  : t("⚡ ปลดล็อก ({0})", triggerNames.join(", "));
+                  ? t("เซฟ {0}", triggerNames.join(", "))
+                  : t("ไร้ตัวแก้ ({0})", triggerNames.join(", "));
+
+          const TriggerIcon =
+            rec.trigger_reason === "counter"
+              ? Swords
+              : rec.trigger_reason === "combo"
+                ? Link2
+                : isBan || rec.trigger_reason === "protect"
+                  ? Shield
+                  : Zap;
 
           const triggerBadgeClass =
             rec.trigger_reason === "counter"
@@ -439,7 +449,7 @@ export const AiPanel = memo(function AiPanel({
 
                   {/* Name + Lane */}
                   <div className="flex w-full min-w-0 items-baseline justify-between gap-1">
-                    <span className="truncate font-display text-xs font-bold leading-tight text-ink xl:text-sm">
+                    <span className="truncate font-display text-[11px] font-bold leading-tight text-ink xl:text-sm">
                       {displayName(rec.hero_name)}
                     </span>
                     <span
@@ -467,9 +477,10 @@ export const AiPanel = memo(function AiPanel({
                   {triggerNames.length > 0 ? (
                     <div className="w-full min-w-0" title={triggerTitle}>
                       <span
-                        className={`block w-full truncate border px-1 py-0.5 text-center font-mono text-[9px] leading-tight ${triggerBadgeClass}`}
+                        className={`flex w-full items-center justify-center gap-1 border px-1 py-0.5 font-mono text-[9px] leading-tight ${triggerBadgeClass}`}
                       >
-                        {triggerBadgeText}
+                        <TriggerIcon className="h-2.5 w-2.5 shrink-0" aria-hidden="true" />
+                        <span className="truncate">{triggerBadgeText}</span>
                       </span>
                     </div>
                   ) : (
@@ -515,7 +526,10 @@ export const AiPanel = memo(function AiPanel({
                           </span>
                         )}
                         {isBan && enemyPoolHeroes?.has(rec.hero_name) && (
-                          <span className="shrink-0 border border-red/60 bg-red/10 px-1 font-mono text-[8.5px] font-bold text-red">
+                          <span
+                            title={enemyPoolName ? `${enemyPoolName}` : undefined}
+                            className="max-w-[72px] shrink-0 truncate border border-red/60 bg-red/10 px-1 font-mono text-[8.5px] font-bold text-red"
+                          >
                             {enemyPoolName ? enemyPoolName : "TARGET"}
                           </span>
                         )}
@@ -538,9 +552,10 @@ export const AiPanel = memo(function AiPanel({
                       {triggerNames.length > 0 ? (
                         <div className="mt-0.5 min-w-0" title={triggerTitle}>
                           <span
-                            className={`block max-w-full truncate border px-1 py-0.5 font-mono text-[9px] leading-tight ${triggerBadgeClass}`}
+                            className={`inline-flex max-w-full items-center gap-1 border px-1 py-0.5 font-mono text-[9px] leading-tight ${triggerBadgeClass}`}
                           >
-                            {triggerBadgeText}
+                            <TriggerIcon className="h-2.5 w-2.5 shrink-0" aria-hidden="true" />
+                            <span className="truncate">{triggerBadgeText}</span>
                           </span>
                         </div>
                       ) : (

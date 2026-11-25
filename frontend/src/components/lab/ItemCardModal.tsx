@@ -201,16 +201,16 @@ export function ItemCardModal({
     <Modal labelledBy={titleId} onClose={onClose} className="w-full max-w-5xl">
       <div className="flex max-h-[92vh] flex-col overflow-hidden bg-bg text-ink">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-line bg-panel px-4 py-3">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-panel px-4 py-3">
+          <div className="flex min-w-0 items-center gap-3">
             <ItemIcon
               src={catalogItem?.icon_url}
               name={currentItem}
               className="h-10 w-10 shrink-0 rounded border border-line-strong object-cover shadow"
             />
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 id={titleId} className="font-display text-base font-bold text-ink">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 id={titleId} className="truncate font-display text-base font-bold text-ink">
                   {currentItem}
                 </h2>
                 {catalogItem?.tier && (
@@ -224,7 +224,7 @@ export function ItemCardModal({
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-3 text-xs text-muted">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted">
                 <span className="flex items-center gap-1 font-mono text-gold">
                   <Coins size={12} />
                   {catalogItem?.price?.toLocaleString() ?? "?"} Gold
@@ -232,13 +232,13 @@ export function ItemCardModal({
                 <span className="text-dim">·</span>
                 <span className="flex items-center gap-1 text-[11px]">
                   <ImageIcon size={12} className="text-blue" />
-                  {t("ภาพการ์ดไอเทมแท้จากในเกม (100% In-Game Screenshot)")}
+                  {t("การ์ดจากในเกม")}
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             {onPick && (
               <button
                 type="button"
@@ -335,11 +335,6 @@ export function ItemCardModal({
                     className="mx-auto block max-h-[56vh] w-auto rounded border border-line object-contain shadow-md"
                     onError={() => setImageError(true)}
                   />
-                  <div className="mt-2 text-center">
-                    <span className="inline-flex items-center gap-1 rounded bg-panel px-2 py-0.5 font-mono text-[10px] text-dim">
-                      {currentScreenshotUrl.split("/").pop()}
-                    </span>
-                  </div>
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-2 py-20 text-dim">
@@ -356,7 +351,7 @@ export function ItemCardModal({
             <div className="mb-4">
               <h3 className="mb-2 flex items-center gap-1.5 font-display text-xs font-bold tracking-wide text-muted">
                 <Shield size={13} className="text-blue" />
-                <span>{t("สเตตัสพื้นฐาน (Base Attributes)")}</span>
+                <span>{t("ค่าสถานะพื้นฐาน")}</span>
               </h3>
               {currentDetails?.stats_raw && currentDetails.stats_raw.length > 0 ? (
                 <div className="flex flex-wrap gap-1.5">
@@ -389,7 +384,7 @@ export function ItemCardModal({
             <div className="mb-5 flex-1">
               <h3 className="mb-2 flex items-center gap-1.5 font-display text-xs font-bold tracking-wide text-muted">
                 <Sparkles size={13} className="text-gold" />
-                <span>{t("เอฟเฟกต์ & สกิลติดตัว (Passives & Description)")}</span>
+                <span>{t("สกิลติดตัว & เอฟเฟกต์")}</span>
               </h3>
               <div className="space-y-2 rounded-lg border border-line bg-panel-2 p-3 text-xs leading-relaxed text-ink/90">
                 {currentDetails?.desc_th?.length && (language === "th" || !catalogItem?.passives?.length) ? (
@@ -415,7 +410,7 @@ export function ItemCardModal({
               <div className="mb-2 flex items-center justify-between">
                 <h4 className="flex items-center gap-1 text-[11px] font-semibold text-muted">
                   <Filter size={11} />
-                  <span>{t("ดูไอเทมชิ้นอื่นในคลัง (114 ไอเทม)")}</span>
+                  <span>{t("ไอเทมอื่นในคลัง")}</span>
                 </h4>
                 <span className="font-mono text-[10px] text-dim">{filteredItems.length} {t("ชิ้น")}</span>
               </div>

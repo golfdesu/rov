@@ -158,7 +158,7 @@ export function DuelSummary({
               type="button"
               onClick={onToggleKiting}
               aria-pressed={enableKiting}
-              title={t("เปิด/ปิด การคำนวณระยะยิงตอดและจังหวะ Kiting ของฮีโร่ตีไกลเทียบตัวประชิด")}
+              title={t("คำนวณระยะยิงตอดของตัวตีไกลเทียบตัวประชิด")}
               className={`border px-2 py-1 text-[11px] font-medium transition-colors ${
                 enableKiting
                   ? "border-gold/60 bg-gold/15 text-gold"
@@ -173,14 +173,15 @@ export function DuelSummary({
               type="button"
               onClick={onToggleActives}
               aria-pressed={enableActives}
-              title={t("เปิด/ปิด เอฟเฟกต์สกิลกดใช้ของไอเทม (Rock Shield / Bow of Slaughter ฯลฯ)")}
+              title={t("คิดเอฟเฟกต์กดใช้ไอเทม (เช่น Rock Shield, Bow of Slaughter)")}
               className={`border px-2 py-1 text-[11px] font-medium transition-colors ${
                 enableActives
                   ? "border-gold/60 bg-gold/15 text-gold"
                   : "border-line text-muted hover:text-ink"
               }`}
             >
-              <StableButtonLabel message="Active ไอเทม:" /> <StableButtonLabel message={enableActives ? "เปิดอยู่" : "ปิดอยู่"} alternatives={["เปิดอยู่", "ปิดอยู่"]} />
+              {t("ไอเทมกดใช้:")}{" "}
+              <StableButtonLabel message={enableActives ? "เปิดอยู่" : "ปิดอยู่"} alternatives={["เปิดอยู่", "ปิดอยู่"]} />
             </button>
           )}
           <button
@@ -211,16 +212,16 @@ export function DuelSummary({
 
       <HpChart timeline={sim.timeline} maxA={result.a.build.stats.max_hp} maxB={result.b.build.stats.max_hp} />
 
-      <div className="mt-2 flex gap-4">
+      <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <SideColumn label={nameA} color="text-blue" data={result.a} sim={sim.a} />
         <SideColumn label={nameB} color="text-red" data={result.b} sim={sim.b} />
       </div>
 
       <details className="mt-3 text-[10px] text-dim">
-        <summary className="cursor-pointer">{t("สมมติฐานของการจำลอง")}</summary>
+        <summary className="cursor-pointer">{t("เงื่อนไขการคำนวณ")}</summary>
         <ul className="mt-1 list-disc pl-4">
           {result.assumptions.map((a) => (
-            <li key={a}>{a}</li>
+            <li key={a} className="break-words">{t(a)}</li>
           ))}
         </ul>
       </details>

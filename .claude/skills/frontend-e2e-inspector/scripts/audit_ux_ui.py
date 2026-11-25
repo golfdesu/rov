@@ -74,6 +74,87 @@ def _audit_viewport_metrics(page) -> tuple[bool, list[dict]]:
     )
 
 
+def _audit_menu_and_dom_clipping(page, check_en_leaks: bool = False) -> dict:
+    return page.evaluate(
+        """(checkEnLeaks) => {
+            const docOverflow = document.documentElement.scrollWidth > window.innerWidth + 1;
+            const clipY = [];
+            const escapeBox = [];
+            const enLeaks = [];
+
+            for (const el of document.querySelectorAll('button, a, [role="tab"], span, div, p, li, h1, h2, h3, label')) {
+                const cs = window.getComputedStyle(el);
+                if (cs.display === 'none' || cs.visibility === 'hidden' || el.getAttribute('aria-hidden') === 'true') continue;
+                const r = el.getBoundingClientRect();
+                if (r.width === 0 || r.height === 0) continue;
+
+                if (
+                    (cs.overflowY === 'hidden' || cs.webkitLineClamp !== 'none') &&
+                    el.scrollHeight > el.clientHeight + 3 &&
+                    !el.className.includes('clip-chamfer')
+                ) {
+                    const txt = (el.innerText || '').trim().slice(0, 60);
+                    if (txt) {
+                        clipY.push({ tag: el.tagName, h: Math.round(el.clientHeight), sh: el.scrollHeight, txt });
+                    }
+                }
+
+                if (
+                    cs.overflowX === 'visible' &&
+                    el.scrollWidth > el.clientWidth + 4 &&
+                    el.clientWidth > 0 &&
+                    !el.closest('.overflow-x-auto, .overflow-auto')
+                ) {
+                    const txt = (el.innerText || '').trim().slice(0, 60);
+                    if (txt && !el.closest('button[title] > div.truncate')) {
+                        escapeBox.push({ tag: el.tagName, w: Math.round(el.clientWidth), sw: el.scrollWidth, txt });
+                    }
+                }
+            }
+
+            const menu = document.querySelector("[role='menu']");
+            let menuOverflow = null;
+            if (menu) {
+                const mr = menu.getBoundingClientRect();
+                const badChildren = [];
+                for (const el of menu.querySelectorAll("[role='menuitem'], span")) {
+                    const r = el.getBoundingClientRect();
+                    if (el.scrollWidth > el.clientWidth + 1 || r.right > mr.right + 1 || r.left < mr.left - 1) {
+                        badChildren.push({ txt: (el.innerText || '').trim().slice(0, 40), cw: el.clientWidth, sw: el.scrollWidth });
+                    }
+                }
+                if (mr.left < 0 || mr.right > window.innerWidth || badChildren.length > 0) {
+                    menuOverflow = { left: Math.round(mr.left), right: Math.round(mr.right), vpW: window.innerWidth, badChildren };
+                }
+            }
+
+            if (checkEnLeaks) {
+                const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+                let node;
+                while ((node = walker.nextNode())) {
+                    const s = (node.nodeValue || '').trim();
+                    if (!s || !/[\\u0E00-\\u0E7F]/.test(s)) continue;
+                    const p = node.parentElement;
+                    if (!p) continue;
+                    const cs = window.getComputedStyle(p);
+                    if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+                    if (p.closest("[aria-hidden='true'], [lang='th']")) continue;
+                    enLeaks.push(s.slice(0, 80));
+                }
+            }
+
+            return {
+                docOverflow,
+                clipY: clipY.slice(0, 10),
+                escapeBox: escapeBox.slice(0, 10),
+                menuOverflow,
+                enLeaks: [...new Set(enLeaks)].slice(0, 15),
+            };
+        }""",
+        check_en_leaks,
+    )
+
+
 def main() -> None:
     print("=" * 72)
     print("RoV Frontend UX/UI & Playwright E2E Auditor")
@@ -112,7 +193,7 @@ def main() -> None:
                 page.on("dialog", lambda d: (native_dialogs.append(d.message), d.dismiss()))
 
                 # 1. AuthLanding audit on mobile (390x844) & desktop (1280x800)
-                print("[1/4] Auditing AuthLanding & touch targets across breakpoints...")
+                print("[1/5] Auditing AuthLanding & touch targets across breakpoints...")
                 for w, h in [(390, 844), (1280, 800)]:
                     page.set_viewport_size({"width": w, "height": h})
                     page.goto(base_url, wait_until="networkidle")
@@ -134,7 +215,7 @@ def main() -> None:
                     survey_heading.wait_for(state="hidden", timeout=3000)
 
                 # 2. Draft Board layout & touch target audit across 4 breakpoints
-                print("[2/4] Auditing Draft Board layout (375x667, 390x844, 768x1024, 1280x800)...")
+                print("[2/5] Auditing Draft Board layout (375x667, 390x844, 768x1024, 1280x800)...")
                 for w, h in [(375, 667), (390, 844), (768, 1024), (1280, 800)]:
                     page.set_viewport_size({"width": w, "height": h})
                     page.wait_for_timeout(200)
@@ -143,7 +224,7 @@ def main() -> None:
                     assert not undersized, f"DraftBoard undersized (<24px) targets at {w}x{h}: {undersized}"
 
                 # 3. Mobile GlobalBanModal ergonomics & Portal ConfirmDialog audit (375x667)
-                print("[3/4] Auditing mobile GlobalBanModal ergonomics & Portal ConfirmDialog...")
+                print("[3/5] Auditing mobile GlobalBanModal ergonomics & Portal ConfirmDialog...")
                 page.set_viewport_size({"width": 375, "height": 667})
                 page.wait_for_timeout(200)
                 page.locator('button[title^="Global Ban ของ"]').first.click()
@@ -172,8 +253,8 @@ def main() -> None:
                 page.get_by_role("button", name="รีเซ็ตกระดาน").click()
                 assert not native_dialogs, f"Native browser dialogs detected: {native_dialogs}"
 
-                # 4. Explicit Side Control audit (no auto-swap on game win)
-                print("[4/4] Auditing explicit side control (no auto-swap when recording winner)...")
+                # 4. Open Swap Menu wrapping + Explicit Side Control audit (no auto-swap on game win)
+                print("[4/5] Auditing open swap-menu wrapping & explicit side control...")
                 page.set_viewport_size({"width": 1280, "height": 800})
                 page.evaluate(
                     """() => {
@@ -206,6 +287,17 @@ def main() -> None:
                     }"""
                 )
                 page.reload(wait_until="networkidle")
+                for w, h in [(375, 667), (1280, 800)]:
+                    page.set_viewport_size({"width": w, "height": h})
+                    page.wait_for_timeout(150)
+                    page.locator("button[aria-haspopup='menu']").first.click()
+                    page.wait_for_timeout(150)
+                    dom_res = _audit_menu_and_dom_clipping(page)
+                    assert dom_res["menuOverflow"] is None, f"Swap menu overflow at {w}x{h}: {dom_res['menuOverflow']}"
+                    assert not dom_res["docOverflow"], f"Swap menu caused doc overflow at {w}x{h}"
+                    page.keyboard.press("Escape")
+                    page.wait_for_timeout(100)
+
                 page.get_by_role("button", name="บันทึกผลเกม").click()
                 page.get_by_role("button", name="ALPHAX ชนะ").click()
 
@@ -216,6 +308,25 @@ def main() -> None:
                 assert stored["globalBans"]["blueSideTeam"] == "A", (
                     f"Unexpected auto side-swap! Expected blueSideTeam='A', got {stored['globalBans']['blueSideTeam']}"
                 )
+
+                # 5. Multi-view clipping, overflow & EN localization audit (#analytics, #tier-list, #lab)
+                print("[5/5] Auditing Scrim Analytics, Tier List & Combat Lab (th/en clipping & overflow)...")
+                for lang in ("th", "en"):
+                    page.evaluate(f"() => localStorage.setItem('minidraft_language', '{lang}')")
+                    page.reload(wait_until="networkidle")
+                    for w, h in [(375, 667), (1280, 800)]:
+                        page.set_viewport_size({"width": w, "height": h})
+                        for route, wait_ms in [("#analytics", 400), ("#tier-list", 400), ("#lab", 800)]:
+                            page.goto(f"{base_url}/{route}", wait_until="networkidle")
+                            page.wait_for_timeout(wait_ms)
+                            dom_res = _audit_menu_and_dom_clipping(page, check_en_leaks=(lang == "en"))
+                            assert not dom_res["docOverflow"], f"{route} docOverflow ({lang}, {w}x{h})"
+                            assert not dom_res["clipY"], f"{route} vertical clipY ({lang}, {w}x{h}): {dom_res['clipY']}"
+                            assert not dom_res["escapeBox"], (
+                                f"{route} escapeBox ({lang}, {w}x{h}): {dom_res['escapeBox']}"
+                            )
+                            assert not dom_res["enLeaks"], f"{route} Thai leaks in EN ({w}x{h}): {dom_res['enLeaks']}"
+                page.evaluate("() => localStorage.removeItem('minidraft_language')")
 
                 assert not errors, f"Console/page errors detected: {errors}"
                 browser.close()

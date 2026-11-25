@@ -27,6 +27,582 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-25 08:50 (UTC+7) — Free Tier History Limit Raised to 21 Games
+- Set FREE_HISTORY_LIMIT = 21 in src/db.py (was 14), since no user has saved more than 21 games. Synced Billing Sandbox copy, Draft Board upsell text, EN i18n entries, docs/SUBSCRIPTION_ROADMAP.md, and 	ests/test_billing.py.
+- Verified: pytest tests/test_billing.py (14 passed), oxlint (0 issues), vite build OK.
+\n## 📅 2026-11-25 08:37 (UTC+7) — Document `src/sample_analytics.py` in WikiSkill
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Documented `src/sample_analytics.py` (`get_sample_analytics`, `GET /analytics/sample`, `_sample_analytics_limiter`, `configs/sample_scrim_rpl_2026_summer.json`, server-side raw match isolation, and coarse `datePreset` scopes) in [`.wikiskill/wiki/system_architecture_and_data.md`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.wikiskill/wiki/system_architecture_and_data.md).
+
+### 📁 Modified Files
+- `.wikiskill/wiki/system_architecture_and_data.md`
+
+### 🧪 Verification
+- `python .wikiskill/skills/scripts/preflight_check.py`: `[OK] PREFLIGHT PASSED` (0 critical errors, 0 warnings across 46 Python files, 3 SLURM scripts, and production config).
+- `python .wikiskill/skills/scripts/validate_gating.py`: `[OK] GATING APPROVED` (Preflight, Data Guardian `130` heroes / `4,352` matches, Regression Guard `72/72` draft states + `3/3` duel benchmarks, and `tests/test_skills_sync.py` `2 passed`).
+
+---
+
+## 📅 2026-11-25 08:33 (UTC+7) — Condense Root AGENTS.md Under 24 KB Rule Budget
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Condensed root [`AGENTS.md`](file:///C:/Users/chaya/Documents/Program/Project/ROV/AGENTS.md) from `21,277 bytes` down to `12,830 bytes` (`17,214 bytes` total after `@~/.gemini/config/AGENTS.md` expansion, comfortably under the `24,000`-byte per-file rule cap), preserving all 15 non-negotiable guardrails, numeric thresholds, `scripts/sync_metadata.py` regex anchors, 10 skill listings, `frontend/AGENTS.md` pointer, and all dev/verification commands.
+
+### 📁 Modified Files
+- `AGENTS.md`
+
+### 🧪 Verification
+- Expanded size check (`AGENTS.md` + `~/.gemini/config/AGENTS.md`): `17,214 B` (`< 24,000 B` cap).
+- `sync_metadata.update_agents_md` parser compatibility: `EXACT_MATCH` (verified cleanly).
+- `.wikiskill/skills/scripts/preflight_check.py`: ran cleanly with 1 unrelated pre-existing alert (`src/sample_analytics.py` missing from `.wikiskill/wiki/*.md`).
+
+---
+
+## 📅 2026-11-25 08:30 (UTC+7) — Persist Anti-Slop UI Copy, i18n & Overflow Guardrails (Rules + Skill QA)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Global & Scoped Rules (`/learn`)**:
+  - Added universal Rule 12 (`Human UI Copy & Overflow Discipline`) in global `~/.gemini/config/AGENTS.md` (anti-slop UI tone, 1-language-per-label discipline, zero `line-clamp-1` on multi-stat cards, `min-w-0` on grid scrollers, `whitespace-normal` on menus inside `whitespace-nowrap` toolbars).
+  - Created directory-scoped [`frontend/AGENTS.md`](file:///C:/Users/chaya/Documents/Program/Project/ROV/frontend/AGENTS.md) and added `UI Copy, i18n & Text-Wrapping Standards` in [`DESIGN.md`](file:///C:/Users/chaya/Documents/Program/Project/ROV/DESIGN.md), avoiding bloat on root `AGENTS.md` (near the 24,000-byte per-file cap).
+- **Automated Static + Playwright QA (`frontend-e2e-inspector`)**:
+  - Created `.agents/skills/frontend-e2e-inspector/scripts/audit_copy_i18n.py` to enforce `0` missing EN keys in `englishMessages.ts`, zero AI-slop/path leaks, zero `line-clamp-1` in `components/lab/`, and zero inherited `whitespace-nowrap` popovers (plus `[WARN]` notices for legacy split `StableButtonLabel` / mixed glosses).
+  - Upgraded `.agents/skills/frontend-e2e-inspector/scripts/audit_ux_ui.py` to 5 stages, verifying open swap-menu `role="menu"` bounds (`375x667`, `1280x800`) and multi-view clipping/overflow/EN-leak checks across `#analytics`, `#tier-list`, and `#lab` in both `th` and `en`.
+  - Updated `.agents/skills/frontend-e2e-inspector/SKILL.md` and mirrored to `.claude/skills/frontend-e2e-inspector/`.
+
+### 📁 Modified Files
+- `C:\Users\chaya\.gemini\config\AGENTS.md`, `frontend/AGENTS.md`, `DESIGN.md`
+- `.agents/skills/frontend-e2e-inspector/SKILL.md`, `.agents/skills/frontend-e2e-inspector/scripts/audit_copy_i18n.py`, `.agents/skills/frontend-e2e-inspector/scripts/audit_ux_ui.py`
+- `.claude/skills/frontend-e2e-inspector/*` (mirrored)
+
+### 🧪 Verification
+- `ruff check --fix .agents/skills/frontend-e2e-inspector/scripts/` & `ruff format`: passed (`All checks passed!`)
+- `pytest -q --tb=short tests/test_skills_sync.py`: `2 passed in 0.23s`
+- `python .agents/skills/frontend-e2e-inspector/scripts/audit_copy_i18n.py`: `[PASS]` (`0` missing keys, `0` errors; `3` non-blocking legacy warnings surfaced)
+- `python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py`: `[PASS]`
+- `python .agents/skills/frontend-e2e-inspector/scripts/audit_ux_ui.py`: `[PASS]` (`[1/5]`–`[5/5]`)
+
+---
+
+## 📅 2026-11-25 08:15 (UTC+7) — Fix Side-Swap Dropdown Text Overflow in DraftBoardView
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Fixed inherited `whitespace-nowrap` overflow inside the DraftBoardView side-swap menu (`role="menu"`, `aria-label="ตัวเลือกสลับฝั่ง"`): added `whitespace-normal` and mobile-centered positioning (`left-1/2 -translate-x-1/2 sm:left-auto sm:right-0 sm:translate-x-0`) plus `max-w-full break-words` on menu item spans so long Thai/English descriptions wrap cleanly inside `w-64` without overflowing the viewport or container.
+
+### 📁 Modified Files
+- `frontend/src/components/DraftBoardView.tsx`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint`: 0 warnings, 0 errors (82 files)
+- `npm --prefix frontend run build`: `tsc -b && vite build` passed in 1.49s
+- `python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py`: `[PASS]`
+- `python .agents/skills/frontend-e2e-inspector/scripts/audit_ux_ui.py`: `[PASS]`
+- Live Playwright open-menu check (`verify_swap_menu.py`) across `th`/`en` and `375x667`/`1280x800`: `menuOverflowViewport: false`, `docOverflow: false`, `badItems: []` (mobile `375x667`: `left=84..right=340`, desktop `1280x800`: `left=735..right=991`).
+
+---
+
+## 📅 2026-11-25 00:40 (UTC+7) — Full Frontend Copy Polish, i18n Sync & Overflow/Clipping Fixes
+**Agent:** Antigravity / Planning & Execution
+
+### ✅ Completed Work
+- **AI-Slop Removal & Concise Copy Across All Views (TH & EN)**:
+  - Replaced academic formulas, mixed `Thai (English)` parentheticals, marketing hype, and leaked dev TODOs/paths across app shell, auth/billing/survey/privacy/admin views, draft board/practice/modals, Scrim Analytics, A4 Scouting Report PDF, Tier List, Matrix Sandbox, and Combat Lab.
+  - Localized remaining hardcoded strings and synced all `260` newly introduced UI/combat-calculator keys into `frontend/src/i18n/englishMessages.ts` (`0` missing keys; `1,876` EN entries).
+  - Updated `scoutingReportPdf.ts` to respect active UI language (`<html lang>`, date formatting, localized headers) and `minmax(0, 1fr)` A4 portrait grids.
+- **Mobile Layout, Clipping & Accessibility Fixes**:
+  - Removed vertical `line-clamp-1` clipping on `ArcanaBoard` stat cards (`CLIP_Y = 0` across TH/EN).
+  - Added `min-w-0` on `ScrimDashboardView` G1–G7 grid containers and `DraftBoardView` mobile tab, stacked `DuelSummary` hero columns on mobile (`sm:grid-cols-2`), widened `BlindCounterSlotCard` desktop grid (`xl:grid-cols-4`), removed broken `shrink-0` on `SkillDamageTable` skill buttons, enlarged item/enchantment clear buttons to `h-6 w-6` (24px WCAG AA), and fixed wrapping across modals (`HeroSkillsModal`, `ItemCardModal`, `AuthModal`, `AdminDashboardView`).
+
+### 📁 Modified Files
+- App shell & modals: `frontend/src/App.tsx`, `frontend/src/components/AuthModal.tsx`, `frontend/src/components/MobileNavDrawer.tsx`, `frontend/src/components/ConfirmDialog.tsx`, `frontend/src/components/ProfileView.tsx`, `frontend/src/components/BillingSandbox.tsx`, `frontend/src/components/TeamSandbox.tsx`, `frontend/src/api/team.ts`, `frontend/src/components/PricingSurveyModal.tsx`, `frontend/src/components/DonateModal.tsx`, `frontend/src/components/ErrorBoundary.tsx`, `frontend/public/privacy.html`, `frontend/src/components/AdminStatsModal.tsx`, `frontend/src/components/AdminDashboardView.tsx`
+- Draft & Practice: `frontend/src/components/ScreenshotImportModal.tsx`, `frontend/src/components/NewSeriesModal.tsx`, `frontend/src/components/AiPanel.tsx`, `frontend/src/components/TeamColumn.tsx`, `frontend/src/components/HeroGrid.tsx`, `frontend/src/components/ScoreBar.tsx`, `frontend/src/hooks/useDraftTimer.ts`, `frontend/src/components/DraftBoardView.tsx`, `frontend/src/components/FinishGameModal.tsx`, `frontend/src/components/GlobalBanModal.tsx`, `frontend/src/components/DraftHistoryModal.tsx`, `frontend/src/components/TournamentField.tsx`, `frontend/src/components/HeroPoolsModal.tsx`, `frontend/src/components/PracticeDraftView.tsx`, `frontend/src/components/PracticeHistoryModal.tsx`, `frontend/src/utils/draft.ts`, `frontend/src/hooks/useDraft.ts`
+- Scrim, Tier List, Matrix Lab, Combat Lab & i18n: `frontend/src/components/ScrimDashboardView.tsx`, `frontend/src/components/scrim/ScrimAdvancedCards.tsx`, `frontend/src/utils/scrimAdvancedStats.ts`, `frontend/src/components/scrim/ScoutingReportModal.tsx`, `frontend/src/utils/scoutingReportPdf.ts`, `frontend/src/components/tierlist/TierListView.tsx`, `frontend/src/components/meta_lab/MetaLab.tsx`, `frontend/src/components/lab/ArcanaBoard.tsx`, `frontend/src/components/lab/BuildPanel.tsx`, `frontend/src/components/lab/EnchantmentBoard.tsx`, `frontend/src/components/lab/EnchantmentSocket.tsx`, `frontend/src/components/lab/enchantmentFactions.ts`, `frontend/src/components/lab/DuelSummary.tsx`, `frontend/src/components/lab/HeroSkillsModal.tsx`, `frontend/src/components/lab/ItemCardModal.tsx`, `frontend/src/components/lab/LevelSweep.tsx`, `frontend/src/components/lab/StatSheet.tsx`, `frontend/src/components/lab/SkillDamageTable.tsx`, `frontend/src/i18n/englishMessages.ts`
+
+### 🧪 Verification
+- `check_i18n.py`: `Total keys: 1251 | In EN dict: 1876 | MISSING Thai/localized: 0`
+- `npm --prefix frontend run lint`: `0 warnings and 0 errors` (82 files)
+- `npm --prefix frontend run build`: `tsc -b && vite build` passed in `1.05s`
+- `python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py`: `[PASS]`
+- `python .agents/skills/frontend-e2e-inspector/scripts/audit_ux_ui.py`: `[PASS]`
+- Live Playwright DOM & leak scan across `th`/`en` and `375x667`/`1280x800` (Landing, DraftBoard, GlobalBanModal, Scrim Analytics, Tier List, Combat Lab): `PW_SCAN views=26 issues=0` (`0` document overflow, `0` clipY, `0` box escapes, `0` EN Thai leaks, `0` console/page errors).
+
+### ⚠️ Open Issues / Important Notes
+- All changes are uncommitted in the working tree for review.
+
+---
+
+## 📅 2026-11-24 23:35 (UTC+7) — Redesign Scrim Analytics into 4-Tab Dashboard, Unify Drawer Navigation & Upgrade A4 PDF Scouting Dossier
+**Agent:** Antigravity / Execution
+
+### ✅ Completed Work
+- **Unified Analytics Navigation & Drawer Label Alignment (`MobileNavDrawer.tsx`, `App.tsx`, `DraftBoardView.tsx`)**:
+  - Deleted `frontend/src/components/ScrimAnalyticsModal.tsx` (old "Quick Scrim Summary" popup) and wired a single `สถิติซ้อมทีม` action in `MobileNavDrawer.tsx` directly to `/#analytics`.
+  - Removed the `สถิติซ้อมทีม` tab from the top desktop bar and from the mobile mode list inside the drawer (`App.tsx`, `MobileNavDrawer.tsx`).
+  - Added `text-left` and `className="inline-grid text-left"` on `StableButtonLabel` across vertical drawer buttons (`MobileNavDrawer.tsx`) so shorter Thai labels align flush against their icons (`8px` gap matching adjacent drawer buttons).
+- **4-Tab Scrim Analytics Dashboard Redesign (`ScrimDashboardView.tsx`, `englishMessages.ts`)**:
+  - Removed the sticky section shortcut bar (`<nav aria-label="ทางลัดหัวข้อวิเคราะห์">`), `SectionPicker`, and header source-switcher buttons (`ประวัติส่วนตัว`, `ประวัติทีม`, `ข้อมูลตัวอย่าง`), unifying Personal, Team, and Demo tournament selection cleanly inside `<optgroup>` sections of the `ทัวร์นาเมนต์` `<select>` dropdown (`personal:<id>`, `team:<id>` listing each individual team tournament, and a single deduplicated `sample-league-2026` entry).
+  - Centered the `ดูแพ็ก` CTA label inside the Demo banner (`text-center` + `StableButtonLabel className="inline-grid text-center"`).
+  - Organized both Team View and All-Teams View below the 4 Executive KPIs into 4 focused tabs (`ภาพรวม & ฟอร์ม`, `ดราฟต์ & Pick/Ban`, `ตารางฮีโร่ & เมต้า`, `คอมโบ & Matchups`).
+- **Comprehensive 12-Section A4 PDF Scouting Dossier (`scoutingReportPdf.ts`, `ScoutingReportModal.tsx`, `index.css`)**:
+  - Replaced legacy body-visibility print CSS (`index.css`) with an isolated print-iframe A4 portrait generator (`frontend/src/utils/scoutingReportPdf.ts`) featuring all 12 analytics sections (Exec KPIs, G1–G7 strip, 5-Lane Pool + Squeeze Risk, Must-Ban & Reactive Bans, Blind/Counter + B1–R5 Pick Slots, Flex Value, Top 15 Hero Table, Comp Archetypes + Phase 1 Openings, Duos & Trios, Hero Counters, Direct Lane Matchups, Head-to-Head, and Period Diff) with hero portraits and `break-inside: avoid` print pagination.
+  - Enriched `ScoutingReportModal.tsx` on-screen preview with 5-lane depth, Must-Ban/Openings, Blind/Counter/Flex/Comps, Counters/Duos/Trios, Top 8 priority heroes, and Period Diff pass-through.
+- **Dev Server Proxy Fix (`frontend/vite.config.ts`)**:
+  - Added `analytics` to the dev API proxy regex forwarding `/analytics/*` requests on `:3000` to FastAPI `:8000`.
+
+### 📁 Modified Files
+- `frontend/src/components/ScrimAnalyticsModal.tsx` (deleted)
+- `frontend/src/utils/scoutingReportPdf.ts` (new)
+- `frontend/src/components/scrim/ScoutingReportModal.tsx`
+- `frontend/src/components/ScrimDashboardView.tsx`
+- `frontend/src/components/MobileNavDrawer.tsx`
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/App.tsx`
+- `frontend/src/index.css`
+- `frontend/src/i18n/englishMessages.ts`
+- `frontend/vite.config.ts`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): `0` warnings, `0` errors across 82 files.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): passed cleanly in `1.43s`.
+- `python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py`: `[PASS]` (43 JS / 1 CSS chunks, 130 avatars, media endpoints).
+- `python .agents/skills/frontend-e2e-inspector/scripts/audit_ux_ui.py`: `[PASS]` (mobile/desktop viewports, touch targets >= 24px, zero horizontal overflow).
+- Live Playwright E2E check against `http://localhost:3000` (backed by FastAPI `:8000`) verified all 8 UI/UX/PDF changes on desktop (`1440x900`) and mobile (`390x844`) with `0` console/page errors, `0` horizontal overflow, exact `8px` drawer icon-text gap, `0.0px` `ดูแพ็ก` center delta, and valid `55,810`-char A4 scouting dossier HTML.
+
+---
+
+## 📅 2026-11-24 20:42 (UTC+7) — Move RPL 2026 Summer Sample Analytics Strictly Server-Side (`GET /analytics/sample`)
+**Agent:** Antigravity / Execution
+
+### ✅ Completed Work
+- **Server-Side Aggregation (`src/sample_analytics.py`, `src/api.py`, `configs/sample_scrim_rpl_2026_summer.json`)**:
+  - Moved the 291-game / 76-series anonymized RPL 2026 Summer dataset from the frontend bundle into server-only `configs/sample_scrim_rpl_2026_summer.json` and deleted `frontend/src/data/sampleScrimGames.ts` so zero raw draft records or true pick orders are shipped to browsers or static mounts.
+  - Implemented `src/sample_analytics.py` (`@lru_cache` aggregated core KPIs, Blue/Red splits, Wilson CI, Bo5/Bo7, G1–G7, EWMA, Pick/Ban, Reactive Bans, Hero Table, Duos, Enemy/Lane Matchups, H2H, plus all 7 Category 1 metrics and Period Diff) exposed via rate-limited `GET /analytics/sample`.
+  - Enforced coarse-grained filters (`team`, `opponent`, `date_preset = all|last7|last30`, `period_mode`) with no custom-date or single-series isolation in sample mode to prevent per-game differencing.
+- **Frontend Integration (`frontend/src/api/sampleAnalytics.ts`, `frontend/src/components/ScrimDashboardView.tsx`, `frontend/src/components/ScrimAnalyticsModal.tsx`, `frontend/src/components/scrim/ScrimAdvancedCards.tsx`, `frontend/src/i18n/englishMessages.ts`)**:
+  - Updated both the full Scrim Analytics Dashboard and quick Scrim Modal to fetch aggregated stats from `GET /analytics/sample` when viewing Demo/Sample data.
+- **Automated Tests (`tests/test_api.py`)**:
+  - Added `test_sample_scrim_analytics_aggregated_no_raw_leak` verifying `291` games / `76` series / `9` teams, `date_preset` filtering, `422` validation, and zero leakage of raw draft fields (`bluePicks`, `redPicks`, `blueBans`, `redBans`, `pickLanes`).
+
+### 📁 Modified Files
+- `configs/sample_scrim_rpl_2026_summer.json` (new, server-only)
+- `src/sample_analytics.py` (new)
+- `src/api.py`
+- `frontend/src/api/sampleAnalytics.ts` (new)
+- `frontend/src/components/ScrimDashboardView.tsx`
+- `frontend/src/components/ScrimAnalyticsModal.tsx`
+- `frontend/src/components/scrim/ScrimAdvancedCards.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `frontend/src/data/sampleScrimGames.ts` (deleted)
+- `tests/test_api.py`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check --fix .` & `ruff format .`: verified cleanly.
+- `pytest tests/test_api.py tests/test_security.py -q --tb=short`: all passed.
+- `npm --prefix frontend run lint` & `npm --prefix frontend run build`: verified cleanly (`0` warnings/errors, zero `sampleScrimGames` chunk in `frontend/dist/assets/`).
+- `inspect_frontend_e2e.py`, `audit_ux_ui.py`, and live Playwright verification of `#analytics` + Quick Modal: verified `291` games / `76` series, `VGD` `68` games, `last30` filter, Period Diff toggle, Scouting Report modal, and `0` console/page errors.
+
+---
+
+## 📅 2026-11-24 20:30 (UTC+7) — Expand SAMPLE LEAGUE 2026 to Full RPL 2026 Summer (291 Games / 76 Series)
+**Agent:** Antigravity / Execution
+
+### ✅ Completed Work
+- **Full Season Sample Dataset (`frontend/src/data/sampleScrimGames.ts`)**:
+  - Replaced the previous 73-game (18-series) FS Winter sample dataset with all **291 games / 76 series / 9 teams** from **RPL 2026 Summer** (`RoV_Pro_League_2026_Summer`, Group Stage + Playoffs) under `SAMPLE LEAGUE 2026`.
+  - Applied 100% verified chronological `bluePicks` / `redPicks` from `data/true_pick_order.json` paired with Liquipedia role-ordered `pickLanes` from `data/matches_draft_full.json`, mapped cleanly to the 9 fictional team codes (`FS -> VGD`, `BRU -> AET`, `KOG -> SOL`, `SLX -> KRN`, `EA -> NXS`, `BAC -> TTN`, `TEN -> ORN`, `GJC -> ZNT`, `HD -> CBL`) and relative `daysAgo` offsets (`1`–`65`).
+- **Updated Sample Fallback Counts (`frontend/src/components/ScrimDashboardView.tsx`, `frontend/src/components/ScrimAnalyticsModal.tsx`)**:
+  - Updated fallback `sampleGames?.length ?? 73` literals to `291` across all Demo/Sample badges and banners.
+
+### 📁 Modified Files
+- `frontend/src/data/sampleScrimGames.ts`
+- `frontend/src/components/ScrimDashboardView.tsx`
+- `frontend/src/components/ScrimAnalyticsModal.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): verified cleanly (`0` warnings, `0` errors).
+- `npm --prefix frontend run build` (`tsc -b && vite build`): verified cleanly.
+- `python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py`: `[PASS]`.
+- Playwright E2E check on `#analytics`: verified `291` games / `76` series / `9` teams in All-Teams View and `68` games in `VGD` Team View with `0` console/page errors.
+
+---
+
+## 📅 2026-11-24 20:25 (UTC+7) — Category 1 Draft Analytics Suite (7 Advanced Scrim Features + Scouting Report)
+**Agent:** Antigravity / Execution
+
+### ✅ Completed Work
+- **Advanced Draft Analytics Engine (`frontend/src/utils/scrimAdvancedStats.ts`)**:
+  - **Positional Pool Depth & Global Ban Squeeze Risk**: Computes per-lane (`DSL`, `JGL`, `MID`, `ADL`, `SUP`) unique hero counts, Shannon Entropy Effective Pool `exp(H)`, pool evenness, top-hero dependency share, and squeeze-risk rating (`high`/`medium`/`low`), supporting both Team View and All-Teams View.
+  - **Blind-Pick vs Counter-Pick WR & Draft Slot Performance**: Splits hero WR across early blind picks (`P1–P3`) vs late counter picks (`P4–P5`) with classification (`blind_safe`, `counter_specialist`, `blind_risk`, `balanced`), plus WR breakdown across all 7 chronological draft pick slots (`B1`, `R1-2`, `B2-3`, `R3`, `R4`, `B4-5`, `R5`).
+  - **Flex-Pick Effectiveness**: Identifies multi-lane flex picks (`>= 2` lanes), breaks down per-lane WR, and compares team WR in games with vs without flex picks.
+  - **Core-Axis & Trio Synergy**: Aggregates 3-hero combinations (`C(5,3)`) plus `Jungle + Mid + Roam` tempo cores with Empirical Bayes shrinkage.
+  - **Team Comp Archetypes & Phase-1 Predictability**: Classifies 5-hero compositions (`frontline_teamfight`, `dive_pick`, `double_carry_poke`, `protect_utility`, `balanced`), surfaces Archetype-vs-Archetype WR matchups, computes Phase-1 opening entropy (`openingDiversityPct`), and tracks repeated opening pairs (`B1+B2` / `R1+R2`).
+  - **Period / Tournament Diff**: Compares two time windows (`split_half`, `last7_vs_prev`, or 2 tournaments) with Blue/Red WR shifts and rising/falling hero priority deltas (`computePeriodDiff`, `splitGamesForPeriodDiff`).
+  - **Scouting Report Markdown Builder**: Formats all tactical metrics into copy-ready Markdown (`buildScoutingReportMarkdown`).
+- **Modular Collapsible Cards & 1-Click Scouting Report (`frontend/src/components/scrim/ScrimAdvancedCards.tsx`, `frontend/src/components/scrim/ScoutingReportModal.tsx`, `frontend/src/components/ScrimDashboardView.tsx`, `frontend/src/index.css`, `frontend/src/i18n/englishMessages.ts`)**:
+  - Added 3 toggleable sections (`คลังแยกเลน & ตัว Flex`, `Blind/Counter & สไตล์คอมพ์`, `เทียบช่วงเวลา / แพตช์`) to `DASHBOARD_SECTIONS` and sticky nav, with per-card collapse/expand (`พับเก็บ` / `กางดู`), tab switches, and scrollable expand toggles.
+  - Added a header `Scouting Report` button opening a print-ready (`@media print` in `index.css`) 1-page modal with clipboard copy and PDF export.
+  - Added complete English translations across all new UI copy in `englishMessages.ts`.
+
+### 📁 Modified Files
+- `frontend/src/utils/scrimAdvancedStats.ts` (new)
+- `frontend/src/components/scrim/ScrimAdvancedCards.tsx` (new)
+- `frontend/src/components/scrim/ScoutingReportModal.tsx` (new)
+- `frontend/src/components/ScrimDashboardView.tsx`
+- `frontend/src/index.css`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): `0 warnings`, `0 errors` across 82 files.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): verified cleanly (`1.34s`).
+- `python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py`: `[PASS]`.
+- `python .agents/skills/frontend-e2e-inspector/scripts/audit_ux_ui.py`: `[PASS]`.
+- Custom Playwright E2E + visual screenshot check (`1440x900` desktop & `390x844` mobile, Team View & All-Teams View, tabs, card collapse/expand, Scouting Report modal + clipboard copy): `overflowX: false`, all touch targets `>= 24px`, `0` console/page errors.
+
+---
+
+## 📅 2026-11-24 20:10 (UTC+7) — Balance Phase Pick Card Height & Align Multi-Column Cards to Top
+**Agent:** Antigravity / Execution
+
+### ✅ Completed Work
+- **Balanced Two-Column Card Heights (`frontend/src/components/ScrimDashboardView.tsx`)**:
+  - Updated `#scrim-draft` and `#scrim-matchups` grid rows in both Team View and All-Teams View to use `items-start` so shorter or unexpanded cards never stretch into dead vertical whitespace beside taller adjacent panels.
+  - Added configurable `previewLimit` on `PhasePickCard` (`9` rows in Team View alongside Ban Stats + Reactive Phase-2 Bans, `6` rows in All-Teams View alongside Ban/Contest Top 6) with `max-h-[28rem]` expanded scrolling for 9-row previews.
+
+### 📁 Modified Files
+- `frontend/src/components/ScrimDashboardView.tsx`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): `0 warnings`, `0 errors` across 79 files.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): verified cleanly.
+- `python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py`: `[PASS]`.
+- `python .agents/skills/frontend-e2e-inspector/scripts/audit_ux_ui.py`: `[PASS]`.
+- Visual screenshot inspection of `#scrim-draft` (`1440x900`) and overflow verification: balanced card heights, zero empty vertical gaps, `overflowX: false`, `0` console errors.
+
+---
+
+## 📅 2026-11-24 20:06 (UTC+7) — Slim G1–G7 Bar Columns & Balanced Form Row Proportions
+**Agent:** Antigravity / Execution
+
+### ✅ Completed Work
+- **Sleek G1–G7 Bars (`frontend/src/components/ScrimDashboardView.tsx`)**:
+  - Rebalanced `#scrim-form` in both Team View and All-Teams View from `lg:grid-cols-3` (`2:1`) to `lg:grid-cols-12` (`7:5`), giving Recent Form / Team Standings more breathing room and narrowing the G1–G7 card cleanly.
+  - Replaced full-width bar blocks with centered `24px` (`w-6`) vertical bars inside `h-20` containers and stacked `%` + `W-L` labels (`min-w-[82px]` on mobile) so bars look crisp and never crowd at `1024px–1280px`.
+
+### 📁 Modified Files
+- `frontend/src/components/ScrimDashboardView.tsx`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): `0 warnings`, `0 errors` across 79 files.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): verified cleanly.
+- `python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py`: `[PASS]`.
+- `python .agents/skills/frontend-e2e-inspector/scripts/audit_ux_ui.py`: `[PASS]`.
+- Visual screenshot inspection of `#scrim-form` (`1440x900`) and layout overflow check (`1280x800`, `390x844`): verified sleek proportions, `overflowX: false`, `0` console errors.
+
+---
+
+## 📅 2026-11-24 19:45 (UTC+7) — Two-Tab Enemy Matchup Card (Tough vs Favorable) in Scrim Analytics
+**Agent:** Antigravity / Execution
+
+### ✅ Completed Work
+- **Split Negative & Positive Enemy Deltas (`frontend/src/utils/scrimStats.ts`, `frontend/src/components/ScrimDashboardView.tsx`, `frontend/src/i18n/englishMessages.ts`)**:
+  - Added `favorableEnemies` (`threatDeltaPct > 0`, sorted descending) alongside `toughestEnemies` (`threatDeltaPct < 0`, sorted ascending) in `ScrimAnalyticsSummary`.
+  - Replaced the single enemy list card with a compact 2-tab panel (`ผลงานเมื่อเจอฮีโร่ฝั่งตรงข้าม`) switching cleanly between `ฮีโร่ที่แพ้ทาง` (`Tough Picks`, red negative deltas with `แพ้ทางจริง`) and `รับมือได้ดี` (`Favorable`, green positive deltas with `ชนะทางจริง`), each retaining independent `ดูทั้งหมด ({n})` / `ย่อกลับ` scrollable expansion.
+  - Added English translations in `englishMessages.ts`.
+
+### 📁 Modified Files
+- `frontend/src/utils/scrimStats.ts`
+- `frontend/src/components/ScrimDashboardView.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): `0 warnings`, `0 errors` across 79 files.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): verified cleanly.
+- `python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py`: `[PASS]`.
+- `python .agents/skills/frontend-e2e-inspector/scripts/audit_ux_ui.py`: `[PASS]`.
+- Playwright E2E on `/#analytics` (`VGD` sample league, `1440x900` & `390x844`): verified `ฮีโร่ที่แพ้ทาง` shows only negative deltas (`< 0%`), `รับมือได้ดี` shows only positive deltas (`> 0%`), both tabs expand/scroll cleanly, `overflowX: false`, and `0` console/page errors.
+
+---
+
+## 📅 2026-11-24 19:29 (UTC+7) — Expand-to-Scroll Toggle Across All Scrim Analytics Cards
+**Agent:** Antigravity / Execution
+
+### ✅ Completed Work
+- **Full List Computation (`frontend/src/utils/scrimStats.ts`)**:
+  - Removed fixed display caps (`.slice(0, 5/6/8)`) on `topDuos`, `toughestEnemies`, `laneStrengths`, `laneWeaknesses`, `protectiveBans`, `phase1Top`, `phase2Top`, `bansAgainstUs`, `bansByUs`, `topBans`, and `topContested` across both `computeScrimAnalytics` and `computeAllTeamsAnalytics` (preserving `ewmaSeries` 30-game window and per-opponent `topEnemies` cap).
+- **Expand/Collapse Scrollable Cards & i18n (`frontend/src/components/ScrimDashboardView.tsx`, `frontend/src/i18n/englishMessages.ts`)**:
+  - Added reusable `ExpandScrollButton` (`ดูทั้งหมด ({n})` / `ย่อกลับ`) across `PhasePickCard`, `DuosCard`, Team Ban & Protective Ban cards, `ฮีโร่ฝั่งตรงข้ามที่แพ้ทาง`, Same-Lane Matchups, and All-Teams Ban/Contested & Lane Matchup cards: cards preview the top 5/6/8 rows by default without clutter, and toggle into a bounded `overflow-y-auto` scrollable list showing all qualifying entries.
+  - Updated `ฮีโร่ฝั่งตรงข้ามที่แพ้ทาง` delta coloring dynamically (`text-red` when negative, `text-good` when non-negative) when viewing full opponent lists, and added `"ย่อกลับ": "Show Less"` to `englishMessages.ts`.
+
+### 📁 Modified Files
+- `frontend/src/utils/scrimStats.ts`
+- `frontend/src/components/ScrimDashboardView.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): `0 warnings`, `0 errors` across 79 files.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): verified cleanly.
+- `python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py`: `[PASS]`.
+- `python .agents/skills/frontend-e2e-inspector/scripts/audit_ux_ui.py`: `[PASS]`.
+- Playwright verification on `/#analytics` (73 sample games, `VGD` & `ทุกทีม` views across `1440x900` & `390x844`): confirmed `ดูทั้งหมด` / `ย่อกลับ` toggles expand item counts into `overflow-y: auto` containers cleanly, `overflowX: false`, and `0` console/page errors.
+
+---
+
+## 📅 2026-11-24 19:14 (UTC+7) — Plain-Language First/Last Pick Labels in Scrim Hero Table
+**Agent:** Antigravity / Execution
+
+### ✅ Completed Work
+- **Analytics Hero Table Readability (`frontend/src/components/ScrimDashboardView.tsx`, `frontend/src/i18n/englishMessages.ts`)**:
+  - Replaced cryptic `B1:{n}` / `R5:{n}` shorthand in the Hero Table's Phase-1 column with a compact 2-line stacked display showing `เปิดแรก {n}` (`First {n}`, blue) and `ปิดท้าย {n}` (`Last {n}`, red) with explanatory tooltips underneath the Phase-1 percentage.
+  - Updated the column header tooltip and added matching English translations in `englishMessages.ts`.
+
+### 📁 Modified Files
+- `frontend/src/components/ScrimDashboardView.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): `0 warnings`, `0 errors` across 79 files.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): verified cleanly.
+- `python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py`: `[PASS]`.
+- `python .agents/skills/frontend-e2e-inspector/scripts/audit_ux_ui.py`: `[PASS]`.
+
+---
+
+## 📅 2026-11-24 18:48 (UTC+7) — Per-Game History Lock & Board Read-Only Mode
+**Agent:** Antigravity / Execution
+
+### ✅ Completed Work
+- **Locked Game Persistence & Guards (`src/schemas.py`, `frontend/src/types/draft.ts`, `frontend/src/hooks/useDraft.ts`)**:
+  - Added `locked: bool = False` to `ArchivedDraftGameSchema` and `locked?: boolean` to `RecordedDraftGame`, preserved across session hydration, remote sync, and JSON import/export (`parseImportedDraftGames`, `normalizeSessionPayload`).
+  - Added `toggleRecordedGameLock`, `isCurrentGameLocked`, and `currentSavedGameId` in `useDraft`, and guarded `upsertSeriesGame`, `recordGameToSeries`, `saveCurrentDraftSnapshot`, `setRecordedGameWinner`, `deleteRecordedGame`, `deleteSeriesGroup`, `clearAllHistory`, and game switching (`selectGameNumber`, `loadRecordedGame`) so locked games cannot be overwritten or deleted.
+- **History Lock Toggle & Read-Only Draft Board (`frontend/src/components/DraftHistoryModal.tsx`, `frontend/src/components/DraftBoardView.tsx`, `frontend/src/i18n/englishMessages.ts`)**:
+  - Added a Lock/Unlock icon toggle button to each personal-history game row in `DraftHistoryModal`; when locked, winner toggles, single-game delete, group delete (when containing locked games), and clear-all history are disabled, and `"โหลดขึ้นกระดาน"` carries a read-only tooltip.
+  - When a locked game is active on `DraftBoardView`, replaced the Save/Result button slot inline with a compact `ล็อกอยู่` (`Locked`) unlock button sharing `RESULT_MESSAGES` width (`alternatives`) for 0px layout shift (no extra banner row), and disabled HeroGrid/AiPanel/TeamColumn slot edits, Global Ban controls, Swap Sides, Undo/Redo/Reset, Save/Update Result, and mutating keyboard shortcuts (`Ctrl+Z`, `Ctrl+Y`, `Enter`).
+  - Added matching English translations in `englishMessages.ts`.
+
+### 📁 Modified Files
+- `src/schemas.py`
+- `frontend/src/types/draft.ts`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/DraftHistoryModal.tsx`
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+
+### 🧪 Verification
+- `ruff check --fix src/schemas.py` & `ruff format src/schemas.py`: passed (`All checks passed!`).
+- `pytest tests/test_api.py -q --tb=short`: `47 passed` (1 Starlette deprecation warning).
+- `npm --prefix frontend run lint` (`oxlint`): `0 warnings`, `0 errors` across 79 files.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): built cleanly.
+- `python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py`: `[PASS]`.
+- `python .agents/skills/frontend-e2e-inspector/scripts/audit_ux_ui.py`: `[PASS]`.
+- Playwright E2E (`1440x900` & `390x844`): verified Lock toggle -> disabled winner/delete controls -> Load Draft -> compact inline `ล็อกอยู่` (`Locked`) button without extra banner -> disabled Swap/Undo/Reset -> inline unlock re-enable, `overflowX: false`, and `0` console/page errors.
+
+---
+
+## 📅 2026-11-24 18:35 (UTC+7) — Two-Mode Side Swap on Complete Drafts (Team Only vs Team & Board Heroes)
+**Agent:** Antigravity / Execution
+
+### ✅ Completed Work
+- **Complete-Draft Board Mirroring (`frontend/src/utils/draft.ts`, `frontend/src/hooks/useDraft.ts`)**:
+  - Added `swap_board_sides` action to `draftReducer` (guarded strictly to complete 18-step drafts: 5 Blue picks, 5 Red picks, 4 Blue bans, 4 Red bans) that mirrors `bluePicks ⇄ redPicks` and `blueBans ⇄ redBans`, rebuilds Undo `history` via `reconstructDraftHistory()`, clears `future`/`prediction`/`winHistory`, and temporarily inverts `blueWinRate` (`100 - blueWinRate`) while `/predict` refreshes.
+  - Added `swapTeamAndBoardSides()` in `useDraft` to atomically toggle `globalBans.blueSideTeam` (`"A" ⇄ "B"`) and dispatch `swap_board_sides`, keeping hero-keyed `pickLanes` and `lateHeroMap` intact.
+- **Draft Board UI Menu & i18n (`frontend/src/components/DraftBoardView.tsx`, `frontend/src/i18n/englishMessages.ts`)**:
+  - Preserved instant 1-click team-only side swapping before draft completion (`!canSwapBoardAndTeams`), and upgraded the Swap button to a 2-option accessible `role="menu"` popover (`สลับเฉพาะฝั่งทีม` vs `สลับทั้งทีมและฮีโร่บนกระดาน`) with `ChevronDown` indicator, outside-click dismissal, and `Escape` close support once all 10 picks are completed.
+  - Added matching English translations in `englishMessages.ts`.
+
+### 📁 Modified Files
+- `frontend/src/utils/draft.ts`
+- `frontend/src/hooks/useDraft.ts`
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): `0 warnings`, `0 errors` across 79 files.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): built cleanly in 1.24s.
+- `python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py`: `[PASS]`.
+- `python .agents/skills/frontend-e2e-inspector/scripts/audit_ux_ui.py`: `[PASS]`.
+- Playwright E2E verification (`1440x900` & `390x844`): confirmed 1-click swap at step 0, 2-option swap menu at step 18, team-only preservation of picks/bans, full mirroring (`bluePicks ⇄ redPicks`, `blueBans ⇄ redBans`, `blueSideTeam`), `overflowX: false`, and `0` console/page errors.
+
+---
+
+## 📅 2026-11-24 18:06 (UTC+7) — Comprehensive Frontend UI/UX & Layout Overhaul
+**Agent:** Antigravity / Execution
+
+### ✅ Completed Work
+- **Navigation, App Chrome & Responsive Layout (`frontend/src/App.tsx`, `frontend/src/components/MobileNavDrawer.tsx`, `frontend/src/components/DraftBoardView.tsx`, `frontend/src/components/ScoreBar.tsx`)**:
+  - Made the top-left MiniDraft brand clickable to return to `#draft`, converted the `< lg` active tab pill into an interactive drawer trigger with `ChevronDown`, added a desktop `สถิติซ้อมทีม` (`#analytics`) nav item, moved Mode Navigation (`โหมดใช้งาน`) to the top of `MobileNavDrawer` with Analytics/Plans links, added `MiniDraftLogo` on auth loading splash, and removed redundant secondary promo banners and gold-fill inflation on non-CTA controls.
+  - Added a 50% midpoint hairline to the `ScoreBar` win-rate meter, replaced mobile cryptic pool badges (`H`/`L`) with `P:HI` / `P:LO` / `P:OFF`, wired live `<AiPanel variant="ribbon" />` on active mobile drafts, and removed rounded corner mismatches against chamfered containers.
+- **Draft Board, Grid & AI Hints (`frontend/src/components/TeamColumn.tsx`, `frontend/src/components/AiPanel.tsx`, `frontend/src/components/HeroGrid.tsx`, `frontend/src/components/PracticeDraftView.tsx`, `frontend/src/components/tierlist/TierListView.tsx`)**:
+  - Collapsed duplicate empty Global Ban buttons in `TeamColumn`, added `เลนซ้ำ` warnings and hover `Pencil` indicators on editable slots, removed `POLICY HEAD` jargon and OS emojis in `AiPanel` (replaced with Lucide icons + shortened `DSL`/`JGL`/`MID`/`ADL`/`SUP` lane chips and open-lane green dots), and locked gold `#1` ring/badge exclusively to the top recommendation in `HeroGrid` (`grid-cols-[repeat(auto-fill,minmax(78px,1fr))]`).
+  - Guarded Practice mode resets with `ConfirmDialog`, fixed hint-off side labels, added an `"AI กำลังคิด…"` status banner, and formatted underscores out of Tier List lane labels (`PRO META 2026`).
+- **Accessible Modals & Workflows (`frontend/src/components/Modal.tsx`, `frontend/src/components/AuthModal.tsx`, `frontend/src/components/GlobalBanModal.tsx`, `frontend/src/components/HeroPoolsModal.tsx`, `frontend/src/components/DraftHistoryModal.tsx`, `frontend/src/components/NewSeriesModal.tsx`)**:
+  - Added `createPortal(..., document.body)`, reference-counted body scroll locks, and coarse-pointer auto-focus protection in `Modal.tsx`.
+  - Scoped `AuthModal` scrolling cleanly on mobile, separated Google/Discord OAuth above username tabs, removed duplicate desktop Guest CTA, gated `GlobalBanModal` clear-all behind `ConfirmDialog` in the footer, removed click-to-sort teleportation in `HeroPoolsModal` with a sticky footer and removable chip strip, and unified mobile scrolling + team search in `DraftHistoryModal`.
+- **Analytics, Profile, Team & Billing (`frontend/src/components/ScrimDashboardView.tsx`, `frontend/src/components/ScrimAnalyticsModal.tsx`, `frontend/src/components/ProfileView.tsx`, `frontend/src/components/TeamSandbox.tsx`, `frontend/src/components/BillingSandbox.tsx`, `frontend/src/i18n/englishMessages.ts`)**:
+  - Added a sticky quick-jump section bar, accessible team/opponent buttons, mobile snap-scroll `G1–G7` cards, `HeroPortrait` thumbnails in same-lane/enemy/ban rows, plain-language coaching labels, and CSS-token SVG colors while preserving `SAMPLE LEAGUE 2026` access for Paid users.
+  - Balanced `ProfileView.tsx` into a 2-column desktop grid (`Account` 5 cols + `Billing`/`Team` stacked in 7 cols) so non-team Pro/Free accounts have no empty right column, added `@username` copy action and character counter, surfaced clear seat-limit/destructive states in `TeamSandbox.tsx`, localized `"โหมดทดสอบ"` and comparison sticky column in `BillingSandbox.tsx`, and added matching English i18n entries in `englishMessages.ts`.
+
+### 📁 Modified Files
+- `frontend/src/App.tsx`, `frontend/src/components/MobileNavDrawer.tsx`, `frontend/src/components/Modal.tsx`
+- `frontend/src/components/DraftBoardView.tsx`, `frontend/src/components/ScoreBar.tsx`, `frontend/src/components/TeamColumn.tsx`, `frontend/src/components/AiPanel.tsx`, `frontend/src/components/HeroGrid.tsx`
+- `frontend/src/components/AuthModal.tsx`, `frontend/src/components/GlobalBanModal.tsx`, `frontend/src/components/HeroPoolsModal.tsx`, `frontend/src/components/DraftHistoryModal.tsx`, `frontend/src/components/NewSeriesModal.tsx`
+- `frontend/src/components/ScrimDashboardView.tsx`, `frontend/src/components/ScrimAnalyticsModal.tsx`, `frontend/src/components/PracticeDraftView.tsx`, `frontend/src/components/tierlist/TierListView.tsx`
+- `frontend/src/components/ProfileView.tsx`, `frontend/src/components/TeamSandbox.tsx`, `frontend/src/components/BillingSandbox.tsx`, `frontend/src/i18n/englishMessages.ts`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): 0 warnings, 0 errors across 79 files.
+- `npm --prefix frontend run build` (`tsc -b && vite build`): built cleanly in 1.07s (42 JS chunks, 1 CSS chunk).
+- `python .agents/skills/frontend-e2e-inspector/scripts/inspect_frontend_e2e.py`: `[PASS]` (bundle, 130 hero avatars, skill/status endpoints, item cards).
+- `python .agents/skills/frontend-e2e-inspector/scripts/audit_ux_ui.py`: `[PASS]` (AuthLanding, Draft Board across `375x667`, `390x844`, `768x1024`, `1280x800`, GlobalBanModal, Portal ConfirmDialog, explicit side-lock).
+- Playwright visual screenshot & DOM audit across `1440x900` and `390x844` (including settled modals `NewSeries`, `GlobalBan`, `HeroPools`, `DraftHistory`, `ScrimAnalytics`, plus authenticated Paid `#plans`, `#profile`, `#analytics` `SAMPLE LEAGUE 2026`): 0 console/page errors, `overflowX: false`, all interactive buttons/links >= 24px.
+
+---
+
+## 📅 2026-11-24 11:52 (UTC+7) — Enable Sample Mode Toggle for Paid Users
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- **Paid-User Sample Dataset Access (`frontend/src/components/ScrimDashboardView.tsx`, `frontend/src/components/ScrimAnalyticsModal.tsx`, `frontend/src/i18n/englishMessages.ts`)**:
+  - Extended the analytics source state from `"personal" | "team"` to `"personal" | "team" | "sample"` (persisted for Paid users under `minidraft_scrim_filters_v1:paid` in `localStorage`).
+  - Added a `ข้อมูลตัวอย่าง` source tab for Paid users in both the full-screen `ScrimDashboardView` (`#analytics`) and the `ScrimAnalyticsModal` quick preview, defaulting to `SAMPLE LEAGUE 2026` + `VGD` (`73` anonymized games) when activated and resetting filters back cleanly when returning to personal/team history.
+  - Kept `sampleScrimGames` lazy-loaded only when `demoMode || source === "sample"` and rendered a neutral read-only banner (without upgrade CTAs) when Paid users inspect the sample dataset.
+  - Prevented async `loadTeamHistory` completion from overwriting a persisted `"sample"` selection when a Paid user has no `team_pro` roster.
+  - Added `SAMPLE LEAGUE 2026` as an always-visible option in the Paid-user tournament dropdown of `ScrimDashboardView`; selecting it enters sample mode (VGD, read-only banner) and selecting any other tournament returns to personal history. The sample chunk still loads lazily only after selection.
+
+### 📁 Modified Files
+- `frontend/src/components/ScrimDashboardView.tsx`
+- `frontend/src/components/ScrimAnalyticsModal.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+
+### 🧪 Verification
+- Verified `npm --prefix frontend run lint` (`oxlint`), `npm --prefix frontend run build` (`tsc -b && vite build`), and Playwright Chromium E2E testing for Paid users toggling between `ประวัติส่วนตัว` and `ข้อมูลตัวอย่าง`.
+
+---
+
+## 📅 2026-11-24 11:43 (UTC+7) — Simplify Scrim Analytics Recent Form & Phase-2 Ban Cards
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- **Player-Friendly Analytics Visuals (`frontend/src/components/ScrimDashboardView.tsx`, `frontend/src/i18n/englishMessages.ts`)**:
+  - Replaced the technical `"แนวโน้มฟอร์มล่าสุด (EWMA Momentum)"` header and raw EWMA percentage delta with `"ฟอร์มช่วงหลัง (Recent Form)"`, explicit `"ชนะ X จาก Y เกมล่าสุด (%)"` copy, a plain-language trend badge (`ฟอร์มกำลังขึ้น` / `ฟอร์มทรงตัว` / `ฟอร์มดรอปลง`), a `W`/`L` result strip for the last 10 games, and a clear `"จุดเขียว = ชนะ · จุดแดง = แพ้"` legend.
+  - Upgraded the `"แบนแก้ทาง Phase 2"` text chips to `"คู่แข่งมักแบนตามหลังเราหยิบ (Phase 2)"` with a 1-line explanation, hero portraits on both sides (`HeroPortrait`), and plain `X ครั้ง` counts (moving the `Lift` multiplier into the hover tooltip).
+
+### 📁 Modified Files
+- `frontend/src/components/ScrimDashboardView.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): passed (`0` warnings, `0` errors).
+- `npm --prefix frontend run build` (`tsc -b && vite build`): passed.
+- Playwright Chromium (`1440x900` on `http://localhost:3000/#analytics`): verified both redesigned cards, `W`/`L` strip, Phase-2 ban hero portraits, and `0` console/page errors.
+
+---
+
+## 📅 2026-11-24 11:26 (UTC+7) — Lazy-Loaded Read-Only Scrim Analytics Sample Mode for Free & Guest Users
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- **Anonymized Lazy Sample Dataset (`frontend/src/data/sampleScrimGames.ts`)**:
+  - Generated an anonymized 73-game (18-series, 9 fictional teams: `VGD`, `AET`, `SOL`, `KRN`, `NXS`, `TTN`, `ORN`, `ZNT`, `CBL`, tournament `SAMPLE LEAGUE 2026`) dataset derived from tournament matches, computing relative `daysAgo` timestamps dynamically from `now` so `All`, `Last 7 days`, `Last 30 days`, and `Custom dates` filters work at any time.
+- **Interactive Demo Experience (`ScrimDashboardView.tsx`, `ScrimAnalyticsModal.tsx`, `englishMessages.ts`)**:
+  - Opened full read-only interactive filtering and charts in both `ScrimAnalyticsModal` and `#analytics` (`ScrimDashboardView`) for Free/Guest users via dynamic `import("../data/sampleScrimGames")` (zero bundle impact on Draft Board or paid users), defaulting first-time Demo filters to `SAMPLE LEAGUE 2026` + team `VGD` and persisting user filter selections per scope (`minidraft_scrim_filters_v1:demo|paid`) across page refreshes.
+  - Added a prominent gold Demo Banner showing read-only sample status (`73` games), a personalized saved-game count CTA when `personalGames.length > 0`, a locked `ประวัติของฉัน` tab linking to `#plans`, and `ดูแพ็ก` upgrade buttons.
+
+### 📁 Modified Files
+- `frontend/src/data/sampleScrimGames.ts` (new)
+- `frontend/src/components/ScrimDashboardView.tsx`
+- `frontend/src/components/ScrimAnalyticsModal.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): passed (`0` warnings, `0` errors).
+- `npm --prefix frontend run build` (`tsc -b && vite build`): passed cleanly with dedicated lazy chunk `sampleScrimGames-*.js`.
+- Playwright Chromium (`1440x900`) as Free user (`is_paid: false`) with `2` saved personal games: verified Scrim Analytics Modal Demo Banner + personalized CTA + `Dashboard` link, `#analytics` `73` total games (`all`), `last7` & `last30` filtered subsets, team selection (`VGD`), zero leaked real team/league names, and `0` console/page errors.
+
+---
+
+## 📅 2026-11-24 11:09 (UTC+7) — Increase Free Limits (14 Games / 2 Hero Pools), Rename `Team Pro` to `Business`, and Add Limit Upgrade Popups
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- **Free Tier Quotas & Plan Display Rename (`src/db.py`, `src/billing.py`, `tests/test_billing.py`, `docs/SUBSCRIPTION_ROADMAP.md`)**:
+  - Raised `FREE_HISTORY_LIMIT` from `7` to `14` games and `FREE_HERO_POOL_LIMIT` from `1` to `2` teams so Free users can test 2-team drafts and two Bo7 series while Analytics/500-game storage remain the paid hook.
+  - Renamed user-facing `"Team Pro"` display labels to `"Business"` across `src/billing.py`, `frontend/src/api/team.ts`, `BillingSandbox.tsx`, `ScreenshotImportModal.tsx`, `ScrimAnalyticsModal.tsx`, `ScrimDashboardView.tsx`, `HeroPoolsModal.tsx`, `DraftBoardView.tsx`, and `englishMessages.ts` (preserving internal `team_pro` enum for DB/API compatibility).
+- **Save & Add-Team Quota Upgrade Popups (`App.tsx`, `DraftBoardView.tsx`, `DraftHistoryModal.tsx`, `HeroPoolsModal.tsx`)**:
+  - Allowed Guest/Free users at history capacity to keep drafting new matches or Global Ban turns (`G1..G7`) and intercepted save attempts (`บันทึกผลเกม`, `FinishGameModal` confirm, and `DraftHistoryModal` save snapshot) with an upgrade modal linking to `#auth` (Guest) or `#plans` (Free) plus `"จัดการประวัติ"`.
+  - Updated `HeroPoolsModal` so Free users at `2/2` can click `+ เพิ่มทีม` to open an upgrade modal linking directly to `#plans`.
+
+### 📁 Modified Files
+- `src/db.py`, `src/billing.py`, `tests/test_billing.py`, `docs/SUBSCRIPTION_ROADMAP.md`
+- `frontend/src/App.tsx`, `frontend/src/api/team.ts`, `frontend/src/i18n/englishMessages.ts`
+- `frontend/src/components/{DraftBoardView,DraftHistoryModal,HeroPoolsModal,BillingSandbox,ScreenshotImportModal,ScrimAnalyticsModal,ScrimDashboardView}.tsx`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check --fix .` & `ruff format --check .`: passed.
+- `pytest -q --tb=short tests/test_billing.py tests/test_api.py`: passed.
+- `npm --prefix frontend run lint` (`oxlint`) & `npm --prefix frontend run build` (`tsc -b && vite build`): passed.
+- Started `npm --prefix frontend run dev` (`:3000`) and `uvicorn src.api:app --reload --port 8000` (`:8000`) and verified HTTP `200`.
+
+---
+
+## 📅 2026-11-24 11:02 (UTC+7) — Restrict Shared Team History & Shared Hero Pools to `Team Pro` Only (Exclude `Duo`)
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- **Backend Tier Gating (`src/db.py`, `tests/test_billing.py`)**:
+  - Added `UserDatabase._active_team_pro()` and switched shared team history (`team_history`, `_read_team_history_for_edit`, `save_team_game`, `save_team_games`, `delete_team_game`) and shared team hero pools (`list_hero_pools`, `upsert_hero_pool` `scope='team'`, `delete_hero_pool`) to require `tier == 'team_pro'`, returning `403 membership_required` / `team_limit = 0` for `duo` while keeping 2-seat invitations and 500-game / 50-pool personal Pro entitlements intact per Duo member.
+  - Updated `test_duo_checkout_invitation_and_shared_history` and `test_hero_pools_limits_and_team_sharing` to assert `403` on Duo shared history and team pool endpoints alongside `team_pro` shared pool coverage.
+- **Frontend UI & Docs (`DraftHistoryModal.tsx`, `ScrimDashboardView.tsx`, `ScrimAnalyticsModal.tsx`, `BillingSandbox.tsx`, `englishMessages.ts`, `docs/SUBSCRIPTION_ROADMAP.md`)**:
+  - Gated team history UI (`team?.tier === "team_pro"`) across `DraftHistoryModal`, `ScrimDashboardView`, and `ScrimAnalyticsModal`, updated Duo benefits and comparison table on `#plans`, added matching EN localizations, and synced `docs/SUBSCRIPTION_ROADMAP.md`.
+
+### 📁 Modified Files
+- `src/db.py`
+- `tests/test_billing.py`
+- `frontend/src/components/DraftHistoryModal.tsx`
+- `frontend/src/components/ScrimDashboardView.tsx`
+- `frontend/src/components/ScrimAnalyticsModal.tsx`
+- `frontend/src/components/BillingSandbox.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `docs/SUBSCRIPTION_ROADMAP.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check --fix .` & `ruff format .`: all checks passed.
+- `pytest -q --tb=short tests/test_billing.py tests/test_api.py`: passed.
+- `npm --prefix frontend run lint` (`oxlint`: 0 warnings, 0 errors) & `npm --prefix frontend run build` (`tsc -b && vite build`: passed).
+
+---
+
+## 📅 2026-11-24 10:46 (UTC+7) — Polish `#plans` Pricing Page Hierarchy, Alignment, and Comparison Table
+**Agent:** Antigravity / Gemini 4 Neon
+
+### ✅ Completed Work
+- **Plans UI/UX Redesign (`frontend/src/components/BillingSandbox.tsx`, `frontend/src/i18n/englishMessages.ts`)**:
+  - Fixed centered label+arrow alignment in plan CTA buttons and centered the `30 วัน` / `90 วัน` segmented control while adding a dynamic `-X%` savings badge on `90 วัน`.
+  - Differentiated tier hierarchy (`Pro` highlighted as `ยอดนิยม` primary solid CTA; `Duo` and `Team Pro` framed cleanly with outline/tinted CTAs, `Team Pro` badged `คุ้มสุดต่อคน`), added per-seat monthly price breakdowns (`เฉลี่ย ~X บาท/คน/30 วัน`), and sharpened per-tier benefits.
+  - Added a responsive `Free` vs `Pro` / `Duo` / `Team Pro` feature comparison table and a non-auto-renew trust footer (`จ่ายครั้งเดียว ไม่ต่ออายุอัตโนมัติ · หมดอายุแล้วกลับเป็น Free โดยประวัติและข้อมูลไม่หาย`).
+
+### 📁 Modified Files
+- `frontend/src/components/BillingSandbox.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint`: passed (`0` warnings, `0` errors).
+- `npm --prefix frontend run build`: `tsc -b && vite build` passed.
+- Playwright Chromium (`1440x900` 30d/90d & `375x812` mobile): `0` horizontal overflow, `0` console/page errors, visual screenshot audit passed.
+
+---
+
 ## 📅 2026-11-24 09:59 (UTC+7) — Scrim Analytics Date Recording & Date-Preset Filter Fix
 **Agent:** Antigravity / Gemini 4 Neon
 

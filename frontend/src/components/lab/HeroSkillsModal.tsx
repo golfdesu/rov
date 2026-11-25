@@ -461,13 +461,13 @@ export function HeroSkillsModal({
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-muted">{t("คำอธิบายสกิลทางการ รูปแบบหน้าต่างในเกม และภาพสกรีนช็อตแคปจริง 130 ฮีโร่")}</p>
+            <p className="text-[11px] text-muted">{t("รายละเอียดสกิล คำนวณดาเมจ และภาพแคปจากในเกม")}</p>
           </div>
         </div>
 
         {/* View Mode Toggle Controls */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center rounded-lg border border-line bg-bg p-0.5 text-xs">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center rounded-lg border border-line bg-bg p-0.5 text-xs">
             <button
               type="button"
               onClick={() => setViewMode("ingame")}
@@ -476,10 +476,10 @@ export function HeroSkillsModal({
                   ? "bg-gold text-bg shadow-sm font-bold"
                   : "text-muted hover:text-ink hover:bg-panel"
               }`}
-              title={t("รูปแบบหน้าต่างทางการเหมือนในเกม RoV")}
+              title={t("ดูรายละเอียดสกิลแบบในเกม")}
             >
               <LayoutGrid size={13} />
-              <span><StableButtonLabel message="หน้าต่างในเกม" /></span>
+              <span><StableButtonLabel message="ในเกม" /></span>
             </button>
             <button
               type="button"
@@ -495,10 +495,10 @@ export function HeroSkillsModal({
                   ? "bg-gold text-bg shadow-sm font-bold"
                   : "text-muted hover:text-ink hover:bg-panel"
               }`}
-              title={t("ดูภาพสกรีนช็อตแคปจริงจากในเกม")}
+              title={t("ดูภาพสกรีนช็อตจริงจากในเกม")}
             >
               <ImageIcon size={13} />
-              <span><StableButtonLabel message="รูปแคปจริง (" />{allScreenshots.length})</span>
+              <span>{t("รูปแคปจริง")} ({allScreenshots.length})</span>
             </button>
             <button
               type="button"
@@ -508,10 +508,10 @@ export function HeroSkillsModal({
                   ? "bg-gold text-bg shadow-sm font-bold"
                   : "text-muted hover:text-ink hover:bg-panel"
               }`}
-              title={t("ตารางคำนวณดาเมจจริงและการเจาะเกราะตามของที่ใส่")}
+              title={t("คำนวณดาเมจและการเจาะเกราะตามของที่ใส่")}
             >
               <Swords size={13} />
-              <span><StableButtonLabel message="คำนวณดาเมจจริง" /></span>
+              <span><StableButtonLabel message="คำนวณดาเมจ" /></span>
             </button>
           </div>
 
@@ -659,13 +659,8 @@ export function HeroSkillsModal({
                 />
               </div>
 
-              <div className="flex items-center justify-between text-[11px] text-muted px-1">
-                <span className="font-mono text-dim">
-                  {t("ไฟล์:")} {allScreenshots[selectedScreenshotIdx]?.url.split("/").pop()}
-                </span>
-                <span className="text-dim">
-                  {t("ภาพสกรีนช็อตของจริงในเกมที่บันทึกไว้ในระบบ (โฟลเดอร์ heroes/")}{screenshotsData?.folder || hero}/)
-                </span>
+              <div className="flex items-center justify-end text-[11px] text-dim px-1">
+                <span>{t("ภาพแคปจริงจากในเกม")}</span>
               </div>
             </div>
           ) : (
@@ -673,14 +668,14 @@ export function HeroSkillsModal({
               <ImageIcon size={48} className="text-dim mb-3" />
               <div className="font-display text-sm font-bold text-ink">{t("ยังไม่มีภาพสกรีนช็อตสำหรับ")} {dName}</div>
               <p className="text-xs text-muted mt-1 max-w-md">
-                {t("ยังไม่พบไฟล์ภาพในโฟลเดอร์ heroes/")}{hero}{t("/skill/ สามารถสลับไปดูข้อมูลที่หน้าต่างในเกมได้ทันที")}
+                {t("สามารถสลับไปดูข้อมูลสกิลในแท็บหน้าต่างในเกมได้")}
               </p>
               <button
                 type="button"
                 onClick={() => setViewMode("ingame")}
                 className="mt-4 rounded-md border border-gold bg-gold/15 px-3 py-1.5 text-xs font-bold text-gold hover:bg-gold/25"
               >
-                <StableButtonLabel message="สลับไปดูหน้าต่างในเกม" />
+                <StableButtonLabel message="ดูหน้าต่างในเกม" />
               </button>
             </div>
           )}
@@ -766,8 +761,8 @@ export function HeroSkillsModal({
                       return (
                         <span className="text-[10px] text-gold">
                           {curSkillLv > 0
-                            ? t("(เหลือ {0}วิ ที่ Lv.{1} ด้วย CDR {2}%)", reducedCd, curSkillLv, heroCdr)
-                            : t("(Lv.1: {0}วิ ด้วย CDR {1}% — ยังไม่อัพสกิล)", reducedCd, heroCdr)}
+                            ? t("(เหลือ {0} วิ · CDR {1}%)", reducedCd, heroCdr)
+                            : t("(Lv.1: {0} วิ · CDR {1}%)", reducedCd, heroCdr)}
                         </span>
                       );
                     })()}
@@ -799,7 +794,7 @@ export function HeroSkillsModal({
               <div className="rounded-lg border border-line/70 bg-bg/60 p-3.5 text-xs leading-relaxed">
                 <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold text-gold">
                   <Sparkles size={12} />
-                  <span>{t("คำอธิบายสกิล (รายละเอียดทางการในเกม)")}</span>
+                  <span>{t("คำอธิบายสกิล")}</span>
                 </div>
                 <div className="whitespace-pre-line text-muted">
                   {descriptionTokens.map((t, idx) => (
@@ -914,7 +909,7 @@ export function HeroSkillsModal({
                 <div className="rounded-lg border border-line bg-panel/70 p-3">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-gold">
                     <Swords size={13} />
-                    <span>{t("สูตรการคูณพลังโจมตี (Scaling Ratios)")}</span>
+                    <span>{t("ตัวคูณสกิล")}</span>
                   </div>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {formatScaling(t, activeSkill.scaling, Math.max(1, activeRow?.skill_level ?? 1)).map((s, idx) => (

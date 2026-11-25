@@ -1,6 +1,6 @@
 import { StableButtonLabel } from "./components/StableButtonLabel";
 import { type Message, translateMessage, useLanguage } from "./i18n/language";
-import { LogIn, Menu, User } from "lucide-react";
+import { ChevronDown, LogIn, Menu, User, X } from "lucide-react";
 import { lazy, Suspense, useCallback, useEffect, useId, useRef, useState } from "react";
 import { ApiError, getJson, postJson, putJson, setExpectedAuthUser, setSessionMismatchHandler } from "./api/client";
 import { AuthLanding, AuthModal } from "./components/AuthModal";
@@ -50,7 +50,7 @@ import type { DraftSessionPayload } from "./types/draft";
 import { accountLabel, restorePreviewAccountStorage } from "./utils/auth";
 
 export type Tab = "draft" | "practice" | "tierlist" | "metalab" | "lab" | "profile" | "plans" | "analytics" | "admin";
-export type DraftToolModal = "pools" | "analytics" | "import";
+export type DraftToolModal = "pools" | "import";
 
 const DRAFT_ONLY = import.meta.env.VITE_DRAFT_ONLY === "true";
 
@@ -121,9 +121,9 @@ function Workspace({
       : tab === "plans"
         ? "แพ็ก"
         : tab === "analytics"
-          ? "Dashboard วิเคราะห์ซ้อมทีม"
+          ? "สถิติซ้อมทีม"
           : tab === "admin"
-            ? "Dashboard สถิติระบบ"
+            ? "สถิติระบบ"
             : TABS.find((item) => item.key === tab)?.label ?? "Draft Board",
   );
 
@@ -142,15 +142,26 @@ function Workspace({
       <nav className="shrink-0 border-b border-line bg-panel/90" aria-label={t("โหมด")}>
         <div className="mx-auto flex max-w-[1920px] items-center justify-between gap-2 px-2.5 py-1.5 sm:px-4 lg:py-0">
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
-            <div className="flex shrink-0 items-center gap-1.5 lg:border-r lg:border-line lg:pr-3">
+            <button
+              type="button"
+              onClick={() => selectTab("draft")}
+              aria-label="MiniDraft Home"
+              className="inline-flex min-h-8 shrink-0 items-center gap-1.5 text-left transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-gold lg:border-r lg:border-line lg:pr-3"
+            >
               <MiniDraftLogo className="h-6 w-6 shrink-0" />
               <span className="font-display text-xs font-extrabold tracking-widest text-ink sm:text-sm">
                 MINI<span className="text-gold">DRAFT</span>
               </span>
-            </div>
-            <span className="truncate border border-line bg-panel-2/70 px-2 py-0.5 font-display text-[11px] font-semibold text-gold lg:hidden">
-              {activeTabLabel}
-            </span>
+            </button>
+            <button
+              type="button"
+              onClick={onOpenMobileDrawer}
+              aria-label={`${activeTabLabel} · ${t("เปิดเมนูเพิ่มเติม")}`}
+              className="inline-flex min-h-7 min-w-0 max-w-[155px] shrink items-center gap-1 border border-line-strong bg-panel-2/80 px-2 py-0.5 font-display text-[11px] font-semibold text-ink transition-colors hover:border-gold/50 lg:hidden"
+            >
+              <span className="truncate">{activeTabLabel}</span>
+              <ChevronDown className="h-3 w-3 shrink-0 text-dim" aria-hidden="true" />
+            </button>
             <div className="hidden min-w-0 flex-1 items-center gap-1 overflow-x-auto lg:flex">
               {TABS.map((item) => (
                 <button
@@ -158,7 +169,7 @@ function Workspace({
                   key={item.key}
                   onClick={() => selectTab(item.key)}
                   aria-current={tab === item.key ? "page" : undefined}
-                  className={`border-b-2 px-3 py-2 font-display text-sm font-semibold tracking-wide whitespace-nowrap transition-colors ${
+                  className={`border-b-2 px-3 py-2.5 font-display text-sm font-semibold tracking-wide whitespace-nowrap transition-colors ${
                     tab === item.key ? "border-gold text-ink" : "border-transparent text-dim hover:text-muted"
                   }`}
                 >
@@ -169,8 +180,8 @@ function Workspace({
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5">
-            <span className="hidden h-7 items-center border border-gold/40 bg-gold/10 px-2.5 font-mono text-[11px] font-bold text-gold xl:inline-flex">
-              <StableButtonLabel message="ให้บริการฟรีถึง 30/11/2026" />
+            <span className="hidden min-h-7 items-center border border-line-strong bg-panel-2 px-2.5 font-mono text-[11px] font-medium whitespace-nowrap text-muted xl:inline-flex">
+              <StableButtonLabel message="ใช้งานฟรีถึง 30 พ.ย. 2026" />
             </span>
             {authLoading ? null : isAuthenticated ? (
               <a
@@ -178,7 +189,11 @@ function Workspace({
                 aria-label={t("เปิดโปรไฟล์ของ {0}", accountName)}
                 aria-current={tab === "profile" ? "page" : undefined}
                 title={t("เปิดโปรไฟล์ของ {0}", accountName)}
-                className="inline-flex h-8 items-center gap-1.5 border border-good/40 bg-good/10 px-2.5 font-mono text-[11px] font-bold text-good transition-colors hover:border-good hover:bg-good/20 focus-visible:outline-2 focus-visible:outline-good"
+                className={`inline-flex min-h-8 items-center gap-1.5 border px-2.5 font-mono text-[11px] font-bold whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-gold ${
+                  tab === "profile"
+                    ? "border-gold/70 bg-gold/10 text-gold"
+                    : "border-line-strong bg-panel-2 text-ink hover:border-gold/50 hover:text-gold"
+                }`}
               >
                 <User className="h-3.5 w-3.5 shrink-0" />
                 <span className="max-w-[76px] truncate sm:max-w-[120px]">{accountName}</span>
@@ -187,8 +202,7 @@ function Workspace({
               <button
                 type="button"
                 onClick={onOpenAuthModal}
-                title={t("เข้าสู่ระบบหรือสมัครสมาชิก เพื่อแยกฐานข้อมูลส่วนตัวและซิงก์ข้าม PC / iPad / มือถือ")}
-                className="inline-flex h-8 items-center gap-1.5 border border-gold/50 bg-gold/10 px-2.5 font-display text-xs font-bold text-gold transition-colors hover:bg-gold hover:text-bg"
+                className="inline-flex min-h-8 items-center gap-1.5 border border-gold/50 bg-gold/10 px-2.5 font-display text-xs font-bold whitespace-nowrap text-gold transition-colors hover:bg-gold hover:text-bg"
               >
                 <LogIn className="h-3.5 w-3.5 shrink-0" />
                 <span><StableButtonLabel message="เข้าสู่ระบบ" /></span>
@@ -210,13 +224,6 @@ function Workspace({
               )}
             </button>
           </div>
-        </div>
-        <div
-          className={`border-t border-line/70 bg-gold/10 px-3 py-0.5 text-center font-mono text-[11px] font-bold text-gold xl:hidden ${
-            tab === "draft" ? "hidden sm:block" : ""
-          }`}
-        >
-          {t("ให้บริการฟรีถึง 30/11/2026")}
         </div>
       </nav>
 
@@ -267,6 +274,8 @@ function Workspace({
             draft={draft}
             teamHistoryUsername={authUser?.stripe_sandbox_enabled ? authUser.username : undefined}
             isPaidUser={Boolean(authUser?.is_paid)}
+            isAuthenticated={isAuthenticated}
+            onOpenAuthModal={onOpenAuthModal}
             activeDraftTool={activeDraftTool}
             onCloseDraftTool={onCloseDraftTool}
             isActiveTab={tab === "draft"}
@@ -472,15 +481,15 @@ function formatOAuthError(code: string | null): string | null {
   if (!code) return null;
   if (code === "google_cancelled") return "ยกเลิกการเข้าสู่ระบบด้วย Google";
   if (code === "discord_cancelled") return "ยกเลิกการเข้าสู่ระบบด้วย Discord";
-  if (code === "discord_invalid_state") return "การยืนยันตัวตน Discord หมดอายุ กรุณาลองใหม่อีกครั้ง";
+  if (code === "discord_invalid_state") return "เซสชันล็อกอิน Discord หมดอายุ ลองใหม่อีกครั้ง";
   if (code === "discord_failed" || code === "discord_unavailable") {
-    return "ไม่สามารถเข้าสู่ระบบด้วย Discord ได้ กรุณาลองใหม่อีกครั้ง";
+    return "เข้าสู่ระบบด้วย Discord ไม่สำเร็จ ลองใหม่อีกครั้ง";
   }
-  if (code === "invalid_state") return "การยืนยันตัวตนหมดอายุ กรุณาลองใหม่อีกครั้ง";
-  if (code === "email_unverified") return "อีเมล Google ของคุณยังไม่ได้ยืนยันตัวตน";
-  if (code === "registration_full") return "ขณะนี้เซิร์ฟเวอร์มีผู้สมัครเต็มโควต้าชั่วคราว";
-  if (code === "rate_limited") return "ลองเข้าสู่ระบบถี่เกินไป กรุณารอสักครู่แล้วลองใหม่";
-  return "ไม่สามารถเข้าสู่ระบบด้วยบัญชีภายนอกได้ กรุณาลองใหม่อีกครั้ง";
+  if (code === "invalid_state") return "เซสชันล็อกอินหมดอายุ ลองใหม่อีกครั้ง";
+  if (code === "email_unverified") return "อีเมล Google ของคุณยังไม่ได้ยืนยัน";
+  if (code === "registration_full") return "ระบบปิดรับสมัครชั่วคราว กรุณาลองใหม่ภายหลัง";
+  if (code === "rate_limited") return "ลองเข้าสู่ระบบถี่เกินไป รอสักครู่แล้วลองใหม่";
+  return "เข้าสู่ระบบไม่สำเร็จ กรุณาลองใหม่";
 }
 
 export function App() {
@@ -649,7 +658,7 @@ export function App() {
           setIsAdminUser(false);
           setAdminStatsModalOpen(false);
           if (authUserRef.current !== null) {
-            setOauthError("เซสชันหมดอายุหรือถูกออกจากระบบจากอุปกรณ์อื่น กรุณาเข้าสู่ระบบใหม่");
+            setOauthError("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่");
           }
           setAuthUser(null);
         }
@@ -747,8 +756,8 @@ export function App() {
       updateGuestEntered(false);
       setOauthError(
         status === 409
-          ? "ตรวจพบการสลับบัญชีในแท็บอื่น ระบบหยุดการเขียนทับข้อมูลและให้เข้าสู่ระบบใหม่แล้ว"
-          : "เซสชันหมดอายุหรือถูกออกจากระบบ กรุณาเข้าสู่ระบบใหม่อีกครั้ง",
+          ? "มีการเปลี่ยนบัญชีในแท็บอื่น กรุณาเข้าสู่ระบบใหม่"
+          : "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่",
       );
     });
     return () => setSessionMismatchHandler(null);
@@ -826,8 +835,14 @@ export function App() {
   if (authLoading) {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-bg px-4">
-        <div className="border border-line bg-panel px-5 py-3 font-mono text-xs text-muted">
-          {t("กำลังตรวจสอบเซสชันผู้ใช้...")}
+        <div className="flex items-center gap-3 border border-line bg-panel px-5 py-3.5 shadow-xl clip-chamfer-sm">
+          <MiniDraftLogo className="h-6 w-6 shrink-0" />
+          <div className="flex flex-col gap-0.5">
+            <span className="font-display text-xs font-extrabold tracking-widest text-ink">
+              MINI<span className="text-gold">DRAFT</span>
+            </span>
+            <span className="font-mono text-[11px] text-muted">{t("กำลังโหลด…")}</span>
+          </div>
         </div>
       </div>
     );
@@ -874,7 +889,7 @@ export function App() {
         setExpectedAuthUser(null);
       }
       setMigrationError(
-        ["ไม่สามารถรวมข้อมูลกับเซิร์ฟเวอร์ได้ในขณะนี้ ({0}) — ข้อมูลเดิมในบัญชีและโหมด Guest ยังอยู่ครบ", err instanceof Error ? err.message : "Network error"],
+        ["รวมข้อมูลไม่สำเร็จ ({0}) ข้อมูลเดิมยังอยู่ครบ", err instanceof Error ? err.message : "Network error"],
       );
     } finally {
       setMigrationBusy(false);
@@ -908,7 +923,7 @@ export function App() {
       return true;
     } catch (err) {
       setSurveyError(
-        ["ไม่สามารถบันทึกคำตอบได้ในขณะนี้ ({0}) กรุณาลองอีกครั้งหรือกด \"ภายหลัง\"", err instanceof Error ? err.message : "Network error"],
+        ["บันทึกไม่สำเร็จ ({0}) ลองใหม่หรือกดภายหลัง", err instanceof Error ? err.message : "Network error"],
       );
       return false;
     } finally {
@@ -1015,7 +1030,8 @@ export function App() {
           onOpenDonate={() => setDonateModalOpen(true)}
           onOpenAdminStats={() => setAdminStatsModalOpen(true)}
           onOpenHeroPools={() => openDraftTool("pools")}
-          onOpenScrimAnalytics={() => openDraftTool("analytics")}
+          onOpenAnalyticsDashboard={() => selectTab("analytics")}
+          onOpenPlans={() => selectTab("plans")}
           onOpenScreenshotImport={() => openDraftTool("import")}
           onOpenAuth={() => setAuthModalOpen(true)}
           onOpenProfile={() => { window.location.hash = "profile"; }}
@@ -1058,31 +1074,42 @@ export function App() {
         <Modal
           labelledBy={migrationTitleId}
           className="max-w-md border-gold/40"
+          dismissDisabled={migrationBusy}
           onClose={migrationBusy ? () => {} : handleIgnoreMigration}
         >
-          <div className="border-b border-line px-5 py-3.5">
+          <div className="flex items-center justify-between gap-2 border-b border-line px-5 py-3.5">
             <h2 id={migrationTitleId} className="font-display text-sm font-bold tracking-wide text-ink sm:text-base">
               {t("พบข้อมูลดราฟต์จากโหมด Guest")}
             </h2>
+            {!migrationBusy && (
+              <button
+                type="button"
+                onClick={handleIgnoreMigration}
+                aria-label={t("ปิด")}
+                className="inline-flex h-8 w-8 items-center justify-center text-dim transition-colors hover:bg-panel-2 hover:text-ink"
+              >
+                <X size={18} />
+              </button>
+            )}
           </div>
           <div className="space-y-3 px-5 py-4 text-xs leading-relaxed text-muted sm:text-sm">
             <p className="text-ink">
-              {t("มีข้อมูลที่ทำค้างไว้ (")}
-              {[
-                pendingMigration.draft.actionsCount > 0 ? t("เลือก/แบน {0} ตัว", pendingMigration.draft.actionsCount) : null,
-                pendingMigration.draft.seriesCount > 0 ? t("บันทึก {0} เกม", pendingMigration.draft.seriesCount) : null,
-                pendingMigration.draft.globalBanCount > 0
-                  ? t("Global Ban {0} ตัว", pendingMigration.draft.globalBanCount)
-                  : null,
-              ]
-                .filter(Boolean)
-                .join(" · ")}
-              {t(") ต้องการย้ายมาใช้ต่อในบัญชี")}{" "}
-              <span className="font-mono font-bold text-gold">{accountLabel(pendingMigration.user)}</span> {t("หรือไม่?")}
+              {t(
+                "พบดราฟต์ในโหมด Guest ({0}) ย้ายเข้าบัญชี {1} ไหม?",
+                [
+                  pendingMigration.draft.actionsCount > 0 ? t("เลือก/แบน {0} ตัว", pendingMigration.draft.actionsCount) : null,
+                  pendingMigration.draft.seriesCount > 0 ? t("บันทึก {0} เกม", pendingMigration.draft.seriesCount) : null,
+                  pendingMigration.draft.globalBanCount > 0
+                    ? t("Global Ban {0} ตัว", pendingMigration.draft.globalBanCount)
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · "),
+                accountLabel(pendingMigration.user),
+              )}
             </p>
             <p className="text-[11px] text-dim sm:text-xs">
-              <strong className="text-ink">{t("ยืนยัน")}</strong> {t("= นำเข้าสู่บัญชีและรวมกับประวัติเดิม (ไม่ลบประวัติเก่า) ·")}{" "}
-              <strong className="text-ink">{t("ไม่ย้าย")}</strong> {t("= โหลดข้อมูลเดิมของบัญชี")}
+              {t("รวมเข้ากับประวัติเดิมในบัญชีโดยไม่ลบของเก่า")}
             </p>
             {migrationError && (
               <div className="border border-red/40 bg-red/10 px-3 py-2 text-[11px] text-red sm:text-xs">
@@ -1090,22 +1117,22 @@ export function App() {
               </div>
             )}
           </div>
-          <div className="flex items-center justify-end gap-2 border-t border-line bg-panel-2/40 px-5 py-3">
+          <div className="flex flex-wrap items-center justify-end gap-2 border-t border-line bg-panel-2/40 px-5 py-3">
             <button
               type="button"
               disabled={migrationBusy}
               onClick={handleIgnoreMigration}
-              className="border border-line-strong bg-panel px-4 py-1.5 font-display text-xs font-semibold text-muted transition-colors hover:border-ink/40 hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
+              className="min-h-9 border border-line-strong bg-panel px-4 py-1.5 font-display text-xs font-semibold text-muted transition-colors hover:border-ink/40 hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <StableButtonLabel message="ไม่ย้าย" />
+              <StableButtonLabel message="ข้าม" />
             </button>
             <button
               type="button"
               disabled={migrationBusy}
               onClick={() => void handleConfirmMigration()}
-              className="border border-gold bg-gold px-4 py-1.5 font-display text-xs font-bold text-bg transition-colors hover:bg-gold/90 disabled:cursor-not-allowed disabled:opacity-60"
+              className="min-h-9 border border-gold bg-gold px-4 py-1.5 font-display text-xs font-bold text-bg transition-colors hover:bg-gold/90 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <StableButtonLabel message={migrationBusy ? "กำลังรวมข้อมูล..." : "ยืนยัน"} alternatives={["กำลังรวมข้อมูล...", "ยืนยัน"]} />
+              <StableButtonLabel message={migrationBusy ? "กำลังรวมข้อมูล..." : "รวมเข้าบัญชี"} alternatives={["กำลังรวมข้อมูล...", "รวมเข้าบัญชี"]} />
             </button>
           </div>
         </Modal>

@@ -14,6 +14,7 @@ import {
   syncSeriesGlobalBans,
 } from "../utils/draft";
 import { displayName, matchesHeroQuery } from "../utils/heroNames";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { HeroPortrait } from "./HeroPortrait";
 import { Modal } from "./Modal";
 
@@ -65,6 +66,7 @@ export function GlobalBanModal({
   const [query, setQuery] = useState("");
   const [role, setRole] = useState<RoleType | null>(null);
   const [limitNotice, setLimitNotice] = useState<string | null>(null);
+  const [confirmClearAllOpen, setConfirmClearAllOpen] = useState(false);
   const titleId = useId();
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -85,12 +87,12 @@ export function GlobalBanModal({
     shortLabel: globalBans.teamAName,
     sideBadge: teamAIsBlue ? t("อยู่ฝั่ง BLUE (ซ้าย)") : t("อยู่ฝั่ง RED (ขวา)"),
     shortSide: teamAIsBlue ? "BLUE" : "RED",
-    desc: t("ฮีโร่ที่ทีม {0} หยิบใช้ไปแล้วในซีรีส์นี้ (จะตามทีม {1} ไปอัตโนมัติไม่ว่าจะสลับไปอยู่ฝั่งฟ้าหรือแดง)", globalBans.teamAName, globalBans.teamAName),
+    desc: t("ฮีโร่ที่ {0} ใช้ไปแล้วในซีรีส์นี้ (ย้ายตามทีมเมื่อสลับฝั่ง)", globalBans.teamAName),
     activeTabClass: teamAIsBlue ? "border-blue bg-blue/15 text-blue" : "border-red bg-red/15 text-red",
     ringClass: teamAIsBlue
       ? "border-blue bg-blue/15 ring-2 ring-blue/60"
       : "border-red bg-red/15 ring-2 ring-red/60",
-    badgeClass: teamAIsBlue ? "bg-blue text-ink" : "bg-red text-ink",
+    badgeClass: teamAIsBlue ? "bg-blue text-bg" : "bg-red text-bg",
   };
 
   const teamBCat = {
@@ -99,12 +101,12 @@ export function GlobalBanModal({
     shortLabel: globalBans.teamBName,
     sideBadge: !teamAIsBlue ? t("อยู่ฝั่ง BLUE (ซ้าย)") : t("อยู่ฝั่ง RED (ขวา)"),
     shortSide: !teamAIsBlue ? "BLUE" : "RED",
-    desc: t("ฮีโร่ที่ทีม {0} หยิบใช้ไปแล้วในซีรีส์นี้ (จะตามทีม {1} ไปอัตโนมัติไม่ว่าจะสลับไปอยู่ฝั่งฟ้าหรือแดง)", globalBans.teamBName, globalBans.teamBName),
+    desc: t("ฮีโร่ที่ {0} ใช้ไปแล้วในซีรีส์นี้ (ย้ายตามทีมเมื่อสลับฝั่ง)", globalBans.teamBName),
     activeTabClass: !teamAIsBlue ? "border-blue bg-blue/15 text-blue" : "border-red bg-red/15 text-red",
     ringClass: !teamAIsBlue
       ? "border-blue bg-blue/15 ring-2 ring-blue/60"
       : "border-red bg-red/15 ring-2 ring-red/60",
-    badgeClass: !teamAIsBlue ? "bg-blue text-ink" : "bg-red text-ink",
+    badgeClass: !teamAIsBlue ? "bg-blue text-bg" : "bg-red text-bg",
   };
 
   // Always order tabs Left = Current Blue Side, Middle = Current Red Side, Right = Universal Ban
@@ -117,7 +119,7 @@ export function GlobalBanModal({
       shortLabel: t("แบนร่วม"),
       sideBadge: "GLOBAL BAN",
       shortSide: "GLOBAL",
-      desc: t("ฮีโร่ที่ถูกแบนร่วมทั้งสองทีมตลอดซีรีส์ หรือแบนจากกติกาพิเศษ — ทั้งสองทีมจะไม่สามารถเลือกใช้ได้"),
+      desc: t("ฮีโร่ที่แบนทั้งสองทีมตลอดซีรีส์"),
       activeTabClass: "border-gold bg-gold/15 text-gold",
       ringClass: "border-gold bg-gold/15 ring-2 ring-gold/60",
       badgeClass: "bg-gold text-bg",
@@ -160,11 +162,11 @@ export function GlobalBanModal({
         return;
       }
       if (activeCategory === "universalBans" && list.length >= MAX_UNIVERSAL_BANS) {
-        setLimitNotice(t("แบนร่วมทั้งซีรีส์ได้สูงสุด {0} ตัวละคร", MAX_UNIVERSAL_BANS));
+        setLimitNotice(t("ใส่แบนร่วมได้สูงสุด {0} ตัว", MAX_UNIVERSAL_BANS));
         return;
       }
       if (activeCategory !== "universalBans" && list.length >= MAX_TEAM_GLOBAL_BANS) {
-        setLimitNotice(t("แบนสะสมต่อทีมได้สูงสุด {0} ตัวละคร", MAX_TEAM_GLOBAL_BANS));
+        setLimitNotice(t("ใส่ฮีโร่ที่ใช้แล้วได้สูงสุดทีมละ {0} ตัว", MAX_TEAM_GLOBAL_BANS));
         return;
       }
       const nextTeamA = activeCategory === "teamAUsed" ? [...list, heroName] : globalBans.teamAUsed;
@@ -173,7 +175,7 @@ export function GlobalBanModal({
       const maskedA = new Set([...nextTeamA, ...nextUniv]).size;
       const maskedB = new Set([...nextTeamB, ...nextUniv]).size;
       if (maskedA > MAX_EFFECTIVE_MASKED_BANS || maskedB > MAX_EFFECTIVE_MASKED_BANS) {
-        setLimitNotice(t("จำนวนแบนรวมต่อฝั่งต้องไม่เกิน {0} ตัวละคร", MAX_EFFECTIVE_MASKED_BANS));
+        setLimitNotice(t("แบนรวมต่อฝั่งไม่เกิน {0} ตัว", MAX_EFFECTIVE_MASKED_BANS));
         return;
       }
     }
@@ -287,32 +289,17 @@ export function GlobalBanModal({
               GLOBAL BAN PICK
               <span className="hidden sm:inline"> {t("· จัดการฮีโร่ที่แต่ละทีมเคยใช้ในซีรีส์")}</span>
             </h2>
-            <p className="hidden text-[11px] text-dim sm:block">
-              {t("ผูกประวัติตัวที่ใช้แล้วกับชื่อทีม (สลับฝั่งฟ้า/แดงได้อิสระโดยตัวที่เคยใช้จะตามทีมไปอัตโนมัติ)")}
-            </p>
           </div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-          <button
-            type="button"
-            onClick={clearAll}
-            disabled={totalCount === 0}
-            title={t("ล้างข้อมูลฮีโร่ที่เคยใช้ทั้งหมด")}
-            className="flex h-7 shrink-0 items-center gap-1 border border-red/40 bg-red/10 px-2 font-display text-[11px] font-semibold tracking-wide whitespace-nowrap text-red transition-colors hover:bg-red hover:text-ink disabled:pointer-events-none disabled:opacity-35 sm:h-8 sm:gap-1.5 sm:px-2.5"
-          >
-            <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-            <span><StableButtonLabel message="ล้างทั้งหมด" /></span>
-          </button>
-          <button
-            type="button"
-            onClick={() => requestClose()}
-            className="shrink-0 rounded p-1 text-dim transition-colors hover:bg-panel-2 hover:text-ink"
-            aria-label={t("ปิด")}
-          >
-            <X size={18} />
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => requestClose()}
+          className="inline-flex h-8 w-8 shrink-0 items-center justify-center text-dim transition-colors hover:bg-panel-2 hover:text-ink"
+          aria-label={t("ปิด")}
+        >
+          <X size={18} />
+        </button>
       </div>
 
       {/* Unified Scroll Body on Mobile (< sm) so controls never crush the 130-hero grid; Split Pane on sm+ */}
@@ -321,7 +308,7 @@ export function GlobalBanModal({
         <div className="flex shrink-0 flex-col gap-2 border-b border-line bg-panel-2/60 px-3 py-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-2.5 sm:px-4 sm:py-2.5">
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             <div className="flex min-w-0 flex-1 items-center gap-1 sm:flex-none sm:gap-1.5">
-              <span className="shrink-0 bg-blue px-1.5 py-0.5 font-mono text-[10px] font-bold text-ink">
+              <span className="shrink-0 bg-blue px-1.5 py-0.5 font-mono text-[10px] font-bold text-bg">
                 BLUE<span className="hidden sm:inline"> {t("(ซ้าย)")}</span>
               </span>
               <input
@@ -345,14 +332,14 @@ export function GlobalBanModal({
               type="button"
               onClick={swapTeamSides}
               title={t("สลับฝั่ง Blue ⇄ Red")}
-              className="flex h-7 shrink-0 items-center gap-1 border border-gold/60 bg-gold/10 px-2 font-display text-[10px] font-bold whitespace-nowrap text-gold transition-colors hover:bg-gold hover:text-bg sm:gap-1.5 sm:px-2.5 sm:text-[11px]"
+              className="flex h-7 shrink-0 items-center gap-1 border border-line-strong bg-panel px-2 font-display text-[10px] font-semibold whitespace-nowrap text-ink transition-colors hover:border-gold/60 hover:text-gold sm:gap-1.5 sm:px-2.5 sm:text-[11px]"
             >
               <ArrowLeftRight className="h-3.5 w-3.5" />
               <span className="hidden sm:inline"><StableButtonLabel message="สลับฝั่ง Blue ⇄ Red" /></span>
             </button>
 
             <div className="flex min-w-0 flex-1 items-center gap-1 sm:flex-none sm:gap-1.5">
-              <span className="shrink-0 bg-red px-1.5 py-0.5 font-mono text-[10px] font-bold text-ink">
+              <span className="shrink-0 bg-red px-1.5 py-0.5 font-mono text-[10px] font-bold text-bg">
                 RED<span className="hidden sm:inline"> {t("(ขวา)")}</span>
               </span>
               <input
@@ -476,7 +463,12 @@ export function GlobalBanModal({
         <div className="shrink-0 border-b border-line bg-panel-2/40 px-3 py-1.5 sm:px-4 sm:py-2.5">
           {!fromTeamHistory && globalBans.gameNumber > 1 && !currentUnlockStatus.isUnlocked && (
             <div className="mb-1.5 border border-gold/50 bg-gold/10 px-2.5 py-1 text-[11px] font-medium text-gold sm:mb-2">
-              {t("จำนวนฮีโร่ไม่ถึงเกณฑ์ Game")} {globalBans.gameNumber} {t("(ต้องการฝั่งละ")} {currentUnlockStatus.requiredCount} {t("ตัว) — เมื่อปิดหน้าต่างจะบันทึกกระดานปัจจุบันและย้อนกลับไป Game")} {maxUnlockedGame}
+              {t(
+                "เกม {0} ต้องมีฝั่งละ {1} ตัว — หากปิดจะกลับไปเกม {2}",
+                globalBans.gameNumber,
+                currentUnlockStatus.requiredCount,
+                maxUnlockedGame,
+              )}
             </div>
           )}
           {limitNotice && (
@@ -493,7 +485,7 @@ export function GlobalBanModal({
               <button
                 type="button"
                 onClick={() => clearCategory(activeCategory)}
-                className="shrink-0 font-display text-[11px] font-semibold text-dim underline underline-offset-2 hover:text-ink"
+                className="inline-flex min-h-7 shrink-0 items-center border border-red/35 bg-red/10 px-2 font-display text-[11px] font-semibold text-red transition-colors hover:bg-red hover:text-bg"
               >
                 <StableButtonLabel message="ล้างหมวดนี้ (" />{activeList.length})
               </button>
@@ -501,8 +493,8 @@ export function GlobalBanModal({
           </div>
 
           {activeList.length === 0 ? (
-            <div className="flex h-7 items-center truncate border border-dashed border-line px-2.5 text-[11px] text-dim sm:h-10 sm:px-3 sm:text-xs">
-              {t("ยังไม่มีตัวในหมวดนี้ — แตะเลือกฮีโร่ด้านล่าง")}
+            <div className="flex min-h-7 items-center border border-dashed border-line px-2.5 py-1 text-[11px] text-dim sm:min-h-10 sm:px-3 sm:text-xs">
+              <span className="truncate">{t("ยังไม่มีตัวในหมวดนี้ — แตะเลือกฮีโร่ด้านล่าง")}</span>
             </div>
           ) : (
             <div className="flex max-h-20 flex-wrap gap-1 overflow-y-auto py-0.5 sm:max-h-24 sm:gap-1.5">
@@ -576,7 +568,7 @@ export function GlobalBanModal({
                   : "border-line text-muted hover:border-line-strong hover:text-ink"
               }`}
             >
-              ALL
+              {t("ทั้งหมด")}
             </button>
             {ROLES.map((r) => (
               <button
@@ -636,7 +628,7 @@ export function GlobalBanModal({
                       <div className="absolute top-0.5 left-0.5 flex flex-wrap gap-0.5">
                         {inA && (
                           <span
-                            className={`px-1 font-mono text-[8px] font-bold leading-tight text-ink ${
+                            className={`px-1 font-mono text-[8px] font-bold leading-tight text-bg ${
                               teamAIsBlue ? "bg-blue" : "bg-red"
                             }`}
                           >
@@ -645,7 +637,7 @@ export function GlobalBanModal({
                         )}
                         {inB && (
                           <span
-                            className={`px-1 font-mono text-[8px] font-bold leading-tight text-ink ${
+                            className={`px-1 font-mono text-[8px] font-bold leading-tight text-bg ${
                               !teamAIsBlue ? "bg-blue" : "bg-red"
                             }`}
                           >
@@ -679,17 +671,28 @@ export function GlobalBanModal({
       </div>
 
       {/* Footer */}
-      <div className="flex shrink-0 items-center justify-between gap-2 border-t border-line bg-bg px-3 py-2 sm:px-4 sm:py-2.5">
-        <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[11px] text-muted sm:gap-3 sm:text-xs">
-          <span>
-            {globalBans.teamAName}
-            <span className="hidden sm:inline"> ({teamAIsBlue ? "Blue" : "Red"})</span>:{" "}
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-line bg-bg px-3 py-2 sm:px-4 sm:py-2.5">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[11px] text-muted sm:gap-3 sm:text-xs">
+          {totalCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setConfirmClearAllOpen(true)}
+              title={t("ล้างข้อมูลฮีโร่ที่เคยใช้ทั้งหมด")}
+              className="flex h-7 shrink-0 items-center gap-1 border border-red/40 bg-red/10 px-2 font-display text-[11px] font-semibold tracking-wide whitespace-nowrap text-red transition-colors hover:bg-red hover:text-bg sm:h-8 sm:gap-1.5 sm:px-2.5"
+            >
+              <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+              <span><StableButtonLabel message="ล้างทั้งหมด" /></span>
+            </button>
+          )}
+          <span className="inline-flex max-w-full items-center gap-1">
+            <span className="max-w-[96px] truncate">{globalBans.teamAName}</span>
+            <span className="hidden sm:inline">({teamAIsBlue ? "Blue" : "Red"})</span>:
             <strong className={teamAIsBlue ? "text-blue" : "text-red"}>{globalBans.teamAUsed.length}</strong>
           </span>
           <span>·</span>
-          <span>
-            {globalBans.teamBName}
-            <span className="hidden sm:inline"> ({!teamAIsBlue ? "Blue" : "Red"})</span>:{" "}
+          <span className="inline-flex max-w-full items-center gap-1">
+            <span className="max-w-[96px] truncate">{globalBans.teamBName}</span>
+            <span className="hidden sm:inline">({!teamAIsBlue ? "Blue" : "Red"})</span>:
             <strong className={!teamAIsBlue ? "text-blue" : "text-red"}>{globalBans.teamBUsed.length}</strong>
           </span>
           <span>·</span>
@@ -700,11 +703,25 @@ export function GlobalBanModal({
         <button
           type="button"
           onClick={() => requestClose()}
-          className="shrink-0 border border-gold bg-gold px-3 py-1.5 font-display text-xs font-bold tracking-wider whitespace-nowrap text-bg transition-colors hover:bg-gold/90 sm:px-4"
+          className="ml-auto shrink-0 border border-gold bg-gold px-3 py-1.5 font-display text-xs font-bold tracking-wider whitespace-nowrap text-bg transition-colors hover:bg-gold/90 sm:px-4"
         >
           <StableButtonLabel message="เสร็จสิ้น" />
         </button>
       </div>
+      {confirmClearAllOpen && (
+        <ConfirmDialog
+          title={t("ล้าง Global Ban ทั้งหมด?")}
+          message={t("ต้องการล้างข้อมูลฮีโร่ที่เคยใช้และแบนร่วมทั้งหมด ({0} รายการ) ในซีรีส์นี้ใช่ไหม?", totalCount)}
+          confirmLabel="ล้างทั้งหมด"
+          cancelLabel="ยกเลิก"
+          tone="danger"
+          onCancel={() => setConfirmClearAllOpen(false)}
+          onConfirm={() => {
+            setConfirmClearAllOpen(false);
+            clearAll();
+          }}
+        />
+      )}
         </>
       )}
     </Modal>

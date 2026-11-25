@@ -20,6 +20,13 @@ const TYPE_STYLE: Record<SkillDamageRow["damage_type"], string> = {
   none: "text-dim",
 };
 
+const TYPE_LABELS: Record<SkillDamageRow["damage_type"], string> = {
+  physical: "กายภาพ",
+  magic: "เวท",
+  true: "จริง",
+  none: "สถานะ",
+};
+
 const COMPONENT_LABELS: Record<string, string> = {
   base: "พื้นฐาน",
   ad: "AD",
@@ -313,7 +320,7 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                               <button
                                 type="button"
                                 onClick={() => toggleExpand(s.slot)}
-                                className="group flex max-w-full shrink-0 items-center gap-1 text-left"
+                                className="group flex min-w-0 max-w-full items-center gap-1 text-left"
                               >
                                 <span className={`min-w-0 truncate font-bold transition-colors group-hover:underline ${TYPE_STYLE[s.damage_type]}`}>
                                   {s.name}
@@ -336,7 +343,7 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                               )}
                             </div>
                             <div className="text-[10px] text-dim">
-                              {s.slot} · {s.damage_type}
+                              {s.slot} · {t(TYPE_LABELS[s.damage_type] ?? s.damage_type)}
                               {parts && ` · ${parts}`}
                               {s.mitigation_multiplier > 0 && s.mitigation_multiplier < 1 && ` · ×${s.mitigation_multiplier}`}
                             </div>
@@ -359,8 +366,8 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                               </div>
                             )}
                             {s.warnings.map((w) => (
-                              <div key={w} className="text-[10px] text-gold">
-                                {w}
+                              <div key={w} className="text-[10px] text-gold break-words">
+                                {t(w)}
                               </div>
                             ))}
                           </div>
@@ -592,20 +599,12 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
                           </div>
                         )}
 
-                        {/* English comparison text in the Thai view. */}
-                        {language === "th" && s.description && s.description !== s.desc_th && (
-                          <div className="rounded border border-line/30 bg-bg/20 p-2 text-dim leading-relaxed">
-                            <div className="text-[10px] font-semibold text-dim mb-0.5">Description (EN):</div>
-                            <p className="text-muted/80 whitespace-pre-line">{s.description}</p>
-                          </div>
-                        )}
-
                         {/* Charging Details if applicable */}
                         {s.has_charge && (
                           <div className="rounded border border-gold/40 bg-gold/10 p-2 text-gold font-mono text-[11px] space-y-1">
                             <div className="font-bold flex items-center gap-1">
                               <Sparkles size={11} />
-                              <span>{t("ระบบชาร์จสกิล / สเกลตามระยะทาง (Linear Interpolation):")}</span>
+                              <span>{t("ระบบชาร์จ / สเกลตามระยะ:")}</span>
                             </div>
                             {(() => {
                               const lvIdx = Math.max(0, s.skill_level - 1);
@@ -665,7 +664,7 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
           </span>
           {side.burst_per_1000_gold != null && (
             <span className="font-mono text-[10px] text-dim">
-              ({side.burst_per_1000_gold.toLocaleString()} {t("dmg/1k ทอง)")}
+              ({side.burst_per_1000_gold.toLocaleString()} {t("ดาเมจ/1k ทอง)")}
             </span>
           )}
         </div>
@@ -676,7 +675,7 @@ export function SkillDamageTable({ side, build, enemyName, onChange }: SkillDama
           </span>
           {side.combo_kills && (
             <span className="rounded bg-good/20 px-1.5 py-0.5 text-[10px] font-bold text-good border border-good/40">
-              {t("ฆ่าได้ในคอมโบเดียว")}
+              {t("ปิดจบได้ในคอมโบเดียว")}
             </span>
           )}
         </div>

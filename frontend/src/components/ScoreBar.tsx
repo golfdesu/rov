@@ -179,7 +179,7 @@ export function ScoreBar({
           type="button"
           data-timer-entry
           onClick={() => timer.onToggleEnabled()}
-          title={t("เปิดระบบจับเวลาต่อเทิร์น (Turn Timer)")}
+          title={t("เปิดจับเวลาต่อเทิร์น")}
           aria-label={t("เปิดจับเวลาดราฟต์")}
           className={`inline-flex ${btnH} min-w-7 shrink-0 items-center justify-center gap-1 border border-line-strong bg-panel px-2 font-mono text-[10.5px] font-bold text-muted transition-colors hover:border-gold/60 hover:text-gold sm:text-[11px]`}
         >
@@ -244,6 +244,10 @@ export function ScoreBar({
         <div
           className="absolute inset-y-0 right-0 bg-gradient-to-l from-red-deep to-red transition-[width] duration-700 ease-out"
           style={{ width: `${red}%` }}
+        />
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 left-1/2 z-10 w-px -translate-x-1/2 bg-ink/70"
         />
         {isLoading && <div className="absolute inset-0 animate-pulse bg-ink/10" />}
       </div>
@@ -400,12 +404,17 @@ export function ScoreBar({
       <div className="mx-auto flex max-w-[1920px] items-center justify-between gap-2 px-2.5 py-1.5 sm:gap-4 sm:px-4 sm:py-2">
         {/* Turn indicator + Desktop/Tablet Timer */}
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-          <div className="hidden h-8 w-8 place-items-center bg-panel-2 clip-chamfer-sm sm:grid">
-            <span className="font-display text-sm font-bold text-gold">R</span>
-          </div>
-          <div className="flex flex-col leading-tight">
+          <div
+            className={`flex flex-col border-l-2 pl-2 leading-tight ${
+              currentStep
+                ? currentStep.side === "blue"
+                  ? "border-blue bg-blue/10 pr-2 py-0.5"
+                  : "border-red bg-red/10 pr-2 py-0.5"
+                : "border-gold bg-gold/10 pr-2 py-0.5"
+            }`}
+          >
             <div className="flex items-center gap-1.5">
-              <span className="font-mono text-[9.5px] font-semibold text-dim sm:text-xs">
+              <span className="font-mono text-[9.5px] font-semibold tabular-nums text-dim sm:text-xs">
                 STEP {Math.min(currentStepIndex + 1, totalSteps)}/{totalSteps}
               </span>
             </div>
@@ -435,10 +444,10 @@ export function ScoreBar({
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           {league && setLeague && (
             <label
-              title="Select regional pro league meta conditioning"
-              className="inline-flex h-8 items-center gap-1 border border-line-strong bg-panel px-1.5 font-mono text-[11px] font-bold text-gold sm:h-8.5 sm:px-2 transition-colors hover:border-gold/60"
+              title={t("เลือกเมต้าโปรลีก")}
+              className="inline-flex h-8 items-center gap-1 border border-line-strong bg-panel-2 px-1.5 font-mono text-[11px] font-bold text-ink sm:h-8.5 sm:px-2 transition-colors hover:border-gold/60"
             >
-              <Globe className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0 text-gold" />
+              <Globe className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0 text-muted" />
               <span className="hidden font-mono text-[10px] uppercase tracking-wider text-dim 2xl:inline">
                 LEAGUE:
               </span>
@@ -446,7 +455,7 @@ export function ScoreBar({
                 aria-label="Regional League Meta"
                 value={league}
                 onChange={(e) => setLeague(e.target.value as LeagueCode)}
-                className="h-full min-h-6 bg-transparent font-mono text-[11px] font-bold text-gold cursor-pointer focus:outline-none"
+                className="h-full min-h-6 bg-transparent font-mono text-[11px] font-bold text-ink cursor-pointer focus:outline-none"
               >
                 {LEAGUE_OPTIONS.map((opt) => (
                   <option key={opt.code} value={opt.code} className="bg-panel text-ink py-1">
@@ -465,11 +474,11 @@ export function ScoreBar({
               title={t("เปิดตัวช่วยเพื่อดูโอกาสชนะระหว่างดราฟต์")}
               className={`inline-flex h-8 min-w-8 items-center justify-center gap-1 border px-1.5 font-display text-xs font-semibold whitespace-nowrap transition-colors sm:h-8.5 sm:px-2.5 ${
                 assistantEnabled
-                  ? "border-gold bg-gold/15 text-gold shadow-sm"
+                  ? "border-gold/45 bg-panel-2 text-ink shadow-sm hover:border-gold"
                   : "border-line-strong bg-panel text-muted hover:border-gold/50 hover:text-ink"
               }`}
             >
-              <Sparkles className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <Sparkles className={`h-3.5 w-3.5 shrink-0 ${assistantEnabled ? "text-gold" : "text-dim"}`} aria-hidden="true" />
               <StableButtonLabel message="ตัวช่วย" className="hidden sm:inline-grid" />
             </button>
           )}
@@ -487,19 +496,19 @@ export function ScoreBar({
                     : t("ดราฟต์เสร็จสิ้นแล้ว")
                   : poolToggle.mode === "high"
                     ? poolToggle.activeTeamName
-                      ? t("โหมด POOL: HIGH — แนะนำเฉพาะฮีโร่ใน Pool ของ {0} (คลิกเพื่อเปลี่ยนเป็น OFF)", poolToggle.activeTeamName)
-                      : t("โหมด POOL: HIGH — แนะนำเฉพาะฮีโร่ใน Pool (คลิกเพื่อเปลี่ยนเป็น OFF)")
+                      ? t("เฉพาะใน Pool ของ {0}", poolToggle.activeTeamName)
+                      : t("เฉพาะใน Hero Pool")
                     : poolToggle.mode === "low"
                       ? poolToggle.activeTeamName
-                        ? t("โหมด POOL: LOW — แนะนำทุกฮีโร่ + ดันตัวใน Pool ของ {0} (คลิกเพื่อเปลี่ยนเป็น HIGH)", poolToggle.activeTeamName)
-                        : t("โหมด POOL: LOW — แนะนำทุกฮีโร่ + ดันตัวใน Pool (คลิกเพื่อเปลี่ยนเป็น HIGH)")
+                        ? t("ทุกฮีโร่ · เน้น Pool ของ {0}", poolToggle.activeTeamName)
+                        : t("ทุกฮีโร่ · เน้น Hero Pool")
                       : poolToggle.activeTeamName
-                        ? t("โหมด POOL: OFF — แนะนำตามเมต้าล้วน ไม่นำ Pool ของ {0} มาคำนวณ (คลิกเพื่อเปลี่ยนเป็น LOW)", poolToggle.activeTeamName)
-                        : t("โหมด POOL: OFF — แนะนำตามเมต้าล้วน ไม่นำ Pool มาคำนวณ (คลิกเพื่อเปลี่ยนเป็น LOW)")
+                        ? t("เมต้าล้วน (ไม่ใช้ Pool ของ {0})", poolToggle.activeTeamName)
+                        : t("เมต้าล้วน (ไม่ใช้ Hero Pool)")
               }
               className={`inline-flex h-8 min-w-8 items-center justify-center gap-1 border px-1.5 font-display text-xs font-semibold whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:opacity-45 sm:h-8.5 sm:px-2.5 ${
                 poolToggle.mode === "high"
-                  ? "border-gold bg-gold/15 text-gold shadow-sm"
+                  ? "border-gold/55 bg-panel-2 text-gold shadow-sm"
                   : poolToggle.mode === "low"
                     ? "border-blue/70 bg-blue/15 text-blue shadow-sm"
                     : "border-line-strong bg-panel text-muted hover:border-gold/50 hover:text-ink"
@@ -507,18 +516,19 @@ export function ScoreBar({
             >
               <Users className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
               <span className="font-mono text-[10px] font-bold sm:hidden">
-                {poolToggle.mode === "high" ? "H" : poolToggle.mode === "low" ? "L" : "OFF"}
+                {poolToggle.mode === "high" ? "P:HI" : poolToggle.mode === "low" ? "P:LO" : "P:OFF"}
               </span>
               <span className="hidden sm:inline">
                 {`POOL: ${poolToggle.mode.toUpperCase()}`}
               </span>
             </button>
           )}
+          <span className="hidden h-5 w-px bg-line sm:block" aria-hidden="true" />
           <button
             type="button"
             onClick={onUndo}
             disabled={!canUndo}
-            title={t("Undo ย้อนกลับ (Ctrl+Z)")}
+            title={t("ย้อนกลับ (Ctrl+Z)")}
             aria-label={t("ย้อนกลับ")}
             className="flex h-8 w-8 items-center justify-center border border-ink/30 bg-panel-2 font-display text-xs font-bold text-ink transition-colors hover:border-ink hover:bg-line-strong disabled:pointer-events-none disabled:opacity-35 sm:h-8.5 sm:w-8.5"
           >
@@ -528,7 +538,7 @@ export function ScoreBar({
             type="button"
             onClick={onRedo}
             disabled={!canRedo}
-            title={t("Forward เดินหน้า (Ctrl+Y / Ctrl+Shift+Z)")}
+            title={t("ทำซ้ำ (Ctrl+Y)")}
             aria-label={t("ทำซ้ำ")}
             className="flex h-8 w-8 items-center justify-center border border-ink/30 bg-panel-2 font-display text-xs font-bold text-ink transition-colors hover:border-ink hover:bg-line-strong disabled:pointer-events-none disabled:opacity-35 sm:h-8.5 sm:w-8.5"
           >
@@ -590,7 +600,7 @@ export function ScoreBar({
                     <div className="flex items-center justify-between gap-2 border border-line bg-panel-2/60 px-3 py-2.5">
                       <div>
                         <div className="font-display font-bold text-ink">{t("สถานะตัวจับเวลา")}</div>
-                        <div className="text-[11px] text-dim">{t("รีเซ็ตเวลานับใหม่ทุกครั้งที่เปลี่ยนเทิร์น")}</div>
+                        <div className="text-[11px] text-dim">{t("นับใหม่ทุกเทิร์น")}</div>
                       </div>
                       <button
                         type="button"
@@ -618,7 +628,7 @@ export function ScoreBar({
                               key={p.id}
                               type="button"
                               onClick={() => timer.onSetPreset(p.id)}
-                              className={`flex min-h-9 flex-col items-start justify-center border px-2.5 py-1.5 text-left transition-colors ${
+                              className={`flex min-h-9 min-w-0 flex-col items-start justify-center border px-2.5 py-1.5 text-left transition-colors ${
                                 p.devOnly ? "col-span-2 border-dashed" : ""
                               } ${
                                 active
@@ -626,8 +636,8 @@ export function ScoreBar({
                                   : "border-line bg-bg/60 text-muted hover:border-line-strong hover:text-ink"
                               }`}
                             >
-                              <span className="font-mono text-[11px] font-bold"><StableButtonLabel message={p.label} /></span>
-                              <span className="text-[10px] text-dim"><StableButtonLabel message={p.description} /></span>
+                              <span className="max-w-full truncate font-mono text-[11px] font-bold"><StableButtonLabel message={p.label} className="inline-grid text-left" /></span>
+                              <span className="text-[10px] text-dim"><StableButtonLabel message={p.description} className="inline-grid text-left" /></span>
                             </button>
                           );
                         })}
@@ -641,16 +651,16 @@ export function ScoreBar({
                         onClick={timer.onToggleSound}
                         className="flex min-h-9 w-full items-center justify-between gap-2 border border-line bg-bg/60 px-3 py-2 text-left transition-colors hover:border-line-strong"
                       >
-                        <span className="flex items-center gap-2 font-display font-semibold text-ink">
+                        <span className="flex min-w-0 items-center gap-2 font-display font-semibold text-ink">
                           {timer.soundEnabled ? (
-                            <Volume2 className="h-4 w-4 text-gold" />
+                            <Volume2 className="h-4 w-4 shrink-0 text-gold" />
                           ) : (
-                            <VolumeX className="h-4 w-4 text-dim" />
+                            <VolumeX className="h-4 w-4 shrink-0 text-dim" />
                           )}
-                          <StableButtonLabel message="เสียงเตือน 5 วินาทีสุดท้าย & หมดเวลา" />
+                          <StableButtonLabel message="เสียงเตือน 5 วิสุดท้าย" className="inline-grid text-left" />
                         </span>
                         <span
-                          className={`border px-2 py-0.5 font-mono text-[10px] font-bold ${
+                          className={`shrink-0 border px-2 py-0.5 font-mono text-[10px] font-bold ${
                             timer.soundEnabled
                               ? "border-gold/50 bg-gold/15 text-gold"
                               : "border-line bg-panel text-dim"
@@ -665,14 +675,9 @@ export function ScoreBar({
                         onClick={timer.onToggleAutoLock}
                         className="flex min-h-9 w-full items-center justify-between gap-2 border border-line bg-bg/60 px-3 py-2 text-left transition-colors hover:border-line-strong"
                       >
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5 font-display font-semibold text-ink">
-                            <Zap className="h-4 w-4 shrink-0 text-gold" />
-                            <span><StableButtonLabel message="Auto-Lock AI #1 เมื่อหมดเวลา" /></span>
-                          </div>
-                          <div className="text-[10px] text-dim">
-                            <StableButtonLabel message="หากเปิด เมื่อนับถึง 0:00 จะเลือกฮีโร่แนะนำอันดับ 1 ให้อัตโนมัติ" />
-                          </div>
+                        <div className="flex min-w-0 items-center gap-1.5 font-display font-semibold text-ink">
+                          <Zap className="h-4 w-4 shrink-0 text-gold" />
+                          <span><StableButtonLabel message="ล็อกตัวแนะนำ #1 เมื่อหมดเวลา" className="inline-grid text-left" /></span>
                         </div>
                         <span
                           className={`shrink-0 border px-2 py-0.5 font-mono text-[10px] font-bold ${
@@ -717,7 +722,7 @@ export function ScoreBar({
       {confirmResetOpen && (
         <ConfirmDialog
           title={t("เริ่มดราฟต์ใหม่ทั้งหมด?")}
-          message={t("การรีเซ็ตจะล้างรายชื่อฮีโร่ที่แบนและเลือกไว้ในกระดานปัจจุบันทั้งหมด (ประวัติซีรีส์และ Global Ban ยังอยู่)")}
+          message={t("ล้างตัวที่เลือกและแบนบนกระดานนี้ (ประวัติและ Global Ban ยังอยู่)")}
           confirmLabel="รีเซ็ตกระดาน"
           cancelLabel="ยกเลิก"
           tone="danger"

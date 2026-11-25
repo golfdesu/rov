@@ -1,6 +1,6 @@
 import { StableButtonLabel } from "./StableButtonLabel";
 import { useLanguage } from "../i18n/language";
-import { Ban, ClockAlert, Layers, Plus, X } from "lucide-react";
+import { Ban, ClockAlert, Layers, Pencil, Plus, X } from "lucide-react";
 import { type KeyboardEvent, memo } from "react";
 import type { DraftStep, Hero, HeroRecommendation, LaneKey } from "../types/draft";
 import { type DraftSlot, LANE_SHORT, laneKey } from "../utils/draft";
@@ -160,7 +160,7 @@ export const TeamColumn = memo(function TeamColumn({
                           : ""
                     }`
                   : ghostBan
-                    ? t("AI คาดเดาแบน: {0}", displayName(ghostBan.hero_name))
+                    ? t("AI คาดการณ์แบน: {0}", displayName(ghostBan.hero_name))
                     : `Ban ${i + 1}`
               )}
               className={`relative aspect-square h-7.5 w-7.5 shrink-0 overflow-hidden border bg-bg max-[374px]:size-6 min-[380px]:h-8 min-[380px]:w-8 sm:h-9 sm:w-9 ${
@@ -303,7 +303,7 @@ export const TeamColumn = memo(function TeamColumn({
                             ? t(" · ดราฟไม่ทันเวลา (0:00)")
                             : "")
                     : ghost
-                      ? t("คาดเดา: {0} ({1}%)", displayName(ghost.hero_name), ghost.probability_pct.toFixed(0))
+                      ? t("คาดการณ์: {0} ({1}%)", displayName(ghost.hero_name), ghost.probability_pct.toFixed(0))
                       : `Pick ${i + 1}`
                 )}
                 className={`relative aspect-square w-full min-w-0 overflow-hidden border bg-bg [direction:ltr] ${
@@ -429,7 +429,7 @@ export const TeamColumn = memo(function TeamColumn({
                             : ""
                       }`
                     : ghostBan
-                      ? t("AI คาดเดาแบน #{0}: {1} ({2}%){3}", ghostBanOffset + 1, displayName(ghostBan.hero_name), ghostBan.probability_pct.toFixed(1), banTriggers.length > 0 ? t(" · ป้องกัน {0}", banTriggers.join(", ")) : "")
+                      ? t("AI คาดการณ์แบน #{0}: {1} ({2}%){3}", ghostBanOffset + 1, displayName(ghostBan.hero_name), ghostBan.probability_pct.toFixed(1), banTriggers.length > 0 ? t(" · ป้องกัน {0}", banTriggers.join(", ")) : "")
                       : `Ban ${i + 1}`
                 )}
                 className={`relative aspect-square h-8.5 shrink-0 overflow-hidden border bg-panel sm:h-11 lg:h-11 xl:h-12 2xl:h-13 ${
@@ -537,10 +537,10 @@ export const TeamColumn = memo(function TeamColumn({
                           ? t(" · ดราฟไม่ทันเวลา (0:00)")
                           : "")
                   : ghost
-                    ? t("AI คาดเดาตัวถัดไป #{0}: {1} ({2}%){3}", ghostOffset + 1, displayName(ghost.hero_name), ghost.probability_pct.toFixed(1), triggerList.length > 0 ? ` · ${triggerLabel}` : "")
+                    ? t("AI คาดการณ์ตัวถัดไป #{0}: {1} ({2}%){3}", ghostOffset + 1, displayName(ghost.hero_name), ghost.probability_pct.toFixed(1), triggerList.length > 0 ? ` · ${triggerLabel}` : "")
                     : undefined
               )}
-              className={`relative min-h-[52px] flex-1 max-h-[96px] overflow-hidden border bg-panel clip-chamfer ${
+              className={`group relative min-h-[52px] flex-1 max-h-[96px] overflow-hidden border bg-panel clip-chamfer ${
                 isActive
                   ? "border-gold animate-slot-pulse"
                   : edit?.isEditing
@@ -580,6 +580,17 @@ export const TeamColumn = memo(function TeamColumn({
                       <span className="min-w-0 truncate font-display text-xs font-bold leading-tight tracking-wide sm:text-base xl:text-lg">
                         {displayName(name)}
                       </span>
+                      {edit?.overlappingLane && !edit?.isEditing && (
+                        <span className="inline-flex shrink-0 items-center border border-red/50 bg-red/20 px-1 py-0.5 font-mono text-[9px] font-bold leading-none text-red">
+                          {t("เลนซ้ำ")}
+                        </span>
+                      )}
+                      {edit && !edit.isEditing && !pickTimedOut && !edit.overlappingLane && (
+                        <Pencil
+                          aria-hidden="true"
+                          className="h-3 w-3 shrink-0 text-dim opacity-0 transition-opacity group-hover:opacity-75"
+                        />
+                      )}
                       {edit?.isEditing && (
                         <span className="inline-flex shrink-0 items-center bg-gold px-1.5 py-0.5 font-display text-[9px] font-extrabold leading-none tracking-wide text-bg sm:text-[10px]">
                           {t("กำลังแก้")}
@@ -640,11 +651,11 @@ export const TeamColumn = memo(function TeamColumn({
                   >
                     <div className="flex max-w-full items-center gap-1">
                       <span
-                        className={`truncate font-mono text-[9px] font-semibold tracking-wider uppercase sm:text-[10px] ${
+                        className={`shrink-0 font-mono text-[9px] font-semibold tracking-wider uppercase sm:text-[10px] ${
                           isActive ? "text-gold" : accent
                         }`}
                       >
-                        {isActive ? t("คาดเดา") : `#${ghostOffset + 1}`} · {ghost.probability_pct.toFixed(0)}%
+                        {isActive ? t("คาดการณ์") : `#${ghostOffset + 1}`} · {ghost.probability_pct.toFixed(0)}%
                       </span>
                       {triggerList.length > 0 && (
                         <span
@@ -714,9 +725,9 @@ export const TeamColumn = memo(function TeamColumn({
                 <div className="mb-1.5 flex min-w-0 items-center justify-between gap-1.5">
                   <div className="flex min-w-0 flex-1 items-center gap-1 sm:gap-1.5">
                     <Layers className={`h-3.5 w-3.5 shrink-0 ${accent}`} />
-                    <span className="truncate font-display text-[10px] font-bold tracking-wide text-ink sm:text-[11px]">
-                      <span className="xl:hidden">GLOBAL BAN</span>
-                      <span className="hidden xl:inline">GLOBAL BAN · {teamName}</span>
+                    <span className="min-w-0 flex-1 truncate font-display text-[10px] font-bold tracking-wide text-ink sm:text-[11px]">
+                      <span className="block truncate xl:hidden">GLOBAL BAN</span>
+                      <span className="hidden w-full truncate xl:block">GLOBAL BAN · {teamName}</span>
                     </span>
                     <span
                       className={`shrink-0 px-1 py-0.5 font-mono text-[9px] font-bold sm:px-1.5 sm:text-[10px] ${
@@ -731,15 +742,16 @@ export const TeamColumn = memo(function TeamColumn({
                     </span>
                   </div>
 
-                  {onOpenGlobalBanForTeam && (
+                  {onOpenGlobalBanForTeam && (usedHeroes.length > 0 || gameNumber === 7) && (
                     <button
                       type="button"
                       disabled={isReplaceLocked}
                       onClick={onOpenGlobalBanForTeam}
-                      className={`flex min-h-6 shrink-0 items-center gap-1 border px-1.5 py-0.5 font-display text-[10px] font-bold tracking-wide transition-colors disabled:cursor-not-allowed disabled:opacity-45 sm:px-2 ${
+                      title={t("Global Ban ของ {0} ({1} ตัว)", teamName, usedHeroes.length)}
+                      className={`flex min-h-6.5 shrink-0 items-center gap-1 border px-1.5 py-0.5 font-display text-[10px] font-bold tracking-wide transition-colors disabled:cursor-not-allowed disabled:opacity-45 sm:px-2 ${
                         isBlue
-                          ? "border-blue/50 bg-blue/10 text-blue hover:bg-blue hover:text-ink"
-                          : "border-red/50 bg-red/10 text-red hover:bg-red hover:text-ink"
+                          ? "border-blue/50 bg-blue/10 text-blue hover:bg-blue hover:text-bg"
+                          : "border-red/50 bg-red/10 text-red hover:bg-red hover:text-bg"
                       }`}
                     >
                       <Plus className="h-3 w-3 shrink-0" />
@@ -751,8 +763,7 @@ export const TeamColumn = memo(function TeamColumn({
 
                 {gameNumber === 7 ? (
                   <div className="truncate border border-gold/40 bg-gold/10 px-1.5 py-1 text-center font-display text-[10px] font-semibold text-gold sm:text-[11px]">
-                    <span className="xl:hidden">{t("G7 ULTIMATE · ปลดล็อก (")}{rawUsedCount})</span>
-                    <span className="hidden xl:inline">{t("GAME 7 ULTIMATE BATTLE · ปลดล็อก (")}{rawUsedCount})</span>
+                    <span>{t("G7 · ใช้ฮีโร่ได้ทุกตัว")} ({rawUsedCount})</span>
                   </div>
                 ) : usedHeroes.length === 0 ? (
                   onOpenGlobalBanForTeam ? (
@@ -760,10 +771,15 @@ export const TeamColumn = memo(function TeamColumn({
                       type="button"
                       disabled={isReplaceLocked}
                       onClick={onOpenGlobalBanForTeam}
-                      className="flex w-full min-w-0 items-center justify-center gap-1 border border-dashed border-line px-1.5 py-1.5 text-[10px] text-dim transition-colors hover:border-line-strong hover:bg-panel-2/50 hover:text-ink disabled:cursor-not-allowed disabled:opacity-45 sm:text-[11px]"
+                      title={t("Global Ban ของ {0} ({1} ตัว)", teamName, usedHeroes.length)}
+                      className={`flex min-h-8 w-full min-w-0 items-center justify-center gap-1.5 border border-dashed px-2 py-1.5 text-[11px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-45 ${
+                        isBlue
+                          ? "border-blue/35 text-blue/90 hover:border-blue hover:bg-blue/10"
+                          : "border-red/35 text-red/90 hover:border-red hover:bg-red/10"
+                      }`}
                     >
-                      <Plus className="h-3 w-3 shrink-0" />
-                      <span className="truncate"><StableButtonLabel message="เลือกฮีโร่ที่" /> {teamName} <StableButtonLabel message="ใช้แล้ว" /></span>
+                      <Plus className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate"><StableButtonLabel message="เพิ่มฮีโร่ที่ใช้แล้ว" /></span>
                     </button>
                   ) : (
                     <div className="flex w-full min-w-0 items-center justify-center border border-dashed border-line px-1.5 py-1.5 text-[10px] text-dim sm:text-[11px]">
@@ -771,7 +787,7 @@ export const TeamColumn = memo(function TeamColumn({
                     </div>
                   )
                 ) : (
-                  <div className="flex max-h-[76px] flex-wrap gap-1 overflow-y-auto pr-0.5">
+                  <div className="flex max-h-[82px] flex-wrap gap-1 overflow-y-auto pr-0.5">
                     {usedHeroes.map((name) => {
                       const hero = heroMap.get(name);
                       const originGame = usedHeroOriginGames[name];
@@ -780,7 +796,7 @@ export const TeamColumn = memo(function TeamColumn({
                           <div
                             key={name}
                             title={`${displayName(name)} (${teamName}${originGame ? ` · Game ${originGame}` : ""})`}
-                            className="flex max-w-full items-center gap-1 border border-line-strong bg-bg py-0.5 pr-1.5 pl-0.5 text-[10px] text-muted sm:text-[11px]"
+                            className="flex min-h-6.5 max-w-full items-center gap-1 border border-line-strong bg-bg py-0.5 pr-1.5 pl-0.5 text-[10px] text-muted sm:text-[11px]"
                           >
                             <div className="h-4.5 w-4.5 shrink-0 overflow-hidden sm:h-5 sm:w-5">
                               <HeroPortrait name={name} hero={hero} className="grayscale" />
@@ -799,7 +815,7 @@ export const TeamColumn = memo(function TeamColumn({
                           disabled={isReplaceLocked}
                           onClick={() => onRemoveUsedHero(name)}
                           title={t("{0} ({1} ใช้แล้ว{2} — คลิกเพื่อนำออก)", displayName(name), teamName, originGame ? t("ใน Game {0}", originGame) : "")}
-                          className="group flex max-w-full items-center gap-1 border border-line-strong bg-bg py-0.5 pr-1.5 pl-0.5 text-[10px] text-muted transition-colors hover:border-red/60 hover:bg-red/10 hover:text-ink disabled:cursor-not-allowed disabled:opacity-45 sm:text-[11px]"
+                          className="group flex min-h-6.5 max-w-full items-center gap-1 border border-line-strong bg-bg py-0.5 pr-1.5 pl-0.5 text-[10px] text-muted transition-colors hover:border-red/60 hover:bg-red/10 hover:text-ink disabled:cursor-not-allowed disabled:opacity-45 sm:text-[11px]"
                         >
                           <div className="h-4.5 w-4.5 shrink-0 overflow-hidden sm:h-5 sm:w-5">
                             <HeroPortrait name={name} hero={hero} className="grayscale group-hover:grayscale-0" />

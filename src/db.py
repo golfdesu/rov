@@ -31,9 +31,9 @@ DISPLAY_NAME_FREE_CHANGES = 3
 DISPLAY_NAME_COOLDOWN_SECONDS = 14 * 24 * 60 * 60
 GROUP_CAPACITY = {"duo": 2, "team_pro": 5}
 TEAM_HISTORY_LIMIT = 500
-FREE_HISTORY_LIMIT = 7
+FREE_HISTORY_LIMIT = 21
 PAID_HISTORY_LIMIT = 500
-FREE_HERO_POOL_LIMIT = 1
+FREE_HERO_POOL_LIMIT = 2
 PAID_HERO_POOL_LIMIT = 50
 TEAM_HERO_POOL_LIMIT = 50
 HERO_POOL_LANES = ("DS_Lane", "Jungle", "Mid", "Dragon_Lane", "Roam")
@@ -658,6 +658,11 @@ class UserDatabase:
         ).fetchone()
 
     @classmethod
+    def _active_team_pro(cls, conn: sqlite3.Connection, user_id: int, now: int) -> sqlite3.Row | None:
+        team = cls._active_team(conn, user_id, now)
+        return team if team is not None and str(team["tier"]) == "team_pro" else None
+
+    @classmethod
     def _is_paid_user(cls, conn: sqlite3.Connection, user_id: int, now: int) -> bool:
         own_pass = conn.execute(
             "SELECT 1 FROM billing_passes WHERE user_id = ? AND expires_at > ?", (user_id, now)
@@ -822,7 +827,7 @@ class UserDatabase:
         self.ensure_schema()
         with self._connect() as conn:
             conn.execute("BEGIN")
-            team = self._active_team(conn, user_id, int(time.time()))
+            team = self._active_team_pro(conn, user_id, int(time.time()))
             if team is None:
                 raise PermissionError("membership_required")
             rows = conn.execute(
@@ -914,7 +919,7 @@ class UserDatabase:
         return cls._set_recorded_team_names(saved, teams[key]) if key in teams else saved
 
     def _read_team_history_for_edit(self, conn: sqlite3.Connection, user_id: int) -> tuple[bool, dict]:
-        team = self._active_team(conn, user_id, int(time.time()))
+        team = self._active_team_pro(conn, user_id, int(time.time()))
         if team is None:
             raise PermissionError("membership_required")
         games = {
@@ -1010,7 +1015,7 @@ class UserDatabase:
         self.ensure_schema()
         with self._connect() as conn:
             conn.execute("BEGIN IMMEDIATE")
-            team = self._active_team(conn, user_id, int(time.time()))
+            team = self._active_team_pro(conn, user_id, int(time.time()))
             if team is None or (team["owner_id"], team["tier"]) != (owner_id, tier):
                 raise PermissionError("membership_required")
             existing = conn.execute(
@@ -1063,7 +1068,7 @@ class UserDatabase:
         self.ensure_schema()
         with self._connect() as conn:
             conn.execute("BEGIN IMMEDIATE")
-            team = self._active_team(conn, user_id, int(time.time()))
+            team = self._active_team_pro(conn, user_id, int(time.time()))
             if team is None or (team["owner_id"], team["tier"]) != (owner_id, tier):
                 raise PermissionError("membership_required")
             placeholders = ",".join("?" for _ in unique_ids)
@@ -1114,7 +1119,7 @@ class UserDatabase:
         self.ensure_schema()
         with self._connect() as conn:
             conn.execute("BEGIN IMMEDIATE")
-            team = self._active_team(conn, user_id, int(time.time()))
+            team = self._active_team_pro(conn, user_id, int(time.time()))
             if team is None:
                 raise PermissionError("membership_required")
             if not conn.execute(
@@ -1160,7 +1165,7 @@ class UserDatabase:
             conn.execute("BEGIN")
             now = int(time.time())
             is_paid = self._is_paid_user(conn, user_id, now)
-            team = self._active_team(conn, user_id, now)
+            team = self._active_team_pro(conn, user_id, now)
             personal_rows = conn.execute(
                 """
                 SELECT id, scope, team_name, lanes_json, updated_at
@@ -1216,7 +1221,7 @@ class UserDatabase:
                 tier = ""
                 limit = PAID_HERO_POOL_LIMIT if self._is_paid_user(conn, user_id, now) else FREE_HERO_POOL_LIMIT
             elif scope == "team":
-                team = self._active_team(conn, user_id, now)
+                team = self._active_team_pro(conn, user_id, now)
                 if team is None:
                     raise PermissionError("membership_required")
                 owner_id = int(team["owner_id"])
@@ -1297,7 +1302,7 @@ class UserDatabase:
                 if int(row["owner_id"]) != user_id:
                     raise LookupError("pool_not_found")
             else:
-                team = self._active_team(conn, user_id, int(time.time()))
+                team = self._active_team_pro(conn, user_id, int(time.time()))
                 if team is None or (int(team["owner_id"]), str(team["tier"])) != (
                     int(row["owner_id"]),
                     str(row["tier"]),

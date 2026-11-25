@@ -124,6 +124,7 @@ export interface RecordedDraftGame {
   globalBans?: GlobalBanLists | null;
   blueWinRate: number;
   winner?: TeamId;
+  locked?: boolean;
 }
 
 export interface DraftSessionPayload {

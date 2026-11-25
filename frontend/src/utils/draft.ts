@@ -101,7 +101,7 @@ export const LANE_SHORT: Record<string, { en: string; th: string }> = {
   DS_Lane: { en: "DSL", th: "ออฟเลน" },
   Jungle: { en: "JGL", th: "ป่า" },
   Mid: { en: "MID", th: "เลนกลาง" },
-  Dragon_Lane: { en: "ADL", th: "แครี่" },
+  Dragon_Lane: { en: "ADL", th: "เลนแครี่" },
   Roam: { en: "SUP", th: "โรมมิ่ง" },
 };
 
@@ -220,6 +220,7 @@ export type DraftAction =
   | { type: "undo" }
   | { type: "redo" }
   | { type: "reset" }
+  | { type: "swap_board_sides" }
   | {
       type: "hydrate";
       payload: {
@@ -678,6 +679,33 @@ export function draftReducer(state: DraftMachineState, action: DraftAction): Dra
     }
     case "reset":
       return INITIAL_DRAFT_STATE;
+    case "swap_board_sides": {
+      if (
+        state.stepIndex < CANONICAL_DRAFT_STEPS.length ||
+        state.bluePicks.length !== 5 ||
+        state.redPicks.length !== 5 ||
+        state.blueBans.length !== 4 ||
+        state.redBans.length !== 4
+      ) {
+        return state;
+      }
+      const swappedDraft = {
+        ...state,
+        bluePicks: [...state.redPicks],
+        redPicks: [...state.bluePicks],
+        blueBans: [...state.redBans],
+        redBans: [...state.blueBans],
+      };
+      const { history } = reconstructDraftHistory(swappedDraft);
+      return {
+        ...swappedDraft,
+        history,
+        future: [],
+        prediction: EMPTY_PREDICTION,
+        winHistory: [],
+        blueWinRate: Math.round((100 - state.blueWinRate) * 10) / 10,
+      };
+    }
     case "hydrate":
       return {
         ...state,

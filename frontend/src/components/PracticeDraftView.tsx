@@ -39,6 +39,7 @@ import {
 } from "../utils/practiceHistory";
 import { AiPanel } from "./AiPanel";
 import { Alert } from "./Alert";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { HeroGrid } from "./HeroGrid";
 import { HeroPortrait } from "./HeroPortrait";
 import { LaneIcon } from "./LaneIcon";
@@ -339,6 +340,7 @@ function PracticeRound({
   const { t } = useLanguage();
   const { startingSide, gameCount, showHints, previousEstimates } = meta;
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<"reset" | "restart" | null>(null);
   const [laneResetKey, setLaneResetKey] = useState(0);
   const aiTurnStartedAt = useRef(0);
   const handledSignaturesRef = useRef<Set<string>>(new Set(historyEntries.map((item) => item.signature)));
@@ -463,7 +465,7 @@ function PracticeRound({
 
   const aiError: Message | null =
     aiTurn && !isLoading && aiCandidates.length === 0
-      ? draft.error ?? (hasPrediction && !draft.isHeroesLoading ? "AI ยังหาฮีโร่ที่เลือกได้ไม่เจอ" : null)
+      ? draft.error ?? (hasPrediction && !draft.isHeroesLoading ? "AI เลือกฮีโร่ไม่สำเร็จ ลองกดใหม่อีกครั้ง" : null)
       : null;
   const turnText = !currentStep
     ? t("ดราฟต์จบแล้ว")
@@ -583,20 +585,22 @@ function PracticeRound({
   const renderCenterBar = (compact: boolean) => (
     <div className="flex min-w-0 flex-1 items-center gap-1.5 sm:gap-2.5">
       <div className="shrink-0 text-right leading-none">
-        <span className="mr-1.5 hidden font-display text-[10px] font-semibold tracking-widest text-blue sm:inline">
-          {blueTeamName}
-        </span>
         {showWinBar ? (
-          <span
-            className={`font-mono font-bold tabular-nums ${
-              compact ? "text-xs sm:text-base" : "text-sm sm:text-lg lg:text-xl"
-            } ${bluePct >= 50 ? "text-blue" : "text-muted"}`}
-          >
-            {bluePct.toFixed(1)}
-            <span className="text-[10px] text-dim">%</span>
-          </span>
+          <>
+            <span className="mr-1.5 hidden font-display text-[10px] font-semibold tracking-widest text-blue sm:inline">
+              {blueTeamName}
+            </span>
+            <span
+              className={`font-mono font-bold tabular-nums ${
+                compact ? "text-xs sm:text-base" : "text-sm sm:text-lg lg:text-xl"
+              } ${bluePct >= 50 ? "text-blue" : "text-muted"}`}
+            >
+              {bluePct.toFixed(1)}
+              <span className="text-[10px] text-dim">%</span>
+            </span>
+          </>
         ) : (
-          <span className="font-mono text-xs font-bold text-blue">BLUE</span>
+          <span className="font-mono text-xs font-bold text-blue">{blueTeamName} (BLUE)</span>
         )}
       </div>
 
@@ -613,6 +617,10 @@ function PracticeRound({
           <div
             className="absolute inset-y-0 right-0 bg-gradient-to-l from-red-deep to-red transition-[width] duration-700 ease-out"
             style={{ width: `${redPct}%` }}
+          />
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-0 left-1/2 z-10 w-px -translate-x-1/2 bg-ink/70"
           />
           {isLoading && <div className="absolute inset-0 animate-pulse bg-ink/10" />}
         </div>
@@ -638,20 +646,22 @@ function PracticeRound({
 
       <div className="shrink-0 leading-none">
         {showWinBar ? (
-          <span
-            className={`font-mono font-bold tabular-nums ${
-              compact ? "text-xs sm:text-base" : "text-sm sm:text-lg lg:text-xl"
-            } ${redPct >= 50 ? "text-red" : "text-muted"}`}
-          >
-            {redPct.toFixed(1)}
-            <span className="text-[10px] text-dim">%</span>
-          </span>
+          <>
+            <span
+              className={`font-mono font-bold tabular-nums ${
+                compact ? "text-xs sm:text-base" : "text-sm sm:text-lg lg:text-xl"
+              } ${redPct >= 50 ? "text-red" : "text-muted"}`}
+            >
+              {redPct.toFixed(1)}
+              <span className="text-[10px] text-dim">%</span>
+            </span>
+            <span className="ml-1.5 hidden font-display text-[10px] font-semibold tracking-widest text-red sm:inline">
+              {redTeamName}
+            </span>
+          </>
         ) : (
-          <span className="font-mono text-xs font-bold text-red">RED</span>
+          <span className="font-mono text-xs font-bold text-red">{redTeamName} (RED)</span>
         )}
-        <span className="ml-1.5 hidden font-display text-[10px] font-semibold tracking-widest text-red sm:inline">
-          {redTeamName}
-        </span>
       </div>
     </div>
   );
@@ -670,7 +680,7 @@ function PracticeRound({
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       {/* Sub-Header Controls Bar (Single compact row on mobile, full bar on >= sm) */}
       <div className="shrink-0 border-b border-line bg-panel/60 px-2 py-1 sm:px-3 sm:py-1.5 xl:px-4">
-        <div className="mx-auto flex max-w-[1920px] items-center justify-between gap-1 sm:flex-wrap sm:gap-1.5">
+        <div className="mx-auto flex max-w-[1920px] flex-wrap items-center justify-between gap-1 sm:gap-1.5">
           {/* Left: Mode badge + Series BoX selector + Game Status */}
           <div className="flex min-w-0 items-center gap-1 sm:flex-wrap sm:gap-2">
             <div className="hidden items-center gap-1.5 sm:flex">
@@ -709,8 +719,8 @@ function PracticeRound({
                     aria-checked={active}
                     disabled={lockedBelowCurrent}
                     onClick={() => onUpdateMeta((prev) => ({ ...prev, gameCount: count }))}
-                    className={`h-6 min-w-8 px-2 font-mono text-[11px] font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-35 ${
-                      active ? "bg-gold text-bg" : "text-muted hover:bg-panel-2 hover:text-ink"
+                    className={`h-7 min-w-8 px-2 font-mono text-[11px] font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-35 ${
+                      active ? "bg-ink text-bg" : "text-muted hover:bg-panel-2 hover:text-ink"
                     }`}
                   >
                     Bo{count}
@@ -719,7 +729,7 @@ function PracticeRound({
               })}
             </div>
 
-            <span className="shrink-0 border border-gold/40 bg-gold/10 px-1.5 py-0.5 font-mono text-[11px] font-bold text-gold sm:px-2">
+            <span className="shrink-0 border border-line-strong bg-panel-2 px-1.5 py-0.5 font-mono text-[11px] font-bold tabular-nums text-ink sm:px-2">
               <span className="sm:hidden">G{gameNumber}/{gameCount}</span>
               <span className="hidden sm:inline">{t("เกม {0}/{1}", gameNumber, gameCount)}</span>
             </span>
@@ -740,7 +750,7 @@ function PracticeRound({
                 aria-label={t("ฝั่งน้ำเงิน")}
                 title={t("ฝั่งน้ำเงิน")}
                 onClick={() => onSwitchSide("blue")}
-                className={`h-6 px-1.5 font-display text-[11px] font-bold transition-colors sm:px-2 ${
+                className={`h-7 px-1.5 font-display text-[11px] font-bold transition-colors sm:px-2 ${
                   playerSide === "blue"
                     ? "bg-blue/20 text-blue"
                     : "text-muted hover:text-blue"
@@ -755,7 +765,7 @@ function PracticeRound({
                 aria-label={t("ฝั่งแดง")}
                 title={t("ฝั่งแดง")}
                 onClick={() => onSwitchSide("red")}
-                className={`h-6 px-1.5 font-display text-[11px] font-bold transition-colors sm:px-2 ${
+                className={`h-7 px-1.5 font-display text-[11px] font-bold transition-colors sm:px-2 ${
                   playerSide === "red"
                     ? "bg-red/20 text-red"
                     : "text-muted hover:text-red"
@@ -769,7 +779,7 @@ function PracticeRound({
                 title={t("สุ่มฝั่ง")}
                 aria-label={t("สุ่มฝั่ง")}
                 onClick={() => onSwitchSide(Math.random() < 0.5 ? "blue" : "red")}
-                className="inline-flex h-6 items-center gap-1 border-l border-line px-1.5 font-display text-[11px] font-semibold text-muted transition-colors hover:text-gold sm:px-2"
+                className="inline-flex h-7 items-center gap-1 border-l border-line px-1.5 font-display text-[11px] font-semibold text-muted transition-colors hover:text-gold sm:px-2"
               >
                 <Shuffle className="size-3 shrink-0" aria-hidden="true" />
                 <span className="hidden md:inline"><StableButtonLabel message="สุ่มฝั่ง" /></span>
@@ -788,11 +798,11 @@ function PracticeRound({
                 }}
                 className={`${HEADER_ACTION_CLASS} ${
                   showHints
-                    ? "border-gold bg-gold/15 text-gold shadow-sm"
+                    ? "border-gold/45 bg-panel-2 text-ink shadow-sm hover:border-gold"
                     : "border-line-strong bg-panel text-muted hover:border-gold/50 hover:text-ink"
                 }`}
               >
-                <Sparkles className="size-3.5 shrink-0" aria-hidden="true" />
+                <Sparkles className={`size-3.5 shrink-0 ${showHints ? "text-gold" : "text-dim"}`} aria-hidden="true" />
                 <span className="hidden sm:inline"><StableButtonLabel message="ตัวช่วย" /></span>
               </button>
             )}
@@ -802,27 +812,29 @@ function PracticeRound({
               onClick={() => setIsHistoryOpen(true)}
               aria-label={t("ประวัติการดราฟต์แข่งกับ AI")}
               title={t("ประวัติการดราฟต์แข่งกับ AI")}
-              className={`${HEADER_ACTION_CLASS} ${
-                historyEntries.length > 0
-                  ? "border-gold/50 bg-gold/10 text-gold hover:bg-gold hover:text-bg"
-                  : "border-line-strong bg-panel text-muted hover:border-gold/50 hover:text-ink"
-              }`}
+              className={`${HEADER_ACTION_CLASS} border-line-strong bg-panel-2 text-ink hover:border-gold/60 hover:text-gold`}
             >
-              <History className="size-3.5 shrink-0" aria-hidden="true" />
+              <History className="size-3.5 shrink-0 text-muted" aria-hidden="true" />
               <span className="hidden sm:inline"><StableButtonLabel message="ประวัติ" /></span>
-              <span className="border border-current/25 bg-bg/50 px-1 font-mono text-[10px] leading-tight">
+              <span className="border border-line-strong bg-bg px-1 font-mono text-[10px] leading-tight tabular-nums text-ink">
                 {historyEntries.length}
               </span>
             </button>
 
             <button
               type="button"
-              onClick={onRestart}
+              onClick={() => {
+                if (hasAnyAction || gameNumber > 1) {
+                  setConfirmAction("restart");
+                } else {
+                  onRestart();
+                }
+              }}
               aria-label={t("เริ่มรอบใหม่")}
               title={t("เริ่มรอบใหม่")}
-              className={`${HEADER_ACTION_CLASS} border-gold bg-gold font-bold text-bg hover:bg-gold/90`}
+              className={`${HEADER_ACTION_CLASS} border-line-strong bg-panel-2 font-semibold text-ink hover:border-gold/60 hover:text-gold`}
             >
-              <PlusCircle className="size-3.5 shrink-0" aria-hidden="true" />
+              <PlusCircle className="size-3.5 shrink-0 text-gold" aria-hidden="true" />
               <span className="hidden sm:inline"><StableButtonLabel message="เริ่มรอบใหม่" /></span>
             </button>
           </div>
@@ -832,18 +844,26 @@ function PracticeRound({
       {/* Broadcast Score & Turn Status Header (Matches ScoreBar layout) */}
       <header className="shrink-0 border-b border-line bg-bg/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-[1920px] items-center justify-between gap-2 px-2.5 py-1.5 sm:gap-4 sm:px-4 sm:py-2">
-          <div role="status" className="flex shrink-0 items-center gap-2 sm:gap-3">
-            <div className="hidden h-8 w-8 place-items-center bg-panel-2 clip-chamfer-sm sm:grid">
-              <Bot className="size-4 text-gold" aria-hidden="true" />
-            </div>
-            <div className="flex flex-col leading-tight">
-              <span className="font-mono text-[9.5px] font-semibold text-dim sm:text-xs">
-                STEP {currentStep ? currentStepIndex + 1 : draft.totalSteps}/{draft.totalSteps}
-              </span>
-              <strong className={`font-display text-xs font-bold tracking-wide sm:text-base ${stepTone}`}>
-                {turnText}
-              </strong>
-            </div>
+          <div
+            role="status"
+            className={`flex min-w-0 flex-col border-l-2 pl-2 leading-tight ${
+              !currentStep
+                ? "border-gold bg-gold/10 pr-2 py-0.5"
+                : playerTurn
+                  ? playerSide === "blue"
+                    ? "border-blue bg-blue/10 pr-2 py-0.5"
+                    : "border-red bg-red/10 pr-2 py-0.5"
+                  : playerSide === "blue"
+                    ? "border-red bg-red/10 pr-2 py-0.5"
+                    : "border-blue bg-blue/10 pr-2 py-0.5"
+            }`}
+          >
+            <span className="font-mono text-[9.5px] font-semibold tabular-nums text-dim sm:text-xs">
+              STEP {currentStep ? currentStepIndex + 1 : draft.totalSteps}/{draft.totalSteps}
+            </span>
+            <strong className={`font-display text-xs font-bold tracking-wide sm:text-base ${stepTone}`}>
+              {turnText}
+            </strong>
           </div>
 
           <div className="hidden min-w-0 max-w-3xl flex-1 items-center px-4 lg:flex xl:max-w-4xl">
@@ -865,10 +885,10 @@ function PracticeRound({
             <button
               type="button"
               disabled={!hasAnyAction}
-              onClick={draft.reset}
+              onClick={() => setConfirmAction("reset")}
               title={t("รีเซ็ตเกมนี้")}
               aria-label={t("รีเซ็ตเกมนี้")}
-              className="flex h-8 items-center gap-1.5 border border-red/50 bg-red/10 px-2.5 font-display text-xs font-bold text-red transition-colors hover:bg-red hover:text-ink disabled:pointer-events-none disabled:opacity-35 sm:h-8.5"
+              className="flex h-8 items-center gap-1.5 border border-red/50 bg-red/10 px-2.5 font-display text-xs font-bold text-red transition-colors hover:bg-red hover:text-bg disabled:pointer-events-none disabled:opacity-35 sm:h-8.5"
             >
               <RotateCcw className="size-3.5 shrink-0" aria-hidden="true" />
               <span className="hidden xl:inline">RESET</span>
@@ -954,29 +974,38 @@ function PracticeRound({
                     </div>
                   </>
                 )}
-                <div
-                  className={`flex min-h-0 flex-1 flex-col ${
-                    showHints ? "md:col-span-7" : "md:col-span-12"
-                  }`}
-                >
-                  <HeroGrid
-                    heroes={draft.heroes}
-                    unavailableHeroes={unavailableHeroes}
-                    blueUsedHeroes={bUsed}
-                    redUsedHeroes={rUsed}
-                    universalBans={draft.globalBans.universalBans}
-                    blueTeamName={blueTeamName}
-                    redTeamName={redTeamName}
-                    recommendedRanks={hintedRanks}
-                    missingAllyLanes={showHints ? draft.missingAllyLanes : []}
-                    currentStep={currentStep}
-                    allowLock={playerTurn}
-                    isLoading={showHints && isLoading}
-                    isHeroesLoading={draft.isHeroesLoading}
-                    laneResetKey={laneResetKey}
-                    onLockHero={handlePlayerLock}
-                  />
-                </div>
+                  <div
+                    className={`flex min-h-0 flex-1 flex-col gap-1.5 ${
+                      showHints ? "md:col-span-7" : "md:col-span-12"
+                    }`}
+                  >
+                    {aiTurn && (
+                      <div
+                        role="status"
+                        className="flex shrink-0 items-center justify-center gap-2 border border-line-strong bg-panel-2 px-3 py-1.5 font-mono text-xs font-semibold text-gold"
+                      >
+                        <Bot className="size-3.5 shrink-0 animate-pulse" aria-hidden="true" />
+                        <span>{t("AI กำลังคิด…")}</span>
+                      </div>
+                    )}
+                    <HeroGrid
+                      heroes={draft.heroes}
+                      unavailableHeroes={unavailableHeroes}
+                      blueUsedHeroes={bUsed}
+                      redUsedHeroes={rUsed}
+                      universalBans={draft.globalBans.universalBans}
+                      blueTeamName={blueTeamName}
+                      redTeamName={redTeamName}
+                      recommendedRanks={hintedRanks}
+                      missingAllyLanes={showHints ? draft.missingAllyLanes : []}
+                      currentStep={currentStep}
+                      allowLock={playerTurn}
+                      isLoading={showHints && isLoading}
+                      isHeroesLoading={draft.isHeroesLoading}
+                      laneResetKey={laneResetKey}
+                      onLockHero={handlePlayerLock}
+                    />
+                  </div>
               </>
             ) : (
               <div className="min-h-0 flex-1 overflow-y-auto md:col-span-12">
@@ -1003,6 +1032,26 @@ function PracticeRound({
           onDeleteEntry={onDeleteHistoryEntry}
           onClearAll={onClearHistory}
           onClose={() => setIsHistoryOpen(false)}
+        />
+      )}
+      {confirmAction && (
+        <ConfirmDialog
+          title={t(confirmAction === "restart" ? "เริ่มรอบใหม่ทั้งหมด?" : "รีเซ็ตเกมนี้?")}
+          message={t(
+            confirmAction === "restart"
+              ? "ล้างกระดานและ Global Ban ทั้งซีรีส์เพื่อเริ่มฝึกดราฟต์รอบใหม่ใช่ไหม?"
+              : "ล้างตัวที่เลือกและแบนทั้งหมดในเกมปัจจุบันเพื่อเริ่มเกมนี้ใหม่ใช่ไหม?",
+          )}
+          confirmLabel={confirmAction === "restart" ? "เริ่มรอบใหม่" : "รีเซ็ตกระดาน"}
+          cancelLabel="ยกเลิก"
+          tone="danger"
+          onCancel={() => setConfirmAction(null)}
+          onConfirm={() => {
+            const action = confirmAction;
+            setConfirmAction(null);
+            if (action === "restart") onRestart();
+            else draft.reset();
+          }}
         />
       )}
     </div>
@@ -1060,8 +1109,8 @@ function PracticeReview({
                 </span>
               </div>
               {playerEstimate !== null ? (
-                <p className={`text-xs font-semibold sm:text-sm ${playerFavoured ? "text-good" : "text-muted"}`}>
-                  {t("โมเดลประเมินโอกาสชนะของฝั่งคุณ {0}%", playerEstimate.toFixed(1))}
+                <p className={`font-mono text-xs font-semibold tabular-nums sm:text-sm ${playerFavoured ? "text-good" : "text-muted"}`}>
+                  {t("โอกาสชนะฝั่งคุณ {0}%", playerEstimate.toFixed(1))}
                 </p>
               ) : evaluationFailed ? (
                 <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-red">

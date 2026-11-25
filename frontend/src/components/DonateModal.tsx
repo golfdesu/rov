@@ -59,7 +59,7 @@ export function DonateModal({ onClose }: DonateModalProps) {
         </a>
 
         <p className="w-full border border-red/35 bg-red/10 px-3 py-2 text-xs leading-relaxed text-red sm:text-[13px]">
-          {t("หมายเหตุ: การโดเนทเป็นการสนับสนุนโดยสมัครใจ ไม่การันตีว่าเว็บจะเปิดให้บริการต่อ และไม่สามารถขอคืนเงินได้ทุกกรณี")}
+          {t("การสนับสนุนโดยสมัครใจ ขอคืนเงินไม่ได้ และไม่ผูกพันระยะเวลาเปิดให้บริการ")}
         </p>
       </div>
         </>

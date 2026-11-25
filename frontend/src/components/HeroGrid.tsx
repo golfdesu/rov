@@ -144,9 +144,13 @@ export const HeroGrid = memo(
         HERO_COLLATOR.compare(parsedHeroMeta.get(a.name)?.label ?? a.name, parsedHeroMeta.get(b.name)?.label ?? b.name),
     );
   }, [heroes, parsedHeroMeta, query, lane, unavailableHeroes, recommendedRanks, missing, allyPoolHeroLanes]);
-  const chip = (active: boolean) =>
-    `h-6 shrink-0 border px-2 font-display text-[10px] font-semibold tracking-wide transition-colors sm:h-6.5 sm:px-2.5 sm:text-[11px] ${
-      active ? "border-gold/60 bg-gold/10 text-gold" : "border-line text-muted hover:border-line-strong hover:text-ink"
+  const chip = (active: boolean, isMissingLane = false) =>
+    `relative h-7 shrink-0 border px-2 font-display text-[10px] font-semibold tracking-wide transition-colors sm:h-7.5 sm:px-2.5 sm:text-[11px] ${
+      active
+        ? "border-ink/50 bg-panel-2 text-ink"
+        : isMissingLane
+          ? "border-good/55 bg-good/10 text-good hover:bg-good/20"
+          : "border-line text-muted hover:border-line-strong hover:text-ink"
     }`;
 
   return (
@@ -218,27 +222,33 @@ export const HeroGrid = memo(
 
         <div className="flex items-center gap-1 overflow-x-auto pb-0.5">
           <button type="button" className={chip(lane === null)} onClick={() => setLane(null)}>
-            ALL
+            {t("ทั้งหมด")}
           </button>
-          {LANE_KEYS.map((k) => (
-            <button
-              key={k}
-              type="button"
-              title={t(LANE_SHORT[k].th)}
-              aria-label={t(LANE_SHORT[k].th)}
-              className={`${chip(lane === k)} inline-flex items-center gap-1`}
-              onClick={() => setLane(lane === k ? null : k)}
-            >
-              <LaneIcon lane={k} className="h-3.5 w-3.5 sm:h-3 sm:w-3" />
-              <span className="hidden sm:inline">{LANE_SHORT[k].en}</span>
-            </button>
-          ))}
+          {LANE_KEYS.map((k) => {
+            const isMissingLane = !isBan && missing.size < 5 && missing.has(k);
+            return (
+              <button
+                key={k}
+                type="button"
+                title={t(LANE_SHORT[k].th)}
+                aria-label={t(LANE_SHORT[k].th)}
+                className={`${chip(lane === k, isMissingLane)} inline-flex items-center gap-1`}
+                onClick={() => setLane(lane === k ? null : k)}
+              >
+                <LaneIcon lane={k} className="h-3.5 w-3.5 sm:h-3 sm:w-3" />
+                <span className="hidden sm:inline">{LANE_SHORT[k].en}</span>
+                {isMissingLane && lane !== k && (
+                  <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-good" />
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Grid — fills remaining vertical height and scrolls internally */}
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-        <div className="grid grid-cols-5 gap-1 p-2 sm:grid-cols-6 sm:gap-1.5 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-9">
+        <div className="grid grid-cols-5 gap-1 p-2 sm:grid-cols-[repeat(auto-fill,minmax(78px,1fr))] sm:gap-1.5 xl:grid-cols-[repeat(auto-fill,minmax(86px,1fr))]">
           {isHeroesLoading &&
             Array.from({ length: 18 }).map((_, i) => <div key={i} className="aspect-square animate-pulse bg-panel-2" />)}
           {!isHeroesLoading && filtered.length === 0 && (
@@ -277,7 +287,7 @@ export const HeroGrid = memo(
                 type="button"
                 disabled={disabled}
                 onClick={() => lockHeroAndResetLane(hero.name, true)}
-                title={`${displayName(hero.name)} · ${hero.role} · ${primaryLane} · Tier ${hero.tier}${
+                title={`${displayName(hero.name)} · ${hero.role} · ${t(LANE_SHORT[primaryLane]?.th ?? primaryLane)} · Tier ${hero.tier}${
                   lockedByGlobalBan
                     ? ` · GLOBAL BAN (${inUnivBan ? t("แบนร่วม") : isBan ? t("{0} เคยใช้แล้ว · ไม่ต้องแบน", opponentTeamName) : t("{0} ใช้แล้ว", actingTeamName)})`
                     : canBanToDeny
@@ -293,15 +303,17 @@ export const HeroGrid = memo(
                       ? "border-red/40 opacity-45 grayscale"
                       : taken
                         ? "border-line opacity-25 grayscale"
-                        : rank
-                          ? "border-gold/70 ring-1 ring-gold/40 hover:border-gold"
-                          : fillsLane
-                            ? "border-good/40 hover:border-good"
-                            : canBanToDeny
-                              ? "border-blue/50 hover:border-blue"
-                              : replacingHero
-                                ? "border-gold/30 hover:border-gold hover:ring-1 hover:ring-gold/50"
-                                : "border-line hover:border-muted"
+                        : rank === 1
+                          ? "border-gold ring-1 ring-gold/40 hover:border-gold"
+                          : rank && rank <= 5
+                            ? "border-gold/45 hover:border-gold"
+                            : fillsLane
+                              ? "border-good/40 hover:border-good"
+                              : canBanToDeny
+                                ? "border-blue/50 hover:border-blue"
+                                : replacingHero
+                                  ? "border-gold/30 hover:border-gold hover:ring-1 hover:ring-gold/50"
+                                  : "border-line hover:border-muted"
                 } ${disabled ? "cursor-not-allowed" : "hover:-translate-y-0.5"}`}
               >
                 <HeroPortrait
@@ -309,7 +321,7 @@ export const HeroGrid = memo(
                   hero={hero}
                   className="transition-transform duration-300 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/30 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-bg/95 via-bg/45 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-1 px-1.5 pb-1">
                   <span className="truncate font-display text-[11px] font-bold leading-tight tracking-wide">
                     {displayName(hero.name)}
@@ -320,15 +332,23 @@ export const HeroGrid = memo(
                     {LANE_SHORT[primaryLane]?.en}
                   </span>
                 </div>
-                <span
-                  className={`absolute top-1 left-1 border px-1 font-mono text-[9px] font-bold ${
-                    rank && !taken ? "hidden xl:inline-block" : ""
-                  } ${TIER_STYLE[hero.tier] ?? TIER_STYLE.B}`}
-                >
-                  {hero.tier}
-                </span>
+                {!(rank && !taken) && (
+                  <span
+                    className={`absolute top-1 left-1 border px-1 font-mono text-[9px] font-bold ${TIER_STYLE[hero.tier] ?? TIER_STYLE.B}`}
+                  >
+                    {hero.tier}
+                  </span>
+                )}
                 {rank && !taken && (
-                  <span className="absolute top-1 right-1 bg-gold px-1 font-mono text-[10px] font-bold text-bg">
+                  <span
+                    className={`absolute top-1 right-1 px-1 font-mono text-[10px] font-bold tabular-nums ${
+                      rank === 1
+                        ? "bg-gold text-bg"
+                        : rank <= 5
+                          ? "border border-gold/60 bg-bg/90 text-gold"
+                          : "border border-line-strong bg-bg/85 text-ink"
+                    }`}
+                  >
                     #{rank}
                   </span>
                 )}
@@ -338,7 +358,7 @@ export const HeroGrid = memo(
                       isBlueTurn ? "bg-red/85 text-ink" : "bg-blue/85 text-ink"
                     }`}
                   >
-                    {opponentTeamName.slice(0, 4)} {t("ใช้แล้ว")}
+                    <span className="hidden sm:inline">{opponentTeamName.slice(0, 4)} </span>{t("ใช้แล้ว")}
                   </span>
                 )}
                 {canBanToDeny && !rank && (
@@ -347,7 +367,7 @@ export const HeroGrid = memo(
                       isBlueTurn ? "bg-blue/85 text-ink" : "bg-red/85 text-ink"
                     }`}
                   >
-                    {actingTeamName.slice(0, 4)} {t("เคยเล่น")}
+                    <span className="hidden sm:inline">{actingTeamName.slice(0, 4)} </span>{t("เคยเล่น")}
                   </span>
                 )}
                 {lockedByGlobalBan && (

@@ -1,4 +1,4 @@
-import { ArrowLeft, Pencil, User } from "lucide-react";
+import { ArrowLeft, Check, Copy, Pencil, User } from "lucide-react";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { ApiError } from "../api/client";
 import { useLanguage } from "../i18n/language";
@@ -22,7 +22,7 @@ function displayNameError(error: unknown): string {
     if (error.status === 401) return "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่";
     if (error.status === 409) return "ข้อมูลบัญชีเปลี่ยนไป กรุณาโหลดหน้าใหม่";
     if (error.status === 422) return DISPLAY_NAME_HINT;
-    if (error.status === 429) return "ยังเปลี่ยนชื่อไม่ได้ในช่วงรอ";
+    if (error.status === 429) return "ยังไม่ถึงเวลาเปลี่ยนชื่อครั้งถัดไป";
   }
   return "บันทึกชื่อที่แสดงไม่สำเร็จ กรุณาลองใหม่";
 }
@@ -39,6 +39,7 @@ export function ProfileView({ user, onSaveDisplayName }: ProfileViewProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [copiedUsername, setCopiedUsername] = useState(false);
   const [now, setNow] = useState(Date.now);
   const [retryAt, setRetryAt] = useState<number | null>(null);
   const accountName = accountLabel(user);
@@ -48,8 +49,8 @@ export function ProfileView({ user, onSaveDisplayName }: ProfileViewProps) {
   const quotaMessage = coolingDown
     ? t("เปลี่ยนได้อีกครั้ง {0}", new Intl.DateTimeFormat(language, { dateStyle: "medium", timeStyle: "short" }).format(unlockAt))
     : freeChanges > 0
-      ? t("เปลี่ยนชื่อได้ทันทีอีก {0} ครั้ง", freeChanges)
-      : t("เปลี่ยนชื่อได้แล้ว หลังบันทึกจะรออีก 14 วัน");
+      ? t("เปลี่ยนชื่อได้อีก {0} ครั้ง", freeChanges)
+      : t("เปลี่ยนชื่อได้ (หลังบันทึกต้องรอ 14 วัน)");
 
   useEffect(() => titleRef.current?.focus(), []);
   useEffect(() => {
@@ -106,29 +107,54 @@ export function ProfileView({ user, onSaveDisplayName }: ProfileViewProps) {
     }
   }
 
+  function copyUsername() {
+    if (typeof navigator === "undefined" || !navigator.clipboard?.writeText) return;
+    void navigator.clipboard.writeText(`@${user.username}`).then(() => {
+      setCopiedUsername(true);
+      window.setTimeout(() => setCopiedUsername(false), 2000);
+    });
+  }
+
   return (
     <main className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:py-8">
-      <div className="mx-auto max-w-lg space-y-4">
-        <a href="#" className="inline-flex min-h-8 items-center gap-2 text-sm text-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-gold">
+      <div className={`mx-auto space-y-4 ${user.stripe_sandbox_enabled ? "max-w-4xl" : "max-w-xl"}`}>
+        <a href="#" className="inline-flex min-h-9 items-center gap-2 text-sm text-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-gold">
           <ArrowLeft className="size-4" aria-hidden="true" />
           {t("กลับไปหน้าดราฟต์")}
         </a>
+        <div className={user.stripe_sandbox_enabled ? "grid grid-cols-1 items-start gap-5 lg:grid-cols-12" : "space-y-4"}>
+        <div className={user.stripe_sandbox_enabled ? "space-y-5 lg:col-span-5" : "space-y-4"}>
         <section className="border border-line bg-panel">
-          <div className="flex items-center gap-3 border-b border-line p-4 sm:p-5">
-            <div className="grid size-10 shrink-0 place-items-center border border-line bg-panel-2 text-gold">
-              <User className="size-5" aria-hidden="true" />
+          <div className="flex items-center justify-between gap-3 border-b border-line bg-linear-to-r from-gold/10 to-transparent p-4 sm:p-5">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="clip-chamfer-sm grid size-10 shrink-0 place-items-center border border-gold/40 bg-gold/10 text-gold">
+                <User className="size-5" aria-hidden="true" />
+              </div>
+              <div className="min-w-0">
+                <h1 ref={titleRef} tabIndex={-1} className="truncate font-display text-lg font-bold text-ink outline-none">
+                  {accountName}
+                </h1>
+                <p className="truncate font-mono text-xs text-muted">@{user.username}</p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <h1 ref={titleRef} tabIndex={-1} className="font-display text-lg font-bold text-ink outline-none">
-                {t("โปรไฟล์")}
-              </h1>
-            </div>
+            <button
+              type="button"
+              onClick={copyUsername}
+              aria-label={t("คัดลอกชื่อผู้ใช้ @{0}", user.username)}
+              className="inline-flex min-h-8 shrink-0 items-center gap-1.5 border border-line-strong bg-panel-2 px-2.5 font-mono text-[11px] font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold"
+            >
+              {copiedUsername ? <Check className="size-3.5 text-good" aria-hidden="true" /> : <Copy className="size-3.5 text-muted" aria-hidden="true" />}
+              <span>{copiedUsername ? t("คัดลอกแล้ว") : t("คัดลอก")}</span>
+            </button>
           </div>
           <div className="space-y-3 p-4 sm:p-5">
             {editing ? (
               <form className="space-y-3" onSubmit={saveDisplayName} aria-busy={saving} noValidate>
                 <label className="block space-y-1.5 text-sm font-semibold text-ink">
-                  <span>{t("ชื่อที่แสดงบนเว็บ")}</span>
+                  <span className="flex items-center justify-between gap-2">
+                    <span>{t("ชื่อที่แสดง")}</span>
+                    <span className="font-mono text-xs font-normal tabular-nums text-dim">{displayName.trim().length}/40</span>
+                  </span>
                   <input
                     ref={inputRef}
                     type="text"
@@ -138,14 +164,12 @@ export function ProfileView({ user, onSaveDisplayName }: ProfileViewProps) {
                     value={displayName}
                     readOnly={saving}
                     aria-invalid={error ? true : undefined}
-                    aria-describedby={error ? "profile-display-name-error" : "profile-display-name-hint"}
+                    aria-describedby={error ? "profile-display-name-error" : undefined}
                     onChange={(event) => { setDisplayName(event.target.value); setError(null); }}
-                    className="min-h-10 w-full border border-line-strong bg-bg px-3 text-base text-ink focus-visible:outline-2 focus-visible:outline-gold"
+                    className="min-h-10 w-full border border-line-strong bg-bg px-3 text-base text-ink focus:border-gold/60 focus-visible:outline-2 focus-visible:outline-gold"
                   />
                 </label>
-                {error
-                  ? <div id="profile-display-name-error"><Alert>{t(error)}</Alert></div>
-                  : <p id="profile-display-name-hint" className="text-xs text-muted">{t(DISPLAY_NAME_HINT)}</p>}
+                {error && <div id="profile-display-name-error"><Alert>{t(error)}</Alert></div>}
                 <div className="flex justify-end gap-2">
                   <button type="button" disabled={saving} onClick={closeEditor} className={`${BUTTON_CLASS} border-line-strong text-ink hover:bg-panel-2 disabled:opacity-50`}>
                     <StableButtonLabel message="ยกเลิก" />
@@ -158,7 +182,7 @@ export function ProfileView({ user, onSaveDisplayName }: ProfileViewProps) {
             ) : (
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-xs text-muted">{t("ชื่อที่แสดงบนเว็บ")}</p>
+                  <p className="text-xs text-muted">{t("ชื่อที่แสดง")}</p>
                   <p className="break-words text-sm font-semibold text-ink">{accountName}</p>
                 </div>
                 <button
@@ -184,17 +208,15 @@ export function ProfileView({ user, onSaveDisplayName }: ProfileViewProps) {
             </p>
             {saved && <p role="status" className="text-sm text-good">{t("บันทึกชื่อที่แสดงแล้ว")}</p>}
           </div>
-          <div className="border-t border-line p-4 sm:p-5">
-            <p className="text-xs text-muted">{t("ชื่อผู้ใช้สำหรับเข้าสู่ระบบ")}</p>
-            <p className="break-all font-mono text-sm font-semibold text-ink">{user.username}</p>
-          </div>
         </section>
+        </div>
         {user.stripe_sandbox_enabled && (
-          <>
-            <TeamSandbox key={`team-${user.id}`} currentUsername={user.username} />
+          <div className="space-y-5 lg:col-span-7">
             <BillingSandbox key={`billing-${user.id}`} username={user.username} />
-          </>
+            <TeamSandbox key={`team-${user.id}`} currentUsername={user.username} />
+          </div>
         )}
+        </div>
       </div>
     </main>
   );

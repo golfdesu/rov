@@ -446,6 +446,7 @@ class ArchivedDraftGameSchema(BaseModel):
     globalBans: GlobalBanListsSchema | None = None
     blueWinRate: FinitePct = 50.0
     winner: Literal["A", "B"] | None = None
+    locked: bool = False
 
 
 class RecordedDraftGameSchema(ArchivedDraftGameSchema):

@@ -117,6 +117,9 @@ function upsertSeriesGame(
   currentGroup: string,
   limit?: number,
 ): RecordedDraftGame[] {
+  if (list.some((g) => getGameSeriesKey(g) === currentGroup && g.gameNumber === snapshot.gameNumber && g.locked)) {
+    return list;
+  }
   const nameSource = getGameNameSource(list, currentGroup, snapshot.gameNumber);
   const namedDraft = nameSource
     ? { ...snapshot, gameName: nameSource.gameName, gameNameShared: nameSource.gameNameShared }
@@ -353,6 +356,9 @@ export function parseImportedDraftGames(
     if (item.teamNamesShared != null && typeof item.teamNamesShared !== "boolean") {
       return { ok: false, error: "invalid_format" };
     }
+    if (item.locked != null && typeof item.locked !== "boolean") {
+      return { ok: false, error: "invalid_format" };
+    }
 
     let timestamp = formatRecordedTimestamp(new Date(stamp), false);
     if (item.timestamp !== undefined && item.timestamp !== null) {
@@ -429,6 +435,7 @@ export function parseImportedDraftGames(
       blueTeamName,
       redTeamName,
       winner,
+      locked: item.locked === true,
       bluePicks,
       redPicks,
       blueBans,
@@ -467,6 +474,7 @@ export function normalizeSessionPayload(parsed: Partial<DraftSessionPayload>): D
           gameName: normalizeHistoryName(g.gameName),
           gameNameShared: g.gameNameShared === true,
           teamNamesShared: g.teamNamesShared === true,
+          locked: g.locked === true,
           tournament: normalizeTournament(g.tournament),
         };
       })
@@ -646,7 +654,7 @@ function useHeroCatalog() {
         }
       })
       .catch(() => {
-        if (!cancelled) setError("Failed to load hero database");
+        if (!cancelled) setError("โหลดข้อมูลฮีโร่ไม่สำเร็จ");
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
@@ -751,6 +759,17 @@ export function useDraft(options: UseDraftOptions = {}) {
     [bluePicks, redPicks, blueBans, redBans, globalBans],
   );
   const conflictingHero = globalBanConflicts[0]?.hero;
+  const currentSeriesGroupKey = resolveSeriesKey(globalBans);
+  const currentSavedGame = useMemo(
+    () =>
+      fromTeamHistory
+        ? null
+        : (seriesGames.find(
+            (g) => getGameSeriesKey(g) === currentSeriesGroupKey && g.gameNumber === globalBans.gameNumber,
+          ) ?? null),
+    [fromTeamHistory, seriesGames, currentSeriesGroupKey, globalBans.gameNumber],
+  );
+  const isCurrentGameLocked = Boolean(currentSavedGame?.locked);
 
   const applyRemoteSession = useCallback(
     (rawRemote: DraftSessionPayload) => {
@@ -1125,7 +1144,7 @@ export function useDraft(options: UseDraftOptions = {}) {
             ? "คำขอแนะนำ AI ถี่เกินไปชั่วคราว กรุณารอสักครู่แล้วกดลองใหม่"
             : err instanceof Error
               ? err.message
-              : "Draft AI service error";
+              : "เชื่อมต่อระบบแนะนำ AI ไม่สำเร็จ";
         setPredictError(msg);
         if (!step) {
           dispatch({ type: "predicted", stepIndex, prediction: EMPTY_PREDICTION, blueWinRate: null });
@@ -1306,6 +1325,23 @@ export function useDraft(options: UseDraftOptions = {}) {
     }));
   }, []);
 
+  const swapTeamAndBoardSides = useCallback(() => {
+    if (
+      state.stepIndex < CANONICAL_DRAFT_STEPS.length ||
+      state.bluePicks.length !== 5 ||
+      state.redPicks.length !== 5 ||
+      state.blueBans.length !== 4 ||
+      state.redBans.length !== 4
+    ) {
+      return;
+    }
+    dispatch({ type: "swap_board_sides" });
+    setGlobalBans((prev) => ({
+      ...prev,
+      blueSideTeam: prev.blueSideTeam === "A" ? "B" : "A",
+    }));
+  }, [state.stepIndex, state.bluePicks.length, state.redPicks.length, state.blueBans.length, state.redBans.length]);
+
   const parkCurrentDraft = useCallback(
     (blueSideTeam = globalBans.blueSideTeam, savedGlobalBans?: GlobalBanLists) => {
       // A team preview can share a series/game key with a parked personal draft.
@@ -1409,8 +1445,9 @@ export function useDraft(options: UseDraftOptions = {}) {
           const previous = activeSeriesGames.find(
             (g) => getGameSeriesKey(g) === currentGroup && g.gameNumber === globalBans.gameNumber,
           );
-          if (conflictingHero) parkCurrentDraft();
-          else if (!isSameRecordedDraft(previous, draftToRecord)) {
+          if (previous?.locked || conflictingHero) {
+            if (!previous?.locked) parkCurrentDraft();
+          } else if (!isSameRecordedDraft(previous, draftToRecord)) {
             const snapshot = createRecordedGame(previous?.winner);
             const next = upsertSeriesGame(activeSeriesGames, snapshot, currentGroup, personalHistoryLimit);
             if (next === activeSeriesGames) parkCurrentDraft();
@@ -1495,6 +1532,7 @@ export function useDraft(options: UseDraftOptions = {}) {
       const overwrittenGames = seriesGames.filter(
         (g) => getGameSeriesKey(g) === currentGroup && g.gameNumber === globalBans.gameNumber,
       );
+      if (overwrittenGames.some((g) => g.locked)) return false;
       const effectiveWinner = winner ?? overwrittenGames[0]?.winner;
 
       const snapshot = createRecordedGame(effectiveWinner);
@@ -1556,7 +1594,11 @@ export function useDraft(options: UseDraftOptions = {}) {
   );
 
   const setRecordedGameWinner = useCallback((id: string, winner?: TeamId) => {
-    setSeriesGames((prev) => prev.map((g) => (g.id === id ? { ...g, winner } : g)));
+    setSeriesGames((prev) => prev.map((g) => (g.id === id && !g.locked ? { ...g, winner } : g)));
+  }, []);
+
+  const toggleRecordedGameLock = useCallback((id: string) => {
+    setSeriesGames((prev) => prev.map((g) => (g.id === id ? { ...g, locked: !g.locked } : g)));
   }, []);
 
   const importSeriesGames = useCallback(
@@ -1619,7 +1661,7 @@ export function useDraft(options: UseDraftOptions = {}) {
     const previous = seriesGames.find(
       (game) => getGameSeriesKey(game) === currentGroup && game.gameNumber === globalBans.gameNumber,
     );
-    if (isSameRecordedDraft(previous, draftToRecord)) return true;
+    if (previous?.locked || isSameRecordedDraft(previous, draftToRecord)) return true;
     const next = upsertSeriesGame(
       seriesGames, createRecordedGame(previous?.winner), currentGroup, personalHistoryLimit,
     );
@@ -1662,6 +1704,7 @@ export function useDraft(options: UseDraftOptions = {}) {
       // Preserve in-progress unsaved drafts in an isolated scratchpad instead of auto-saving them into seriesGames
       if (
         hasCurrentActions &&
+        !existingCurrentGame?.locked &&
         !isSameRecordedDraft(existingCurrentGame, { ...draftToRecord, blueSideTeam: effectiveGlobalBans.blueSideTeam })
       ) {
         parkCurrentDraft(effectiveGlobalBans.blueSideTeam);
@@ -1708,6 +1751,7 @@ export function useDraft(options: UseDraftOptions = {}) {
   const deleteRecordedGame = useCallback(
     (id: string) => {
       const deleted = seriesGames.find((g) => g.id === id);
+      if (deleted?.locked) return;
       const nextSeriesGames = seriesGames.filter((g) => g.id !== id);
       setSeriesGames(nextSeriesGames);
       if (deleted) {
@@ -1778,6 +1822,7 @@ export function useDraft(options: UseDraftOptions = {}) {
 
   const deleteSeriesGroup = useCallback(
     (groupName: string) => {
+      if (seriesGames.some((g) => getGameSeriesKey(g) === groupName && g.locked)) return;
       for (let gameNumber = 1; gameNumber <= 7; gameNumber++) {
         delete unsavedDraftsRef.current[`${groupName}::g${gameNumber}`];
       }
@@ -1795,7 +1840,7 @@ export function useDraft(options: UseDraftOptions = {}) {
         }));
       }
     },
-    [globalBans, fromTeamHistory],
+    [seriesGames, globalBans, fromTeamHistory],
   );
 
   const assignSeriesTournament = useCallback((seriesKeys: ReadonlySet<string>, tournament: TournamentRef | null) => {
@@ -1961,6 +2006,7 @@ export function useDraft(options: UseDraftOptions = {}) {
   );
 
   const clearAllHistory = useCallback(() => {
+    if (seriesGames.some((g) => g.locked)) return;
     isHydratingRemoteRef.current = true;
     unsavedDraftsRef.current = {};
     lastPredictedKeyRef.current = "";
@@ -1981,7 +2027,7 @@ export function useDraft(options: UseDraftOptions = {}) {
         // ignore
       });
     }
-  }, [persistSession, storageKey]);
+  }, [seriesGames, persistSession, storageKey]);
 
   const importDraft = useCallback(
     (draft: {
@@ -2045,6 +2091,8 @@ export function useDraft(options: UseDraftOptions = {}) {
     selectGameNumber,
     seriesGames,
     fromTeamHistory,
+    currentSavedGameId: currentSavedGame?.id ?? null,
+    isCurrentGameLocked,
     globalBanConflicts,
     saveCurrentDraftSnapshot,
     currentDraftSnapshot,
@@ -2059,8 +2107,10 @@ export function useDraft(options: UseDraftOptions = {}) {
     deleteSeriesGroup,
     clearAllHistory,
     swapTeamSides,
+    swapTeamAndBoardSides,
     recordGameToSeries,
     setRecordedGameWinner,
+    toggleRecordedGameLock,
     importSeriesGames,
     importDraft,
     unavailableHeroes,
