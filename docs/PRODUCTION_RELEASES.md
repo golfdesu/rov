@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `b8cd831` (`main`: show purchase and claim timestamps in active passes table) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-CC7FvFCS.js` (`483.17 kB`) + `dist-prod/assets/index-C4BQQffz.css` (`114.16 kB`), `dist-prod/index.html` (`3.12 kB`) |
+| **Git Base Commit on VM** | `cb6ba65` (`main`: require visible user interaction for daily visits and skip empty-board predict counts) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-BrZ7xUyP.js` (`483.54 kB`) + `dist-prod/assets/index-C4BQQffz.css` (`114.16 kB`), `dist-prod/index.html` (`3.12 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-26 06:41 (UTC+7)` |
+| **Last Updated** | `2026-11-26 06:53 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,13 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-26 06:53 (UTC+7) — Interaction-Gated Daily Visit & Active-Board Predict Telemetry (`cb6ba65`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `b8cd831` to `cb6ba65` (`main`, 19-path sparse-checkout intact).
+- **Summary (`frontend/src/App.tsx`, `src/api.py`, `tests/test_api.py`):** Gated the once-per-day `POST /telemetry/visit` ping on `document.visibilityState === "visible"` plus a real `pointerdown`/`keydown` user interaction, and skipped `record_predict_telemetry` on empty `0/18` preload `/predict` calls (`ally_bans`, `enemy_bans`, `ally_picks`, `enemy_picks`, and global bans all empty) so background/suspended mobile tab reloads no longer inflate DAU or `predict_count`.
+- **Bundle Built:** `dist-prod/index.html` (`3.12 kB`), `dist-prod/assets/index-BrZ7xUyP.js` (`483.54 kB`), `dist-prod/assets/index-C4BQQffz.css` (`114.16 kB`).
+- **Verification:** `ruff` clean, `pytest -q --tb=short tests/test_api.py` (`52 passed`), `oxlint` (`0` warnings/errors), `vite build` & `build:prod`; live `https://minidraft.app/health` -> `200 {"status":"healthy","model_loaded":true}`, live HTML serving `assets/index-BrZ7xUyP.js` and `assets/index-C4BQQffz.css`; `/app/db/rov_app.db` intact (`users: 1034`, `promo_claims: 31`, `billing_orders: 5`, `billing_passes: 32`).
+- **VM Sync Note:** Docs-only commit recording this release is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
 
 ### 📅 2026-11-26 06:41 (UTC+7) — Show Purchase & Claim Timestamps in `#admin` Active Passes Table (`b8cd831`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `76d6aa4` to `b8cd831` (`main`, 19-path sparse-checkout intact).

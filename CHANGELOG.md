@@ -27,6 +27,23 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-26 06:53 (UTC+7) — Filter Background Mobile Tab Telemetry From Daily Visits & Predict Usage
+**Agent:** Antigravity Agent
+
+### ✅ Completed Work
+- **Interaction-Gated Visit Ping (`frontend/src/App.tsx`):** Required `document.visibilityState === "visible"` and an actual `pointerdown`/`keydown` interaction before firing `POST /telemetry/visit` so suspended mobile browser tab reloads are not counted as returning DAU.
+- **Active-Board Predict Counting (`src/api.py`, `tests/test_api.py`):** Skipped `record_predict_telemetry` in `predict_draft()` when `ally_bans`, `enemy_bans`, `ally_picks`, `enemy_picks`, and global bans are all empty, preventing automatic Step-0 preload fetches from inflating `user_usage_daily.predict_count`; added `test_predict_telemetry_skips_empty_board`.
+
+### 📁 Modified Files
+- `frontend/src/App.tsx`, `src/api.py`, `tests/test_api.py`
+- `docs/PRODUCTION_RELEASES.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified locally with `ruff check/format`, `pytest -q --tb=short tests/test_api.py` (`52 passed`), `oxlint` (`0` warnings, `0` errors), `vite build`, and `build:prod`.
+- Verified live production deploy (`cb6ba65` on `20.2.210.230`) with `https://minidraft.app/health` (`200`), active bundle (`index-BrZ7xUyP.js`), and SQLite DB integrity (`users: 1034`, `promo_claims: 31`, `billing_passes: 32`).
+
+---
+
 ## 📅 2026-11-26 06:41 (UTC+7) — Show Purchase & Claim Timestamps in Admin Active Passes Table
 **Agent:** Antigravity Agent
 
