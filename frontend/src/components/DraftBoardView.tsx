@@ -1134,13 +1134,16 @@ export function DraftBoardView({
                     }`}
                   />
                   <span className="hidden md:inline"><StableButtonLabel message="สลับฝั่ง" /></span>
-                  {canSwapBoardAndTeams && (
-                    <ChevronDown
-                      className={`h-3 w-3 shrink-0 text-gold transition-transform ${
-                        isSwapMenuOpen ? "rotate-180" : ""
-                      }`}
-                    />
-                  )}
+                  <ChevronDown
+                    aria-hidden="true"
+                    className={`h-3 w-3 shrink-0 text-gold transition-transform ${
+                      !canSwapBoardAndTeams
+                        ? "invisible"
+                        : isSwapMenuOpen
+                          ? "rotate-180"
+                          : ""
+                    }`}
+                  />
                 </button>
                 {isSwapMenuOpen && (
                   <div
