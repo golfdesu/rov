@@ -1896,7 +1896,7 @@ export const englishMessages: Readonly<Record<string, string>> = {
   "ระบบทีม & Hero Pool": "Teams & Hero Pool",
   "ตั้ง Pool ฮีโร่รายเลนพร้อมแจ้งเตือนบนบอร์ด และซิงก์ประวัติทีมร่วมกันในแพ็ก Business": "Set lane Hero Pools with board alerts and sync shared team history on Business",
   "ปรับปรุงบอร์ดดราฟต์, AI & PromptPay": "Draft Board, AI & PromptPay",
-  "วางช่อง Ban เหนือ Pick, รีเซ็ตเลนอัตโนมัติ, AI เร็วขึ้น และเพิ่มแพ็กเติมวันผ่าน PromptPay": "Bans above Picks, auto lane reset, faster AI, and PromptPay day passes",
+  "วางช่อง Ban เหนือ Pick, รีเซ็ตเลนอัตโนมัติ, AI เร็วขึ้น และเพิ่มแพ็ก Pro / Duo / Business จ่ายผ่าน PromptPay": "Bans above Picks, auto lane reset, faster AI, and Pro / Duo / Business PromptPay passes",
   "เขียน Feedback หรือข้อเสนอแนะถึงผู้พัฒนา": "Write feedback or suggestions for the developer",
   "แจ้งบั๊ก แนะนำฟีเจอร์ หรือบอกความรู้สึกหลังลองฟีเจอร์ใหม่ได้เลย...": "Report a bug, suggest a feature, or share your thoughts...",
   "กรุณาพิมพ์ข้อความอย่างน้อย 2 ตัวอักษร": "Please enter at least 2 characters",

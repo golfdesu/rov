@@ -33,7 +33,7 @@ const UPDATE_HIGHLIGHTS = [
   },
   {
     title: "ปรับปรุงบอร์ดดราฟต์, AI & PromptPay",
-    detail: "วางช่อง Ban เหนือ Pick, รีเซ็ตเลนอัตโนมัติ, AI เร็วขึ้น และเพิ่มแพ็กเติมวันผ่าน PromptPay",
+    detail: "วางช่อง Ban เหนือ Pick, รีเซ็ตเลนอัตโนมัติ, AI เร็วขึ้น และเพิ่มแพ็ก Pro / Duo / Business จ่ายผ่าน PromptPay",
   },
 ] as const;
 
