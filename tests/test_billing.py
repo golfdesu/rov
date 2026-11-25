@@ -1093,3 +1093,52 @@ def test_live_billing_mode_uses_https_production_origins_and_rejects_test_events
         }
         assert event(client, complete).status_code == 204
         assert client.get("/billing").json()["active_pass"]["tier"] == "pro"
+
+
+def test_cancel_uncreated_order_and_normalized_cors_origin(tmp_path, monkeypatch):
+    monkeypatch.setattr(api.config, "env", "production")
+    monkeypatch.setattr(api.config, "cors_origins", ["https://MINIDRAFT.APP/"])
+    monkeypatch.setattr(api.config, "stripe_secret_key", "rk_live_fixture")
+    monkeypatch.setattr(api.config, "stripe_webhook_secret", WEBHOOK_SECRET)
+    monkeypatch.setattr(api.config, "stripe_live_enabled", True)
+    monkeypatch.setattr(api.config.paths, "app_db_path", tmp_path / "cancel_uncreated.db")
+    monkeypatch.setattr(api, "_billing_rate_limiter", RateLimiter(max_attempts=12))
+
+    class FailingCheckout(FakeCheckout):
+        def create(self, params, options):
+            raise stripe.APIConnectionError("network down")
+
+    fake = FailingCheckout()
+    monkeypatch.setattr(
+        api,
+        "make_stripe_client",
+        lambda _key: SimpleNamespace(v1=SimpleNamespace(checkout=SimpleNamespace(sessions=fake))),
+    )
+    db = api.get_user_db()
+    user = db.register_user(USERNAME, "test-password", display_name="Cancel Tester")
+
+    with TestClient(api.app, base_url="https://minidraft.app") as client:
+        client.cookies.set(SESSION_COOKIE_NAME, db.create_session(user.id))
+        # Trailing-slash / case-insensitive CORS origin must be accepted
+        headers = {"Origin": "https://minidraft.app"}
+        err = client.post(
+            "/billing/checkout",
+            headers=headers,
+            json={"tier": "pro", "days": 30, "expected_username": USERNAME},
+        )
+        assert err.status_code == 502
+
+        summary = client.get("/billing").json()
+        assert len(summary["orders"]) == 1
+        pending = summary["orders"][0]
+        assert pending["status"] == "pending"
+
+        # Cancelling an uncreated order (stripe_session_id is None) must succeed cleanly via DB without calling Stripe
+        cancel_res = client.post(
+            f"/billing/orders/{pending['id']}/cancel",
+            headers=headers,
+            json={"expected_username": USERNAME},
+        )
+        assert cancel_res.status_code == 204
+        after = client.get("/billing").json()
+        assert after["orders"][0]["status"] == "closed"

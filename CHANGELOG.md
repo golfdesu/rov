@@ -27,6 +27,132 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-25 11:46 (UTC+7) — Unify Scrim Analytics Default to Sample League + VGD for All Users
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Updated `defaultScrimFilters()`, `readSavedFilters()`, `sampleQueryTeam` fallback, and `422` recovery in `frontend/src/components/ScrimDashboardView.tsx` so both Paid and Free/Guest users start on `SAMPLE LEAGUE 2026` (`sample-league-2026`) with team `VGD` selected by default (preserving Paid users' `localStorage` switches once they choose personal or team history).
+
+### 📁 Modified Files
+- `frontend/src/components/ScrimDashboardView.tsx`, `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint && npm --prefix frontend run build && npm --prefix frontend run build:prod`
+- `audit_copy_i18n.py`, `inspect_frontend_e2e.py`, `audit_ux_ui.py`.
+
+---
+
+## 📅 2026-11-25 11:44 (UTC+7) — Add Scrim Analytics Shortcut Button to Announcement Modal
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Added an **Explore Scrim Analytics** (`ลองดูสถิติซ้อมทีม`) action button inside `frontend/src/components/PricingSurveyModal.tsx` (wired from `frontend/src/App.tsx`) that marks the announcement read, closes the modal, and navigates straight to `#analytics`.
+- Synced EN translation in `frontend/src/i18n/englishMessages.ts`.
+
+### 📁 Modified Files
+- `frontend/src/components/PricingSurveyModal.tsx`, `frontend/src/App.tsx`, `frontend/src/i18n/englishMessages.ts`, `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint && npm --prefix frontend run build && npm --prefix frontend run build:prod`
+- `audit_copy_i18n.py`, `inspect_frontend_e2e.py`, `audit_ux_ui.py`.
+
+---
+
+## 📅 2026-11-25 11:32 (UTC+7) — Resolve Pre-Deploy Audit Bugs & Remove Outdated Promo Banner
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Backend Reliability & Limits (`src/api.py`, `src/billing.py`)**:
+  - Raised `_MaxBodySizeMiddleware` cap from 256 KB to 1 MB specifically for `PUT /draft/session` (`_MAX_DRAFT_SESSION_BODY_BYTES`) so Paid 500-game histories never fail with HTTP `413 Payload Too Large`, while keeping 256 KB on other routes.
+  - Normalized `config.cors_origins` in `_billing_request_origin` and preserved HTTPS fallback when `Origin` is omitted behind Caddy.
+  - Updated `cancel_billing_checkout` to close uncreated pending orders (`stripe_session_id is None`) directly in SQLite (204 No Content) instead of triggering Stripe `sessions.create`, and clamped `checkout_session` `expires_at` (`>= now + 1860`) for retries.
+- **Frontend UX, Quota & Bug Fixes (`frontend/src/`)**:
+  - Raised JSON import limit to `MAX_IMPORT_GAMES = 500` in `useDraft.ts` matching Paid/Team 500-game capacity, and gated `onHistoryFullUpgrade` in `DraftBoardView.tsx` so Paid users at 500/500 never see the Free-tier upsell modal.
+  - Fixed `PricingSurveyModal.tsx` dismiss lockout and double-close timer by delegating close animations to `<Modal dismissDisabled={locked}>` render prop, synced `App.tsx` React announcement state immediately on submit, and clarified Business shared team history copy.
+  - Removed the outdated `"ใช้งานฟรีถึง 30 พ.ย. 2026"` badge/banner from `App.tsx`, `AuthModal.tsx`, and `MobileNavDrawer.tsx`.
+  - Updated `ScrimDashboardView.tsx` to prompt Guests with Login instead of a dead `#plans` link and auto-recover from stale `localStorage` team names on sample `422` errors; guarded `AdminDashboardView.tsx` Feedback Inbox on loaded `feedbackReport` and distinguished deleted users from Guests (`AdminStatsModal.tsx`, `AdminDashboardView.tsx`).
+  - Added `/feedback` to `frontend/vite.config.ts` dev proxy, fixed `shrink: 0` -> `flex-shrink: 0` in `scoutingReportPdf.ts`, removed unused `/combat/builds` check in `client.ts`, and synced EN translations in `englishMessages.ts`.
+- **Tests (`tests/test_billing.py`, `tests/test_api.py`)**:
+  - Added `test_cancel_uncreated_order_and_normalized_cors_origin` and `test_production_body_limit_allows_large_draft_session_only`.
+
+### 📁 Modified Files
+- `src/api.py`, `src/billing.py`, `tests/test_billing.py`, `tests/test_api.py`
+- `frontend/vite.config.ts`, `frontend/src/api/client.ts`, `frontend/src/App.tsx`, `frontend/src/components/AuthModal.tsx`, `frontend/src/components/MobileNavDrawer.tsx`, `frontend/src/components/PricingSurveyModal.tsx`, `frontend/src/components/DraftBoardView.tsx`, `frontend/src/components/ScrimDashboardView.tsx`, `frontend/src/components/AdminDashboardView.tsx`, `frontend/src/components/AdminStatsModal.tsx`, `frontend/src/hooks/useDraft.ts`, `frontend/src/utils/scoutingReportPdf.ts`, `frontend/src/i18n/englishMessages.ts`, `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check --fix . && ruff format .`, `pytest -q --tb=short tests/test_api.py tests/test_billing.py tests/test_security.py tests/test_skills_sync.py`
+- `npm --prefix frontend run lint && npm --prefix frontend run build && npm --prefix frontend run build:prod`
+- `audit_copy_i18n.py`, `inspect_frontend_e2e.py`, `audit_ux_ui.py`.
+
+---
+
+## 📅 2026-11-25 11:20 (UTC+7) — Archive Meta Tier List, MetaLab & Combat Lab UI for Future Development
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Archived `TierListView.tsx`, `MetaLab.tsx`, 12 `CombatLab` UI modules, `useCombatLab.ts`, `types/combat.ts`, `utils/skillEffects.ts`, and `App.tsx` route/tab wiring into `docs/archive/meta_and_combat_labs/` (`meta_and_combat_labs.patch` + `META_AND_COMBAT_LABS_BACKUP.md`), preserving shared `HeroPickerModal.tsx` and backend `src/combat_calculator.py`.
+- Removed `Meta Tier List`, `MetaLab`, and `Combat Lab` tabs/routes from `frontend/src/App.tsx` and updated `audit_ux_ui.py` stage 5 (mirrored to `.claude/skills/`).
+
+### 📁 Modified Files
+- `docs/archive/meta_and_combat_labs/meta_and_combat_labs.patch` (new)
+- `docs/archive/meta_and_combat_labs/META_AND_COMBAT_LABS_BACKUP.md` (new)
+- Deleted `17` frontend files across `frontend/src/components/tierlist/`, `frontend/src/components/meta_lab/`, `frontend/src/components/lab/` (except `HeroPickerModal.tsx`), `hooks/useCombatLab.ts`, `types/combat.ts`, `utils/skillEffects.ts`
+- `frontend/src/App.tsx`, `.agents/skills/frontend-e2e-inspector/scripts/audit_ux_ui.py`, `.claude/skills/frontend-e2e-inspector/scripts/audit_ux_ui.py`, `CHANGELOG.md`
+
+### 🧪 Verification
+- `git apply --ignore-whitespace --check docs/archive/meta_and_combat_labs/meta_and_combat_labs.patch`
+- `ruff check --fix . && ruff format . && pytest -q --tb=short tests/test_skills_sync.py`
+- `npm --prefix frontend run lint && npm --prefix frontend run build && npm --prefix frontend run build:prod`
+- `audit_copy_i18n.py`, `inspect_frontend_e2e.py`, `audit_ux_ui.py`.
+
+---
+
+## 📅 2026-11-25 11:12 (UTC+7) — Archive Screenshot Draft Import UI for Future Development
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Archived `frontend/src/components/ScreenshotImportModal.tsx` and its wiring in `App.tsx`, `MobileNavDrawer.tsx`, and `DraftBoardView.tsx` into `docs/archive/screenshot_draft_import/` (`screenshot_draft_import.patch` + `SCREENSHOT_IMPORT_BACKUP.md`) following the `docs/archive/ranked_10_ban_mode/` convention.
+- Removed the "Import draft from screenshot" button from `MobileNavDrawer.tsx` and eliminated the unused modal chunk from dev/prod bundles.
+
+### 📁 Modified Files
+- `docs/archive/screenshot_draft_import/screenshot_draft_import.patch` (new)
+- `docs/archive/screenshot_draft_import/SCREENSHOT_IMPORT_BACKUP.md` (new)
+- `frontend/src/components/ScreenshotImportModal.tsx` (deleted)
+- `frontend/src/App.tsx`, `frontend/src/components/MobileNavDrawer.tsx`, `frontend/src/components/DraftBoardView.tsx`, `CHANGELOG.md`
+
+### 🧪 Verification
+- `git apply --ignore-whitespace --check docs/archive/screenshot_draft_import/screenshot_draft_import.patch`
+- `npm --prefix frontend run lint && npm --prefix frontend run build && npm --prefix frontend run build:prod`
+- `audit_copy_i18n.py`, `inspect_frontend_e2e.py`, `audit_ux_ui.py`.
+
+---
+
+## 📅 2026-11-25 11:05 (UTC+7) — Replace Willingness-to-Pay Poll With Update Announcement & User Feedback Inbox
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Backend Feedback Persistence & Admin API (`src/db.py`, `src/schemas.py`, `src/api.py`)**:
+  - Added `user_feedback` SQLite table and indexes, `record_user_feedback`, and `get_admin_feedback` (while preserving legacy `pricing_survey_responses` rows for historical analytics compatibility).
+  - Added rate-limited `POST /feedback` (`no-store`, 2–1500 char validated text for members and guests) and owner-only `GET /admin/feedback` (fail-closed `404` for guests/non-admins) plus `feedback` summary counters in `GET /admin/stats`.
+- **Announcement & Feedback Popup + Admin Dashboard Inbox (`frontend/src/`)**:
+  - Replaced the willing/not-willing poll in `PricingSurveyModal.tsx`, `App.tsx`, and `MobileNavDrawer.tsx` with a versioned update announcement (`minidraft_announcement_v2`, showing new features since the previous release in both Sandbox and Live modes) and a free-text feedback form.
+  - Added a searchable, filterable (`All`, `Members`, `Guests`) User Feedback Inbox section and KPI card inside both `AdminStatsModal.tsx` and `AdminDashboardView.tsx` (`/#admin`), plus synced EN strings in `englishMessages.ts`.
+- **Tests & WikiSkill (`tests/test_api.py`, `.wikiskill/wiki/`)**:
+  - Added `test_user_feedback_submission_and_admin_inbox` verifying feedback submission, input validation, and fail-closed admin inbox access; documented `user_feedback`, `/feedback`, and `/admin/feedback` in `.wikiskill/wiki/`.
+
+### 📁 Modified Files
+- `src/db.py`, `src/schemas.py`, `src/api.py`
+- `frontend/src/types/auth.ts`, `frontend/src/App.tsx`, `frontend/src/components/PricingSurveyModal.tsx`, `frontend/src/components/MobileNavDrawer.tsx`, `frontend/src/components/AdminStatsModal.tsx`, `frontend/src/components/AdminDashboardView.tsx`, `frontend/src/i18n/englishMessages.ts`
+- `tests/test_api.py`, `.wikiskill/wiki/system_architecture_and_data.md`, `.wikiskill/wiki/production_deployment_and_ui.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check --fix . && ruff format .`
+- `pytest -q --tb=short tests/test_api.py tests/test_billing.py tests/test_security.py tests/test_skills_sync.py`
+- `npm --prefix frontend run lint && npm --prefix frontend run build`
+- `audit_copy_i18n.py`, `inspect_frontend_e2e.py`, `audit_ux_ui.py`, `preflight_check.py`, `validate_gating.py`.
+
+---
+
 ## 📅 2026-11-25 10:26 (UTC+7) — Document Stripe PromptPay Setup in WikiSkill
 **Agent:** Antigravity
 

@@ -316,7 +316,7 @@ export function buildScoutingReportPrintHtml({
   .doc-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; border-bottom: 2px solid #0f172a; padding-bottom: 8px; margin-bottom: 10px; }
   .doc-brand { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; color: #b45309; text-transform: uppercase; }
   h1 { margin: 2px 0 0; font-size: 16px; font-weight: 800; color: #0f172a; overflow-wrap: anywhere; }
-  .doc-meta { text-align: right; font-family: ui-monospace, monospace; font-size: 9px; color: #475569; shrink: 0; white-space: nowrap; }
+  .doc-meta { text-align: right; font-family: ui-monospace, monospace; font-size: 9px; color: #475569; flex-shrink: 0; white-space: nowrap; }
   .kpi-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin-bottom: 10px; break-inside: avoid; }
   .kpi { min-width: 0; border: 1px solid #cbd5e1; background: #f8fafc; padding: 6px 8px; border-radius: 3px; overflow-wrap: break-word; }
   .kpi-lbl { font-size: 8.5px; color: #475569; font-weight: 600; }

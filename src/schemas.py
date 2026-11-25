@@ -544,6 +544,7 @@ class AdminStatsResponse(BaseModel):
     generated_at_th: str
     users: dict[str, Any]
     survey: dict[str, Any]
+    feedback: dict[str, Any] | None = None
     cloudflare: dict[str, Any] | None = None
     retention: dict[str, Any] | None = None
 
@@ -662,6 +663,49 @@ class PricingSurveyRequest(BaseModel):
 class PricingSurveyResponse(BaseModel):
     recorded: bool
     choice: Literal["willing", "not_willing"]
+
+
+class FeedbackSubmitRequest(BaseModel):
+    message: str = Field(..., min_length=2, max_length=1500)
+    client_id: str | None = Field(default=None, min_length=8, max_length=64, pattern=r"^[a-zA-Z0-9_-]+$")
+    page_context: str | None = Field(default=None, max_length=32, pattern=r"^[a-zA-Z0-9_-]+$")
+
+    @field_validator("message")
+    @classmethod
+    def validate_message(cls, value: str) -> str:
+        clean = value.strip()
+        if len(clean) < 2:
+            raise ValueError("Feedback message must be at least 2 characters")
+        if len(clean) > 1500:
+            raise ValueError("Feedback message must not exceed 1500 characters")
+        return clean
+
+
+class FeedbackSubmitResponse(BaseModel):
+    recorded: bool
+    id: int
+    created_at_th: str
+
+
+class AdminFeedbackItemSchema(BaseModel):
+    id: int
+    message: str
+    is_guest: bool
+    username: str | None = None
+    display_name: str | None = None
+    email: str | None = None
+    client_id: str | None = None
+    page_context: str | None = None
+    created_at_th: str
+
+
+class AdminFeedbackResponse(BaseModel):
+    generated_at_th: str
+    total: int
+    today: int
+    member_total: int
+    guest_total: int
+    items: list[AdminFeedbackItemSchema]
 
 
 class CombatBuildsSyncSchema(BaseModel):

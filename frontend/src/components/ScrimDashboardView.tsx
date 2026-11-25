@@ -20,7 +20,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState, type RefObject } from "react";
-import { getJson, isAbortError } from "../api/client";
+import { ApiError, getJson, isAbortError } from "../api/client";
 import { fetchSampleAnalytics, type SampleAnalyticsResponse } from "../api/sampleAnalytics";
 import { getTeam, teamPath, type Team, type TeamGame } from "../api/team";
 import { useLanguage } from "../i18n/language";
@@ -56,8 +56,10 @@ interface ScrimDashboardViewProps {
   personalGames: RecordedDraftGame[];
   heroMap: Map<string, Hero>;
   isPaid: boolean;
+  isAuthenticated?: boolean;
   teamHistoryEnabled: boolean;
   defaultTeamName?: string;
+  onOpenAuthModal?: () => void;
   onBack: () => void;
 }
 
@@ -103,12 +105,12 @@ interface SavedScrimFilters {
   sortBy: HeroSortKey;
 }
 
-function defaultScrimFilters(isPaid: boolean): SavedScrimFilters {
+function defaultScrimFilters(): SavedScrimFilters {
   return {
-    source: "personal",
-    tournamentFilter: !isPaid ? "sample-league-2026" : ALL_TOURNAMENTS,
-    allTeamsSelected: isPaid,
-    selectedTeam: !isPaid ? "VGD" : "",
+    source: "sample",
+    tournamentFilter: SAMPLE_TOURNAMENT_ID,
+    allTeamsSelected: false,
+    selectedTeam: "VGD",
     opponentFilter: "ALL",
     seriesFilter: [],
     datePreset: "all",
@@ -120,7 +122,7 @@ function defaultScrimFilters(isPaid: boolean): SavedScrimFilters {
 }
 
 function readSavedFilters(isPaid: boolean): SavedScrimFilters {
-  const defaults = defaultScrimFilters(isPaid);
+  const defaults = defaultScrimFilters();
   try {
     const raw: unknown = JSON.parse(localStorage.getItem(`${SAVED_FILTERS_KEY_PREFIX}${isPaid ? "paid" : "demo"}`) ?? "null");
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) return defaults;
@@ -135,12 +137,12 @@ function readSavedFilters(isPaid: boolean): SavedScrimFilters {
       ? (obj.sortBy as HeroSortKey)
       : defaults.sortBy;
     const savedSource = !isPaid
-      ? "personal"
+      ? "sample"
       : obj.source === "team"
         ? "team"
-        : obj.source === "sample"
-          ? "sample"
-          : "personal";
+        : obj.source === "personal"
+          ? "personal"
+          : "sample";
     return {
       source: savedSource,
       tournamentFilter: typeof obj.tournamentFilter === "string" ? obj.tournamentFilter : defaults.tournamentFilter,
@@ -809,7 +811,9 @@ export function ScrimDashboardView({
   personalGames,
   heroMap,
   isPaid,
+  isAuthenticated = true,
   teamHistoryEnabled,
+  onOpenAuthModal,
   onBack,
 }: ScrimDashboardViewProps) {
   const { t } = useLanguage();
@@ -860,7 +864,7 @@ export function ScrimDashboardView({
     : trimmedSelectedTeam &&
         (!knownSampleTeams || knownSampleTeams.some((n) => n.toLowerCase() === trimmedSelectedTeam.toLowerCase()))
       ? trimmedSelectedTeam
-      : demoMode
+      : showSampleData
         ? "VGD"
         : "";
   const knownSampleOpps = sampleState.data?.opponents;
@@ -893,6 +897,12 @@ export function ScrimDashboardView({
       })
       .catch((err) => {
         if (!cancelled && !isAbortError(err)) {
+          if (err instanceof ApiError && err.status === 422 && (sampleQueryTeam || sampleQueryOpp !== "ALL")) {
+            setSelectedTeam("VGD");
+            setAllTeamsSelected(false);
+            setOpponentFilter("ALL");
+            return;
+          }
           setSampleState((prev) => ({ key: sampleRequestKey, data: prev.data, error: true }));
         }
       });
@@ -1262,12 +1272,22 @@ export function ScrimDashboardView({
                   : t("ลองกดกรองทีม คู่แข่ง เลน และช่วงวันที่ได้เต็มที่ · อัปเกรดเพื่อวิเคราะห์ข้อมูลดราฟต์ของคุณเองสูงสุด 500 เกม")}
               </p>
             </div>
-            <a
-              href="#plans"
-              className="inline-flex min-h-9 w-full shrink-0 items-center justify-center border border-gold bg-gold px-4 text-center font-display text-xs font-bold text-bg hover:bg-gold/90 sm:w-auto"
-            >
-              <StableButtonLabel message="ดูแพ็ก" className="inline-grid text-center" />
-            </a>
+            {!isAuthenticated && onOpenAuthModal ? (
+              <button
+                type="button"
+                onClick={onOpenAuthModal}
+                className="inline-flex min-h-9 w-full shrink-0 items-center justify-center border border-gold bg-gold px-4 text-center font-display text-xs font-bold text-bg hover:bg-gold/90 sm:w-auto"
+              >
+                <StableButtonLabel message="เข้าสู่ระบบ" className="inline-grid text-center" />
+              </button>
+            ) : (
+              <a
+                href="#plans"
+                className="inline-flex min-h-9 w-full shrink-0 items-center justify-center border border-gold bg-gold px-4 text-center font-display text-xs font-bold text-bg hover:bg-gold/90 sm:w-auto"
+              >
+                <StableButtonLabel message="ดูแพ็ก" className="inline-grid text-center" />
+              </a>
+            )}
           </section>
         ) : source === "sample" && (
           <section

@@ -350,6 +350,22 @@ class UserDatabase:
                     CREATE UNIQUE INDEX IF NOT EXISTS idx_pricing_survey_client
                         ON pricing_survey_responses(client_id) WHERE client_id IS NOT NULL;
 
+                    CREATE TABLE IF NOT EXISTS user_feedback (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                        client_id TEXT,
+                        message TEXT NOT NULL,
+                        is_guest INTEGER NOT NULL DEFAULT 0,
+                        page_context TEXT,
+                        created_at INTEGER NOT NULL
+                    );
+
+                    CREATE INDEX IF NOT EXISTS idx_user_feedback_created
+                        ON user_feedback(created_at DESC, id DESC);
+
+                    CREATE INDEX IF NOT EXISTS idx_user_feedback_user
+                        ON user_feedback(user_id, created_at DESC) WHERE user_id IS NOT NULL;
+
                     CREATE TABLE IF NOT EXISTS daily_visits (
                         client_id TEXT NOT NULL,
                         visit_date TEXT NOT NULL,
@@ -1911,6 +1927,101 @@ class UserDatabase:
                 (norm_client_id, choice, now, now),
             )
 
+    def record_user_feedback(
+        self,
+        user_id: int | None,
+        client_id: str | None,
+        message: str,
+        page_context: str | None = None,
+    ) -> dict[str, Any]:
+        """Store text feedback from either an authenticated user or a guest browser client."""
+        clean_msg = message.strip()[:1500]
+        if len(clean_msg) < 2:
+            raise ValueError("Feedback message must be at least 2 characters")
+        norm_client_id = client_id.strip()[:64] if client_id and client_id.strip() else None
+        norm_ctx = page_context.strip()[:32] if page_context and page_context.strip() else None
+        now = int(time.time())
+        tz_th = timezone(timedelta(hours=7))
+        created_at_th = datetime.fromtimestamp(now, tz_th).strftime("%Y-%m-%d %H:%M:%S")
+        is_guest = 1 if user_id is None else 0
+        self.ensure_schema()
+        with self._lock, self._connect() as conn:
+            cursor = conn.execute(
+                """
+                INSERT INTO user_feedback (user_id, client_id, message, is_guest, page_context, created_at)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (user_id, norm_client_id, clean_msg, is_guest, norm_ctx, now),
+            )
+            row_id = int(cursor.lastrowid or 0)
+        return {
+            "recorded": True,
+            "id": row_id,
+            "created_at_th": created_at_th,
+        }
+
+    def get_admin_feedback(self, limit: int = 300) -> dict[str, Any]:
+        """Return written user/guest feedback entries newest-first for owner inspection."""
+        safe_limit = max(1, min(500, int(limit)))
+        self.ensure_schema()
+        now = int(time.time())
+        tz_th = timezone(timedelta(hours=7))
+        now_dt = datetime.fromtimestamp(now, tz_th)
+        today_start = int(datetime(now_dt.year, now_dt.month, now_dt.day, 0, 0, 0, tzinfo=tz_th).timestamp())
+        with self._lock, self._connect() as conn:
+            agg_row = conn.execute(
+                """
+                SELECT
+                    COUNT(*) AS total,
+                    COALESCE(SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END), 0) AS today,
+                    COALESCE(SUM(CASE WHEN is_guest = 0 THEN 1 ELSE 0 END), 0) AS member_total,
+                    COALESCE(SUM(CASE WHEN is_guest = 1 THEN 1 ELSE 0 END), 0) AS guest_total
+                FROM user_feedback
+                """,
+                (today_start,),
+            ).fetchone()
+            rows = conn.execute(
+                """
+                SELECT
+                    f.id,
+                    f.message,
+                    f.is_guest,
+                    f.client_id,
+                    f.page_context,
+                    f.created_at,
+                    u.username,
+                    u.display_name,
+                    u.email
+                FROM user_feedback f
+                LEFT JOIN users u ON u.id = f.user_id
+                ORDER BY f.created_at DESC, f.id DESC
+                LIMIT ?
+                """,
+                (safe_limit,),
+            ).fetchall()
+        items = [
+            {
+                "id": int(r["id"]),
+                "message": str(r["message"]),
+                "is_guest": bool(r["is_guest"]),
+                "username": str(r["username"]) if r["username"] else None,
+                "display_name": str(r["display_name"]) if r["display_name"] else None,
+                "email": str(r["email"]) if r["email"] else None,
+                "client_id": str(r["client_id"]) if r["client_id"] else None,
+                "page_context": str(r["page_context"]) if r["page_context"] else None,
+                "created_at_th": datetime.fromtimestamp(int(r["created_at"]), tz_th).strftime("%Y-%m-%d %H:%M:%S"),
+            }
+            for r in rows
+        ]
+        return {
+            "generated_at_th": now_dt.strftime("%Y-%m-%d %H:%M:%S"),
+            "total": int(agg_row["total"] or 0),
+            "today": int(agg_row["today"] or 0),
+            "member_total": int(agg_row["member_total"] or 0),
+            "guest_total": int(agg_row["guest_total"] or 0),
+            "items": items,
+        }
+
     def record_daily_visit(
         self,
         *,
@@ -2235,6 +2346,18 @@ class UserDatabase:
                 for r in breakdown_rows
             ]
 
+            feedback_row = conn.execute(
+                """
+                SELECT
+                    COUNT(*) AS total,
+                    COALESCE(SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END), 0) AS today
+                FROM user_feedback
+                """,
+                (today_start,),
+            ).fetchone()
+            feedback_total = int(feedback_row["total"] or 0)
+            feedback_today = int(feedback_row["today"] or 0)
+
         return {
             "generated_at_th": now_dt.strftime("%Y-%m-%d %H:%M:%S"),
             "users": {
@@ -2258,6 +2381,10 @@ class UserDatabase:
                 "not_willing_guest": not_willing_guest,
                 "willing_pct": willing_pct,
                 "recent": recent_votes,
+            },
+            "feedback": {
+                "total": feedback_total,
+                "today": feedback_today,
             },
             "retention": {
                 "today_dau": today_dau,

@@ -33,6 +33,39 @@ export interface PricingSurveyResponse {
   choice: PricingSurveyChoice;
 }
 
+export interface FeedbackSubmitRequest {
+  message: string;
+  client_id?: string | null;
+  page_context?: string | null;
+}
+
+export interface FeedbackSubmitResponse {
+  recorded: boolean;
+  id: number;
+  created_at_th: string;
+}
+
+export interface AdminFeedbackItem {
+  id: number;
+  message: string;
+  is_guest: boolean;
+  username: string | null;
+  display_name?: string | null;
+  email?: string | null;
+  client_id?: string | null;
+  page_context?: string | null;
+  created_at_th: string;
+}
+
+export interface AdminFeedbackResponse {
+  generated_at_th: string;
+  total: number;
+  today: number;
+  member_total: number;
+  guest_total: number;
+  items: AdminFeedbackItem[];
+}
+
 export interface AdminStatsResponse {
   generated_at_th: string;
   users: {
@@ -65,6 +98,10 @@ export interface AdminStatsResponse {
       updated_at_th: string;
     }[];
   };
+  feedback?: {
+    total: number;
+    today: number;
+  } | null;
   cloudflare?: {
     today_uniques: number;
     today_page_views: number;

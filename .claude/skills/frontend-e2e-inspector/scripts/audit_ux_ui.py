@@ -205,13 +205,13 @@ def main() -> None:
                 page.get_by_role("button", name="เข้าใช้งานแบบ Guest ทันที").click()
                 page.wait_for_timeout(300)
 
-                # If daily PricingSurveyModal auto-opened on first Guest Draft visit, verify its metrics then snooze it
-                survey_heading = page.get_by_role("heading", name="สำรวจความคิดเห็น MINIDRAFT")
+                # If announcement & feedback modal auto-opened on first Guest Draft visit, verify its metrics then acknowledge it
+                survey_heading = page.get_by_role("heading", name="อัปเดตใหม่ & Feedback MINIDRAFT")
                 if survey_heading.is_visible():
                     overflow_x, undersized = _audit_viewport_metrics(page)
-                    assert not overflow_x, "PricingSurveyModal horizontal overflow"
-                    assert not undersized, f"PricingSurveyModal undersized (<24px) targets: {undersized}"
-                    page.get_by_role("button", name="ภายหลัง (ไว้ถามใหม่พรุ่งนี้)").click()
+                    assert not overflow_x, "Announcement/Feedback modal horizontal overflow"
+                    assert not undersized, f"Announcement/Feedback modal undersized (<24px) targets: {undersized}"
+                    page.get_by_role("button", name="รับทราบ / ปิด").click()
                     survey_heading.wait_for(state="hidden", timeout=3000)
 
                 # 2. Draft Board layout & touch target audit across 4 breakpoints
@@ -309,14 +309,14 @@ def main() -> None:
                     f"Unexpected auto side-swap! Expected blueSideTeam='A', got {stored['globalBans']['blueSideTeam']}"
                 )
 
-                # 5. Multi-view clipping, overflow & EN localization audit (#analytics, #tier-list, #lab)
-                print("[5/5] Auditing Scrim Analytics, Tier List & Combat Lab (th/en clipping & overflow)...")
+                # 5. Multi-view clipping, overflow & EN localization audit (#analytics)
+                print("[5/5] Auditing Scrim Analytics (th/en clipping & overflow)...")
                 for lang in ("th", "en"):
                     page.evaluate(f"() => localStorage.setItem('minidraft_language', '{lang}')")
                     page.reload(wait_until="networkidle")
                     for w, h in [(375, 667), (1280, 800)]:
                         page.set_viewport_size({"width": w, "height": h})
-                        for route, wait_ms in [("#analytics", 400), ("#tier-list", 400), ("#lab", 800)]:
+                        for route, wait_ms in [("#analytics", 400)]:
                             page.goto(f"{base_url}/{route}", wait_until="networkidle")
                             page.wait_for_timeout(wait_ms)
                             dom_res = _audit_menu_and_dom_clipping(page, check_en_leaks=(lang == "en"))

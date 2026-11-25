@@ -4,9 +4,9 @@ import {
   ArrowUpDown,
   BarChart3,
   BookOpen,
-  Coins,
   Cpu,
   Globe,
+  MessageSquare,
   RefreshCw,
   Repeat,
   Search,
@@ -20,6 +20,7 @@ import { ApiError, getJson } from "../api/client";
 import { useLanguage } from "../i18n/language";
 import type {
   AdminAnalyticsResponse,
+  AdminFeedbackResponse,
   AdminStatsResponse,
   AdminUserActivityItem,
   AdminUsersResponse,
@@ -211,6 +212,9 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
   const [stats, setStats] = useState<AdminStatsResponse | null>(null);
   const [usersReport, setUsersReport] = useState<AdminUsersResponse | null>(null);
   const [analytics, setAnalytics] = useState<AdminAnalyticsResponse | null>(null);
+  const [feedbackReport, setFeedbackReport] = useState<AdminFeedbackResponse | null>(null);
+  const [feedbackQuery, setFeedbackQuery] = useState("");
+  const [feedbackFilter, setFeedbackFilter] = useState<"all" | "member" | "guest">("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -224,19 +228,22 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
     setLoading(true);
     setError(null);
     try {
-      const [statsRes, usersRes, analyticsRes] = await Promise.all([
+      const [statsRes, usersRes, analyticsRes, feedbackRes] = await Promise.all([
         getJson<AdminStatsResponse>("/admin/stats"),
         getJson<AdminUsersResponse>("/admin/users"),
         getJson<AdminAnalyticsResponse>("/admin/analytics"),
+        getJson<AdminFeedbackResponse>("/admin/feedback"),
       ]);
       setStats(statsRes);
       setUsersReport(usersRes);
       setAnalytics(analyticsRes);
+      setFeedbackReport(feedbackRes);
     } catch (err) {
       if (err instanceof ApiError && (err.status === 401 || err.status === 404)) {
         setStats(null);
         setUsersReport(null);
         setAnalytics(null);
+        setFeedbackReport(null);
       }
       setError(err instanceof Error ? err.message : "ไม่สามารถโหลดข้อมูล Dashboard ได้");
     } finally {
@@ -250,12 +257,14 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
       getJson<AdminStatsResponse>("/admin/stats", ctrl.signal),
       getJson<AdminUsersResponse>("/admin/users", ctrl.signal),
       getJson<AdminAnalyticsResponse>("/admin/analytics", ctrl.signal),
+      getJson<AdminFeedbackResponse>("/admin/feedback", ctrl.signal),
     ])
-      .then(([statsRes, usersRes, analyticsRes]) => {
+      .then(([statsRes, usersRes, analyticsRes, feedbackRes]) => {
         if (ctrl.signal.aborted) return;
         setStats(statsRes);
         setUsersReport(usersRes);
         setAnalytics(analyticsRes);
+        setFeedbackReport(feedbackRes);
         setError(null);
       })
       .catch((err) => {
@@ -264,6 +273,7 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
           setStats(null);
           setUsersReport(null);
           setAnalytics(null);
+          setFeedbackReport(null);
         }
         setError(err instanceof Error ? err.message : "ไม่สามารถโหลดข้อมูล Dashboard ได้");
       })
@@ -272,6 +282,20 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
       });
     return () => ctrl.abort();
   }, []);
+
+  const filteredFeedbacks = useMemo(() => {
+    const items = feedbackReport?.items ?? [];
+    const fq = feedbackQuery.trim().toLowerCase();
+    return items.filter((item) => {
+      if (feedbackFilter === "member" && item.is_guest) return false;
+      if (feedbackFilter === "guest" && !item.is_guest) return false;
+      if (fq) {
+        const hay = `${item.message} ${item.username ?? ""} ${item.display_name ?? ""} ${item.email ?? ""} ${item.page_context ?? ""}`.toLowerCase();
+        if (!hay.includes(fq)) return false;
+      }
+      return true;
+    });
+  }, [feedbackReport, feedbackFilter, feedbackQuery]);
 
   const toggleSort = (col: SortColumn) => {
     if (sortBy === col) {
@@ -447,20 +471,111 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
 
           <div className="border border-line bg-panel p-4">
             <div className="flex items-center justify-between text-xs text-muted sm:text-sm">
-              <span className="font-display font-bold">ผลสำรวจความพร้อมจ่าย</span>
-              <Coins className="h-4 w-4 text-gold" />
+              <span className="font-display font-bold">Feedback จากผู้ใช้</span>
+              <MessageSquare className="h-4 w-4 text-gold" />
             </div>
             <div className="mt-1.5 font-mono text-2xl font-extrabold text-ink sm:text-3xl">
-              {stats.survey.willing_pct}%{" "}
-              <span className="text-sm font-normal text-muted">
-                ({stats.survey.willing_total}/{stats.survey.total} คน)
-              </span>
+              {(feedbackReport?.total ?? stats.feedback?.total ?? 0).toLocaleString()}{" "}
+              <span className="text-sm font-normal text-muted">ข้อความ</span>
             </div>
             <div className="mt-1.5 font-mono text-xs text-dim">
-              สมาชิกพร้อม {stats.survey.willing_member} · ขาจร {stats.survey.willing_guest}
+              วันนี้ +{(feedbackReport?.today ?? stats.feedback?.today ?? 0).toLocaleString()} · สมาชิก{" "}
+              {feedbackReport?.member_total ?? 0} · Guest {feedbackReport?.guest_total ?? 0}
             </div>
           </div>
         </section>
+      )}
+
+      {/* Written User Feedback Inbox */}
+      {feedbackReport && (
+      <section className="flex flex-col gap-3.5 border border-gold/35 bg-panel p-4 sm:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <MessageSquare className="h-5 w-5 text-gold" />
+            <h2 className="font-display text-base font-bold tracking-wide text-ink sm:text-lg">
+              ข้อความ Feedback จากผู้ใช้ ({filteredFeedbacks.length.toLocaleString()} /{" "}
+              {feedbackReport.total.toLocaleString()})
+            </h2>
+          </div>
+
+          <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+            <div className="relative min-w-0 flex-1 sm:w-72 sm:flex-none">
+              <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-dim" />
+              <input
+                type="search"
+                value={feedbackQuery}
+                onChange={(e) => setFeedbackQuery(e.target.value)}
+                placeholder="ค้นหาข้อความ, @username, ชื่อ..."
+                className="h-9 w-full border border-line-strong bg-bg pr-3 pl-9 font-mono text-xs text-ink placeholder:text-dim focus:border-gold focus:outline-none sm:text-sm"
+              />
+            </div>
+            {(
+              [
+                ["all", "ทั้งหมด"],
+                ["member", "เฉพาะสมาชิก"],
+                ["guest", "Guest"],
+              ] as const
+            ).map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setFeedbackFilter(key)}
+                className={`h-9 border px-3 font-display text-xs font-semibold transition-colors ${
+                  feedbackFilter === key
+                    ? "border-gold bg-gold font-bold text-bg"
+                    : "border-line-strong bg-bg text-muted hover:text-ink"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {filteredFeedbacks.length === 0 ? (
+          <div className="border border-line bg-bg/50 px-4 py-8 text-center font-mono text-xs text-dim sm:text-sm">
+            {loading ? "กำลังโหลดข้อความ Feedback..." : "ยังไม่มีข้อความ Feedback ตามตัวกรองที่เลือก"}
+          </div>
+        ) : (
+          <div className="max-h-96 divide-y divide-line overflow-y-auto border border-line bg-bg/50">
+            {filteredFeedbacks.map((item) => (
+              <div key={item.id} className="flex flex-col gap-1.5 px-4 py-3 hover:bg-panel-2/40">
+                <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
+                  <div className="flex min-w-0 flex-wrap items-center gap-2">
+                    <span className="text-dim">#{item.id}</span>
+                    {item.username ? (
+                      <>
+                        <span className="font-bold text-gold">@{item.username}</span>
+                        {item.display_name && item.display_name !== item.username && (
+                          <span className="text-ink">({item.display_name})</span>
+                        )}
+                        {item.email && <span className="text-dim">{item.email}</span>}
+                      </>
+                    ) : item.is_guest ? (
+                      <span className="border border-line-strong bg-panel-2 px-1.5 py-0.5 text-[11px] text-muted">
+                        Guest
+                      </span>
+                    ) : (
+                      <span className="border border-line-strong bg-panel-2 px-1.5 py-0.5 text-[11px] text-muted">
+                        สมาชิกที่ลบบัญชี
+                      </span>
+                    )}
+                    {item.page_context && (
+                      <span className="border border-line bg-panel px-1.5 py-0.5 text-[11px] text-dim">
+                        {item.page_context}
+                      </span>
+                    )}
+                  </div>
+                  <span className="shrink-0 text-dim">{item.created_at_th} (UTC+7)</span>
+                </div>
+                <p className="text-sm leading-relaxed whitespace-pre-wrap break-words text-ink">
+                  {item.message}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
       )}
 
       {/* Plain-Thai Behavior & AI Summary Section */}

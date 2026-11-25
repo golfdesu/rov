@@ -30,7 +30,6 @@ function buildSyncHeaders(url: string, extra?: Record<string, string>): Record<s
     expectedAuthUser &&
     (url.startsWith("/draft/session") ||
       url.startsWith("/draft/practice-history") ||
-      url.startsWith("/combat/builds") ||
       url === "/billing" ||
       url.startsWith("/billing/"))
   ) {

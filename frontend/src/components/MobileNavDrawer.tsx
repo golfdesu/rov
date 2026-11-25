@@ -1,9 +1,9 @@
 import { StableButtonLabel } from "./StableButtonLabel";
 import { useLanguage } from "../i18n/language";
 import { LanguageSwitch } from "../i18n/LanguageProvider";
-import { BarChart3, Camera, Coffee, Crown, LogIn, LogOut, MessageSquare, User, Users, X } from "lucide-react";
+import { BarChart3, Coffee, Crown, LogIn, LogOut, Megaphone, User, Users, X } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import type { AuthUser, PricingSurveyChoice } from "../types/auth";
+import type { AuthUser } from "../types/auth";
 import { accountLabel } from "../utils/auth";
 import { MiniDraftLogo } from "./MiniDraftLogo";
 
@@ -21,8 +21,8 @@ interface MobileNavDrawerProps<T extends string> {
   authUser: AuthUser | null;
   isAdmin?: boolean;
   sandboxBilling?: boolean;
-  surveyAnswered: boolean;
-  surveyChoice?: PricingSurveyChoice | null;
+  announcementSeen: boolean;
+  feedbackSent?: boolean;
   onSelectTab: (tab: T) => void;
   onOpenSurvey: () => void;
   onOpenDonate: () => void;
@@ -30,7 +30,6 @@ interface MobileNavDrawerProps<T extends string> {
   onOpenHeroPools?: () => void;
   onOpenAnalyticsDashboard?: () => void;
   onOpenPlans?: () => void;
-  onOpenScreenshotImport?: () => void;
   onOpenAuth: () => void;
   onOpenProfile: () => void;
   onLogout: () => void;
@@ -44,8 +43,8 @@ export function MobileNavDrawer<T extends string>({
   authUser,
   isAdmin = false,
   sandboxBilling = false,
-  surveyAnswered,
-  surveyChoice,
+  announcementSeen,
+  feedbackSent = false,
   onSelectTab,
   onOpenSurvey,
   onOpenDonate,
@@ -53,7 +52,6 @@ export function MobileNavDrawer<T extends string>({
   onOpenHeroPools,
   onOpenAnalyticsDashboard,
   onOpenPlans,
-  onOpenScreenshotImport,
   onOpenAuth,
   onOpenProfile,
   onLogout,
@@ -136,14 +134,12 @@ export function MobileNavDrawer<T extends string>({
     };
   }, [requestClose]);
 
-  const surveyTooltipMessage = surveyAnswered
-    ? surveyChoice === "willing"
-      ? "ตอบแล้ว: พร้อมจ่าย"
-      : surveyChoice === "not_willing"
-        ? "ตอบแล้ว: ไม่พร้อม"
-        : "ตอบแล้ว"
-    : "ยังไม่ได้ตอบ";
-  const surveyStatusMessage = surveyAnswered ? "ตอบแล้ว" : "ยังไม่ได้ตอบ";
+  const announcementTooltipMessage = feedbackSent
+    ? "ดูประกาศอัปเดตหรือส่ง Feedback เพิ่มเติม"
+    : announcementSeen
+      ? "อ่านประกาศอัปเดตและส่ง Feedback"
+      : "มีอัปเดตใหม่ รออ่านและส่ง Feedback";
+  const announcementStatusMessage = feedbackSent ? "ส่งแล้ว" : announcementSeen ? "อ่านแล้ว" : "ใหม่";
 
   return (
     <div
@@ -257,7 +253,7 @@ export function MobileNavDrawer<T extends string>({
             )}
           </div>
 
-          {sandboxBilling && (onOpenHeroPools || onOpenAnalyticsDashboard || onOpenScreenshotImport) && (
+          {sandboxBilling && (onOpenHeroPools || onOpenAnalyticsDashboard) && (
             <div className="flex flex-col gap-2">
               <span className="font-mono text-[10px] font-semibold tracking-wider text-dim uppercase">
                 {t("เครื่องมือดราฟต์")}
@@ -282,40 +278,32 @@ export function MobileNavDrawer<T extends string>({
                   <StableButtonLabel message="สถิติซ้อมทีม" className="inline-grid text-left" />
                 </button>
               )}
-              {onOpenScreenshotImport && (
-                <button
-                  type="button"
-                  onClick={() => requestClose(onOpenScreenshotImport)}
-                  className="flex min-h-10 w-full items-center gap-2 border border-line-strong bg-panel-2 px-3 py-1.5 text-left font-display text-xs font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold"
-                >
-                  <Camera className="h-4 w-4 shrink-0 text-gold" />
-                  <StableButtonLabel message="นำเข้าดราฟต์จากภาพหน้าจอ" className="inline-grid text-left" />
-                </button>
-              )}
             </div>
           )}
 
           {/* Actions */}
           <div className="flex flex-col gap-2">
             <span className="font-mono text-[10px] font-semibold tracking-wider text-dim uppercase">
-              {t("แบบสอบถาม & สนับสนุน")}
+              {t("ประกาศ & สนับสนุน")}
             </span>
             <button
               type="button"
-              title={t(surveyTooltipMessage)}
+              title={t(announcementTooltipMessage)}
               onClick={() => requestClose(onOpenSurvey)}
               className="flex min-h-10 w-full items-center justify-between gap-2 border border-line-strong bg-panel-2 px-3 py-1.5 text-left font-display text-xs font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold"
             >
               <span className="flex min-w-0 items-center gap-2">
-                <MessageSquare className="h-4 w-4 shrink-0 text-gold" />
-                <StableButtonLabel message="แบบสอบถาม" className="inline-grid items-center text-left whitespace-nowrap" />
+                <Megaphone className="h-4 w-4 shrink-0 text-gold" />
+                <StableButtonLabel message="อัปเดตใหม่ & Feedback" className="inline-grid items-center text-left whitespace-nowrap" />
               </span>
               <span
-                className={`shrink-0 font-mono text-[10px] whitespace-nowrap ${surveyAnswered ? "text-good" : "text-gold"}`}
+                className={`shrink-0 font-mono text-[10px] whitespace-nowrap ${
+                  feedbackSent ? "text-good" : announcementSeen ? "text-muted" : "text-gold"
+                }`}
               >
                 <StableButtonLabel
-                  message={surveyStatusMessage}
-                  alternatives={["ตอบแล้ว", "ยังไม่ได้ตอบ"]}
+                  message={announcementStatusMessage}
+                  alternatives={["ใหม่", "อ่านแล้ว", "ส่งแล้ว"]}
                   className="inline-grid items-center whitespace-nowrap text-right"
                 />
               </span>
@@ -341,10 +329,6 @@ export function MobileNavDrawer<T extends string>({
               </button>
             )}
           </div>
-        </div>
-
-        <div className="shrink-0 border-t border-line bg-bg/80 px-4 py-2.5 text-center font-mono text-[11px] font-medium text-muted">
-          {t("ใช้งานฟรีถึง 30 พ.ย. 2026")}
         </div>
       </div>
     </div>

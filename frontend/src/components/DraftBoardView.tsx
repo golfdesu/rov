@@ -82,9 +82,6 @@ const NewSeriesModal = lazy(() =>
 const PickLaneModal = lazy(() =>
   import("./PickLaneModal").then((m) => ({ default: m.PickLaneModal })),
 );
-const ScreenshotImportModal = lazy(() =>
-  import("./ScreenshotImportModal").then((m) => ({ default: m.ScreenshotImportModal })),
-);
 const HeroPickerModal = lazy(() =>
   import("./lab/HeroPickerModal").then((m) => ({ default: m.HeroPickerModal })),
 );
@@ -120,7 +117,7 @@ export interface DraftBoardViewProps {
   isPaidUser?: boolean;
   isAuthenticated?: boolean;
   onOpenAuthModal?: () => void;
-  activeDraftTool?: "pools" | "import" | null;
+  activeDraftTool?: "pools" | null;
   onCloseDraftTool?: () => void;
 }
 
@@ -228,7 +225,6 @@ export function DraftBoardView({
   const [historyUpgradeOpen, setHistoryUpgradeOpen] = useState(false);
   const historyUpgradeTitleId = useId();
   const isPoolsModalOpen = activeDraftTool === "pools";
-  const isImportModalOpen = activeDraftTool === "import";
   const [heroPoolOverview, setHeroPoolOverview] = useState<HeroPoolOverview | null>(null);
   const [poolRevision, setPoolRevision] = useState(0);
   const lastPoolRefreshAtRef = useRef(0);
@@ -349,7 +345,6 @@ export function DraftBoardView({
         isFinishGameModalOpen ||
         historyUpgradeOpen ||
         isPoolsModalOpen ||
-        isImportModalOpen ||
         confirmState !== null,
     ),
     fallbackHero: fallbackTimerHero,
@@ -687,7 +682,6 @@ export function DraftBoardView({
       isFinishGameModalOpen ||
       historyUpgradeOpen ||
       isPoolsModalOpen ||
-      isImportModalOpen ||
       activeSlotEditor?.view === "actions" ||
       activeSlotEditor?.view === "lane" ||
       (activeSlotEditor?.view === "hero" && isMobileViewport) ||
@@ -783,7 +777,6 @@ export function DraftBoardView({
     isFinishGameModalOpen,
     historyUpgradeOpen,
     isPoolsModalOpen,
-    isImportModalOpen,
     slotEditor,
     activeSlotEditor,
     editingSlot,
@@ -1362,10 +1355,14 @@ export function DraftBoardView({
             }
             return saved;
           }}
-          onHistoryFullUpgrade={() => {
-            setIsHistoryModalOpen(false);
-            setHistoryUpgradeOpen(true);
-          }}
+          onHistoryFullUpgrade={
+            isPaidUser
+              ? undefined
+              : () => {
+                  setIsHistoryModalOpen(false);
+                  setHistoryUpgradeOpen(true);
+                }
+          }
           teamHistoryUsername={teamHistoryUsername}
           currentDraftSnapshot={currentDraftSnapshot}
           personalHistoryLimit={personalHistoryLimit}
@@ -1424,16 +1421,6 @@ export function DraftBoardView({
           heroMap={heroMap}
           initialTeamName={bName}
           onChanged={(overview) => setHeroPoolOverview(overview)}
-          onClose={() => onCloseDraftTool?.()}
-        />
-      )}
-
-      {isImportModalOpen && (
-        <ScreenshotImportModal
-          heroes={heroes}
-          heroMap={heroMap}
-          isPaid={isPaidUser}
-          onLoadImportedDraft={(game) => loadRecordedGame(game)}
           onClose={() => onCloseDraftTool?.()}
         />
       )}

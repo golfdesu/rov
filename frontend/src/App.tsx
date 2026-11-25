@@ -30,42 +30,22 @@ const ProfileView = lazy(() =>
 const ScrimDashboardView = lazy(() =>
   import("./components/ScrimDashboardView").then((m) => ({ default: m.ScrimDashboardView })),
 );
-const CombatLab = lazy(() =>
-  import("./components/lab/CombatLab").then((m) => ({ default: m.CombatLab })),
-);
-const MetaLab = lazy(() =>
-  import("./components/meta_lab/MetaLab").then((m) => ({ default: m.MetaLab })),
-);
-const TierListView = lazy(() =>
-  import("./components/tierlist/TierListView").then((m) => ({ default: m.TierListView })),
-);
 import { mergeGuestIntoAccountSession, normalizeSessionPayload, useDraft } from "./hooks/useDraft";
 import type {
   AuthStatusResponse,
   AuthUser,
-  PricingSurveyChoice,
-  PricingSurveyResponse,
+  FeedbackSubmitResponse,
 } from "./types/auth";
 import type { DraftSessionPayload } from "./types/draft";
 import { accountLabel, restorePreviewAccountStorage } from "./utils/auth";
 
-export type Tab = "draft" | "practice" | "tierlist" | "metalab" | "lab" | "profile" | "plans" | "analytics" | "admin";
-export type DraftToolModal = "pools" | "import";
+export type Tab = "draft" | "practice" | "profile" | "plans" | "analytics" | "admin";
+export type DraftToolModal = "pools";
 
-const DRAFT_ONLY = import.meta.env.VITE_DRAFT_ONLY === "true";
-
-const TABS: { key: Tab; label: string }[] = DRAFT_ONLY
-  ? [
-      { key: "draft", label: "Draft Board" },
-      { key: "practice", label: "ฝึกดราฟต์ vs AI" },
-    ]
-  : [
-      { key: "draft", label: "Draft Board" },
-      { key: "practice", label: "ฝึกดราฟต์ vs AI" },
-      { key: "tierlist", label: "Meta Tier List" },
-      { key: "metalab", label: "MetaLab" },
-      { key: "lab", label: "Combat Lab" },
-    ];
+const TABS: { key: Tab; label: string }[] = [
+  { key: "draft", label: "Draft Board" },
+  { key: "practice", label: "ฝึกดราฟต์ vs AI" },
+];
 
 function initialTab(): Tab {
   if (window.location.hash === "#admin") return "admin";
@@ -73,10 +53,6 @@ function initialTab(): Tab {
   if (window.location.hash === "#profile") return "profile";
   if (window.location.hash === "#plans") return "plans";
   if (window.location.hash === "#practice") return "practice";
-  if (DRAFT_ONLY) return "draft";
-  if (window.location.hash === "#tierlist") return "tierlist";
-  if (window.location.hash === "#metalab") return "metalab";
-  if (window.location.hash === "#lab") return "lab";
   return "draft";
 }
 
@@ -89,7 +65,7 @@ interface WorkspaceProps {
   sandboxBilling: boolean;
   activeDraftTool: DraftToolModal | null;
   onCloseDraftTool: () => void;
-  surveyAnswered: boolean;
+  announcementSeen: boolean;
   disableShortcuts: boolean;
   onOpenAuthModal: () => void;
   onOpenMobileDrawer: () => void;
@@ -105,7 +81,7 @@ function Workspace({
   sandboxBilling,
   activeDraftTool,
   onCloseDraftTool,
-  surveyAnswered,
+  announcementSeen,
   disableShortcuts,
   onOpenAuthModal,
   onOpenMobileDrawer,
@@ -180,9 +156,6 @@ function Workspace({
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5">
-            <span className="hidden min-h-7 items-center border border-line-strong bg-panel-2 px-2.5 font-mono text-[11px] font-medium whitespace-nowrap text-muted xl:inline-flex">
-              <StableButtonLabel message="ใช้งานฟรีถึง 30 พ.ย. 2026" />
-            </span>
             {authLoading ? null : isAuthenticated ? (
               <a
                 href="#profile"
@@ -216,7 +189,7 @@ function Workspace({
               className="relative inline-flex h-8 w-8 items-center justify-center border border-line-strong bg-panel-2 text-ink transition-colors hover:border-gold/60 hover:text-gold"
             >
               <Menu className="h-4 w-4" />
-              {!surveyAnswered && (
+              {!announcementSeen && (
                 <span
                   aria-hidden="true"
                   className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-gold"
@@ -236,8 +209,10 @@ function Workspace({
             personalGames={draft.seriesGames}
             heroMap={draft.heroMap}
             isPaid={Boolean(authUser?.is_paid)}
+            isAuthenticated={isAuthenticated}
             teamHistoryEnabled={Boolean(authUser?.stripe_sandbox_enabled)}
             defaultTeamName={draft.globalBans.teamAName}
+            onOpenAuthModal={onOpenAuthModal}
             onBack={() => selectTab("draft")}
           />
         ) : tab === "profile" && authUser ? (
@@ -246,28 +221,6 @@ function Workspace({
           <BillingSandbox key={authUser.id} username={authUser.username} view="plans" livemode={Boolean(authUser.stripe_livemode)} />
         ) : tab === "practice" ? (
           <PracticeDraftView key={scope} scope={scope} persistSession={isAuthenticated} />
-        ) : !DRAFT_ONLY && tab === "tierlist" ? (
-          <TierListView heroes={draft.heroes} disableShortcuts={disableShortcuts} />
-        ) : !DRAFT_ONLY && tab === "metalab" ? (
-          <MetaLab
-            heroMap={draft.heroMap}
-            mainBluePicks={draft.bluePicks}
-            mainRedPicks={draft.redPicks}
-            mainBlueBans={draft.blueBans}
-            mainRedBans={draft.redBans}
-            mainGlobalBans={draft.globalBans}
-            mainSeriesGames={draft.seriesGames}
-            disableShortcuts={disableShortcuts}
-          />
-        ) : !DRAFT_ONLY && tab === "lab" ? (
-          <main className="mx-auto w-full max-w-[1680px] flex-1 overflow-y-auto px-4 py-4">
-            <CombatLab
-              key={scope}
-              heroMap={draft.heroMap}
-              storageKey={`${COMBAT_STORAGE_PREFIX}:${scope}`}
-              persistRemote={isAuthenticated}
-            />
-          </main>
         ) : (
           <DraftBoardView
             key={`draft:${scope}`}
@@ -292,23 +245,24 @@ function Workspace({
 
 const GUEST_ENTERED_STORAGE_KEY = "minidraft_guest_entered_v1";
 const AUTH_SYNC_STORAGE_KEY = "minidraft_auth_user_sync_v1";
-const PRICING_SURVEY_STORAGE_KEY = "minidraft_pricing_survey_v1";
+const ANNOUNCEMENT_VERSION = "2026-11-25";
+const ANNOUNCEMENT_STORAGE_KEY = "minidraft_announcement_v2";
 const PRICING_SURVEY_CLIENT_ID_KEY = "minidraft_pricing_survey_client_id_v1";
 const DRAFT_STORAGE_PREFIX = "rov_draft_session_v1";
-const COMBAT_STORAGE_PREFIX = "rov-combat-lab-v1";
-const ACCOUNT_STORAGE_PREFIXES = [DRAFT_STORAGE_PREFIX, COMBAT_STORAGE_PREFIX, PRICING_SURVEY_STORAGE_KEY];
+const ACCOUNT_STORAGE_PREFIXES = [DRAFT_STORAGE_PREFIX, ANNOUNCEMENT_STORAGE_KEY];
 
 function prepareAuthenticatedUser(user: AuthUser): void {
   restorePreviewAccountStorage(user, ACCOUNT_STORAGE_PREFIXES);
   setExpectedAuthUser(user.username);
 }
 
-interface PricingSurveyStorage {
+interface AnnouncementStorage {
   clientId: string;
-  status: "pending" | "answered";
-  choice?: PricingSurveyChoice;
+  status: "pending" | "seen";
+  version?: string;
+  feedbackSent?: boolean;
   snoozedDate?: string;
-  answeredAt?: number;
+  updatedAt?: number;
 }
 
 function getLocalDateKey(now = new Date()): string {
@@ -335,14 +289,6 @@ function getOrCreateSurveyClientId(): string {
     if (existing && /^[a-zA-Z0-9_-]{8,64}$/.test(existing)) {
       return existing;
     }
-    const legacyRaw = window.localStorage.getItem(PRICING_SURVEY_STORAGE_KEY);
-    if (legacyRaw) {
-      const legacyParsed = JSON.parse(legacyRaw) as { clientId?: unknown };
-      if (typeof legacyParsed?.clientId === "string" && /^[a-zA-Z0-9_-]{8,64}$/.test(legacyParsed.clientId)) {
-        window.localStorage.setItem(PRICING_SURVEY_CLIENT_ID_KEY, legacyParsed.clientId);
-        return legacyParsed.clientId;
-      }
-    }
     const generated = createSurveyClientId();
     window.localStorage.setItem(PRICING_SURVEY_CLIENT_ID_KEY, generated);
     return generated;
@@ -351,22 +297,22 @@ function getOrCreateSurveyClientId(): string {
   }
 }
 
-function loadPricingSurveyState(scope: string): PricingSurveyStorage {
+function loadAnnouncementState(scope: string): AnnouncementStorage {
   const clientId = getOrCreateSurveyClientId();
   try {
-    const scopedKey = `${PRICING_SURVEY_STORAGE_KEY}:${scope}`;
-    const raw =
-      window.localStorage.getItem(scopedKey) ??
-      (scope === "guest" ? window.localStorage.getItem(PRICING_SURVEY_STORAGE_KEY) : null);
+    const scopedKey = `${ANNOUNCEMENT_STORAGE_KEY}:${scope}`;
+    const raw = window.localStorage.getItem(scopedKey);
     if (raw) {
-      const parsed = JSON.parse(raw) as Partial<PricingSurveyStorage>;
+      const parsed = JSON.parse(raw) as Partial<AnnouncementStorage>;
       if (parsed && typeof parsed === "object") {
+        const versionMatches = parsed.version === ANNOUNCEMENT_VERSION;
         return {
           clientId,
-          status: parsed.status === "answered" ? "answered" : "pending",
-          choice: parsed.choice === "willing" || parsed.choice === "not_willing" ? parsed.choice : undefined,
+          status: versionMatches && parsed.status === "seen" ? "seen" : "pending",
+          version: versionMatches ? parsed.version : undefined,
+          feedbackSent: Boolean(parsed.feedbackSent),
           snoozedDate: typeof parsed.snoozedDate === "string" ? parsed.snoozedDate : undefined,
-          answeredAt: typeof parsed.answeredAt === "number" ? parsed.answeredAt : undefined,
+          updatedAt: typeof parsed.updatedAt === "number" ? parsed.updatedAt : undefined,
         };
       }
     }
@@ -376,12 +322,9 @@ function loadPricingSurveyState(scope: string): PricingSurveyStorage {
   return { clientId, status: "pending" };
 }
 
-function savePricingSurveyState(scope: string, next: PricingSurveyStorage): void {
+function saveAnnouncementState(scope: string, next: AnnouncementStorage): void {
   try {
-    window.localStorage.setItem(`${PRICING_SURVEY_STORAGE_KEY}:${scope}`, JSON.stringify(next));
-    if (scope === "guest") {
-      window.localStorage.removeItem(PRICING_SURVEY_STORAGE_KEY);
-    }
+    window.localStorage.setItem(`${ANNOUNCEMENT_STORAGE_KEY}:${scope}`, JSON.stringify(next));
   } catch {
     // Ignore storage quota/privacy restrictions
   }
@@ -501,7 +444,6 @@ export function App() {
   const lastAuthCheckAtRef = useRef(0);
   const [authLoading, setAuthLoading] = useState(true);
   const [sandboxBilling, setSandboxBilling] = useState(false);
-  const [billingLivemode, setBillingLivemode] = useState(false);
   const [googleLoginEnabled, setGoogleLoginEnabled] = useState(false);
   const [discordLoginEnabled, setDiscordLoginEnabled] = useState(false);
   const [oauthError, setOauthError] = useState<string | null>(() => {
@@ -521,9 +463,7 @@ export function App() {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [activeDraftTool, setActiveDraftTool] = useState<DraftToolModal | null>(null);
   const [manualSurveyOpen, setManualSurveyOpen] = useState(false);
-  const [surveyStateByScope, setSurveyStateByScope] = useState<Record<string, PricingSurveyStorage>>({});
-  const [pricingSurveyAnsweredServer, setPricingSurveyAnsweredServer] = useState(false);
-  const [pricingSurveyChoiceServer, setPricingSurveyChoiceServer] = useState<PricingSurveyChoice | null>(null);
+  const [announcementByScope, setAnnouncementByScope] = useState<Record<string, AnnouncementStorage>>({});
   const [surveyBusy, setSurveyBusy] = useState(false);
   const [surveyError, setSurveyError] = useState<Message | null>(null);
   const [pendingMigration, setPendingMigration] = useState<{ user: AuthUser; draft: PendingGuestDraft } | null>(null);
@@ -546,7 +486,7 @@ export function App() {
   }, []);
 
   const surveyScope = authUser ? `user:${authUser.username.toLowerCase()}` : "guest";
-  const pricingSurveyState = surveyStateByScope[surveyScope] ?? loadPricingSurveyState(surveyScope);
+  const announcementState = announcementByScope[surveyScope] ?? loadAnnouncementState(surveyScope);
 
   const updateGuestEntered = useCallback((enabled: boolean) => {
     saveGuestEntered(enabled);
@@ -570,12 +510,10 @@ export function App() {
     (
       user: AuthUser,
       fromGuestFlow: boolean,
-      surveyAnswered = false,
-      surveyChoice: PricingSurveyChoice | null = null,
+      _surveyAnswered = false,
+      _surveyChoice: string | null = null,
       isAdmin = false,
     ) => {
-      setPricingSurveyAnsweredServer(surveyAnswered || surveyChoice !== null);
-      setPricingSurveyChoiceServer(surveyChoice);
       setIsAdminUser(isAdmin);
       if (fromGuestFlow) {
         const pending = readPendingGuestDraft();
@@ -621,12 +559,9 @@ export function App() {
       try {
         const res = await getJson<AuthStatusResponse>("/auth/me", signal);
         setSandboxBilling(Boolean(res.stripe_sandbox_enabled));
-        setBillingLivemode(Boolean(res.stripe_livemode));
         setGoogleLoginEnabled(Boolean(res.google_login_enabled));
         setDiscordLoginEnabled(Boolean(res.discord_login_enabled));
         if (res.authenticated && res.user) {
-          setPricingSurveyAnsweredServer(Boolean(res.pricing_survey_answered));
-          setPricingSurveyChoiceServer(res.pricing_survey_choice ?? null);
           setIsAdminUser(Boolean(res.is_admin));
           if (allowGuestMigration && loadGuestEntered()) {
             const pending = readPendingGuestDraft();
@@ -656,8 +591,6 @@ export function App() {
           ));
         } else {
           setExpectedAuthUser(null);
-          setPricingSurveyAnsweredServer(false);
-          setPricingSurveyChoiceServer(null);
           setIsAdminUser(false);
           setAdminStatsModalOpen(false);
           if (authUserRef.current !== null) {
@@ -681,12 +614,9 @@ export function App() {
         if (ctrl.signal.aborted) return;
         lastAuthCheckAtRef.current = Date.now();
         setSandboxBilling(Boolean(res.stripe_sandbox_enabled));
-        setBillingLivemode(Boolean(res.stripe_livemode));
         setGoogleLoginEnabled(Boolean(res.google_login_enabled));
         setDiscordLoginEnabled(Boolean(res.discord_login_enabled));
         if (res.authenticated && res.user) {
-          setPricingSurveyAnsweredServer(Boolean(res.pricing_survey_answered));
-          setPricingSurveyChoiceServer(res.pricing_survey_choice ?? null);
           setIsAdminUser(Boolean(res.is_admin));
           if (loadGuestEntered()) {
             const pending = readPendingGuestDraft();
@@ -700,8 +630,6 @@ export function App() {
           setAuthUser(res.user);
         } else {
           setExpectedAuthUser(null);
-          setPricingSurveyAnsweredServer(false);
-          setPricingSurveyChoiceServer(null);
           setIsAdminUser(false);
           setAuthUser(null);
         }
@@ -749,8 +677,6 @@ export function App() {
     setSessionMismatchHandler((status) => {
       setExpectedAuthUser(null);
       setAuthUser(null);
-      setPricingSurveyAnsweredServer(false);
-      setPricingSurveyChoiceServer(null);
       setIsAdminUser(false);
       setAdminStatsModalOpen(false);
       setActiveDraftTool(null);
@@ -830,8 +756,6 @@ export function App() {
     setAdminStatsModalOpen(false);
     setActiveDraftTool(null);
     setIsAdminUser(false);
-    setPricingSurveyAnsweredServer(false);
-    setPricingSurveyChoiceServer(null);
     updateGuestEntered(false);
     broadcastAuthChange(null);
   };
@@ -908,26 +832,29 @@ export function App() {
     finalizeAuthenticatedUser(user);
   };
 
-  const handleSelectSurveyChoice = async (choice: PricingSurveyChoice): Promise<boolean> => {
+  const handleSubmitFeedback = async (message: string): Promise<boolean> => {
     if (surveyBusy) return false;
     setSurveyBusy(true);
     setSurveyError(null);
     try {
-      await postJson<PricingSurveyResponse>("/survey/pricing", {
-        choice,
-        client_id: pricingSurveyState.clientId,
+      await postJson<FeedbackSubmitResponse>("/feedback", {
+        message,
+        client_id: announcementState.clientId,
+        page_context: tab,
       });
-      const next: PricingSurveyStorage = {
-        ...pricingSurveyState,
-        status: "answered",
-        choice,
-        answeredAt: Date.now(),
+      const next: AnnouncementStorage = {
+        ...announcementState,
+        status: "seen",
+        version: ANNOUNCEMENT_VERSION,
+        feedbackSent: true,
+        updatedAt: Date.now(),
       };
-      savePricingSurveyState(surveyScope, next);
+      saveAnnouncementState(surveyScope, next);
+      setAnnouncementByScope((prev) => ({ ...prev, [surveyScope]: next }));
       return true;
     } catch (err) {
       setSurveyError(
-        ["บันทึกไม่สำเร็จ ({0}) ลองใหม่หรือกดภายหลัง", err instanceof Error ? err.message : "Network error"],
+        ["ส่ง Feedback ไม่สำเร็จ ({0}) ลองใหม่อีกครั้ง", err instanceof Error ? err.message : "Network error"],
       );
       return false;
     } finally {
@@ -935,19 +862,30 @@ export function App() {
     }
   };
 
-  const handleFinalizeSurveyChoice = (choice: PricingSurveyChoice) => {
-    const next: PricingSurveyStorage = {
-      ...pricingSurveyState,
-      status: "answered",
-      choice,
-      answeredAt: Date.now(),
+  const handleAfterFeedbackSubmit = () => {
+    const next: AnnouncementStorage = {
+      ...announcementState,
+      status: "seen",
+      version: ANNOUNCEMENT_VERSION,
+      feedbackSent: true,
+      updatedAt: Date.now(),
     };
-    savePricingSurveyState(surveyScope, next);
-    setSurveyStateByScope((prev) => ({ ...prev, [surveyScope]: next }));
-    if (authUser) {
-      setPricingSurveyAnsweredServer(true);
-      setPricingSurveyChoiceServer(choice);
-    }
+    saveAnnouncementState(surveyScope, next);
+    setAnnouncementByScope((prev) => ({ ...prev, [surveyScope]: next }));
+    setManualSurveyOpen(false);
+  };
+
+  const handleAcknowledgeAnnouncement = () => {
+    if (surveyBusy) return;
+    setSurveyError(null);
+    const next: AnnouncementStorage = {
+      ...announcementState,
+      status: "seen",
+      version: ANNOUNCEMENT_VERSION,
+      updatedAt: Date.now(),
+    };
+    saveAnnouncementState(surveyScope, next);
+    setAnnouncementByScope((prev) => ({ ...prev, [surveyScope]: next }));
     setManualSurveyOpen(false);
   };
 
@@ -955,28 +893,26 @@ export function App() {
     if (surveyBusy) return;
     setSurveyError(null);
     setManualSurveyOpen(false);
-    if (!surveyAnswered) {
-      const next: PricingSurveyStorage = {
-        ...pricingSurveyState,
+    setAnnouncementByScope((prev) => {
+      const cur = prev[surveyScope] ?? announcementState;
+      if (cur.status === "seen" && cur.version === ANNOUNCEMENT_VERSION) return prev;
+      const next: AnnouncementStorage = {
+        ...cur,
         snoozedDate: getLocalDateKey(),
       };
-      savePricingSurveyState(surveyScope, next);
-      setSurveyStateByScope((prev) => ({ ...prev, [surveyScope]: next }));
-    }
+      saveAnnouncementState(surveyScope, next);
+      return { ...prev, [surveyScope]: next };
+    });
   };
 
   const todayDateKey = getLocalDateKey();
-  const effectiveSurveyChoice: PricingSurveyChoice | null =
-    pricingSurveyChoiceServer ?? pricingSurveyState.choice ?? null;
-  const surveyAnswered =
-    pricingSurveyAnsweredServer ||
-    pricingSurveyChoiceServer !== null ||
-    pricingSurveyState.status === "answered";
+  const announcementSeen =
+    announcementState.status === "seen" && announcementState.version === ANNOUNCEMENT_VERSION;
+  const feedbackSent = Boolean(announcementState.feedbackSent);
   const autoSurveyOpen =
-    !billingLivemode &&
     tab === "draft" &&
-    !surveyAnswered &&
-    pricingSurveyState.snoozedDate !== todayDateKey;
+    !announcementSeen &&
+    announcementState.snoozedDate !== todayDateKey;
   const pricingSurveyOpen =
     !authModalOpen &&
     pendingMigration === null &&
@@ -1005,7 +941,7 @@ export function App() {
         sandboxBilling={sandboxBilling}
         activeDraftTool={activeDraftTool}
         onCloseDraftTool={() => setActiveDraftTool(null)}
-        surveyAnswered={surveyAnswered}
+        announcementSeen={announcementSeen}
         disableShortcuts={
           authModalOpen ||
           pendingMigration !== null ||
@@ -1025,8 +961,8 @@ export function App() {
           authUser={authUser}
           isAdmin={isAdminUser}
           sandboxBilling={sandboxBilling}
-          surveyAnswered={surveyAnswered}
-          surveyChoice={effectiveSurveyChoice}
+          announcementSeen={announcementSeen}
+          feedbackSent={feedbackSent}
           onSelectTab={selectTab}
           onOpenSurvey={() => {
             setSurveyError(null);
@@ -1037,7 +973,6 @@ export function App() {
           onOpenHeroPools={() => openDraftTool("pools")}
           onOpenAnalyticsDashboard={() => selectTab("analytics")}
           onOpenPlans={() => selectTab("plans")}
-          onOpenScreenshotImport={() => openDraftTool("import")}
           onOpenAuth={() => setAuthModalOpen(true)}
           onOpenProfile={() => { window.location.hash = "profile"; }}
           onLogout={() => void handleLogout()}
@@ -1053,11 +988,12 @@ export function App() {
         <PricingSurveyModal
           busy={surveyBusy}
           error={surveyError && translateMessage(t, surveyError)}
-          answered={surveyAnswered}
-          currentChoice={effectiveSurveyChoice}
-          onSelect={handleSelectSurveyChoice}
-          onAfterSelect={handleFinalizeSurveyChoice}
+          feedbackSent={feedbackSent}
+          onSubmitFeedback={handleSubmitFeedback}
+          onAfterSubmit={handleAfterFeedbackSubmit}
+          onAcknowledge={handleAcknowledgeAnnouncement}
           onSnooze={handleSnoozeSurvey}
+          onOpenAnalytics={sandboxBilling ? () => selectTab("analytics") : undefined}
         />
       )}
       {donateModalOpen && <DonateModal onClose={() => setDonateModalOpen(false)} />}

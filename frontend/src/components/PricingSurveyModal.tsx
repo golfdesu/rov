@@ -1,173 +1,211 @@
 import { StableButtonLabel } from "./StableButtonLabel";
 import { useLanguage } from "../i18n/language";
-import { Check, Coins, X } from "lucide-react";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
-import type { PricingSurveyChoice } from "../types/auth";
+import { ArrowRight, BarChart3, Check, Megaphone, Send, Sparkles, X } from "lucide-react";
+import { type FormEvent, useId, useState } from "react";
 import { Modal } from "./Modal";
 
 interface PricingSurveyModalProps {
   busy: boolean;
   error: string | null;
-  answered?: boolean;
-  currentChoice?: PricingSurveyChoice | null;
-  onSelect: (choice: PricingSurveyChoice) => Promise<boolean>;
-  onAfterSelect: (choice: PricingSurveyChoice) => void;
+  feedbackSent?: boolean;
+  onSubmitFeedback: (message: string) => Promise<boolean>;
+  onAfterSubmit: () => void;
+  onAcknowledge: () => void;
   onSnooze: () => void;
+  onOpenAnalytics?: () => void;
 }
 
-/** Daily willingness-to-pay survey popup shown once per day on entering the Draft screen (or manually via Feedback). */
+const UPDATE_HIGHLIGHTS = [
+  {
+    title: "สถิติซ้อมทีม & Scouting Report PDF",
+    detail: "วิเคราะห์ Pick/Ban, Matchups, คอมโบ, ความลึก Hero Pool 4 แท็บ และส่งออกรายงาน A4",
+  },
+  {
+    title: "จัดทัวร์นาเมนต์ & ประวัติฟรี 21 เกม",
+    detail: "แยกบันทึกประวัติตามทัวร์นาเมนต์ ตั้งชื่อซีรีส์ และขยายโควตาบันทึกฟรีเป็น 21 เกม",
+  },
+  {
+    title: "ระบบทีม & Hero Pool",
+    detail: "ตั้ง Pool ฮีโร่รายเลนพร้อมแจ้งเตือนบนบอร์ด และซิงก์ประวัติทีมร่วมกันในแพ็ก Business",
+  },
+  {
+    title: "ปรับปรุงบอร์ดดราฟต์, AI & PromptPay",
+    detail: "วางช่อง Ban เหนือ Pick, รีเซ็ตเลนอัตโนมัติ, AI เร็วขึ้น และเพิ่มแพ็กเติมวันผ่าน PromptPay",
+  },
+] as const;
+
+/** Update announcement and direct text feedback modal shown on first visit to this release or via Drawer. */
 export function PricingSurveyModal({
   busy,
   error,
-  answered = false,
-  currentChoice,
-  onSelect,
-  onAfterSelect,
+  feedbackSent = false,
+  onSubmitFeedback,
+  onAfterSubmit,
+  onAcknowledge,
   onSnooze,
+  onOpenAnalytics,
 }: PricingSurveyModalProps) {
   const { t } = useLanguage();
   const titleId = useId();
-  const [isClosing, setIsClosing] = useState(false);
-  const closeTimerRef = useRef<number | null>(null);
-  const alreadyAnswered = answered || currentChoice === "willing" || currentChoice === "not_willing";
+  const [message, setMessage] = useState("");
+  const [localError, setLocalError] = useState<string | null>(null);
+  const [closing, setClosing] = useState(false);
 
-  useEffect(() => {
-    return () => {
-      if (closeTimerRef.current !== null) {
-        window.clearTimeout(closeTimerRef.current);
-        closeTimerRef.current = null;
-      }
-    };
-  }, []);
+  const trimmedLength = message.trim().length;
+  const locked = busy || closing;
 
-  const runExitTransition = useCallback((done: () => void) => {
-    setIsClosing(true);
-    if (closeTimerRef.current !== null) {
-      window.clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
-    }
-    const reducedMotion =
-      typeof window !== "undefined" &&
-      typeof window.matchMedia === "function" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reducedMotion) {
-      done();
+  const handleSubmit = async (e: FormEvent, requestClose: (afterClose?: () => void) => void) => {
+    e.preventDefault();
+    if (locked) return;
+    const trimmed = message.trim();
+    if (trimmed.length < 2) {
+      setLocalError(t("กรุณาพิมพ์ข้อความอย่างน้อย 2 ตัวอักษร"));
       return;
     }
-    closeTimerRef.current = window.setTimeout(() => {
-      closeTimerRef.current = null;
-      done();
-    }, 180);
-  }, []);
-
-  const handleRequestSnooze = useCallback(() => {
-    if (busy || isClosing) return;
-    runExitTransition(onSnooze);
-  }, [busy, isClosing, onSnooze, runExitTransition]);
-
-  const handleChoiceClick = async (choice: PricingSurveyChoice) => {
-    if (busy || isClosing) return;
-    const ok = await onSelect(choice);
+    setLocalError(null);
+    const ok = await onSubmitFeedback(trimmed);
     if (ok) {
-      runExitTransition(() => onAfterSelect(choice));
+      setMessage("");
+      setClosing(true);
+      requestClose(onAfterSubmit);
     }
   };
+
+  const displayError = localError ?? error;
 
   return (
     <Modal
       labelledBy={titleId}
-      className="max-w-sm border-gold/40 pricing-survey-modal"
-      isClosing={isClosing}
-      onClose={busy || isClosing ? () => {} : handleRequestSnooze}
+      className="max-w-lg border-gold/40 pricing-survey-modal"
+      dismissDisabled={locked}
+      onClose={onSnooze}
     >
-      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-line px-4 py-3 sm:px-5">
-        <div className="flex min-w-0 items-center gap-2">
-          <Coins className="h-4 w-4 shrink-0 text-gold" />
-          <h2 id={titleId} className="font-display text-sm font-bold tracking-wider text-ink sm:text-base">
-            {t("สำรวจความคิดเห็น MINIDRAFT")}
-          </h2>
-        </div>
-        <button
-          type="button"
-          disabled={busy || isClosing}
-          onClick={handleRequestSnooze}
-          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-dim transition-colors hover:bg-panel-2 hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
-          aria-label={alreadyAnswered ? t("ปิดหน้าต่าง") : t("ไว้ถามใหม่วันพรุ่งนี้")}
-        >
-          <X size={18} />
-        </button>
-      </div>
-
-      <div className="flex shrink-0 flex-col gap-3.5 p-4 sm:p-5">
-        <div className="inline-flex w-fit items-center border border-gold/40 bg-gold/10 px-2.5 py-1 font-mono text-[11px] font-bold text-gold">
-          {t("ใช้งานฟรีถึง 30 พ.ย. 2026")}
-        </div>
-
-        <p className="text-sm font-medium leading-relaxed text-ink sm:text-base">
-          {t("ถ้าอนาคตมีแพ็กรายเดือนเพื่อช่วยค่าเซิร์ฟเวอร์และพัฒนาเว็บต่อ คุณพร้อมสนับสนุนไหม?")}
-        </p>
-
-        {alreadyAnswered ? (
-          <div className="border border-good/40 bg-good/10 px-3 py-2 text-xs text-good">
-            {t("คุณตอบแล้ว:")}{" "}
-            <strong>
-              {currentChoice === "willing"
-                ? t("พร้อมจ่าย")
-                : currentChoice === "not_willing"
-                  ? t("ไม่พร้อม")
-                  : t("บันทึกคำตอบแล้ว")}
-            </strong>{" "}
-            {t("(สามารถกดเปลี่ยนคำตอบได้)")}
+      {(requestClose) => (
+        <>
+          <div className="flex shrink-0 items-center justify-between gap-2 border-b border-line px-4 py-3 sm:px-5">
+            <div className="flex min-w-0 items-center gap-2">
+              <Megaphone className="h-4 w-4 shrink-0 text-gold" />
+              <h2 id={titleId} className="font-display text-sm font-bold tracking-wider text-ink sm:text-base">
+                {t("อัปเดตใหม่ & Feedback MINIDRAFT")}
+              </h2>
+            </div>
+            <button
+              type="button"
+              disabled={locked}
+              onClick={() => {
+                if (locked) return;
+                setClosing(true);
+                requestClose();
+              }}
+              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-dim transition-colors hover:bg-panel-2 hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
+              aria-label={t("ปิดหน้าต่าง")}
+            >
+              <X size={18} />
+            </button>
           </div>
-        ) : (
-          <p className="text-xs leading-relaxed text-muted sm:text-[13px]">
-            {t("ถามครั้งเดียว จะไม่แสดงซ้ำอีก")}
-          </p>
-        )}
 
-        {error && (
-          <div className="border border-red/40 bg-red/10 px-3 py-2 text-xs text-red">
-            {error}
+          <div className="flex flex-col gap-3.5 overflow-y-auto p-4 sm:p-5">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1 border border-gold/40 bg-gold/10 px-2.5 py-1 font-mono text-[11px] font-bold text-gold">
+                <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                <span>{t("อัปเดตล่าสุดจากเวอร์ชันก่อน")}</span>
+              </span>
+              {feedbackSent && (
+                <span className="inline-flex items-center gap-1 border border-good/40 bg-good/10 px-2 py-1 font-mono text-[11px] font-bold text-good">
+                  <Check className="h-3 w-3 shrink-0" />
+                  <span>{t("เคยส่ง Feedback แล้ว")}</span>
+                </span>
+              )}
+            </div>
+
+            <ul className="flex flex-col gap-2 border border-line bg-panel-2/60 p-3 text-xs leading-relaxed sm:text-[13px]">
+              {UPDATE_HIGHLIGHTS.map((item) => (
+                <li key={item.title} className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gold" aria-hidden="true" />
+                  <div className="min-w-0">
+                    <strong className="font-display text-ink">{t(item.title)}</strong>
+                    <span className="text-muted"> — {t(item.detail)}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+
+            {onOpenAnalytics && (
+              <button
+                type="button"
+                disabled={locked}
+                onClick={() => {
+                  if (locked) return;
+                  setClosing(true);
+                  requestClose(() => {
+                    onAcknowledge();
+                    onOpenAnalytics();
+                  });
+                }}
+                className="inline-flex min-h-10 w-full items-center justify-between gap-2 border border-gold/50 bg-gold/10 px-3 py-2 font-display text-xs font-bold text-gold transition-colors hover:bg-gold hover:text-bg disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm"
+              >
+                <span className="flex min-w-0 items-center gap-2">
+                  <BarChart3 className="h-4 w-4 shrink-0" />
+                  <span><StableButtonLabel message="ลองดูสถิติซ้อมทีม" /></span>
+                </span>
+                <ArrowRight className="h-4 w-4 shrink-0" />
+              </button>
+            )}
+
+            <form onSubmit={(e) => void handleSubmit(e, requestClose)} className="flex flex-col gap-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <label htmlFor={`${titleId}-feedback`} className="font-display text-xs font-bold text-ink sm:text-sm">
+                  {t("เขียน Feedback หรือข้อเสนอแนะถึงผู้พัฒนา")}
+                </label>
+                <span className="font-mono text-[11px] text-dim">{trimmedLength} / 1500</span>
+              </div>
+
+              <textarea
+                id={`${titleId}-feedback`}
+                value={message}
+                disabled={locked}
+                onChange={(e) => {
+                  setMessage(e.target.value);
+                  if (localError) setLocalError(null);
+                }}
+                maxLength={1500}
+                rows={3}
+                placeholder={t("แจ้งบั๊ก แนะนำฟีเจอร์ หรือบอกความรู้สึกหลังลองฟีเจอร์ใหม่ได้เลย...")}
+                className="w-full resize-y border border-line-strong bg-bg px-3 py-2 text-xs leading-relaxed text-ink placeholder:text-dim focus:border-gold focus:outline-none disabled:opacity-60 sm:text-sm"
+              />
+
+              {displayError && (
+                <div className="border border-red/40 bg-red/10 px-3 py-2 text-xs text-red">
+                  {displayError}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 gap-2 pt-0.5 sm:grid-cols-2">
+                <button
+                  type="submit"
+                  disabled={locked || trimmedLength < 2}
+                  className="inline-flex min-h-10 items-center justify-center gap-1.5 border border-gold bg-gold px-3 py-2 font-display text-sm font-bold text-bg transition-colors hover:bg-gold/90 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <Send className="h-4 w-4 shrink-0" />
+                  <span><StableButtonLabel message="ส่ง Feedback" /></span>
+                </button>
+                <button
+                  type="button"
+                  disabled={locked}
+                  onClick={() => {
+                    if (locked) return;
+                    setClosing(true);
+                    requestClose(onAcknowledge);
+                  }}
+                  className="inline-flex min-h-10 items-center justify-center border border-line-strong bg-panel-2 px-3 py-2 font-display text-xs font-semibold text-ink transition-colors hover:border-ink/40 hover:bg-panel disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm"
+                >
+                  <StableButtonLabel message="รับทราบ / ปิด" />
+                </button>
+              </div>
+            </form>
           </div>
-        )}
-
-        <div className="grid grid-cols-2 gap-2.5 pt-0.5">
-          <button
-            type="button"
-            disabled={busy || isClosing}
-            onClick={() => void handleChoiceClick("willing")}
-            className={`inline-flex min-h-10 items-center justify-center gap-1.5 border px-3 py-2 font-display text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
-              currentChoice === "willing"
-                ? "border-gold bg-gold text-bg ring-2 ring-gold/40"
-                : "border-gold bg-gold text-bg hover:bg-gold/90"
-            }`}
-          >
-            <Check className="h-4 w-4 shrink-0" />
-            <span><StableButtonLabel message="พร้อมจ่าย" /></span>
-          </button>
-          <button
-            type="button"
-            disabled={busy || isClosing}
-            onClick={() => void handleChoiceClick("not_willing")}
-            className={`inline-flex min-h-10 items-center justify-center border px-3 py-2 font-display text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
-              currentChoice === "not_willing"
-                ? "border-gold/70 bg-panel-2 text-gold"
-                : "border-line-strong bg-panel-2 text-ink hover:border-ink/40 hover:bg-panel"
-            }`}
-          >
-            <StableButtonLabel message="ไม่พร้อม" />
-          </button>
-        </div>
-
-        <button
-          type="button"
-          disabled={busy || isClosing}
-          onClick={handleRequestSnooze}
-          className="inline-flex min-h-9 w-full items-center justify-center border border-line bg-transparent px-3 py-1.5 font-display text-xs font-medium text-muted transition-colors hover:border-line-strong hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <StableButtonLabel message={alreadyAnswered ? "ปิด" : "ภายหลัง (ไว้ถามใหม่พรุ่งนี้)"} alternatives={["ปิด", "ภายหลัง (ไว้ถามใหม่พรุ่งนี้)"]} />
-        </button>
-      </div>
+        </>
+      )}
     </Modal>
   );
 }

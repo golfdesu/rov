@@ -61,6 +61,7 @@ import { displayName } from "../utils/heroNames";
 // Fetch a wider candidate pool so lane-filling and per-lane filtered heroes always have 5+ candidates
 const CANDIDATE_POOL = 50;
 export const MAX_SERIES_GAMES = 100;
+const MAX_IMPORT_GAMES = 500;
 const SESSION_STORAGE_KEY = "rov_draft_session_v1";
 const VALID_LEAGUES: readonly LeagueCode[] = ["GLOBAL", "RPL", "GCS", "AOG", "INTL"];
 
@@ -242,7 +243,7 @@ export function parseImportedDraftGames(
       ? raw.seriesGames
       : null;
   if (!items || items.length === 0) return { ok: false, error: "invalid_format" };
-  if (items.length > MAX_SERIES_GAMES) return { ok: false, error: "too_many_games" };
+  if (items.length > MAX_IMPORT_GAMES) return { ok: false, error: "too_many_games" };
 
   let validLookup: Map<string, string> | null = null;
   if (validHeroNames && validHeroNames.size > 0) {

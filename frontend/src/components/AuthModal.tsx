@@ -478,9 +478,6 @@ export function AuthLanding({
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="hidden rounded border border-gold/40 bg-gold/10 px-2.5 py-1 font-mono text-[10px] font-bold tracking-wider text-gold min-[420px]:inline-block sm:text-[11px]">
-              <StableButtonLabel message="ใช้งานฟรีถึง 30 พ.ย. 2026" />
-            </span>
             <LanguageSwitch />
           </div>
         </div>

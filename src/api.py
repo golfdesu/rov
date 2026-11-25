@@ -73,6 +73,7 @@ from src.predictor import RoVDraftPredictor
 from src.sample_analytics import get_sample_analytics
 from src.schemas import (
     AdminAnalyticsResponse,
+    AdminFeedbackResponse,
     AdminStatsResponse,
     AdminUsersResponse,
     AuthLoginRequest,
@@ -92,6 +93,8 @@ from src.schemas import (
     DraftPredictionResponse,
     DraftSessionStateSchema,
     DraftStateRequest,
+    FeedbackSubmitRequest,
+    FeedbackSubmitResponse,
     HealthResponse,
     PracticeHistorySyncSchema,
     PricingSurveyRequest,
@@ -189,6 +192,7 @@ _PROD_BLOCKED_EXACT = frozenset(
 
 
 _MAX_PROD_BODY_BYTES = 256 * 1024
+_MAX_DRAFT_SESSION_BODY_BYTES = 1024 * 1024
 
 
 class _MaxBodySizeMiddleware:
@@ -206,6 +210,13 @@ class _MaxBodySizeMiddleware:
             await self.app_inner(scope, receive, send)
             return
 
+        norm_path = _normalize_request_path(scope.get("path") or "/")
+        body_limit = (
+            _MAX_DRAFT_SESSION_BODY_BYTES
+            if scope.get("method") == "PUT" and norm_path == "/draft/session"
+            else _MAX_PROD_BODY_BYTES
+        )
+
         headers = {k.lower(): v for k, v in scope.get("headers", ())}
         raw_cl = headers.get(b"content-length")
         if raw_cl is not None:
@@ -219,7 +230,7 @@ class _MaxBodySizeMiddleware:
                 resp = JSONResponse({"detail": "Invalid Content-Length"}, status_code=400, headers=_SECURITY_HEADERS)
                 await resp(scope, receive, send)
                 return
-            if cl > _MAX_PROD_BODY_BYTES:
+            if cl > body_limit:
                 resp = JSONResponse({"detail": "Payload Too Large"}, status_code=413, headers=_SECURITY_HEADERS)
                 await resp(scope, receive, send)
                 return
@@ -235,7 +246,7 @@ class _MaxBodySizeMiddleware:
             message = await receive()
             if message.get("type") == "http.request":
                 received_bytes += len(message.get("body", b""))
-                if received_bytes > _MAX_PROD_BODY_BYTES:
+                if received_bytes > body_limit:
                     too_large = True
                     return {"type": "http.request", "body": b"", "more_body": False}
             return message
@@ -327,6 +338,7 @@ async def security_and_lockdown_middleware(request: Request, call_next):
             "/predict",
             "/combat/",
             "/survey/",
+            "/feedback",
             "/telemetry/",
             "/admin/",
             "/billing",
@@ -562,6 +574,7 @@ _account_login_limiter = RateLimiter(max_attempts=20, window_seconds=300)
 _global_reg_limiter = RateLimiter(max_attempts=40, window_seconds=3600)
 _predict_rate_limiter = RateLimiter(max_attempts=120, window_seconds=60)
 _survey_rate_limiter = RateLimiter(max_attempts=10, window_seconds=60)
+_feedback_rate_limiter = RateLimiter(max_attempts=6, window_seconds=60)
 _billing_rate_limiter = RateLimiter(max_attempts=12, window_seconds=60)
 _team_rate_limiter = RateLimiter(max_attempts=40, window_seconds=60)
 _sample_analytics_limiter = RateLimiter(max_attempts=60, window_seconds=60)
@@ -1219,17 +1232,24 @@ require_stripe_sandbox = require_billing_enabled
 
 
 def _billing_request_origin(request: Request) -> str:
-    origin = _extract_origin(request.headers.get("origin", str(request.base_url)))
+    raw_origin = request.headers.get("origin")
+    if raw_origin:
+        origin = _extract_origin(raw_origin)
+    else:
+        origin = _extract_origin(str(request.base_url))
+        if origin and config.is_production and _is_https_request(request) and origin.startswith("http://"):
+            origin = "https://" + origin[len("http://") :]
     parsed = urlparse(origin) if origin else None
+    allowed = {o.rstrip("/").lower() for o in config.cors_origins}
     if config.is_production:
-        if not origin or parsed is None or parsed.scheme != "https" or origin not in config.cors_origins:
+        if not origin or parsed is None or parsed.scheme != "https" or origin not in allowed:
             raise HTTPException(status_code=403, detail="Invalid checkout origin")
         return origin
     if (
         not origin
         or parsed is None
         or parsed.hostname not in {"localhost", "127.0.0.1", "::1"}
-        or origin not in config.cors_origins
+        or origin not in allowed
     ):
         raise HTTPException(status_code=403, detail="Invalid checkout origin")
     return origin
@@ -1291,6 +1311,9 @@ def cancel_billing_checkout(
     if order is None:
         raise HTTPException(status_code=404, detail="Order not found")
     if order["status"] != "pending":
+        return
+    if not order["stripe_session_id"]:
+        db.close_uncreated_billing_order(order["id"])
         return
     client = make_stripe_client(config.stripe_secret_key)
     livemode = config.stripe_livemode
@@ -1750,6 +1773,25 @@ def submit_pricing_survey(
     return PricingSurveyResponse(recorded=True, choice=payload.choice)
 
 
+@app.post("/feedback", response_model=FeedbackSubmitResponse)
+def submit_user_feedback(
+    payload: FeedbackSubmitRequest,
+    request: Request,
+    user: AuthUser | None = Depends(get_optional_user),
+):
+    """Record user or guest free-text feedback for admin review."""
+    client_ip = _client_ip(request)
+    if not _feedback_rate_limiter.check_and_record(f"feedback:{client_ip}"):
+        raise HTTPException(status_code=429, detail="Too many feedback submissions, please try again shortly")
+    result = get_user_db().record_user_feedback(
+        user_id=user.id if user is not None else None,
+        client_id=payload.client_id,
+        message=payload.message,
+        page_context=payload.page_context,
+    )
+    return FeedbackSubmitResponse.model_validate(result)
+
+
 _cf_stats_lock = threading.Lock()
 _cf_stats_cache: dict[str, object] = {"at": 0.0, "data": None}
 
@@ -1916,9 +1958,21 @@ def get_admin_stats(user: AuthUser | None = Depends(get_optional_user)):
         generated_at_th=str(db_stats["generated_at_th"]),
         users=db_stats["users"],
         survey=db_stats["survey"],
+        feedback=db_stats.get("feedback"),
         cloudflare=cf_stats,
         retention=db_stats.get("retention"),
     )
+
+
+@app.get("/admin/feedback", response_model=AdminFeedbackResponse)
+def get_admin_feedback(
+    limit: int = Query(default=300, ge=1, le=500),
+    user: AuthUser | None = Depends(get_optional_user),
+):
+    """Owner-only user feedback inbox endpoint (404 for non-admins)."""
+    if user is None or not config.is_admin_username(user.username):
+        raise HTTPException(status_code=404, detail="Not Found")
+    return AdminFeedbackResponse.model_validate(get_user_db().get_admin_feedback(limit=limit))
 
 
 @app.get("/admin/users", response_model=AdminUsersResponse)

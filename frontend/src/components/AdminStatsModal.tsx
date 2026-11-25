@@ -1,41 +1,49 @@
 import { StableButtonLabel } from "./StableButtonLabel";
 import { useLanguage } from "../i18n/language";
-import { BarChart3, Coins, ExternalLink, Globe, RefreshCw, Repeat, Users, X } from "lucide-react";
+import { BarChart3, ExternalLink, Globe, MessageSquare, RefreshCw, Repeat, Users, X } from "lucide-react";
 import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import { ApiError, getJson } from "../api/client";
-import type { AdminStatsResponse } from "../types/auth";
+import type { AdminFeedbackResponse, AdminStatsResponse } from "../types/auth";
 import { Modal } from "./Modal";
 
 interface AdminStatsModalProps {
   onClose: () => void;
 }
 
-type SurveyChoiceFilter = "all" | "willing" | "not_willing";
+type FeedbackSenderFilter = "all" | "member" | "guest";
 
 let cachedAdminStats: AdminStatsResponse | null = null;
+let cachedAdminFeedback: AdminFeedbackResponse | null = null;
 
-/** Owner-only production & survey analytics dashboard modal. */
+/** Owner-only production & feedback analytics dashboard modal. */
 export function AdminStatsModal({ onClose }: AdminStatsModalProps) {
   const { t } = useLanguage();
   const titleId = useId();
   const [data, setData] = useState<AdminStatsResponse | null>(() => cachedAdminStats);
+  const [feedbackData, setFeedbackData] = useState<AdminFeedbackResponse | null>(() => cachedAdminFeedback);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [choiceFilter, setChoiceFilter] = useState<SurveyChoiceFilter>("all");
-  const [membersOnly, setMembersOnly] = useState(false);
+  const [senderFilter, setSenderFilter] = useState<FeedbackSenderFilter>("all");
   const [refererRange, setRefererRange] = useState<"today" | "7d">("today");
 
   const handleRefresh = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await getJson<AdminStatsResponse>("/admin/stats");
-      cachedAdminStats = res;
-      setData(res);
+      const [statsRes, feedbackRes] = await Promise.all([
+        getJson<AdminStatsResponse>("/admin/stats"),
+        getJson<AdminFeedbackResponse>("/admin/feedback"),
+      ]);
+      cachedAdminStats = statsRes;
+      cachedAdminFeedback = feedbackRes;
+      setData(statsRes);
+      setFeedbackData(feedbackRes);
     } catch (err) {
       if (err instanceof ApiError && (err.status === 401 || err.status === 404)) {
         cachedAdminStats = null;
+        cachedAdminFeedback = null;
         setData(null);
+        setFeedbackData(null);
       }
       setError(err instanceof Error ? err.message : "ไม่สามารถดึงข้อมูลสถิติได้");
     } finally {
@@ -45,11 +53,16 @@ export function AdminStatsModal({ onClose }: AdminStatsModalProps) {
 
   useEffect(() => {
     const ctrl = new AbortController();
-    getJson<AdminStatsResponse>("/admin/stats", ctrl.signal)
-      .then((res) => {
+    Promise.all([
+      getJson<AdminStatsResponse>("/admin/stats", ctrl.signal),
+      getJson<AdminFeedbackResponse>("/admin/feedback", ctrl.signal),
+    ])
+      .then(([statsRes, feedbackRes]) => {
         if (!ctrl.signal.aborted) {
-          cachedAdminStats = res;
-          setData(res);
+          cachedAdminStats = statsRes;
+          cachedAdminFeedback = feedbackRes;
+          setData(statsRes);
+          setFeedbackData(feedbackRes);
           setError(null);
         }
       })
@@ -57,7 +70,9 @@ export function AdminStatsModal({ onClose }: AdminStatsModalProps) {
         if (!ctrl.signal.aborted) {
           if (err instanceof ApiError && (err.status === 401 || err.status === 404)) {
             cachedAdminStats = null;
+            cachedAdminFeedback = null;
             setData(null);
+            setFeedbackData(null);
           }
           setError(err instanceof Error ? err.message : "ไม่สามารถดึงข้อมูลสถิติได้");
         }
@@ -70,20 +85,19 @@ export function AdminStatsModal({ onClose }: AdminStatsModalProps) {
     return () => ctrl.abort();
   }, []);
 
-  const notWillingPct = data && data.survey.total > 0 ? Math.round((100 - data.survey.willing_pct) * 10) / 10 : 0;
   const estimatedGuests =
     data?.cloudflare && data.cloudflare.total_uniques > data.users.total
       ? data.cloudflare.total_uniques - data.users.total
       : null;
 
-  const filteredVotes = useMemo(() => {
-    if (!data) return [];
-    return data.survey.recent.filter((item) => {
-      if (choiceFilter !== "all" && item.choice !== choiceFilter) return false;
-      if (membersOnly && !item.username) return false;
+  const filteredFeedbacks = useMemo(() => {
+    if (!feedbackData) return [];
+    return feedbackData.items.filter((item) => {
+      if (senderFilter === "member" && item.is_guest) return false;
+      if (senderFilter === "guest" && !item.is_guest) return false;
       return true;
     });
-  }, [data, choiceFilter, membersOnly]);
+  }, [feedbackData, senderFilter]);
 
   return (
     <Modal labelledBy={titleId} className="max-w-2xl" onClose={onClose}>
@@ -150,164 +164,100 @@ export function AdminStatsModal({ onClose }: AdminStatsModalProps) {
 
             {data && (
               <>
-                {/* 1. Pricing Survey Summary (Clickable filter cards) */}
+                {/* 1. Written User Feedback Inbox */}
                 <section className="flex flex-col gap-2.5 border border-gold/35 bg-panel-2/60 p-3.5">
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <Coins className="h-4 w-4 text-gold" />
+                      <MessageSquare className="h-4 w-4 text-gold" />
                       <h3 className="font-display text-xs font-bold tracking-wide text-ink sm:text-sm">
-                        {t("ผลสำรวจความพร้อมจ่าย")}
+                        {t("ข้อความ Feedback จากผู้ใช้")}
                       </h3>
                     </div>
-                    <span className="border border-gold/50 bg-gold/10 px-2 py-0.5 font-mono text-xs font-bold whitespace-nowrap text-gold">
-                      {t("รวม")} {data.survey.total.toLocaleString()} {t("คน")}
-                    </span>
-                  </div>
-
-                  <div className="h-2.5 w-full overflow-hidden bg-bg">
-                    <div
-                      className="h-full bg-good transition-all duration-300"
-                      style={{ width: `${data.survey.willing_pct}%` }}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                    <button
-                      type="button"
-                      onClick={() => setChoiceFilter((prev) => (prev === "willing" ? "all" : "willing"))}
-                      className={`border p-2.5 text-left transition-all ${
-                        choiceFilter === "willing"
-                          ? "border-good bg-good/20 ring-1 ring-good"
-                          : "border-good/40 bg-good/10 hover:border-good/80"
-                      }`}
-                    >
-                      <div className="flex items-baseline justify-between gap-2">
-                        <span className="font-display text-xs font-bold text-good"><StableButtonLabel message="พร้อมจ่าย" /></span>
-                        <span className="font-mono text-sm font-extrabold whitespace-nowrap text-good">
-                          {t("{0} คน ({1}%)", data.survey.willing_total.toLocaleString(), data.survey.willing_pct)}
-                        </span>
-                      </div>
-                      <div className="mt-1 font-mono text-[11px] text-muted">
-                        <StableButtonLabel message="สมาชิก:" /> <strong className="text-ink">{data.survey.willing_member}</strong> · Guest:{" "}
-                        <strong className="text-ink">{data.survey.willing_guest}</strong>
-                      </div>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setChoiceFilter((prev) => (prev === "not_willing" ? "all" : "not_willing"))}
-                      className={`border p-2.5 text-left transition-all ${
-                        choiceFilter === "not_willing"
-                          ? "border-gold bg-panel ring-1 ring-gold"
-                          : "border-line-strong bg-bg/70 hover:border-ink/40"
-                      }`}
-                    >
-                      <div className="flex items-baseline justify-between gap-2">
-                        <span className="font-display text-xs font-bold text-muted"><StableButtonLabel message="ไม่พร้อม" /></span>
-                        <span className="font-mono text-sm font-extrabold whitespace-nowrap text-ink">
-                          {t("{0} คน ({1}%)", data.survey.not_willing_total.toLocaleString(), notWillingPct)}
-                        </span>
-                      </div>
-                      <div className="mt-1 font-mono text-[11px] text-muted">
-                        <StableButtonLabel message="สมาชิก:" /> <strong className="text-ink">{data.survey.not_willing_member}</strong> · Guest:{" "}
-                        <strong className="text-ink">{data.survey.not_willing_guest}</strong>
-                      </div>
-                    </button>
-                  </div>
-                </section>
-
-                {/* 2. Filterable Survey Responses List */}
-                <section className="flex flex-col gap-2.5 border border-line bg-panel-2/30 p-3.5">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <h3 className="font-display text-xs font-bold tracking-wide text-ink sm:text-sm">
-                      {t("ผู้ตอบแบบสอบถาม ({0})", filteredVotes.length.toLocaleString())}
-                    </h3>
-
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => setChoiceFilter("all")}
-                        className={`min-h-7 border px-2 py-0.5 font-display text-[11px] font-semibold whitespace-nowrap transition-colors ${
-                          choiceFilter === "all"
-                            ? "border-gold bg-gold text-bg font-bold"
-                            : "border-line-strong bg-bg text-muted hover:text-ink"
-                        }`}
-                      >
-                        {t("ทั้งหมด ({0})", data.survey.total)}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setChoiceFilter("willing")}
-                        className={`min-h-7 border px-2 py-0.5 font-display text-[11px] font-semibold whitespace-nowrap transition-colors ${
-                          choiceFilter === "willing"
-                            ? "border-good bg-good text-bg font-bold"
-                            : "border-good/40 bg-good/10 text-good hover:border-good"
-                        }`}
-                      >
-                        {t("พร้อมจ่าย ({0})", data.survey.willing_total)}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setChoiceFilter("not_willing")}
-                        className={`min-h-7 border px-2 py-0.5 font-display text-[11px] font-semibold whitespace-nowrap transition-colors ${
-                          choiceFilter === "not_willing"
-                            ? "border-ink bg-ink text-bg font-bold"
-                            : "border-line-strong bg-bg text-muted hover:text-ink"
-                        }`}
-                      >
-                        {t("ไม่พร้อม ({0})", data.survey.not_willing_total)}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setMembersOnly((v) => !v)}
-                        className={`min-h-7 border px-2 py-0.5 font-display text-[11px] font-semibold whitespace-nowrap transition-colors ${
-                          membersOnly
-                            ? "border-blue bg-blue/20 text-blue font-bold"
-                            : "border-line-strong bg-bg text-muted hover:text-ink"
-                        }`}
-                      >
-                        <StableButtonLabel message={membersOnly ? "✓ เฉพาะสมาชิก (@)" : "เฉพาะสมาชิก (@)"} alternatives={["✓ เฉพาะสมาชิก (@)", "เฉพาะสมาชิก (@)"]} />
-                      </button>
+                    <div className="flex items-center gap-1.5 font-mono text-[11px]">
+                      <span className="border border-gold/50 bg-gold/10 px-2 py-0.5 font-bold whitespace-nowrap text-gold">
+                        {t("ทั้งหมด {0}", (feedbackData?.total ?? data.feedback?.total ?? 0).toLocaleString())}
+                      </span>
+                      <span className="border border-good/40 bg-good/10 px-2 py-0.5 font-bold whitespace-nowrap text-good">
+                        {t("วันนี้ +{0}", (feedbackData?.today ?? data.feedback?.today ?? 0).toLocaleString())}
+                      </span>
                     </div>
                   </div>
 
-                  {filteredVotes.length === 0 ? (
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setSenderFilter("all")}
+                      className={`min-h-7 border px-2 py-0.5 font-display text-[11px] font-semibold whitespace-nowrap transition-colors ${
+                        senderFilter === "all"
+                          ? "border-gold bg-gold text-bg font-bold"
+                          : "border-line-strong bg-bg text-muted hover:text-ink"
+                      }`}
+                    >
+                      {t("ทั้งหมด ({0})", feedbackData?.total ?? 0)}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSenderFilter("member")}
+                      className={`min-h-7 border px-2 py-0.5 font-display text-[11px] font-semibold whitespace-nowrap transition-colors ${
+                        senderFilter === "member"
+                          ? "border-blue bg-blue text-bg font-bold"
+                          : "border-blue/40 bg-blue/10 text-blue hover:border-blue"
+                      }`}
+                    >
+                      {t("เฉพาะสมาชิก ({0})", feedbackData?.member_total ?? 0)}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSenderFilter("guest")}
+                      className={`min-h-7 border px-2 py-0.5 font-display text-[11px] font-semibold whitespace-nowrap transition-colors ${
+                        senderFilter === "guest"
+                          ? "border-ink bg-ink text-bg font-bold"
+                          : "border-line-strong bg-bg text-muted hover:text-ink"
+                      }`}
+                    >
+                      {t("Guest ({0})", feedbackData?.guest_total ?? 0)}
+                    </button>
+                  </div>
+
+                  {filteredFeedbacks.length === 0 ? (
                     <div className="border border-line bg-bg/50 py-5 text-center font-mono text-xs text-dim">
-                      {t("ไม่พบรายการตามตัวกรองที่เลือก")}
+                      {t("ยังไม่มีข้อความ Feedback")}
                     </div>
                   ) : (
-                    <div className="max-h-56 overflow-y-auto border border-line bg-bg/60 divide-y divide-line">
-                      {filteredVotes.map((item) => (
-                        <div
-                          key={item.id}
-                          className="flex items-center justify-between gap-2 px-3 py-2 font-mono text-[11px]"
-                        >
-                          <div className="flex min-w-0 items-center gap-2">
-                            <span className="w-7 shrink-0 text-dim">#{item.id}</span>
-                            <span
-                              className={`shrink-0 px-1.5 py-0.5 text-[10px] font-bold ${
-                                item.choice === "willing"
-                                  ? "border border-good/40 bg-good/15 text-good"
-                                  : "border border-line-strong bg-panel-2 text-muted"
-                              }`}
-                            >
-                              {item.choice === "willing" ? t("พร้อมจ่าย") : t("ไม่พร้อม")}
-                            </span>
-                            {item.username ? (
-                              <div className="min-w-0 truncate">
-                                <span className="font-bold text-gold">@{item.username}</span>
-                                {item.display_name && item.display_name !== item.username && (
-                                  <span className="ml-1.5 text-ink">({item.display_name})</span>
-                                )}
-                                {item.email && (
-                                  <span className="ml-1.5 text-[10px] text-dim">{item.email}</span>
-                                )}
-                              </div>
-                            ) : (
-                              <span className="text-muted">Guest</span>
-                            )}
+                    <div className="max-h-64 divide-y divide-line overflow-y-auto border border-line bg-bg/60">
+                      {filteredFeedbacks.map((item) => (
+                        <div key={item.id} className="flex flex-col gap-1.5 px-3 py-2.5">
+                          <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-[11px]">
+                            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                              <span className="text-dim">#{item.id}</span>
+                              {item.username ? (
+                                <>
+                                  <span className="font-bold text-gold">@{item.username}</span>
+                                  {item.display_name && item.display_name !== item.username && (
+                                    <span className="text-ink">({item.display_name})</span>
+                                  )}
+                                  {item.email && <span className="text-[10px] text-dim">{item.email}</span>}
+                                </>
+                              ) : item.is_guest ? (
+                                <span className="border border-line-strong bg-panel-2 px-1.5 py-0.5 text-[10px] text-muted">
+                                  Guest
+                                </span>
+                              ) : (
+                                <span className="border border-line-strong bg-panel-2 px-1.5 py-0.5 text-[10px] text-muted">
+                                  {t("สมาชิกที่ลบบัญชี")}
+                                </span>
+                              )}
+                              {item.page_context && (
+                                <span className="border border-line bg-panel px-1.5 py-0.5 text-[10px] text-dim">
+                                  {item.page_context}
+                                </span>
+                              )}
+                            </div>
+                            <span className="shrink-0 text-[10px] text-dim">{item.created_at_th.slice(5)}</span>
                           </div>
-                          <span className="shrink-0 text-[10px] text-dim">{item.updated_at_th.slice(5)}</span>
+                          <p className="text-xs leading-relaxed whitespace-pre-wrap break-words text-ink">
+                            {item.message}
+                          </p>
                         </div>
                       ))}
                     </div>

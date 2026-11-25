@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sqlite3
+import time
 from typing import Annotated, Literal
 from urllib.parse import urlparse
 
@@ -246,7 +247,7 @@ def checkout_session(
                 "metadata": {"minidraft_order_id": order["id"]},
                 "success_url": f"{origin}/#profile",
                 "cancel_url": f"{origin}/#profile",
-                "expires_at": order["created_at"] + 3600,
+                "expires_at": max(order["created_at"] + 3600, int(time.time()) + 1860),
                 "line_items": [
                     {
                         "quantity": 1,

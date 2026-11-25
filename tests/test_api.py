@@ -1918,6 +1918,71 @@ def test_pricing_survey_endpoint_and_deduplication(tmp_path, monkeypatch):
     assert len(an["user_btyd_scores"]) == 3
 
 
+def test_user_feedback_submission_and_admin_inbox(tmp_path, monkeypatch):
+    import src.api as api_mod
+    from src.config import config
+
+    db_file = tmp_path / "feedback_test.db"
+    monkeypatch.setattr(config.paths, "app_db_path", db_file)
+    monkeypatch.setattr(config, "admin_usernames", ("chayanin5392",))
+    monkeypatch.setattr(api_mod._feedback_rate_limiter, "max_attempts", 20)
+
+    guest = TestClient(app)
+    member = TestClient(app)
+    owner = TestClient(app)
+
+    assert guest.post("/feedback", json={"message": " ", "client_id": "cid_guest_fb1"}).status_code == 422
+    assert guest.post("/feedback", json={"message": "a", "client_id": "cid_guest_fb1"}).status_code == 422
+    assert guest.post("/feedback", json={"message": "ดีครับ", "client_id": "bad$id"}).status_code == 422
+
+    r_guest = guest.post(
+        "/feedback",
+        json={"message": "  ขอโหมดวิเคราะห์ดราฟต์เพิ่มครับ  ", "client_id": "cid_guest_fb1", "page_context": "draft"},
+    )
+    assert r_guest.status_code == 200
+    assert r_guest.json()["recorded"] is True
+    assert "no-store" in r_guest.headers.get("cache-control", "").lower()
+
+    assert (
+        member.post("/auth/register", json={"username": "fb_member", "password": "secret-pass-fb"}).status_code == 201
+    )
+    r_member = member.post(
+        "/feedback",
+        json={"message": "Scouting PDF สวยมาก!", "client_id": "cid_member_fb2", "page_context": "analytics"},
+    )
+    assert r_member.status_code == 200
+    assert r_member.json()["recorded"] is True
+
+    # Fail-closed for guests and non-admin members
+    assert guest.get("/admin/feedback").status_code == 404
+    assert member.get("/admin/feedback").status_code == 404
+
+    assert (
+        owner.post("/auth/register", json={"username": "chayanin5392", "password": "owner-secret-fb"}).status_code
+        == 201
+    )
+    inbox = owner.get("/admin/feedback")
+    assert inbox.status_code == 200
+    body = inbox.json()
+    assert body["total"] == 2
+    assert body["today"] == 2
+    assert body["member_total"] == 1
+    assert body["guest_total"] == 1
+    assert len(body["items"]) == 2
+    # Ordered newest first
+    assert body["items"][0]["username"] == "fb_member"
+    assert body["items"][0]["is_guest"] is False
+    assert body["items"][0]["message"] == "Scouting PDF สวยมาก!"
+    assert body["items"][0]["page_context"] == "analytics"
+    assert body["items"][1]["username"] is None
+    assert body["items"][1]["is_guest"] is True
+    assert body["items"][1]["message"] == "ขอโหมดวิเคราะห์ดราฟต์เพิ่มครับ"
+
+    stats_res = owner.get("/admin/stats")
+    assert stats_res.status_code == 200
+    assert stats_res.json()["feedback"] == {"total": 2, "today": 2}
+
+
 def test_daily_visit_telemetry_and_retention_stats(tmp_path, monkeypatch):
     from datetime import datetime, timedelta, timezone
 
@@ -2436,3 +2501,75 @@ def test_sample_scrim_analytics_aggregated_no_raw_leak():
     assert res_bad.status_code == 422
     res_bad_preset = client.get("/analytics/sample", params={"date_preset": "custom"})
     assert res_bad_preset.status_code == 422
+
+
+def test_production_body_limit_allows_large_draft_session_only(tmp_path, monkeypatch):
+    import sqlite3
+    import time
+
+    from src.config import config
+
+    monkeypatch.setattr(config, "env", "production")
+    monkeypatch.setattr(config, "cors_origins", ["https://minidraft.app"])
+    monkeypatch.setattr(config, "stripe_secret_key", "rk_live_fixture")
+    monkeypatch.setattr(config, "stripe_webhook_secret", "whsec_local_test_fixture")
+    monkeypatch.setattr(config, "stripe_live_enabled", True)
+    monkeypatch.setattr(config.paths, "app_db_path", tmp_path / "prod_body_limit.db")
+
+    prod_headers = {"Origin": "https://minidraft.app"}
+    authed = TestClient(app)
+    reg_res = authed.post(
+        "/auth/register",
+        headers=prod_headers,
+        json={"username": "big_sync_u", "password": "secret-pass-big"},
+    )
+    assert reg_res.status_code == 201
+    uid = int(reg_res.json()["user"]["id"])
+    with sqlite3.connect(config.paths.app_db_path) as conn:
+        conn.execute(
+            "INSERT INTO billing_passes (user_id, tier, expires_at) VALUES (?, 'pro', ?)",
+            (uid, int(time.time()) + 86400),
+        )
+
+    # > 256 KB payload rejected on normal POST routes (e.g. /feedback) with 413
+    oversized_feedback = json.dumps({"message": "x" * (270 * 1024)}).encode("utf-8")
+    r_fb = authed.post(
+        "/feedback", headers={**prod_headers, "Content-Type": "application/json"}, content=oversized_feedback
+    )
+    assert r_fb.status_code == 413
+
+    # ~330 KB (> 256 KB, < 1 MB) realistic payload succeeds on PUT /draft/session
+    games = [
+        {
+            "id": f"big-game-{i}",
+            "gameNumber": (i % 7) + 1,
+            "timestamp": "2026-11-25 11:30",
+            "seriesName": f"Matchup Series #{i:03d} vs Rival",
+            "blueTeamName": "TEAM A",
+            "redTeamName": "TEAM B",
+            "bluePicks": ["Violet", "Tulen", "Thane", "Aoi", "Omen"],
+            "redPicks": ["Hayate", "Krixi", "Zip", "Keera", "Riktor"],
+            "blueBans": ["Gildur", "Kaine", "Dolia", "Aya"],
+            "redBans": ["Rouie", "Ybneth", "Bonnie", "Stuart"],
+            "pickLanes": {
+                "Omen": "DS_Lane",
+                "Aoi": "Jungle",
+                "Tulen": "Mid",
+                "Violet": "Dragon_Lane",
+                "Thane": "Roam",
+                "Riktor": "DS_Lane",
+                "Keera": "Jungle",
+                "Krixi": "Mid",
+                "Hayate": "Dragon_Lane",
+                "Zip": "Roam",
+            },
+            "winner": "A",
+        }
+        for i in range(490)
+    ]
+    raw_session = json.dumps({"seriesGames": games, "updatedAt": 123456}).encode("utf-8")
+    assert len(raw_session) > 256 * 1024
+    r_sess = authed.put(
+        "/draft/session", headers={**prod_headers, "Content-Type": "application/json"}, content=raw_session
+    )
+    assert r_sess.status_code == 200
