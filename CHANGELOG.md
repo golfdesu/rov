@@ -27,6 +27,21 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-25 19:32 (UTC+7) — Non-Blocking Stale-While-Revalidate Cloudflare Stats & Progressive Admin Load
+**Agent:** Antigravity Agent
+
+### ✅ Completed Work
+- **Backend Non-Blocking Cloudflare Cache (`src/api.py`):** Eliminated the 4.2s `/admin/stats` stall by replacing the synchronous 60s Cloudflare GraphQL fetch with a 5-minute (`300s`) stale-while-revalidate cache and single-flight daemon refresh thread (`_schedule_cloudflare_refresh`, `_fetch_cloudflare_stats_live`).
+- **Progressive Admin Frontend Load (`frontend/src/components/AdminDashboardView.tsx`):** Replaced the blocking `Promise.all` with concurrent per-endpoint `Promise.allSettled` updates so each admin panel renders as soon as its DB endpoint resolves (~25–55ms).
+
+### 📁 Modified Files
+- `src/api.py`, `frontend/src/components/AdminDashboardView.tsx`, `tests/test_api.py`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified with `ruff check` / `ruff format`, `pytest -q --tb=short tests/test_api.py tests/test_billing.py`, `oxlint`, `npm run build`, `npm run build:prod`, and `audit_copy_i18n.py`.
+
+---
+
 ## 📅 2026-11-25 19:18 (UTC+7) — Display Duo/Business Team Members in Admin Dashboard
 **Agent:** Antigravity Agent
 

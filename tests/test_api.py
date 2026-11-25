@@ -2573,3 +2573,46 @@ def test_production_body_limit_allows_large_draft_session_only(tmp_path, monkeyp
         "/draft/session", headers={**prod_headers, "Content-Type": "application/json"}, content=raw_session
     )
     assert r_sess.status_code == 200
+
+
+def test_cloudflare_stats_stale_while_revalidate_non_blocking(monkeypatch):
+    import src.api as api_mod
+    from src.config import config
+
+    monkeypatch.setattr(config, "cf_api_token", "cf-token")
+    monkeypatch.setattr(config, "cf_account_id", "cf-acct")
+    monkeypatch.setattr(config, "cf_zone_id", "cf-zone")
+
+    refresh_calls = 0
+
+    def fake_schedule():
+        nonlocal refresh_calls
+        refresh_calls += 1
+
+    monkeypatch.setattr(api_mod, "_schedule_cloudflare_refresh", fake_schedule)
+
+    # Cold cache returns None immediately and schedules background refresh
+    with api_mod._cf_stats_lock:
+        monkeypatch.setitem(api_mod._cf_stats_cache, "at", 0.0)
+        monkeypatch.setitem(api_mod._cf_stats_cache, "data", None)
+        monkeypatch.setitem(api_mod._cf_stats_cache, "refreshing", False)
+    assert api_mod._fetch_cloudflare_stats() is None
+    assert refresh_calls == 1
+
+    # Fresh cache (< 300s) returns data without triggering refresh
+    cached_payload = {"today_uniques": 12, "total_uniques": 500}
+    with api_mod._cf_stats_lock:
+        monkeypatch.setitem(api_mod._cf_stats_cache, "at", api_mod.time.monotonic())
+        monkeypatch.setitem(api_mod._cf_stats_cache, "data", cached_payload)
+    assert api_mod._fetch_cloudflare_stats() == cached_payload
+    assert refresh_calls == 1
+
+    # Stale cache (>= 300s) still returns stale payload immediately and triggers background refresh
+    with api_mod._cf_stats_lock:
+        monkeypatch.setitem(
+            api_mod._cf_stats_cache,
+            "at",
+            api_mod.time.monotonic() - (api_mod._CF_STATS_TTL_SECONDS + 10.0),
+        )
+    assert api_mod._fetch_cloudflare_stats() == cached_payload
+    assert refresh_calls == 2

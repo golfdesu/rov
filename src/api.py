@@ -1821,8 +1821,9 @@ def submit_user_feedback(
     return FeedbackSubmitResponse.model_validate(result)
 
 
+_CF_STATS_TTL_SECONDS = 300.0
 _cf_stats_lock = threading.Lock()
-_cf_stats_cache: dict[str, object] = {"at": 0.0, "data": None}
+_cf_stats_cache: dict[str, object] = {"at": 0.0, "data": None, "refreshing": False}
 
 
 def _normalize_referer_host(host: str) -> str:
@@ -1880,16 +1881,9 @@ def _aggregate_referers(rows: object) -> list[dict[str, object]]:
     return [{"source": source, "visits": count} for source, count in ranked]
 
 
-def _fetch_cloudflare_stats() -> dict[str, object] | None:
+def _fetch_cloudflare_stats_live() -> dict[str, object] | None:
     if not (config.cf_api_token and config.cf_account_id and config.cf_zone_id):
         return None
-    now_mono = time.monotonic()
-    with _cf_stats_lock:
-        cached_at = float(_cf_stats_cache.get("at") or 0.0)
-        cached_data = _cf_stats_cache.get("data")
-        if isinstance(cached_data, dict) and (now_mono - cached_at) < 60.0:
-            return cached_data
-
     from datetime import datetime, timedelta, timezone
 
     now_utc = datetime.now(timezone.utc)
@@ -1969,11 +1963,52 @@ def _fetch_cloudflare_stats() -> dict[str, object] | None:
             "referers_7d": _aggregate_referers(accounts.get("rum_ref_7d")),
         }
         with _cf_stats_lock:
-            _cf_stats_cache["at"] = now_mono
+            _cf_stats_cache["at"] = time.monotonic()
             _cf_stats_cache["data"] = result
         return result
     except Exception:
         return None
+
+
+def _schedule_cloudflare_refresh() -> None:
+    """Spawn a single-flight background thread to refresh Cloudflare analytics without blocking HTTP handlers."""
+    with _cf_stats_lock:
+        if _cf_stats_cache.get("refreshing"):
+            return
+        _cf_stats_cache["refreshing"] = True
+
+    def _worker() -> None:
+        try:
+            _fetch_cloudflare_stats_live()
+        finally:
+            with _cf_stats_lock:
+                _cf_stats_cache["refreshing"] = False
+
+    threading.Thread(target=_worker, name="cf-stats-refresh", daemon=True).start()
+
+
+def _fetch_cloudflare_stats() -> dict[str, object] | None:
+    """Return cached Cloudflare stats immediately and refresh stale entries asynchronously (5 min TTL)."""
+    if not (config.cf_api_token and config.cf_account_id and config.cf_zone_id):
+        return None
+    now_mono = time.monotonic()
+    with _cf_stats_lock:
+        cached_at = float(_cf_stats_cache.get("at") or 0.0)
+        cached_data = _cf_stats_cache.get("data")
+        if isinstance(cached_data, dict):
+            is_fresh = (now_mono - cached_at) < _CF_STATS_TTL_SECONDS
+            cached_copy = cached_data
+        else:
+            is_fresh = False
+            cached_copy = None
+
+    if cached_copy is not None:
+        if not is_fresh:
+            _schedule_cloudflare_refresh()
+        return cached_copy
+
+    _schedule_cloudflare_refresh()
+    return None
 
 
 @app.get("/admin/stats", response_model=AdminStatsResponse)

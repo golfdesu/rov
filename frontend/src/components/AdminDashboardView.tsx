@@ -243,64 +243,58 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
   const [showAllUsers, setShowAllUsers] = useState(false);
   const [refererRange, setRefererRange] = useState<"today" | "7d">("today");
 
-  const handleRefresh = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [statsRes, usersRes, analyticsRes, feedbackRes] = await Promise.all([
-        getJson<AdminStatsResponse>("/admin/stats"),
-        getJson<AdminUsersResponse>("/admin/users"),
-        getJson<AdminAnalyticsResponse>("/admin/analytics"),
-        getJson<AdminFeedbackResponse>("/admin/feedback"),
-      ]);
-      setStats(statsRes);
-      setUsersReport(usersRes);
-      setAnalytics(analyticsRes);
-      setFeedbackReport(feedbackRes);
-    } catch (err) {
+  const fetchAll = useCallback(async (signal?: AbortSignal) => {
+    const handleFailure = (err: unknown) => {
+      if (signal?.aborted) return;
+      if (err instanceof Error && err.name === "AbortError") return;
       if (err instanceof ApiError && (err.status === 401 || err.status === 404)) {
         setStats(null);
         setUsersReport(null);
         setAnalytics(null);
         setFeedbackReport(null);
       }
-      setError(err instanceof Error ? err.message : "ไม่สามารถโหลดข้อมูล Dashboard ได้");
+      setError((prev) => prev ?? (err instanceof Error ? err.message : "ไม่สามารถโหลดข้อมูล Dashboard ได้"));
+    };
+
+    try {
+      await Promise.allSettled([
+        getJson<AdminStatsResponse>("/admin/stats", signal)
+          .then((res) => {
+            if (!signal?.aborted) setStats(res);
+          })
+          .catch(handleFailure),
+        getJson<AdminUsersResponse>("/admin/users", signal)
+          .then((res) => {
+            if (!signal?.aborted) setUsersReport(res);
+          })
+          .catch(handleFailure),
+        getJson<AdminAnalyticsResponse>("/admin/analytics", signal)
+          .then((res) => {
+            if (!signal?.aborted) setAnalytics(res);
+          })
+          .catch(handleFailure),
+        getJson<AdminFeedbackResponse>("/admin/feedback", signal)
+          .then((res) => {
+            if (!signal?.aborted) setFeedbackReport(res);
+          })
+          .catch(handleFailure),
+      ]);
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
   }, []);
 
+  const handleRefresh = useCallback(() => {
+    setLoading(true);
+    setError(null);
+    void fetchAll();
+  }, [fetchAll]);
+
   useEffect(() => {
     const ctrl = new AbortController();
-    Promise.all([
-      getJson<AdminStatsResponse>("/admin/stats", ctrl.signal),
-      getJson<AdminUsersResponse>("/admin/users", ctrl.signal),
-      getJson<AdminAnalyticsResponse>("/admin/analytics", ctrl.signal),
-      getJson<AdminFeedbackResponse>("/admin/feedback", ctrl.signal),
-    ])
-      .then(([statsRes, usersRes, analyticsRes, feedbackRes]) => {
-        if (ctrl.signal.aborted) return;
-        setStats(statsRes);
-        setUsersReport(usersRes);
-        setAnalytics(analyticsRes);
-        setFeedbackReport(feedbackRes);
-        setError(null);
-      })
-      .catch((err) => {
-        if (ctrl.signal.aborted) return;
-        if (err instanceof ApiError && (err.status === 401 || err.status === 404)) {
-          setStats(null);
-          setUsersReport(null);
-          setAnalytics(null);
-          setFeedbackReport(null);
-        }
-        setError(err instanceof Error ? err.message : "ไม่สามารถโหลดข้อมูล Dashboard ได้");
-      })
-      .finally(() => {
-        if (!ctrl.signal.aborted) setLoading(false);
-      });
+    void fetchAll(ctrl.signal);
     return () => ctrl.abort();
-  }, []);
+  }, [fetchAll]);
 
   const filteredFeedbacks = useMemo(() => {
     const items = feedbackReport?.items ?? [];
