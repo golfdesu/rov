@@ -397,7 +397,9 @@ export function BillingSandbox({
             <>
               {activePass?.tier === "pro" && (
                 <p className="mx-auto max-w-2xl border border-line-strong bg-panel px-4 py-2 text-center text-xs text-muted">
-                  {t("เติม Pro เพื่อบวกวันต่อท้ายวันหมดอายุเดิม หรืออัปเกรดเป็น Duo/Business โดยแปลงวัน Pro ที่เหลือเป็นวันโบนัส")}
+                  {t(
+                    "คุณกำลังใช้งานแพ็ก Pro อยู่ — ต่ออายุ Pro ได้หลังหมดอายุ หรืออัปเกรดเป็น Duo/Business ได้ทันทีโดยแปลงวัน Pro ที่เหลือเป็นวันโบนัส",
+                  )}
                 </p>
               )}
               <fieldset
@@ -495,11 +497,9 @@ export function BillingSandbox({
                         <span>
                           {processing === pass.tier
                             ? t("กำลังเปิดหน้าชำระเงิน…")
-                            : isCurrentTier
-                              ? t("เติมวัน {0}", name)
-                              : activePass?.tier === "pro"
-                                ? t("อัปเกรดเป็น {0}", name)
-                                : t("เลือก {0}", name)}
+                            : activePass?.tier === "pro"
+                              ? t("อัปเกรดเป็น {0}", name)
+                              : t("เลือก {0}", name)}
                         </span>
                         <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
                       </button>

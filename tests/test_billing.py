@@ -134,39 +134,37 @@ def test_paid_webhook_validates_payment_and_grants_access_once(sandbox):
     assert event(client, complete).status_code == 204
     state = client.get("/billing").json()
     assert state["active_pass"]["tier"] == "pro"
-    assert len(state["packages"]) == 6
+    assert [(package["tier"], package["days"]) for package in state["packages"]] == [
+        ("duo", 30),
+        ("duo", 90),
+        ("team_pro", 30),
+        ("team_pro", 90),
+    ]
     assert state["orders"][0]["status"] == "paid"
     expires_at = state["active_pass"]["expires_at"]
     assert expires_at == state["orders"][0]["paid_at"] + 30 * 86400
     assert event(client, complete, event_type="checkout.session.async_payment_succeeded").status_code == 204
     assert client.get("/billing").json()["active_pass"]["expires_at"] == expires_at
 
-    # Active Pro users can extend Pro (stacking onto current expiry) or upgrade to Duo with bonus days.
-    assert create_checkout(client, days=90).status_code == 200
-    stack_renewal = {
+    # Active Pro users cannot repurchase Pro until expiry, but can upgrade to Duo (with bonus days) or Business.
+    for days in (30, 90):
+        response = create_checkout(client, days=days)
+        assert response.status_code == 409
+        assert response.json()["detail"] == "pass_active"
+    assert len(fake.by_id) == 1
+    assert len(client.get("/billing").json()["orders"]) == 1
+
+    assert create_checkout(client, tier="duo", days=30).status_code == 200
+    duo_upgrade = {
         **fake.by_id["cs_test_example1"],
         "status": "complete",
         "payment_status": "paid",
         "payment_intent": "pi_example1",
     }
-    assert event(client, stack_renewal).status_code == 204
-    state = client.get("/billing").json()
-    assert state["active_pass"]["tier"] == "pro"
-    assert state["active_pass"]["expires_at"] == expires_at + 90 * 86400
-    assert len(state["orders"]) == 2
-
-    pro_expires_before_duo = state["active_pass"]["expires_at"]
-    assert create_checkout(client, tier="duo", days=30).status_code == 200
-    duo_upgrade = {
-        **fake.by_id["cs_test_example2"],
-        "status": "complete",
-        "payment_status": "paid",
-        "payment_intent": "pi_example2",
-    }
     assert event(client, duo_upgrade).status_code == 204
     state = client.get("/billing").json()
     duo_order = next(order for order in state["orders"] if order["tier"] == "duo")
-    duo_credit_days = (pro_expires_before_duo - duo_order["paid_at"]) // 86400 // 2
+    duo_credit_days = (expires_at - duo_order["paid_at"]) // 86400 // 2
     assert state["active_pass"]["tier"] == "duo"
     assert state["active_pass"]["expires_at"] == duo_order["paid_at"] + (30 + duo_credit_days) * 86400
 
@@ -177,16 +175,14 @@ def test_paid_webhook_validates_payment_and_grants_access_once(sandbox):
     assert len(state["packages"]) == 6
     assert create_checkout(client, days=90).status_code == 200
     renewal = {
-        **fake.by_id["cs_test_example3"],
+        **fake.by_id["cs_test_example2"],
         "status": "complete",
         "payment_status": "paid",
-        "payment_intent": "pi_example3",
+        "payment_intent": "pi_example2",
     }
     assert event(client, renewal).status_code == 204
     state = client.get("/billing").json()
-    renewal_order = next(
-        order for order in state["orders"] if order["id"] != state["orders"][-1]["id"] and order["days"] == 90
-    )
+    renewal_order = next(order for order in state["orders"] if order["days"] == 90)
     assert state["active_pass"]["expires_at"] == renewal_order["paid_at"] + 90 * 86400
 
 

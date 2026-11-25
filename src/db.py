@@ -60,10 +60,10 @@ BILLING_TABLES = {
 
 
 def billing_purchase_block(active_tier: str | None, requested_tier: str) -> str | None:
-    if active_tier == "pro":
-        return None
     if active_tier == requested_tier:
         return "pass_active"
+    if active_tier == "pro":
+        return None
     if active_tier == "team_pro":
         return "team_active"
     if active_tier is not None and (active_tier == "duo" or requested_tier == "duo"):
