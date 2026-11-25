@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `27167b8` (`main`: keep Swap Sides button width stable before first pick) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-gbAOGplt.js` (`470.44 kB`) + `dist-prod/assets/index-lnmJj0ei.css` (`113.97 kB`), `dist-prod/index.html` (`3.12 kB`) |
+| **Git Base Commit on VM** | `19b890d` (`main`: add User Guide modal and active paid/promo pass tracker in admin dashboard) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-DYeWCBhA.js` (`484.58 kB`) + `dist-prod/assets/index-DTk0A1yx.css` (`114.24 kB`), `dist-prod/index.html` (`3.12 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-25 14:21 (UTC+7)` |
+| **Last Updated** | `2026-11-25 15:38 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,13 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-25 15:38 (UTC+7) — User Guide Modal & Admin Paid/Promo Pass Tracker (`19b890d`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `27167b8` to `19b890d` (`main`, 19-path sparse-checkout intact).
+- **Summary:**
+  - Added the 4-tab `UserGuideModal` (`Draft Board & Series`, `AI & Draft Practice`, `Stats, Pools & Teams`, `Shortcuts & Accounts`) with a top-nav `?` help button and Drawer entry point, highlighting `New Series` for starting a new series.
+  - Added live active pass tracking (`Paid` by tier + THB revenue vs `Free Pro` promo claims + expiry dates/days left) to `GET /admin/stats`, `GET /admin/users`, and `AdminDashboardView`.
+- **Bundle Built:** `dist-prod/index.html` (`3.12 kB`), `dist-prod/assets/index-DYeWCBhA.js` (`484.58 kB`), `dist-prod/assets/index-DTk0A1yx.css` (`114.24 kB`).
 
 ### 📅 2026-11-25 14:21 (UTC+7) — Keep Swap Sides Button Width Constant (`27167b8`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `252f881` to `27167b8` (`main`).
