@@ -27,6 +27,22 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-25 22:37 (UTC+7) — Display Disabled Current Pro Card Alongside Duo & Business on Plans Page
+**Agent:** Antigravity Agent
+
+### ✅ Completed Work
+- **Symmetric 3-Card Plans Display (`frontend/src/components/BillingSandbox.tsx`, `frontend/src/i18n/englishMessages.ts`):** Rendered the active user's Pro tier card (`59` / `139` THB) alongside Duo and Business on `#plans` with a disabled `"แพ็กเกจปัจจุบัน"` (`Current Plan`) button, preserving the backend repeat-Pro checkout block (`409 pass_active`) while keeping all 3 plans visible for comparison.
+
+### 📁 Modified Files
+- `frontend/src/components/BillingSandbox.tsx`, `frontend/src/i18n/englishMessages.ts`
+- `docs/PRODUCTION_RELEASES.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified locally with `npm --prefix frontend run lint` (`0` warnings, `0` errors), `vite build`, `build:prod`, and `audit_copy_i18n.py` (`[PASS]`, 100% EN coverage).
+- Verified live production deploy (`76d6aa4` on `20.2.210.230`) with `https://minidraft.app/health` (`200`), active bundle (`index-CTznpWeT.js`), and SQLite DB integrity (`users: 1027`, `promo_claims: 25`, `billing_passes: 26`).
+
+---
+
 ## 📅 2026-11-25 22:32 (UTC+7) — Block Repeat Pro Purchases While Active, Keep Duo & Business Upgrades
 **Agent:** Antigravity Agent
 
