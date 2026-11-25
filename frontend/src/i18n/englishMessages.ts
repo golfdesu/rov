@@ -1966,7 +1966,7 @@ export const englishMessages: Readonly<Record<string, string>> = {
   "สลับฝั่ง Blue / Red": "Swap Blue / Red Sides",
   'กดปุ่ม "สลับฝั่ง" เพื่อสลับฝั่งทีม ฮีโร่ที่แต่ละทีมเคยใช้จะย้ายฝั่งตามทีมไปอัตโนมัติ หากมีฮีโร่บนบอร์ดแล้วสามารถเลือกสลับเฉพาะชื่อทีมหรือสลับพร้อมฮีโร่ได้': 'Click "Swap Sides" to flip teams. Used Global Ban heroes move with each team automatically, and when heroes are already on the board you can swap team names only or include board heroes.',
   "บันทึกผลเกม & ดูประวัติ": "Save Match Result & View History",
-  'ดราฟต์ครบ 18 ขั้นแล้วกด "บันทึกผลเกม" พร้อมเลือกทีมชนะ เพื่อเก็บลงประวัติและนำไปคำนวณในหน้าสถิติซ้อมทีม': 'After all 18 draft steps, click "บันทึกผลเกม" and choose the winning team to save the game into your history and Scrim Analytics.',
+  'ดราฟต์ครบ 10 ตัวแล้วกด "บันทึกผลเกม" พร้อมเลือกทีมชนะ เพื่อเก็บลงประวัติและนำไปคำนวณในหน้าสถิติซ้อมทีม': 'After all 10 heroes are picked, click "Save Result" and choose the winning team to save the game into your history and Scrim Analytics.',
   "ตั้งค่า Global Ban เอง": "Edit Global Bans Manually",
   'กดปุ่ม "Global Ban" เพื่อเพิ่มหรือลบฮีโร่ที่ถูกใช้ไปแล้วล่วงหน้า เหมาะสำหรับเริ่มดราฟต์กลางซีรีส์ เช่น เริ่มที่ Game 3': 'Click "Global Ban" to add or remove pre-used heroes ahead of time — ideal when joining a series mid-way, such as starting at Game 3.',
   "ผู้ช่วย AI บนบอร์ด": "Live AI Assistant on the Board",
