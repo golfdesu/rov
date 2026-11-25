@@ -1,6 +1,6 @@
 import { StableButtonLabel } from "./StableButtonLabel";
 import { useLanguage } from "../i18n/language";
-import { RotateCcw, X } from "lucide-react";
+import { ArrowLeftRight, RotateCcw, X } from "lucide-react";
 import { CANONICAL_LANES, type Hero, type LaneKey } from "../types/draft";
 import { LANE_SHORT, laneKey } from "../utils/draft";
 import { displayName } from "../utils/heroNames";
@@ -16,6 +16,7 @@ interface PickLaneModalProps {
   currentLane?: LaneKey;
   lockedByLane?: Partial<Record<LaneKey, string>>;
   onSelectLane: (lane?: LaneKey) => void;
+  onReplaceHero?: () => void;
   onClose: () => void;
 }
 
@@ -27,6 +28,7 @@ export function PickLaneModal({
   currentLane,
   lockedByLane = {},
   onSelectLane,
+  onReplaceHero,
   onClose,
 }: PickLaneModalProps) {
   const { t } = useLanguage();
@@ -171,6 +173,18 @@ export function PickLaneModal({
           })}
         </div>
       </div>
+      {onReplaceHero && (
+        <div className="border-t border-line px-4 py-3">
+          <button
+            type="button"
+            onClick={onReplaceHero}
+            className="flex min-h-10 w-full items-center justify-center gap-2 border border-gold/50 bg-gold/10 px-3 font-display text-xs font-bold text-gold transition-colors hover:bg-gold hover:text-bg focus-visible:outline-2 focus-visible:outline-gold sm:text-sm"
+          >
+            <ArrowLeftRight className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <StableButtonLabel message="เปลี่ยนฮีโร่" />
+          </button>
+        </div>
+      )}
           </>
         );
       }}

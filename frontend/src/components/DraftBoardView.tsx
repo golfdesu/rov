@@ -64,9 +64,6 @@ import { TeamColumn } from "./TeamColumn";
 const DraftHistoryModal = lazy(() =>
   import("./DraftHistoryModal").then((m) => ({ default: m.DraftHistoryModal })),
 );
-const DraftPickActions = lazy(() =>
-  import("./DraftPickActions").then((m) => ({ default: m.DraftPickActions })),
-);
 const FinishGameModal = lazy(() =>
   import("./FinishGameModal").then((m) => ({ default: m.FinishGameModal })),
 );
@@ -234,7 +231,7 @@ export function DraftBoardView({
     () => setPoolMode((m) => (m === "low" ? "high" : m === "high" ? "off" : "low")),
     [],
   );
-  const [slotEditor, setSlotEditor] = useState<{ slot: DraftSlot; view: "actions" | "hero" | "lane" } | null>(null);
+  const [slotEditor, setSlotEditor] = useState<{ slot: DraftSlot; view: "hero" | "lane" } | null>(null);
   const [confirmState, setConfirmState] = useState<{
     title: string;
     message: string;
@@ -682,7 +679,6 @@ export function DraftBoardView({
       isFinishGameModalOpen ||
       historyUpgradeOpen ||
       isPoolsModalOpen ||
-      activeSlotEditor?.view === "actions" ||
       activeSlotEditor?.view === "lane" ||
       (activeSlotEditor?.view === "hero" && isMobileViewport) ||
       confirmState !== null
@@ -807,7 +803,7 @@ export function DraftBoardView({
         return;
       }
       if (slot.action === "pick") {
-        setSlotEditor({ slot, view: "actions" });
+        setSlotEditor({ slot, view: "lane" });
       } else {
         openHeroReplace(slot);
       }
@@ -1428,22 +1424,6 @@ export function DraftBoardView({
         />
       )}
 
-      {activeSlotEditor?.view === "actions" && editingHero && (
-        <DraftPickActions
-          heroName={editingHero}
-          hero={heroMap.get(editingHero)}
-          pickNumber={activeSlotEditor.slot.index + 1}
-          onChoose={(view) => {
-            if (view === "hero") {
-              openHeroReplace(activeSlotEditor.slot);
-            } else {
-              setSlotEditor({ ...activeSlotEditor, view });
-            }
-          }}
-          onClose={closeSlotEditor}
-        />
-      )}
-
       {isMobileViewport && activeSlotEditor?.view === "hero" && editingHero && (
         <HeroPickerModal
           heroes={heroes}
@@ -1487,6 +1467,7 @@ export function DraftBoardView({
             trackTelemetryEvent("feat_pick_lane");
             setPickLane(editingHero, lane);
           }}
+          onReplaceHero={() => openHeroReplace(activeSlotEditor.slot)}
           onClose={closeSlotEditor}
         />
       )}
