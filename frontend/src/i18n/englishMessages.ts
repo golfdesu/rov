@@ -1983,4 +1983,6 @@ export const englishMessages: Readonly<Record<string, string>> = {
   "ซิงก์คลาวด์ได้สูงสุด 14 เกม และสร้าง Hero Pools ได้ 2 ทีม": "Cloud sync for up to 14 games and 2 Hero Pools.",
   "บันทึกได้สูงสุด 500 เกม, Hero Pools 50 ชุด, ปลดล็อกสถิติซ้อมทีมและส่งออก PDF (Duo/Business เพิ่มพื้นที่แชร์ทีม)": "Up to 500 saved games, 50 Hero Pools, Scrim Analytics, and PDF export (Duo & Business add shared team workspace).",
   "เข้าใจแล้ว": "Got It",
+  "รับ Pro ฟรีถึง {0}": "Free Pro until {0}",
+  "กดรับเลย": "Claim now",
 };

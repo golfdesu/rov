@@ -364,6 +364,35 @@ export function BillingSandbox({
             </p>
           </header>
           {paymentNotice}
+          {promoClaimedUntil !== null && (
+            <p role="status" className="border border-good/40 bg-good/10 px-4 py-2.5 text-center text-xs font-semibold text-good sm:text-sm">
+              {t("รับสิทธิ์ Pro ฟรีเรียบร้อยแล้ว ใช้งานได้ถึง {0}", dateFormat.format(promoClaimedUntil * 1000))}
+            </p>
+          )}
+          {summary?.promo_claimable && summary.promo_expires_at && (
+            <div className="mx-auto flex max-w-2xl flex-col gap-3 border border-gold/50 bg-gold/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-2.5">
+                <Gift className="mt-0.5 size-4 shrink-0 text-gold" aria-hidden="true" />
+                <div className="min-w-0 space-y-0.5">
+                  <p className="font-display text-sm font-bold text-gold">{t("รับสิทธิ์ Pro ฟรี")}</p>
+                  <p className="text-xs leading-relaxed text-ink">
+                    {t(
+                      "ปลดล็อกประวัติ 500 เกม, Hero Pools 50 ชุด และสถิติซ้อมทีมฟรี (หมดอายุ {0} โดยข้อมูลไม่หาย)",
+                      dateFormat.format(summary.promo_expires_at * 1000),
+                    )}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                disabled={busy}
+                className={`${primaryAction} w-full shrink-0 sm:w-auto`}
+                onClick={() => void claimPromo()}
+              >
+                <span>{processing === "promo" ? t("กำลังรับสิทธิ์…") : t("รับสิทธิ์ Pro ฟรี")}</span>
+              </button>
+            </div>
+          )}
           {summary && !pending && (packages.length > 0 ? (
             <>
               <fieldset

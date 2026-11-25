@@ -1,6 +1,6 @@
 import { StableButtonLabel } from "./components/StableButtonLabel";
 import { type Message, translateMessage, useLanguage } from "./i18n/language";
-import { ChevronDown, HelpCircle, LogIn, Menu, User, X } from "lucide-react";
+import { ChevronDown, Gift, HelpCircle, LogIn, Menu, User, X } from "lucide-react";
 import { lazy, Suspense, useCallback, useEffect, useId, useRef, useState } from "react";
 import { ApiError, getJson, postJson, putJson, setExpectedAuthUser, setSessionMismatchHandler } from "./api/client";
 import { AuthLanding, AuthModal } from "./components/AuthModal";
@@ -70,6 +70,7 @@ interface WorkspaceProps {
   isAdmin: boolean;
   authLoading: boolean;
   sandboxBilling: boolean;
+  freePromoUntil: number | null;
   activeDraftTool: DraftToolModal | null;
   onCloseDraftTool: () => void;
   announcementSeen: boolean;
@@ -87,6 +88,7 @@ function Workspace({
   isAdmin,
   authLoading,
   sandboxBilling,
+  freePromoUntil,
   activeDraftTool,
   onCloseDraftTool,
   announcementSeen,
@@ -96,10 +98,33 @@ function Workspace({
   onOpenMobileDrawer,
   onSaveDisplayName,
 }: WorkspaceProps) {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
+  const [nowMs] = useState(Date.now);
   const isAuthenticated = authUser !== null;
   const accountName = isAuthenticated ? accountLabel(authUser) : "";
   const scope = isAuthenticated ? `user:${authUser.username}` : "guest";
+  const showFreePromoBadge = Boolean(
+    sandboxBilling &&
+      !authLoading &&
+      !authUser?.is_paid &&
+      freePromoUntil &&
+      freePromoUntil * 1000 > nowMs,
+  );
+  const freePromoShortDate =
+    showFreePromoBadge && freePromoUntil
+      ? new Intl.DateTimeFormat(language === "th" ? "th-TH" : "en-GB", {
+          day: "numeric",
+          month: "short",
+          timeZone: "Asia/Bangkok",
+        }).format(freePromoUntil * 1000)
+      : "";
+  const handleOpenPromo = () => {
+    if (isAuthenticated) {
+      selectTab("profile");
+    } else {
+      onOpenAuthModal();
+    }
+  };
   const activeTabLabel = t(
     tab === "profile"
       ? "โปรไฟล์"
@@ -165,6 +190,16 @@ function Workspace({
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5">
+            {showFreePromoBadge && (
+              <button
+                type="button"
+                onClick={handleOpenPromo}
+                className="hidden min-h-8 items-center gap-1.5 border border-gold/60 bg-gold/15 px-2.5 font-display text-xs font-bold whitespace-nowrap text-gold transition-colors hover:bg-gold hover:text-bg focus-visible:outline-2 focus-visible:outline-gold sm:inline-flex"
+              >
+                <Gift className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span>{t("รับ Pro ฟรีถึง {0}", freePromoShortDate)}</span>
+              </button>
+            )}
             {authLoading ? null : isAuthenticated ? (
               <a
                 href="#profile"
@@ -216,6 +251,18 @@ function Workspace({
             </button>
           </div>
         </div>
+        {showFreePromoBadge && (
+          <button
+            type="button"
+            onClick={handleOpenPromo}
+            className="flex min-h-7 w-full items-center justify-center gap-1.5 border-t border-gold/25 bg-gold/10 px-3 py-1 font-display text-[11px] font-bold text-gold transition-colors hover:bg-gold/20 sm:hidden"
+          >
+            <Gift className="h-3 w-3 shrink-0" aria-hidden="true" />
+            <span>{t("รับ Pro ฟรีถึง {0}", freePromoShortDate)}</span>
+            <span aria-hidden="true">·</span>
+            <span className="underline underline-offset-2">{t("กดรับเลย")}</span>
+          </button>
+        )}
       </nav>
 
       <ErrorBoundary resetKey={`${tab}:${scope}`}>
@@ -962,6 +1009,7 @@ export function App() {
         isAdmin={isAdminUser}
         authLoading={authLoading}
         sandboxBilling={sandboxBilling}
+        freePromoUntil={authUser?.is_paid ? null : freePromoUntil}
         activeDraftTool={activeDraftTool}
         onCloseDraftTool={() => setActiveDraftTool(null)}
         announcementSeen={announcementSeen}
