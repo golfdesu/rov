@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `867bdaa` (`main`: display active Duo/Business team members in admin dashboard) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-Cw53souk.js` (`482.19 kB`) + `dist-prod/assets/index-DrPQ72Op.css` (`114.16 kB`), `dist-prod/index.html` (`3.12 kB`) |
+| **Git Base Commit on VM** | `5d66a76` (`main`: use stale-while-revalidate Cloudflare cache and progressive admin dashboard load) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-C5yl2h2h.js` (`482.19 kB`) + `dist-prod/assets/index-DrPQ72Op.css` (`114.16 kB`), `dist-prod/index.html` (`3.12 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-25 19:19 (UTC+7)` |
+| **Last Updated** | `2026-11-25 19:37 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,11 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-25 19:37 (UTC+7) — Non-Blocking Cloudflare Cache & Progressive Admin Dashboard (`5d66a76`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `867bdaa` to `5d66a76` (`main`, 19-path sparse-checkout intact).
+- **Summary (`src/api.py`, `AdminDashboardView.tsx`):** Eliminated the 4.2s `/admin/stats` stall with a 5-minute (`300s`) stale-while-revalidate Cloudflare cache + single-flight background thread and switched the admin dashboard from blocking `Promise.all` to progressive per-endpoint rendering (`Promise.allSettled`).
+- **Bundle Built:** `dist-prod/index.html` (`3.12 kB`), `dist-prod/assets/index-C5yl2h2h.js` (`482.19 kB`), `dist-prod/assets/index-DrPQ72Op.css` (`114.16 kB`).
 
 ### 📅 2026-11-25 19:19 (UTC+7) — Display Active Duo/Business Team Members in Admin Dashboard (`867bdaa`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `7c27b2d` to `867bdaa` (`main`, 19-path sparse-checkout intact).
