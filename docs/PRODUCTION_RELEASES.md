@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `252f881` (`main`: clarify Pro/Duo/Business PromptPay copy in update announcement) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-D63M18OL.js` (`470.41 kB`) + `dist-prod/assets/index-lnmJj0ei.css` (`113.97 kB`), `dist-prod/index.html` (`3.12 kB`) |
+| **Git Base Commit on VM** | `27167b8` (`main`: keep Swap Sides button width stable before first pick) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-gbAOGplt.js` (`470.44 kB`) + `dist-prod/assets/index-lnmJj0ei.css` (`113.97 kB`), `dist-prod/index.html` (`3.12 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-25 13:30 (UTC+7)` |
+| **Last Updated** | `2026-11-25 14:21 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,13 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-25 14:21 (UTC+7) — Keep Swap Sides Button Width Constant (`27167b8`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `252f881` to `27167b8` (`main`).
+- **Summary (`DraftBoardView.tsx`):** Always render the Swap Sides `<ChevronDown>` icon (`invisible` when `!canSwapBoardAndTeams`) so the button width never jumps when the first pick or ban is placed.
+- **Bundle Built:** `dist-prod/index.html` (`3.12 kB`), `dist-prod/assets/index-gbAOGplt.js` (`470.44 kB`), `dist-prod/assets/index-lnmJj0ei.css` (`113.97 kB`).
+- **Verification:** Local `oxlint` (`0` warnings/errors), `vite build` + `build:prod`; live `https://minidraft.app/health` -> `200 {"status":"healthy","model_loaded":true}`, live HTML serving `assets/index-gbAOGplt.js` and `assets/index-lnmJj0ei.css`.
+- **VM Sync Note:** Docs-only commit recording this release is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
 
 ### 📅 2026-11-25 13:30 (UTC+7) — Update Announcement PromptPay Copy Polish (`252f881`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `947cfd9` to `252f881` (`main`).
