@@ -27,6 +27,25 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-26 06:41 (UTC+7) — Show Purchase & Claim Timestamps in Admin Active Passes Table
+**Agent:** Antigravity Agent
+
+### ✅ Completed Work
+- **Backend Acquisition Timestamps (`src/db.py`):** Extended `get_admin_stats()` (`billing.active_passes`) with `acquired_at` and Thai-formatted `acquired_at_th` (`MAX(paid_at)` for paid passes and `MAX(claimed_at)` for Free Pro promo passes) and sorted newest acquisitions first within each source tier.
+- **Admin Dashboard Column (`frontend/src/types/auth.ts`, `frontend/src/components/AdminDashboardView.tsx`):** Added `acquired_at` / `acquired_at_th` types and rendered the `"ซื้อ / รับสิทธิ์ (เวลาไทย)"` column in the active passes table.
+- **Tests (`tests/test_billing.py`):** Added assertions verifying `acquired_at_th` values for paid, promo, and team member pass rows.
+
+### 📁 Modified Files
+- `src/db.py`, `tests/test_billing.py`
+- `frontend/src/types/auth.ts`, `frontend/src/components/AdminDashboardView.tsx`
+- `docs/PRODUCTION_RELEASES.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified locally with `ruff check/format`, `pytest -q --tb=short tests/test_billing.py` (`18 passed`), `oxlint` (`0` warnings, `0` errors), `vite build`, and `build:prod`.
+- Verified live production deploy (`b8cd831` on `20.2.210.230`) with `https://minidraft.app/health` (`200`), active bundle (`index-CC7FvFCS.js`), and SQLite DB integrity (`users: 1034`, `promo_claims: 31`, `billing_passes: 32`).
+
+---
+
 ## 📅 2026-11-25 22:37 (UTC+7) — Display Disabled Current Pro Card Alongside Duo & Business on Plans Page
 **Agent:** Antigravity Agent
 

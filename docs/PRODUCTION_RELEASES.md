@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `76d6aa4` (`main`: display non-purchasable current Pro card on plans page) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-CTznpWeT.js` (`483.17 kB`) + `dist-prod/assets/index-DrPQ72Op.css` (`114.16 kB`), `dist-prod/index.html` (`3.12 kB`) |
+| **Git Base Commit on VM** | `b8cd831` (`main`: show purchase and claim timestamps in active passes table) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-CC7FvFCS.js` (`483.17 kB`) + `dist-prod/assets/index-C4BQQffz.css` (`114.16 kB`), `dist-prod/index.html` (`3.12 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-25 22:37 (UTC+7)` |
+| **Last Updated** | `2026-11-26 06:41 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,13 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-26 06:41 (UTC+7) — Show Purchase & Claim Timestamps in `#admin` Active Passes Table (`b8cd831`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `76d6aa4` to `b8cd831` (`main`, 19-path sparse-checkout intact).
+- **Summary (`src/db.py`, `auth.ts`, `AdminDashboardView.tsx`, `tests/test_billing.py`):** Added `acquired_at` / `acquired_at_th` (`MAX(paid_at)` for paid orders and `MAX(claimed_at)` for Free Pro claims) to `GET /admin/stats` (`billing.active_passes`), sorted newest acquisitions first per source tier, and rendered the `"ซื้อ / รับสิทธิ์ (เวลาไทย)"` column in `#admin`.
+- **Bundle Built:** `dist-prod/index.html` (`3.12 kB`), `dist-prod/assets/index-CC7FvFCS.js` (`483.17 kB`), `dist-prod/assets/index-C4BQQffz.css` (`114.16 kB`).
+- **Verification:** `ruff` clean, `pytest -q --tb=short tests/test_billing.py` (`18 passed`), `oxlint` (`0` warnings/errors), `vite build` & `build:prod`; live `https://minidraft.app/health` -> `200 {"status":"healthy","model_loaded":true}`, live HTML serving `assets/index-CC7FvFCS.js` and `assets/index-C4BQQffz.css`; `/app/db/rov_app.db` intact (`users: 1034`, `promo_claims: 31`, `billing_orders: 5`, `billing_passes: 32`).
+- **VM Sync Note:** Docs-only commit recording this release is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
 
 ### 📅 2026-11-25 22:37 (UTC+7) — Display Disabled Current Pro Card on `#plans` (`76d6aa4`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `a05845b` to `76d6aa4` (`main`, 19-path sparse-checkout intact).
