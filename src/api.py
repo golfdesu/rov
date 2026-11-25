@@ -2092,13 +2092,23 @@ def predict_draft(
         detail = "Invalid draft request or unknown hero name" if restricted_prod else str(exc)
         raise HTTPException(status_code=422, detail=detail) from exc
     elapsed_ms = int((time.perf_counter() - t0) * 1000)
-    background_tasks.add_task(
-        get_user_db().record_predict_telemetry,
-        user_id=user.id if user is not None else None,
-        client_id=x_client_id if user is None else None,
-        elapsed_ms=elapsed_ms,
-        use_lookahead=bool(request.use_lookahead),
+    has_draft_activity = bool(
+        request.ally_bans
+        or request.enemy_bans
+        or request.ally_picks
+        or request.enemy_picks
+        or request.global_bans
+        or request.blue_global_bans
+        or request.red_global_bans
     )
+    if has_draft_activity:
+        background_tasks.add_task(
+            get_user_db().record_predict_telemetry,
+            user_id=user.id if user is not None else None,
+            client_id=x_client_id if user is None else None,
+            elapsed_ms=elapsed_ms,
+            use_lookahead=bool(request.use_lookahead),
+        )
     if restricted_prod:
         return result.model_copy(update={"architecture": "RoV Draft AI"})
     return result

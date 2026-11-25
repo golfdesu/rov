@@ -2616,3 +2616,42 @@ def test_cloudflare_stats_stale_while_revalidate_non_blocking(monkeypatch):
         )
     assert api_mod._fetch_cloudflare_stats() == cached_payload
     assert refresh_calls == 2
+
+
+def test_predict_telemetry_skips_empty_board(tmp_path, monkeypatch):
+    import src.api as api_mod
+    from src.config import config
+
+    db_file = tmp_path / "predict_telemetry.db"
+    monkeypatch.setattr(config.paths, "app_db_path", db_file)
+
+    user_client = TestClient(app)
+    reg = user_client.post(
+        "/auth/register",
+        json={"username": "active_drafter", "password": "secret-pass-123"},
+    )
+    assert reg.status_code == 201
+    user = user_client.get("/auth/me").json()["user"]
+
+    # Empty board /predict (0 bans, 0 picks, 0 global bans) must not inflate user usage telemetry
+    empty_res = user_client.post("/predict", json={"mode": "ban", "side": "blue", "phase": 1})
+    assert empty_res.status_code == 200
+    with api_mod.get_user_db()._connect() as conn:
+        row = conn.execute(
+            "SELECT COALESCE(SUM(predict_count), 0) FROM user_usage_daily WHERE user_id = ?",
+            (user["id"],),
+        ).fetchone()
+        assert row[0] == 0
+
+    # Active draft board with at least 1 hero action increments predict_count normally
+    active_res = user_client.post(
+        "/predict",
+        json={"mode": "ban", "side": "red", "phase": 1, "enemy_bans": ["Florentino"]},
+    )
+    assert active_res.status_code == 200
+    with api_mod.get_user_db()._connect() as conn:
+        row = conn.execute(
+            "SELECT COALESCE(SUM(predict_count), 0) FROM user_usage_daily WHERE user_id = ?",
+            (user["id"],),
+        ).fetchone()
+        assert row[0] == 1

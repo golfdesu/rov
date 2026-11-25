@@ -713,32 +713,53 @@ export function App() {
     return () => ctrl.abort();
   }, [updateGuestEntered]);
 
-  // Lightweight first-party daily visit ping (at most once per UTC+7 day per browser/user)
+  // Lightweight first-party daily visit ping (at most once per UTC+7 day per browser/user,
+  // gated on visible tab + first real user interaction so background/suspended tab reloads do not inflate DAU)
   useEffect(() => {
     if (authLoading) return;
     const todayTh = new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 10);
     const scopeKey = `${todayTh}:${authUser?.username ?? "guest"}`;
     try {
       if (window.localStorage.getItem("minidraft_last_visit_ping_v1") === scopeKey) return;
-      const clientId = getOrCreateSurveyClientId();
-      const deviceType = window.innerWidth < 768 ? "mobile" : "desktop";
-      postJson<{ recorded: boolean; visit_date: string }>("/telemetry/visit", {
-        client_id: clientId,
-        device_type: deviceType,
-      })
-        .then(() => {
-          try {
-            window.localStorage.setItem("minidraft_last_visit_ping_v1", scopeKey);
-          } catch {
-            // ignore storage errors
-          }
-        })
-        .catch(() => {
-          // non-blocking telemetry
-        });
     } catch {
-      // ignore localStorage access errors
+      return;
     }
+
+    let sent = false;
+    const cleanup = () => {
+      window.removeEventListener("pointerdown", sendVisitPing);
+      window.removeEventListener("keydown", sendVisitPing);
+    };
+    const sendVisitPing = () => {
+      if (sent || document.visibilityState !== "visible") return;
+      sent = true;
+      cleanup();
+      try {
+        if (window.localStorage.getItem("minidraft_last_visit_ping_v1") === scopeKey) return;
+        const clientId = getOrCreateSurveyClientId();
+        const deviceType = window.innerWidth < 768 ? "mobile" : "desktop";
+        postJson<{ recorded: boolean; visit_date: string }>("/telemetry/visit", {
+          client_id: clientId,
+          device_type: deviceType,
+        })
+          .then(() => {
+            try {
+              window.localStorage.setItem("minidraft_last_visit_ping_v1", scopeKey);
+            } catch {
+              // ignore storage errors
+            }
+          })
+          .catch(() => {
+            // non-blocking telemetry
+          });
+      } catch {
+        // ignore localStorage access errors
+      }
+    };
+
+    window.addEventListener("pointerdown", sendVisitPing, { passive: true });
+    window.addEventListener("keydown", sendVisitPing, { passive: true });
+    return cleanup;
   }, [authLoading, authUser?.username]);
 
   // Detect expired/evicted sessions or cross-tab account switches immediately
