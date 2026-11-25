@@ -162,7 +162,15 @@ export function BillingSandbox({
   const pending = summary?.orders.find((order) => order.status === "pending");
   const activePass = summary?.active_pass;
   const packages = summary?.packages ?? [];
-  const visiblePackages = packages.filter((pass) => pass.days === duration);
+  const proDisplayPackages: PrepaidPass[] = [
+    { tier: "pro", days: 30, amount: 5900 },
+    { tier: "pro", days: 90, amount: 13900 },
+  ];
+  const allDisplayPackages =
+    activePass?.tier === "pro" && !packages.some((pass) => pass.tier === "pro")
+      ? [...proDisplayPackages, ...packages]
+      : packages;
+  const displayPackages = allDisplayPackages.filter((pass) => pass.days === duration);
   const maxSavingsPct = packages.reduce((best, pass) => {
     if (pass.days !== 90) return best;
     const monthly = packages.find((candidate) => candidate.tier === pass.tier && candidate.days === 30);
@@ -336,7 +344,7 @@ export function BillingSandbox({
         aria-labelledby={`${sectionId}-heading`}
         className="min-h-0 flex-1 overflow-y-auto bg-[radial-gradient(ellipse_at_top,var(--color-panel-2),transparent_32rem)] px-4 pt-3 pb-8 sm:px-6 sm:pt-6 sm:pb-12"
       >
-        <div className={`mx-auto space-y-4 sm:space-y-6 ${visiblePackages.length > 2 ? "max-w-6xl" : "max-w-4xl"}`}>
+        <div className={`mx-auto space-y-4 sm:space-y-6 ${displayPackages.length > 2 ? "max-w-6xl" : "max-w-4xl"}`}>
           <a
             href="#profile"
             className="inline-flex min-h-9 items-center gap-2 text-sm font-medium text-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-gold"
@@ -431,19 +439,21 @@ export function BillingSandbox({
                   </label>
                 ))}
               </fieldset>
-              <div className={visiblePackages.length > 2
+              <div className={displayPackages.length > 2
                 ? "grid gap-3 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3"
-                : visiblePackages.length === 2 ? "grid gap-3 sm:grid-cols-2 sm:gap-5" : "mx-auto grid max-w-md"}>
-                {visiblePackages.map((pass) => {
+                : displayPackages.length === 2 ? "grid gap-3 sm:grid-cols-2 sm:gap-5" : "mx-auto grid max-w-md"}>
+                {displayPackages.map((pass) => {
                   const name = tierNames[pass.tier];
                   const details = tierDetails[pass.tier];
                   const Icon = details.Icon;
-                  const monthly = packages.find((candidate) => candidate.tier === pass.tier && candidate.days === 30);
+                  const monthly = allDisplayPackages.find((candidate) => candidate.tier === pass.tier && candidate.days === 30);
                   const savings = monthly && pass.days === 90 ? (monthly.amount * 3 - pass.amount) / 100 : 0;
                   const perSeatMonthly = details.seats > 1
                     ? Math.round(pass.amount / 100 / details.seats / (pass.days / 30))
                     : 0;
                   const isCurrentTier = activePass?.tier === pass.tier;
+                  const isLockedCurrentTier =
+                    isCurrentTier && !packages.some((candidate) => candidate.tier === pass.tier && candidate.days === pass.days);
                   return (
                     <article
                       key={pass.tier}
@@ -488,21 +498,31 @@ export function BillingSandbox({
                           <span className="font-mono text-muted">{t("เฉลี่ย ~{0} บาท/คน/30 วัน", perSeatMonthly)}</span>
                         )}
                       </p>
-                      <button
-                        type="button"
-                        disabled={busy}
-                        className={`${actionClass} mt-3 w-full gap-2 transition-colors ${details.actionClass}`}
-                        onClick={() => void checkout(pass)}
-                      >
-                        <span>
-                          {processing === pass.tier
-                            ? t("กำลังเปิดหน้าชำระเงิน…")
-                            : activePass?.tier === "pro"
-                              ? t("อัปเกรดเป็น {0}", name)
-                              : t("เลือก {0}", name)}
-                        </span>
-                        <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
-                      </button>
+                      {isLockedCurrentTier ? (
+                        <button
+                          type="button"
+                          disabled
+                          className={`${actionClass} mt-3 w-full cursor-not-allowed border-line-strong bg-panel-2 text-muted opacity-80`}
+                        >
+                          <span>{t("แพ็กเกจปัจจุบัน")}</span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled={busy}
+                          className={`${actionClass} mt-3 w-full gap-2 transition-colors ${details.actionClass}`}
+                          onClick={() => void checkout(pass)}
+                        >
+                          <span>
+                            {processing === pass.tier
+                              ? t("กำลังเปิดหน้าชำระเงิน…")
+                              : activePass?.tier === "pro"
+                                ? t("อัปเกรดเป็น {0}", name)
+                                : t("เลือก {0}", name)}
+                          </span>
+                          <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
+                        </button>
+                      )}
                       <ul className="mt-4 space-y-2 border-t border-line-strong/70 pt-3 text-sm text-ink sm:mt-5 sm:pt-4">
                         {details.benefits.map((benefit) => (
                           <li key={benefit} className="flex items-start gap-2">
