@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `7c27b2d` (`main`: remove unused keyboard shortcuts from User Guide modal) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-BsWEyMW4.js` (`482.19 kB`) + `dist-prod/assets/index-DrPQ72Op.css` (`114.16 kB`), `dist-prod/index.html` (`3.12 kB`) |
+| **Git Base Commit on VM** | `867bdaa` (`main`: display active Duo/Business team members in admin dashboard) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-Cw53souk.js` (`482.19 kB`) + `dist-prod/assets/index-DrPQ72Op.css` (`114.16 kB`), `dist-prod/index.html` (`3.12 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-25 15:58 (UTC+7)` |
+| **Last Updated** | `2026-11-25 19:19 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,11 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-25 19:19 (UTC+7) — Display Active Duo/Business Team Members in Admin Dashboard (`867bdaa`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `7c27b2d` to `867bdaa` (`main`, 19-path sparse-checkout intact).
+- **Summary (`db.py`, `schemas.py`, `auth.ts`, `AdminDashboardView.tsx`):** Included active Duo and Business `team_memberships` in `/admin/stats`, `/admin/users`, and the `#admin` dashboard (`Team Member (@owner)` badges, expiry dates, and filters) without double-counting paying buyers or revenue.
+- **Bundle Built:** `dist-prod/index.html` (`3.12 kB`), `dist-prod/assets/index-Cw53souk.js` (`482.19 kB`), `dist-prod/assets/index-DrPQ72Op.css` (`114.16 kB`).
 
 ### 📅 2026-11-25 15:58 (UTC+7) — Remove Keyboard Shortcuts from User Guide (`7c27b2d`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `eb65d1f` to `7c27b2d` (`main`, 19-path sparse-checkout intact).
