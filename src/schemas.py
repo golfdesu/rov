@@ -571,9 +571,10 @@ class AdminUserActivitySchema(BaseModel):
     active_sessions: int = 0
     survey_choice: Literal["willing", "not_willing"] | None = None
     pass_tier: str | None = None
-    pass_source: Literal["paid", "promo_free", "manual"] | None = None
+    pass_source: Literal["paid", "promo_free", "team_member", "manual"] | None = None
     pass_expires_at_th: str | None = None
     pass_days_left: int | None = None
+    pass_team_owner: str | None = None
 
 
 class AdminGuestClientSchema(BaseModel):

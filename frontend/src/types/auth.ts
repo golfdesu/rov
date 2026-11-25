@@ -73,19 +73,22 @@ export interface AdminActivePassItem {
   display_name: string;
   email?: string | null;
   tier: string;
-  source: "paid" | "promo_free" | "manual";
+  source: "paid" | "promo_free" | "team_member" | "manual";
   paid_orders: number;
   paid_amount_thb: number;
   expires_at: number;
   expires_at_th: string;
   days_left: number;
   claimed_at_th?: string | null;
+  team_owner_username?: string | null;
+  team_tier?: string | null;
 }
 
 export interface AdminBillingSummary {
   active_total: number;
   active_paid_users: number;
   active_promo_users: number;
+  active_team_members?: number;
   active_manual_users: number;
   active_paid_by_tier: Record<string, number>;
   active_by_tier: Record<string, number>;
@@ -185,9 +188,10 @@ export interface AdminUserActivityItem {
   active_sessions: number;
   survey_choice?: PricingSurveyChoice | null;
   pass_tier?: string | null;
-  pass_source?: "paid" | "promo_free" | "manual" | null;
+  pass_source?: "paid" | "promo_free" | "team_member" | "manual" | null;
   pass_expires_at_th?: string | null;
   pass_days_left?: number | null;
+  pass_team_owner?: string | null;
 }
 
 export interface AdminGuestClientItem {

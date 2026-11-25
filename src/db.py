@@ -2463,13 +2463,16 @@ class UserDatabase:
             total_revenue_thb = round(int(paid_totals_row["revenue_satang"] or 0) / 100.0, 2)
 
             active_passes: list[dict[str, Any]] = []
+            pass_by_user_id: dict[int, dict[str, Any]] = {}
             active_paid_by_tier = {"pro": 0, "duo": 0, "team_pro": 0}
             active_by_tier = {"pro": 0, "duo": 0, "team_pro": 0}
             active_paid_users = 0
             active_promo_users = 0
+            active_team_members = 0
             active_manual_users = 0
 
             for pr in pass_rows:
+                uid = int(pr["user_id"])
                 tier_code = str(pr["tier"])
                 expires_at = int(pr["expires_at"])
                 paid_orders_cnt = int(pr["paid_orders"] or 0)
@@ -2486,30 +2489,81 @@ class UserDatabase:
                     active_manual_users += 1
                 active_by_tier[tier_code] = active_by_tier.get(tier_code, 0) + 1
                 days_left = max(0, (expires_at - now + 86399) // 86400)
+                item = {
+                    "user_id": uid,
+                    "username": str(pr["username"]),
+                    "display_name": str(pr["display_name"]),
+                    "email": str(pr["email"]) if pr["email"] else None,
+                    "tier": tier_code,
+                    "source": source,
+                    "paid_orders": paid_orders_cnt,
+                    "paid_amount_thb": round(int(pr["paid_amount_satang"] or 0) / 100.0, 2),
+                    "expires_at": expires_at,
+                    "expires_at_th": datetime.fromtimestamp(expires_at, tz_th).strftime("%Y-%m-%d %H:%M"),
+                    "days_left": days_left,
+                    "claimed_at_th": (
+                        datetime.fromtimestamp(promo_claimed_at, tz_th).strftime("%Y-%m-%d %H:%M")
+                        if promo_claimed_at
+                        else None
+                    ),
+                    "team_owner_username": None,
+                    "team_tier": None,
+                }
+                active_passes.append(item)
+                pass_by_user_id[uid] = item
+
+            member_rows = conn.execute(
+                """
+                SELECT
+                    tm.user_id,
+                    tm.tier,
+                    bp.expires_at,
+                    u.username,
+                    u.display_name,
+                    u.email,
+                    owner.username AS team_owner_username
+                FROM team_memberships tm
+                JOIN billing_passes bp ON bp.user_id = tm.owner_id AND bp.tier = tm.tier AND bp.expires_at > ?
+                JOIN users u ON u.id = tm.user_id
+                JOIN users owner ON owner.id = tm.owner_id
+                """,
+                (now,),
+            ).fetchall()
+            for mr in member_rows:
+                uid = int(mr["user_id"])
+                tier_code = str(mr["tier"])
+                expires_at = int(mr["expires_at"])
+                owner_username = str(mr["team_owner_username"])
+                active_team_members += 1
+                existing = pass_by_user_id.get(uid)
+                if existing is not None:
+                    existing["team_owner_username"] = owner_username
+                    existing["team_tier"] = tier_code
+                    continue
+                active_by_tier[tier_code] = active_by_tier.get(tier_code, 0) + 1
+                days_left = max(0, (expires_at - now + 86399) // 86400)
                 active_passes.append(
                     {
-                        "user_id": int(pr["user_id"]),
-                        "username": str(pr["username"]),
-                        "display_name": str(pr["display_name"]),
-                        "email": str(pr["email"]) if pr["email"] else None,
+                        "user_id": uid,
+                        "username": str(mr["username"]),
+                        "display_name": str(mr["display_name"]),
+                        "email": str(mr["email"]) if mr["email"] else None,
                         "tier": tier_code,
-                        "source": source,
-                        "paid_orders": paid_orders_cnt,
-                        "paid_amount_thb": round(int(pr["paid_amount_satang"] or 0) / 100.0, 2),
+                        "source": "team_member",
+                        "paid_orders": 0,
+                        "paid_amount_thb": 0.0,
                         "expires_at": expires_at,
                         "expires_at_th": datetime.fromtimestamp(expires_at, tz_th).strftime("%Y-%m-%d %H:%M"),
                         "days_left": days_left,
-                        "claimed_at_th": (
-                            datetime.fromtimestamp(promo_claimed_at, tz_th).strftime("%Y-%m-%d %H:%M")
-                            if promo_claimed_at
-                            else None
-                        ),
+                        "claimed_at_th": None,
+                        "team_owner_username": owner_username,
+                        "team_tier": tier_code,
                     }
                 )
 
-            source_rank = {"paid": 0, "manual": 1, "promo_free": 2}
+            source_rank = {"paid": 0, "team_member": 1, "manual": 2, "promo_free": 3}
             active_passes.sort(
-                key=lambda item: (source_rank.get(item["source"], 3), -int(item["expires_at"]), int(item["user_id"]))
+                key=lambda item: (source_rank.get(item["source"], 4), -int(item["expires_at"]), int(item["user_id"]))
             )
 
         return {
@@ -2544,6 +2598,7 @@ class UserDatabase:
                 "active_total": len(active_passes),
                 "active_paid_users": active_paid_users,
                 "active_promo_users": active_promo_users,
+                "active_team_members": active_team_members,
                 "active_manual_users": active_manual_users,
                 "active_paid_by_tier": active_paid_by_tier,
                 "active_by_tier": active_by_tier,
@@ -2661,6 +2716,16 @@ class UserDatabase:
                         MAX(claimed_at) AS promo_claimed_at
                     FROM promo_claims
                     GROUP BY user_id
+                ),
+                team_mem_agg AS (
+                    SELECT
+                        tm.user_id,
+                        tm.tier AS team_tier,
+                        bp.expires_at AS team_expires_at,
+                        owner.username AS team_owner_username
+                    FROM team_memberships tm
+                    JOIN billing_passes bp ON bp.user_id = tm.owner_id AND bp.tier = tm.tier AND bp.expires_at > ?
+                    JOIN users owner ON owner.id = tm.owner_id
                 )
                 SELECT
                     u.id,
@@ -2685,7 +2750,10 @@ class UserDatabase:
                     bp.tier AS pass_tier,
                     bp.expires_at AS pass_expires_at,
                     COALESCE(po.paid_orders, 0) AS paid_orders,
-                    pr.promo_claimed_at AS promo_claimed_at
+                    pr.promo_claimed_at AS promo_claimed_at,
+                    tma.team_tier AS team_tier,
+                    tma.team_expires_at AS team_expires_at,
+                    tma.team_owner_username AS team_owner_username
                 FROM users u
                 LEFT JOIN visit_agg va ON va.user_id = u.id
                 LEFT JOIN usage_agg ua ON ua.user_id = u.id
@@ -2697,6 +2765,7 @@ class UserDatabase:
                 LEFT JOIN billing_passes bp ON bp.user_id = u.id AND bp.expires_at > ?
                 LEFT JOIN paid_agg po ON po.user_id = u.id
                 LEFT JOIN promo_agg pr ON pr.user_id = u.id
+                LEFT JOIN team_mem_agg tma ON tma.user_id = u.id
                 ORDER BY
                     COALESCE(va.active_days, 0) DESC,
                     (COALESCE(json_array_length(json_extract(ds.payload_json, '$.seriesGames')), 0)
@@ -2704,7 +2773,7 @@ class UserDatabase:
                     COALESCE(ua.predict_calls, 0) DESC,
                     u.id DESC
                 """,
-                (now, now),
+                (now, now, now),
             ).fetchall()
 
             guest_rows = conn.execute(
@@ -2730,6 +2799,7 @@ class UserDatabase:
             survey_val = str(r["survey_choice"]) if r["survey_choice"] in {"willing", "not_willing"} else None
             pass_tier = str(r["pass_tier"]) if r["pass_tier"] else None
             pass_expires_raw = int(r["pass_expires_at"]) if r["pass_expires_at"] else None
+            team_owner_username = str(r["team_owner_username"]) if r["team_owner_username"] else None
             if pass_tier and pass_expires_raw:
                 if int(r["paid_orders"] or 0) > 0:
                     pass_source = "paid"
@@ -2739,10 +2809,19 @@ class UserDatabase:
                     pass_source = "manual"
                 pass_expires_at_th = datetime.fromtimestamp(pass_expires_raw, tz_th).strftime("%Y-%m-%d %H:%M")
                 pass_days_left = max(0, (pass_expires_raw - now + 86399) // 86400)
+                pass_team_owner = team_owner_username
+            elif r["team_tier"] and r["team_expires_at"]:
+                team_expires_raw = int(r["team_expires_at"])
+                pass_tier = str(r["team_tier"])
+                pass_source = "team_member"
+                pass_expires_at_th = datetime.fromtimestamp(team_expires_raw, tz_th).strftime("%Y-%m-%d %H:%M")
+                pass_days_left = max(0, (team_expires_raw - now + 86399) // 86400)
+                pass_team_owner = team_owner_username
             else:
                 pass_source = None
                 pass_expires_at_th = None
                 pass_days_left = None
+                pass_team_owner = None
             users_list.append(
                 {
                     "id": int(r["id"]),
@@ -2767,6 +2846,7 @@ class UserDatabase:
                     "pass_source": pass_source,
                     "pass_expires_at_th": pass_expires_at_th,
                     "pass_days_left": pass_days_left,
+                    "pass_team_owner": pass_team_owner,
                 }
             )
 

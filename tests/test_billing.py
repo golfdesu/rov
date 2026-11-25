@@ -1211,10 +1211,17 @@ def test_admin_stats_and_users_include_paid_and_promo_passes(sandbox, monkeypatc
     monkeypatch.setattr(api.config, "free_promo_until", str(future_ts))
     monkeypatch.setattr(api.config, "admin_usernames", frozenset({USERNAME}))
 
-    # Paid Duo user + Free Pro promo user
+    # Paid Duo owner + Business owner + Business team member + Free Pro promo user
     paid_user = db.register_user("paid_duo_buyer", "test-password", display_name="Paid Buyer")
     order = db.reserve_billing_order(paid_user.id, "duo", 30, 10900, ORIGIN["Origin"])
     db.settle_billing_order(order["id"], "cs_test_admin_duo", 10900, "pi_admin_duo")
+
+    biz_owner = db.register_user("biz_owner_admin", "test-password", display_name="Biz Owner")
+    biz_member = db.register_user("biz_member_admin", "test-password", display_name="Biz Member")
+    biz_order = db.reserve_billing_order(biz_owner.id, "team_pro", 30, 23900, ORIGIN["Origin"])
+    db.settle_billing_order(biz_order["id"], "cs_test_admin_biz", 23900, "pi_admin_biz")
+    db.invite_team_member(biz_owner.id, biz_member.username)
+    db.respond_to_team_invite(biz_member.id, biz_owner.id, True)
 
     claim_res = client.post("/billing/promo/claim", headers=ORIGIN, json={"expected_username": USERNAME})
     assert claim_res.status_code == 200
@@ -1222,19 +1229,26 @@ def test_admin_stats_and_users_include_paid_and_promo_passes(sandbox, monkeypatc
     stats_res = client.get("/admin/stats")
     assert stats_res.status_code == 200
     billing = stats_res.json()["billing"]
-    assert billing["active_total"] == 2
-    assert billing["active_paid_users"] == 1
+    assert billing["active_total"] == 4
+    assert billing["active_paid_users"] == 2
+    assert billing["active_team_members"] == 1
     assert billing["active_promo_users"] == 1
     assert billing["active_paid_by_tier"]["duo"] == 1
+    assert billing["active_paid_by_tier"]["team_pro"] == 1
+    assert billing["active_by_tier"]["team_pro"] == 2
     assert billing["total_promo_claims"] == 1
-    assert billing["total_paid_orders"] == 1
-    assert billing["total_revenue_thb"] == 109.0
+    assert billing["total_paid_orders"] == 2
+    assert billing["total_revenue_thb"] == 348.0
 
     by_name = {item["username"]: item for item in billing["active_passes"]}
     assert by_name["paid_duo_buyer"]["tier"] == "duo"
     assert by_name["paid_duo_buyer"]["source"] == "paid"
     assert by_name["paid_duo_buyer"]["paid_amount_thb"] == 109.0
     assert by_name["paid_duo_buyer"]["days_left"] >= 29
+    assert by_name["biz_member_admin"]["tier"] == "team_pro"
+    assert by_name["biz_member_admin"]["source"] == "team_member"
+    assert by_name["biz_member_admin"]["team_owner_username"] == "biz_owner_admin"
+    assert by_name["biz_member_admin"]["paid_amount_thb"] == 0.0
     assert by_name[USERNAME]["tier"] == "pro"
     assert by_name[USERNAME]["source"] == "promo_free"
     assert by_name[USERNAME]["days_left"] >= 9
@@ -1245,6 +1259,9 @@ def test_admin_stats_and_users_include_paid_and_promo_passes(sandbox, monkeypatc
     assert users_by_name["paid_duo_buyer"]["pass_tier"] == "duo"
     assert users_by_name["paid_duo_buyer"]["pass_source"] == "paid"
     assert users_by_name["paid_duo_buyer"]["pass_expires_at_th"]
+    assert users_by_name["biz_member_admin"]["pass_tier"] == "team_pro"
+    assert users_by_name["biz_member_admin"]["pass_source"] == "team_member"
+    assert users_by_name["biz_member_admin"]["pass_team_owner"] == "biz_owner_admin"
     assert users_by_name[USERNAME]["pass_tier"] == "pro"
     assert users_by_name[USERNAME]["pass_source"] == "promo_free"
     assert users_by_name[USERNAME]["pass_expires_at_th"]

@@ -27,6 +27,23 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-25 19:18 (UTC+7) — Display Duo/Business Team Members in Admin Dashboard
+**Agent:** Antigravity Agent
+
+### ✅ Completed Work
+- **Backend Team Member Pass Visibility (`src/db.py`, `src/schemas.py`):** Extended `get_admin_stats()` (`GET /admin/stats`) and `get_admin_users_report()` (`GET /admin/users`) to surface active `team_memberships` for Duo and Business teams (`source = "team_member"`, `team_owner_username`, `active_team_members`) with owner-linked expiry timestamps and zero revenue/buyer double-counting.
+- **Admin UI (`frontend/src/types/auth.ts`, `frontend/src/components/AdminDashboardView.tsx`):** Added `สมาชิกทีม` filter pills, team-member counts, and blue `สมาชิกทีม (@owner)` badges across both the active passes panel and the user activity table.
+
+### 📁 Modified Files
+- `src/db.py`, `src/schemas.py`
+- `frontend/src/types/auth.ts`, `frontend/src/components/AdminDashboardView.tsx`
+- `tests/test_billing.py`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified with `ruff check` / `ruff format`, `pytest -q --tb=short tests/test_billing.py tests/test_api.py`, `oxlint`, `npm run build`, `npm run build:prod`, and `audit_copy_i18n.py`.
+
+---
+
 ## 📅 2026-11-25 15:30 (UTC+7) — Add Active Paid & Free Pro Pass Tracking to Admin Dashboard
 **Agent:** Antigravity Agent
 

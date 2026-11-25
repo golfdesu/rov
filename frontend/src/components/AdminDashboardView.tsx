@@ -33,8 +33,17 @@ interface AdminDashboardViewProps {
   onBack: () => void;
 }
 
-type UserFilterMode = "all" | "paid" | "promo_free" | "returning" | "draft_saved" | "practice_played" | "willing" | "not_willing";
-type PassSourceFilter = "all" | "paid" | "promo_free";
+type UserFilterMode =
+  | "all"
+  | "paid"
+  | "promo_free"
+  | "team_member"
+  | "returning"
+  | "draft_saved"
+  | "practice_played"
+  | "willing"
+  | "not_willing";
+type PassSourceFilter = "all" | "paid" | "team_member" | "promo_free";
 
 function formatPassTierLabel(tier: string): string {
   if (tier === "pro") return "Pro";
@@ -324,6 +333,7 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
     const matched = list.filter((u) => {
       if (filterMode === "paid" && u.pass_source !== "paid") return false;
       if (filterMode === "promo_free" && u.pass_source !== "promo_free") return false;
+      if (filterMode === "team_member" && u.pass_source !== "team_member") return false;
       if (filterMode === "returning" && u.active_days < 2) return false;
       if (filterMode === "draft_saved" && u.saved_series_games < 1) return false;
       if (filterMode === "practice_played" && u.practice_games < 1) return false;
@@ -513,6 +523,7 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                 [
                   ["all", `ทั้งหมด (${stats.billing.active_total.toLocaleString()})`],
                   ["paid", `เติมเงินจริง (${stats.billing.active_paid_users.toLocaleString()})`],
+                  ["team_member", `สมาชิกทีม (${(stats.billing.active_team_members ?? 0).toLocaleString()})`],
                   ["promo_free", `รับ Pro ฟรี (${stats.billing.active_promo_users.toLocaleString()})`],
                 ] as const
               ).map(([key, label]) => (
@@ -567,6 +578,9 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
               <div className="mt-1 font-mono text-xs text-dim">
                 {`Pro ${stats.billing.active_by_tier.pro ?? 0} · Duo ${stats.billing.active_by_tier.duo ?? 0} · Business ${stats.billing.active_by_tier.team_pro ?? 0}`}
               </div>
+              <div className="mt-0.5 font-mono text-[11px] text-dim/90">
+                {`สมาชิกทีม (Duo/Business) ${(stats.billing.active_team_members ?? 0).toLocaleString()} คน`}
+              </div>
             </div>
           </div>
 
@@ -585,6 +599,7 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                 {(() => {
                   const list = (stats.billing?.active_passes ?? []).filter((item) => {
                     if (passSourceFilter === "paid") return item.source === "paid";
+                    if (passSourceFilter === "team_member") return item.source === "team_member";
                     if (passSourceFilter === "promo_free") return item.source === "promo_free";
                     return true;
                   });
@@ -611,19 +626,30 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                         </span>
                       </td>
                       <td className="px-3 py-2">
-                        {item.source === "paid" ? (
-                          <span className="border border-good/40 bg-good/15 px-2 py-0.5 text-xs font-bold text-good">
-                            {`เติมเงิน · ${item.paid_amount_thb.toLocaleString()} บ.`}
-                          </span>
-                        ) : item.source === "promo_free" ? (
-                          <span className="border border-gold/40 bg-gold/15 px-2 py-0.5 text-xs font-bold text-gold">
-                            Pro ฟรี
-                          </span>
-                        ) : (
-                          <span className="border border-line-strong bg-panel-2 px-2 py-0.5 text-xs text-muted">
-                            Manual
-                          </span>
-                        )}
+                        <div className="flex flex-col items-start gap-0.5">
+                          {item.source === "paid" ? (
+                            <span className="border border-good/40 bg-good/15 px-2 py-0.5 text-xs font-bold text-good">
+                              {`เติมเงิน · ${item.paid_amount_thb.toLocaleString()} บ.`}
+                            </span>
+                          ) : item.source === "team_member" ? (
+                            <span className="border border-blue/40 bg-blue/15 px-2 py-0.5 text-xs font-bold text-blue">
+                              {`สมาชิกทีม (@${item.team_owner_username ?? "-"})`}
+                            </span>
+                          ) : item.source === "promo_free" ? (
+                            <span className="border border-gold/40 bg-gold/15 px-2 py-0.5 text-xs font-bold text-gold">
+                              Pro ฟรี
+                            </span>
+                          ) : (
+                            <span className="border border-line-strong bg-panel-2 px-2 py-0.5 text-xs text-muted">
+                              Manual
+                            </span>
+                          )}
+                          {item.source !== "team_member" && item.team_owner_username && (
+                            <span className="text-[11px] text-dim">
+                              {`ทีม @${item.team_owner_username}`}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-3 py-2 text-right">
                         <div className="font-bold text-ink">{item.expires_at_th}</div>
@@ -1149,6 +1175,7 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
             [
               ["all", "ทั้งหมด"],
               ["paid", "เติมเงินจริง"],
+              ["team_member", "สมาชิกทีม"],
               ["promo_free", "รับ Pro ฟรี"],
               ["returning", "เข้าซ้ำ 2+ วัน"],
               ["draft_saved", "เซฟ Draft 1+ เกม"],
@@ -1273,18 +1300,25 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                               className={`border px-1.5 py-0.5 text-[11px] font-bold ${
                                 u.pass_source === "paid"
                                   ? "border-good/40 bg-good/15 text-good"
-                                  : u.pass_source === "promo_free"
-                                    ? "border-gold/40 bg-gold/15 text-gold"
-                                    : "border-line-strong bg-panel-2 text-ink"
+                                  : u.pass_source === "team_member"
+                                    ? "border-blue/40 bg-blue/15 text-blue"
+                                    : u.pass_source === "promo_free"
+                                      ? "border-gold/40 bg-gold/15 text-gold"
+                                      : "border-line-strong bg-panel-2 text-ink"
                               }`}
                             >
                               {formatPassTierLabel(u.pass_tier)}{" "}
                               {u.pass_source === "paid"
                                 ? "เติมเงิน"
-                                : u.pass_source === "promo_free"
-                                  ? "ฟรี"
-                                  : ""}
+                                : u.pass_source === "team_member"
+                                  ? "สมาชิก"
+                                  : u.pass_source === "promo_free"
+                                    ? "ฟรี"
+                                    : ""}
                             </span>
+                            {u.pass_source === "team_member" && u.pass_team_owner && (
+                              <span className="text-[11px] text-dim">{`@${u.pass_team_owner}`}</span>
+                            )}
                             {u.pass_expires_at_th && (
                               <span className="text-[11px] text-dim">{u.pass_expires_at_th.slice(5)}</span>
                             )}
