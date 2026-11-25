@@ -5,6 +5,7 @@ import {
   BarChart3,
   BookOpen,
   Cpu,
+  Crown,
   Globe,
   MessageSquare,
   RefreshCw,
@@ -32,7 +33,15 @@ interface AdminDashboardViewProps {
   onBack: () => void;
 }
 
-type UserFilterMode = "all" | "returning" | "draft_saved" | "practice_played" | "willing" | "not_willing";
+type UserFilterMode = "all" | "paid" | "promo_free" | "returning" | "draft_saved" | "practice_played" | "willing" | "not_willing";
+type PassSourceFilter = "all" | "paid" | "promo_free";
+
+function formatPassTierLabel(tier: string): string {
+  if (tier === "pro") return "Pro";
+  if (tier === "duo") return "Duo";
+  if (tier === "team_pro") return "Business";
+  return tier;
+}
 type SortColumn =
   | "active_days"
   | "saved_series_games"
@@ -219,6 +228,7 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [filterMode, setFilterMode] = useState<UserFilterMode>("all");
+  const [passSourceFilter, setPassSourceFilter] = useState<PassSourceFilter>("all");
   const [sortBy, setSortBy] = useState<SortColumn>("active_days");
   const [sortDesc, setSortDesc] = useState(true);
   const [showAllUsers, setShowAllUsers] = useState(false);
@@ -312,6 +322,8 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
     const list = usersReport?.users ?? [];
     const q = query.trim().toLowerCase();
     const matched = list.filter((u) => {
+      if (filterMode === "paid" && u.pass_source !== "paid") return false;
+      if (filterMode === "promo_free" && u.pass_source !== "promo_free") return false;
       if (filterMode === "returning" && u.active_days < 2) return false;
       if (filterMode === "draft_saved" && u.saved_series_games < 1) return false;
       if (filterMode === "practice_played" && u.practice_games < 1) return false;
@@ -482,6 +494,146 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
               วันนี้ +{(feedbackReport?.today ?? stats.feedback?.today ?? 0).toLocaleString()} · สมาชิก{" "}
               {feedbackReport?.member_total ?? 0} · Guest {feedbackReport?.guest_total ?? 0}
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* Active Passes & Billing Summary */}
+      {stats?.billing && (
+        <section className="flex flex-col gap-3.5 border border-gold/35 bg-panel p-4 sm:p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Crown className="h-5 w-5 text-gold" />
+              <h2 className="font-display text-base font-bold tracking-wide text-ink sm:text-lg">
+                แพ็กเกจ &amp; สิทธิ์ Pro ที่กำลังใช้งาน
+              </h2>
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {(
+                [
+                  ["all", `ทั้งหมด (${stats.billing.active_total.toLocaleString()})`],
+                  ["paid", `เติมเงินจริง (${stats.billing.active_paid_users.toLocaleString()})`],
+                  ["promo_free", `รับ Pro ฟรี (${stats.billing.active_promo_users.toLocaleString()})`],
+                ] as const
+              ).map(([key, label]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setPassSourceFilter(key)}
+                  className={`h-8 border px-3 font-display text-xs font-semibold transition-colors ${
+                    passSourceFilter === key
+                      ? "border-gold bg-gold font-bold text-bg"
+                      : "border-line-strong bg-bg text-muted hover:text-ink"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="border border-line bg-bg/60 p-3.5">
+              <div className="font-display text-xs font-bold text-muted">เติมเงินจริง (กำลังใช้งาน)</div>
+              <div className="mt-1 font-mono text-2xl font-extrabold text-good">
+                {stats.billing.active_paid_users.toLocaleString()}{" "}
+                <span className="text-sm font-normal text-muted">คน</span>
+              </div>
+              <div className="mt-1 font-mono text-xs text-dim">
+                {`Pro ${stats.billing.active_paid_by_tier.pro ?? 0} · Duo ${stats.billing.active_paid_by_tier.duo ?? 0} · Business ${stats.billing.active_paid_by_tier.team_pro ?? 0}`}
+              </div>
+              <div className="mt-0.5 font-mono text-[11px] text-dim/90">
+                {`ยอดชำระรวม ${stats.billing.total_revenue_thb.toLocaleString()} บาท (${stats.billing.total_paid_orders.toLocaleString()} ออเดอร์)`}
+              </div>
+            </div>
+
+            <div className="border border-line bg-bg/60 p-3.5">
+              <div className="font-display text-xs font-bold text-muted">รับ Pro ฟรี (กำลังใช้งาน)</div>
+              <div className="mt-1 font-mono text-2xl font-extrabold text-gold">
+                {stats.billing.active_promo_users.toLocaleString()}{" "}
+                <span className="text-sm font-normal text-muted">คน</span>
+              </div>
+              <div className="mt-1 font-mono text-xs text-dim">
+                {`กดรับโปรสะสมทั้งหมด ${stats.billing.total_promo_claims.toLocaleString()} บัญชี`}
+              </div>
+            </div>
+
+            <div className="border border-line bg-bg/60 p-3.5">
+              <div className="font-display text-xs font-bold text-muted">สิทธิ์ที่กำลังใช้งานรวม</div>
+              <div className="mt-1 font-mono text-2xl font-extrabold text-ink">
+                {stats.billing.active_total.toLocaleString()}{" "}
+                <span className="text-sm font-normal text-muted">คน</span>
+              </div>
+              <div className="mt-1 font-mono text-xs text-dim">
+                {`Pro ${stats.billing.active_by_tier.pro ?? 0} · Duo ${stats.billing.active_by_tier.duo ?? 0} · Business ${stats.billing.active_by_tier.team_pro ?? 0}`}
+              </div>
+            </div>
+          </div>
+
+          <div className="max-h-80 overflow-auto border border-line bg-bg/50">
+            <table className="w-full min-w-[680px] border-collapse text-left font-mono text-xs sm:text-sm">
+              <thead>
+                <tr className="border-b border-line bg-panel-2/70 text-muted">
+                  <th className="px-3 py-2 text-xs font-bold text-dim">#</th>
+                  <th className="px-3 py-2 text-xs font-bold">บัญชี</th>
+                  <th className="px-3 py-2 text-xs font-bold">แพ็ก</th>
+                  <th className="px-3 py-2 text-xs font-bold">ประเภท</th>
+                  <th className="px-3 py-2 text-right text-xs font-bold">หมดอายุ (เวลาไทย)</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {(() => {
+                  const list = (stats.billing?.active_passes ?? []).filter((item) => {
+                    if (passSourceFilter === "paid") return item.source === "paid";
+                    if (passSourceFilter === "promo_free") return item.source === "promo_free";
+                    return true;
+                  });
+                  if (list.length === 0) {
+                    return (
+                      <tr>
+                        <td colSpan={5} className="px-4 py-6 text-center text-dim">
+                          ยังไม่มีผู้ใช้ที่มีสิทธิ์กำลังใช้งาน
+                        </td>
+                      </tr>
+                    );
+                  }
+                  return list.map((item, idx) => (
+                    <tr key={`${item.user_id}-${item.tier}`} className="hover:bg-panel-2/40">
+                      <td className="px-3 py-2 text-dim">{idx + 1}</td>
+                      <td className="max-w-[260px] px-3 py-2">
+                        <div className="truncate font-bold text-gold">@{item.username}</div>
+                        <div className="truncate text-xs text-ink">{item.display_name}</div>
+                        {item.email && <div className="truncate text-[11px] text-dim">{item.email}</div>}
+                      </td>
+                      <td className="px-3 py-2">
+                        <span className="border border-line-strong bg-panel px-2 py-0.5 text-xs font-bold text-ink">
+                          {formatPassTierLabel(item.tier)}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2">
+                        {item.source === "paid" ? (
+                          <span className="border border-good/40 bg-good/15 px-2 py-0.5 text-xs font-bold text-good">
+                            {`เติมเงิน · ${item.paid_amount_thb.toLocaleString()} บ.`}
+                          </span>
+                        ) : item.source === "promo_free" ? (
+                          <span className="border border-gold/40 bg-gold/15 px-2 py-0.5 text-xs font-bold text-gold">
+                            Pro ฟรี
+                          </span>
+                        ) : (
+                          <span className="border border-line-strong bg-panel-2 px-2 py-0.5 text-xs text-muted">
+                            Manual
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        <div className="font-bold text-ink">{item.expires_at_th}</div>
+                        <div className="text-[11px] text-dim">{`เหลือ ${item.days_left} วัน`}</div>
+                      </td>
+                    </tr>
+                  ));
+                })()}
+              </tbody>
+            </table>
           </div>
         </section>
       )}
@@ -996,6 +1148,8 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
           {(
             [
               ["all", "ทั้งหมด"],
+              ["paid", "เติมเงินจริง"],
+              ["promo_free", "รับ Pro ฟรี"],
               ["returning", "เข้าซ้ำ 2+ วัน"],
               ["draft_saved", "เซฟ Draft 1+ เกม"],
               ["practice_played", "เล่น vs AI"],
@@ -1029,6 +1183,7 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                 <th className="px-3 py-2.5 text-right">{sortHeaderBtn("practice_games", "vs AI (เกม)")}</th>
                 <th className="px-3 py-2.5 text-right">{sortHeaderBtn("predict_calls", "เรียก AI")}</th>
                 <th className="px-3 py-2.5 text-right">{sortHeaderBtn("p_alive", "โอกาสกลับมาใช้")}</th>
+                <th className="px-3 py-2.5 text-center text-xs font-bold text-muted">แพ็ก / หมดอายุ</th>
                 <th className="px-3 py-2.5 text-center text-xs font-bold text-muted">แบบสอบถาม</th>
                 <th className="px-3 py-2.5 text-right">{sortHeaderBtn("last_activity", "ใช้งานล่าสุด")}</th>
                 <th className="px-3 py-2.5 text-right">{sortHeaderBtn("created_at", "สมัครเมื่อ")}</th>
@@ -1037,7 +1192,7 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
             <tbody className="divide-y divide-line">
               {visibleUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="px-4 py-8 text-center text-dim">
+                  <td colSpan={11} className="px-4 py-8 text-center text-dim">
                     {loading ? "กำลังโหลดรายชื่อผู้ใช้..." : "ไม่พบบัญชีที่ตรงกับตัวกรอง"}
                   </td>
                 </tr>
@@ -1107,6 +1262,33 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                             <div className={`font-bold ${tierBadge}`}>{tierLabel}</div>
                             <div className="text-xs text-dim">คะแนน {bScore.behavior_score}/100</div>
                           </>
+                        ) : (
+                          <span className="text-dim">-</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2.5 text-center">
+                        {u.pass_tier ? (
+                          <div className="inline-flex flex-col items-center gap-0.5">
+                            <span
+                              className={`border px-1.5 py-0.5 text-[11px] font-bold ${
+                                u.pass_source === "paid"
+                                  ? "border-good/40 bg-good/15 text-good"
+                                  : u.pass_source === "promo_free"
+                                    ? "border-gold/40 bg-gold/15 text-gold"
+                                    : "border-line-strong bg-panel-2 text-ink"
+                              }`}
+                            >
+                              {formatPassTierLabel(u.pass_tier)}{" "}
+                              {u.pass_source === "paid"
+                                ? "เติมเงิน"
+                                : u.pass_source === "promo_free"
+                                  ? "ฟรี"
+                                  : ""}
+                            </span>
+                            {u.pass_expires_at_th && (
+                              <span className="text-[11px] text-dim">{u.pass_expires_at_th.slice(5)}</span>
+                            )}
+                          </div>
                         ) : (
                           <span className="text-dim">-</span>
                         )}

@@ -1,7 +1,7 @@
 import { StableButtonLabel } from "./StableButtonLabel";
 import { useLanguage } from "../i18n/language";
 import { LanguageSwitch } from "../i18n/LanguageProvider";
-import { BarChart3, Coffee, Crown, LogIn, LogOut, Megaphone, User, Users, X } from "lucide-react";
+import { BarChart3, BookOpen, Coffee, Crown, LogIn, LogOut, Megaphone, User, Users, X } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { AuthUser } from "../types/auth";
 import { accountLabel } from "../utils/auth";
@@ -24,6 +24,7 @@ interface MobileNavDrawerProps<T extends string> {
   announcementSeen: boolean;
   feedbackSent?: boolean;
   onSelectTab: (tab: T) => void;
+  onOpenGuide: () => void;
   onOpenSurvey: () => void;
   onOpenDonate: () => void;
   onOpenAdminStats?: () => void;
@@ -45,6 +46,7 @@ export function MobileNavDrawer<T extends string>({
   announcementSeen,
   feedbackSent = false,
   onSelectTab,
+  onOpenGuide,
   onOpenSurvey,
   onOpenDonate,
   onOpenAdminStats,
@@ -275,6 +277,14 @@ export function MobileNavDrawer<T extends string>({
             <span className="font-mono text-[10px] font-semibold tracking-wider text-dim uppercase">
               {t("ประกาศ & สนับสนุน")}
             </span>
+            <button
+              type="button"
+              onClick={() => requestClose(onOpenGuide)}
+              className="flex min-h-10 w-full items-center gap-2 border border-line-strong bg-panel-2 px-3 py-1.5 text-left font-display text-xs font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold"
+            >
+              <BookOpen className="h-4 w-4 shrink-0 text-gold" />
+              <StableButtonLabel message="คู่มือการใช้งาน" className="inline-grid text-left" />
+            </button>
             <button
               type="button"
               title={t(announcementTooltipMessage)}

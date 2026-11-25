@@ -27,6 +27,42 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-25 15:30 (UTC+7) — Add Active Paid & Free Pro Pass Tracking to Admin Dashboard
+**Agent:** Antigravity Agent
+
+### ✅ Completed Work
+- **Backend Admin Billing & Promo Analytics (`src/db.py`, `src/schemas.py`, `src/api.py`):** Added a `billing` summary block to `GET /admin/stats` reporting active paid users by tier (`pro`, `duo`, `team_pro`), active Free Pro promo claimers, total paid orders/THB revenue, cumulative promo claims, and the `active_passes` table (with Thai expiry timestamps and days remaining). Also added `pass_tier`, `pass_source`, `pass_expires_at_th`, and `pass_days_left` to each entry in `GET /admin/users`.
+- **Admin Dashboard UI (`frontend/src/types/auth.ts`, `frontend/src/components/AdminDashboardView.tsx`):** Added the `แพ็กเกจ & สิทธิ์ Pro ที่กำลังใช้งาน` panel with Paid vs Free Pro summary cards, source filter pills, an expiry table, plus user table filter buttons (`เติมเงินจริง`, `รับ Pro ฟรี`) and a `แพ็ก / หมดอายุ` column.
+
+### 📁 Modified Files
+- `src/db.py`, `src/schemas.py`, `src/api.py`
+- `frontend/src/types/auth.ts`, `frontend/src/components/AdminDashboardView.tsx`
+- `tests/test_billing.py`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified with `ruff check` / `ruff format`, `pytest -q --tb=short tests/test_billing.py tests/test_api.py`, `oxlint`, `npm run build`, `npm run build:prod`, and `audit_copy_i18n.py`.
+
+---
+
+## 📅 2026-11-25 15:25 (UTC+7) — Add Concise User Guide Modal & Top-Nav / Drawer Entry Points
+**Agent:** Antigravity Agent
+
+### ✅ Completed Work
+- **User Guide Modal (`frontend/src/components/UserGuideModal.tsx`):** Added an accessible 4-tab quick-start guide (`Draft Board & Series`, `AI & Draft Practice`, `Stats, Pools & Teams`, `Shortcuts & Accounts`) highlighting how to start a new series via `แมตช์ใหม่`, G1–G7 Global Ban syncing, side swapping, AI assistant/practice, Scrim Analytics & PDF export, 5-lane Hero Pools, shared team workspace, keyboard shortcuts, and Guest/Free/Pro limits.
+- **Navigation & Drawer Entry Points (`frontend/src/App.tsx`, `frontend/src/components/MobileNavDrawer.tsx`):** Added a compact `?` help button in the top navigation bar (visible on all screens) and a `คู่มือการใช้งาน` button inside the utility drawer, plus full Thai/English translations in `frontend/src/i18n/englishMessages.ts`.
+
+### 📁 Modified Files
+- `frontend/src/components/UserGuideModal.tsx` (new)
+- `frontend/src/App.tsx`
+- `frontend/src/components/MobileNavDrawer.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified with `npm --prefix frontend run lint`, `npm --prefix frontend run build`, `build:prod`, `audit_copy_i18n.py`, and `audit_ux_ui.py`.
+
+---
+
 ## 📅 2026-11-25 12:36 (UTC+7) — Streamline Plans, Expose Scrim Analytics Tab & Add Claimable Free Pro Promo
 **Agent:** Antigravity Agent
 

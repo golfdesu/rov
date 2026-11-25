@@ -2413,6 +2413,105 @@ class UserDatabase:
             feedback_total = int(feedback_row["total"] or 0)
             feedback_today = int(feedback_row["today"] or 0)
 
+            pass_rows = conn.execute(
+                """
+                WITH paid_agg AS (
+                    SELECT
+                        user_id,
+                        COUNT(*) AS paid_orders,
+                        COALESCE(SUM(amount), 0) AS paid_amount_satang
+                    FROM billing_orders
+                    WHERE status = 'paid'
+                    GROUP BY user_id
+                ),
+                promo_agg AS (
+                    SELECT
+                        user_id,
+                        MAX(claimed_at) AS promo_claimed_at
+                    FROM promo_claims
+                    GROUP BY user_id
+                )
+                SELECT
+                    bp.user_id,
+                    bp.tier,
+                    bp.expires_at,
+                    u.username,
+                    u.display_name,
+                    u.email,
+                    COALESCE(po.paid_orders, 0) AS paid_orders,
+                    COALESCE(po.paid_amount_satang, 0) AS paid_amount_satang,
+                    pr.promo_claimed_at
+                FROM billing_passes bp
+                JOIN users u ON u.id = bp.user_id
+                LEFT JOIN paid_agg po ON po.user_id = bp.user_id
+                LEFT JOIN promo_agg pr ON pr.user_id = bp.user_id
+                WHERE bp.expires_at > ?
+                """,
+                (now,),
+            ).fetchall()
+            total_promo_claims = int(conn.execute("SELECT COUNT(*) FROM promo_claims").fetchone()[0])
+            paid_totals_row = conn.execute(
+                """
+                SELECT
+                    COUNT(*) AS paid_orders,
+                    COALESCE(SUM(amount), 0) AS revenue_satang
+                FROM billing_orders
+                WHERE status = 'paid'
+                """
+            ).fetchone()
+            total_paid_orders = int(paid_totals_row["paid_orders"] or 0)
+            total_revenue_thb = round(int(paid_totals_row["revenue_satang"] or 0) / 100.0, 2)
+
+            active_passes: list[dict[str, Any]] = []
+            active_paid_by_tier = {"pro": 0, "duo": 0, "team_pro": 0}
+            active_by_tier = {"pro": 0, "duo": 0, "team_pro": 0}
+            active_paid_users = 0
+            active_promo_users = 0
+            active_manual_users = 0
+
+            for pr in pass_rows:
+                tier_code = str(pr["tier"])
+                expires_at = int(pr["expires_at"])
+                paid_orders_cnt = int(pr["paid_orders"] or 0)
+                promo_claimed_at = int(pr["promo_claimed_at"]) if pr["promo_claimed_at"] else None
+                if paid_orders_cnt > 0:
+                    source = "paid"
+                    active_paid_users += 1
+                    active_paid_by_tier[tier_code] = active_paid_by_tier.get(tier_code, 0) + 1
+                elif promo_claimed_at is not None:
+                    source = "promo_free"
+                    active_promo_users += 1
+                else:
+                    source = "manual"
+                    active_manual_users += 1
+                active_by_tier[tier_code] = active_by_tier.get(tier_code, 0) + 1
+                days_left = max(0, (expires_at - now + 86399) // 86400)
+                active_passes.append(
+                    {
+                        "user_id": int(pr["user_id"]),
+                        "username": str(pr["username"]),
+                        "display_name": str(pr["display_name"]),
+                        "email": str(pr["email"]) if pr["email"] else None,
+                        "tier": tier_code,
+                        "source": source,
+                        "paid_orders": paid_orders_cnt,
+                        "paid_amount_thb": round(int(pr["paid_amount_satang"] or 0) / 100.0, 2),
+                        "expires_at": expires_at,
+                        "expires_at_th": datetime.fromtimestamp(expires_at, tz_th).strftime("%Y-%m-%d %H:%M"),
+                        "days_left": days_left,
+                        "claimed_at_th": (
+                            datetime.fromtimestamp(promo_claimed_at, tz_th).strftime("%Y-%m-%d %H:%M")
+                            if promo_claimed_at
+                            else None
+                        ),
+                    }
+                )
+
+            source_rank = {"paid": 0, "manual": 1, "promo_free": 2}
+            active_passes.sort(
+                key=lambda item: (source_rank.get(item["source"], 3), -int(item["expires_at"]), int(item["user_id"]))
+            )
+
         return {
             "generated_at_th": now_dt.strftime("%Y-%m-%d %H:%M:%S"),
             "users": {
@@ -2440,6 +2539,18 @@ class UserDatabase:
             "feedback": {
                 "total": feedback_total,
                 "today": feedback_today,
+            },
+            "billing": {
+                "active_total": len(active_passes),
+                "active_paid_users": active_paid_users,
+                "active_promo_users": active_promo_users,
+                "active_manual_users": active_manual_users,
+                "active_paid_by_tier": active_paid_by_tier,
+                "active_by_tier": active_by_tier,
+                "total_promo_claims": total_promo_claims,
+                "total_paid_orders": total_paid_orders,
+                "total_revenue_thb": total_revenue_thb,
+                "active_passes": active_passes,
             },
             "retention": {
                 "today_dau": today_dau,
@@ -2535,6 +2646,21 @@ class UserDatabase:
                         MIN(provider) AS oauth_provider
                     FROM user_oauth_accounts
                     GROUP BY user_id
+                ),
+                paid_agg AS (
+                    SELECT
+                        user_id,
+                        COUNT(*) AS paid_orders
+                    FROM billing_orders
+                    WHERE status = 'paid'
+                    GROUP BY user_id
+                ),
+                promo_agg AS (
+                    SELECT
+                        user_id,
+                        MAX(claimed_at) AS promo_claimed_at
+                    FROM promo_claims
+                    GROUP BY user_id
                 )
                 SELECT
                     u.id,
@@ -2555,7 +2681,11 @@ class UserDatabase:
                     COALESCE(ua.predict_calls, 0) AS predict_calls,
                     COALESCE(ua.draft_save_calls, 0) AS draft_save_calls,
                     COALESCE(sa.active_sessions, 0) AS active_sessions,
-                    ps.choice AS survey_choice
+                    ps.choice AS survey_choice,
+                    bp.tier AS pass_tier,
+                    bp.expires_at AS pass_expires_at,
+                    COALESCE(po.paid_orders, 0) AS paid_orders,
+                    pr.promo_claimed_at AS promo_claimed_at
                 FROM users u
                 LEFT JOIN visit_agg va ON va.user_id = u.id
                 LEFT JOIN usage_agg ua ON ua.user_id = u.id
@@ -2564,6 +2694,9 @@ class UserDatabase:
                 LEFT JOIN user_draft_states ds ON ds.user_id = u.id
                 LEFT JOIN user_practice_histories ph ON ph.user_id = u.id
                 LEFT JOIN pricing_survey_responses ps ON ps.user_id = u.id
+                LEFT JOIN billing_passes bp ON bp.user_id = u.id AND bp.expires_at > ?
+                LEFT JOIN paid_agg po ON po.user_id = u.id
+                LEFT JOIN promo_agg pr ON pr.user_id = u.id
                 ORDER BY
                     COALESCE(va.active_days, 0) DESC,
                     (COALESCE(json_array_length(json_extract(ds.payload_json, '$.seriesGames')), 0)
@@ -2571,7 +2704,7 @@ class UserDatabase:
                     COALESCE(ua.predict_calls, 0) DESC,
                     u.id DESC
                 """,
-                (now,),
+                (now, now),
             ).fetchall()
 
             guest_rows = conn.execute(
@@ -2595,6 +2728,21 @@ class UserDatabase:
         for r in rows:
             provider = str(r["oauth_provider"] or ("google" if r["google_sub"] else "password"))
             survey_val = str(r["survey_choice"]) if r["survey_choice"] in {"willing", "not_willing"} else None
+            pass_tier = str(r["pass_tier"]) if r["pass_tier"] else None
+            pass_expires_raw = int(r["pass_expires_at"]) if r["pass_expires_at"] else None
+            if pass_tier and pass_expires_raw:
+                if int(r["paid_orders"] or 0) > 0:
+                    pass_source = "paid"
+                elif r["promo_claimed_at"]:
+                    pass_source = "promo_free"
+                else:
+                    pass_source = "manual"
+                pass_expires_at_th = datetime.fromtimestamp(pass_expires_raw, tz_th).strftime("%Y-%m-%d %H:%M")
+                pass_days_left = max(0, (pass_expires_raw - now + 86399) // 86400)
+            else:
+                pass_source = None
+                pass_expires_at_th = None
+                pass_days_left = None
             users_list.append(
                 {
                     "id": int(r["id"]),
@@ -2615,6 +2763,10 @@ class UserDatabase:
                     "draft_save_calls": int(r["draft_save_calls"] or 0),
                     "active_sessions": int(r["active_sessions"] or 0),
                     "survey_choice": survey_val,
+                    "pass_tier": pass_tier,
+                    "pass_source": pass_source,
+                    "pass_expires_at_th": pass_expires_at_th,
+                    "pass_days_left": pass_days_left,
                 }
             )
 

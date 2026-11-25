@@ -1988,6 +1988,7 @@ def get_admin_stats(user: AuthUser | None = Depends(get_optional_user)):
         users=db_stats["users"],
         survey=db_stats["survey"],
         feedback=db_stats.get("feedback"),
+        billing=db_stats.get("billing"),
         cloudflare=cf_stats,
         retention=db_stats.get("retention"),
     )

@@ -1203,3 +1203,48 @@ def test_free_pro_promo_claim_and_expiry(sandbox, monkeypatch):
 
     ended = client.post("/billing/promo/claim", headers=ORIGIN, json={"expected_username": USERNAME})
     assert ended.status_code == 410 and ended.json()["detail"] == "promo_ended"
+
+
+def test_admin_stats_and_users_include_paid_and_promo_passes(sandbox, monkeypatch):
+    client, _, db, promo_user = sandbox
+    future_ts = int(time.time()) + 10 * 86400
+    monkeypatch.setattr(api.config, "free_promo_until", str(future_ts))
+    monkeypatch.setattr(api.config, "admin_usernames", frozenset({USERNAME}))
+
+    # Paid Duo user + Free Pro promo user
+    paid_user = db.register_user("paid_duo_buyer", "test-password", display_name="Paid Buyer")
+    order = db.reserve_billing_order(paid_user.id, "duo", 30, 10900, ORIGIN["Origin"])
+    db.settle_billing_order(order["id"], "cs_test_admin_duo", 10900, "pi_admin_duo")
+
+    claim_res = client.post("/billing/promo/claim", headers=ORIGIN, json={"expected_username": USERNAME})
+    assert claim_res.status_code == 200
+
+    stats_res = client.get("/admin/stats")
+    assert stats_res.status_code == 200
+    billing = stats_res.json()["billing"]
+    assert billing["active_total"] == 2
+    assert billing["active_paid_users"] == 1
+    assert billing["active_promo_users"] == 1
+    assert billing["active_paid_by_tier"]["duo"] == 1
+    assert billing["total_promo_claims"] == 1
+    assert billing["total_paid_orders"] == 1
+    assert billing["total_revenue_thb"] == 109.0
+
+    by_name = {item["username"]: item for item in billing["active_passes"]}
+    assert by_name["paid_duo_buyer"]["tier"] == "duo"
+    assert by_name["paid_duo_buyer"]["source"] == "paid"
+    assert by_name["paid_duo_buyer"]["paid_amount_thb"] == 109.0
+    assert by_name["paid_duo_buyer"]["days_left"] >= 29
+    assert by_name[USERNAME]["tier"] == "pro"
+    assert by_name[USERNAME]["source"] == "promo_free"
+    assert by_name[USERNAME]["days_left"] >= 9
+
+    users_res = client.get("/admin/users")
+    assert users_res.status_code == 200
+    users_by_name = {u["username"]: u for u in users_res.json()["users"]}
+    assert users_by_name["paid_duo_buyer"]["pass_tier"] == "duo"
+    assert users_by_name["paid_duo_buyer"]["pass_source"] == "paid"
+    assert users_by_name["paid_duo_buyer"]["pass_expires_at_th"]
+    assert users_by_name[USERNAME]["pass_tier"] == "pro"
+    assert users_by_name[USERNAME]["pass_source"] == "promo_free"
+    assert users_by_name[USERNAME]["pass_expires_at_th"]

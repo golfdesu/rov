@@ -67,6 +67,34 @@ export interface AdminFeedbackResponse {
   items: AdminFeedbackItem[];
 }
 
+export interface AdminActivePassItem {
+  user_id: number;
+  username: string;
+  display_name: string;
+  email?: string | null;
+  tier: string;
+  source: "paid" | "promo_free" | "manual";
+  paid_orders: number;
+  paid_amount_thb: number;
+  expires_at: number;
+  expires_at_th: string;
+  days_left: number;
+  claimed_at_th?: string | null;
+}
+
+export interface AdminBillingSummary {
+  active_total: number;
+  active_paid_users: number;
+  active_promo_users: number;
+  active_manual_users: number;
+  active_paid_by_tier: Record<string, number>;
+  active_by_tier: Record<string, number>;
+  total_promo_claims: number;
+  total_paid_orders: number;
+  total_revenue_thb: number;
+  active_passes: AdminActivePassItem[];
+}
+
 export interface AdminStatsResponse {
   generated_at_th: string;
   users: {
@@ -103,6 +131,7 @@ export interface AdminStatsResponse {
     total: number;
     today: number;
   } | null;
+  billing?: AdminBillingSummary | null;
   cloudflare?: {
     today_uniques: number;
     today_page_views: number;
@@ -155,6 +184,10 @@ export interface AdminUserActivityItem {
   draft_save_calls: number;
   active_sessions: number;
   survey_choice?: PricingSurveyChoice | null;
+  pass_tier?: string | null;
+  pass_source?: "paid" | "promo_free" | "manual" | null;
+  pass_expires_at_th?: string | null;
+  pass_days_left?: number | null;
 }
 
 export interface AdminGuestClientItem {

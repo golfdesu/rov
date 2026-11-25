@@ -546,6 +546,7 @@ class AdminStatsResponse(BaseModel):
     users: dict[str, Any]
     survey: dict[str, Any]
     feedback: dict[str, Any] | None = None
+    billing: dict[str, Any] | None = None
     cloudflare: dict[str, Any] | None = None
     retention: dict[str, Any] | None = None
 
@@ -569,6 +570,10 @@ class AdminUserActivitySchema(BaseModel):
     draft_save_calls: int = 0
     active_sessions: int = 0
     survey_choice: Literal["willing", "not_willing"] | None = None
+    pass_tier: str | None = None
+    pass_source: Literal["paid", "promo_free", "manual"] | None = None
+    pass_expires_at_th: str | None = None
+    pass_days_left: int | None = None
 
 
 class AdminGuestClientSchema(BaseModel):

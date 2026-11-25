@@ -1,6 +1,6 @@
 import { StableButtonLabel } from "./components/StableButtonLabel";
 import { type Message, translateMessage, useLanguage } from "./i18n/language";
-import { ChevronDown, LogIn, Menu, User, X } from "lucide-react";
+import { ChevronDown, HelpCircle, LogIn, Menu, User, X } from "lucide-react";
 import { lazy, Suspense, useCallback, useEffect, useId, useRef, useState } from "react";
 import { ApiError, getJson, postJson, putJson, setExpectedAuthUser, setSessionMismatchHandler } from "./api/client";
 import { AuthLanding, AuthModal } from "./components/AuthModal";
@@ -11,6 +11,7 @@ import { MiniDraftLogo } from "./components/MiniDraftLogo";
 import { MobileNavDrawer } from "./components/MobileNavDrawer";
 import { Modal } from "./components/Modal";
 import { PricingSurveyModal } from "./components/PricingSurveyModal";
+import { UserGuideModal } from "./components/UserGuideModal";
 
 const AdminDashboardView = lazy(() =>
   import("./components/AdminDashboardView").then((m) => ({ default: m.AdminDashboardView })),
@@ -74,6 +75,7 @@ interface WorkspaceProps {
   announcementSeen: boolean;
   disableShortcuts: boolean;
   onOpenAuthModal: () => void;
+  onOpenGuide: () => void;
   onOpenMobileDrawer: () => void;
   onSaveDisplayName: (displayName: string) => Promise<void>;
 }
@@ -90,6 +92,7 @@ function Workspace({
   announcementSeen,
   disableShortcuts,
   onOpenAuthModal,
+  onOpenGuide,
   onOpenMobileDrawer,
   onSaveDisplayName,
 }: WorkspaceProps) {
@@ -187,6 +190,15 @@ function Workspace({
                 <span><StableButtonLabel message="เข้าสู่ระบบ" /></span>
               </button>
             )}
+            <button
+              type="button"
+              onClick={onOpenGuide}
+              aria-label={t("คู่มือการใช้งาน")}
+              title={t("คู่มือการใช้งาน")}
+              className="inline-flex h-8 w-8 items-center justify-center border border-line-strong bg-panel-2 text-ink transition-colors hover:border-gold/60 hover:text-gold"
+            >
+              <HelpCircle className="h-4 w-4" />
+            </button>
             <button
               type="button"
               onClick={onOpenMobileDrawer}
@@ -460,6 +472,7 @@ export function App() {
   const [guestEntered, setGuestEntered] = useState<boolean>(loadGuestEntered);
   const [authModalOpen, setAuthModalOpen] = useState<boolean>(() => Boolean(oauthError && loadGuestEntered()));
   const [donateModalOpen, setDonateModalOpen] = useState(false);
+  const [guideModalOpen, setGuideModalOpen] = useState(false);
   const [adminStatsModalOpen, setAdminStatsModalOpen] = useState(false);
   const [isAdminUser, setIsAdminUser] = useState(false);
   const tab =
@@ -926,6 +939,7 @@ export function App() {
     !authModalOpen &&
     pendingMigration === null &&
     !donateModalOpen &&
+    !guideModalOpen &&
     !adminStatsModalOpen &&
     !mobileDrawerOpen &&
     activeDraftTool === null &&
@@ -955,11 +969,13 @@ export function App() {
           authModalOpen ||
           pendingMigration !== null ||
           donateModalOpen ||
+          guideModalOpen ||
           adminStatsModalOpen ||
           mobileDrawerOpen ||
           pricingSurveyOpen
         }
         onOpenAuthModal={() => setAuthModalOpen(true)}
+        onOpenGuide={() => setGuideModalOpen(true)}
         onOpenMobileDrawer={() => setMobileDrawerOpen(true)}
         onSaveDisplayName={handleSaveDisplayName}
       />
@@ -973,6 +989,7 @@ export function App() {
           announcementSeen={announcementSeen}
           feedbackSent={feedbackSent}
           onSelectTab={selectTab}
+          onOpenGuide={() => setGuideModalOpen(true)}
           onOpenSurvey={() => {
             setSurveyError(null);
             setManualSurveyOpen(true);
@@ -1012,6 +1029,7 @@ export function App() {
         />
       )}
       {donateModalOpen && <DonateModal onClose={() => setDonateModalOpen(false)} />}
+      {guideModalOpen && <UserGuideModal onClose={() => setGuideModalOpen(false)} />}
       {authModalOpen && (
         <AuthModal
           googleLoginEnabled={googleLoginEnabled}
