@@ -1,4 +1,4 @@
-import { BookOpen, Bot, Keyboard, Layers, ShieldAlert, Sparkles, Trophy, Users, X } from "lucide-react";
+import { BookOpen, Bot, Crown, Layers, ShieldAlert, Sparkles, Trophy, Users, X } from "lucide-react";
 import { useId, useState } from "react";
 import { useLanguage } from "../i18n/language";
 import { Modal } from "./Modal";
@@ -16,7 +16,7 @@ const GUIDE_TABS: { key: GuideTabKey; label: string; icon: typeof Layers }[] = [
   { key: "draft", label: "บอร์ดดราฟต์ & ซีรีส์", icon: Layers },
   { key: "ai", label: "ผู้ช่วย AI & ฝึกดราฟต์", icon: Bot },
   { key: "scrim", label: "สถิติ, Pool & ทีม", icon: Trophy },
-  { key: "tips", label: "คีย์ลัด & บัญชี", icon: Keyboard },
+  { key: "tips", label: "ระดับบัญชี & สิทธิ์", icon: Crown },
 ];
 
 const GUIDE_SECTIONS: Record<"draft" | "ai" | "scrim", GuideCardItem[]> = {
@@ -72,14 +72,6 @@ const GUIDE_SECTIONS: Record<"draft" | "ai" | "scrim", GuideCardItem[]> = {
     },
   ],
 };
-
-const KEYBOARD_SHORTCUTS: { keys: string[]; label: string }[] = [
-  { keys: ["/"], label: "โฟกัสช่องค้นหาฮีโร่" },
-  { keys: ["Enter"], label: "ล็อกฮีโร่อันดับ 1 ที่ AI แนะนำ" },
-  { keys: ["Ctrl", "Z"], label: "ย้อนกลับ 1 ขั้น" },
-  { keys: ["Ctrl", "Shift", "Z"], label: "ทำซ้ำ" },
-  { keys: ["Esc"], label: "ปิดหน้าต่างหรือยกเลิกการแก้ไขช่องฮีโร่" },
-];
 
 const ACCOUNT_TIERS: { tier: string; detail: string; accentClass: string }[] = [
   {
@@ -191,62 +183,23 @@ export function UserGuideModal({ onClose }: UserGuideModalProps) {
                 ))}
               </div>
             ) : (
-              <div className="space-y-3">
-                <section className="border border-line bg-panel-2/50 p-3 sm:p-3.5">
-                  <div className="mb-2.5 flex items-center gap-2">
-                    <Keyboard className="h-4 w-4 shrink-0 text-gold" aria-hidden="true" />
-                    <h3 className="font-display text-xs font-bold text-ink sm:text-sm">
-                      {t("คีย์ลัดบนบอร์ดดราฟต์")}
-                    </h3>
-                  </div>
-                  <div className="divide-y divide-line">
-                    {KEYBOARD_SHORTCUTS.map((row) => (
-                      <div key={row.label} className="flex flex-wrap items-center justify-between gap-2 py-2 first:pt-0 last:pb-0">
-                        <span className="text-xs text-muted sm:text-[13px]">{t(row.label)}</span>
-                        <div className="flex shrink-0 items-center gap-1">
-                          {row.keys.map((keyLabel) => (
-                            <kbd
-                              key={keyLabel}
-                              className="inline-flex min-h-6 min-w-6 items-center justify-center border border-line-strong bg-bg px-1.5 font-mono text-[11px] font-bold text-ink"
-                            >
-                              {keyLabel}
-                            </kbd>
-                          ))}
-                          {row.keys.join("+") === "Ctrl+Shift+Z" && (
-                            <>
-                              <span className="px-0.5 font-mono text-[10px] text-dim">/</span>
-                              <kbd className="inline-flex min-h-6 min-w-6 items-center justify-center border border-line-strong bg-bg px-1.5 font-mono text-[11px] font-bold text-ink">
-                                Ctrl
-                              </kbd>
-                              <kbd className="inline-flex min-h-6 min-w-6 items-center justify-center border border-line-strong bg-bg px-1.5 font-mono text-[11px] font-bold text-ink">
-                                Y
-                              </kbd>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-
-                <section className="border border-line bg-panel-2/50 p-3 sm:p-3.5">
-                  <h3 className="mb-2.5 font-display text-xs font-bold text-ink sm:text-sm">
-                    {t("สิทธิ์การใช้งานแต่ละระดับ")}
-                  </h3>
-                  <div className="space-y-2">
-                    {ACCOUNT_TIERS.map((row) => (
-                      <div key={row.tier} className="border border-line bg-bg/60 p-2.5">
-                        <span className={`inline-block border px-1.5 py-0.5 font-mono text-[11px] font-bold ${row.accentClass}`}>
-                          {row.tier}
-                        </span>
-                        <p className="mt-1.5 text-xs leading-relaxed text-muted sm:text-[13px]">
-                          {t(row.detail)}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              </div>
+              <section className="border border-line bg-panel-2/50 p-3 sm:p-3.5">
+                <h3 className="mb-2.5 font-display text-xs font-bold text-ink sm:text-sm">
+                  {t("สิทธิ์การใช้งานแต่ละระดับ")}
+                </h3>
+                <div className="space-y-2">
+                  {ACCOUNT_TIERS.map((row) => (
+                    <div key={row.tier} className="border border-line bg-bg/60 p-2.5">
+                      <span className={`inline-block border px-1.5 py-0.5 font-mono text-[11px] font-bold ${row.accentClass}`}>
+                        {row.tier}
+                      </span>
+                      <p className="mt-1.5 text-xs leading-relaxed text-muted sm:text-[13px]">
+                        {t(row.detail)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </section>
             )}
           </div>
 
