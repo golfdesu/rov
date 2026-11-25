@@ -1,6 +1,6 @@
 # Cloud & VPS Hosting Comparison (`minidraft.app`)
 
-> **Reference Date:** 2026-11-20  
+> **Reference Date:** 2026-11-25  
 > **Purpose:** Compare market alternatives to the current Azure production VM (`Standard_B2als_v2`), including paid monthly rates (Singapore / Thailand regions) and all conditions/caveats for running on free tiers, trial credits, or student programs.
 
 ---
@@ -25,10 +25,19 @@ All non-Thai providers below are priced for their **Singapore** datacenter (appr
 | Provider | Region | Spec | Monthly Price | Included Bandwidth | Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **OVHcloud (VPS-1)** | Singapore | 2 vCPU / 4 GB RAM / 40 GB NVMe | **`~4.54 USD`** (`~S$5.78`, ~160 THB) | Unlimited (500 Mbps) | **Best value.** No-commitment monthly rate, daily backups included. (8 GB RAM `VPS-2` is `~S$10.88/mo`). |
+| **GreenCloudVPS (KVM Promo)** | Singapore | EPYC / Ryzen / 4 GB RAM / NVMe | **`~5–10+ USD`** (~175–350+ THB, promo) | 1–2+ TB | Fast hardware on flash sales, but Singapore stock sells out quickly and best rates require annual billing. |
+| **Kainode (Budget KVM)** | Singapore | 2 vCPU / 4 GB RAM / 40–60 GB SSD | **`~5.99 USD`** (~210 THB, with recurring promo) | 1 TB (`1 Gbps`) | Small LowEndBox budget host with monthly billing; check stock and peering stability before use. |
+| **HostHatch (NVMe Compute)** | Singapore | 2 vCPU AMD EPYC / 4 GB RAM / 20 GB NVMe | **`~6.00 USD`** (~210 THB, typically `72 USD/yr`) | 1 TB | Strong EPYC performance, but usually billed annually and 20 GB disk is tight for Docker builds. |
+| **Hostinger VPS (`KVM 1` / `KVM 2`)** | Singapore | 1–2 vCPU / 4–8 GB RAM / 50–100 GB NVMe | **`~220–330 THB`** (promo, 24-mo upfront) | 4–8 TB | Heavily promoted by Thai tech YouTubers; includes weekly backups. **Caveat:** Promo rate requires 24-month upfront payment (~5,300–7,500 THB) and renewal pricing is significantly higher. |
+| **Tencent Cloud Lighthouse** | Singapore | 2–4 vCPU / 4 GB RAM / 60–80 GB SSD | **`~7–12 USD`** (~245–420 THB, promo/bundle) | 500 GB–1+ TB (speed-capped) | Major Asian cloud with deep first-year promos, but some bundles cap peak speed (`6–15 Mbps`) and renew higher. |
+| **ThaiDNS (`Budget VM` / `Business Cloud`)** | Thailand | 2 vCPU / 4 GB RAM / 30 GB NVMe | **`250 THB`** (`+7% VAT`, Budget VM) / **`500 THB`** (Business) | 1 TB (`100 Mbps`) / Unlimited (`1 Gbps`) | Cheapest Thai datacenter option for 4 GB RAM with full root (Docker-ready) and monthly THB payment. |
 | **Hetzner Cloud (CPX)** | Singapore | 2–3 vCPU AMD / 2–4 GB RAM / 40 GB NVMe | **`~7–15+ EUR`** (~260–550+ THB) | 20 TB | Budget `CX` plans are unavailable in Singapore (only `CPX` AMD). Strict KYC/ID verification on signup. |
-| **HostAtom (VPS SSD2)** | Thailand | 2 vCPU / 4 GB RAM / 40 GB SSD | **`590 THB`** (~472 THB/mo annual) | Unlimited | Thai datacenter, lowest ping, easy THB payment. (8 GB RAM `SSD3` is `1,190 THB/mo`). |
+| **ThaiEasyVPS / VisperHost** | Thailand | Entry Linux SSD VPS | **From `150 THB`** (entry; higher for 2–4 GB) | Unlimited / 1 Gbps | Budget Thai VPS providers (CSLoxinfo/INET); entry RAM is small — verify 2–4 GB tier pricing and ToS before migrating. |
+| **VPSHiSpeed (Linux VPS)** | Thailand | 2 vCPU / 1+ GB RAM / 15+ GB NVMe | **From `399 THB`** (1 GB entry; higher for 4 GB) | Unlimited | Thai datacenter (CAT), Xeon + NVMe hardware, responsive Thai support; entry tier has only 1 GB RAM so 2–4 GB upgrade is required for Docker + PyTorch. |
+| **HostAtom (VPS SSD)** | Thailand | 2 vCPU / 4 GB RAM / 40 GB SSD | **`590 THB`** (~472 THB/mo annual) | Unlimited | Thai datacenter, lowest ping, easy THB payment. Also offers `290 THB/mo` entry tier (`1 vCPU / 2 GB RAM / 20 GB SSD`), while some SSD3/NVMe 4 GB tiers run `1,190+ THB/mo` (confirm current tier pricing at checkout). |
 | **Bangmod.Cloud** | Thailand | 4 vCPU / 4 GB RAM / 50 GB SSD | **`719 THB`** (`+7% VAT` = ~769 THB) | 8 TB | 4 vCPU (faster builds/inference), hourly billing supported (~1.07 THB/hr). |
 | **Z.com Cloud (C3)** | Thailand | 4 vCPU / 4 GB RAM / 50 GB SSD | **`1,200 THB`** | Unlimited (fair use) | Enterprise Thai cloud; pricier than HostAtom/Bangmod. |
+| **UpCloud (Starter 4 GB)** | Singapore | 1–2 vCPU / 4 GB RAM / 30 GB SSD | **`~12–14 USD`** (~420–490 THB) | Included (`250–500 Mbps`, zero egress) | Finnish cloud with enterprise reliability and hourly billing; General Purpose 4 GB tier is `~29–33 USD/mo`. |
 | **Contabo (Cloud VPS)** | Singapore | 4 vCPU / 4–8 GB RAM / 150 GB SSD | **`~13.50+ EUR`** (~500+ THB) | Unlimited (fair use) | Large disk space, but Singapore region adds location surcharge. |
 | **AWS Lightsail** | Singapore | 2 vCPU / 4 GB RAM / 80 GB SSD | **`20.00 USD`** (~700 THB) | 4 TB | Predictable flat bundle (VM + Disk + IP + Egress). |
 | **Vultr (Cloud Compute)** | Singapore | 2 vCPU / 4 GB RAM / 65–80 GB SSD | **`20.00 USD`** (~700 THB) | 3–4 TB | Hourly billing; High Frequency NVMe tier is `24.00 USD/mo`. |
@@ -85,9 +94,9 @@ All non-Thai providers below are priced for their **Singapore** datacenter (appr
 ## 4. Practical Recommendations for `minidraft.app`
 
 1. **Cheapest Reliable Paid Migration (Drop-in x86 Docker):**
-   - **OVHcloud Singapore `VPS-1`** (`~4.54 USD/mo`, ~160 THB) — Keeps the exact same Docker + Caddy + SQLite (`rov_app.db`) + Cloudflare architecture with zero code changes.
+   - **OVHcloud Singapore `VPS-1`** (`~4.54 USD/mo`, ~160 THB) — Keeps the exact same Docker + Caddy + SQLite (`rov_app.db`) + Cloudflare architecture with zero code changes (avoid **Hostinger** if you do not want 1–2 year upfront lock-in).
 2. **Best Local Thai Support & Lowest Latency:**
-   - **HostAtom `VPS SSD2`** (`590 THB/mo`, or `~472 THB/mo` paid annually) or **Bangmod.Cloud** (`719 THB/mo` + VAT).
+   - **ThaiDNS `Budget VM`** (`250 THB/mo` + VAT, 2 vCPU / 4 GB RAM / 30 GB NVMe, 1 TB traffic) is the cheapest no-lock-in monthly Thai option, alongside **HostAtom** (`290–590+ THB/mo`) and **Bangmod.Cloud** (`719 THB/mo` + VAT).
 3. **True `0 USD` Long-Term Hosting:**
    - **Oracle Cloud Always Free (`ap-singapore-1`)** upgraded to **PAYG** (staying strictly inside 2 OCPU ARM / 12 GB RAM / 200 GB storage), with Docker rebuilt for `linux/arm64`.
 4. **Short-Term Free Runway (3–5 Months):**

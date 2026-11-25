@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `5d66a76` (`main`: use stale-while-revalidate Cloudflare cache and progressive admin dashboard load) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-C5yl2h2h.js` (`482.19 kB`) + `dist-prod/assets/index-DrPQ72Op.css` (`114.16 kB`), `dist-prod/index.html` (`3.12 kB`) |
+| **Git Base Commit on VM** | `93b5ce0` (`main`: add Free Pro promo badge in navbar and plans view) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-CW-NmP1u.js` (`483.50 kB`) + `dist-prod/assets/index-DrPQ72Op.css` (`114.16 kB`), `dist-prod/index.html` (`3.12 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-25 19:37 (UTC+7)` |
+| **Last Updated** | `2026-11-25 21:33 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,13 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-25 21:33 (UTC+7) — Free Pro Promo Badge in Navbar & `#plans` View (`93b5ce0`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `5d66a76` to `93b5ce0` (`main`, 19-path sparse-checkout intact).
+- **Summary (`App.tsx`, `BillingSandbox.tsx`, `englishMessages.ts`):** Added a visible Free Pro promo pill (`Free Pro until <date>`) in the Desktop navbar and a slim clickable strip below the Mobile `< sm` navbar linking directly to `#profile` (or Sign-In for guests), plus a 1-click Free Pro claim banner at the top of `#plans` (automatically hidden once `authUser.is_paid` or expired).
+- **Bundle Built:** `dist-prod/index.html` (`3.12 kB`), `dist-prod/assets/index-CW-NmP1u.js` (`483.50 kB`), `dist-prod/assets/index-DrPQ72Op.css` (`114.16 kB`).
+- **Verification:** `oxlint` (`0` warnings/errors), `vite build` & `build:prod`, `audit_copy_i18n.py` (`[PASS]`, 100% EN coverage); live `https://minidraft.app/health` -> `200 {"status":"healthy","model_loaded":true}`, live HTML serving `assets/index-CW-NmP1u.js` and `assets/index-DrPQ72Op.css`; `/app/db/rov_app.db` intact (`users: 1024`, `promo_claims: 22`, `billing_orders: 4`, `billing_passes: 23`).
+- **VM Sync Note:** Docs-only commit recording this release is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
 
 ### 📅 2026-11-25 19:37 (UTC+7) — Non-Blocking Cloudflare Cache & Progressive Admin Dashboard (`5d66a76`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `867bdaa` to `5d66a76` (`main`, 19-path sparse-checkout intact).

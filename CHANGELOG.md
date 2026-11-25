@@ -27,6 +27,24 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-25 21:33 (UTC+7) — Free Pro Promo Badge in Navbar & Plans View
+**Agent:** Antigravity Agent
+
+### ✅ Completed Work
+- **Navbar Free Pro Promo Indicator (`frontend/src/App.tsx`):** Added a compact `Free Pro until {date}` button in the Desktop (`>= sm`) navbar and a slim clickable strip below the Mobile (`< sm`) navbar linking authenticated users to `#profile` (or opening Sign-In for guests), automatically hidden for paid/claimed users or once expired.
+- **1-Click Claim Banner in Plans View (`frontend/src/components/BillingSandbox.tsx`):** Added the claimable Free Pro banner above package cards on `#plans` when `summary.promo_claimable` is true.
+- **i18n & Cloud Hosting Docs (`frontend/src/i18n/englishMessages.ts`, `docs/CLOUD_HOSTING_COMPARISON.md`, `docs/PRODUCTION_RELEASES.md`):** Added missing English dictionary keys, documented Thai and Singapore budget VPS comparisons, and logged the production deploy (`93b5ce0`).
+
+### 📁 Modified Files
+- `frontend/src/App.tsx`, `frontend/src/components/BillingSandbox.tsx`, `frontend/src/i18n/englishMessages.ts`
+- `docs/CLOUD_HOSTING_COMPARISON.md`, `docs/PRODUCTION_RELEASES.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified locally with `npm --prefix frontend run lint` (`0` warnings, `0` errors), `npm --prefix frontend run build`, `npm --prefix frontend run build:prod`, and `audit_copy_i18n.py` (`[PASS]`, 100% EN coverage).
+- Verified live production deploy (`93b5ce0` on `20.2.210.230`) with `https://minidraft.app/health` (`200`), active bundle (`index-CW-NmP1u.js`), and SQLite DB integrity (`users: 1024`, `promo_claims: 22`, `billing_passes: 23`).
+
+---
+
 ## 📅 2026-11-25 19:32 (UTC+7) — Non-Blocking Stale-While-Revalidate Cloudflare Stats & Progressive Admin Load
 **Agent:** Antigravity Agent
 
