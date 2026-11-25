@@ -27,6 +27,25 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-25 22:19 (UTC+7) — Allow Pro Users to Extend Pro or Upgrade to Duo on Plans Page
+**Agent:** Antigravity Agent
+
+### ✅ Completed Work
+- **Backend Pro Extension & Duo Upgrade (`src/db.py`):** Updated `billing_purchase_block()` and `settle_billing_order()` so active `pro` pass holders (including Free Pro promo users) can purchase `pro` extensions (stacking onto current `expires_at`) or upgrade `pro -> duo` with `remaining_days // 2` bonus days (`pro -> team_pro` retains `remaining_days // 3`; `duo`/`team_pro` and `team_memberships` restrictions remain intact).
+- **Plans UI & i18n (`frontend/src/components/BillingSandbox.tsx`, `frontend/src/i18n/englishMessages.ts`):** Added Pro stacking/upgrade explanation banner on `#plans` and clear contextual CTA labels (`Extend Pro`, `Upgrade to Duo`, `Upgrade to Business`).
+- **Tests (`tests/test_billing.py`):** Updated and expanded billing test coverage for `pro -> pro` stacking and `pro -> duo` upgrade bonus calculation.
+
+### 📁 Modified Files
+- `src/db.py`, `tests/test_billing.py`
+- `frontend/src/components/BillingSandbox.tsx`, `frontend/src/i18n/englishMessages.ts`
+- `docs/PRODUCTION_RELEASES.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified locally with `ruff check/format`, `pytest -q --tb=short tests/test_billing.py` (`18 passed`), `oxlint` (`0` warnings, `0` errors), `vite build`, `build:prod`, and `audit_copy_i18n.py` (`[PASS]`, 100% EN coverage).
+- Verified live production deploy (`a045e93` on `20.2.210.230`) with `https://minidraft.app/health` (`200`), active bundle (`index-DAsMzu-l.js`), and SQLite DB integrity (`users: 1026`, `promo_claims: 24`, `billing_passes: 25`).
+
+---
+
 ## 📅 2026-11-25 22:05 (UTC+7) — Direct Lane Selector on Pick Click with Replace Hero Action
 **Agent:** Antigravity Agent
 

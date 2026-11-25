@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `a321a9d` (`main`: open lane selector directly on pick click with hero replace button) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-u27y8avV.js` (`483.17 kB`) + `dist-prod/assets/index-DrPQ72Op.css` (`114.16 kB`), `dist-prod/index.html` (`3.12 kB`) |
+| **Git Base Commit on VM** | `a045e93` (`main`: allow Pro users to extend Pro or upgrade to Duo on plans page) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-DAsMzu-l.js` (`483.17 kB`) + `dist-prod/assets/index-DrPQ72Op.css` (`114.16 kB`), `dist-prod/index.html` (`3.12 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-25 22:05 (UTC+7)` |
+| **Last Updated** | `2026-11-25 22:19 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,13 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-25 22:19 (UTC+7) — Allow Pro Users to Extend Pro & Upgrade to Duo on `#plans` (`a045e93`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `a321a9d` to `a045e93` (`main`, 19-path sparse-checkout intact).
+- **Summary (`src/db.py`, `BillingSandbox.tsx`, `englishMessages.ts`, `tests/test_billing.py`):** Enabled active `pro` users (including Free Pro promo users) to see all 3 tiers (`pro`, `duo`, `team_pro`) on `#plans`, extend `pro` by stacking days onto their existing expiry, or upgrade `pro -> duo` with `remaining_days // 2` bonus days (`pro -> team_pro` retains `remaining_days // 3` bonus days; `duo`/`team_pro` and `team_memberships` blocks remain unchanged).
+- **Bundle Built:** `dist-prod/index.html` (`3.12 kB`), `dist-prod/assets/index-DAsMzu-l.js` (`483.17 kB`), `dist-prod/assets/index-DrPQ72Op.css` (`114.16 kB`).
+- **Verification:** `ruff` clean, `pytest -q --tb=short tests/test_billing.py` (`18 passed`), `oxlint` (`0` warnings/errors), `vite build` & `build:prod`, `audit_copy_i18n.py` (`[PASS]`, 100% EN coverage); live `https://minidraft.app/health` -> `200 {"status":"healthy","model_loaded":true}`, live HTML serving `assets/index-DAsMzu-l.js` and `assets/index-DrPQ72Op.css`; `/app/db/rov_app.db` intact (`users: 1026`, `promo_claims: 24`, `billing_orders: 4`, `billing_passes: 25`).
+- **VM Sync Note:** Docs-only commit recording this release is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
 
 ### 📅 2026-11-25 22:05 (UTC+7) — Direct `PickLaneModal` on Pick Click with Inline Replace Hero (`a321a9d`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `93b5ce0` to `a321a9d` (`main`, 19-path sparse-checkout intact).
