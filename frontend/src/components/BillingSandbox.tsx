@@ -123,7 +123,15 @@ const statusMessages: Record<OrderStatus, string> = {
 const actionClass = "inline-flex min-h-10 items-center justify-center border px-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-gold disabled:opacity-50";
 const primaryAction = `${actionClass} border-gold bg-gold text-bg enabled:hover:bg-gold/90`;
 
-export function BillingSandbox({ username, view = "profile" }: { username: string; view?: "profile" | "plans" }) {
+export function BillingSandbox({
+  username,
+  view = "profile",
+  livemode = false,
+}: {
+  username: string;
+  view?: "profile" | "plans";
+  livemode?: boolean;
+}) {
   const { language, t } = useLanguage();
   const sectionId = useId();
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -304,8 +312,12 @@ export function BillingSandbox({ username, view = "profile" }: { username: strin
             </h1>
             <p className="flex flex-wrap justify-center gap-x-2 text-sm text-muted sm:text-base">
               <span>{t("จ่ายครั้งเดียวผ่าน PromptPay")}</span>
-              <span aria-hidden="true">·</span>
-              <span>{t("โหมดทดสอบ")}</span>
+              {!livemode && (
+                <>
+                  <span aria-hidden="true">·</span>
+                  <span>{t("โหมดทดสอบ")}</span>
+                </>
+              )}
             </p>
           </header>
           {paymentNotice}
@@ -482,9 +494,11 @@ export function BillingSandbox({ username, view = "profile" }: { username: strin
             {t("แพ็กและการชำระเงิน")}
           </h2>
         </div>
-        <span className="border border-line-strong bg-panel-2 px-2 py-0.5 font-mono text-[11px] text-muted">
-          {t("โหมดทดสอบ")}
-        </span>
+        {!livemode && (
+          <span className="border border-line-strong bg-panel-2 px-2 py-0.5 font-mono text-[11px] text-muted">
+            {t("โหมดทดสอบ")}
+          </span>
+        )}
       </header>
       <div className="space-y-4 p-4 sm:p-5">
       {summary && (

@@ -1,5 +1,10 @@
 // English copy for the existing Thai interface messages.
 export const englishMessages: Readonly<Record<string, string>> = {
+  "ข้อมูลที่มีผลแพ้-ชนะยังมี {0} เกม — ควรมีอย่างน้อย 40 เกมเพื่อให้สถิติทีมแม่นยำ และ 100+ เกมสำหรับคอมโบกับคู่เลน": "Only {0} decided games recorded — aim for at least 40 games for reliable team stats, and 100+ for combo and lane matchup trends.",
+  "ข้อมูลที่มีผลแพ้-ชนะมี {0} เกม — พอเห็นภาพรวมแล้ว ควรเก็บให้ครบ 40 เกมเพื่อให้สถิติทีมนิ่งขึ้น": "{0} decided games recorded — enough for an early overview, though 40+ games will make team trends much steadier.",
+  "แนะนำบันทึกอย่างน้อย 40 เกมที่มีผลแพ้-ชนะ เพื่อให้สถิติทีมและเมต้าวิเคราะห์ได้แม่นยำ": "Record at least 40 decided games for reliable team and meta analytics.",
+  "7. จำนวนเกมที่แนะนำ:": "7. Recommended Sample Size:",
+  "20+ เกมสำหรับดูภาพรวมเบื้องต้น · 40+ เกมสำหรับจัดลำดับแบน/หยิบและฟอร์มทีม · 100+ เกมสำหรับสถิติคอมโบ คู่เลน และสเกาต์คู่แข่ง": "20+ games for an early overview · 40+ games for pick/ban priorities and team form · 100+ games for reliable combos, lane matchups, and opponent scouting.",
   "ฝึกดราฟต์ vs AI": "Draft vs AI",
   "เลือกจำนวนเกมและฝั่ง AI จะเลือกและแบนให้อีกฝั่ง": "Choose the number of games and your side. AI will pick and ban for the other side.",
   "จำนวนเกม": "Number of games",

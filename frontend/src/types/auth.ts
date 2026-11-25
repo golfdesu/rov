@@ -9,6 +9,7 @@ export interface AuthUser {
   display_name_changes_remaining?: number;
   display_name_next_change_at?: number | null;
   stripe_sandbox_enabled?: boolean;
+  stripe_livemode?: boolean;
   draft_history_limit?: number | null;
   is_paid?: boolean;
 }
@@ -22,6 +23,7 @@ export interface AuthStatusResponse {
   pricing_survey_choice?: PricingSurveyChoice | null;
   is_admin?: boolean;
   stripe_sandbox_enabled?: boolean;
+  stripe_livemode?: boolean;
 }
 
 export type PricingSurveyChoice = "willing" | "not_willing";

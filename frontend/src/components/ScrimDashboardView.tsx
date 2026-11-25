@@ -8,6 +8,7 @@ import {
   ChevronRight,
   ChevronUp,
   FileText,
+  Info,
   Layers,
   RotateCcw,
   Search,
@@ -584,8 +585,35 @@ function MethodsReferenceCard() {
           <strong className="text-ink">{t("6. Trio Core, Comp Archetypes & Period Diff:")}</strong>{" "}
           {t("วิเคราะห์แกน 3 ตัว (JGL+MID+SUP), จำแนกสไตล์คอมพ์ทีมจาก Role, ความหลากหลาย Phase 1 และเทียบเมต้าข้ามช่วงเวลา/ทัวร์นาเมนต์")}
         </div>
+        <div className="md:col-span-2">
+          <strong className="text-ink">{t("7. จำนวนเกมที่แนะนำ:")}</strong>{" "}
+          {t("20+ เกมสำหรับดูภาพรวมเบื้องต้น · 40+ เกมสำหรับจัดลำดับแบน/หยิบและฟอร์มทีม · 100+ เกมสำหรับสถิติคอมโบ คู่เลน และสเกาต์คู่แข่ง")}
+        </div>
       </div>
     </details>
+  );
+}
+
+function SampleSizeNotice({ decided }: { decided: number }) {
+  const { t } = useLanguage();
+  const message =
+    decided < 20
+      ? t(
+          "ข้อมูลที่มีผลแพ้-ชนะยังมี {0} เกม — ควรมีอย่างน้อย 40 เกมเพื่อให้สถิติทีมแม่นยำ และ 100+ เกมสำหรับคอมโบกับคู่เลน",
+          decided,
+        )
+      : t(
+          "ข้อมูลที่มีผลแพ้-ชนะมี {0} เกม — พอเห็นภาพรวมแล้ว ควรเก็บให้ครบ 40 เกมเพื่อให้สถิติทีมนิ่งขึ้น",
+          decided,
+        );
+  return (
+    <p
+      role="status"
+      className="flex items-start gap-2 border border-gold/35 bg-gold/10 px-3.5 py-2.5 text-xs text-ink/90"
+    >
+      <Info className="mt-0.5 size-4 shrink-0 text-gold" aria-hidden="true" />
+      <span>{message}</span>
+    </p>
   );
 }
 
@@ -736,6 +764,43 @@ function EwmaSparkline({
           {t("ล่าสุด:")} {last.label} ({last.win ? t("ชนะ") : t("แพ้")})
         </span>
       </div>
+    </div>
+  );
+}
+
+function ScrimTabBar({
+  activeTab,
+  onSelectTab,
+}: {
+  activeTab: ScrimDashboardTab;
+  onSelectTab: (tab: ScrimDashboardTab) => void;
+}) {
+  const { t } = useLanguage();
+  return (
+    <div
+      role="tablist"
+      aria-label={t("หมวดวิเคราะห์สถิติ")}
+      className="grid grid-cols-2 gap-1.5 border-b border-line pb-2 sm:flex sm:flex-wrap"
+    >
+      {SCRIM_TABS.map(([tabKey, tabLabel]) => {
+        const selected = activeTab === tabKey;
+        return (
+          <button
+            key={tabKey}
+            type="button"
+            role="tab"
+            aria-selected={selected}
+            onClick={() => onSelectTab(tabKey)}
+            className={`min-h-10 min-w-0 border px-2.5 py-1.5 text-center font-display text-xs font-bold leading-tight tracking-wide transition-colors sm:shrink-0 sm:px-4 ${
+              selected
+                ? "border-gold/70 bg-gold/15 text-gold"
+                : "border-line bg-panel text-muted hover:border-line-strong hover:text-ink"
+            }`}
+          >
+            {t(tabLabel)}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -1154,11 +1219,14 @@ export function ScrimDashboardView({
               <span className="hidden sm:inline"><StableButtonLabel message="กลับหน้า Draft Board" /></span>
             </button>
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <BarChart3 className="size-5 shrink-0 text-gold" />
                 <h1 className="font-display text-base font-extrabold tracking-wider text-ink sm:text-xl">
                   {t("สถิติซ้อมทีม")}
                 </h1>
+                <span className="border border-gold/45 bg-gold/10 px-1.5 py-0.5 font-mono text-[10px] font-bold tracking-wider text-gold uppercase">
+                  Beta
+                </span>
               </div>
               <p className="text-xs text-muted">
                 {t("สรุป Win Rate ตามฝั่ง, ฟอร์มรายเกม, คอมโบ และคู่แข่ง")}
@@ -1472,6 +1540,11 @@ export function ScrimDashboardView({
         ) : (allTeamsMode ? displayScopedCount : stats.total) === 0 ? (
           <section className="space-y-3 border border-dashed border-line bg-panel/40 p-10 text-center text-sm text-muted">
             <p>{!showSampleData && activeGames.length === 0 ? t("ยังไม่มีเกมที่บันทึกในประวัติสำหรับแสดงสถิติ") : t("ไม่พบเกมตามตัวกรอง")}</p>
+            {!showSampleData && activeGames.length === 0 && (
+              <p className="text-xs text-dim">
+                {t("แนะนำบันทึกอย่างน้อย 40 เกมที่มีผลแพ้-ชนะ เพื่อให้สถิติทีมและเมต้าวิเคราะห์ได้แม่นยำ")}
+              </p>
+            )}
             {(showSampleData || activeGames.length > 0) && hasActiveFilters && (
               <button
                 type="button"
@@ -1483,7 +1556,12 @@ export function ScrimDashboardView({
               </button>
             )}
           </section>
-        ) : allTeamsMode && allStats ? (
+        ) : (
+          <>
+            {!showSampleData && (allTeamsMode && allStats ? allStats.decided : stats.decided) < 40 && (
+              <SampleSizeNotice decided={allTeamsMode && allStats ? allStats.decided : stats.decided} />
+            )}
+            {allTeamsMode && allStats ? (
           <>
             {/* All Teams Executive KPIs */}
             <section id="scrim-overview" aria-label={t("ภาพรวมทัวร์นาเมนต์")} className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -1578,31 +1656,7 @@ export function ScrimDashboardView({
             </section>
 
             {/* 4-Tab Bar */}
-            <div
-              role="tablist"
-              aria-label={t("หมวดวิเคราะห์สถิติ")}
-              className="flex gap-1.5 overflow-x-auto border-b border-line pb-2"
-            >
-              {SCRIM_TABS.map(([tabKey, tabLabel]) => {
-                const selected = activeTab === tabKey;
-                return (
-                  <button
-                    key={tabKey}
-                    type="button"
-                    role="tab"
-                    aria-selected={selected}
-                    onClick={() => setActiveTab(tabKey)}
-                    className={`min-h-10 shrink-0 border px-4 font-display text-xs font-bold tracking-wide transition-colors ${
-                      selected
-                        ? "border-gold/70 bg-gold/15 text-gold"
-                        : "border-line bg-panel text-muted hover:border-line-strong hover:text-ink"
-                    }`}
-                  >
-                    {t(tabLabel)}
-                  </button>
-                );
-              })}
-            </div>
+            <ScrimTabBar activeTab={activeTab} onSelectTab={setActiveTab} />
 
             {activeTab === "overview" && (
               <div className="space-y-4">
@@ -2061,31 +2115,7 @@ export function ScrimDashboardView({
             </section>
 
             {/* 4-Tab Bar */}
-            <div
-              role="tablist"
-              aria-label={t("หมวดวิเคราะห์สถิติ")}
-              className="flex gap-1.5 overflow-x-auto border-b border-line pb-2"
-            >
-              {SCRIM_TABS.map(([tabKey, tabLabel]) => {
-                const selected = activeTab === tabKey;
-                return (
-                  <button
-                    key={tabKey}
-                    type="button"
-                    role="tab"
-                    aria-selected={selected}
-                    onClick={() => setActiveTab(tabKey)}
-                    className={`min-h-10 shrink-0 border px-4 font-display text-xs font-bold tracking-wide transition-colors ${
-                      selected
-                        ? "border-gold/70 bg-gold/15 text-gold"
-                        : "border-line bg-panel text-muted hover:border-line-strong hover:text-ink"
-                    }`}
-                  >
-                    {t(tabLabel)}
-                  </button>
-                );
-              })}
-            </div>
+            <ScrimTabBar activeTab={activeTab} onSelectTab={setActiveTab} />
 
             {activeTab === "overview" && (
               <div className="space-y-4">
@@ -2699,6 +2729,8 @@ export function ScrimDashboardView({
             )}
 
             <MethodsReferenceCard />
+          </>
+        )}
           </>
         )}
       </div>

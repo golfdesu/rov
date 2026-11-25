@@ -522,6 +522,7 @@ class AuthUserSchema(BaseModel):
     display_name_changes_remaining: int
     display_name_next_change_at: int | None = None
     stripe_sandbox_enabled: bool = False
+    stripe_livemode: bool = False
     draft_history_limit: int | None = None
     is_paid: bool = False
 
@@ -535,6 +536,7 @@ class AuthStatusResponse(BaseModel):
     pricing_survey_choice: Literal["willing", "not_willing"] | None = None
     is_admin: bool = False
     stripe_sandbox_enabled: bool = False
+    stripe_livemode: bool = False
 
 
 class AdminStatsResponse(BaseModel):

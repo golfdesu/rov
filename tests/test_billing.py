@@ -108,7 +108,7 @@ def test_checkout_uses_server_price_and_keeps_one_open_order(sandbox):
     assert create_checkout(client, amount=1).status_code == 200
     assert fake.last_params["mode"] == "payment"
     assert fake.last_params["allowed_payment_method_types"] == ["promptpay"]
-    assert fake.last_params["line_items"][0]["price_data"]["unit_amount"] == 4900
+    assert fake.last_params["line_items"][0]["price_data"]["unit_amount"] == 5900
     assert fake.last_params["success_url"] == "http://localhost:3000/#profile"
     assert create_checkout(client).status_code == 200
     assert len(fake.by_id) == 1
@@ -118,7 +118,7 @@ def test_checkout_uses_server_price_and_keeps_one_open_order(sandbox):
     closed = client.post(f"/billing/orders/{order['id']}/cancel", headers=ORIGIN, json={"expected_username": USERNAME})
     assert closed.status_code == 204
     assert create_checkout(client, days=90).status_code == 200
-    assert fake.last_params["line_items"][0]["price_data"]["unit_amount"] == 11900
+    assert fake.last_params["line_items"][0]["price_data"]["unit_amount"] == 13900
 
 
 def test_paid_webhook_validates_payment_and_grants_access_once(sandbox):
@@ -197,18 +197,18 @@ def test_order_ownership_origin_and_production_gate(sandbox, monkeypatch):
 
 def test_concurrent_webhooks_and_team_upgrade(sandbox):
     client, fake, db, user = sandbox
-    pro = db.reserve_billing_order(user.id, "pro", 90, 11900, ORIGIN["Origin"])
+    pro = db.reserve_billing_order(user.id, "pro", 90, 13900, ORIGIN["Origin"])
 
     def fulfill(_):
         # Separate instances can process concurrent deliveries in separate worker processes.
-        UserDatabase(db.db_path).settle_billing_order(pro["id"], "cs_test_pro", 11900, "pi_pro")
+        UserDatabase(db.db_path).settle_billing_order(pro["id"], "cs_test_pro", 13900, "pi_pro")
 
     with ThreadPoolExecutor(max_workers=4) as pool:
         list(pool.map(fulfill, range(8)))
     active, orders = db.billing_summary(user.id)
     assert active["expires_at"] == orders[0]["paid_at"] + 90 * 86400
-    team = db.reserve_billing_order(user.id, "team_pro", 30, 19900, ORIGIN["Origin"])
-    db.settle_billing_order(team["id"], "cs_test_team", 19900, "pi_team")
+    team = db.reserve_billing_order(user.id, "team_pro", 30, 23900, ORIGIN["Origin"])
+    db.settle_billing_order(team["id"], "cs_test_team", 23900, "pi_team")
     team_active, orders = db.billing_summary(user.id)
     paid_at = next(order["paid_at"] for order in orders if order["id"] == team["id"])
     credit_days = (active["expires_at"] - paid_at) // 86400 // 3
@@ -239,7 +239,7 @@ def test_duo_checkout_invitation_and_shared_history(sandbox):
     member = db.register_user("duo_friend", "test-password", display_name="Friend")
     outsider = db.register_user("duo_other", "test-password", display_name="Other")
     assert create_checkout(client, "duo", 30).status_code == 200
-    assert fake.last_params["line_items"][0]["price_data"]["unit_amount"] == 8900
+    assert fake.last_params["line_items"][0]["price_data"]["unit_amount"] == 10900
     assert (
         event(
             client,
@@ -330,8 +330,8 @@ def test_duo_checkout_invitation_and_shared_history(sandbox):
 
 def test_team_pro_seats_capacity_and_expiry(sandbox, monkeypatch):
     client, _, db, owner = sandbox
-    order = db.reserve_billing_order(owner.id, "team_pro", 90, 46900, ORIGIN["Origin"])
-    db.settle_billing_order(order["id"], "cs_test_team", 46900, "pi_team")
+    order = db.reserve_billing_order(owner.id, "team_pro", 90, 56900, ORIGIN["Origin"])
+    db.settle_billing_order(order["id"], "cs_test_team", 56900, "pi_team")
     members = [db.register_user(f"team_member_{number}", "test-password", display_name="Member") for number in range(5)]
     for member in members[:4]:
         db.invite_team_member(owner.id, member.username)
@@ -372,13 +372,13 @@ def test_duo_schema_migrates_existing_billing_rows(tmp_path, monkeypatch):
         )
         legacy = UserDatabase(path)
         user = legacy.register_user("team_owner", "test-password", display_name="Owner")
-        order = legacy.reserve_billing_order(user.id, "team_pro", 30, 19900, ORIGIN["Origin"])
-        legacy.settle_billing_order(order["id"], "cs_test_legacy", 19900, "pi_legacy")
+        order = legacy.reserve_billing_order(user.id, "team_pro", 30, 23900, ORIGIN["Origin"])
+        legacy.settle_billing_order(order["id"], "cs_test_legacy", 23900, "pi_legacy")
     db = UserDatabase(path)
     assert db.team_overview(user.id)["team"]["capacity"] == 5
     assert db.get_billing_order(user.id, order["id"])["stripe_payment_id"] == "pi_legacy"
     another = db.register_user("duo_owner", "test-password", display_name="Duo Owner")
-    assert db.reserve_billing_order(another.id, "duo", 90, 20900, ORIGIN["Origin"])["tier"] == "duo"
+    assert db.reserve_billing_order(another.id, "duo", 90, 25900, ORIGIN["Origin"])["tier"] == "duo"
 
 
 def test_sandbox_personal_history_preserves_existing_games_at_capacity(sandbox):
@@ -388,8 +388,8 @@ def test_sandbox_personal_history_preserves_existing_games_at_capacity(sandbox):
     full = client.put("/draft/session", json={"seriesGames": games, "updatedAt": 2})
     assert full.status_code == 422 and full.json()["detail"] == "history_full"
     assert len(client.get("/draft/session").json()["seriesGames"]) == 21
-    order = db.reserve_billing_order(user.id, "pro", 30, 4900, ORIGIN["Origin"])
-    db.settle_billing_order(order["id"], "cs_test_pro", 4900, "pi_pro")
+    order = db.reserve_billing_order(user.id, "pro", 30, 5900, ORIGIN["Origin"])
+    db.settle_billing_order(order["id"], "cs_test_pro", 5900, "pi_pro")
     assert client.put("/draft/session", json={"seriesGames": games, "updatedAt": 3}).status_code == 200
     with db._connect() as conn:
         conn.execute("UPDATE billing_passes SET expires_at = ? WHERE user_id = ?", (int(time.time()), user.id))
@@ -440,8 +440,8 @@ def test_hero_pools_limits_and_team_sharing(sandbox, monkeypatch):
     )
 
     # Upgrade owner to Duo and invite member (personal 50 pools each, no shared team pools)
-    order = db.reserve_billing_order(owner.id, "duo", 30, 8900, ORIGIN["Origin"])
-    db.settle_billing_order(order["id"], "cs_test_duo_pool", 8900, "pi_duo_pool")
+    order = db.reserve_billing_order(owner.id, "duo", 30, 10900, ORIGIN["Origin"])
+    db.settle_billing_order(order["id"], "cs_test_duo_pool", 10900, "pi_duo_pool")
     db.invite_team_member(owner.id, member.username)
     db.respond_to_team_invite(member.id, owner.id, True)
     assert client.get("/auth/me").json()["user"]["is_paid"] is True
@@ -480,8 +480,8 @@ def test_hero_pools_limits_and_team_sharing(sandbox, monkeypatch):
     # Team Pro grants 50 shared team Hero Pools across the team owner and accepted members
     team_owner = db.register_user("team_pool_owner", "test-password", display_name="Team Owner")
     team_member = db.register_user("team_pool_member", "test-password", display_name="Team Member")
-    t_order = db.reserve_billing_order(team_owner.id, "team_pro", 30, 19900, ORIGIN["Origin"])
-    db.settle_billing_order(t_order["id"], "cs_test_team_pool", 19900, "pi_team_pool")
+    t_order = db.reserve_billing_order(team_owner.id, "team_pro", 30, 23900, ORIGIN["Origin"])
+    db.settle_billing_order(t_order["id"], "cs_test_team_pool", 23900, "pi_team_pool")
     db.invite_team_member(team_owner.id, team_member.username)
     db.respond_to_team_invite(team_member.id, team_owner.id, True)
 
@@ -575,8 +575,8 @@ def test_hero_pools_limits_and_team_sharing(sandbox, monkeypatch):
 
 def test_tournament_assignment_preserves_series_identity_and_team_permissions(sandbox):
     client, _, db, owner = sandbox
-    order = db.reserve_billing_order(owner.id, "team_pro", 30, 19900, ORIGIN["Origin"])
-    db.settle_billing_order(order["id"], "cs_test_tournament", 19900, "pi_tournament")
+    order = db.reserve_billing_order(owner.id, "team_pro", 30, 23900, ORIGIN["Origin"])
+    db.settle_billing_order(order["id"], "cs_test_tournament", 23900, "pi_tournament")
     member = db.register_user("tournament_friend", "test-password", display_name="Friend")
     db.invite_team_member(owner.id, member.username)
     db.respond_to_team_invite(member.id, owner.id, True)
@@ -667,8 +667,8 @@ def test_tournament_assignment_preserves_series_identity_and_team_permissions(sa
 
 def test_team_history_rename_keeps_group_identity_and_scope(sandbox):
     client, _, db, owner = sandbox
-    order = db.reserve_billing_order(owner.id, "team_pro", 30, 19900, ORIGIN["Origin"])
-    db.settle_billing_order(order["id"], "cs_test_rename", 19900, "pi_rename")
+    order = db.reserve_billing_order(owner.id, "team_pro", 30, 23900, ORIGIN["Origin"])
+    db.settle_billing_order(order["id"], "cs_test_rename", 23900, "pi_rename")
     member = db.register_user("rename_member", "test-password", display_name="Member")
     db.invite_team_member(owner.id, member.username)
     db.respond_to_team_invite(member.id, owner.id, True)
@@ -750,8 +750,8 @@ def test_team_history_rename_keeps_group_identity_and_scope(sandbox):
 
 def test_team_history_series_edit_keeps_side_mapping_and_legacy_identity(sandbox):
     client, _, db, owner = sandbox
-    order = db.reserve_billing_order(owner.id, "team_pro", 30, 19900, ORIGIN["Origin"])
-    db.settle_billing_order(order["id"], "cs_test_series_edit", 19900, "pi_series_edit")
+    order = db.reserve_billing_order(owner.id, "team_pro", 30, 23900, ORIGIN["Origin"])
+    db.settle_billing_order(order["id"], "cs_test_series_edit", 23900, "pi_series_edit")
     member = db.register_user("series_editor", "test-password", display_name="Member")
     db.invite_team_member(owner.id, member.username)
     db.respond_to_team_invite(member.id, owner.id, True)
@@ -855,8 +855,8 @@ def test_draft_sync_keeps_legacy_duplicate_heroes_without_sharing_invalid_games(
     assert reloaded["seriesGames"][0]["seriesTitle"] == "Renamed scrim"
     assert reloaded["blueBans"] == ["Zip"] and reloaded["globalBans"]["gameNumber"] == 2
 
-    order = db.reserve_billing_order(owner.id, "team_pro", 30, 19900, ORIGIN["Origin"])
-    db.settle_billing_order(order["id"], "cs_test_legacy_draft", 19900, "pi_legacy_draft")
+    order = db.reserve_billing_order(owner.id, "team_pro", 30, 23900, ORIGIN["Origin"])
+    db.settle_billing_order(order["id"], "cs_test_legacy_draft", 23900, "pi_legacy_draft")
     team = {"owner_id": owner.id, "tier": "team_pro"}
     rejected = client.post(
         "/billing/team/history/batch", headers=ORIGIN, json={**team, "source_ids": [edited["id"], legacy["id"]]}
@@ -869,8 +869,8 @@ def test_draft_sync_keeps_legacy_duplicate_heroes_without_sharing_invalid_games(
 
 def test_team_history_batch_series_copy_idempotent_and_atomic(sandbox, monkeypatch):
     client, _, db, owner = sandbox
-    order = db.reserve_billing_order(owner.id, "team_pro", 30, 19900, ORIGIN["Origin"])
-    db.settle_billing_order(order["id"], "cs_test_batch", 19900, "pi_batch")
+    order = db.reserve_billing_order(owner.id, "team_pro", 30, 23900, ORIGIN["Origin"])
+    db.settle_billing_order(order["id"], "cs_test_batch", 23900, "pi_batch")
 
     g1 = {**draft_game("series-g1"), "gameNumber": 1}
     g2 = {**draft_game("series-g2"), "gameNumber": 2}
@@ -976,3 +976,120 @@ def test_team_history_batch_series_copy_idempotent_and_atomic(sandbox, monkeypat
         ).status_code
         == 422
     )
+
+
+def test_live_billing_mode_uses_https_production_origins_and_rejects_test_events(tmp_path, monkeypatch):
+    from src.billing import apply_checkout_result, hosted_checkout_url
+    from src.config import Config
+
+    live_cfg = Config(env="production")
+    assert not live_cfg.billing_enabled
+    monkeypatch.setattr(live_cfg, "stripe_secret_key", "rk_live_fixture")
+    monkeypatch.setattr(live_cfg, "stripe_webhook_secret", WEBHOOK_SECRET)
+    assert live_cfg.stripe_livemode and live_cfg.billing_enabled
+
+    # Test key in production or live key in development must never enable billing
+    prod_with_test = Config(env="production")
+    monkeypatch.setattr(prod_with_test, "stripe_secret_key", "sk_test_fixture")
+    monkeypatch.setattr(prod_with_test, "stripe_webhook_secret", WEBHOOK_SECRET)
+    assert not prod_with_test.billing_enabled and not prod_with_test.stripe_livemode
+
+    dev_with_live = Config(env="development")
+    monkeypatch.setattr(dev_with_live, "stripe_secret_key", "rk_live_fixture")
+    monkeypatch.setattr(dev_with_live, "stripe_webhook_secret", WEBHOOK_SECRET)
+    assert not dev_with_live.billing_enabled and not dev_with_live.stripe_livemode
+
+    # Kill-switch disables live mode even when live keys exist
+    monkeypatch.setattr(live_cfg, "stripe_live_enabled", False)
+    assert not live_cfg.billing_enabled and not live_cfg.stripe_livemode
+    monkeypatch.setattr(live_cfg, "stripe_live_enabled", True)
+
+    # Full production API flow over https://minidraft.app
+    monkeypatch.setattr(api.config, "env", "production")
+    monkeypatch.setattr(api.config, "cors_origins", ["https://minidraft.app", "https://www.minidraft.app"])
+    monkeypatch.setattr(api.config, "stripe_secret_key", "rk_live_fixture")
+    monkeypatch.setattr(api.config, "stripe_webhook_secret", WEBHOOK_SECRET)
+    monkeypatch.setattr(api.config, "stripe_live_enabled", True)
+    monkeypatch.setattr(api.config.paths, "app_db_path", tmp_path / "live_billing.db")
+    monkeypatch.setattr(api, "_billing_rate_limiter", RateLimiter(max_attempts=12))
+    monkeypatch.setattr(api, "_team_rate_limiter", RateLimiter(max_attempts=40, window_seconds=60))
+
+    class LiveFakeCheckout(FakeCheckout):
+        def create(self, params, options):
+            self.last_params = params
+            key = options["idempotency_key"]
+            assert key.startswith("minidraft-live-")
+            if key not in self.by_key:
+                session_id = f"cs_live_example{len(self.by_key)}"
+                data = make_session(
+                    params["client_reference_id"],
+                    session_id,
+                    params["line_items"][0]["price_data"]["unit_amount"],
+                    livemode=True,
+                )
+                self.by_key[key] = session_id
+                self.by_id[session_id] = data
+            return self.retrieve(self.by_key[key])
+
+    fake = LiveFakeCheckout()
+    monkeypatch.setattr(
+        api,
+        "make_stripe_client",
+        lambda _key: SimpleNamespace(v1=SimpleNamespace(checkout=SimpleNamespace(sessions=fake))),
+    )
+    db = api.get_user_db()
+    user = db.register_user(USERNAME, "test-password", display_name="Live Tester")
+    prod_origin = {"Origin": "https://minidraft.app"}
+
+    with TestClient(api.app, base_url="https://minidraft.app") as client:
+        client.cookies.set(SESSION_COOKIE_NAME, db.create_session(user.id))
+        me = client.get("/auth/me").json()
+        assert me["stripe_sandbox_enabled"] is True
+        assert me["stripe_livemode"] is True
+        assert me["user"]["stripe_livemode"] is True
+
+        # Loopback origin must be rejected in production
+        bad_origin = client.post(
+            "/billing/checkout",
+            headers=ORIGIN,
+            json={"tier": "pro", "days": 30, "expected_username": USERNAME},
+        )
+        assert bad_origin.status_code == 403
+
+        ok = client.post(
+            "/billing/checkout",
+            headers=prod_origin,
+            json={"tier": "pro", "days": 30, "expected_username": USERNAME},
+        )
+        assert ok.status_code == 200
+        assert ok.json()["url"] == "https://checkout.stripe.com/c/pay/example"
+
+        live_session = fake.by_id["cs_live_example0"]
+        # Test session / non-live event must be rejected in live mode
+        test_event = {
+            **live_session,
+            "id": "cs_test_spoofed",
+            "livemode": False,
+            "status": "complete",
+            "payment_status": "paid",
+            "payment_intent": "pi_spoof",
+        }
+        assert event(client, test_event).status_code == 400
+        with pytest.raises(ValueError, match="checkout_unavailable"):
+            hosted_checkout_url(stripe.checkout.Session.construct_from(test_event, None), expected_livemode=True)
+        with pytest.raises(ValueError, match="checkout_session_mismatch"):
+            apply_checkout_result(
+                db,
+                stripe.checkout.Session.construct_from(test_event, None),
+                "checkout.session.completed",
+                expected_livemode=True,
+            )
+
+        complete = {
+            **live_session,
+            "status": "complete",
+            "payment_status": "paid",
+            "payment_intent": "pi_live_0",
+        }
+        assert event(client, complete).status_code == 204
+        assert client.get("/billing").json()["active_pass"]["tier"] == "pro"

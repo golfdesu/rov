@@ -243,7 +243,7 @@ function Workspace({
         ) : tab === "profile" && authUser ? (
           <ProfileView user={authUser} onSaveDisplayName={onSaveDisplayName} />
         ) : tab === "plans" && authUser?.stripe_sandbox_enabled ? (
-          <BillingSandbox key={authUser.id} username={authUser.username} view="plans" />
+          <BillingSandbox key={authUser.id} username={authUser.username} view="plans" livemode={Boolean(authUser.stripe_livemode)} />
         ) : tab === "practice" ? (
           <PracticeDraftView key={scope} scope={scope} persistSession={isAuthenticated} />
         ) : !DRAFT_ONLY && tab === "tierlist" ? (
@@ -501,6 +501,7 @@ export function App() {
   const lastAuthCheckAtRef = useRef(0);
   const [authLoading, setAuthLoading] = useState(true);
   const [sandboxBilling, setSandboxBilling] = useState(false);
+  const [billingLivemode, setBillingLivemode] = useState(false);
   const [googleLoginEnabled, setGoogleLoginEnabled] = useState(false);
   const [discordLoginEnabled, setDiscordLoginEnabled] = useState(false);
   const [oauthError, setOauthError] = useState<string | null>(() => {
@@ -620,6 +621,7 @@ export function App() {
       try {
         const res = await getJson<AuthStatusResponse>("/auth/me", signal);
         setSandboxBilling(Boolean(res.stripe_sandbox_enabled));
+        setBillingLivemode(Boolean(res.stripe_livemode));
         setGoogleLoginEnabled(Boolean(res.google_login_enabled));
         setDiscordLoginEnabled(Boolean(res.discord_login_enabled));
         if (res.authenticated && res.user) {
@@ -646,6 +648,7 @@ export function App() {
             prev.display_name_changes_remaining === user.display_name_changes_remaining &&
             prev.display_name_next_change_at === user.display_name_next_change_at &&
             prev.stripe_sandbox_enabled === user.stripe_sandbox_enabled &&
+            prev.stripe_livemode === user.stripe_livemode &&
             prev.draft_history_limit === user.draft_history_limit &&
             prev.is_paid === user.is_paid &&
             prev.auth_provider === user.auth_provider
@@ -678,6 +681,7 @@ export function App() {
         if (ctrl.signal.aborted) return;
         lastAuthCheckAtRef.current = Date.now();
         setSandboxBilling(Boolean(res.stripe_sandbox_enabled));
+        setBillingLivemode(Boolean(res.stripe_livemode));
         setGoogleLoginEnabled(Boolean(res.google_login_enabled));
         setDiscordLoginEnabled(Boolean(res.discord_login_enabled));
         if (res.authenticated && res.user) {
@@ -969,6 +973,7 @@ export function App() {
     pricingSurveyChoiceServer !== null ||
     pricingSurveyState.status === "answered";
   const autoSurveyOpen =
+    !billingLivemode &&
     tab === "draft" &&
     !surveyAnswered &&
     pricingSurveyState.snoozedDate !== todayDateKey;

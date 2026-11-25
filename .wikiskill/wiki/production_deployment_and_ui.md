@@ -43,6 +43,32 @@ Live production runs at **`https://minidraft.app/`** on Azure VM `rov-draft-vm` 
 
 ---
 
+## 3. Stripe PromptPay Billing Setup (Sandbox & Live Production)
+
+1. **Stripe Thailand Dashboard Setup (`Individual` KYC)**:
+   - **Account Type & KYC**: `Business type = Individual` (Thailand); Legal Name entered in **Thai script** matching the National ID card; ID photo upload must have **no signatures, notes, or watermarks**; Thailand THB bank payout account.
+   - **Product & Descriptor Settings**:
+     - Category: `Software as a service` (SaaS; avoid `Video Games` / `Virtual goods` MCCs).
+     - Statement Descriptor / Shortened: `MINIDRAFT.APP` / `MINIDRAFT`; Support Contact Email + Website enabled; Fraud Protection set to **`Radar Lite (Included)`** (free — avoid per-transaction Radar Standard fees since only PromptPay is accepted).
+     - **Payment Methods**: Confirm **PromptPay** is `Enabled` (`thb`). Keep **Adaptive Pricing** turned `Off` (additionally enforced per Checkout Session via `adaptive_pricing: {"enabled": False}` and `currency == "thb"` checks).
+     - **Branding**: Background `#070B14`, Accent `#F5C451`, Logo [`frontend/public/logo.png`](../../frontend/public/logo.png). Enable Store `Refund and return policy` only after a public `/terms` or `/refund` page is deployed.
+2. **Restricted API Key & Workbench Webhook**:
+   - **API Key**: `Developers -> API keys -> Create key -> Building your own integration -> Custom permissions -> Checkout Sessions: Write` only (`rk_live_<...>` or `sk_live_<...>`).
+   - **Webhook (Stripe Workbench -> Webhooks -> Add destination)**:
+     - Scope: `Your account` | Payload style: **`Snapshot`** (never `Thin`, because `src/api.py` reads `event.data.object` directly).
+     - Endpoint URL: `https://minidraft.app/billing/webhook`
+     - Subscribe to **4 events** (`BILLING_EVENT_TYPES` in `src/billing.py`): `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired`.
+   - **Secret Hygiene**: Keep live `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` (`whsec_<...>`) strictly inside gitignored VM `.env` (never in tracked repo files or chat logs; rotate immediately if exposed).
+3. **Dual-Mode Architecture & Pricing (`src/config.py`, `src/billing.py`, `src/api.py`, `deploy/compose.yaml`)**:
+   - **Strict Mode Isolation**:
+     - Development Sandbox (`ROV_ENV=development` + `sk_test_`/`rk_test_` + `whsec_`): accepts `cs_test_`, `livemode=False`, loopback origins, and shows `"โหมดทดสอบ"` (`Test Mode`) badges.
+     - Production Live (`ROV_ENV=production` + `ROV_STRIPE_LIVE_ENABLED!=false` + `sk_live_`/`rk_live_` + `whsec_`): accepts `cs_live_`, `livemode=True`, HTTPS `config.cors_origins` (`https://minidraft.app`), unblocks `/billing` & `/billing/*` in `security_and_lockdown_middleware`, hides test badges, and suppresses `autoSurveyOpen`. Cross-mode keys or test-vs-live webhook events are rejected fail-closed.
+   - **Active Limits & Pass Catalog (`PRICE_SATANG`)**:
+     - Guest: `3` browser-local games | Free Registered: `21` synced games, `2` personal Hero Pools.
+     - Paid (`500` games, `50` Hero Pools, Scrim Analytics): **Pro** (`59 THB / 30d`, `139 THB / 90d`), **Duo** (`109 THB / 30d`, `259 THB / 90d`, 2 seats), **Business (`team_pro`)** (`239 THB / 30d`, `569 THB / 90d`, 5 seats + shared Team History & Pools).
+
+---
+
 ## Related Wiki Articles
 
 - [`system_architecture_and_data.md`](system_architecture_and_data.md)

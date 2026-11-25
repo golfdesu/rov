@@ -30,13 +30,13 @@ Production remains focused on the **Draft Board** (`VITE_DRAFT_ONLY=true`; Meta 
 
 | Tier | 30-day pass | 90-day pass | Savings versus three 30-day passes | Price status |
 | :--- | ---: | ---: | ---: | :--- |
-| **Pro** | 49 THB | 119 THB | 28 THB (19.0%) | Confirmed |
-| **Duo** | 89 THB | 209 THB | 58 THB (21.7%) | Sandbox proposal |
-| **Business (`team_pro`)** | 199 THB | 469 THB | 128 THB (21.4%) | Confirmed |
+| **Pro** | 59 THB | 139 THB | 38 THB (21.5%) | Confirmed |
+| **Duo** | 109 THB | 259 THB | 68 THB (20.8%) | Sandbox proposal |
+| **Business (`team_pro`)** | 239 THB | 569 THB | 148 THB (20.6%) | Confirmed |
 
 The 90-day passes target about 20% savings and use prices ending in 9. Both durations include the same tier benefits. After the pass expires, the user can renew with another one-time payment.
 
-The 30-day Team Pro price is designed for four or five active members. Four individual Pro passes cost 196 THB. Team Pro includes shared history at 199 THB, and with all five seats filled it costs 39.80 THB per member.
+The 30-day Team Pro price is designed for four or five active members. Four individual Pro passes cost 236 THB. Team Pro includes shared history at 239 THB, and with all five seats filled it costs 47.80 THB per member.
 
 ---
 

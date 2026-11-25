@@ -137,6 +137,12 @@ class Config:
         self.discord_redirect_uri: str = os.environ.get("ROV_DISCORD_REDIRECT_URI", "").strip()
         self.stripe_secret_key = os.environ.get("STRIPE_SECRET_KEY", "").strip()
         self.stripe_webhook_secret = os.environ.get("STRIPE_WEBHOOK_SECRET", "").strip()
+        self.stripe_live_enabled: bool = os.environ.get("ROV_STRIPE_LIVE_ENABLED", "true").strip().lower() not in {
+            "0",
+            "false",
+            "no",
+            "off",
+        }
 
         raw_admins = os.environ.get("ROV_ADMIN_USERNAMES", "").strip()
         self.admin_usernames: tuple[str, ...] = tuple(u.strip().lower() for u in raw_admins.split(",") if u.strip())
@@ -160,12 +166,26 @@ class Config:
         return self.env == "production"
 
     @property
-    def stripe_sandbox_enabled(self) -> bool:
+    def stripe_livemode(self) -> bool:
         return (
+            self.env == "production"
+            and self.stripe_live_enabled
+            and self.stripe_secret_key.startswith(("sk_live_", "rk_live_"))
+            and self.stripe_webhook_secret.startswith("whsec_")
+        )
+
+    @property
+    def billing_enabled(self) -> bool:
+        test_enabled = (
             self.env == "development"
             and self.stripe_secret_key.startswith(("sk_test_", "rk_test_"))
             and self.stripe_webhook_secret.startswith("whsec_")
         )
+        return test_enabled or self.stripe_livemode
+
+    @property
+    def stripe_sandbox_enabled(self) -> bool:
+        return self.billing_enabled
 
     def resolve_frontend_dist(self) -> Path:
         override = os.environ.get("ROV_FRONTEND_DIST", "").strip()

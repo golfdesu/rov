@@ -212,7 +212,7 @@ export function ProfileView({ user, onSaveDisplayName }: ProfileViewProps) {
         </div>
         {user.stripe_sandbox_enabled && (
           <div className="space-y-5 lg:col-span-7">
-            <BillingSandbox key={`billing-${user.id}`} username={user.username} />
+            <BillingSandbox key={`billing-${user.id}`} username={user.username} livemode={Boolean(user.stripe_livemode)} />
             <TeamSandbox key={`team-${user.id}`} currentUsername={user.username} />
           </div>
         )}

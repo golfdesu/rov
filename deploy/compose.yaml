@@ -20,6 +20,9 @@ services:
       - ROV_CF_API_TOKEN=${ROV_CF_API_TOKEN:-}
       - ROV_CF_ACCOUNT_ID=${ROV_CF_ACCOUNT_ID:-}
       - ROV_CF_ZONE_ID=${ROV_CF_ZONE_ID:-}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET:-}
+      - ROV_STRIPE_LIVE_ENABLED=${ROV_STRIPE_LIVE_ENABLED:-true}
     volumes:
       - rov_db_data:/app/db
     expose:

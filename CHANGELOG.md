@@ -27,10 +27,114 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-25 10:26 (UTC+7) — Document Stripe PromptPay Setup in WikiSkill
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Added **Section 3: Stripe PromptPay Billing Setup (Sandbox & Live Production)** in `.wikiskill/wiki/production_deployment_and_ui.md` covering Thailand Individual KYC rules, Dashboard branding/Radar Lite/PromptPay settings, Snapshot Workbench Webhooks, Restricted Key (`Checkout Sessions: Write`), Dual-Mode architecture invariants, and current pricing/quotas (without storing any secrets).
+
+### 📁 Modified Files
+- `.wikiskill/wiki/production_deployment_and_ui.md`
+
+### 🧪 Verification
+- `python .wikiskill/skills/scripts/preflight_check.py`
+- `python .wikiskill/skills/scripts/validate_gating.py`.
+
+---
+
+## 📅 2026-11-25 10:22 (UTC+7) — Enable Dual-Mode Stripe Checkout & Live Production Support
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Updated `src/config.py`, `src/schemas.py`, `src/billing.py`, and `src/api.py` to support both development Test/Sandbox (`sk_test_`/`rk_test_`, `cs_test_`, loopback origins) and live production (`ROV_ENV=production`, `sk_live_`/`rk_live_`, `cs_live_`, HTTPS `config.cors_origins`, and `ROV_STRIPE_LIVE_ENABLED` toggle) with strict cross-mode session/webhook rejection.
+- Updated `frontend/src/types/auth.ts`, `frontend/src/App.tsx`, `frontend/src/components/ProfileView.tsx`, and `frontend/src/components/BillingSandbox.tsx` so live mode hides the test-mode badge and stops auto-showing the pre-launch free-period survey modal.
+- Added `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and `ROV_STRIPE_LIVE_ENABLED` environment mappings to `deploy/compose.yaml` (without storing any secrets).
+- Added live-mode unit/API tests in `tests/test_billing.py`.
+
+### 📁 Modified Files
+- `src/config.py`, `src/schemas.py`, `src/billing.py`, `src/api.py`
+- `frontend/src/types/auth.ts`, `frontend/src/App.tsx`, `frontend/src/components/ProfileView.tsx`, `frontend/src/components/BillingSandbox.tsx`
+- `deploy/compose.yaml`, `tests/test_billing.py`
+
+### 🧪 Verification
+- `ruff check --fix . && ruff format .`, `pytest -q --tb=short tests/test_billing.py tests/test_api.py`
+- `npm --prefix frontend run lint && npm --prefix frontend run build`, `audit_copy_i18n.py`, `inspect_frontend_e2e.py`, and `audit_ux_ui.py`.
+
+---
+
+## 📅 2026-11-25 09:16 (UTC+7) — Raise Prepaid Pass Pricing Tier Anchors (Pro 59 THB Base)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Scaled `PRICE_SATANG` in `src/billing.py` proportionally (~+20.4%, ending in 9, keeping ~21% 90-day discount): Pro `59` / `139` THB, Duo `109` / `259` THB, Business (`team_pro`) `239` / `569` THB.
+- Synced pricing table and per-seat anchor notes in `docs/SUBSCRIPTION_ROADMAP.md` and updated billing test assertions in `tests/test_billing.py`.
+
+### 📁 Modified Files
+- `src/billing.py`
+- `docs/SUBSCRIPTION_ROADMAP.md`
+- `tests/test_billing.py`
+
+### 🧪 Verification
+- `ruff check --fix . && ruff format .`
+- `pytest -q --tb=short tests/test_billing.py`.
+
+---
+
+## 📅 2026-11-25 09:06 (UTC+7) — Add Beta Badge to Scrim Analytics Header
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Added an uppercase `Beta` badge next to the Scrim Analytics `<h1>` header (`สถิติซ้อมทีม`) in `frontend/src/components/ScrimDashboardView.tsx` with `flex-wrap` for narrow mobile screens.
+
+### 📁 Modified Files
+- `frontend/src/components/ScrimDashboardView.tsx`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint && npm --prefix frontend run build`
+- `audit_copy_i18n.py`, `inspect_frontend_e2e.py`, and `audit_ux_ui.py`.
+
+---
+
+## 📅 2026-11-25 09:05 (UTC+7) — Add Recommended Sample-Size Guidance to Scrim Analytics
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Added a `SampleSizeNotice` banner in `frontend/src/components/ScrimDashboardView.tsx` when viewing user-recorded data (`!showSampleData`) with `< 40` decided games, guiding players toward `40+` games for reliable team trends and `100+` for combos/lane matchups.
+- Added sample-size guidance to the empty-history state (`activeGames.length === 0`) and `MethodsReferenceCard` (`20+` / `40+` / `100+` games), plus synced EN strings in `frontend/src/i18n/englishMessages.ts`.
+
+### 📁 Modified Files
+- `frontend/src/components/ScrimDashboardView.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint && npm --prefix frontend run build`
+- `audit_copy_i18n.py`, `inspect_frontend_e2e.py`, and `audit_ux_ui.py`.
+
+---
+
+## 📅 2026-11-25 09:00 (UTC+7) — Make Scrim Analytics 4-Tab Bar Wrap Into 2x2 Grid on Mobile
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Extracted a shared `ScrimTabBar` helper inside `frontend/src/components/ScrimDashboardView.tsx` replacing both duplicated `<div role="tablist">` blocks (all-teams and single-team views).
+- Changed the 4-tab bar layout from `flex overflow-x-auto` (`shrink-0`) — which pushed the 3rd/4th tabs (`ตารางฮีโร่ & เมต้า`, `คอมโบ & Matchups`) off-screen at `375px` mobile widths — to `grid grid-cols-2 gap-1.5 ... sm:flex sm:flex-wrap` with `min-w-0` wrapping buttons.
+
+### 📁 Modified Files
+- `frontend/src/components/ScrimDashboardView.tsx`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint && npm --prefix frontend run build`
+- `audit_copy_i18n.py`, `inspect_frontend_e2e.py`, `audit_ux_ui.py`, and Playwright `375x667` mobile tablist bounds check.
+
+---
+
 ## 📅 2026-11-25 08:50 (UTC+7) — Free Tier History Limit Raised to 21 Games
-- Set FREE_HISTORY_LIMIT = 21 in src/db.py (was 14), since no user has saved more than 21 games. Synced Billing Sandbox copy, Draft Board upsell text, EN i18n entries, docs/SUBSCRIPTION_ROADMAP.md, and 	ests/test_billing.py.
-- Verified: pytest tests/test_billing.py (14 passed), oxlint (0 issues), vite build OK.
-\n## 📅 2026-11-25 08:37 (UTC+7) — Document `src/sample_analytics.py` in WikiSkill
+- Set `FREE_HISTORY_LIMIT = 21` in `src/db.py` (was 14), since no user has saved more than 21 games. Synced Billing Sandbox copy, Draft Board upsell text, EN i18n entries, `docs/SUBSCRIPTION_ROADMAP.md`, and `tests/test_billing.py`.
+- Verified: `pytest tests/test_billing.py` (14 passed), oxlint (0 issues), vite build OK.
+
+---
+
+## 📅 2026-11-25 08:37 (UTC+7) — Document `src/sample_analytics.py` in WikiSkill
 **Agent:** Antigravity
 
 ### ✅ Completed Work

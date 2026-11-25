@@ -174,7 +174,6 @@ _PROD_BLOCKED_PREFIXES = (
     "/items/",
     "/enchantments/",
     "/skills/",
-    "/billing/",
 )
 _PROD_BLOCKED_EXACT = frozenset(
     {
@@ -290,7 +289,11 @@ def _normalize_request_path(raw_path: str) -> str:
 @app.middleware("http")
 async def security_and_lockdown_middleware(request: Request, call_next):
     norm_path = _normalize_request_path(request.url.path)
-    if config.is_production and (norm_path in _PROD_BLOCKED_EXACT or norm_path.startswith(_PROD_BLOCKED_PREFIXES)):
+    if config.is_production and (
+        norm_path in _PROD_BLOCKED_EXACT
+        or norm_path.startswith(_PROD_BLOCKED_PREFIXES)
+        or (not config.billing_enabled and (norm_path == "/billing" or norm_path.startswith("/billing/")))
+    ):
         return JSONResponse({"detail": "Not Found"}, status_code=404, headers=_SECURITY_HEADERS)
     if config.is_production and request.method in {"POST", "PUT", "PATCH", "DELETE"}:
         origin_hdr = request.headers.get("origin", "").strip()
@@ -682,9 +685,10 @@ def _to_user_schema(user: AuthUser) -> AuthUserSchema:
         display_label=user.display_label,
         display_name_changes_remaining=user.display_name_changes_remaining,
         display_name_next_change_at=user.display_name_next_change_at,
-        stripe_sandbox_enabled=config.stripe_sandbox_enabled,
-        draft_history_limit=get_user_db().personal_history_limit(user.id) if config.stripe_sandbox_enabled else None,
-        is_paid=get_user_db().is_paid_user(user.id) if config.stripe_sandbox_enabled else False,
+        stripe_sandbox_enabled=config.billing_enabled,
+        stripe_livemode=config.stripe_livemode,
+        draft_history_limit=get_user_db().personal_history_limit(user.id) if config.billing_enabled else None,
+        is_paid=get_user_db().is_paid_user(user.id) if config.billing_enabled else False,
     )
 
 
@@ -809,7 +813,8 @@ def _auth_status_response(user: AuthUser | None) -> AuthStatusResponse:
         pricing_survey_answered=survey_choice is not None,
         pricing_survey_choice=survey_choice,  # type: ignore[arg-type]
         is_admin=config.is_admin_username(user.username) if user is not None else False,
-        stripe_sandbox_enabled=config.stripe_sandbox_enabled,
+        stripe_sandbox_enabled=config.billing_enabled,
+        stripe_livemode=config.stripe_livemode,
     )
 
 
@@ -1205,16 +1210,25 @@ def _verify_expected_user(user: AuthUser | None, expected_user: str | None) -> N
         raise HTTPException(status_code=409, detail="Active account changed in another session")
 
 
-def require_stripe_sandbox() -> None:
-    if not config.stripe_sandbox_enabled:
+def require_billing_enabled() -> None:
+    if not config.billing_enabled:
         raise HTTPException(status_code=404, detail="Not Found")
+
+
+require_stripe_sandbox = require_billing_enabled
 
 
 def _billing_request_origin(request: Request) -> str:
     origin = _extract_origin(request.headers.get("origin", str(request.base_url)))
+    parsed = urlparse(origin) if origin else None
+    if config.is_production:
+        if not origin or parsed is None or parsed.scheme != "https" or origin not in config.cors_origins:
+            raise HTTPException(status_code=403, detail="Invalid checkout origin")
+        return origin
     if (
         not origin
-        or urlparse(origin).hostname not in {"localhost", "127.0.0.1", "::1"}
+        or parsed is None
+        or parsed.hostname not in {"localhost", "127.0.0.1", "::1"}
         or origin not in config.cors_origins
     ):
         raise HTTPException(status_code=403, detail="Invalid checkout origin")
@@ -1249,15 +1263,16 @@ def start_billing_checkout(
     if not _billing_rate_limiter.check_and_record(f"billing:{user.id}"):
         raise HTTPException(status_code=429, detail="Too many checkout requests")
     db = get_user_db()
+    livemode = config.stripe_livemode
     try:
         order = db.reserve_billing_order(user.id, body.tier, body.days, PRICE_SATANG[(body.tier, body.days)], origin)
-        session = checkout_session(make_stripe_client(config.stripe_secret_key), db, order)
+        session = checkout_session(make_stripe_client(config.stripe_secret_key), db, order, livemode=livemode)
         if session.status != "open":
-            apply_checkout_result(db, session, "")
+            apply_checkout_result(db, session, "", expected_livemode=livemode)
             return CheckoutResponse(url=None)
-        return CheckoutResponse(url=hosted_checkout_url(session))
+        return CheckoutResponse(url=hosted_checkout_url(session, expected_livemode=livemode))
     except stripe.StripeError as error:
-        logger.warning("Sandbox checkout failed (%s)", type(error).__name__)
+        logger.warning("Billing checkout failed (%s)", type(error).__name__)
         raise HTTPException(status_code=502, detail="Stripe checkout unavailable") from error
     except ValueError as error:
         raise HTTPException(status_code=409, detail=str(error)) from error
@@ -1278,17 +1293,18 @@ def cancel_billing_checkout(
     if order["status"] != "pending":
         return
     client = make_stripe_client(config.stripe_secret_key)
+    livemode = config.stripe_livemode
     try:
-        session = checkout_session(client, db, order)
+        session = checkout_session(client, db, order, livemode=livemode)
         if session.status == "open":
             try:
                 session = client.v1.checkout.sessions.expire(session.id)
             except stripe.InvalidRequestError:
                 # A payment can complete between retrieval and expiration.
                 session = client.v1.checkout.sessions.retrieve(session.id)
-        apply_checkout_result(db, session, "")
+        apply_checkout_result(db, session, "", expected_livemode=livemode)
     except stripe.StripeError as error:
-        logger.warning("Sandbox checkout cancellation failed (%s)", type(error).__name__)
+        logger.warning("Billing checkout cancellation failed (%s)", type(error).__name__)
         raise HTTPException(status_code=502, detail="Stripe checkout unavailable") from error
     except ValueError as error:
         raise HTTPException(status_code=409, detail=str(error)) from error
@@ -1299,12 +1315,15 @@ def cancel_billing_checkout(
 @app.post("/billing/webhook", status_code=204, dependencies=[Depends(require_stripe_sandbox)])
 async def billing_webhook(request: Request, stripe_signature: str = Header(default="")) -> None:
     payload = await request.body()
+    livemode = config.stripe_livemode
     try:
         event = stripe.Webhook.construct_event(payload, stripe_signature, config.stripe_webhook_secret)
         if event.type in BILLING_EVENT_TYPES:
-            await run_in_threadpool(apply_checkout_result, get_user_db(), event.data.object, event.type)
+            await run_in_threadpool(
+                apply_checkout_result, get_user_db(), event.data.object, event.type, expected_livemode=livemode
+            )
     except (ValueError, sqlite3.IntegrityError, stripe.SignatureVerificationError) as error:
-        logger.warning("Rejected sandbox checkout event (%s)", type(error).__name__)
+        logger.warning("Rejected billing checkout event (%s)", type(error).__name__)
         raise HTTPException(status_code=400, detail="Invalid Stripe event") from error
 
 
@@ -1541,13 +1560,13 @@ def save_draft_session(
 ):
     _verify_expected_user(user, x_expected_user)
     session = session.model_copy(update={"engine": "sota"})
-    if not config.stripe_sandbox_enabled and len(session.seriesGames) > 100:
+    if not config.billing_enabled and len(session.seriesGames) > 100:
         raise HTTPException(status_code=422, detail="Too many saved games")
     if user is not None:
         dumped = session.model_dump()
         try:
             stored = get_user_db().save_user_draft_state(
-                user.id, dumped, int(session.updatedAt or 0), limit_draft_history=config.stripe_sandbox_enabled
+                user.id, dumped, int(session.updatedAt or 0), limit_draft_history=config.billing_enabled
             )
         except ValueError as error:
             raise HTTPException(status_code=422, detail=str(error)) from error

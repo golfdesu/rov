@@ -21,12 +21,12 @@ from src.schemas import (
 Tier = Literal["pro", "duo", "team_pro"]
 PassDays = Literal[30, 90]
 PRICE_SATANG: dict[tuple[Tier, PassDays], int] = {
-    ("pro", 30): 4900,
-    ("pro", 90): 11900,
-    ("duo", 30): 8900,
-    ("duo", 90): 20900,
-    ("team_pro", 30): 19900,
-    ("team_pro", 90): 46900,
+    ("pro", 30): 5900,
+    ("pro", 90): 13900,
+    ("duo", 30): 10900,
+    ("duo", 90): 25900,
+    ("team_pro", 30): 23900,
+    ("team_pro", 90): 56900,
 }
 TIER_NAMES = {"pro": "Pro", "duo": "Duo", "team_pro": "Business"}
 BILLING_EVENT_TYPES = frozenset(
@@ -224,7 +224,9 @@ def make_stripe_client(secret_key: str) -> stripe.StripeClient:
     return stripe.StripeClient(secret_key, http_client=stripe.RequestsClient(timeout=10), max_network_retries=1)
 
 
-def checkout_session(client: stripe.StripeClient, db: UserDatabase, order: sqlite3.Row) -> stripe.checkout.Session:
+def checkout_session(
+    client: stripe.StripeClient, db: UserDatabase, order: sqlite3.Row, *, livemode: bool = False
+) -> stripe.checkout.Session:
     sessions = client.v1.checkout.sessions
     session_id = order["stripe_session_id"]
     if session_id:
@@ -233,6 +235,7 @@ def checkout_session(client: stripe.StripeClient, db: UserDatabase, order: sqlit
     origin = order["return_origin"]
     tier_name = TIER_NAMES[order["tier"]]
     days = order["days"]
+    mode_prefix = "live" if livemode else "sandbox"
     try:
         session = sessions.create(
             {
@@ -255,7 +258,7 @@ def checkout_session(client: stripe.StripeClient, db: UserDatabase, order: sqlit
                     }
                 ],
             },
-            {"idempotency_key": f"minidraft-sandbox-{order['id']}"},
+            {"idempotency_key": f"minidraft-{mode_prefix}-{order['id']}"},
         )
     except stripe.InvalidRequestError as error:
         if error.code != "idempotency_key_in_use":
@@ -265,12 +268,12 @@ def checkout_session(client: stripe.StripeClient, db: UserDatabase, order: sqlit
     return session
 
 
-def hosted_checkout_url(session: stripe.checkout.Session) -> str:
+def hosted_checkout_url(session: stripe.checkout.Session, *, expected_livemode: bool = False) -> str:
     url = session.url or ""
     parsed = urlparse(url)
     if (
         session.status != "open"
-        or session.livemode
+        or bool(session.livemode) != expected_livemode
         or parsed.scheme != "https"
         or parsed.netloc != "checkout.stripe.com"
     ):
@@ -278,20 +281,23 @@ def hosted_checkout_url(session: stripe.checkout.Session) -> str:
     return url
 
 
-def apply_checkout_result(db: UserDatabase, session: stripe.checkout.Session, event_type: str) -> None:
+def apply_checkout_result(
+    db: UserDatabase, session: stripe.checkout.Session, event_type: str, *, expected_livemode: bool = False
+) -> None:
     data = session.to_dict()
     order_id = (data.get("metadata") or {}).get("minidraft_order_id")
     if not order_id:
         return
+    expected_prefix = "cs_live_" if expected_livemode else "cs_test_"
     if (
-        data.get("livemode") is not False
+        data.get("livemode") is not expected_livemode
         or data.get("mode") != "payment"
         or data.get("currency") != "thb"
         or data.get("client_reference_id") != order_id
         or data.get("payment_method_types") != ["promptpay"]
         or not isinstance(data.get("amount_total"), int)
         or not isinstance(data.get("id"), str)
-        or not session.id.startswith("cs_test_")
+        or not session.id.startswith(expected_prefix)
     ):
         raise ValueError("checkout_session_mismatch")
     if data.get("payment_status") == "paid" and data.get("status") == "complete":
