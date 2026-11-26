@@ -27,6 +27,24 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-26 21:44 (UTC+7) — Tier-Colored Profile Navbar Badge (`63b0930`) & Owner Read-Only `#plans` Preview (`a29e4fe`)
+**Agent:** Antigravity Agent
+
+### ✅ Completed Work
+- **Tier-Colored `#profile` Navbar Button (`63b0930`, `frontend/src/App.tsx`):** Styled the header profile button by active pass tier (`Owner` maroon `rose-950`/`rose-800` + `Crown` icon, `Business` blue, `Duo` emerald/good, `Pro` gold, `Free` neutral) and deployed to production (`index-mHEU1SNF.js`).
+- **Owner Read-Only `#plans` Preview (`a29e4fe`, `frontend/src/components/BillingSandbox.tsx`, `frontend/src/i18n/englishMessages.ts`):** Added `catalogDisplayPackages` so owner accounts see the exact `#plans` page regular users see (all 3 tiers, 30/90-day duration toggle, savings badge, and comparison table) with an Owner preview banner, disabled checkout buttons, and a `"ดูหน้าแพ็กเกจ"` link on `#profile`.
+
+### 📁 Modified Files
+- `frontend/src/App.tsx` (`63b0930`)
+- `frontend/src/components/BillingSandbox.tsx`, `frontend/src/i18n/englishMessages.ts` (`a29e4fe`)
+- `docs/PRODUCTION_RELEASES.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified locally with `npm --prefix frontend run lint` (`0` warnings, `0` errors), `npm --prefix frontend run build`, `npm --prefix frontend run build:prod`, and `python .agents/skills/frontend-e2e-inspector/scripts/audit_copy_i18n.py` (`[PASS]`, 0 missing EN keys).
+- Deployed `a29e4fe` to `20.2.210.230` (19-path sparse-checkout preserved) and verified live `https://minidraft.app/health` (`200`), active bundle (`index-BYT79WHc.js` + `index-CFfhrfw3.css`), and SQLite DB integrity (`users: 1066`, `promo_claims: 47`, `billing_orders: 5`, `billing_passes: 48`).
+
+---
+
 ## 📅 2026-11-26 21:24 (UTC+7) — Funnel/Feature Telemetry & `#admin` Billing Orders History
 **Agent:** Antigravity Agent
 

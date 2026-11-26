@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `0d6c73c` (`main`: track feature/funnel events and show billing orders history in #admin) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-0Er8RcO9.js` (`487.07 kB`) + `dist-prod/assets/index-TJjZCR0r.css` (`114.20 kB`), `dist-prod/index.html` (`3.12 kB`) |
+| **Git Base Commit on VM** | `a29e4fe` (`main`: show full read-only plans view for owner account) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-BYT79WHc.js` (`487.73 kB`) + `dist-prod/assets/index-CFfhrfw3.css` (`116.53 kB`), `dist-prod/index.html` (`3.12 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-26 21:24 (UTC+7)` |
+| **Last Updated** | `2026-11-26 21:44 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,16 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-26 21:44 (UTC+7) — Owner Read-Only `#plans` Preview (`a29e4fe`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `63b0930` to `a29e4fe` (`main`, 19-path sparse-checkout intact).
+- **Owner Plans View (`frontend/src/components/BillingSandbox.tsx`, `frontend/src/i18n/englishMessages.ts`):** Added `catalogDisplayPackages` so owner accounts see the exact `#plans` layout regular users see (Pro, Duo, and Business cards, 30/90-day duration toggle, savings badges, comparison table, and standard tier CTA labels) with an Owner preview banner, checkout buttons disabled, and a `#plans` link on `#profile`.
+- **Live Verification (`20.2.210.230`):** Built & started `deploy-app-1` (`dist-prod/assets/index-BYT79WHc.js` `487.73 kB`, `index-CFfhrfw3.css` `116.53 kB`), verified `https://minidraft.app/health` (`200`), and verified SQLite DB counts intact (`users: 1066`, `promo_claims: 47`, `billing_orders: 5`, `billing_passes: 48`).
+
+### 📅 2026-11-26 21:39 (UTC+7) — Tier-Colored `#profile` Navbar Button & Maroon Owner Badge (`63b0930`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `0d6c73c` to `63b0930` (`main`, 19-path sparse-checkout intact).
+- **Navbar Tier Styling (`frontend/src/App.tsx`):** Styled the `#profile` navbar button by active pass tier (`Owner` = maroon `border-rose-800 bg-rose-950/90 text-rose-200` + `Crown` icon, `Business` = `blue`, `Duo` = `good`, `Pro` = `gold`, `Free` = neutral).
+- **Live Verification (`20.2.210.230`):** Deployed `dist-prod/assets/index-mHEU1SNF.js` (`487.73 kB`) + `index-ByPqdtLZ.css` (`115.76 kB`) and verified `https://minidraft.app/health` (`200`) and SQLite row counts (`users: 1066`, `promo_claims: 47`, `billing_orders: 5`, `billing_passes: 48`).
 
 ### 📅 2026-11-26 21:24 (UTC+7) — Funnel/Feature Telemetry & `#admin` Billing Orders History (`0d6c73c`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `5aec988` to `0d6c73c` (`main`, 19-path sparse-checkout intact).
