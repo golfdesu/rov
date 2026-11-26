@@ -285,7 +285,12 @@ function Workspace({
         ) : tab === "plans" && authUser?.stripe_sandbox_enabled ? (
           <BillingSandbox key={authUser.id} username={authUser.username} view="plans" livemode={Boolean(authUser.stripe_livemode)} />
         ) : tab === "practice" ? (
-          <PracticeDraftView key={scope} scope={scope} persistSession={isAuthenticated} />
+          <PracticeDraftView
+            key={scope}
+            scope={scope}
+            persistSession={isAuthenticated}
+            historyLimit={authUser?.practice_history_limit ?? undefined}
+          />
         ) : (
           <DraftBoardView
             key={`draft:${scope}`}
@@ -653,6 +658,7 @@ export function App() {
             prev.stripe_sandbox_enabled === user.stripe_sandbox_enabled &&
             prev.stripe_livemode === user.stripe_livemode &&
             prev.draft_history_limit === user.draft_history_limit &&
+            prev.practice_history_limit === user.practice_history_limit &&
             prev.is_paid === user.is_paid &&
             prev.auth_provider === user.auth_provider
               ? prev : user

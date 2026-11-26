@@ -1988,4 +1988,8 @@ export const englishMessages: Readonly<Record<string, string>> = {
   "คุณกำลังใช้งานแพ็ก Pro อยู่ — ต่ออายุ Pro ได้หลังหมดอายุ หรืออัปเกรดเป็น Duo/Business ได้ทันทีโดยแปลงวัน Pro ที่เหลือเป็นวันโบนัส": "You are currently on Pro — renew Pro after expiry, or upgrade to Duo/Business now with remaining Pro days converted to bonus days.",
   "อัปเกรดเป็น {0}": "Upgrade to {0}",
   "แพ็กเกจปัจจุบัน": "Current Plan",
+  "ประวัติดราฟต์ vs AI": "Draft vs AI history",
+  "100 เกม": "100 games",
+  "1,000 เกม": "1,000 games",
+  "คนละ 1,000 เกม": "1,000 games each",
 };

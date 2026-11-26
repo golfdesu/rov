@@ -33,6 +33,8 @@ GROUP_CAPACITY = {"duo": 2, "team_pro": 5}
 TEAM_HISTORY_LIMIT = 500
 FREE_HISTORY_LIMIT = 14
 PAID_HISTORY_LIMIT = 500
+FREE_PRACTICE_HISTORY_LIMIT = 100
+PAID_PRACTICE_HISTORY_LIMIT = 1000
 FREE_HERO_POOL_LIMIT = 2
 PAID_HERO_POOL_LIMIT = 50
 TEAM_HERO_POOL_LIMIT = 50
@@ -757,6 +759,19 @@ class UserDatabase:
         self.ensure_schema()
         with self._connect() as conn:
             return self._personal_history_limit(conn, user_id)
+
+    @classmethod
+    def _practice_history_limit(cls, conn: sqlite3.Connection, user_id: int) -> int:
+        return (
+            PAID_PRACTICE_HISTORY_LIMIT
+            if cls._is_paid_user(conn, user_id, int(time.time()))
+            else FREE_PRACTICE_HISTORY_LIMIT
+        )
+
+    def practice_history_limit(self, user_id: int) -> int:
+        self.ensure_schema()
+        with self._connect() as conn:
+            return self._practice_history_limit(conn, user_id)
 
     @staticmethod
     def _team_member_count(conn: sqlite3.Connection, team: sqlite3.Row) -> int:
@@ -1858,7 +1873,8 @@ class UserDatabase:
                 merged_entries.append(entry)
 
             merged_entries.sort(key=lambda e: str(e.get("recordedAt") or ""), reverse=True)
-            merged_entries = merged_entries[:100]
+            limit = self._practice_history_limit(conn, user_id)
+            merged_entries = merged_entries[:limit]
             merged_updated_at = max(existing_updated_at, int(updated_at or 0))
             changed = (
                 (merged_entries != existing_entries)

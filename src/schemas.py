@@ -524,6 +524,7 @@ class AuthUserSchema(BaseModel):
     stripe_sandbox_enabled: bool = False
     stripe_livemode: bool = False
     draft_history_limit: int | None = None
+    practice_history_limit: int | None = None
     is_paid: bool = False
 
 
@@ -752,7 +753,7 @@ class PracticeHistoryEntrySchema(BaseModel):
 
 
 class PracticeHistorySyncSchema(BaseModel):
-    entries: list[PracticeHistoryEntrySchema] = Field(default_factory=list, max_length=100)
+    entries: list[PracticeHistoryEntrySchema] = Field(default_factory=list, max_length=1000)
     updatedAt: int = Field(default=0, ge=0, le=9223372036854775807)
     deletedIds: list[ShortStr] = Field(default_factory=list, max_length=100)
     clearedAt: int = Field(default=0, ge=0, le=9223372036854775807)

@@ -194,6 +194,7 @@ _PROD_BLOCKED_EXACT = frozenset(
 
 _MAX_PROD_BODY_BYTES = 256 * 1024
 _MAX_DRAFT_SESSION_BODY_BYTES = 1024 * 1024
+_MAX_PRACTICE_HISTORY_BODY_BYTES = 2 * 1024 * 1024
 
 
 class _MaxBodySizeMiddleware:
@@ -212,11 +213,12 @@ class _MaxBodySizeMiddleware:
             return
 
         norm_path = _normalize_request_path(scope.get("path") or "/")
-        body_limit = (
-            _MAX_DRAFT_SESSION_BODY_BYTES
-            if scope.get("method") == "PUT" and norm_path == "/draft/session"
-            else _MAX_PROD_BODY_BYTES
-        )
+        if scope.get("method") == "PUT" and norm_path == "/draft/session":
+            body_limit = _MAX_DRAFT_SESSION_BODY_BYTES
+        elif scope.get("method") == "PUT" and norm_path == "/draft/practice-history":
+            body_limit = _MAX_PRACTICE_HISTORY_BODY_BYTES
+        else:
+            body_limit = _MAX_PROD_BODY_BYTES
 
         headers = {k.lower(): v for k, v in scope.get("headers", ())}
         raw_cl = headers.get(b"content-length")
@@ -702,6 +704,7 @@ def _to_user_schema(user: AuthUser) -> AuthUserSchema:
         stripe_sandbox_enabled=config.billing_enabled,
         stripe_livemode=config.stripe_livemode,
         draft_history_limit=get_user_db().personal_history_limit(user.id) if config.billing_enabled else None,
+        practice_history_limit=get_user_db().practice_history_limit(user.id) if config.billing_enabled else None,
         is_paid=get_user_db().is_paid_user(user.id) if config.billing_enabled else False,
     )
 

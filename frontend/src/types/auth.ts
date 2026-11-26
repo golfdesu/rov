@@ -11,6 +11,7 @@ export interface AuthUser {
   stripe_sandbox_enabled?: boolean;
   stripe_livemode?: boolean;
   draft_history_limit?: number | null;
+  practice_history_limit?: number | null;
   is_paid?: boolean;
 }
 

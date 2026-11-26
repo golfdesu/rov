@@ -1289,3 +1289,59 @@ def test_admin_stats_and_users_include_paid_and_promo_passes(sandbox, monkeypatc
     assert users_by_name[USERNAME]["pass_tier"] == "pro"
     assert users_by_name[USERNAME]["pass_source"] == "promo_free"
     assert users_by_name[USERNAME]["pass_expires_at_th"]
+
+
+def test_practice_history_limit_free_100_and_paid_1000(sandbox):
+    client, _, db, free_user = sandbox
+
+    def make_practice_entry(idx: int) -> dict:
+        return {
+            "id": f"p-{idx:04d}",
+            "signature": f"sig-{idx:04d}",
+            "recordedAt": f"2026-11-26T{idx // 3600:02d}:{(idx // 60) % 60:02d}:{idx % 60:02d}Z",
+            "gameNumber": 1,
+            "gameCount": 1,
+            "startingSide": "blue",
+            "playerSide": "blue",
+            "bluePicks": ["Florentino", "Nakroth", "Tulen", "Violet", "Zip"],
+            "redPicks": ["Riktor", "Keera", "Liliana", "Hayate", "Thane"],
+            "blueBans": ["Aoi"],
+            "redBans": ["Dolia"],
+            "playerEstimate": 52.5,
+        }
+
+    me_free = client.get("/auth/me").json()
+    assert me_free["user"]["is_paid"] is False
+    assert me_free["user"]["practice_history_limit"] == 100
+
+    res_free = client.put(
+        "/draft/practice-history",
+        json={"entries": [make_practice_entry(i) for i in range(105)], "updatedAt": 1000},
+    )
+    assert res_free.status_code == 200
+    assert len(res_free.json()["entries"]) == 100
+    assert res_free.json()["entries"][0]["id"] == "p-0104"
+
+    order = db.reserve_billing_order(free_user.id, "pro", 30, 5900, ORIGIN["Origin"])
+    db.settle_billing_order(order["id"], "cs_test_practice_1000", 5900, "pi_practice_1000")
+
+    me_paid = client.get("/auth/me").json()
+    assert me_paid["user"]["is_paid"] is True
+    assert me_paid["user"]["practice_history_limit"] == 1000
+
+    res_paid = client.put(
+        "/draft/practice-history",
+        json={"entries": [make_practice_entry(i) for i in range(120)], "updatedAt": 2000},
+    )
+    assert res_paid.status_code == 200
+    assert len(res_paid.json()["entries"]) == 120
+    assert res_paid.json()["entries"][0]["id"] == "p-0119"
+
+    db_capped = db.save_user_practice_history(
+        free_user.id,
+        {"entries": [make_practice_entry(i) for i in range(1010)], "updatedAt": 3000},
+        3000,
+    )
+    assert len(db_capped["entries"]) == 1000
+    assert db_capped["entries"][0]["id"] == "p-1009"
+    assert db_capped["entries"][-1]["id"] == "p-0010"

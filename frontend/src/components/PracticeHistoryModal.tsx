@@ -11,6 +11,7 @@ import { StableButtonLabel } from "./StableButtonLabel";
 
 interface PracticeHistoryModalProps {
   entries: PracticeHistoryEntry[];
+  maxHistory?: number;
   heroMap: Map<string, Hero>;
   onLoadEntry: (entry: PracticeHistoryEntry) => void;
   onDeleteEntry: (id: string) => void;
@@ -20,6 +21,7 @@ interface PracticeHistoryModalProps {
 
 export function PracticeHistoryModal({
   entries,
+  maxHistory = MAX_PRACTICE_HISTORY,
   heroMap,
   onLoadEntry,
   onDeleteEntry,
@@ -83,7 +85,7 @@ export function PracticeHistoryModal({
                 >
                   <span>{t("ประวัติฝึกดราฟต์ vs AI")}</span>
                   <span className="border border-gold/60 bg-gold/15 px-1.5 py-0.5 font-mono text-[10px] font-bold text-gold sm:px-2 sm:text-xs">
-                    {entries.length}/{MAX_PRACTICE_HISTORY}
+                    {entries.length}/{maxHistory}
                   </span>
                 </h2>
                 <p className="hidden text-[11px] text-dim sm:block lg:text-xs">
@@ -286,9 +288,9 @@ export function PracticeHistoryModal({
           </div>
 
           <div className="flex shrink-0 items-center justify-between border-t border-line bg-bg/70 px-3 py-2 text-[11px] text-dim sm:px-4">
-            <span>{t("บันทึกอัตโนมัติสูงสุด {0} เกมล่าสุด", MAX_PRACTICE_HISTORY)}</span>
+            <span>{t("บันทึกอัตโนมัติสูงสุด {0} เกมล่าสุด", maxHistory)}</span>
             <span>
-              {entries.length}/{MAX_PRACTICE_HISTORY}
+              {entries.length}/{maxHistory}
             </span>
           </div>
 

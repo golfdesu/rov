@@ -25,6 +25,7 @@ import {
   filterEntriesAfterClear,
   loadPracticeHistoryState,
   loadPracticeMeta,
+  MAX_PRACTICE_HISTORY,
   mergePracticeHistoryEntries,
   PRACTICE_GAME_COUNTS,
   type PracticeGameCount,
@@ -63,11 +64,15 @@ const HEADER_ACTION_CLASS =
 interface PracticeDraftViewProps {
   scope: string;
   persistSession?: boolean;
+  historyLimit?: number;
 }
 
-export function PracticeDraftView({ scope, persistSession = false }: PracticeDraftViewProps) {
+export function PracticeDraftView({ scope, persistSession = false, historyLimit }: PracticeDraftViewProps) {
+  const resolvedHistoryLimit = historyLimit ?? MAX_PRACTICE_HISTORY;
   const [meta, setMeta] = useState<PracticeRoundMeta>(() => loadPracticeMeta(scope));
-  const [historyState, setHistoryState] = useState<PracticeHistorySyncPayload>(() => loadPracticeHistoryState(scope));
+  const [historyState, setHistoryState] = useState<PracticeHistorySyncPayload>(() =>
+    loadPracticeHistoryState(scope, resolvedHistoryLimit),
+  );
   const [roundId, setRoundId] = useState(0);
 
   const historyRef = useRef(historyState);
@@ -93,7 +98,7 @@ export function PracticeDraftView({ scope, persistSession = false }: PracticeDra
           payload.clearedAt ?? 0,
           historyRef.current.clearedAt ?? 0,
         );
-        const serverEntries = sanitizePracticeHistoryEntries(res?.entries);
+        const serverEntries = sanitizePracticeHistoryEntries(res?.entries, resolvedHistoryLimit);
         const nextState: PracticeHistorySyncPayload = {
           entries: filterEntriesAfterClear(res?.entries ? serverEntries : payload.entries, serverClearedAt),
           updatedAt: Math.max(serverUpdatedAt, lastSavedAtRef.current),
@@ -101,7 +106,7 @@ export function PracticeDraftView({ scope, persistSession = false }: PracticeDra
         };
         lastSavedAtRef.current = nextState.updatedAt;
         historyRef.current = nextState;
-        savePracticeHistoryState(scope, nextState);
+        savePracticeHistoryState(scope, nextState, resolvedHistoryLimit);
         setHistoryState(nextState);
         hasDirtyLocalRef.current = false;
       } catch (err) {
@@ -110,21 +115,21 @@ export function PracticeDraftView({ scope, persistSession = false }: PracticeDra
         }
       }
     },
-    [persistSession, scope],
+    [persistSession, resolvedHistoryLimit, scope],
   );
 
   useEffect(() => {
     const expectedKey = practiceHistoryStorageKey(scope);
     const onStorage = (event: StorageEvent) => {
       if (event.key !== expectedKey) return;
-      const reloaded = loadPracticeHistoryState(scope);
+      const reloaded = loadPracticeHistoryState(scope, resolvedHistoryLimit);
       lastSavedAtRef.current = reloaded.updatedAt;
       historyRef.current = reloaded;
       setHistoryState(reloaded);
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
-  }, [scope]);
+  }, [resolvedHistoryLimit, scope]);
 
   useEffect(() => {
     if (!persistSession) return;
@@ -139,7 +144,10 @@ export function PracticeDraftView({ scope, persistSession = false }: PracticeDra
         const remoteUpdatedAt = typeof remote?.updatedAt === "number" ? remote.updatedAt : 0;
         const remoteClearedAt = typeof remote?.clearedAt === "number" ? remote.clearedAt : 0;
         const effectiveClearedAt = Math.max(remoteClearedAt, historyRef.current.clearedAt ?? 0);
-        const remoteEntries = filterEntriesAfterClear(sanitizePracticeHistoryEntries(remote?.entries), effectiveClearedAt);
+        const remoteEntries = filterEntriesAfterClear(
+          sanitizePracticeHistoryEntries(remote?.entries, resolvedHistoryLimit),
+          effectiveClearedAt,
+        );
         const remoteDeletedIds = Array.isArray(remote?.deletedIds) ? remote.deletedIds : [];
         const pendingDeleted = historyRef.current.deletedIds ?? [];
         const localAfterClear = filterEntriesAfterClear(historyRef.current.entries, effectiveClearedAt);
@@ -147,7 +155,7 @@ export function PracticeDraftView({ scope, persistSession = false }: PracticeDra
           const mergedEntries =
             remoteEntries.length === 0 && localAfterClear.length > 0 && remoteUpdatedAt > 0
               ? []
-              : mergePracticeHistoryEntries(remoteEntries, localAfterClear, remoteDeletedIds);
+              : mergePracticeHistoryEntries(remoteEntries, localAfterClear, remoteDeletedIds, resolvedHistoryLimit);
           lastSavedAtRef.current = remoteUpdatedAt;
           const nextState: PracticeHistorySyncPayload = {
             entries: mergedEntries,
@@ -155,7 +163,7 @@ export function PracticeDraftView({ scope, persistSession = false }: PracticeDra
             ...(effectiveClearedAt > 0 ? { clearedAt: effectiveClearedAt } : {}),
           };
           historyRef.current = nextState;
-          savePracticeHistoryState(scope, nextState);
+          savePracticeHistoryState(scope, nextState, resolvedHistoryLimit);
           setHistoryState(nextState);
         } else if (
           lastSavedAtRef.current > remoteUpdatedAt &&
@@ -173,6 +181,7 @@ export function PracticeDraftView({ scope, persistSession = false }: PracticeDra
             localAfterClear,
             remoteEntries,
             combinedDeleted,
+            resolvedHistoryLimit,
           );
           await pushToServer({
             entries: mergedEntries,
@@ -202,7 +211,7 @@ export function PracticeDraftView({ scope, persistSession = false }: PracticeDra
       window.removeEventListener("focus", onFocusOrVisible);
       document.removeEventListener("visibilitychange", onFocusOrVisible);
     };
-  }, [persistSession, pushToServer, scope]);
+  }, [persistSession, pushToServer, resolvedHistoryLimit, scope]);
 
   const commitHistoryEntries = useCallback(
     (nextEntries: PracticeHistoryEntry[], deletedIds?: string[]) => {
@@ -220,7 +229,7 @@ export function PracticeDraftView({ scope, persistSession = false }: PracticeDra
         ...(currentClearedAt > 0 ? { clearedAt: currentClearedAt } : {}),
       };
       historyRef.current = nextState;
-      savePracticeHistoryState(scope, nextState);
+      savePracticeHistoryState(scope, nextState, resolvedHistoryLimit);
       setHistoryState({
         entries: nextEntries,
         updatedAt: nextUpdatedAt,
@@ -230,16 +239,16 @@ export function PracticeDraftView({ scope, persistSession = false }: PracticeDra
         void pushToServer(nextState);
       }
     },
-    [persistSession, pushToServer, scope],
+    [persistSession, pushToServer, resolvedHistoryLimit, scope],
   );
 
   const handleRecordHistoryEntry = useCallback(
     (entryInput: Omit<PracticeHistoryEntry, "id" | "recordedAt">) => {
-      const next = appendPracticeHistoryEntry(historyRef.current.entries, entryInput);
+      const next = appendPracticeHistoryEntry(historyRef.current.entries, entryInput, resolvedHistoryLimit);
       if (next === historyRef.current.entries) return;
       commitHistoryEntries(next);
     },
-    [commitHistoryEntries],
+    [commitHistoryEntries, resolvedHistoryLimit],
   );
 
   const handleDeleteHistoryEntry = useCallback(
@@ -260,7 +269,7 @@ export function PracticeDraftView({ scope, persistSession = false }: PracticeDra
       clearedAt: nextUpdatedAt,
     };
     historyRef.current = cleared;
-    savePracticeHistoryState(scope, cleared);
+    savePracticeHistoryState(scope, cleared, resolvedHistoryLimit);
     setHistoryState(cleared);
     if (persistSession) {
       void (async () => {
@@ -271,7 +280,7 @@ export function PracticeDraftView({ scope, persistSession = false }: PracticeDra
             lastSavedAtRef.current = res.updatedAt;
             const synced: PracticeHistorySyncPayload = { entries: [], updatedAt: res.updatedAt, clearedAt };
             historyRef.current = synced;
-            savePracticeHistoryState(scope, synced);
+            savePracticeHistoryState(scope, synced, resolvedHistoryLimit);
             setHistoryState(synced);
           }
           hasDirtyLocalRef.current = false;
@@ -282,7 +291,7 @@ export function PracticeDraftView({ scope, persistSession = false }: PracticeDra
         }
       })();
     }
-  }, [persistSession, scope]);
+  }, [persistSession, resolvedHistoryLimit, scope]);
 
   function updateMeta(updater: (prev: PracticeRoundMeta) => PracticeRoundMeta) {
     setMeta((prev) => {
@@ -304,6 +313,7 @@ export function PracticeDraftView({ scope, persistSession = false }: PracticeDra
       scope={scope}
       meta={meta}
       historyEntries={historyState.entries}
+      maxHistory={resolvedHistoryLimit}
       onUpdateMeta={updateMeta}
       onRecordHistoryEntry={handleRecordHistoryEntry}
       onDeleteHistoryEntry={handleDeleteHistoryEntry}
@@ -318,6 +328,7 @@ interface PracticeRoundProps {
   scope: string;
   meta: PracticeRoundMeta;
   historyEntries: PracticeHistoryEntry[];
+  maxHistory: number;
   onUpdateMeta: (updater: (prev: PracticeRoundMeta) => PracticeRoundMeta) => void;
   onRecordHistoryEntry: (entryInput: Omit<PracticeHistoryEntry, "id" | "recordedAt">) => void;
   onDeleteHistoryEntry: (id: string) => void;
@@ -330,6 +341,7 @@ function PracticeRound({
   scope,
   meta,
   historyEntries,
+  maxHistory,
   onUpdateMeta,
   onRecordHistoryEntry,
   onDeleteHistoryEntry,
@@ -1027,6 +1039,7 @@ function PracticeRound({
       {isHistoryOpen && (
         <PracticeHistoryModal
           entries={historyEntries}
+          maxHistory={maxHistory}
           heroMap={draft.heroMap}
           onLoadEntry={handleLoadHistoryEntry}
           onDeleteEntry={onDeleteHistoryEntry}

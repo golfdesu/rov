@@ -16,7 +16,9 @@ export const DEFAULT_PRACTICE_GLOBAL_BANS: GlobalBanState = {
 };
 
 export const PRACTICE_GAME_COUNTS: readonly PracticeGameCount[] = [1, 3, 5, 7];
-export const MAX_PRACTICE_HISTORY = 100;
+export const FREE_PRACTICE_HISTORY_LIMIT = 100;
+export const PRO_PRACTICE_HISTORY_LIMIT = 1000;
+export const MAX_PRACTICE_HISTORY = FREE_PRACTICE_HISTORY_LIMIT;
 
 export interface PracticeRoundMeta {
   sessionId: string;
@@ -213,6 +215,7 @@ export function mergePracticeHistoryEntries(
   primary: PracticeHistoryEntry[],
   secondary: PracticeHistoryEntry[],
   deletedIds?: string[],
+  limit = MAX_PRACTICE_HISTORY,
 ): PracticeHistoryEntry[] {
   const deletedSet = new Set(deletedIds ?? []);
   const merged: PracticeHistoryEntry[] = [];
@@ -226,10 +229,10 @@ export function mergePracticeHistoryEntries(
     merged.push(entry);
   }
   merged.sort((a, b) => (b.recordedAt || "").localeCompare(a.recordedAt || ""));
-  return merged.slice(0, MAX_PRACTICE_HISTORY);
+  return merged.slice(0, limit);
 }
 
-export function sanitizePracticeHistoryEntries(raw: unknown): PracticeHistoryEntry[] {
+export function sanitizePracticeHistoryEntries(raw: unknown, limit = MAX_PRACTICE_HISTORY): PracticeHistoryEntry[] {
   if (!Array.isArray(raw)) return [];
   const entries: PracticeHistoryEntry[] = [];
   for (const item of raw) {
@@ -274,22 +277,22 @@ export function sanitizePracticeHistoryEntries(raw: unknown): PracticeHistoryEnt
       seriesGames: Array.isArray(obj.seriesGames) ? obj.seriesGames.slice(0, 7) : undefined,
     });
   }
-  return entries.slice(0, MAX_PRACTICE_HISTORY);
+  return entries.slice(0, limit);
 }
 
-export function loadPracticeHistoryState(scope: string): PracticeHistorySyncPayload {
+export function loadPracticeHistoryState(scope: string, limit = MAX_PRACTICE_HISTORY): PracticeHistorySyncPayload {
   if (typeof window === "undefined") return { entries: [], updatedAt: 0 };
   try {
     const raw = window.localStorage.getItem(practiceHistoryStorageKey(scope));
     if (!raw) return { entries: [], updatedAt: 0 };
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) {
-      const entries = sanitizePracticeHistoryEntries(parsed);
+      const entries = sanitizePracticeHistoryEntries(parsed, limit);
       return { entries, updatedAt: entries.length > 0 ? 1 : 0 };
     }
     if (parsed && typeof parsed === "object") {
       const obj = parsed as Partial<PracticeHistorySyncPayload>;
-      const entries = sanitizePracticeHistoryEntries(obj.entries);
+      const entries = sanitizePracticeHistoryEntries(obj.entries, limit);
       const deletedIds = Array.isArray(obj.deletedIds)
         ? obj.deletedIds.filter((id): id is string => typeof id === "string" && id.length > 0).slice(0, 100)
         : undefined;
@@ -314,7 +317,11 @@ export function loadPracticeHistoryState(scope: string): PracticeHistorySyncPayl
   }
 }
 
-export function savePracticeHistoryState(scope: string, state: PracticeHistorySyncPayload): void {
+export function savePracticeHistoryState(
+  scope: string,
+  state: PracticeHistorySyncPayload,
+  limit = MAX_PRACTICE_HISTORY,
+): void {
   if (typeof window === "undefined") return;
   try {
     const deletedIds = Array.isArray(state.deletedIds)
@@ -325,7 +332,7 @@ export function savePracticeHistoryState(scope: string, state: PracticeHistorySy
     window.localStorage.setItem(
       practiceHistoryStorageKey(scope),
       JSON.stringify({
-        entries: state.entries.slice(0, MAX_PRACTICE_HISTORY),
+        entries: state.entries.slice(0, limit),
         updatedAt: state.updatedAt,
         ...(deletedIds.length > 0 ? { deletedIds } : {}),
         ...(clearedAt > 0 ? { clearedAt } : {}),
@@ -336,12 +343,17 @@ export function savePracticeHistoryState(scope: string, state: PracticeHistorySy
   }
 }
 
-export function loadPracticeHistory(scope: string): PracticeHistoryEntry[] {
-  return loadPracticeHistoryState(scope).entries;
+export function loadPracticeHistory(scope: string, limit = MAX_PRACTICE_HISTORY): PracticeHistoryEntry[] {
+  return loadPracticeHistoryState(scope, limit).entries;
 }
 
-export function savePracticeHistory(scope: string, entries: PracticeHistoryEntry[], updatedAt = Date.now()): void {
-  savePracticeHistoryState(scope, { entries, updatedAt });
+export function savePracticeHistory(
+  scope: string,
+  entries: PracticeHistoryEntry[],
+  updatedAt = Date.now(),
+  limit = MAX_PRACTICE_HISTORY,
+): void {
+  savePracticeHistoryState(scope, { entries, updatedAt }, limit);
 }
 
 export function buildPracticeSignature(
@@ -364,6 +376,7 @@ export function buildPracticeSignature(
 export function appendPracticeHistoryEntry(
   current: PracticeHistoryEntry[],
   entryInput: Omit<PracticeHistoryEntry, "id" | "recordedAt">,
+  limit = MAX_PRACTICE_HISTORY,
 ): PracticeHistoryEntry[] {
   if (current.some((item) => item.signature === entryInput.signature)) {
     return current;
@@ -373,17 +386,18 @@ export function appendPracticeHistoryEntry(
     id: createPracticeSessionId(),
     recordedAt: new Date().toISOString(),
   };
-  return [entry, ...current].slice(0, MAX_PRACTICE_HISTORY);
+  return [entry, ...current].slice(0, limit);
 }
 
 export function recordPracticeHistoryEntry(
   scope: string,
   current: PracticeHistoryEntry[],
   entryInput: Omit<PracticeHistoryEntry, "id" | "recordedAt">,
+  limit = MAX_PRACTICE_HISTORY,
 ): PracticeHistoryEntry[] {
-  const next = appendPracticeHistoryEntry(current, entryInput);
+  const next = appendPracticeHistoryEntry(current, entryInput, limit);
   if (next === current) return current;
-  savePracticeHistory(scope, next);
+  savePracticeHistory(scope, next, Date.now(), limit);
   return next;
 }
 

@@ -109,6 +109,13 @@ const comparisonRows: readonly { feature: string; free: string | null; pro: stri
     team_pro: "คนละ 500 เกม",
   },
   {
+    feature: "ประวัติดราฟต์ vs AI",
+    free: "100 เกม",
+    pro: "1,000 เกม",
+    duo: "คนละ 1,000 เกม",
+    team_pro: "คนละ 1,000 เกม",
+  },
+  {
     feature: "Hero Pools ส่วนตัว",
     free: "2 ชุด",
     pro: "50 ชุด",
