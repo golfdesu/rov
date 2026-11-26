@@ -1,10 +1,30 @@
 import { createContext, useContext } from "react";
-import { englishMessages } from "./englishMessages";
 
 export type Language = "th" | "en";
 type Value = string | number;
 export type Translate = (message: string, ...values: Value[]) => string;
 export type Message = string | [message: string, ...values: Value[]];
+
+let cachedEnglishMessages: Readonly<Record<string, string>> | null = null;
+let inflightEnglishPromise: Promise<Readonly<Record<string, string>>> | null = null;
+
+export function getCachedEnglishMessages(): Readonly<Record<string, string>> | null {
+  return cachedEnglishMessages;
+}
+
+export async function loadEnglishMessages(): Promise<Readonly<Record<string, string>>> {
+  if (cachedEnglishMessages) return cachedEnglishMessages;
+  if (inflightEnglishPromise) return inflightEnglishPromise;
+  inflightEnglishPromise = import("./englishMessages")
+    .then((mod) => {
+      cachedEnglishMessages = mod.englishMessages;
+      return mod.englishMessages;
+    })
+    .finally(() => {
+      inflightEnglishPromise = null;
+    });
+  return inflightEnglishPromise;
+}
 
 export function translateMessage(t: Translate, message: Message): string {
   return typeof message === "string" ? t(message) : t(...message);
@@ -27,9 +47,15 @@ const formatMessage: Translate = (message, ...values) =>
     return value === undefined ? placeholder : String(value);
   });
 
-export function createTranslator(language: Language): Translate {
+export function createTranslator(
+  language: Language,
+  messages: Readonly<Record<string, string>> | null = cachedEnglishMessages,
+): Translate {
   return (message, ...values) => {
-    const text = languageSwitchEnabled && language === "en" && Object.hasOwn(englishMessages, message) ? englishMessages[message] : message;
+    const text =
+      languageSwitchEnabled && language === "en" && messages && Object.hasOwn(messages, message)
+        ? messages[message]
+        : message;
     return values.length ? formatMessage(text, ...values) : text;
   };
 }

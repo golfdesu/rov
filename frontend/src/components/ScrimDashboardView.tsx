@@ -20,7 +20,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { useEffect, useId, useMemo, useRef, useState, type RefObject } from "react";
+import { lazy, Suspense, useEffect, useId, useMemo, useRef, useState, type RefObject } from "react";
 import { ApiError, getJson, isAbortError } from "../api/client";
 import {
   fetchSampleAnalytics,
@@ -55,9 +55,12 @@ import {
   PositionalPoolCard,
   TrioSynergyCard,
 } from "./scrim/ScrimAdvancedCards";
-import { ScoutingReportModal } from "./scrim/ScoutingReportModal";
 import { StableButtonLabel } from "./StableButtonLabel";
 import { trackTelemetryEvent } from "../utils/telemetry";
+
+const ScoutingReportModal = lazy(() =>
+  import("./scrim/ScoutingReportModal").then((m) => ({ default: m.ScoutingReportModal })),
+);
 
 interface ScrimDashboardViewProps {
   personalGames: RecordedDraftGame[];
@@ -2856,17 +2859,21 @@ export function ScrimDashboardView({
         )}
       </div>
 
-      <ScoutingReportModal
-        open={reportOpen}
-        onClose={() => setReportOpen(false)}
-        focusTeam={focusTeam}
-        opponentFilter={opponentFilter}
-        stats={stats}
-        allStats={allStats}
-        advanced={advancedStats}
-        periodDiff={modalPeriodDiff}
-        heroMap={heroMap}
-      />
+      {reportOpen && (
+        <Suspense fallback={null}>
+          <ScoutingReportModal
+            open={reportOpen}
+            onClose={() => setReportOpen(false)}
+            focusTeam={focusTeam}
+            opponentFilter={opponentFilter}
+            stats={stats}
+            allStats={allStats}
+            advanced={advancedStats}
+            periodDiff={modalPeriodDiff}
+            heroMap={heroMap}
+          />
+        </Suspense>
+      )}
     </main>
   );
 }

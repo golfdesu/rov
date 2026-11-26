@@ -19,6 +19,8 @@ interface HeroPickerModalProps {
   onClose: () => void;
 }
 
+const HERO_COLLATOR = new Intl.Collator(undefined, { sensitivity: "base" });
+
 const ROLE_LABELS: Record<RoleType, string> = {
   Tank: "แทงค์",
   Fighter: "ไฟต์เตอร์",
@@ -49,7 +51,7 @@ export function HeroPickerModal({
     const q = query.trim().toLowerCase();
     return heroes
       .filter((h) => (!q || matchesHeroQuery(h.name, q)) && (!role || h.role === role))
-      .sort((a, b) => displayName(a.name).localeCompare(displayName(b.name)));
+      .sort((a, b) => HERO_COLLATOR.compare(displayName(a.name), displayName(b.name)));
   }, [heroes, query, role]);
 
   return (

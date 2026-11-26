@@ -1,8 +1,21 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { createTranslator, type Language, LanguageContext, languageStorageKey, languageSwitchEnabled, readLanguage, useLanguage } from "./language";
+import {
+  createTranslator,
+  getCachedEnglishMessages,
+  type Language,
+  LanguageContext,
+  languageStorageKey,
+  languageSwitchEnabled,
+  loadEnglishMessages,
+  readLanguage,
+  useLanguage,
+} from "./language";
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<Language>(readLanguage);
+  const [enMessages, setEnMessages] = useState<Readonly<Record<string, string>> | null>(
+    () => (readLanguage() === "en" ? getCachedEnglishMessages() : null),
+  );
 
   useEffect(() => {
     document.documentElement.lang = language;
@@ -19,7 +32,21 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     }
   }, [language]);
 
-  const locale = useMemo(() => ({ language, setLanguage, t: createTranslator(language) }), [language]);
+  useEffect(() => {
+    if (!languageSwitchEnabled || language !== "en" || enMessages !== null) return;
+    let cancelled = false;
+    void loadEnglishMessages().then((dict) => {
+      if (!cancelled) setEnMessages(dict);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [language, enMessages]);
+
+  const locale = useMemo(
+    () => ({ language, setLanguage, t: createTranslator(language, enMessages) }),
+    [language, enMessages],
+  );
 
   return <LanguageContext.Provider value={locale}>{children}</LanguageContext.Provider>;
 }

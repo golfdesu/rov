@@ -22,6 +22,7 @@ export const HeroPortrait = memo(function HeroPortrait({
       src={hero?.image_url || getHeroFallbackImage(displayName(name))}
       alt={displayName(name)}
       loading="lazy"
+      decoding="async"
       draggable={false}
       style={{ objectPosition: position }}
       className={`h-full w-full object-cover ${className}`}

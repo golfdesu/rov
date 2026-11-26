@@ -171,14 +171,14 @@ def run_model(
     model: torch.nn.Module, arrays: tuple[np.ndarray, ...], device: torch.device
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """Runs one batched forward pass; returns (policy probs, acting-team win probs), each (batch, heroes)."""
-    with torch.no_grad():
-        logits, q_win_logits = model(*(torch.from_numpy(a).to(device) for a in arrays))
-    probs = torch.softmax(logits, dim=-1)
-    unavail = torch.from_numpy(arrays[4]).to(device)
-    probs = probs.masked_fill(unavail, 0.0)
-    sums = probs.sum(dim=-1, keepdim=True)
-    probs = torch.where(sums > 0, probs / sums, probs)
-    return probs, torch.sigmoid(q_win_logits)
+    with torch.inference_mode():
+        tensors = tuple(torch.from_numpy(a).to(device) for a in arrays)
+        logits, q_win_logits = model(*tensors)
+        probs = torch.softmax(logits, dim=-1)
+        probs = probs.masked_fill(tensors[4], 0.0)
+        sums = probs.sum(dim=-1, keepdim=True)
+        probs = torch.where(sums > 0, probs / sums, probs)
+        return probs, torch.sigmoid(q_win_logits)
 
 
 @dataclasses.dataclass(frozen=True)

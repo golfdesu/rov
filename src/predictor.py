@@ -1,6 +1,9 @@
 import json
 import math
+import os
 import re
+import threading
+from collections import OrderedDict
 from pathlib import Path
 from typing import Literal, NamedTuple
 
@@ -94,6 +97,12 @@ class RoVDraftPredictor:
         self.model.to(self.device)
         self.model.eval()
         self.model.precompute_gnn_embeddings()
+        raw_threads = os.getenv("ROV_TORCH_NUM_THREADS", "").strip()
+        if raw_threads.isdigit() and int(raw_threads) > 0:
+            torch.set_num_threads(int(raw_threads))
+        self._predict_cache: OrderedDict[tuple, DraftPredictionResponse] = OrderedDict()
+        self._predict_cache_lock = threading.Lock()
+        self._predict_cache_maxsize = 512
 
         self.heroes_df = pd.read_csv(config.paths.heroes_csv_path).set_index("name")
         self.stats_df = pd.read_csv(config.paths.hero_stats_csv_path).set_index("name")
@@ -980,7 +989,49 @@ class RoVDraftPredictor:
             )
         return unlocked, ban_triggers
 
+    @staticmethod
+    def _predict_cache_key(req: DraftStateRequest) -> tuple:
+        return (
+            req.mode,
+            req.side,
+            req.phase,
+            tuple(req.ally_picks),
+            tuple(req.enemy_picks),
+            tuple(req.ally_bans),
+            tuple(req.enemy_bans),
+            tuple(req.global_bans),
+            tuple(req.blue_global_bans),
+            tuple(req.red_global_bans),
+            req.top_k,
+            req.use_lookahead,
+            req.lookahead_depth,
+            req.league,
+            tuple(req.series_winning_heroes),
+            tuple(sorted(req.ally_pick_lanes.items())),
+            tuple(sorted(req.enemy_pick_lanes.items())),
+            tuple(req.ally_pool),
+            tuple(req.enemy_pool),
+            req.pool_only,
+            req.pool_mode,
+            tuple((k, tuple(v)) for k, v in sorted(req.ally_pool_lanes.items())),
+        )
+
     def predict(self, req: DraftStateRequest) -> DraftPredictionResponse:
+        cache_key = self._predict_cache_key(req)
+        with self._predict_cache_lock:
+            cached = self._predict_cache.get(cache_key)
+            if cached is not None:
+                self._predict_cache.move_to_end(cache_key)
+                return cached.model_copy(deep=True)
+        result = self._predict_uncached(req)
+        with self._predict_cache_lock:
+            self._predict_cache[cache_key] = result.model_copy(deep=True)
+            self._predict_cache.move_to_end(cache_key)
+            while len(self._predict_cache) > self._predict_cache_maxsize:
+                self._predict_cache.popitem(last=False)
+        return result
+
+    def _predict_uncached(self, req: DraftStateRequest) -> DraftPredictionResponse:
         ally_picks = self.resolve_heroes(req.ally_picks)
         enemy_picks = self.resolve_heroes(req.enemy_picks)
         ally_bans = self.resolve_heroes(req.ally_bans)

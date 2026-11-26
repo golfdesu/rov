@@ -12,6 +12,7 @@ import sqlite3
 import threading
 import time
 import uuid
+from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 from urllib.parse import urlencode, urlparse
@@ -29,6 +30,7 @@ from google.auth.transport import requests as google_auth_requests
 from google.oauth2 import id_token as google_id_token
 from pydantic import ValidationError
 from starlette.concurrency import run_in_threadpool
+from starlette.datastructures import MutableHeaders
 
 from src.billing import (
     BILLING_EVENT_TYPES,
@@ -116,11 +118,17 @@ HERO_FOLDER_ALIASES = {
     "Celica": "Brunhilda",
     "Riktor": "Richter",
 }
-ITEM_FOLDER_ALIASES = {
-    **DEFAULT_ITEM_ALIASES,
-    **get_engine().item_aliases,
-}
-ITEM_FOLDER_ALIASES_LOWER = {k.lower(): v for k, v in ITEM_FOLDER_ALIASES.items()}
+
+
+@lru_cache(maxsize=1)
+def _item_folder_aliases() -> tuple[dict[str, str], dict[str, str]]:
+    """Lazy-load CombatEngine item aliases on first dev combat-asset lookup."""
+    merged = {
+        **DEFAULT_ITEM_ALIASES,
+        **get_engine().item_aliases,
+    }
+    return merged, {k.lower(): v for k, v in merged.items()}
+
 
 app = FastAPI(
     title="RoV SOTA Draft Intelligence API",
@@ -334,7 +342,6 @@ async def security_and_lockdown_middleware(request: Request, call_next):
     if norm_path.startswith(
         (
             "/health",
-            "/heroes",
             "/auth/",
             "/draft/session",
             "/draft/practice-history",
@@ -690,9 +697,16 @@ def _clear_session_cookie(response: Response, request: Request) -> None:
     )
 
 
-def _to_user_schema(user: AuthUser) -> AuthUserSchema:
-    db = get_user_db()
-    pass_status = db.user_pass_status(user.id) if config.billing_enabled else None
+def _to_user_schema(user: AuthUser, auth_ctx: dict | None = None) -> AuthUserSchema:
+    if config.billing_enabled:
+        ctx = auth_ctx or get_user_db().get_auth_user_context(user.id, None, True, include_survey=False)
+        pass_status = ctx["pass_status"]
+        draft_history_limit = ctx["draft_history_limit"]
+        practice_history_limit = ctx["practice_history_limit"]
+    else:
+        pass_status = None
+        draft_history_limit = None
+        practice_history_limit = None
     return AuthUserSchema(
         id=user.id,
         username=user.username,
@@ -705,8 +719,8 @@ def _to_user_schema(user: AuthUser) -> AuthUserSchema:
         display_name_next_change_at=user.display_name_next_change_at,
         stripe_sandbox_enabled=config.billing_enabled,
         stripe_livemode=config.stripe_livemode,
-        draft_history_limit=db.personal_history_limit(user.id) if config.billing_enabled else None,
-        practice_history_limit=db.practice_history_limit(user.id) if config.billing_enabled else None,
+        draft_history_limit=draft_history_limit,
+        practice_history_limit=practice_history_limit,
         is_paid=pass_status is not None if config.billing_enabled else False,
         pass_tier=pass_status[0] if pass_status else None,  # type: ignore[arg-type]
         pass_source=pass_status[1] if pass_status else None,  # type: ignore[arg-type]
@@ -751,7 +765,8 @@ def health_check():
 
 
 @app.get("/heroes")
-def list_heroes():
+def list_heroes(response: Response):
+    response.headers["Cache-Control"] = "public, max-age=3600"
     details = public_hero_details_cache if config.is_production else hero_details_cache
     return {
         "count": len(predictor.hero_names),
@@ -826,22 +841,36 @@ def _resolve_oauth_redirect_uri(request: Request, provider: str, explicit_uri: s
 
 
 def _auth_status_response(user: AuthUser | None) -> AuthStatusResponse:
-    db = get_user_db()
-    survey_choice = db.get_pricing_survey_choice(user.id) if user is not None else None
     promo_until = config.free_promo_until_ts if config.free_promo_active else None
-    show_promo_until = (
-        promo_until
-        if promo_until is not None and (user is None or db.can_claim_free_pro_promo(user.id, promo_until))
-        else None
+    if user is None:
+        return AuthStatusResponse(
+            authenticated=False,
+            user=None,
+            google_login_enabled=config.google_oauth_enabled,
+            discord_login_enabled=config.discord_oauth_enabled,
+            pricing_survey_answered=False,
+            pricing_survey_choice=None,
+            is_admin=False,
+            stripe_sandbox_enabled=config.billing_enabled,
+            stripe_livemode=config.stripe_livemode,
+            free_promo_until=promo_until,
+        )
+    auth_ctx = get_user_db().get_auth_user_context(
+        user.id,
+        promo_until,
+        config.billing_enabled,
+        include_survey=True,
     )
+    survey_choice = auth_ctx["survey_choice"]
+    show_promo_until = promo_until if promo_until is not None and auth_ctx["promo_claimable"] else None
     return AuthStatusResponse(
-        authenticated=user is not None,
-        user=_to_user_schema(user) if user is not None else None,
+        authenticated=True,
+        user=_to_user_schema(user, auth_ctx=auth_ctx),
         google_login_enabled=config.google_oauth_enabled,
         discord_login_enabled=config.discord_oauth_enabled,
         pricing_survey_answered=survey_choice is not None,
         pricing_survey_choice=survey_choice,  # type: ignore[arg-type]
-        is_admin=config.is_admin_username(user.username) if user is not None else False,
+        is_admin=config.is_admin_username(user.username),
         stripe_sandbox_enabled=config.billing_enabled,
         stripe_livemode=config.stripe_livemode,
         free_promo_until=show_promo_until,
@@ -1277,12 +1306,9 @@ def billing_summary(
     user: AuthUser = Depends(get_required_user), x_expected_user: str | None = Header(default=None)
 ) -> BillingSummary:
     _verify_expected_user(user, x_expected_user)
-    db = get_user_db()
-    active_pass, orders = db.billing_summary(user.id)
-    pass_status = db.user_pass_status(user.id)
-    current = BillingPass(**dict(active_pass), source=pass_status[1] if pass_status else None) if active_pass else None  # type: ignore[arg-type]
     promo_until = config.free_promo_until_ts if config.free_promo_active else None
-    promo_claimable = db.can_claim_free_pro_promo(user.id, promo_until)
+    active_pass, orders, pass_status, promo_claimable = get_user_db().get_billing_snapshot(user.id, promo_until)
+    current = BillingPass(**dict(active_pass), source=pass_status[1] if pass_status else None) if active_pass else None  # type: ignore[arg-type]
     return BillingSummary(
         packages=[
             BillingPackage(tier=tier, days=days, amount=amount)
@@ -2280,9 +2306,10 @@ def get_item_screenshots(item_name: str, _guard: None = Depends(require_developm
     ):
         raise HTTPException(status_code=400, detail="Invalid item name")
 
-    resolved_name = ITEM_FOLDER_ALIASES.get(
+    item_aliases, item_aliases_lower = _item_folder_aliases()
+    resolved_name = item_aliases.get(
         item_name,
-        ITEM_FOLDER_ALIASES_LOWER.get(item_name.lower(), item_name),
+        item_aliases_lower.get(item_name.lower(), item_name),
     )
     item_dir = ITEMS_DIR / resolved_name
     try:
@@ -2349,14 +2376,35 @@ if ITEMS_DIR.is_dir():
 
 
 class _FrontendStaticFiles(StaticFiles):
-    """Serve frontend static assets while returning 404 (not 405) for unmatched non-GET/HEAD API paths."""
+    """Serve frontend static assets with proper Cache-Control and 404 for unmatched non-GET/HEAD API paths."""
+
+    @staticmethod
+    def _cache_control_for(path: str, content_type: str) -> str | None:
+        if path.startswith("/assets/"):
+            return "public, max-age=31536000, immutable"
+        if path.startswith("/avatars/") or path == "/hero_images.json":
+            return "public, max-age=86400"
+        if "text/html" in content_type or path in ("", "/", "/index.html"):
+            return "no-cache"
+        return None
 
     async def __call__(self, scope, receive, send) -> None:
         if scope.get("type") == "http" and scope.get("method") not in ("GET", "HEAD"):
             resp = JSONResponse({"detail": "Not Found"}, status_code=404)
             await resp(scope, receive, send)
             return
-        await super().__call__(scope, receive, send)
+        req_path = str(scope.get("path", "") or "")
+
+        async def send_with_cache(message) -> None:
+            if message.get("type") == "http.response.start" and message.get("status") == 200:
+                headers = MutableHeaders(scope=message)
+                if "cache-control" not in headers:
+                    cc = self._cache_control_for(req_path, headers.get("content-type", ""))
+                    if cc is not None:
+                        headers["Cache-Control"] = cc
+            await send(message)
+
+        await super().__call__(scope, receive, send_with_cache)
 
 
 # Mounted last so the API routes above take precedence over static files.

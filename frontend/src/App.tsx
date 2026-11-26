@@ -3,16 +3,29 @@ import { type Message, translateMessage, useLanguage } from "./i18n/language";
 import { ChevronDown, Crown, Gift, HelpCircle, LogIn, Menu, User, X } from "lucide-react";
 import { lazy, Suspense, useCallback, useEffect, useId, useRef, useState } from "react";
 import { ApiError, getJson, postJson, putJson, setExpectedAuthUser, setSessionMismatchHandler } from "./api/client";
-import { AuthLanding, AuthModal } from "./components/AuthModal";
-import { DonateModal } from "./components/DonateModal";
 import { DraftBoardView } from "./components/DraftBoardView";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { MiniDraftLogo } from "./components/MiniDraftLogo";
-import { MobileNavDrawer } from "./components/MobileNavDrawer";
 import { Modal } from "./components/Modal";
-import { PricingSurveyModal } from "./components/PricingSurveyModal";
-import { UserGuideModal } from "./components/UserGuideModal";
 
+const AuthLanding = lazy(() =>
+  import("./components/AuthModal").then((m) => ({ default: m.AuthLanding })),
+);
+const AuthModal = lazy(() =>
+  import("./components/AuthModal").then((m) => ({ default: m.AuthModal })),
+);
+const DonateModal = lazy(() =>
+  import("./components/DonateModal").then((m) => ({ default: m.DonateModal })),
+);
+const MobileNavDrawer = lazy(() =>
+  import("./components/MobileNavDrawer").then((m) => ({ default: m.MobileNavDrawer })),
+);
+const PricingSurveyModal = lazy(() =>
+  import("./components/PricingSurveyModal").then((m) => ({ default: m.PricingSurveyModal })),
+);
+const UserGuideModal = lazy(() =>
+  import("./components/UserGuideModal").then((m) => ({ default: m.UserGuideModal })),
+);
 const AdminDashboardView = lazy(() =>
   import("./components/AdminDashboardView").then((m) => ({ default: m.AdminDashboardView })),
 );
@@ -31,7 +44,12 @@ const ProfileView = lazy(() =>
 const ScrimDashboardView = lazy(() =>
   import("./components/ScrimDashboardView").then((m) => ({ default: m.ScrimDashboardView })),
 );
-import { mergeGuestIntoAccountSession, normalizeSessionPayload, useDraft } from "./hooks/useDraft";
+import {
+  fetchHeroCatalogOnce,
+  mergeGuestIntoAccountSession,
+  normalizeSessionPayload,
+  useDraft,
+} from "./hooks/useDraft";
 import type {
   AuthStatusResponse,
   AuthUser,
@@ -648,7 +666,31 @@ export function App() {
   const [otherModalOpen, setOtherModalOpen] = useState(false);
   const migrationTitleId = useId();
 
+  const surveyScope = authUser ? `user:${authUser.username.toLowerCase()}` : "guest";
+  const announcementState = announcementByScope[surveyScope] ?? loadAnnouncementState(surveyScope);
+  const todayDateKey = getLocalDateKey();
+  const announcementSeen =
+    announcementState.status === "seen" && announcementState.version === ANNOUNCEMENT_VERSION;
+  const feedbackSent = Boolean(announcementState.feedbackSent);
+  const autoSurveyOpen =
+    tab === "draft" &&
+    !announcementSeen &&
+    announcementState.snoozedDate !== todayDateKey;
+  const shouldWatchOtherDialogs =
+    !authLoading &&
+    Boolean(authUser || guestEntered) &&
+    !manualSurveyOpen &&
+    autoSurveyOpen &&
+    !authModalOpen &&
+    pendingMigration === null &&
+    !donateModalOpen &&
+    !guideModalOpen &&
+    !adminStatsModalOpen &&
+    !mobileDrawerOpen &&
+    activeDraftTool === null;
+
   useEffect(() => {
+    if (!shouldWatchOtherDialogs) return;
     const checkDialogs = () => {
       const hasOtherDialog = Array.from(
         document.querySelectorAll('[role="dialog"][aria-modal="true"]'),
@@ -659,10 +701,7 @@ export function App() {
     const observer = new MutationObserver(checkDialogs);
     observer.observe(document.body, { childList: true, subtree: true });
     return () => observer.disconnect();
-  }, []);
-
-  const surveyScope = authUser ? `user:${authUser.username.toLowerCase()}` : "guest";
-  const announcementState = announcementByScope[surveyScope] ?? loadAnnouncementState(surveyScope);
+  }, [shouldWatchOtherDialogs]);
 
   const updateGuestEntered = useCallback((enabled: boolean) => {
     saveGuestEntered(enabled);
@@ -795,6 +834,7 @@ export function App() {
 
   useEffect(() => {
     const ctrl = new AbortController();
+    void fetchHeroCatalogOnce().catch(() => {});
     getJson<AuthStatusResponse>("/auth/me", ctrl.signal)
       .then((res) => {
         if (ctrl.signal.aborted) return;
@@ -999,19 +1039,21 @@ export function App() {
 
   if (!authUser && !guestEntered) {
     return (
-      <AuthLanding
-        googleLoginEnabled={googleLoginEnabled}
-        discordLoginEnabled={discordLoginEnabled}
-        initialError={oauthError}
-        onSuccess={(user, surveyAnswered, surveyChoice, isAdmin) =>
-          applyAuthenticatedUser(user, false, surveyAnswered, surveyChoice ?? null, Boolean(isAdmin))
-        }
-        onContinueGuest={() => {
-          trackTelemetryEvent("auth_skip_guest");
-          setOauthError(null);
-          updateGuestEntered(true);
-        }}
-      />
+      <Suspense fallback={null}>
+        <AuthLanding
+          googleLoginEnabled={googleLoginEnabled}
+          discordLoginEnabled={discordLoginEnabled}
+          initialError={oauthError}
+          onSuccess={(user, surveyAnswered, surveyChoice, isAdmin) =>
+            applyAuthenticatedUser(user, false, surveyAnswered, surveyChoice ?? null, Boolean(isAdmin))
+          }
+          onContinueGuest={() => {
+            trackTelemetryEvent("auth_skip_guest");
+            setOauthError(null);
+            updateGuestEntered(true);
+          }}
+        />
+      </Suspense>
     );
   }
 
@@ -1127,14 +1169,6 @@ export function App() {
     });
   };
 
-  const todayDateKey = getLocalDateKey();
-  const announcementSeen =
-    announcementState.status === "seen" && announcementState.version === ANNOUNCEMENT_VERSION;
-  const feedbackSent = Boolean(announcementState.feedbackSent);
-  const autoSurveyOpen =
-    tab === "draft" &&
-    !announcementSeen &&
-    announcementState.snoozedDate !== todayDateKey;
   const pricingSurveyOpen =
     !authModalOpen &&
     pendingMigration === null &&
@@ -1143,7 +1177,7 @@ export function App() {
     !adminStatsModalOpen &&
     !mobileDrawerOpen &&
     activeDraftTool === null &&
-    (manualSurveyOpen || (autoSurveyOpen && !otherModalOpen));
+    (manualSurveyOpen || (autoSurveyOpen && !(shouldWatchOtherDialogs && otherModalOpen)));
 
   const openDraftTool = (tool: DraftToolModal) => {
     if (tool === "pools") trackTelemetryEvent("feat_hero_pools");
@@ -1192,29 +1226,31 @@ export function App() {
         onSaveDisplayName={handleSaveDisplayName}
       />
       {mobileDrawerOpen && (
-        <MobileNavDrawer
-          tabs={visibleTabs(sandboxBilling)}
-          activeTab={tab}
-          authUser={authUser}
-          isAdmin={isAdminUser}
-          sandboxBilling={sandboxBilling}
-          announcementSeen={announcementSeen}
-          feedbackSent={feedbackSent}
-          onSelectTab={selectTab}
-          onOpenGuide={() => setGuideModalOpen(true)}
-          onOpenSurvey={() => {
-            setSurveyError(null);
-            setManualSurveyOpen(true);
-          }}
-          onOpenDonate={() => setDonateModalOpen(true)}
-          onOpenAdminStats={() => setAdminStatsModalOpen(true)}
-          onOpenHeroPools={() => openDraftTool("pools")}
-          onOpenPlans={() => selectTab("plans")}
-          onOpenAuth={() => setAuthModalOpen(true)}
-          onOpenProfile={() => { window.location.hash = "profile"; }}
-          onLogout={() => void handleLogout()}
-          onClose={() => setMobileDrawerOpen(false)}
-        />
+        <Suspense fallback={null}>
+          <MobileNavDrawer
+            tabs={visibleTabs(sandboxBilling)}
+            activeTab={tab}
+            authUser={authUser}
+            isAdmin={isAdminUser}
+            sandboxBilling={sandboxBilling}
+            announcementSeen={announcementSeen}
+            feedbackSent={feedbackSent}
+            onSelectTab={(next) => selectTab(next as Tab)}
+            onOpenGuide={() => setGuideModalOpen(true)}
+            onOpenSurvey={() => {
+              setSurveyError(null);
+              setManualSurveyOpen(true);
+            }}
+            onOpenDonate={() => setDonateModalOpen(true)}
+            onOpenAdminStats={() => setAdminStatsModalOpen(true)}
+            onOpenHeroPools={() => openDraftTool("pools")}
+            onOpenPlans={() => selectTab("plans")}
+            onOpenAuth={() => setAuthModalOpen(true)}
+            onOpenProfile={() => { window.location.hash = "profile"; }}
+            onLogout={() => void handleLogout()}
+            onClose={() => setMobileDrawerOpen(false)}
+          />
+        </Suspense>
       )}
       {adminStatsModalOpen && isAdminUser && (
         <Suspense fallback={null}>
@@ -1222,39 +1258,51 @@ export function App() {
         </Suspense>
       )}
       {pricingSurveyOpen && (
-        <PricingSurveyModal
-          busy={surveyBusy}
-          error={surveyError && translateMessage(t, surveyError)}
-          feedbackSent={feedbackSent}
-          onSubmitFeedback={handleSubmitFeedback}
-          onAfterSubmit={handleAfterFeedbackSubmit}
-          onAcknowledge={handleAcknowledgeAnnouncement}
-          onSnooze={handleSnoozeSurvey}
-          onOpenAnalytics={sandboxBilling ? () => selectTab("analytics") : undefined}
-          freePromoUntil={authUser?.is_paid ? null : freePromoUntil}
-          isAuthenticated={authUser !== null}
-          onOpenPromoProfile={
-            sandboxBilling
-              ? (authUser ? () => selectTab("profile") : () => setAuthModalOpen(true))
-              : undefined
-          }
-        />
+        <Suspense fallback={null}>
+          <PricingSurveyModal
+            busy={surveyBusy}
+            error={surveyError && translateMessage(t, surveyError)}
+            feedbackSent={feedbackSent}
+            onSubmitFeedback={handleSubmitFeedback}
+            onAfterSubmit={handleAfterFeedbackSubmit}
+            onAcknowledge={handleAcknowledgeAnnouncement}
+            onSnooze={handleSnoozeSurvey}
+            onOpenAnalytics={sandboxBilling ? () => selectTab("analytics") : undefined}
+            freePromoUntil={authUser?.is_paid ? null : freePromoUntil}
+            isAuthenticated={authUser !== null}
+            onOpenPromoProfile={
+              sandboxBilling
+                ? (authUser ? () => selectTab("profile") : () => setAuthModalOpen(true))
+                : undefined
+            }
+          />
+        </Suspense>
       )}
-      {donateModalOpen && <DonateModal onClose={() => setDonateModalOpen(false)} />}
-      {guideModalOpen && <UserGuideModal onClose={() => setGuideModalOpen(false)} />}
+      {donateModalOpen && (
+        <Suspense fallback={null}>
+          <DonateModal onClose={() => setDonateModalOpen(false)} />
+        </Suspense>
+      )}
+      {guideModalOpen && (
+        <Suspense fallback={null}>
+          <UserGuideModal onClose={() => setGuideModalOpen(false)} />
+        </Suspense>
+      )}
       {authModalOpen && (
-        <AuthModal
-          googleLoginEnabled={googleLoginEnabled}
-          discordLoginEnabled={discordLoginEnabled}
-          initialError={oauthError}
-          onSuccess={(user, surveyAnswered, surveyChoice, isAdmin) =>
-            applyAuthenticatedUser(user, true, surveyAnswered, surveyChoice ?? null, Boolean(isAdmin))
-          }
-          onClose={() => {
-            setOauthError(null);
-            setAuthModalOpen(false);
-          }}
-        />
+        <Suspense fallback={null}>
+          <AuthModal
+            googleLoginEnabled={googleLoginEnabled}
+            discordLoginEnabled={discordLoginEnabled}
+            initialError={oauthError}
+            onSuccess={(user, surveyAnswered, surveyChoice, isAdmin) =>
+              applyAuthenticatedUser(user, true, surveyAnswered, surveyChoice ?? null, Boolean(isAdmin))
+            }
+            onClose={() => {
+              setOauthError(null);
+              setAuthModalOpen(false);
+            }}
+          />
+        </Suspense>
       )}
       {pendingMigration && (
         <Modal

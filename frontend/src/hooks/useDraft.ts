@@ -603,7 +603,7 @@ function initMachineState(session: DraftSessionPayload | null): DraftMachineStat
 let cachedHeroesCatalog: { heroes: Hero[]; isFallback: boolean } | null = null;
 let inflightHeroesPromise: Promise<{ heroes: Hero[]; isFallback: boolean }> | null = null;
 
-async function fetchHeroCatalogOnce(): Promise<{ heroes: Hero[]; isFallback: boolean }> {
+export async function fetchHeroCatalogOnce(): Promise<{ heroes: Hero[]; isFallback: boolean }> {
   if (cachedHeroesCatalog) return cachedHeroesCatalog;
   if (inflightHeroesPromise) return inflightHeroesPromise;
 

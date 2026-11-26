@@ -257,15 +257,18 @@ class UserDatabase:
         self.max_users = max_users
         self._lock = threading.Lock()
         self._initialized_path: Path | None = None
+        self.db_path.parent.mkdir(parents=True, exist_ok=True)
 
     @contextmanager
     def _connect(self) -> Iterator[sqlite3.Connection]:
-        self.db_path.parent.mkdir(parents=True, exist_ok=True)
         conn = sqlite3.connect(self.db_path, timeout=5.0, check_same_thread=False)
         try:
             conn.row_factory = sqlite3.Row
             conn.execute("PRAGMA foreign_keys=ON")
             conn.execute("PRAGMA busy_timeout=5000")
+            conn.execute("PRAGMA synchronous=NORMAL")
+            conn.execute("PRAGMA temp_store=MEMORY")
+            conn.execute("PRAGMA cache_size=-16000")
             with conn:
                 yield conn
         finally:
@@ -277,6 +280,7 @@ class UserDatabase:
         with self._lock:
             if self._initialized_path == self.db_path and self.db_path.exists():
                 return
+            self.db_path.parent.mkdir(parents=True, exist_ok=True)
             with self._connect() as conn:
                 conn.execute("PRAGMA journal_mode=WAL")
                 conn.executescript(
@@ -444,12 +448,12 @@ class UserDatabase:
                         updated_at INTEGER NOT NULL,
                         UNIQUE(owner_id, scope, tier, normalized_name)
                     );
-                    CREATE INDEX IF NOT EXISTS idx_hero_pools_owner ON hero_pools(owner_id, scope, tier, updated_at DESC);
                     CREATE INDEX IF NOT EXISTS idx_hero_pools_owner_sort ON hero_pools(owner_id, scope, tier, updated_at DESC, id DESC);
                     """
                 )
                 conn.execute("BEGIN IMMEDIATE")
                 self._ensure_billing_schema(conn)
+                conn.execute("DROP INDEX IF EXISTS idx_hero_pools_owner")
                 cols = {str(r["name"]) for r in conn.execute("PRAGMA table_info(users)").fetchall()}
                 if "google_sub" not in cols:
                     conn.execute("ALTER TABLE users ADD COLUMN google_sub TEXT")
@@ -476,6 +480,16 @@ class UserDatabase:
                 if "device_type" not in visit_cols:
                     conn.execute("ALTER TABLE daily_visits ADD COLUMN device_type TEXT")
                 conn.execute("CREATE INDEX IF NOT EXISTS idx_users_email ON users(email) WHERE email IS NOT NULL")
+                conn.execute("CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at)")
+                conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_daily_visits_user_date ON daily_visits(user_id, visit_date)"
+                )
+                conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_pricing_survey_updated ON pricing_survey_responses(updated_at DESC, id DESC)"
+                )
+                conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_team_invites_owner_tier_exp ON team_invites(owner_id, tier, expires_at)"
+                )
                 conn.execute(
                     """
                     INSERT OR IGNORE INTO user_oauth_accounts (user_id, provider, provider_user_id, email, created_at)
@@ -500,6 +514,11 @@ class UserDatabase:
         conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_billing_orders_user_created ON billing_orders(user_id, created_at DESC, id DESC)"
         )
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_billing_orders_user_status ON billing_orders(user_id, status)")
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_billing_orders_created ON billing_orders(created_at DESC, id DESC)"
+        )
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_billing_passes_expires_at ON billing_passes(expires_at)")
         conn.execute(
             "CREATE UNIQUE INDEX IF NOT EXISTS idx_billing_orders_pending ON billing_orders(user_id) WHERE status = 'pending'"
         )
@@ -590,6 +609,105 @@ class UserDatabase:
                 (user_id, expires_at),
             )
             return {"tier": "pro", "expires_at": expires_at, "is_owner": True}
+
+    def get_auth_user_context(
+        self,
+        user_id: int,
+        promo_until: int | None,
+        billing_enabled: bool,
+        *,
+        include_survey: bool = True,
+    ) -> dict[str, Any]:
+        """Fetch survey choice, active pass status, limits, and promo eligibility in one SQLite connection."""
+        self.ensure_schema()
+        now = int(time.time())
+        survey_choice: str | None = None
+        pass_status: tuple[str, str, int] | None = None
+        promo_claimable = False
+        draft_history_limit: int | None = None
+        practice_history_limit: int | None = None
+        with self._connect() as conn:
+            conn.execute("BEGIN")
+            if include_survey:
+                row = conn.execute(
+                    "SELECT choice FROM pricing_survey_responses WHERE user_id = ? LIMIT 1",
+                    (user_id,),
+                ).fetchone()
+                if row is not None:
+                    raw_choice = str(row["choice"])
+                    if raw_choice in {"willing", "not_willing"}:
+                        survey_choice = raw_choice
+            if billing_enabled:
+                pass_status = self._user_pass_status(conn, user_id, now)
+                is_paid = pass_status is not None
+                draft_history_limit = PAID_HISTORY_LIMIT if is_paid else FREE_HISTORY_LIMIT
+                practice_history_limit = PAID_PRACTICE_HISTORY_LIMIT if is_paid else FREE_PRACTICE_HISTORY_LIMIT
+                if promo_until is not None and now < promo_until and not is_paid:
+                    promo_key = f"free_pro_{promo_until}"
+                    claimed = conn.execute(
+                        "SELECT 1 FROM promo_claims WHERE user_id = ? AND promo_key = ?",
+                        (user_id, promo_key),
+                    ).fetchone()
+                    promo_claimable = claimed is None
+        return {
+            "survey_choice": survey_choice,
+            "pass_status": pass_status,
+            "promo_claimable": promo_claimable,
+            "draft_history_limit": draft_history_limit,
+            "practice_history_limit": practice_history_limit,
+        }
+
+    def get_billing_snapshot(
+        self, user_id: int, promo_until: int | None
+    ) -> tuple[sqlite3.Row | None, list[sqlite3.Row], tuple[str, str, int] | None, bool]:
+        """Fetch active pass, recent orders, pass source, and Free Pro promo eligibility in one connection."""
+        self.ensure_schema()
+        now = int(time.time())
+        with self._connect() as conn:
+            conn.execute("BEGIN")
+            team = self._active_team(conn, user_id, now)
+            own = conn.execute(
+                "SELECT tier, expires_at FROM billing_passes WHERE user_id = ? AND expires_at > ?",
+                (user_id, now),
+            ).fetchone()
+            active_pass = team if team is not None else own
+            if own is not None:
+                has_paid = conn.execute(
+                    "SELECT 1 FROM billing_orders WHERE user_id = ? AND status = 'paid' LIMIT 1",
+                    (user_id,),
+                ).fetchone()
+                if has_paid is not None:
+                    source = "paid"
+                else:
+                    has_promo = conn.execute(
+                        "SELECT 1 FROM promo_claims WHERE user_id = ? LIMIT 1",
+                        (user_id,),
+                    ).fetchone()
+                    source = "promo_free" if has_promo is not None else "manual"
+                pass_status: tuple[str, str, int] | None = (str(own["tier"]), source, int(own["expires_at"]))
+            elif team is not None:
+                pass_status = (str(team["tier"]), "team_member", int(team["expires_at"]))
+            else:
+                pass_status = None
+
+            orders = conn.execute(
+                """
+                SELECT id, tier, days, amount, status, paid_at
+                FROM billing_orders WHERE user_id = ?
+                ORDER BY created_at DESC, id DESC LIMIT 10
+                """,
+                (user_id,),
+            ).fetchall()
+
+            promo_claimable = False
+            if promo_until is not None and now < promo_until and pass_status is None:
+                promo_key = f"free_pro_{promo_until}"
+                claimed = conn.execute(
+                    "SELECT 1 FROM promo_claims WHERE user_id = ? AND promo_key = ?",
+                    (user_id, promo_key),
+                ).fetchone()
+                promo_claimable = claimed is None
+        return active_pass, orders, pass_status, promo_claimable
 
     def billing_summary(self, user_id: int) -> tuple[sqlite3.Row | None, list[sqlite3.Row]]:
         self.ensure_schema()
@@ -1633,7 +1751,7 @@ class UserDatabase:
             verify_password(password, _DUMMY_PASSWORD_HASH)
             return None
         self.ensure_schema()
-        with self._lock, self._connect() as conn:
+        with self._connect() as conn:
             row = conn.execute(
                 "SELECT id, username, display_name, password_hash, created_at, google_sub, email, "
                 "display_name_is_custom, display_name_change_count, display_name_changed_at "
@@ -1686,7 +1804,7 @@ class UserDatabase:
         token_hash = hash_session_token(token)
         now = int(time.time())
         self.ensure_schema()
-        with self._lock, self._connect() as conn:
+        with self._connect() as conn:
             row = conn.execute(
                 """
                 SELECT u.id, u.username, u.display_name, u.created_at, u.google_sub, u.email,
@@ -1736,7 +1854,7 @@ class UserDatabase:
         if table not in self._USER_STATE_TABLES:
             raise ValueError(f"Unsupported user state table: {table}")
         self.ensure_schema()
-        with self._lock, self._connect() as conn:
+        with self._connect() as conn:
             row = conn.execute(
                 f"SELECT payload_json FROM {table} WHERE user_id = ?",
                 (user_id,),
@@ -1953,7 +2071,7 @@ class UserDatabase:
 
     def get_pricing_survey_choice(self, user_id: int) -> str | None:
         self.ensure_schema()
-        with self._lock, self._connect() as conn:
+        with self._connect() as conn:
             row = conn.execute(
                 "SELECT choice FROM pricing_survey_responses WHERE user_id = ? LIMIT 1",
                 (user_id,),
@@ -2073,7 +2191,7 @@ class UserDatabase:
         tz_th = timezone(timedelta(hours=7))
         now_dt = datetime.fromtimestamp(now, tz_th)
         today_start = int(datetime(now_dt.year, now_dt.month, now_dt.day, 0, 0, 0, tzinfo=tz_th).timestamp())
-        with self._lock, self._connect() as conn:
+        with self._connect() as conn:
             agg_row = conn.execute(
                 """
                 SELECT
@@ -2272,7 +2390,7 @@ class UserDatabase:
         tz_th = timezone(timedelta(hours=7))
         now_dt = datetime.fromtimestamp(now, tz_th)
         today_str = now_dt.strftime("%Y-%m-%d")
-        with self._lock, self._connect() as conn:
+        with self._connect() as conn:
             report = build_statistical_analytics(conn, today_str)
         report["generated_at_th"] = now_dt.strftime("%Y-%m-%d %H:%M:%S")
         return report
@@ -2285,7 +2403,7 @@ class UserDatabase:
         now_dt = datetime.fromtimestamp(now, tz_th)
         today_start = int(datetime(now_dt.year, now_dt.month, now_dt.day, 0, 0, 0, tzinfo=tz_th).timestamp())
 
-        with self._lock, self._connect() as conn:
+        with self._connect() as conn:
             total_users = int(conn.execute("SELECT COUNT(*) FROM users").fetchone()[0])
             new_users_today = int(
                 conn.execute("SELECT COUNT(*) FROM users WHERE created_at >= ?", (today_start,)).fetchone()[0]
@@ -2812,7 +2930,7 @@ class UserDatabase:
             secs = int(raw_val) / 1000.0 if is_ms else int(raw_val)
             return datetime.fromtimestamp(secs, tz_th).strftime("%Y-%m-%d %H:%M:%S")
 
-        with self._lock, self._connect() as conn:
+        with self._connect() as conn:
             rows = conn.execute(
                 """
                 WITH visit_agg AS (
@@ -2872,52 +2990,55 @@ class UserDatabase:
                     FROM team_memberships tm
                     JOIN billing_passes bp ON bp.user_id = tm.owner_id AND bp.tier = tm.tier AND bp.expires_at > ?
                     JOIN users owner ON owner.id = tm.owner_id
+                ),
+                user_rows AS (
+                    SELECT
+                        u.id,
+                        u.username,
+                        u.display_name,
+                        u.email,
+                        u.created_at,
+                        u.google_sub,
+                        oa.oauth_provider,
+                        COALESCE(va.active_days, 0) AS active_days,
+                        va.first_visit,
+                        va.last_visit,
+                        COALESCE(json_array_length(json_extract(ds.payload_json, '$.seriesGames')), 0) AS saved_series_games,
+                        COALESCE(CAST(json_extract(ds.payload_json, '$.stepIndex') AS INTEGER), 0) AS draft_step_index,
+                        COALESCE(ds.updated_at, 0) AS draft_updated_at,
+                        COALESCE(json_array_length(json_extract(ph.payload_json, '$.entries')), 0) AS practice_games,
+                        COALESCE(ph.updated_at, 0) AS practice_updated_at,
+                        COALESCE(ua.predict_calls, 0) AS predict_calls,
+                        COALESCE(ua.draft_save_calls, 0) AS draft_save_calls,
+                        COALESCE(sa.active_sessions, 0) AS active_sessions,
+                        ps.choice AS survey_choice,
+                        bp.tier AS pass_tier,
+                        bp.expires_at AS pass_expires_at,
+                        COALESCE(po.paid_orders, 0) AS paid_orders,
+                        pr.promo_claimed_at AS promo_claimed_at,
+                        tma.team_tier AS team_tier,
+                        tma.team_expires_at AS team_expires_at,
+                        tma.team_owner_username AS team_owner_username
+                    FROM users u
+                    LEFT JOIN visit_agg va ON va.user_id = u.id
+                    LEFT JOIN usage_agg ua ON ua.user_id = u.id
+                    LEFT JOIN session_agg sa ON sa.user_id = u.id
+                    LEFT JOIN oauth_agg oa ON oa.user_id = u.id
+                    LEFT JOIN user_draft_states ds ON ds.user_id = u.id
+                    LEFT JOIN user_practice_histories ph ON ph.user_id = u.id
+                    LEFT JOIN pricing_survey_responses ps ON ps.user_id = u.id
+                    LEFT JOIN billing_passes bp ON bp.user_id = u.id AND bp.expires_at > ?
+                    LEFT JOIN paid_agg po ON po.user_id = u.id
+                    LEFT JOIN promo_agg pr ON pr.user_id = u.id
+                    LEFT JOIN team_mem_agg tma ON tma.user_id = u.id
                 )
-                SELECT
-                    u.id,
-                    u.username,
-                    u.display_name,
-                    u.email,
-                    u.created_at,
-                    u.google_sub,
-                    oa.oauth_provider,
-                    COALESCE(va.active_days, 0) AS active_days,
-                    va.first_visit,
-                    va.last_visit,
-                    COALESCE(json_array_length(json_extract(ds.payload_json, '$.seriesGames')), 0) AS saved_series_games,
-                    COALESCE(CAST(json_extract(ds.payload_json, '$.stepIndex') AS INTEGER), 0) AS draft_step_index,
-                    COALESCE(ds.updated_at, 0) AS draft_updated_at,
-                    COALESCE(json_array_length(json_extract(ph.payload_json, '$.entries')), 0) AS practice_games,
-                    COALESCE(ph.updated_at, 0) AS practice_updated_at,
-                    COALESCE(ua.predict_calls, 0) AS predict_calls,
-                    COALESCE(ua.draft_save_calls, 0) AS draft_save_calls,
-                    COALESCE(sa.active_sessions, 0) AS active_sessions,
-                    ps.choice AS survey_choice,
-                    bp.tier AS pass_tier,
-                    bp.expires_at AS pass_expires_at,
-                    COALESCE(po.paid_orders, 0) AS paid_orders,
-                    pr.promo_claimed_at AS promo_claimed_at,
-                    tma.team_tier AS team_tier,
-                    tma.team_expires_at AS team_expires_at,
-                    tma.team_owner_username AS team_owner_username
-                FROM users u
-                LEFT JOIN visit_agg va ON va.user_id = u.id
-                LEFT JOIN usage_agg ua ON ua.user_id = u.id
-                LEFT JOIN session_agg sa ON sa.user_id = u.id
-                LEFT JOIN oauth_agg oa ON oa.user_id = u.id
-                LEFT JOIN user_draft_states ds ON ds.user_id = u.id
-                LEFT JOIN user_practice_histories ph ON ph.user_id = u.id
-                LEFT JOIN pricing_survey_responses ps ON ps.user_id = u.id
-                LEFT JOIN billing_passes bp ON bp.user_id = u.id AND bp.expires_at > ?
-                LEFT JOIN paid_agg po ON po.user_id = u.id
-                LEFT JOIN promo_agg pr ON pr.user_id = u.id
-                LEFT JOIN team_mem_agg tma ON tma.user_id = u.id
+                SELECT *
+                FROM user_rows
                 ORDER BY
-                    COALESCE(va.active_days, 0) DESC,
-                    (COALESCE(json_array_length(json_extract(ds.payload_json, '$.seriesGames')), 0)
-                     + COALESCE(json_array_length(json_extract(ph.payload_json, '$.entries')), 0)) DESC,
-                    COALESCE(ua.predict_calls, 0) DESC,
-                    u.id DESC
+                    active_days DESC,
+                    (saved_series_games + practice_games) DESC,
+                    predict_calls DESC,
+                    id DESC
                 """,
                 (now, now, now),
             ).fetchall()

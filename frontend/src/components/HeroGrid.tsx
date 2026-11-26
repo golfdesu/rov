@@ -1,6 +1,6 @@
 import { useLanguage } from "../i18n/language";
 import { Search, X } from "lucide-react";
-import { forwardRef, memo, type ReactNode, useMemo, useState } from "react";
+import { forwardRef, memo, type ReactNode, useDeferredValue, useMemo, useState } from "react";
 import type { DraftStep, Hero, LaneKey } from "../types/draft";
 import { LANE_SHORT, TIER_STYLE, heroLanes, laneKey, missingLaneKeys } from "../utils/draft";
 import { displayName, matchesHeroQuery } from "../utils/heroNames";
@@ -59,6 +59,7 @@ export const HeroGrid = memo(
 ) {
   const { t } = useLanguage();
   const [query, setQuery] = useState("");
+  const deferredQuery = useDeferredValue(query);
   const [laneState, setLaneState] = useState<{ key: number; value: string | null }>({
     key: laneResetKey,
     value: null,
@@ -103,7 +104,7 @@ export const HeroGrid = memo(
   );
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = deferredQuery.trim().toLowerCase();
     // Precompute sort keys once per hero instead of splitting lane strings inside .sort()
     const scores = new Map<string, number>();
     const list: Hero[] = [];
@@ -143,7 +144,7 @@ export const HeroGrid = memo(
         (scores.get(a.name) ?? 2000) - (scores.get(b.name) ?? 2000) ||
         HERO_COLLATOR.compare(parsedHeroMeta.get(a.name)?.label ?? a.name, parsedHeroMeta.get(b.name)?.label ?? b.name),
     );
-  }, [heroes, parsedHeroMeta, query, lane, unavailableHeroes, recommendedRanks, missing, allyPoolHeroLanes]);
+  }, [heroes, parsedHeroMeta, deferredQuery, lane, unavailableHeroes, recommendedRanks, missing, allyPoolHeroLanes]);
   const chip = (active: boolean, isMissingLane = false) =>
     `relative h-7 shrink-0 border px-2 font-display text-[10px] font-semibold tracking-wide transition-colors sm:h-7.5 sm:px-2.5 sm:text-[11px] ${
       active
@@ -296,7 +297,7 @@ export const HeroGrid = memo(
                         ? t(" · {0} ใช้ไปแล้วในเกมก่อน", opponentTeamName)
                         : ""
                 }`}
-                className={`group relative aspect-square overflow-hidden border text-left transition-all ${
+                className={`group relative aspect-square overflow-hidden border text-left transition-[border-color,opacity,transform] ${
                   isReplacingCurrent
                     ? "border-gold bg-gold/10 ring-1 ring-gold/60 opacity-85"
                     : lockedByGlobalBan

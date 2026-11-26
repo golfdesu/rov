@@ -1,5 +1,5 @@
 import { ArrowRight, Bot, History, PlusCircle, RotateCcw, Shuffle, Sparkles, Trophy, Undo2 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { deleteJson, getJson, isAbortError, putJson } from "../api/client";
 import { useDraft } from "../hooks/useDraft";
 import { type Message, translateMessage, useLanguage } from "../i18n/language";
@@ -44,9 +44,13 @@ import { ConfirmDialog } from "./ConfirmDialog";
 import { HeroGrid } from "./HeroGrid";
 import { HeroPortrait } from "./HeroPortrait";
 import { LaneIcon } from "./LaneIcon";
-import { PracticeHistoryModal } from "./PracticeHistoryModal";
 import { StableButtonLabel } from "./StableButtonLabel";
 import { TeamColumn } from "./TeamColumn";
+
+const PracticeHistoryModal = lazy(() =>
+  import("./PracticeHistoryModal").then((m) => ({ default: m.PracticeHistoryModal })),
+);
+const EMPTY_MISSING_LANES: string[] = [];
 
 type Side = DraftStep["side"];
 const AI_MIN_THINK_MS = 1000;
@@ -503,15 +507,18 @@ function PracticeRound({
   const hasAnyAction = draft.bluePicks.length + draft.redPicks.length + draft.blueBans.length + draft.redBans.length > 0;
   const canUndoPlayerTurn = Boolean(lastPlayerStep);
 
-  function handlePlayerLock(hero: string): boolean {
-    if (!playerTurn || unavailableHeroes.has(hero)) return false;
-    if (!hasAnyAction && currentStepIndex === 0) {
-      trackTelemetryEvent("practice_started");
-    }
-    lockHero(hero, currentStepIndex);
-    setLaneResetKey((k) => k + 1);
-    return true;
-  }
+  const handlePlayerLock = useCallback(
+    (hero: string): boolean => {
+      if (!playerTurn || unavailableHeroes.has(hero)) return false;
+      if (!hasAnyAction && currentStepIndex === 0) {
+        trackTelemetryEvent("practice_started");
+      }
+      lockHero(hero, currentStepIndex);
+      setLaneResetKey((k) => k + 1);
+      return true;
+    },
+    [playerTurn, unavailableHeroes, hasAnyAction, currentStepIndex, lockHero],
+  );
 
   function handleUndoPlayerTurn() {
     if (!lastPlayerStep) return;
@@ -1016,7 +1023,7 @@ function PracticeRound({
                       blueTeamName={blueTeamName}
                       redTeamName={redTeamName}
                       recommendedRanks={hintedRanks}
-                      missingAllyLanes={showHints ? draft.missingAllyLanes : []}
+                      missingAllyLanes={showHints ? draft.missingAllyLanes : EMPTY_MISSING_LANES}
                       currentStep={currentStep}
                       allowLock={playerTurn}
                       isLoading={showHints && isLoading}
@@ -1044,15 +1051,17 @@ function PracticeRound({
       </main>
 
       {isHistoryOpen && (
-        <PracticeHistoryModal
-          entries={historyEntries}
-          maxHistory={maxHistory}
-          heroMap={draft.heroMap}
-          onLoadEntry={handleLoadHistoryEntry}
-          onDeleteEntry={onDeleteHistoryEntry}
-          onClearAll={onClearHistory}
-          onClose={() => setIsHistoryOpen(false)}
-        />
+        <Suspense fallback={null}>
+          <PracticeHistoryModal
+            entries={historyEntries}
+            maxHistory={maxHistory}
+            heroMap={draft.heroMap}
+            onLoadEntry={handleLoadHistoryEntry}
+            onDeleteEntry={onDeleteHistoryEntry}
+            onClearAll={onClearHistory}
+            onClose={() => setIsHistoryOpen(false)}
+          />
+        </Suspense>
       )}
       {confirmAction && (
         <ConfirmDialog
