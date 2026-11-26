@@ -27,6 +27,23 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-26 07:03 (UTC+7) — Add Engaged Users Filter Pill & Clean Historical Ghost-Tab Rows
+**Agent:** Antigravity Agent
+
+### ✅ Completed Work
+- **Engaged Users Filter (`frontend/src/components/AdminDashboardView.tsx`):** Added `"ใช้งานจริง"` (`engaged`) filter pill in the `#admin` user table matching users with real draft/practice/save/multi-predict activity (`saved_series_games >= 1 || practice_games >= 1 || draft_step_index >= 1 || predict_calls >= 2`).
+- **Targeted Production DB Cleanup (`20.2.210.230`):** Backed up `/app/db/rov_app.db` to `/app/db/rov_app.db.bak-20261126-ghostcleanup` (`4,792,320` bytes) and removed historical ghost-tab telemetry rows (`9` `daily_visits` and `7` `user_usage_daily`) for `@kaisertz` and `@nicee2925` after verifying zero draft/practice/billing rows.
+
+### 📁 Modified Files
+- `frontend/src/components/AdminDashboardView.tsx`
+- `docs/PRODUCTION_RELEASES.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified locally with `npm --prefix frontend run lint` (`0` warnings, `0` errors), `vite build`, and `build:prod`.
+- Verified live production deploy (`a4eaa1c` on `20.2.210.230`) with `https://minidraft.app/health` (`200`), active bundle (`index-DHp6DXP3.js`), and SQLite DB integrity (`users: 1034`, `promo_claims: 31`, `billing_passes: 32`).
+
+---
+
 ## 📅 2026-11-26 06:53 (UTC+7) — Filter Background Mobile Tab Telemetry From Daily Visits & Predict Usage
 **Agent:** Antigravity Agent
 

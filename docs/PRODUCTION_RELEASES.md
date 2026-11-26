@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `cb6ba65` (`main`: require visible user interaction for daily visits and skip empty-board predict counts) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-BrZ7xUyP.js` (`483.54 kB`) + `dist-prod/assets/index-C4BQQffz.css` (`114.16 kB`), `dist-prod/index.html` (`3.12 kB`) |
+| **Git Base Commit on VM** | `a4eaa1c` (`main`: add engaged user filter pill in admin users table) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-DHp6DXP3.js` (`483.54 kB`) + `dist-prod/assets/index-C4BQQffz.css` (`114.16 kB`), `dist-prod/index.html` (`3.12 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-26 06:53 (UTC+7)` |
+| **Last Updated** | `2026-11-26 07:03 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,16 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-26 07:03 (UTC+7) — Ghost-Tab Telemetry DB Cleanup & `#admin` `"ใช้งานจริง"` Filter Pill (`a4eaa1c`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `cb6ba65` to `a4eaa1c` (`main`, 19-path sparse-checkout intact).
+- **Targeted Live DB Cleanup (`/app/db/rov_app.db`):**
+  - Created online SQLite backup `/app/db/rov_app.db.bak-20261126-ghostcleanup` (`4,792,320` bytes) via `sqlite3.Connection.backup()`.
+  - Verified zero draft, practice, promo, or billing rows for suspended-tab-only accounts `@kaisertz` (`id=273`) and `@nicee2925` (`id=349`), then removed `9` `daily_visits` rows and `7` `user_usage_daily` rows (`0` remaining for both accounts; `users: 1034` intact).
+- **Frontend (`AdminDashboardView.tsx`):** Added the `"ใช้งานจริง"` (`engaged`: `saved_series_games >= 1 || practice_games >= 1 || draft_step_index >= 1 || predict_calls >= 2`) filter pill in the `#admin` user activity table.
+- **Bundle Built:** `dist-prod/index.html` (`3.12 kB`), `dist-prod/assets/index-DHp6DXP3.js` (`483.54 kB`), `dist-prod/assets/index-C4BQQffz.css` (`114.16 kB`).
+- **Verification:** `oxlint` (`0` warnings/errors), `vite build` & `build:prod`; live `https://minidraft.app/health` -> `200 {"status":"healthy","model_loaded":true}`, live HTML serving `assets/index-DHp6DXP3.js` and `assets/index-C4BQQffz.css`; `/app/db/rov_app.db` intact (`users: 1034`, `promo_claims: 31`, `billing_orders: 5`, `billing_passes: 32`).
+- **VM Sync Note:** Docs-only commit recording this release is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
 
 ### 📅 2026-11-26 06:53 (UTC+7) — Interaction-Gated Daily Visit & Active-Board Predict Telemetry (`cb6ba65`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `b8cd831` to `cb6ba65` (`main`, 19-path sparse-checkout intact).
