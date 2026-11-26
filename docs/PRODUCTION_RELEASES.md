@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `a4eaa1c` (`main`: add engaged user filter pill in admin users table) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-DHp6DXP3.js` (`483.54 kB`) + `dist-prod/assets/index-C4BQQffz.css` (`114.16 kB`), `dist-prod/index.html` (`3.12 kB`) |
+| **Git Base Commit on VM** | `3805788` (`main`: set Draft vs AI history limit to 100 free / 1000 pro) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-BsjAkmLf.js` (`483.64 kB`) + `dist-prod/assets/index-C4BQQffz.css` (`114.16 kB`), `dist-prod/index.html` (`3.12 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-26 07:03 (UTC+7)` |
+| **Last Updated** | `2026-11-26 08:38 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,14 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-26 08:38 (UTC+7) — Tiered Draft vs AI Practice History Limits (100 Free / 1,000 Pro) (`3805788`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `a4eaa1c` to `3805788` (`main`, 19-path sparse-checkout intact).
+- **Backend (`src/db.py`, `src/schemas.py`, `src/api.py`, `tests/test_billing.py`):** Added `FREE_PRACTICE_HISTORY_LIMIT = 100` and `PAID_PRACTICE_HISTORY_LIMIT = 1000`, enforced per-user limit in `save_user_practice_history()`, raised `PracticeHistorySyncSchema.entries` `max_length` to `1000`, raised production `_MaxBodySizeMiddleware` cap on `PUT /draft/practice-history` to `2 MiB`, and exposed `practice_history_limit` on `/auth/me`.
+- **Frontend (`types/auth.ts`, `utils/practiceHistory.ts`, `PracticeDraftView.tsx`, `PracticeHistoryModal.tsx`, `App.tsx`, `BillingSandbox.tsx`, `englishMessages.ts`):** Propagated `authUser.practice_history_limit` into practice history sanitization/merge/storage and `PracticeHistoryModal` cap indicator (`entries.length / maxHistory`), and added the `"ประวัติดราฟต์ vs AI"` (`100` Free / `1,000` Pro, Duo, Business) comparison row on `#plans`.
+- **Bundle Built:** `dist-prod/index.html` (`3.12 kB`), `dist-prod/assets/index-BsjAkmLf.js` (`483.64 kB`), `dist-prod/assets/index-C4BQQffz.css` (`114.16 kB`).
+- **Verification:** `ruff check/format` clean, `pytest -q --tb=short tests/test_billing.py tests/test_api.py` (`71 passed`), `oxlint` (`0` warnings/errors), `vite build` & `build:prod`, `audit_copy_i18n.py` (`[PASS]`, 100% EN coverage); live `https://minidraft.app/health` -> `200 {"status":"healthy","model_loaded":true}`, live HTML serving `assets/index-BsjAkmLf.js` and `assets/index-C4BQQffz.css`; `/app/db/rov_app.db` intact (`users: 1035`, `promo_claims: 31`, `billing_orders: 5`, `billing_passes: 32`).
+- **VM Sync Note:** Docs-only commit recording this release is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
 
 ### 📅 2026-11-26 07:03 (UTC+7) — Ghost-Tab Telemetry DB Cleanup & `#admin` `"ใช้งานจริง"` Filter Pill (`a4eaa1c`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `cb6ba65` to `a4eaa1c` (`main`, 19-path sparse-checkout intact).

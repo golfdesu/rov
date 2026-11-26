@@ -27,6 +27,24 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-26 08:38 (UTC+7) — Tiered Draft vs AI Practice History Limits (100 Free / 1,000 Pro)
+**Agent:** Antigravity Agent
+
+### ✅ Completed Work
+- **Backend Tiered Limits (`src/db.py`, `src/schemas.py`, `src/api.py`, `tests/test_billing.py`):** Added `FREE_PRACTICE_HISTORY_LIMIT = 100` and `PAID_PRACTICE_HISTORY_LIMIT = 1000`, enforced per-user trimming in `save_user_practice_history()`, raised `PracticeHistorySyncSchema.entries` `max_length` to `1000` and production `PUT /draft/practice-history` body limit to `2 MiB`, exposed `practice_history_limit` on `AuthUserSchema`, and added `test_practice_history_limit_free_100_and_paid_1000`.
+- **Frontend Sync & Plans UI (`frontend/src/types/auth.ts`, `frontend/src/utils/practiceHistory.ts`, `frontend/src/components/PracticeDraftView.tsx`, `frontend/src/components/PracticeHistoryModal.tsx`, `frontend/src/App.tsx`, `frontend/src/components/BillingSandbox.tsx`, `frontend/src/i18n/englishMessages.ts`):** Wired `authUser.practice_history_limit` through local storage and server sync helpers, updated `PracticeHistoryModal` limit counter/footer copy, and added the Draft vs AI history comparison row (`100` Free vs `1,000` Pro/Duo/Business) on `#plans`.
+
+### 📁 Modified Files
+- `src/db.py`, `src/schemas.py`, `src/api.py`, `tests/test_billing.py`
+- `frontend/src/types/auth.ts`, `frontend/src/utils/practiceHistory.ts`, `frontend/src/components/PracticeDraftView.tsx`, `frontend/src/components/PracticeHistoryModal.tsx`, `frontend/src/App.tsx`, `frontend/src/components/BillingSandbox.tsx`, `frontend/src/i18n/englishMessages.ts`
+- `docs/PRODUCTION_RELEASES.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified locally with `ruff check/format` clean, `pytest -q --tb=short tests/test_billing.py tests/test_api.py` (`71 passed`), `npm --prefix frontend run lint` (`0` warnings, `0` errors), `vite build`, `build:prod`, and `audit_copy_i18n.py` (`[PASS]`, 100% EN coverage).
+- Verified live production deploy (`3805788` on `20.2.210.230`) with `https://minidraft.app/health` (`200`), active bundle (`index-BsjAkmLf.js`), and SQLite DB integrity (`users: 1035`, `promo_claims: 31`, `billing_orders: 5`, `billing_passes: 32`).
+
+---
+
 ## 📅 2026-11-26 07:03 (UTC+7) — Add Engaged Users Filter Pill & Clean Historical Ghost-Tab Rows
 **Agent:** Antigravity Agent
 
