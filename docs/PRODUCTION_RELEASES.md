@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `3805788` (`main`: set Draft vs AI history limit to 100 free / 1000 pro) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-BsjAkmLf.js` (`483.64 kB`) + `dist-prod/assets/index-C4BQQffz.css` (`114.16 kB`), `dist-prod/index.html` (`3.12 kB`) |
+| **Git Base Commit on VM** | `a821939` (`main`: use real RPL 2026 Summer and Winter sample datasets) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-8QUWNewd.js` (`483.64 kB`) + `dist-prod/assets/index-C4BQQffz.css` (`114.16 kB`), `dist-prod/index.html` (`3.12 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-26 08:38 (UTC+7)` |
+| **Last Updated** | `2026-11-26 14:04 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,15 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-26 14:04 (UTC+7) — Real RPL 2026 Winter & Summer Sample Analytics Datasets (`a821939`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `3805788` to `a821939` (`main`, 19-path sparse-checkout intact).
+- **Datasets (`configs/sample_scrim_rpl_2026_summer.json`, `configs/sample_scrim_rpl_2026_winter.json`):** Replaced the anonymized team aliases in the 291-game RPL 2026 Summer sample with authentic team codes (`BRU`, `FS`, `KOG`, `SLX`, `EA`, `TEN`, `BAC`, `GJC`, `HD`), and generated the 307-game (`76` series) RPL 2026 Winter server-side sample dataset with verified true pick order and 10-slot lane assignments.
+- **Backend (`src/sample_analytics.py`, `src/api.py`, `tests/test_api.py`):** Added multi-dataset selection via `dataset` on `GET /analytics/sample` (`rpl-2026-winter` default `307` games, `rpl-2026-summer` `291` games, and legacy `sample-league-2026` alias) returning `availableTournaments` while keeping all raw match records strictly server-side.
+- **Frontend (`frontend/src/api/sampleAnalytics.ts`, `frontend/src/components/ScrimDashboardView.tsx`):** Exposed both `RPL 2026 Winter (307)` and `RPL 2026 Summer (291)` in the Scrim Analytics tournament selector across sample/demo and paid modes, defaulting to `RPL 2026 Winter` + `BRU` with graceful fallback from cached legacy filters.
+- **Bundle Built:** `dist-prod/index.html` (`3.12 kB`), `dist-prod/assets/index-8QUWNewd.js` (`483.64 kB`), `dist-prod/assets/index-C4BQQffz.css` (`114.16 kB`).
+- **Verification:** `ruff check/format` clean, `pytest -q --tb=short tests/test_api.py` (`52 passed`), `oxlint` (`0` warnings/errors), `vite build` & `build:prod`, `audit_copy_i18n.py` (`[PASS]`, 100% EN coverage); live `https://minidraft.app/health` -> `200 {"status":"healthy","model_loaded":true}`, live HTML serving `assets/index-8QUWNewd.js` and `assets/index-C4BQQffz.css`, live `/analytics/sample` returning `RPL 2026 Winter` (`307` games) and `RPL 2026 Summer` (`291` games); `/app/db/rov_app.db` intact (`users: 1045`, `promo_claims: 36`, `billing_orders: 5`, `billing_passes: 37`).
+- **VM Sync Note:** Docs-only commit recording this release is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
 
 ### 📅 2026-11-26 08:38 (UTC+7) — Tiered Draft vs AI Practice History Limits (100 Free / 1,000 Pro) (`3805788`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `a4eaa1c` to `3805788` (`main`, 19-path sparse-checkout intact).

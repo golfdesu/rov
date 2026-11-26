@@ -27,6 +27,26 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-26 14:04 (UTC+7) — Real RPL 2026 Winter & Summer Sample Analytics Datasets
+**Agent:** Antigravity Agent
+
+### ✅ Completed Work
+- **Sample Datasets (`configs/sample_scrim_rpl_2026_summer.json`, `configs/sample_scrim_rpl_2026_winter.json`):** Restored real tournament and team codes (`BRU`, `FS`, `KOG`, `SLX`, `EA`, `TEN`, `BAC`, `GJC`, `HD`) in the 291-game RPL 2026 Summer sample and added the 307-game (`76` series) RPL 2026 Winter server-side sample dataset with true pick order and verified lane assignments.
+- **Backend & Tests (`src/sample_analytics.py`, `src/api.py`, `tests/test_api.py`):** Added multi-dataset support (`rpl-2026-winter` default, `rpl-2026-summer`, and legacy `sample-league-2026` alias) to `GET /analytics/sample` with `availableTournaments` metadata and zero raw draft leakage; updated `test_sample_scrim_analytics_aggregated_no_raw_leak`.
+- **Frontend (`frontend/src/api/sampleAnalytics.ts`, `frontend/src/components/ScrimDashboardView.tsx`):** Updated Scrim Analytics to display `RPL 2026 Winter (307)` and `RPL 2026 Summer (291)` in the tournament selector with default team `BRU` and automatic fallback for legacy cached filters.
+
+### 📁 Modified Files
+- `configs/sample_scrim_rpl_2026_summer.json`, `configs/sample_scrim_rpl_2026_winter.json`
+- `src/sample_analytics.py`, `src/api.py`, `tests/test_api.py`
+- `frontend/src/api/sampleAnalytics.ts`, `frontend/src/components/ScrimDashboardView.tsx`
+- `docs/PRODUCTION_RELEASES.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified locally with `ruff check/format` clean, `pytest -q --tb=short tests/test_api.py` (`52 passed`), `npm --prefix frontend run lint` (`0` warnings, `0` errors), `vite build`, `build:prod`, and `audit_copy_i18n.py` (`[PASS]`, 100% EN coverage).
+- Verified live production deploy (`a821939` on `20.2.210.230`) with `https://minidraft.app/health` (`200`), active bundle (`index-8QUWNewd.js`), live `/analytics/sample` endpoints (`307` Winter / `291` Summer), and SQLite DB integrity (`users: 1045`, `promo_claims: 36`, `billing_orders: 5`, `billing_passes: 37`).
+
+---
+
 ## 📅 2026-11-26 08:38 (UTC+7) — Tiered Draft vs AI Practice History Limits (100 Free / 1,000 Pro)
 **Agent:** Antigravity Agent
 
