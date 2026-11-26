@@ -189,14 +189,22 @@ export function BillingSandbox({
     { tier: "pro", days: 30, amount: 5900 },
     { tier: "pro", days: 90, amount: 13900 },
   ];
-  const allDisplayPackages =
-    activePass?.tier === "pro" && !packages.some((pass) => pass.tier === "pro")
+  const catalogDisplayPackages: PrepaidPass[] = [
+    ...proDisplayPackages,
+    { tier: "duo", days: 30, amount: 10900 },
+    { tier: "duo", days: 90, amount: 25900 },
+    { tier: "team_pro", days: 30, amount: 23900 },
+    { tier: "team_pro", days: 90, amount: 56900 },
+  ];
+  const allDisplayPackages = isOwnerAccount
+    ? catalogDisplayPackages
+    : activePass?.tier === "pro" && !packages.some((pass) => pass.tier === "pro")
       ? [...proDisplayPackages, ...packages]
       : packages;
   const displayPackages = allDisplayPackages.filter((pass) => pass.days === duration);
-  const maxSavingsPct = packages.reduce((best, pass) => {
+  const maxSavingsPct = allDisplayPackages.reduce((best, pass) => {
     if (pass.days !== 90) return best;
-    const monthly = packages.find((candidate) => candidate.tier === pass.tier && candidate.days === 30);
+    const monthly = allDisplayPackages.find((candidate) => candidate.tier === pass.tier && candidate.days === 30);
     if (!monthly || monthly.amount <= 0) return best;
     const pct = Math.round(((monthly.amount * 3 - pass.amount) / (monthly.amount * 3)) * 100);
     return Math.max(best, pct);
@@ -433,8 +441,13 @@ export function BillingSandbox({
               <span>{t("ข้อมูลทั้งหมดไม่หาย ต่อ Pro ได้หลังหมดอายุ หรืออัปเกรดเป็น Duo/Business ได้เลย")}</span>
             </div>
           )}
-          {summary && !pending && (packages.length > 0 ? (
+          {summary && !pending && (allDisplayPackages.length > 0 ? (
             <>
+              {isOwnerAccount && (
+                <p className="mx-auto max-w-2xl border border-rose-800/70 bg-rose-950/60 px-4 py-2 text-center text-xs text-rose-200">
+                  {t("มุมมอง Owner — แสดงหน้าแพ็กเกจเหมือนผู้ใช้ทั่วไป (ปิดปุ่มชำระเงินไว้)")}
+                </p>
+              )}
               {activePass?.tier === "pro" && (
                 <p className="mx-auto max-w-2xl border border-line-strong bg-panel px-4 py-2 text-center text-xs text-muted">
                   {t(
@@ -483,7 +496,7 @@ export function BillingSandbox({
                   const perSeatMonthly = details.seats > 1
                     ? Math.round(pass.amount / 100 / details.seats / (pass.days / 30))
                     : 0;
-                  const isCurrentTier = activePass?.tier === pass.tier;
+                  const isCurrentTier = !isOwnerAccount && activePass?.tier === pass.tier;
                   const isLockedCurrentTier =
                     isCurrentTier && !packages.some((candidate) => candidate.tier === pass.tier && candidate.days === pass.days);
                   return (
@@ -541,9 +554,11 @@ export function BillingSandbox({
                       ) : (
                         <button
                           type="button"
-                          disabled={busy}
-                          className={`${actionClass} mt-3 w-full gap-2 transition-colors ${details.actionClass}`}
-                          onClick={() => void checkout(pass)}
+                          disabled={busy || isOwnerAccount}
+                          className={`${actionClass} mt-3 w-full gap-2 transition-colors ${details.actionClass} ${isOwnerAccount ? "cursor-not-allowed opacity-70" : ""}`}
+                          onClick={() => {
+                            if (!isOwnerAccount) void checkout(pass);
+                          }}
                         >
                           <span>
                             {processing === pass.tier
@@ -704,6 +719,12 @@ export function BillingSandbox({
             <span>{processing === "promo" ? t("กำลังรับสิทธิ์…") : t("รับสิทธิ์ Pro ฟรี")}</span>
           </button>
         </div>
+      )}
+      {isOwnerAccount && !pending && (
+        <a href="#plans" className={`${actionClass} w-full gap-2 border-rose-800/70 bg-rose-950/50 text-rose-200 hover:bg-rose-950/80 sm:w-auto`}>
+          <span>{t("ดูหน้าแพ็กเกจ")}</span>
+          <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
+        </a>
       )}
       {!isOwnerAccount && !pending && (packages.length > 0 ? (
         <a href="#plans" className={`${actionClass} w-full gap-2 border-gold/60 text-gold hover:bg-gold/10 sm:w-auto`}>

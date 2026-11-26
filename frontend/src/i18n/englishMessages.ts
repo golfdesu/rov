@@ -2007,4 +2007,6 @@ export const englishMessages: Readonly<Record<string, string>> = {
   "Pro ฟรีหมดอายุ {0} · ต่อแพ็ก": "Free Pro ends {0} · Plans",
   "คุณเคยแจ้งสนใจแพ็กเกจ — ตอนนี้รับ Pro ฟรีได้ถึง {0} เพื่อปลดล็อก 500 เกม & สถิติซ้อมทีม": "Thanks for your interest — claim a Free Pro Pass until {0} to unlock 500 saved games & Scrim Analytics.",
   "รับ Pro ฟรีเลย": "Claim Free Pro",
+  "มุมมอง Owner — แสดงหน้าแพ็กเกจเหมือนผู้ใช้ทั่วไป (ปิดปุ่มชำระเงินไว้)": "Owner preview — showing the exact plans view seen by users (checkout disabled)",
+  "ดูหน้าแพ็กเกจ": "View plans page",
 };
