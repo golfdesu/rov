@@ -697,6 +697,59 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
               </tbody>
             </table>
           </div>
+
+          {(stats.billing.recent_orders ?? []).length > 0 && (
+            <details className="border border-line bg-bg/50 px-3.5 py-2.5 text-xs">
+              <summary className="cursor-pointer font-display font-bold text-ink select-none hover:text-gold">
+                {`ประวัติคำสั่งซื้อทั้งหมด (${(stats.billing.recent_orders ?? []).length.toLocaleString()} รายการล่าสุด)`}
+              </summary>
+              <div className="mt-2.5 max-h-64 overflow-auto border-t border-line pt-2.5">
+                <table className="w-full min-w-[680px] border-collapse text-left font-mono text-xs">
+                  <thead>
+                    <tr className="border-b border-line bg-panel-2/70 text-muted">
+                      <th className="px-2.5 py-1.5 font-bold">บัญชี</th>
+                      <th className="px-2.5 py-1.5 font-bold">แพ็ก</th>
+                      <th className="px-2.5 py-1.5 font-bold">ราคา</th>
+                      <th className="px-2.5 py-1.5 font-bold">สถานะ</th>
+                      <th className="px-2.5 py-1.5 text-right font-bold">สร้างเมื่อ (เวลาไทย)</th>
+                      <th className="px-2.5 py-1.5 text-right font-bold">ชำระเมื่อ (เวลาไทย)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-line">
+                    {(stats.billing.recent_orders ?? []).map((order) => (
+                      <tr key={order.id} className="hover:bg-panel-2/40">
+                        <td className="px-2.5 py-1.5">
+                          <span className="font-bold text-gold">@{order.username}</span>
+                          {order.is_admin && (
+                            <span className="ml-1.5 border border-blue/40 bg-blue/10 px-1.5 py-0.5 text-xs text-blue">
+                              แอดมิน
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-2.5 py-1.5 text-ink">{`${formatPassTierLabel(order.tier)} · ${order.days} วัน`}</td>
+                        <td className="px-2.5 py-1.5 tabular-nums text-ink">{`${order.amount_thb.toLocaleString()} บ.`}</td>
+                        <td className="px-2.5 py-1.5">
+                          <span
+                            className={`border px-2 py-0.5 text-xs font-bold ${
+                              order.status === "paid"
+                                ? "border-good/40 bg-good/15 text-good"
+                                : order.status === "pending"
+                                  ? "border-gold/40 bg-gold/15 text-gold"
+                                  : "border-line-strong bg-panel-2 text-dim"
+                            }`}
+                          >
+                            {order.status === "paid" ? "จ่ายสำเร็จ" : order.status === "pending" ? "รอชำระ" : "ปิดรายการ"}
+                          </span>
+                        </td>
+                        <td className="px-2.5 py-1.5 text-right text-dim">{order.created_at_th}</td>
+                        <td className="px-2.5 py-1.5 text-right text-ink">{order.paid_at_th ?? "-"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          )}
         </section>
       )}
 
@@ -1135,7 +1188,8 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                   <Activity className="h-4 w-4 text-blue" /> เล่นจบเกม, อุปกรณ์ &amp; เครื่องมือ
                 </span>
                 <span className="font-mono text-xs text-dim">
-                  ครบ 18 ตัว: ดราฟต์ {analytics.feature_usage.draft_completed_18} / ซ้อม{" "}
+                  เริ่ม/จบ 18 ตัว: ดราฟต์ {analytics.feature_usage.draft_started ?? "-"}/
+                  {analytics.feature_usage.draft_completed_18} · ซ้อม {analytics.feature_usage.practice_started ?? "-"}/
                   {analytics.feature_usage.practice_completed_18}
                 </span>
               </div>
@@ -1146,7 +1200,21 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                 <span>· จับเวลา {analytics.feature_usage.tools.timer_start}</span>
                 <span>· เลือกเลน {analytics.feature_usage.tools.pick_lane}</span>
                 <span>· สลับฮีโร่ {analytics.feature_usage.tools.replace_hero}</span>
+                <span>· PDF {analytics.feature_usage.tools.scouting_pdf ?? 0}</span>
+                <span>· Pools {analytics.feature_usage.tools.hero_pools ?? 0}</span>
+                <span>· Global Ban {analytics.feature_usage.tools.global_ban ?? 0}</span>
+                <span>· ประวัติ AI {analytics.feature_usage.tools.practice_history ?? 0}</span>
+                <span>· ทบทวน AI {analytics.feature_usage.tools.practice_review ?? 0}</span>
               </div>
+              {analytics.feature_usage.tabs && (
+                <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
+                  <span>แท็บซ้อม AI: {analytics.feature_usage.tabs.practice}</span>
+                  <span>· วิเคราะห์: {analytics.feature_usage.tabs.analytics}</span>
+                  <span>· แพ็ก: {analytics.feature_usage.tabs.plans}</span>
+                  <span>· โปรไฟล์: {analytics.feature_usage.tabs.profile}</span>
+                  <span>· กดเข้าแบบ Guest: {analytics.feature_usage.funnel?.auth_skip_guest ?? 0}</span>
+                </div>
+              )}
               <div className="mt-1.5 text-xs text-dim">
                 ลีกที่ใช้:{" "}
                 {Object.entries(analytics.feature_usage.leagues)

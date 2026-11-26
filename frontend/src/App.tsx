@@ -40,6 +40,7 @@ import type {
 } from "./types/auth";
 import type { DraftSessionPayload } from "./types/draft";
 import { accountLabel, restorePreviewAccountStorage } from "./utils/auth";
+import { trackTelemetryEvent } from "./utils/telemetry";
 
 export type Tab = "draft" | "practice" | "profile" | "plans" | "analytics" | "admin";
 export type DraftToolModal = "pools";
@@ -949,6 +950,16 @@ export function App() {
     broadcastAuthChange(null);
   };
 
+  const lastTrackedTabRef = useRef<Tab | null>(null);
+  useEffect(() => {
+    if (authLoading || tab === lastTrackedTabRef.current) return;
+    lastTrackedTabRef.current = tab;
+    if (tab === "practice") trackTelemetryEvent("tab_practice");
+    else if (tab === "analytics") trackTelemetryEvent("tab_analytics");
+    else if (tab === "plans") trackTelemetryEvent("tab_plans");
+    else if (tab === "profile") trackTelemetryEvent("tab_profile");
+  }, [authLoading, tab]);
+
   if (authLoading) {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-bg px-4">
@@ -975,6 +986,7 @@ export function App() {
           applyAuthenticatedUser(user, false, surveyAnswered, surveyChoice ?? null, Boolean(isAdmin))
         }
         onContinueGuest={() => {
+          trackTelemetryEvent("auth_skip_guest");
           setOauthError(null);
           updateGuestEntered(true);
         }}
@@ -1113,6 +1125,7 @@ export function App() {
     (manualSurveyOpen || (autoSurveyOpen && !otherModalOpen));
 
   const openDraftTool = (tool: DraftToolModal) => {
+    if (tool === "pools") trackTelemetryEvent("feat_hero_pools");
     selectTab("draft");
     setActiveDraftTool(tool);
   };

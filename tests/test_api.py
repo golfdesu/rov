@@ -1870,7 +1870,19 @@ def test_pricing_survey_endpoint_and_deduplication(tmp_path, monkeypatch):
         guest.post(
             "/telemetry/event",
             json={
-                "events": {"draft_completed_18": 1, "ai_adopt_top1": 2, "league_RPL": 1},
+                "events": {
+                    "draft_started": 2,
+                    "draft_completed_18": 1,
+                    "practice_started": 3,
+                    "ai_adopt_top1": 2,
+                    "league_RPL": 1,
+                    "tab_analytics": 4,
+                    "tab_plans": 2,
+                    "feat_scouting_pdf": 1,
+                    "feat_hero_pools": 1,
+                    "feat_global_ban": 1,
+                    "auth_skip_guest": 2,
+                },
                 "client_id": "cid_guest_001",
             },
         ).status_code
@@ -1902,7 +1914,15 @@ def test_pricing_survey_endpoint_and_deduplication(tmp_path, monkeypatch):
     an = analytics_res.json()
     assert an["guest_vs_member_predicts"]["member"] == 1
     assert an["guest_vs_member_predicts"]["guest"] == 1
+    assert an["feature_usage"]["draft_started"] == 2
     assert an["feature_usage"]["draft_completed_18"] == 1
+    assert an["feature_usage"]["practice_started"] == 3
+    assert an["feature_usage"]["tabs"]["analytics"] == 4
+    assert an["feature_usage"]["tabs"]["plans"] == 2
+    assert an["feature_usage"]["funnel"]["auth_skip_guest"] == 2
+    assert an["feature_usage"]["tools"]["scouting_pdf"] == 1
+    assert an["feature_usage"]["tools"]["hero_pools"] == 1
+    assert an["feature_usage"]["tools"]["global_ban"] == 1
     assert an["feature_usage"]["leagues"]["RPL"] == 1
     assert an["ai_trust"]["top1_count"] == 2
     assert an["latency"]["total_requests"] == 2

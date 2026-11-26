@@ -19,7 +19,19 @@ export type TelemetryMetricKey =
   | "feat_timer_start"
   | "feat_pick_lane"
   | "feat_replace_hero"
-  | "feat_practice_hints_off";
+  | "feat_practice_hints_off"
+  | "tab_practice"
+  | "tab_analytics"
+  | "tab_plans"
+  | "tab_profile"
+  | "feat_scouting_pdf"
+  | "feat_hero_pools"
+  | "feat_global_ban"
+  | "feat_practice_history"
+  | "feat_practice_review"
+  | "draft_started"
+  | "practice_started"
+  | "auth_skip_guest";
 
 export function getStoredClientId(): string | null {
   try {

@@ -913,11 +913,22 @@ def build_statistical_analytics(conn: sqlite3.Connection, today_str: str) -> dic
     }
 
     feature_usage = {
+        "draft_started": totals.get("draft_started", 0),
         "draft_completed_18": totals.get("draft_completed_18", 0),
+        "practice_started": totals.get("practice_started", 0),
         "practice_completed_18": totals.get("practice_completed_18", 0),
         "devices": {
             "mobile": totals.get("device_mobile", 0),
             "desktop": totals.get("device_desktop", 0),
+        },
+        "tabs": {
+            "practice": totals.get("tab_practice", 0),
+            "analytics": totals.get("tab_analytics", 0),
+            "plans": totals.get("tab_plans", 0),
+            "profile": totals.get("tab_profile", 0),
+        },
+        "funnel": {
+            "auth_skip_guest": totals.get("auth_skip_guest", 0),
         },
         "leagues": {lg: totals.get(f"league_{lg}", 0) for lg in ("GLOBAL", "RPL", "GCS", "AOG", "INTL")},
         "practice_modes": {m: totals.get(f"mode_{m}", 0) for m in ("bo1", "bo3", "bo5", "bo7")},
@@ -926,6 +937,11 @@ def build_statistical_analytics(conn: sqlite3.Connection, today_str: str) -> dic
             "pick_lane": totals.get("feat_pick_lane", 0),
             "replace_hero": totals.get("feat_replace_hero", 0),
             "practice_hints_off": totals.get("feat_practice_hints_off", 0),
+            "scouting_pdf": totals.get("feat_scouting_pdf", 0),
+            "hero_pools": totals.get("feat_hero_pools", 0),
+            "global_ban": totals.get("feat_global_ban", 0),
+            "practice_history": totals.get("feat_practice_history", 0),
+            "practice_review": totals.get("feat_practice_review", 0),
         },
     }
 

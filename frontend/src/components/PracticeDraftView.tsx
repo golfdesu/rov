@@ -505,6 +505,9 @@ function PracticeRound({
 
   function handlePlayerLock(hero: string): boolean {
     if (!playerTurn || unavailableHeroes.has(hero)) return false;
+    if (!hasAnyAction && currentStepIndex === 0) {
+      trackTelemetryEvent("practice_started");
+    }
     lockHero(hero, currentStepIndex);
     setLaneResetKey((k) => k + 1);
     return true;
@@ -528,6 +531,7 @@ function PracticeRound({
   }
 
   function handleLoadHistoryEntry(entry: PracticeHistoryEntry) {
+    trackTelemetryEvent("feat_practice_review");
     const entrySessionId = entry.signature.split("|")[0] || createPracticeSessionId();
     handledSignaturesRef.current.add(entry.signature);
     onUpdateMeta((prev) => ({
@@ -821,7 +825,10 @@ function PracticeRound({
 
             <button
               type="button"
-              onClick={() => setIsHistoryOpen(true)}
+              onClick={() => {
+                trackTelemetryEvent("feat_practice_history");
+                setIsHistoryOpen(true);
+              }}
               aria-label={t("ประวัติการดราฟต์แข่งกับ AI")}
               title={t("ประวัติการดราฟต์แข่งกับ AI")}
               className={`${HEADER_ACTION_CLASS} border-line-strong bg-panel-2 text-ink hover:border-gold/60 hover:text-gold`}

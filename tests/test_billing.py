@@ -1343,6 +1343,12 @@ def test_admin_stats_separates_admin_test_orders_and_promo_status(sandbox, monke
     by_name = {item["username"]: item for item in billing["active_passes"]}
     assert by_name[USERNAME]["is_admin"] is True
     assert by_name["real_biz_cust"]["is_admin"] is False
+    assert len(billing["recent_orders"]) == 2
+    orders_by_user = {o["username"]: o for o in billing["recent_orders"]}
+    assert orders_by_user[USERNAME]["is_admin"] is True and orders_by_user[USERNAME]["amount_thb"] == 59.0
+    assert (
+        orders_by_user["real_biz_cust"]["is_admin"] is False and orders_by_user["real_biz_cust"]["amount_thb"] == 569.0
+    )
 
 
 def test_practice_history_limit_free_100_and_paid_1000(sandbox):

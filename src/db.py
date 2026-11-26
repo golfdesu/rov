@@ -2670,6 +2670,44 @@ class UserDatabase:
                 )
             )
 
+            recent_order_rows = conn.execute(
+                """
+                SELECT
+                    o.id,
+                    o.tier,
+                    o.days,
+                    o.amount,
+                    o.status,
+                    o.created_at,
+                    o.paid_at,
+                    u.username,
+                    u.display_name
+                FROM billing_orders o
+                JOIN users u ON u.id = o.user_id
+                ORDER BY o.created_at DESC, o.id DESC
+                LIMIT 50
+                """
+            ).fetchall()
+            recent_orders = [
+                {
+                    "id": str(r["id"]),
+                    "username": str(r["username"]),
+                    "display_name": str(r["display_name"]),
+                    "tier": str(r["tier"]),
+                    "days": int(r["days"]),
+                    "amount_thb": round(int(r["amount"] or 0) / 100.0, 2),
+                    "status": str(r["status"]),
+                    "is_admin": str(r["username"]).lower() in admin_set,
+                    "created_at_th": datetime.fromtimestamp(int(r["created_at"]), tz_th).strftime("%Y-%m-%d %H:%M"),
+                    "paid_at_th": (
+                        datetime.fromtimestamp(int(r["paid_at"]), tz_th).strftime("%Y-%m-%d %H:%M")
+                        if r["paid_at"]
+                        else None
+                    ),
+                }
+                for r in recent_order_rows
+            ]
+
         return {
             "generated_at_th": now_dt.strftime("%Y-%m-%d %H:%M:%S"),
             "users": {
@@ -2713,6 +2751,7 @@ class UserDatabase:
                 "admin_test_orders": admin_test_orders,
                 "admin_test_revenue_thb": admin_test_revenue_thb,
                 "active_passes": active_passes,
+                "recent_orders": recent_orders,
             },
             "retention": {
                 "today_dau": today_dau,

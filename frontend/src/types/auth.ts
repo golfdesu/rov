@@ -91,6 +91,19 @@ export interface AdminActivePassItem {
   team_tier?: string | null;
 }
 
+export interface AdminBillingOrderItem {
+  id: string;
+  username: string;
+  display_name: string;
+  tier: string;
+  days: number;
+  amount_thb: number;
+  status: "pending" | "paid" | "closed";
+  is_admin?: boolean;
+  created_at_th: string;
+  paid_at_th?: string | null;
+}
+
 export interface AdminBillingSummary {
   active_total: number;
   active_paid_users: number;
@@ -106,6 +119,7 @@ export interface AdminBillingSummary {
   admin_test_orders?: number;
   admin_test_revenue_thb?: number;
   active_passes: AdminActivePassItem[];
+  recent_orders?: AdminBillingOrderItem[];
 }
 
 export interface AdminStatsResponse {
@@ -384,9 +398,13 @@ export interface AdminAnalyticsResponse {
     guest_share_pct: number;
   };
   feature_usage: {
+    draft_started?: number;
     draft_completed_18: number;
+    practice_started?: number;
     practice_completed_18: number;
     devices: { mobile: number; desktop: number };
+    tabs?: { practice: number; analytics: number; plans: number; profile: number };
+    funnel?: { auth_skip_guest: number };
     leagues: Record<string, number>;
     practice_modes: Record<string, number>;
     tools: {
@@ -394,6 +412,11 @@ export interface AdminAnalyticsResponse {
       pick_lane: number;
       replace_hero: number;
       practice_hints_off: number;
+      scouting_pdf?: number;
+      hero_pools?: number;
+      global_ban?: number;
+      practice_history?: number;
+      practice_review?: number;
     };
   };
   behavioral_signals?: BehavioralSignalItem[];

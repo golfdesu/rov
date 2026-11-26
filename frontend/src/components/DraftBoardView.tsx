@@ -210,6 +210,7 @@ export function DraftBoardView({
   const [globalBanModalCat, setGlobalBanModalCatState] = useState<GlobalBanCategoryKey | null>(null);
   const setGlobalBanModalCat = useCallback(
     (cat: GlobalBanCategoryKey | null) => {
+      if (cat !== null) trackTelemetryEvent("feat_global_ban");
       setGlobalBanModalCatState(cat);
       setPausePredict?.(cat !== null);
     },
@@ -487,6 +488,9 @@ export function DraftBoardView({
           return next;
         });
       }
+      if (bluePicks.length + redPicks.length + blueBans.length + redBans.length === 0) {
+        trackTelemetryEvent("draft_started");
+      }
       if (assistantEnabled && recommendations.length > 0) {
         trackTelemetryEvent(aiAdoptionMetricForRank(recommendedRanks.get(heroName)));
       }
@@ -494,6 +498,10 @@ export function DraftBoardView({
     },
     [
       isCurrentGameLocked,
+      bluePicks.length,
+      redPicks.length,
+      blueBans.length,
+      redBans.length,
       assistantEnabled,
       recommendations.length,
       recommendedRanks,

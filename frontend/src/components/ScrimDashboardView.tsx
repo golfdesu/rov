@@ -57,6 +57,7 @@ import {
 } from "./scrim/ScrimAdvancedCards";
 import { ScoutingReportModal } from "./scrim/ScoutingReportModal";
 import { StableButtonLabel } from "./StableButtonLabel";
+import { trackTelemetryEvent } from "../utils/telemetry";
 
 interface ScrimDashboardViewProps {
   personalGames: RecordedDraftGame[];
@@ -1284,7 +1285,10 @@ export function ScrimDashboardView({
           {displayScopedCount > 0 && (
             <button
               type="button"
-              onClick={() => setReportOpen(true)}
+              onClick={() => {
+                trackTelemetryEvent("feat_scouting_pdf");
+                setReportOpen(true);
+              }}
               className="inline-flex min-h-9 shrink-0 items-center gap-1.5 border border-gold/50 bg-gold/10 px-3 font-display text-xs font-bold text-gold hover:bg-gold hover:text-bg"
             >
               <FileText className="size-3.5 shrink-0" aria-hidden="true" />
