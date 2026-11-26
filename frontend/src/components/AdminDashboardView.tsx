@@ -39,6 +39,7 @@ type UserFilterMode =
   | "promo_free"
   | "team_member"
   | "returning"
+  | "engaged"
   | "draft_saved"
   | "practice_played"
   | "willing"
@@ -329,6 +330,15 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
       if (filterMode === "promo_free" && u.pass_source !== "promo_free") return false;
       if (filterMode === "team_member" && u.pass_source !== "team_member") return false;
       if (filterMode === "returning" && u.active_days < 2) return false;
+      if (
+        filterMode === "engaged" &&
+        u.saved_series_games < 1 &&
+        u.practice_games < 1 &&
+        u.draft_step_index < 1 &&
+        u.predict_calls < 2
+      ) {
+        return false;
+      }
       if (filterMode === "draft_saved" && u.saved_series_games < 1) return false;
       if (filterMode === "practice_played" && u.practice_games < 1) return false;
       if (filterMode === "willing" && u.survey_choice !== "willing") return false;
@@ -1185,6 +1195,7 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
               ["team_member", "สมาชิกทีม"],
               ["promo_free", "รับ Pro ฟรี"],
               ["returning", "เข้าซ้ำ 2+ วัน"],
+              ["engaged", "ใช้งานจริง"],
               ["draft_saved", "เซฟ Draft 1+ เกม"],
               ["practice_played", "เล่น vs AI"],
               ["willing", "พร้อมจ่าย"],
