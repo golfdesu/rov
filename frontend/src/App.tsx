@@ -1,6 +1,6 @@
 import { StableButtonLabel } from "./components/StableButtonLabel";
 import { type Message, translateMessage, useLanguage } from "./i18n/language";
-import { ChevronDown, Gift, HelpCircle, LogIn, Menu, User, X } from "lucide-react";
+import { ChevronDown, Crown, Gift, HelpCircle, LogIn, Menu, User, X } from "lucide-react";
 import { lazy, Suspense, useCallback, useEffect, useId, useRef, useState } from "react";
 import { ApiError, getJson, postJson, putJson, setExpectedAuthUser, setSessionMismatchHandler } from "./api/client";
 import { AuthLanding, AuthModal } from "./components/AuthModal";
@@ -147,6 +147,27 @@ function Workspace({
       tab !== "profile" &&
       tab !== "plans",
   );
+  const isProfileTab = tab === "profile";
+  const profileButtonClass = isAdmin
+    ? isProfileTab
+      ? "border-rose-500 bg-rose-900/90 text-rose-100"
+      : "border-rose-800 bg-rose-950/90 text-rose-200 hover:border-rose-600 hover:bg-rose-900/90 hover:text-white"
+    : authUser?.pass_tier === "team_pro"
+      ? isProfileTab
+        ? "border-blue bg-blue/20 text-blue"
+        : "border-blue/60 bg-blue/12 text-blue hover:border-blue hover:bg-blue/20"
+      : authUser?.pass_tier === "duo"
+        ? isProfileTab
+          ? "border-good bg-good/20 text-good"
+          : "border-good/60 bg-good/12 text-good hover:border-good hover:bg-good/20"
+        : authUser?.pass_tier === "pro"
+          ? isProfileTab
+            ? "border-gold bg-gold/20 text-gold"
+            : "border-gold/60 bg-gold/12 text-gold hover:border-gold hover:bg-gold/20"
+          : isProfileTab
+            ? "border-gold/70 bg-gold/10 text-gold"
+            : "border-line-strong bg-panel-2 text-ink hover:border-gold/50 hover:text-gold";
+
   const handleOpenPromo = () => {
     if (isAuthenticated) {
       selectTab("profile");
@@ -244,13 +265,13 @@ function Workspace({
                 aria-label={t("เปิดโปรไฟล์ของ {0}", accountName)}
                 aria-current={tab === "profile" ? "page" : undefined}
                 title={t("เปิดโปรไฟล์ของ {0}", accountName)}
-                className={`inline-flex min-h-8 items-center gap-1.5 border px-2.5 font-mono text-[11px] font-bold whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-gold ${
-                  tab === "profile"
-                    ? "border-gold/70 bg-gold/10 text-gold"
-                    : "border-line-strong bg-panel-2 text-ink hover:border-gold/50 hover:text-gold"
-                }`}
+                className={`inline-flex min-h-8 items-center gap-1.5 border px-2.5 font-mono text-[11px] font-bold whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-gold ${profileButtonClass}`}
               >
-                <User className="h-3.5 w-3.5 shrink-0" />
+                {isAdmin ? (
+                  <Crown className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                ) : (
+                  <User className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                )}
                 <span className="max-w-[76px] truncate sm:max-w-[120px]">{accountName}</span>
               </a>
             ) : (
