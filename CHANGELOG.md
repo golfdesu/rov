@@ -27,6 +27,37 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-26 22:26 (UTC+7) — Full-Stack Performance Optimization & Prod Deploy (`fa137ac`)
+**Agent:** Antigravity Agent
+
+### ✅ Completed Work
+- **Frontend Bundle, Waterfall & Rendering (`frontend/`):**
+  - Dynamic-imported `englishMessages.ts` (`frontend/src/i18n/language.ts`, `LanguageProvider.tsx`) so Thai users no longer download/parse the 202 KB EN dictionary on initial load (`createLucideIcon` chunk dropped from `210.0 KB` to `5.3 KB`, split into lazy `englishMessages-*.js` `201.9 KB`).
+  - Split React vendor runtime (`react`, `react-dom`, `scheduler`) into a cacheable `react-vendor-*.js` (`218.8 KB`) via `rolldownOptions.output.manualChunks` in `frontend/vite.config.ts`, and lazy-loaded modals (`AuthLanding`, `AuthModal`, `DonateModal`, `MobileNavDrawer`, `PricingSurveyModal`, `UserGuideModal`, `ScoutingReportModal`, `PracticeHistoryModal`) — shrinking `index` from `483.5 KB` to `224.5 KB`, `ScrimDashboardView` from `197.4 KB` to `158.3 KB`, and `PracticeDraftView` from `46.9 KB` to `38.1 KB`.
+  - Eliminated initial fetch waterfall by prefetching `fetchHeroCatalogOnce()` in parallel with `/auth/me` (`frontend/src/hooks/useDraft.ts`, `frontend/src/App.tsx`).
+  - Gated the `document.body` `MutationObserver` only when auto-survey eligibility applies (`App.tsx`), stabilized callbacks/array refs in `PracticeDraftView.tsx` for `React.memo(HeroGrid)`, added `useDeferredValue(query)` and targeted CSS transitions in `HeroGrid.tsx`, added `decoding="async"` in `HeroPortrait.tsx`, and shared `Intl.Collator` in `HeroPickerModal.tsx`.
+- **Backend Inference, Lazy Init & HTTP Caching (`src/predictor.py`, `src/search/draft_mcts.py`, `src/api.py`, `deploy/compose.yaml`):**
+  - Added thread-safe bounded LRU cache (`maxsize=512` with `.model_copy(deep=True)` isolation) in `RoVDraftPredictor.predict()`, cutting repeated-state inference from `5.87 ms` cold to `0.069 ms` avg (`~85x`).
+  - Switched `run_model()` in `src/search/draft_mcts.py` to `torch.inference_mode()` without duplicate `unavail` tensor conversion, added `ROV_TORCH_NUM_THREADS` / `OMP_NUM_THREADS=1` / `MKL_NUM_THREADS=1` defaults in `deploy/compose.yaml`.
+  - Lazy-loaded `CombatEngine` via `_item_folder_aliases()` in `src/api.py` so `CombatEngine()` is not instantiated at API module import time.
+  - Enabled `Cache-Control: public, max-age=3600` on `/heroes`, `public, max-age=31536000, immutable` on `/assets/*`, `public, max-age=86400` on `/avatars/*` and `/hero_images.json`, and `no-cache` on HTML in `_FrontendStaticFiles`.
+- **SQLite Throughput, Indexes & Query Consolidation (`src/db.py`, `src/api.py`):**
+  - Tuned WAL connection pragmas (`PRAGMA synchronous=NORMAL`, `temp_store=MEMORY`, `cache_size=-16000`), moved `mkdir` out of hot `_connect()`, added 7 missing indexes (`billing_orders`, `billing_passes`, `daily_visits`, `users`, `pricing_survey_responses`, `team_invites`), dropped redundant `idx_hero_pools_owner`, removed `self._lock` from WAL-safe read methods, and eliminated double `json_extract` evaluation in `get_admin_users_report`.
+  - Consolidated `GET /auth/me` and `GET /billing` via `get_auth_user_context()` and `get_billing_snapshot()` (`<= 2` DB connections per authenticated call, down from up to 7).
+
+### 📁 Modified & Added Files
+- Frontend: `frontend/vite.config.ts`, `frontend/src/i18n/language.ts`, `frontend/src/i18n/LanguageProvider.tsx`, `frontend/src/hooks/useDraft.ts`, `frontend/src/App.tsx`, `frontend/src/components/ScrimDashboardView.tsx`, `frontend/src/components/PracticeDraftView.tsx`, `frontend/src/components/HeroGrid.tsx`, `frontend/src/components/HeroPortrait.tsx`, `frontend/src/components/lab/HeroPickerModal.tsx`
+- Backend & Deploy: `src/predictor.py`, `src/search/draft_mcts.py`, `src/api.py`, `src/db.py`, `deploy/compose.yaml`
+- **Files:** `CHANGELOG.md`, `docs/PRODUCTION_RELEASES.md`
+- **Tests:** `tests/test_perf_optimizations.py`
+
+### 🧪 Verification
+- Frontend: `npm --prefix frontend run lint` (`0` warnings/errors), `build:prod` & `build` clean, `audit_copy_i18n.py` `[PASS]` (`0` missing EN keys).
+- Python & Audits: `ruff check --fix .` & `ruff format --check .` clean (`145` files), `pytest -q --tb=short` (`173 passed`), `audit_arch_perf.py` `[OK]` (direct median `0.2 ms`, depth-2 `0.2 ms`), `audit_security.py` `[PASS]`, `audit_regression_guard.py` (`72/72` draft states + `3/3` combat duels).
+- Production Deploy (`fa137ac` on `20.2.210.230`, 19-path sparse-checkout preserved): verified `https://minidraft.app/health` (`200`), live bundle (`index-DZ579WS6.js` `224.54 kB`, `react-vendor-DpjQJ7Lb.js` `218.79 kB`, `index-3Q07jOHG.css` `116.22 kB`), live `Cache-Control` headers on `/assets/*`, `/heroes`, and `/avatars/*`, and SQLite DB integrity (`SYNC=1`, new indexes active, `users: 1067`, `promo_claims: 47`, `billing_orders: 5`, `billing_passes: 48`).
+
+---
+
 ## 📅 2026-11-26 21:49 (UTC+7) — Translucent Purple Owner Accents (`ff7f2ec`)
 **Agent:** Antigravity Agent
 

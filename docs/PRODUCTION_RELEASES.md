@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `ff7f2ec` (`main`: switch owner badge and preview accents to translucent purple) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-CbKosdoR.js` (`487.73 kB`) + `dist-prod/assets/index-Bh3zIg3X.css` (`115.96 kB`), `dist-prod/index.html` (`3.12 kB`) |
+| **Git Base Commit on VM** | `fa137ac` (`main`: optimize frontend bundle splitting, LRU inference cache, HTTP headers, and SQLite WAL/indexes) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-DZ579WS6.js` (`224.54 kB`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/createLucideIcon-CpX25kZH.js` (`5.34 kB`) + `dist-prod/assets/index-3Q07jOHG.css` (`116.22 kB`), `dist-prod/index.html` (`3.13 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-26 21:49 (UTC+7)` |
+| **Last Updated** | `2026-11-26 22:26 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,14 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-26 22:26 (UTC+7) — Full-Stack Performance Optimization (`fa137ac`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `ff7f2ec` to `fa137ac` (`main`, 19-path sparse-checkout intact).
+- **Frontend Bundle & Initial Load (`frontend/`):** Dynamic-imported `englishMessages.ts` into a separate `201.92 kB` EN-only chunk (`createLucideIcon` dropped from `210.0 kB` to `5.34 kB`), split `react-vendor` (`218.79 kB`), lazy-loaded rare modals + `ScoutingReportModal` (`42.81 kB`) + `PracticeHistoryModal` (`9.80 kB`), prefetched `/heroes` in parallel with `/auth/me`, gated the `document.body` `MutationObserver`, stabilized `PracticeDraftView` callbacks/arrays for `HeroGrid`, and added `useDeferredValue` + `decoding="async"`.
+- **Backend Inference, Lazy Init & HTTP Caching (`src/predictor.py`, `src/search/draft_mcts.py`, `src/api.py`, `deploy/compose.yaml`):** Added thread-safe LRU cache (`maxsize=512`, `0.069 ms` avg hit vs `5.87 ms` cold), switched `run_model()` to `torch.inference_mode()` without redundant `unavail` tensor creation, pinned `OMP_NUM_THREADS=1` / `MKL_NUM_THREADS=1` / `ROV_TORCH_NUM_THREADS=1`, lazy-loaded `CombatEngine`, and added `Cache-Control` headers (`immutable` for `/assets/*`, `max-age=86400` for `/avatars/*`, `max-age=3600` for `/heroes`).
+- **SQLite Tuning, Indexes & Query Consolidation (`src/db.py`, `src/api.py`):** Enabled `PRAGMA synchronous=NORMAL` + `temp_store=MEMORY` + `cache_size=-16000`, added 7 missing indexes, dropped redundant `idx_hero_pools_owner`, removed `self._lock` from WAL-safe reads, and consolidated `GET /auth/me` and `GET /billing` via `get_auth_user_context()` and `get_billing_snapshot()`.
+- **Live Verification (`20.2.210.230`):** Built & started `deploy-app-1` (`index-DZ579WS6.js` `224.54 kB`, `react-vendor-DpjQJ7Lb.js` `218.79 kB`, `index-3Q07jOHG.css` `116.22 kB`); verified `https://minidraft.app/health` (`200`), `/assets/index-DZ579WS6.js` (`immutable`), `/heroes` (`public, max-age=3600`), `/avatars/Valhein.jpg` (`public, max-age=86400`), and `/app/db/rov_app.db` (`PRAGMA synchronous = 1`, new indexes active, `users: 1067`, `promo_claims: 47`, `billing_orders: 5`, `billing_passes: 48`).
+- **VM Sync Note:** Docs/tests commit recording this release (`CHANGELOG.md`, `docs/PRODUCTION_RELEASES.md`, `tests/test_perf_optimizations.py`) is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
 
 ### 📅 2026-11-26 21:49 (UTC+7) — Translucent Purple Owner Accents (`ff7f2ec`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `a29e4fe` to `ff7f2ec` (`main`, 19-path sparse-checkout intact).
