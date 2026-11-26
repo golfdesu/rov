@@ -27,6 +27,24 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-26 21:24 (UTC+7) — Funnel/Feature Telemetry & `#admin` Billing Orders History
+**Agent:** Antigravity Agent
+
+### ✅ Completed Work
+- **Aggregate Telemetry Expansion (`src/schemas.py`, `src/analytics.py`, `frontend/src/utils/telemetry.ts`, `App.tsx`, `DraftBoardView.tsx`, `PracticeDraftView.tsx`, `ScrimDashboardView.tsx`):** Added `tab_practice`, `tab_analytics`, `tab_plans`, `tab_profile`, `feat_scouting_pdf`, `feat_hero_pools`, `feat_global_ban`, `feat_practice_history`, `feat_practice_review`, `draft_started`, `practice_started`, and `auth_skip_guest` event tracking to measure tab engagement, Pro feature adoption, start-to-complete drop-off, and guest skip rates.
+- **Billing Orders & Funnel Dashboard (`src/db.py`, `frontend/src/types/auth.ts`, `AdminDashboardView.tsx`):** Added `recent_orders` (`50` latest `billing_orders` across `paid`/`pending`/`closed` statuses with admin tagging) and rendered the collapsible order history table plus tab/tool/funnel counters in `#admin`; expanded telemetry and billing tests in `tests/test_api.py` and `tests/test_billing.py`.
+
+### 📁 Modified Files
+- `src/schemas.py`, `src/analytics.py`, `src/db.py`, `tests/test_api.py`, `tests/test_billing.py`
+- `frontend/src/utils/telemetry.ts`, `frontend/src/types/auth.ts`, `frontend/src/App.tsx`, `frontend/src/components/DraftBoardView.tsx`, `frontend/src/components/PracticeDraftView.tsx`, `frontend/src/components/ScrimDashboardView.tsx`, `frontend/src/components/AdminDashboardView.tsx`
+- `docs/PRODUCTION_RELEASES.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified locally with `ruff check/format` clean, `pytest -q --tb=short tests/test_billing.py tests/test_api.py` (`72 passed`), `npm --prefix frontend run lint` (`0` warnings, `0` errors), `vite build`, `build:prod`, `audit_copy_i18n.py` (`[PASS]`, 100% EN coverage), and `preflight_check.py` (`[OK]`).
+- Verified live production deploy (`0d6c73c` on `20.2.210.230`) with `https://minidraft.app/health` (`200`), active bundle (`index-0Er8RcO9.js`), and SQLite DB integrity (`users: 1064`, `promo_claims: 44`, `billing_orders: 5`, `billing_passes: 45`).
+
+---
+
 ## 📅 2026-11-26 21:16 (UTC+7) — Team Onboarding, Free Pro Conversion/Expiry Nudges, Owner Pass & Admin Revenue Separation
 **Agent:** Antigravity Agent
 

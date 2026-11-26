@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `5aec988` (`main`: add team onboarding, promo expiry/willing nudges, owner display, and admin stats separation) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-31ipnxx8.js` (`486.66 kB`) + `dist-prod/assets/index-C4BQQffz.css` (`114.16 kB`), `dist-prod/index.html` (`3.12 kB`) |
+| **Git Base Commit on VM** | `0d6c73c` (`main`: track feature/funnel events and show billing orders history in #admin) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-0Er8RcO9.js` (`487.07 kB`) + `dist-prod/assets/index-TJjZCR0r.css` (`114.20 kB`), `dist-prod/index.html` (`3.12 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-26 21:16 (UTC+7)` |
+| **Last Updated** | `2026-11-26 21:24 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,14 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-26 21:24 (UTC+7) — Funnel/Feature Telemetry & `#admin` Billing Orders History (`0d6c73c`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `5aec988` to `0d6c73c` (`main`, 19-path sparse-checkout intact).
+- **Telemetry Keys & Analytics (`src/schemas.py`, `src/analytics.py`, `frontend/src/utils/telemetry.ts`, `App.tsx`, `DraftBoardView.tsx`, `PracticeDraftView.tsx`, `ScrimDashboardView.tsx`):** Added 12 lightweight aggregate telemetry counters (`tab_practice`, `tab_analytics`, `tab_plans`, `tab_profile`, `feat_scouting_pdf`, `feat_hero_pools`, `feat_global_ban`, `feat_practice_history`, `feat_practice_review`, `draft_started`, `practice_started`, `auth_skip_guest`) to `site_events_daily` and exposed them under `feature_usage` in `/admin/analytics` and `#admin`.
+- **Billing Orders Table in `#admin` (`src/db.py`, `frontend/src/types/auth.ts`, `AdminDashboardView.tsx`):** Added `recent_orders` (latest `50` `billing_orders` rows across `paid`, `pending`, `closed` with `is_admin` badge) under a collapsible section in the `#admin` billing panel.
+- **Bundle Built:** `dist-prod/index.html` (`3.12 kB`), `dist-prod/assets/index-0Er8RcO9.js` (`487.07 kB`), `dist-prod/assets/index-TJjZCR0r.css` (`114.20 kB`).
+- **Verification:** `ruff check/format` clean, `pytest -q --tb=short tests/test_billing.py tests/test_api.py` (`72 passed`), `oxlint` (`0` warnings/errors), `vite build` & `build:prod`, `audit_copy_i18n.py` (`[PASS]`, 100% EN coverage), `preflight_check.py` (`[OK]`); live `https://minidraft.app/health` -> `200`, live HTML serving `assets/index-0Er8RcO9.js` and `assets/index-TJjZCR0r.css`; `/app/db/rov_app.db` intact (`users: 1064`, `promo_claims: 44`, `billing_orders: 5`, `billing_passes: 45`).
+- **VM Sync Note:** Docs-only commit recording this release is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
 
 ### 📅 2026-11-26 21:16 (UTC+7) — Team Onboarding, Free Pro Conversion & Expiry Nudges, Owner Pass, and Admin Revenue Separation (`5aec988`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `a821939` to `5aec988` (`main`, 19-path sparse-checkout intact).
