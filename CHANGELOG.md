@@ -27,6 +27,22 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-26 21:49 (UTC+7) — Translucent Purple Owner Accents (`ff7f2ec`)
+**Agent:** Antigravity Agent
+
+### ✅ Completed Work
+- **Owner Accent Styling (`frontend/src/App.tsx`, `frontend/src/components/BillingSandbox.tsx`):** Updated the Owner `#profile` navbar button, `#plans` preview notice, and `#profile` plans shortcut from maroon (`rose-*`) to translucent purple (`purple-400`/`500`/`300`/`200`) so it integrates smoothly with the dark tier theme.
+
+### 📁 Modified Files
+- `frontend/src/App.tsx`, `frontend/src/components/BillingSandbox.tsx` (`ff7f2ec`)
+- `docs/PRODUCTION_RELEASES.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified locally with `npm --prefix frontend run lint` (`0` warnings, `0` errors), `npm --prefix frontend run build`, and `npm --prefix frontend run build:prod`.
+- Deployed `ff7f2ec` to `20.2.210.230` (19-path sparse-checkout preserved) and verified live `https://minidraft.app/health` (`200`), active bundle (`index-CbKosdoR.js` + `index-Bh3zIg3X.css`), and SQLite DB integrity (`users: 1066`, `promo_claims: 47`, `billing_orders: 5`, `billing_passes: 48`).
+
+---
+
 ## 📅 2026-11-26 21:44 (UTC+7) — Tier-Colored Profile Navbar Badge (`63b0930`) & Owner Read-Only `#plans` Preview (`a29e4fe`)
 **Agent:** Antigravity Agent
 

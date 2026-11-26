@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `a29e4fe` (`main`: show full read-only plans view for owner account) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-BYT79WHc.js` (`487.73 kB`) + `dist-prod/assets/index-CFfhrfw3.css` (`116.53 kB`), `dist-prod/index.html` (`3.12 kB`) |
+| **Git Base Commit on VM** | `ff7f2ec` (`main`: switch owner badge and preview accents to translucent purple) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-CbKosdoR.js` (`487.73 kB`) + `dist-prod/assets/index-Bh3zIg3X.css` (`115.96 kB`), `dist-prod/index.html` (`3.12 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-26 21:44 (UTC+7)` |
+| **Last Updated** | `2026-11-26 21:49 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,11 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-26 21:49 (UTC+7) — Translucent Purple Owner Accents (`ff7f2ec`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `a29e4fe` to `ff7f2ec` (`main`, 19-path sparse-checkout intact).
+- **Theme Alignment (`frontend/src/App.tsx`, `frontend/src/components/BillingSandbox.tsx`):** Replaced the maroon (`rose-*`) Owner `#profile` navbar button, `#plans` Owner preview notice, and `#profile` plans link with translucent purple styling (`purple-400/500/300/200`) matching the existing tier palette.
+- **Live Verification (`20.2.210.230`):** Built & started `deploy-app-1` (`dist-prod/assets/index-CbKosdoR.js` `487.73 kB`, `index-Bh3zIg3X.css` `115.96 kB`), verified `https://minidraft.app/health` (`200`), and verified SQLite DB counts intact (`users: 1066`, `promo_claims: 47`, `billing_orders: 5`, `billing_passes: 48`).
 
 ### 📅 2026-11-26 21:44 (UTC+7) — Owner Read-Only `#plans` Preview (`a29e4fe`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `63b0930` to `a29e4fe` (`main`, 19-path sparse-checkout intact).
