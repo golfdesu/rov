@@ -72,6 +72,21 @@ Live production runs at **`https://minidraft.app/`** on Azure VM `rov-draft-vm` 
 
 ---
 
+## 4. Performance, Caching & SQLite Invariants (`fa137ac`)
+
+1. **Frontend Bundle & Load Architecture (`frontend/`):**
+   - **Dynamic EN i18n (`language.ts`, `LanguageProvider.tsx`):** `englishMessages.ts` (`~202 KB`) is dynamic-imported only when `language === "en"`, shrinking `createLucideIcon-*.js` from `210.0 KB` to `5.34 KB` for default Thai users.
+   - **Vendor & Modal Splitting (`vite.config.ts`, `App.tsx`, `ScrimDashboardView.tsx`, `PracticeDraftView.tsx`):** `rolldownOptions.output.manualChunks` isolates `react-vendor` (`~219 KB`), and rarely-opened modals (`AuthModal`, `ScoutingReportModal` PDF export, `PracticeHistoryModal`, `MobileNavDrawer`, `DonateModal`, `UserGuideModal`, `PricingSurveyModal`) are `React.lazy()`-loaded, keeping core `index-*.js` at `~224.5 KB`.
+   - **Zero Initial Waterfall & Low-Overhead UI:** `fetchHeroCatalogOnce()` runs in parallel with `GET /auth/me`; `document.body` `MutationObserver` mounts only when auto-survey is eligible; `HeroGrid` uses `useDeferredValue(query)`, targeted CSS transitions, stable props from `PracticeDraftView`, and `decoding="async"` on `HeroPortrait`.
+2. **Backend Inference & HTTP Caching (`src/predictor.py`, `src/search/draft_mcts.py`, `src/api.py`, `deploy/compose.yaml`):**
+   - **Thread-Safe LRU Cache (`maxsize=512`):** `RoVDraftPredictor.predict()` caches canonicalized 22-field `DraftStateRequest` responses (`~0.07 ms` hit vs `~5.9 ms` cold) with `.model_copy(deep=True)` isolation. `run_model()` runs inside `torch.inference_mode()` reusing `tensors[4]` (`unavail`), while `deploy/compose.yaml` pins `OMP_NUM_THREADS=1` / `MKL_NUM_THREADS=1` / `ROV_TORCH_NUM_THREADS=1`.
+   - **Lazy `CombatEngine` & Static `Cache-Control`:** `CombatEngine` is lazy-loaded via `_item_folder_aliases()` (never instantiated at import time). `/heroes` returns `Cache-Control: public, max-age=3600`, `/assets/*` returns `public, max-age=31536000, immutable`, `/avatars/*` + `/hero_images.json` return `public, max-age=86400`, and HTML serves `no-cache`.
+3. **SQLite Pragmas, Read Concurrency & Query Consolidation (`src/db.py`, `src/api.py`):**
+   - `_connect()` configures `PRAGMA synchronous=NORMAL`, `temp_store=MEMORY`, and `cache_size=-16000`; WAL-safe read paths run without `self._lock`.
+   - Seven missing indexes cover `billing_orders`, `billing_passes`, `daily_visits(user_id, visit_date)`, `users(created_at)`, `pricing_survey_responses`, and `team_invites`; redundant prefix `idx_hero_pools_owner` was dropped; `get_admin_users_report()` sorts over a CTE without duplicate `json_extract()`; `/auth/me` and `/billing` consolidate DB reads via `get_auth_user_context()` and `get_billing_snapshot()` (`<= 2` connections per request).
+
+---
+
 ## Related Wiki Articles
 
 - [`system_architecture_and_data.md`](system_architecture_and_data.md)

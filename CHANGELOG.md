@@ -27,6 +27,30 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-26 22:32 (UTC+7) — Upgrade `arch-perf-auditor` Skill & Record Optimization Invariants in WikiSkill
+**Agent:** Antigravity Agent
+
+### ✅ Completed Work
+- **Skill Upgrade (`.agents/skills/arch-perf-auditor/`, mirrored to `.claude/skills/arch-perf-auditor/`):**
+  - Updated `SKILL.md` to cover all 5 performance pillars: LRU prediction cache (`maxsize=512`), `torch.inference_mode()`, OpenMP/PyTorch thread caps, lazy `CombatEngine`, HTTP `Cache-Control` headers, SQLite `WAL`/`synchronous=NORMAL`/`temp_store=MEMORY`/7 indexes/lock-free reads/endpoint consolidation, and frontend dynamic EN i18n, `react-vendor`, lazy modals, `/heroes` prefetch, and rendering hygiene.
+  - Upgraded `scripts/audit_arch_perf.py` to test GNN equivalence on `_predict_uncached()`, benchmark both uncached (`direct median=5.2 ms`, `depth-2 median=9.9 ms`) and LRU hit latency (`median=0.181 ms`), verify SQLite pragmas + 7 new indexes + `idx_hero_pools_owner` removal + `billing_orders` query plan, and verify `_FrontendStaticFiles` `Cache-Control` + `frontend/dist-prod/assets` chunk splits (`englishMessages-*.js`, `react-vendor-*.js`, `createLucideIcon-*.js < 25 KB`).
+- **WikiSkill Institutional Memory (`.wikiskill/`):**
+  - Added Section 4 (`Performance, Caching & SQLite Invariants (fa137ac)`) to `.wikiskill/wiki/production_deployment_and_ui.md`.
+  - Appended Section 5 (`Full-Stack Performance Optimization Trace`) to `.wikiskill/traces/production_cutover_and_ux_trace.md`.
+
+### 📁 Modified Files
+- `.agents/skills/arch-perf-auditor/SKILL.md`, `.agents/skills/arch-perf-auditor/scripts/audit_arch_perf.py`
+- `.claude/skills/arch-perf-auditor/SKILL.md`, `.claude/skills/arch-perf-auditor/scripts/audit_arch_perf.py`
+- `.wikiskill/wiki/production_deployment_and_ui.md`, `.wikiskill/traces/production_cutover_and_ux_trace.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check --fix .` & `ruff format .` clean; `pytest -q tests/test_skills_sync.py` (`2 passed`).
+- `python .agents/skills/arch-perf-auditor/scripts/audit_arch_perf.py` `[OK]` (all 5 checks passed).
+- `python .wikiskill/skills/scripts/preflight_check.py` `[OK]` & `python .wikiskill/skills/scripts/validate_gating.py` `[OK]`.
+
+---
+
 ## 📅 2026-11-26 22:26 (UTC+7) — Full-Stack Performance Optimization & Prod Deploy (`fa137ac`)
 **Agent:** Antigravity Agent
 

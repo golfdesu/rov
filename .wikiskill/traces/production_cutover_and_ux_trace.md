@@ -43,3 +43,15 @@ Distilled lessons from `CHANGELOG.md` and `docs/PRODUCTION_RELEASES.md` covering
   - **Heavy-Tailed Usage & AI Trust**: Saved-game distribution is strongly overdispersed (`Var/Mean = 4.69`, `Gini = 0.863`, Top 10% users generate `73.3%` of saved games). Live AI Top-5 adoption reached `52.2%` vs `3.85%` random baseline (`Binomial Z = 12.05`, `p < 0.0001`).
 - **Dashboard Readability Lesson**:
   - Exposing raw academic terms (`BG/NBD`, `Markov Migration`, `Wilson/Katz CI`, `Spearman rho`) or micro-typography (`9px–10px`) obscures decision-making for product owners. Keep the math engine in `src/analytics.py`, render plain-Thai headlines and `"สรุปให้:"` callouts at `>= 12px` (`text-xs sm:text-sm`), and tuck formal citations into a collapsible footer drawer.
+
+---
+
+## 5. Full-Stack Performance Optimization Trace (`2026-11-26`, `fa137ac`)
+
+- **Problem Diagnosed (Zero-Accuracy-Loss Profiling):**
+  - Static EN translation map (`englishMessages.ts`, `201.9 kB` UTF-8) bundled into `createLucideIcon-*.js` (`210.0 kB`), forcing Thai users to download/parse 2,012 EN keys on first paint; `GET /heroes` waited behind `GET /auth/me` spinner; global `MutationObserver` ran on every DOM change.
+  - `RoVDraftPredictor.predict()` had zero response caching, `run_model()` allocated `unavail` tensors twice under `torch.no_grad()`, OpenMP threads were uncapped under AnyIO's 40-thread pool, `src/api.py` eagerly initialized `CombatEngine()` at import time, and `/assets/*` + `/avatars/*` + `/heroes` lacked cache headers.
+  - SQLite `_connect()` called `mkdir()` per query without `synchronous=NORMAL` / `temp_store=MEMORY` / `cache_size`, global `self._lock` blocked WAL reads behind admin scans, and `/auth/me` opened up to 7 connections sequentially.
+- **Measured Outcomes (`dist-prod` + Python Microbenchmarks + Live VM):**
+  - Frontend bundles: `createLucideIcon` `210.0 kB -> 5.34 kB` (`englishMessages` split to `201.92 kB` lazy EN chunk), core `index` `483.5 kB -> 224.54 kB` + cached `react-vendor` `218.79 kB`, `ScrimDashboardView` `197.4 kB -> 158.30 kB`, `PracticeDraftView` `46.9 kB -> 38.13 kB`.
+  - Backend inference & DB: `predict()` repeated-state latency `5.87 ms -> 0.069 ms` (`~85x` via thread-safe LRU `maxsize=512` with `model_copy(deep=True)` isolation), `72/72` golden snapshot parity untouched (`100%`), `/auth/me` & `/billing` consolidated to `<= 2` DB connections, live `minidraft.app` serving `Cache-Control` `immutable` on `/assets/*`, `86400s` on `/avatars/*`, `3600s` on `/heroes`.

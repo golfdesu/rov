@@ -3,12 +3,10 @@
 from __future__ import annotations
 
 import argparse
-import sqlite3
 import statistics
 import sys
 import tempfile
 import time
-from contextlib import closing
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parents[4]
@@ -26,20 +24,48 @@ def audit_sqlite_query_plans() -> None:
         db.record_daily_visit(client_id="audit_cid_1", user_id=user.id, visit_date_override="2026-11-20")
         db.record_daily_visit(client_id="audit_cid_1", user_id=user.id, visit_date_override="2026-11-21")
 
-        with closing(sqlite3.connect(db.db_path)) as conn:
+        with db._connect() as conn:
+            sync_val = int(conn.execute("PRAGMA synchronous").fetchone()[0])
+            temp_store_val = int(conn.execute("PRAGMA temp_store").fetchone()[0])
+            assert sync_val == 1, f"Expected PRAGMA synchronous=NORMAL (1), got {sync_val}"
+            assert temp_store_val == 2, f"Expected PRAGMA temp_store=MEMORY (2), got {temp_store_val}"
+
+            indexes = {
+                str(r[0]) for r in conn.execute("SELECT name FROM sqlite_master WHERE type = 'index'").fetchall()
+            }
+            assert "idx_hero_pools_owner" not in indexes, "Redundant prefix index idx_hero_pools_owner still exists"
+            for expected_idx in (
+                "idx_billing_orders_user_status",
+                "idx_billing_orders_created",
+                "idx_billing_passes_expires_at",
+                "idx_daily_visits_user_date",
+                "idx_users_created_at",
+                "idx_pricing_survey_updated",
+                "idx_team_invites_owner_tier_exp",
+            ):
+                assert expected_idx in indexes, f"Missing expected SQLite index: {expected_idx}"
+
             plan_rows = conn.execute(
                 "EXPLAIN QUERY PLAN SELECT token_hash FROM auth_sessions WHERE user_id = ? "
                 "ORDER BY created_at DESC, rowid DESC LIMIT 9",
                 (user.id,),
             ).fetchall()
-        plan_text = " ".join(str(r[-1]) for r in plan_rows).upper()
-        assert "IDX_AUTH_SESSIONS_USER_CREATED" in plan_text, f"Missing composite index use: {plan_text}"
-        assert "USE TEMP B-TREE" not in plan_text, f"Unexpected temp B-tree sort: {plan_text}"
+            plan_text = " ".join(str(r[-1]) for r in plan_rows).upper()
+            assert "IDX_AUTH_SESSIONS_USER_CREATED" in plan_text, f"Missing composite index use: {plan_text}"
+            assert "USE TEMP B-TREE" not in plan_text, f"Unexpected temp B-tree sort: {plan_text}"
+
+            orders_plan = " ".join(
+                str(r[-1])
+                for r in conn.execute(
+                    "EXPLAIN QUERY PLAN SELECT id FROM billing_orders ORDER BY created_at DESC, id DESC LIMIT 50"
+                ).fetchall()
+            ).upper()
+            assert "TEMP B-TREE" not in orders_plan, f"Unexpected temp B-tree on billing_orders: {orders_plan}"
 
         stats = db.get_admin_stats()
         assert stats["retention"]["total_tracked_clients"] == 1
         assert stats["retention"]["returning_clients"] == 1
-    print("[PASS] SQLite Query Plan & CTE Retention Audit")
+    print("[PASS] SQLite Pragmas, Indexes & CTE Retention Audit")
 
 
 def audit_serving_gnn_cache_and_latency(skip_bench: bool = False) -> None:
@@ -60,9 +86,9 @@ def audit_serving_gnn_cache_and_latency(skip_bench: bool = False) -> None:
         top_k=5,
         use_lookahead=False,
     )
-    cached_resp = predictor.predict(req_direct)
+    cached_resp = predictor._predict_uncached(req_direct)
     predictor.model.invalidate_gnn_cache()
-    uncached_resp = predictor.predict(req_direct)
+    uncached_resp = predictor._predict_uncached(req_direct)
     assert [r.hero_name for r in cached_resp.recommendations] == [r.hero_name for r in uncached_resp.recommendations], (
         "Cached and uncached hero rankings diverge"
     )
@@ -75,24 +101,32 @@ def audit_serving_gnn_cache_and_latency(skip_bench: bool = False) -> None:
         return
 
     req_depth2 = req_direct.model_copy(update={"use_lookahead": True, "lookahead_depth": 2})
-    # Warm up once before timing
-    predictor.predict(req_direct)
+    # Warm up once before timing uncached neural forward passes & LRU hits
+    predictor._predict_uncached(req_direct)
     direct_ms = []
     for _ in range(5):
         t0 = time.perf_counter()
-        predictor.predict(req_direct)
+        predictor._predict_uncached(req_direct)
         direct_ms.append((time.perf_counter() - t0) * 1000.0)
 
-    predictor.predict(req_depth2)
+    predictor._predict_uncached(req_depth2)
     depth2_ms = []
     for _ in range(3):
         t0 = time.perf_counter()
-        predictor.predict(req_depth2)
+        predictor._predict_uncached(req_depth2)
         depth2_ms.append((time.perf_counter() - t0) * 1000.0)
 
+    predictor.predict(req_direct)
+    lru_ms = []
+    for _ in range(10):
+        t0 = time.perf_counter()
+        predictor.predict(req_direct)
+        lru_ms.append((time.perf_counter() - t0) * 1000.0)
+
     print(
-        f"[PASS] Serving GNN Cache Audit (direct median={statistics.median(direct_ms):.1f} ms, "
-        f"depth-2 median={statistics.median(depth2_ms):.1f} ms)"
+        f"[PASS] Serving Cache Audit (direct median={statistics.median(direct_ms):.1f} ms, "
+        f"depth-2 median={statistics.median(depth2_ms):.1f} ms, "
+        f"LRU hit median={statistics.median(lru_ms):.3f} ms)"
     )
 
 
@@ -153,6 +187,29 @@ def audit_fail_closed_and_sync_merge() -> None:
     print("[PASS] Fail-Closed Admin & Sync Monotonic Revision Audit")
 
 
+def audit_http_cache_and_frontend_bundle() -> None:
+    from src.api import _FrontendStaticFiles
+
+    assert _FrontendStaticFiles._cache_control_for("/assets/index-test.js", "application/javascript") == (
+        "public, max-age=31536000, immutable"
+    )
+    assert _FrontendStaticFiles._cache_control_for("/avatars/Valhein.jpg", "image/jpeg") == "public, max-age=86400"
+    assert _FrontendStaticFiles._cache_control_for("/", "text/html") == "no-cache"
+
+    assets_dir = ROOT_DIR / "frontend" / "dist-prod" / "assets"
+    if assets_dir.is_dir():
+        en_chunks = list(assets_dir.glob("englishMessages-*.js"))
+        vendor_chunks = list(assets_dir.glob("react-vendor-*.js"))
+        lucide_chunks = list(assets_dir.glob("createLucideIcon-*.js"))
+        assert en_chunks, "Expected dynamic englishMessages-*.js chunk in frontend/dist-prod/assets"
+        assert vendor_chunks, "Expected react-vendor-*.js chunk in frontend/dist-prod/assets"
+        if lucide_chunks:
+            assert lucide_chunks[0].stat().st_size < 25_000, (
+                f"createLucideIcon chunk bloated ({lucide_chunks[0].stat().st_size} B); check eager i18n imports"
+            )
+    print("[PASS] HTTP Cache-Control & Frontend Bundle Split Audit")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Audit RoV architecture, DSA, SQLite plans, cache & leakage.")
     parser.add_argument("--skip-bench", action="store_true", help="Skip CPU inference latency timing")
@@ -163,6 +220,7 @@ def main() -> None:
     print("=" * 70)
     audit_sqlite_query_plans()
     audit_serving_gnn_cache_and_latency(skip_bench=args.skip_bench)
+    audit_http_cache_and_frontend_bundle()
     audit_ml_split_and_leakage_guard()
     audit_fail_closed_and_sync_merge()
     print("=" * 70)
