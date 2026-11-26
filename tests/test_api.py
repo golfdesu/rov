@@ -2474,11 +2474,14 @@ def test_sample_scrim_analytics_aggregated_no_raw_leak():
     res_all = client.get("/analytics/sample")
     assert res_all.status_code == 200
     data_all = res_all.json()
-    assert data_all["totalGames"] == 291
-    assert data_all["scopedGameCount"] == 291
-    assert data_all["allStats"]["total"] == 291
+    assert data_all["tournament"] == {"id": "rpl-2026-winter", "name": "RPL 2026 Winter"}
+    assert [t["id"] for t in data_all["availableTournaments"]] == ["rpl-2026-winter", "rpl-2026-summer"]
+    assert data_all["totalGames"] == 307
+    assert data_all["scopedGameCount"] == 307
+    assert data_all["allStats"]["total"] == 307
     assert data_all["allStats"]["seriesCount"] == 76
     assert len(data_all["teamNames"]) == 9
+    assert set(data_all["teamNames"]) == {"BAC", "BRU", "EA", "FS", "GJC", "HD", "KOG", "SLX", "TEN"}
     assert data_all["stats"] is None
     assert len(data_all["advanced"]["positionalPools"]) == 5
 
@@ -2486,10 +2489,10 @@ def test_sample_scrim_analytics_aggregated_no_raw_leak():
     for forbidden in ("bluePicks", "redPicks", "blueBans", "redBans", "pickLanes", "seriesGames"):
         assert forbidden not in raw_text_all
 
-    res_team = client.get("/analytics/sample", params={"team": "VGD", "date_preset": "last30"})
+    res_team = client.get("/analytics/sample", params={"team": "BRU", "date_preset": "last30"})
     assert res_team.status_code == 200
     data_team = res_team.json()
-    assert data_team["focusTeam"] == "VGD"
+    assert data_team["focusTeam"] == "BRU"
     assert data_team["stats"]["total"] > 0
     assert data_team["allStats"] is None
     assert len(data_team["opponents"]) == 8
@@ -2497,10 +2500,22 @@ def test_sample_scrim_analytics_aggregated_no_raw_leak():
     for forbidden in ("bluePicks", "redPicks", "blueBans", "redBans", "pickLanes", "seriesGames"):
         assert forbidden not in raw_text_team
 
+    for legacy_or_summer in ("rpl-2026-summer", "sample-league-2026"):
+        res_summer = client.get("/analytics/sample", params={"dataset": legacy_or_summer, "team": "FS"})
+        assert res_summer.status_code == 200
+        data_summer = res_summer.json()
+        assert data_summer["tournament"] == {"id": "rpl-2026-summer", "name": "RPL 2026 Summer"}
+        assert data_summer["totalGames"] == 291
+        assert data_summer["focusTeam"] == "FS"
+        assert data_summer["stats"]["total"] == 68
+        assert "VGD" not in json.dumps(data_summer)
+
     res_bad = client.get("/analytics/sample", params={"team": "NONEXISTENT"})
     assert res_bad.status_code == 422
     res_bad_preset = client.get("/analytics/sample", params={"date_preset": "custom"})
     assert res_bad_preset.status_code == 422
+    res_bad_dataset = client.get("/analytics/sample", params={"dataset": "unknown"})
+    assert res_bad_dataset.status_code == 422
 
 
 def test_production_body_limit_allows_large_draft_session_only(tmp_path, monkeypatch):

@@ -1,6 +1,6 @@
-"""Server-side Scrim Analytics aggregator for the anonymized RPL 2026 Summer sample dataset.
+"""Server-side Scrim Analytics aggregator for the RPL 2026 sample datasets.
 
-All raw match arrays remain strictly server-side in configs/sample_scrim_rpl_2026_summer.json;
+All raw match arrays remain strictly server-side in configs/sample_scrim_rpl_2026_*.json;
 only aggregated statistics and metrics are returned to clients.
 """
 
@@ -15,8 +15,22 @@ from typing import Literal
 
 from src.config import config
 
-SAMPLE_GAMES_PATH = config.paths.configs_dir / "sample_scrim_rpl_2026_summer.json"
-SAMPLE_TOURNAMENT = {"id": "sample-league-2026", "name": "SAMPLE LEAGUE 2026"}
+DEFAULT_SAMPLE_DATASET = "rpl-2026-winter"
+SAMPLE_DATASET_ALIASES = {"sample-league-2026": "rpl-2026-summer"}
+SAMPLE_DATASETS: dict[str, dict] = {
+    "rpl-2026-winter": {
+        "id": "rpl-2026-winter",
+        "name": "RPL 2026 Winter",
+        "path": config.paths.configs_dir / "sample_scrim_rpl_2026_winter.json",
+    },
+    "rpl-2026-summer": {
+        "id": "rpl-2026-summer",
+        "name": "RPL 2026 Summer",
+        "path": config.paths.configs_dir / "sample_scrim_rpl_2026_summer.json",
+    },
+}
+SAMPLE_GAMES_PATH = SAMPLE_DATASETS[DEFAULT_SAMPLE_DATASET]["path"]
+SAMPLE_TOURNAMENT = {"id": DEFAULT_SAMPLE_DATASET, "name": SAMPLE_DATASETS[DEFAULT_SAMPLE_DATASET]["name"]}
 CANONICAL_LANES = ("DS_Lane", "Jungle", "Mid", "Dragon_Lane", "Roam")
 VALID_LANES = frozenset(CANONICAL_LANES)
 SLOT_DEFS = (
@@ -130,9 +144,12 @@ def _compute_pool_diversity(pick_counts: dict[str, int], total_pick_slots: int) 
     return unique_count, effective, evenness
 
 
-@lru_cache(maxsize=1)
-def _load_sample_games() -> tuple[dict, ...]:
-    path: Path = SAMPLE_GAMES_PATH
+@lru_cache(maxsize=4)
+def _load_sample_games(dataset_id: str = DEFAULT_SAMPLE_DATASET) -> tuple[dict, ...]:
+    meta = SAMPLE_DATASETS.get(dataset_id)
+    if meta is None:
+        return ()
+    path: Path = meta["path"]
     if not path.is_file():
         return ()
     raw = json.loads(path.read_text(encoding="utf-8"))
@@ -1536,9 +1553,14 @@ def get_sample_analytics(
     opponent: str = "ALL",
     date_preset: Literal["all", "last7", "last30"] = "all",
     period_mode: Literal["split_half", "last7_vs_prev"] = "split_half",
+    dataset: str = DEFAULT_SAMPLE_DATASET,
 ) -> dict:
     """Return aggregated analytics for the server-side sample dataset with zero raw game leakage."""
-    all_games = list(_load_sample_games())
+    canonical_dataset = SAMPLE_DATASET_ALIASES.get(dataset, dataset)
+    dataset_meta = SAMPLE_DATASETS.get(canonical_dataset)
+    if dataset_meta is None:
+        raise ValueError(f"Unknown sample dataset: {dataset}")
+    all_games = list(_load_sample_games(canonical_dataset))
     hero_roles = _load_hero_roles()
 
     # Date preset filter (strictly coarse ranges only to prevent single-game extraction)
@@ -1595,10 +1617,16 @@ def get_sample_analytics(
 
     scoped_count = stats["total"] if stats is not None else len(scoped)
 
+    available_tournaments = [
+        {"id": meta["id"], "name": meta["name"], "totalGames": len(_load_sample_games(meta["id"]))}
+        for meta in SAMPLE_DATASETS.values()
+    ]
+
     return {
         "totalGames": len(all_games),
         "scopedGameCount": scoped_count,
-        "tournament": SAMPLE_TOURNAMENT,
+        "tournament": {"id": dataset_meta["id"], "name": dataset_meta["name"]},
+        "availableTournaments": available_tournaments,
         "teamNames": known_teams,
         "opponents": opponents,
         "focusTeam": canonical_team,

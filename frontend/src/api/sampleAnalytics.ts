@@ -9,11 +9,19 @@ import type {
 import { getJson } from "./client";
 
 export type SampleDatePreset = "all" | "last7" | "last30";
+export type SampleDatasetId = "rpl-2026-winter" | "rpl-2026-summer";
+
+export interface SampleTournamentOption {
+  id: SampleDatasetId;
+  name: string;
+  totalGames: number;
+}
 
 export interface SampleAnalyticsResponse {
   totalGames: number;
   scopedGameCount: number;
   tournament: TournamentRef;
+  availableTournaments?: SampleTournamentOption[];
   teamNames: string[];
   opponents: string[];
   focusTeam: string;
@@ -53,12 +61,14 @@ export async function fetchSampleAnalytics({
   opponent,
   datePreset,
   periodMode,
+  dataset,
   signal,
 }: {
   team: string;
   opponent: string;
   datePreset: SampleDatePreset;
   periodMode: "split_half" | "last7_vs_prev";
+  dataset?: SampleDatasetId;
   signal?: AbortSignal;
 }): Promise<SampleAnalyticsResponse> {
   const params = new URLSearchParams({
@@ -67,6 +77,7 @@ export async function fetchSampleAnalytics({
     date_preset: datePreset,
     period_mode: periodMode,
   });
+  if (dataset) params.set("dataset", dataset);
   const raw = await getJson<RawSampleAnalyticsResponse>(`/analytics/sample?${params.toString()}`, signal);
   return {
     ...raw,

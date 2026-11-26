@@ -21,7 +21,12 @@ import {
 } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState, type RefObject } from "react";
 import { ApiError, getJson, isAbortError } from "../api/client";
-import { fetchSampleAnalytics, type SampleAnalyticsResponse } from "../api/sampleAnalytics";
+import {
+  fetchSampleAnalytics,
+  type SampleAnalyticsResponse,
+  type SampleDatasetId,
+  type SampleTournamentOption,
+} from "../api/sampleAnalytics";
 import { getTeam, teamPath, type Team, type TeamGame } from "../api/team";
 import { useLanguage } from "../i18n/language";
 import type { Hero, LaneKey, RecordedDraftGame } from "../types/draft";
@@ -83,8 +88,21 @@ type ScrimDashboardTab = typeof SCRIM_TABS[number][0];
 const SAVED_FILTERS_KEY_PREFIX = "minidraft_scrim_filters_v1:";
 const ALL_TOURNAMENTS = "*";
 const EMPTY_GAMES: RecordedDraftGame[] = [];
-const SAMPLE_TOURNAMENT_ID = "sample-league-2026";
-const SAMPLE_TOURNAMENT_NAME = "SAMPLE LEAGUE 2026";
+const DEFAULT_SAMPLE_TOURNAMENT_ID: SampleDatasetId = "rpl-2026-winter";
+const DEFAULT_SAMPLE_TEAM = "BRU";
+const SAMPLE_TOURNAMENT_DEFAULTS: readonly SampleTournamentOption[] = [
+  { id: "rpl-2026-winter", name: "RPL 2026 Winter", totalGames: 307 },
+  { id: "rpl-2026-summer", name: "RPL 2026 Summer", totalGames: 291 },
+];
+
+function resolveSampleDatasetId(value: string): SampleDatasetId {
+  if (value === "rpl-2026-summer" || value === "sample-league-2026") return "rpl-2026-summer";
+  return "rpl-2026-winter";
+}
+
+function isSampleTournamentId(value: string): boolean {
+  return value === "rpl-2026-winter" || value === "rpl-2026-summer" || value === "sample-league-2026";
+}
 const FILTER_CONTROL_CLASS = "min-h-9 min-w-0 w-full border border-line-strong bg-panel px-2.5 font-display text-base font-semibold text-ink focus-visible:outline-2 focus-visible:outline-gold sm:text-xs";
 
 const VALID_DATE_PRESETS: ReadonlySet<DatePreset> = new Set(["all", "last7", "last30", "custom"]);
@@ -108,9 +126,9 @@ interface SavedScrimFilters {
 function defaultScrimFilters(): SavedScrimFilters {
   return {
     source: "sample",
-    tournamentFilter: SAMPLE_TOURNAMENT_ID,
+    tournamentFilter: DEFAULT_SAMPLE_TOURNAMENT_ID,
     allTeamsSelected: false,
-    selectedTeam: "VGD",
+    selectedTeam: DEFAULT_SAMPLE_TEAM,
     opponentFilter: "ALL",
     seriesFilter: [],
     datePreset: "all",
@@ -856,6 +874,9 @@ export function ScrimDashboardView({
   const canLoadTeamHistory = isPaid && teamHistoryEnabled;
   const showTeamHistory = canLoadTeamHistory && source === "team";
 
+  const activeSampleDataset: SampleDatasetId = resolveSampleDatasetId(tournamentFilter);
+  const sampleData = showSampleData ? sampleState.data : null;
+  const sampleTournamentOptions = sampleData?.availableTournaments ?? SAMPLE_TOURNAMENT_DEFAULTS;
   const sampleEffectiveDatePreset = datePreset === "custom" ? "all" : datePreset;
   const knownSampleTeams = sampleState.data?.teamNames;
   const trimmedSelectedTeam = selectedTeam.trim();
@@ -865,7 +886,7 @@ export function ScrimDashboardView({
         (!knownSampleTeams || knownSampleTeams.some((n) => n.toLowerCase() === trimmedSelectedTeam.toLowerCase()))
       ? trimmedSelectedTeam
       : showSampleData
-        ? "VGD"
+        ? DEFAULT_SAMPLE_TEAM
         : "";
   const knownSampleOpps = sampleState.data?.opponents;
   const sampleQueryOpp =
@@ -875,11 +896,10 @@ export function ScrimDashboardView({
         : opponentFilter
       : "ALL";
   const sampleRequestKey = showSampleData
-    ? `${sampleQueryTeam}|${sampleQueryOpp}|${sampleEffectiveDatePreset}|${samplePeriodMode}|${sampleReload}`
+    ? `${activeSampleDataset}|${sampleQueryTeam}|${sampleQueryOpp}|${sampleEffectiveDatePreset}|${samplePeriodMode}|${sampleReload}`
     : "";
   const sampleLoading = Boolean(sampleRequestKey) && sampleState.key !== sampleRequestKey;
   const sampleError = Boolean(sampleRequestKey) && sampleState.key === sampleRequestKey && sampleState.error;
-  const sampleData = showSampleData ? sampleState.data : null;
 
   useEffect(() => {
     if (!sampleRequestKey) return;
@@ -890,6 +910,7 @@ export function ScrimDashboardView({
       opponent: sampleQueryOpp,
       datePreset: sampleEffectiveDatePreset,
       periodMode: samplePeriodMode,
+      dataset: activeSampleDataset,
       signal: ctrl.signal,
     })
       .then((data) => {
@@ -898,7 +919,7 @@ export function ScrimDashboardView({
       .catch((err) => {
         if (!cancelled && !isAbortError(err)) {
           if (err instanceof ApiError && err.status === 422 && (sampleQueryTeam || sampleQueryOpp !== "ALL")) {
-            setSelectedTeam("VGD");
+            setSelectedTeam(DEFAULT_SAMPLE_TEAM);
             setAllTeamsSelected(false);
             setOpponentFilter("ALL");
             return;
@@ -910,7 +931,7 @@ export function ScrimDashboardView({
       cancelled = true;
       ctrl.abort();
     };
-  }, [sampleRequestKey, sampleQueryTeam, sampleQueryOpp, sampleEffectiveDatePreset, samplePeriodMode]);
+  }, [sampleRequestKey, activeSampleDataset, sampleQueryTeam, sampleQueryOpp, sampleEffectiveDatePreset, samplePeriodMode]);
 
   useEffect(() => {
     try {
@@ -1001,14 +1022,14 @@ export function ScrimDashboardView({
   const tournaments = useMemo(
     () =>
       showSampleData
-        ? [{ id: SAMPLE_TOURNAMENT_ID, name: SAMPLE_TOURNAMENT_NAME }]
+        ? sampleTournamentOptions.map(({ id, name }) => ({ id, name }))
         : showTeamHistory
           ? teamTournaments
           : personalTournaments,
-    [showSampleData, showTeamHistory, teamTournaments, personalTournaments],
+    [showSampleData, sampleTournamentOptions, showTeamHistory, teamTournaments, personalTournaments],
   );
   const activeTournament = showSampleData
-    ? SAMPLE_TOURNAMENT_ID
+    ? activeSampleDataset
     : tournamentFilter === "" || tournaments.some(({ id }) => id === tournamentFilter)
       ? tournamentFilter
       : ALL_TOURNAMENTS;
@@ -1040,7 +1061,7 @@ export function ScrimDashboardView({
     if (target) {
       const exact = teamNames.find((n) => n.toLowerCase() === target);
       if (exact) return exact;
-      if (showSampleData && target === "vgd") return "VGD";
+      if (showSampleData && target === DEFAULT_SAMPLE_TEAM.toLowerCase()) return DEFAULT_SAMPLE_TEAM;
     }
     return "";
   }, [allTeamsSelected, selectedTeam, teamNames, showSampleData]);
@@ -1157,7 +1178,10 @@ export function ScrimDashboardView({
   );
   const advancedStats = showSampleData ? (sampleData?.advanced ?? localAdvancedStats) : localAdvancedStats;
   const displayScopedCount = showSampleData ? (sampleData?.scopedGameCount ?? 0) : scopedGames.length;
-  const sampleTotalCount = sampleData?.totalGames ?? 291;
+  const sampleTotalCount =
+    sampleData?.totalGames ??
+    sampleTournamentOptions.find((item) => item.id === activeSampleDataset)?.totalGames ??
+    307;
 
   const localPeriodDiff = useMemo(() => {
     if (showSampleData || scopedGames.length === 0) return null;
@@ -1181,7 +1205,7 @@ export function ScrimDashboardView({
     (!allTeamsMode && opponentFilter !== "ALL");
 
   function resetFilters() {
-    setTournamentFilter(showSampleData ? SAMPLE_TOURNAMENT_ID : ALL_TOURNAMENTS);
+    setTournamentFilter(showSampleData ? activeSampleDataset : ALL_TOURNAMENTS);
     setAllTeamsSelected(true);
     setSelectedTeam("");
     setOpponentFilter("ALL");
@@ -1191,11 +1215,11 @@ export function ScrimDashboardView({
     setDateTo("");
   }
 
-  function enterSampleSource() {
+  function enterSampleSource(datasetId: SampleDatasetId = DEFAULT_SAMPLE_TOURNAMENT_ID) {
     setSource("sample");
-    setTournamentFilter(SAMPLE_TOURNAMENT_ID);
+    setTournamentFilter(datasetId);
     setAllTeamsSelected(false);
-    setSelectedTeam("VGD");
+    setSelectedTeam((prev) => (prev.trim() && prev.trim().toLowerCase() !== "vgd" ? prev : DEFAULT_SAMPLE_TEAM));
     setOpponentFilter("ALL");
     setSeriesFilter([]);
   }
@@ -1313,12 +1337,14 @@ export function ScrimDashboardView({
                   <span className="truncate font-mono text-[11px]">{t("ทัวร์นาเมนต์")}</span>
                   <select
                     className={FILTER_CONTROL_CLASS}
-                    value={showSampleData ? SAMPLE_TOURNAMENT_ID : `${showTeamHistory ? "team" : "personal"}:${activeTournament}`}
+                    value={showSampleData ? activeSampleDataset : `${showTeamHistory ? "team" : "personal"}:${activeTournament}`}
                     onChange={(event) => {
                       const value = event.target.value;
                       if (!demoMode) {
-                        if (value === SAMPLE_TOURNAMENT_ID) {
-                          if (source !== "sample") enterSampleSource();
+                        if (isSampleTournamentId(value)) {
+                          const nextDataset = resolveSampleDatasetId(value);
+                          if (source !== "sample") enterSampleSource(nextDataset);
+                          else setTournamentFilter(nextDataset);
                           return;
                         }
                         const nextSource: "personal" | "team" = value.startsWith("team:") ? "team" : "personal";
@@ -1350,7 +1376,7 @@ export function ScrimDashboardView({
                         setOpponentFilter("ALL");
                         return;
                       }
-                      setTournamentFilter(value);
+                      setTournamentFilter(resolveSampleDatasetId(value));
                     }}
                   >
                     {!demoMode ? (
@@ -1380,15 +1406,19 @@ export function ScrimDashboardView({
                           </optgroup>
                         )}
                         <optgroup label={t("ข้อมูลตัวอย่าง")}>
-                          <option value={SAMPLE_TOURNAMENT_ID}>
-                            {SAMPLE_TOURNAMENT_NAME} ({sampleTotalCount})
-                          </option>
+                          {sampleTournamentOptions.map((item) => (
+                            <option key={item.id} value={item.id}>
+                              {item.name} ({item.totalGames})
+                            </option>
+                          ))}
                         </optgroup>
                       </>
                     ) : (
-                      <option value={SAMPLE_TOURNAMENT_ID}>
-                        {SAMPLE_TOURNAMENT_NAME} ({sampleTotalCount})
-                      </option>
+                      sampleTournamentOptions.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.name} ({item.totalGames})
+                        </option>
+                      ))
                     )}
                   </select>
                 </label>

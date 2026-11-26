@@ -2315,8 +2315,9 @@ def get_sample_scrim_analytics(
     opponent: str = Query(default="ALL", max_length=32),
     date_preset: Literal["all", "last7", "last30"] = Query(default="all"),
     period_mode: Literal["split_half", "last7_vs_prev"] = Query(default="split_half"),
+    dataset: Literal["rpl-2026-winter", "rpl-2026-summer", "sample-league-2026"] = Query(default="rpl-2026-winter"),
 ):
-    """Return aggregated analytics for the anonymized RPL 2026 Summer sample without exposing raw drafts."""
+    """Return aggregated analytics for the RPL 2026 sample datasets without exposing raw drafts."""
     if not _sample_analytics_limiter.check_and_record(f"sample:{_client_ip(request)}"):
         raise HTTPException(status_code=429, detail="Too many analytics requests. Please slow down.")
     try:
@@ -2325,6 +2326,7 @@ def get_sample_scrim_analytics(
             opponent=opponent,
             date_preset=date_preset,
             period_mode=period_mode,
+            dataset=dataset,
         )
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
