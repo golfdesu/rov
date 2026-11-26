@@ -22,10 +22,16 @@ interface BillingOrder extends PrepaidPass {
 
 interface BillingSummary {
   packages: PrepaidPass[];
-  active_pass: { tier: Tier; expires_at: number; is_owner: boolean } | null;
+  active_pass: {
+    tier: Tier;
+    expires_at: number;
+    is_owner: boolean;
+    source?: "paid" | "promo_free" | "team_member" | "manual" | null;
+  } | null;
   orders: BillingOrder[];
   promo_claimable?: boolean;
   promo_expires_at?: number | null;
+  is_owner_account?: boolean;
 }
 
 interface TierDetails {
@@ -165,9 +171,19 @@ export function BillingSandbox({
   const [promoClaimedUntil, setPromoClaimedUntil] = useState<number | null>(null);
   const [refresh, setRefresh] = useState(0);
   const [showAllOrders, setShowAllOrders] = useState(false);
+  const [nowMs] = useState(Date.now);
   const busy = processing !== null;
   const pending = summary?.orders.find((order) => order.status === "pending");
   const activePass = summary?.active_pass;
+  const isOwnerAccount = Boolean(summary?.is_owner_account) && activePass?.tier === "team_pro";
+  const promoDaysLeft =
+    activePass &&
+    activePass.source === "promo_free" &&
+    !isOwnerAccount &&
+    activePass.expires_at * 1000 > nowMs
+      ? Math.max(1, Math.ceil((activePass.expires_at * 1000 - nowMs) / 86_400_000))
+      : null;
+  const showPromoExpiringAlert = promoDaysLeft !== null && promoDaysLeft <= 4;
   const packages = summary?.packages ?? [];
   const proDisplayPackages: PrepaidPass[] = [
     { tier: "pro", days: 30, amount: 5900 },
@@ -408,6 +424,15 @@ export function BillingSandbox({
               </button>
             </div>
           )}
+          {showPromoExpiringAlert && activePass && (
+            <div className="mx-auto max-w-2xl border border-gold/60 bg-gold/15 px-4 py-3 text-center text-xs leading-relaxed text-ink sm:text-sm">
+              <strong className="font-display text-gold">
+                {t("สิทธิ์ Pro ฟรีจะหมดอายุในอีก {0} วัน ({1})", promoDaysLeft, dateFormat.format(activePass.expires_at * 1000))}
+              </strong>
+              {" — "}
+              <span>{t("ข้อมูลทั้งหมดไม่หาย ต่อ Pro ได้หลังหมดอายุ หรืออัปเกรดเป็น Duo/Business ได้เลย")}</span>
+            </div>
+          )}
           {summary && !pending && (packages.length > 0 ? (
             <>
               {activePass?.tier === "pro" && (
@@ -616,12 +641,38 @@ export function BillingSandbox({
       {summary && (
         <div aria-live="polite" className="space-y-1">
           <p className="text-xs text-muted">{t("แพ็กปัจจุบัน")}</p>
-          <p className="font-display text-base font-bold text-ink">{activePass ? tierNames[activePass.tier] : "Free"}</p>
-          {activePass && (
-            <p className="text-sm font-semibold text-good">
-              {t("ใช้ได้ถึง {0}", dateFormat.format(activePass.expires_at * 1000))}
+          <p className="font-display text-base font-bold text-ink">
+            {isOwnerAccount ? "Owner" : activePass ? tierNames[activePass.tier] : "Free"}
+          </p>
+          {isOwnerAccount ? (
+            <p className="text-sm font-semibold text-gold">
+              {t("สิทธิ์เจ้าของระบบ · ปลดล็อกทุกฟีเจอร์ถาวร")}
             </p>
+          ) : (
+            activePass && (
+              <p className="text-sm font-semibold text-good">
+                {t("ใช้ได้ถึง {0}", dateFormat.format(activePass.expires_at * 1000))}
+              </p>
+            )
           )}
+          {!isOwnerAccount &&
+            activePass &&
+            (activePass.tier === "duo" || activePass.tier === "team_pro") &&
+            activePass.is_owner && (
+              <p className="pt-0.5 text-xs text-blue">
+                <a href="#team-setup" className="font-semibold underline underline-offset-2 hover:text-ink">
+                  {t("จัดการสมาชิกและเริ่มใช้งานทีมด้านล่าง")}
+                </a>
+              </p>
+            )}
+        </div>
+      )}
+      {showPromoExpiringAlert && activePass && (
+        <div className="space-y-1.5 border border-gold/60 bg-gold/15 p-3 text-xs leading-relaxed text-ink">
+          <p className="font-display font-bold text-gold">
+            {t("สิทธิ์ Pro ฟรีจะหมดอายุในอีก {0} วัน ({1})", promoDaysLeft, dateFormat.format(activePass.expires_at * 1000))}
+          </p>
+          <p>{t("ข้อมูลทั้งหมดไม่หาย ต่อ Pro ได้หลังหมดอายุ หรืออัปเกรดเป็น Duo/Business ได้เลย")}</p>
         </div>
       )}
       {paymentNotice}
@@ -654,7 +705,7 @@ export function BillingSandbox({
           </button>
         </div>
       )}
-      {!pending && (packages.length > 0 ? (
+      {!isOwnerAccount && !pending && (packages.length > 0 ? (
         <a href="#plans" className={`${actionClass} w-full gap-2 border-gold/60 text-gold hover:bg-gold/10 sm:w-auto`}>
           <StableButtonLabel message={activePass ? "จัดการ / เปลี่ยนแพ็ก" : "ดูแพ็ก"} alternatives={["จัดการ / เปลี่ยนแพ็ก", "ดูแพ็ก"]} />
           <ArrowRight className="size-4 shrink-0" aria-hidden="true" />

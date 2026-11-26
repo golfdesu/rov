@@ -8,6 +8,7 @@ import {
   ChevronRight,
   ChevronUp,
   FileText,
+  Gift,
   Info,
   Layers,
   RotateCcw,
@@ -63,6 +64,7 @@ interface ScrimDashboardViewProps {
   isPaid: boolean;
   isAuthenticated?: boolean;
   teamHistoryEnabled: boolean;
+  freePromoUntil?: number | null;
   defaultTeamName?: string;
   onOpenAuthModal?: () => void;
   onBack: () => void;
@@ -831,10 +833,21 @@ export function ScrimDashboardView({
   isPaid,
   isAuthenticated = true,
   teamHistoryEnabled,
+  freePromoUntil,
   onOpenAuthModal,
   onBack,
 }: ScrimDashboardViewProps) {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
+  const [nowMs] = useState(Date.now);
+  const demoPromoActive = Boolean(!isPaid && freePromoUntil && freePromoUntil * 1000 > nowMs);
+  const demoPromoShortDate =
+    demoPromoActive && freePromoUntil
+      ? new Intl.DateTimeFormat(language === "th" ? "th-TH" : "en-GB", {
+          day: "numeric",
+          month: "short",
+          timeZone: "Asia/Bangkok",
+        }).format(freePromoUntil * 1000)
+      : "";
   const [initialFilters] = useState(() => readSavedFilters(isPaid));
   const [source, setSource] = useState<"personal" | "team" | "sample">(initialFilters.source);
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({});
@@ -1296,22 +1309,51 @@ export function ScrimDashboardView({
                   : t("ลองกดกรองทีม คู่แข่ง เลน และช่วงวันที่ได้เต็มที่ · อัปเกรดเพื่อวิเคราะห์ข้อมูลดราฟต์ของคุณเองสูงสุด 500 เกม")}
               </p>
             </div>
-            {!isAuthenticated && onOpenAuthModal ? (
-              <button
-                type="button"
-                onClick={onOpenAuthModal}
-                className="inline-flex min-h-9 w-full shrink-0 items-center justify-center border border-gold bg-gold px-4 text-center font-display text-xs font-bold text-bg hover:bg-gold/90 sm:w-auto"
-              >
-                <StableButtonLabel message="เข้าสู่ระบบ" className="inline-grid text-center" />
-              </button>
-            ) : (
-              <a
-                href="#plans"
-                className="inline-flex min-h-9 w-full shrink-0 items-center justify-center border border-gold bg-gold px-4 text-center font-display text-xs font-bold text-bg hover:bg-gold/90 sm:w-auto"
-              >
-                <StableButtonLabel message="ดูแพ็ก" className="inline-grid text-center" />
-              </a>
-            )}
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              {demoPromoActive &&
+                (!isAuthenticated && onOpenAuthModal ? (
+                  <button
+                    type="button"
+                    onClick={onOpenAuthModal}
+                    className="inline-flex min-h-9 w-full shrink-0 items-center justify-center gap-1.5 border border-gold bg-gold px-4 text-center font-display text-xs font-bold text-bg hover:bg-gold/90 sm:w-auto"
+                  >
+                    <Gift className="size-3.5 shrink-0" aria-hidden="true" />
+                    <span>{t("รับ Pro ฟรีถึง {0}", demoPromoShortDate)}</span>
+                  </button>
+                ) : (
+                  <a
+                    href="#plans"
+                    className="inline-flex min-h-9 w-full shrink-0 items-center justify-center gap-1.5 border border-gold bg-gold px-4 text-center font-display text-xs font-bold text-bg hover:bg-gold/90 sm:w-auto"
+                  >
+                    <Gift className="size-3.5 shrink-0" aria-hidden="true" />
+                    <span>{t("รับ Pro ฟรีถึง {0}", demoPromoShortDate)}</span>
+                  </a>
+                ))}
+              {!isAuthenticated && onOpenAuthModal ? (
+                <button
+                  type="button"
+                  onClick={onOpenAuthModal}
+                  className={`inline-flex min-h-9 w-full shrink-0 items-center justify-center border px-4 text-center font-display text-xs font-bold sm:w-auto ${
+                    demoPromoActive
+                      ? "border-gold/60 bg-panel text-gold hover:bg-gold/10"
+                      : "border-gold bg-gold text-bg hover:bg-gold/90"
+                  }`}
+                >
+                  <StableButtonLabel message="เข้าสู่ระบบ" className="inline-grid text-center" />
+                </button>
+              ) : (
+                <a
+                  href="#plans"
+                  className={`inline-flex min-h-9 w-full shrink-0 items-center justify-center border px-4 text-center font-display text-xs font-bold sm:w-auto ${
+                    demoPromoActive
+                      ? "border-gold/60 bg-panel text-gold hover:bg-gold/10"
+                      : "border-gold bg-gold text-bg hover:bg-gold/90"
+                  }`}
+                >
+                  <StableButtonLabel message="ดูแพ็ก" className="inline-grid text-center" />
+                </a>
+              )}
+            </div>
           </section>
         ) : source === "sample" && (
           <section
@@ -1589,11 +1631,36 @@ export function ScrimDashboardView({
           <Alert>{t("วันที่สิ้นสุดต้องไม่ก่อนวันที่เริ่มต้น")}</Alert>
         ) : (allTeamsMode ? displayScopedCount : stats.total) === 0 ? (
           <section className="space-y-3 border border-dashed border-line bg-panel/40 p-10 text-center text-sm text-muted">
-            <p>{!showSampleData && activeGames.length === 0 ? t("ยังไม่มีเกมที่บันทึกในประวัติสำหรับแสดงสถิติ") : t("ไม่พบเกมตามตัวกรอง")}</p>
-            {!showSampleData && activeGames.length === 0 && (
-              <p className="text-xs text-dim">
-                {t("แนะนำบันทึกอย่างน้อย 40 เกมที่มีผลแพ้-ชนะ เพื่อให้สถิติทีมและเมต้าวิเคราะห์ได้แม่นยำ")}
-              </p>
+            <p>
+              {showTeamHistory && team && teamGames.length === 0
+                ? t("ยังไม่มีเกมในประวัติทีม {0} — เปิด 'ประวัติเกม' บนกระดานดราฟต์เพื่อบันทึกหรือแชร์เกมเข้าทีม", team.owner_username)
+                : !showSampleData && activeGames.length === 0
+                  ? t("ยังไม่มีเกมที่บันทึกในประวัติสำหรับแสดงสถิติ")
+                  : t("ไม่พบเกมตามตัวกรอง")}
+            </p>
+            {showTeamHistory && team && teamGames.length === 0 ? (
+              <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+                <a
+                  href="#"
+                  className="inline-flex min-h-9 items-center border border-gold bg-gold px-4 font-display text-xs font-bold text-bg hover:bg-gold/90"
+                >
+                  {t("ไปกระดานดราฟต์")}
+                </a>
+                {team.is_owner && team.members.length === 1 && (
+                  <a
+                    href="#profile"
+                    className="inline-flex min-h-9 items-center border border-blue/50 bg-blue/10 px-4 font-display text-xs font-bold text-blue hover:bg-blue/20"
+                  >
+                    {t("ชวนเพื่อนเข้าทีม")}
+                  </a>
+                )}
+              </div>
+            ) : (
+              !showSampleData && activeGames.length === 0 && (
+                <p className="text-xs text-dim">
+                  {t("แนะนำบันทึกอย่างน้อย 40 เกมที่มีผลแพ้-ชนะ เพื่อให้สถิติทีมและเมต้าวิเคราะห์ได้แม่นยำ")}
+                </p>
+              )
             )}
             {(showSampleData || activeGames.length > 0) && hasActiveFilters && (
               <button

@@ -691,6 +691,8 @@ def _clear_session_cookie(response: Response, request: Request) -> None:
 
 
 def _to_user_schema(user: AuthUser) -> AuthUserSchema:
+    db = get_user_db()
+    pass_status = db.user_pass_status(user.id) if config.billing_enabled else None
     return AuthUserSchema(
         id=user.id,
         username=user.username,
@@ -703,9 +705,12 @@ def _to_user_schema(user: AuthUser) -> AuthUserSchema:
         display_name_next_change_at=user.display_name_next_change_at,
         stripe_sandbox_enabled=config.billing_enabled,
         stripe_livemode=config.stripe_livemode,
-        draft_history_limit=get_user_db().personal_history_limit(user.id) if config.billing_enabled else None,
-        practice_history_limit=get_user_db().practice_history_limit(user.id) if config.billing_enabled else None,
-        is_paid=get_user_db().is_paid_user(user.id) if config.billing_enabled else False,
+        draft_history_limit=db.personal_history_limit(user.id) if config.billing_enabled else None,
+        practice_history_limit=db.practice_history_limit(user.id) if config.billing_enabled else None,
+        is_paid=pass_status is not None if config.billing_enabled else False,
+        pass_tier=pass_status[0] if pass_status else None,  # type: ignore[arg-type]
+        pass_source=pass_status[1] if pass_status else None,  # type: ignore[arg-type]
+        pass_expires_at=pass_status[2] if pass_status else None,
     )
 
 
@@ -1274,7 +1279,8 @@ def billing_summary(
     _verify_expected_user(user, x_expected_user)
     db = get_user_db()
     active_pass, orders = db.billing_summary(user.id)
-    current = BillingPass(**dict(active_pass)) if active_pass else None
+    pass_status = db.user_pass_status(user.id)
+    current = BillingPass(**dict(active_pass), source=pass_status[1] if pass_status else None) if active_pass else None  # type: ignore[arg-type]
     promo_until = config.free_promo_until_ts if config.free_promo_active else None
     promo_claimable = db.can_claim_free_pro_promo(user.id, promo_until)
     return BillingSummary(
@@ -1288,6 +1294,7 @@ def billing_summary(
         orders=[BillingOrder(**dict(order)) for order in orders],
         promo_claimable=promo_claimable,
         promo_expires_at=promo_until if promo_claimable else None,
+        is_owner_account=config.is_admin_username(user.username),
     )
 
 
@@ -2019,7 +2026,7 @@ def get_admin_stats(user: AuthUser | None = Depends(get_optional_user)):
     """Owner-only live production & survey analytics endpoint (404 for non-admins)."""
     if user is None or not config.is_admin_username(user.username):
         raise HTTPException(status_code=404, detail="Not Found")
-    db_stats = get_user_db().get_admin_stats()
+    db_stats = get_user_db().get_admin_stats(admin_usernames=config.admin_usernames)
     cf_stats = _fetch_cloudflare_stats()
     return AdminStatsResponse(
         generated_at_th=str(db_stats["generated_at_th"]),

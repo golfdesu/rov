@@ -13,6 +13,9 @@ export interface AuthUser {
   draft_history_limit?: number | null;
   practice_history_limit?: number | null;
   is_paid?: boolean;
+  pass_tier?: "pro" | "duo" | "team_pro" | null;
+  pass_source?: "paid" | "promo_free" | "team_member" | "manual" | null;
+  pass_expires_at?: number | null;
 }
 
 export interface AuthStatusResponse {
@@ -75,6 +78,7 @@ export interface AdminActivePassItem {
   email?: string | null;
   tier: string;
   source: "paid" | "promo_free" | "team_member" | "manual";
+  is_admin?: boolean;
   paid_orders: number;
   paid_amount_thb: number;
   expires_at: number;
@@ -98,6 +102,9 @@ export interface AdminBillingSummary {
   total_promo_claims: number;
   total_paid_orders: number;
   total_revenue_thb: number;
+  active_admin_passes?: number;
+  admin_test_orders?: number;
+  admin_test_revenue_thb?: number;
   active_passes: AdminActivePassItem[];
 }
 

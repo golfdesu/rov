@@ -66,6 +66,7 @@ class BillingPass(BaseModel):
     tier: Tier
     expires_at: int
     is_owner: bool = True
+    source: Literal["paid", "promo_free", "team_member", "manual"] | None = None
 
 
 class BillingSummary(BaseModel):
@@ -74,6 +75,7 @@ class BillingSummary(BaseModel):
     orders: list[BillingOrder]
     promo_claimable: bool = False
     promo_expires_at: int | None = None
+    is_owner_account: bool = False
 
 
 class PromoClaimRequest(BaseModel):

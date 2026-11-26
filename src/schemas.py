@@ -526,6 +526,9 @@ class AuthUserSchema(BaseModel):
     draft_history_limit: int | None = None
     practice_history_limit: int | None = None
     is_paid: bool = False
+    pass_tier: Literal["pro", "duo", "team_pro"] | None = None
+    pass_source: Literal["paid", "promo_free", "team_member", "manual"] | None = None
+    pass_expires_at: int | None = None
 
 
 class AuthStatusResponse(BaseModel):

@@ -36,6 +36,7 @@ import type {
   AuthStatusResponse,
   AuthUser,
   FeedbackSubmitResponse,
+  PricingSurveyChoice,
 } from "./types/auth";
 import type { DraftSessionPayload } from "./types/draft";
 import { accountLabel, restorePreviewAccountStorage } from "./utils/auth";
@@ -71,6 +72,9 @@ interface WorkspaceProps {
   authLoading: boolean;
   sandboxBilling: boolean;
   freePromoUntil: number | null;
+  pricingSurveyChoice: PricingSurveyChoice | null;
+  willingNudgeDismissed: boolean;
+  onDismissWillingNudge: () => void;
   activeDraftTool: DraftToolModal | null;
   onCloseDraftTool: () => void;
   announcementSeen: boolean;
@@ -89,6 +93,9 @@ function Workspace({
   authLoading,
   sandboxBilling,
   freePromoUntil,
+  pricingSurveyChoice,
+  willingNudgeDismissed,
+  onDismissWillingNudge,
   activeDraftTool,
   onCloseDraftTool,
   announcementSeen,
@@ -110,14 +117,35 @@ function Workspace({
       freePromoUntil &&
       freePromoUntil * 1000 > nowMs,
   );
-  const freePromoShortDate =
-    showFreePromoBadge && freePromoUntil
-      ? new Intl.DateTimeFormat(language === "th" ? "th-TH" : "en-GB", {
-          day: "numeric",
-          month: "short",
-          timeZone: "Asia/Bangkok",
-        }).format(freePromoUntil * 1000)
-      : "";
+  const showFreePromoExpiryWarning = Boolean(
+    sandboxBilling &&
+      !authLoading &&
+      !isAdmin &&
+      authUser?.pass_source === "promo_free" &&
+      authUser.pass_expires_at &&
+      authUser.pass_expires_at * 1000 > nowMs &&
+      authUser.pass_expires_at * 1000 - nowMs <= 4 * 86_400_000,
+  );
+  const promoDisplayTimestamp = showFreePromoBadge
+    ? freePromoUntil
+    : showFreePromoExpiryWarning
+      ? (authUser?.pass_expires_at ?? null)
+      : null;
+  const freePromoShortDate = promoDisplayTimestamp
+    ? new Intl.DateTimeFormat(language === "th" ? "th-TH" : "en-GB", {
+        day: "numeric",
+        month: "short",
+        timeZone: "Asia/Bangkok",
+      }).format(promoDisplayTimestamp * 1000)
+    : "";
+  const showWillingPromoNudge = Boolean(
+    isAuthenticated &&
+      pricingSurveyChoice === "willing" &&
+      showFreePromoBadge &&
+      !willingNudgeDismissed &&
+      tab !== "profile" &&
+      tab !== "plans",
+  );
   const handleOpenPromo = () => {
     if (isAuthenticated) {
       selectTab("profile");
@@ -190,7 +218,7 @@ function Workspace({
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5">
-            {showFreePromoBadge && (
+            {showFreePromoBadge ? (
               <button
                 type="button"
                 onClick={handleOpenPromo}
@@ -198,6 +226,15 @@ function Workspace({
               >
                 <Gift className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                 <span>{t("รับ Pro ฟรีถึง {0}", freePromoShortDate)}</span>
+              </button>
+            ) : showFreePromoExpiryWarning && (
+              <button
+                type="button"
+                onClick={() => selectTab("plans")}
+                className="hidden min-h-8 items-center gap-1.5 border border-gold/70 bg-gold/20 px-2.5 font-display text-xs font-bold whitespace-nowrap text-gold transition-colors hover:bg-gold hover:text-bg focus-visible:outline-2 focus-visible:outline-gold sm:inline-flex"
+              >
+                <Gift className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span>{t("Pro ฟรีหมดอายุ {0} · ต่อแพ็ก", freePromoShortDate)}</span>
               </button>
             )}
             {authLoading ? null : isAuthenticated ? (
@@ -251,7 +288,7 @@ function Workspace({
             </button>
           </div>
         </div>
-        {showFreePromoBadge && (
+        {showFreePromoBadge ? (
           <button
             type="button"
             onClick={handleOpenPromo}
@@ -262,6 +299,42 @@ function Workspace({
             <span aria-hidden="true">·</span>
             <span className="underline underline-offset-2">{t("กดรับเลย")}</span>
           </button>
+        ) : showFreePromoExpiryWarning && (
+          <button
+            type="button"
+            onClick={() => selectTab("plans")}
+            className="flex min-h-7 w-full items-center justify-center gap-1.5 border-t border-gold/40 bg-gold/15 px-3 py-1 font-display text-[11px] font-bold text-gold transition-colors hover:bg-gold/25 sm:hidden"
+          >
+            <Gift className="h-3 w-3 shrink-0" aria-hidden="true" />
+            <span>{t("Pro ฟรีหมดอายุ {0} · ต่อแพ็ก", freePromoShortDate)}</span>
+          </button>
+        )}
+        {showWillingPromoNudge && (
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-gold/35 bg-gold/10 px-3 py-1.5 text-xs text-ink sm:px-4">
+            <div className="flex min-w-0 items-center gap-2">
+              <Gift className="h-3.5 w-3.5 shrink-0 text-gold" aria-hidden="true" />
+              <span className="min-w-0">
+                {t("คุณเคยแจ้งสนใจแพ็กเกจ — ตอนนี้รับ Pro ฟรีได้ถึง {0} เพื่อปลดล็อก 500 เกม & สถิติซ้อมทีม", freePromoShortDate)}
+              </span>
+            </div>
+            <div className="flex shrink-0 items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => selectTab("plans")}
+                className="inline-flex min-h-7 items-center border border-gold bg-gold px-2.5 font-display text-[11px] font-bold text-bg hover:bg-gold/90"
+              >
+                {t("รับ Pro ฟรีเลย")}
+              </button>
+              <button
+                type="button"
+                onClick={onDismissWillingNudge}
+                aria-label={t("ปิด")}
+                className="inline-flex h-7 w-7 items-center justify-center border border-line-strong bg-panel-2 text-dim hover:text-ink"
+              >
+                <X className="h-3.5 w-3.5" aria-hidden="true" />
+              </button>
+            </div>
+          </div>
         )}
       </nav>
 
@@ -276,6 +349,7 @@ function Workspace({
             isPaid={Boolean(authUser?.is_paid)}
             isAuthenticated={isAuthenticated}
             teamHistoryEnabled={Boolean(authUser?.stripe_sandbox_enabled)}
+            freePromoUntil={authUser?.is_paid ? null : freePromoUntil}
             defaultTeamName={draft.globalBans.teamAName}
             onOpenAuthModal={onOpenAuthModal}
             onBack={() => selectTab("draft")}
@@ -515,6 +589,14 @@ export function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [sandboxBilling, setSandboxBilling] = useState(false);
   const [freePromoUntil, setFreePromoUntil] = useState<number | null>(null);
+  const [pricingSurveyChoice, setPricingSurveyChoice] = useState<PricingSurveyChoice | null>(null);
+  const [willingNudgeDismissed, setWillingNudgeDismissed] = useState<boolean>(() => {
+    try {
+      return window.localStorage.getItem("minidraft_willing_promo_nudge_v1") === "1";
+    } catch {
+      return false;
+    }
+  });
   const [googleLoginEnabled, setGoogleLoginEnabled] = useState(false);
   const [discordLoginEnabled, setDiscordLoginEnabled] = useState(false);
   const [oauthError, setOauthError] = useState<string | null>(() => {
@@ -583,10 +665,13 @@ export function App() {
       user: AuthUser,
       fromGuestFlow: boolean,
       _surveyAnswered = false,
-      _surveyChoice: string | null = null,
+      surveyChoice: string | null = null,
       isAdmin = false,
     ) => {
       setIsAdminUser(isAdmin);
+      setPricingSurveyChoice(
+        surveyChoice === "willing" || surveyChoice === "not_willing" ? surveyChoice : null,
+      );
       if (fromGuestFlow) {
         const pending = readPendingGuestDraft();
         if (pending) {
@@ -636,6 +721,7 @@ export function App() {
         setDiscordLoginEnabled(Boolean(res.discord_login_enabled));
         if (res.authenticated && res.user) {
           setIsAdminUser(Boolean(res.is_admin));
+          setPricingSurveyChoice(res.pricing_survey_choice ?? null);
           if (allowGuestMigration && loadGuestEntered()) {
             const pending = readPendingGuestDraft();
             if (pending) {
@@ -660,12 +746,16 @@ export function App() {
             prev.draft_history_limit === user.draft_history_limit &&
             prev.practice_history_limit === user.practice_history_limit &&
             prev.is_paid === user.is_paid &&
+            prev.pass_tier === user.pass_tier &&
+            prev.pass_source === user.pass_source &&
+            prev.pass_expires_at === user.pass_expires_at &&
             prev.auth_provider === user.auth_provider
               ? prev : user
           ));
         } else {
           setExpectedAuthUser(null);
           setIsAdminUser(false);
+          setPricingSurveyChoice(null);
           setAdminStatsModalOpen(false);
           if (authUserRef.current !== null) {
             setOauthError("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่");
@@ -693,6 +783,7 @@ export function App() {
         setDiscordLoginEnabled(Boolean(res.discord_login_enabled));
         if (res.authenticated && res.user) {
           setIsAdminUser(Boolean(res.is_admin));
+          setPricingSurveyChoice(res.pricing_survey_choice ?? null);
           if (loadGuestEntered()) {
             const pending = readPendingGuestDraft();
             if (pending) {
@@ -706,6 +797,7 @@ export function App() {
         } else {
           setExpectedAuthUser(null);
           setIsAdminUser(false);
+          setPricingSurveyChoice(null);
           setAuthUser(null);
         }
       })
@@ -852,6 +944,7 @@ export function App() {
     setAdminStatsModalOpen(false);
     setActiveDraftTool(null);
     setIsAdminUser(false);
+    setPricingSurveyChoice(null);
     updateGuestEntered(false);
     broadcastAuthChange(null);
   };
@@ -1037,6 +1130,16 @@ export function App() {
         authLoading={authLoading}
         sandboxBilling={sandboxBilling}
         freePromoUntil={authUser?.is_paid ? null : freePromoUntil}
+        pricingSurveyChoice={pricingSurveyChoice}
+        willingNudgeDismissed={willingNudgeDismissed}
+        onDismissWillingNudge={() => {
+          setWillingNudgeDismissed(true);
+          try {
+            window.localStorage.setItem("minidraft_willing_promo_nudge_v1", "1");
+          } catch {
+            // ignore storage errors
+          }
+        }}
         activeDraftTool={activeDraftTool}
         onCloseDraftTool={() => setActiveDraftTool(null)}
         announcementSeen={announcementSeen}

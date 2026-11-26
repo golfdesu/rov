@@ -761,6 +761,36 @@ class UserDatabase:
             return self._personal_history_limit(conn, user_id)
 
     @classmethod
+    def _user_pass_status(cls, conn: sqlite3.Connection, user_id: int, now: int) -> tuple[str, str, int] | None:
+        own = conn.execute(
+            "SELECT tier, expires_at FROM billing_passes WHERE user_id = ? AND expires_at > ?",
+            (user_id, now),
+        ).fetchone()
+        if own is not None:
+            has_paid = conn.execute(
+                "SELECT 1 FROM billing_orders WHERE user_id = ? AND status = 'paid' LIMIT 1",
+                (user_id,),
+            ).fetchone()
+            if has_paid is not None:
+                source = "paid"
+            else:
+                has_promo = conn.execute(
+                    "SELECT 1 FROM promo_claims WHERE user_id = ? LIMIT 1",
+                    (user_id,),
+                ).fetchone()
+                source = "promo_free" if has_promo is not None else "manual"
+            return (str(own["tier"]), source, int(own["expires_at"]))
+        team = cls._active_team(conn, user_id, now)
+        if team is not None:
+            return (str(team["tier"]), "team_member", int(team["expires_at"]))
+        return None
+
+    def user_pass_status(self, user_id: int) -> tuple[str, str, int] | None:
+        self.ensure_schema()
+        with self._connect() as conn:
+            return self._user_pass_status(conn, user_id, int(time.time()))
+
+    @classmethod
     def _practice_history_limit(cls, conn: sqlite3.Connection, user_id: int) -> int:
         return (
             PAID_PRACTICE_HISTORY_LIMIT
@@ -2247,8 +2277,9 @@ class UserDatabase:
         report["generated_at_th"] = now_dt.strftime("%Y-%m-%d %H:%M:%S")
         return report
 
-    def get_admin_stats(self) -> dict[str, Any]:
+    def get_admin_stats(self, admin_usernames: frozenset[str] = frozenset()) -> dict[str, Any]:
         self.ensure_schema()
+        admin_set = {u.strip().lower() for u in admin_usernames if u and u.strip()}
         now = int(time.time())
         tz_th = timezone(timedelta(hours=7))
         now_dt = datetime.fromtimestamp(now, tz_th)
@@ -2471,18 +2502,32 @@ class UserDatabase:
                 """,
                 (now,),
             ).fetchall()
-            total_promo_claims = int(conn.execute("SELECT COUNT(*) FROM promo_claims").fetchone()[0])
-            paid_totals_row = conn.execute(
+            promo_claim_rows = conn.execute(
+                "SELECT LOWER(u.username) AS uname FROM promo_claims pc JOIN users u ON u.id = pc.user_id"
+            ).fetchall()
+            total_promo_claims = sum(1 for row in promo_claim_rows if str(row["uname"]) not in admin_set)
+            paid_order_rows = conn.execute(
                 """
-                SELECT
-                    COUNT(*) AS paid_orders,
-                    COALESCE(SUM(amount), 0) AS revenue_satang
-                FROM billing_orders
-                WHERE status = 'paid'
+                SELECT o.amount, LOWER(u.username) AS uname
+                FROM billing_orders o
+                JOIN users u ON u.id = o.user_id
+                WHERE o.status = 'paid'
                 """
-            ).fetchone()
-            total_paid_orders = int(paid_totals_row["paid_orders"] or 0)
-            total_revenue_thb = round(int(paid_totals_row["revenue_satang"] or 0) / 100.0, 2)
+            ).fetchall()
+            total_paid_orders = 0
+            revenue_satang = 0
+            admin_test_orders = 0
+            admin_revenue_satang = 0
+            for row in paid_order_rows:
+                amt = int(row["amount"] or 0)
+                if str(row["uname"]) in admin_set:
+                    admin_test_orders += 1
+                    admin_revenue_satang += amt
+                else:
+                    total_paid_orders += 1
+                    revenue_satang += amt
+            total_revenue_thb = round(revenue_satang / 100.0, 2)
+            admin_test_revenue_thb = round(admin_revenue_satang / 100.0, 2)
 
             active_passes: list[dict[str, Any]] = []
             pass_by_user_id: dict[int, dict[str, Any]] = {}
@@ -2492,9 +2537,13 @@ class UserDatabase:
             active_promo_users = 0
             active_team_members = 0
             active_manual_users = 0
+            active_non_admin_total = 0
+            active_admin_passes = 0
 
             for pr in pass_rows:
                 uid = int(pr["user_id"])
+                uname = str(pr["username"])
+                is_admin_acct = uname.lower() in admin_set
                 tier_code = str(pr["tier"])
                 expires_at = int(pr["expires_at"])
                 paid_orders_cnt = int(pr["paid_orders"] or 0)
@@ -2502,26 +2551,34 @@ class UserDatabase:
                 promo_claimed_at = int(pr["promo_claimed_at"]) if pr["promo_claimed_at"] else None
                 if paid_orders_cnt > 0:
                     source = "paid"
-                    active_paid_users += 1
-                    active_paid_by_tier[tier_code] = active_paid_by_tier.get(tier_code, 0) + 1
                 elif promo_claimed_at is not None:
                     source = "promo_free"
-                    active_promo_users += 1
                 else:
                     source = "manual"
-                    active_manual_users += 1
-                active_by_tier[tier_code] = active_by_tier.get(tier_code, 0) + 1
+                if is_admin_acct:
+                    active_admin_passes += 1
+                else:
+                    active_non_admin_total += 1
+                    active_by_tier[tier_code] = active_by_tier.get(tier_code, 0) + 1
+                    if source == "paid":
+                        active_paid_users += 1
+                        active_paid_by_tier[tier_code] = active_paid_by_tier.get(tier_code, 0) + 1
+                    elif source == "promo_free":
+                        active_promo_users += 1
+                    else:
+                        active_manual_users += 1
                 days_left = max(0, (expires_at - now + 86399) // 86400)
                 acquired_at = (
                     last_paid_at if source == "paid" else (promo_claimed_at if source == "promo_free" else None)
                 )
                 item = {
                     "user_id": uid,
-                    "username": str(pr["username"]),
+                    "username": uname,
                     "display_name": str(pr["display_name"]),
                     "email": str(pr["email"]) if pr["email"] else None,
                     "tier": tier_code,
                     "source": source,
+                    "is_admin": is_admin_acct,
                     "paid_orders": paid_orders_cnt,
                     "paid_amount_thb": round(int(pr["paid_amount_satang"] or 0) / 100.0, 2),
                     "expires_at": expires_at,
@@ -2561,25 +2618,34 @@ class UserDatabase:
             ).fetchall()
             for mr in member_rows:
                 uid = int(mr["user_id"])
+                uname = str(mr["username"])
+                is_admin_acct = uname.lower() in admin_set
                 tier_code = str(mr["tier"])
                 expires_at = int(mr["expires_at"])
                 owner_username = str(mr["team_owner_username"])
-                active_team_members += 1
                 existing = pass_by_user_id.get(uid)
                 if existing is not None:
                     existing["team_owner_username"] = owner_username
                     existing["team_tier"] = tier_code
+                    if not is_admin_acct:
+                        active_team_members += 1
                     continue
-                active_by_tier[tier_code] = active_by_tier.get(tier_code, 0) + 1
+                if is_admin_acct:
+                    active_admin_passes += 1
+                else:
+                    active_team_members += 1
+                    active_non_admin_total += 1
+                    active_by_tier[tier_code] = active_by_tier.get(tier_code, 0) + 1
                 days_left = max(0, (expires_at - now + 86399) // 86400)
                 active_passes.append(
                     {
                         "user_id": uid,
-                        "username": str(mr["username"]),
+                        "username": uname,
                         "display_name": str(mr["display_name"]),
                         "email": str(mr["email"]) if mr["email"] else None,
                         "tier": tier_code,
                         "source": "team_member",
+                        "is_admin": is_admin_acct,
                         "paid_orders": 0,
                         "paid_amount_thb": 0.0,
                         "expires_at": expires_at,
@@ -2596,6 +2662,7 @@ class UserDatabase:
             source_rank = {"paid": 0, "team_member": 1, "manual": 2, "promo_free": 3}
             active_passes.sort(
                 key=lambda item: (
+                    1 if item.get("is_admin") else 0,
                     source_rank.get(item["source"], 4),
                     -int(item["acquired_at"] or 0),
                     -int(item["expires_at"]),
@@ -2632,7 +2699,7 @@ class UserDatabase:
                 "today": feedback_today,
             },
             "billing": {
-                "active_total": len(active_passes),
+                "active_total": active_non_admin_total,
                 "active_paid_users": active_paid_users,
                 "active_promo_users": active_promo_users,
                 "active_team_members": active_team_members,
@@ -2642,6 +2709,9 @@ class UserDatabase:
                 "total_promo_claims": total_promo_claims,
                 "total_paid_orders": total_paid_orders,
                 "total_revenue_thb": total_revenue_thb,
+                "active_admin_passes": active_admin_passes,
+                "admin_test_orders": admin_test_orders,
+                "admin_test_revenue_thb": admin_test_revenue_thb,
                 "active_passes": active_passes,
             },
             "retention": {

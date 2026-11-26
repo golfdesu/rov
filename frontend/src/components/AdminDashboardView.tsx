@@ -44,7 +44,7 @@ type UserFilterMode =
   | "practice_played"
   | "willing"
   | "not_willing";
-type PassSourceFilter = "all" | "paid" | "team_member" | "promo_free";
+type PassSourceFilter = "all" | "paid" | "team_member" | "promo_free" | "admin_test";
 
 function formatPassTierLabel(tier: string): string {
   if (tier === "pro") return "Pro";
@@ -529,6 +529,9 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                   ["paid", `เติมเงินจริง (${stats.billing.active_paid_users.toLocaleString()})`],
                   ["team_member", `สมาชิกทีม (${(stats.billing.active_team_members ?? 0).toLocaleString()})`],
                   ["promo_free", `รับ Pro ฟรี (${stats.billing.active_promo_users.toLocaleString()})`],
+                  ...((stats.billing.active_admin_passes ?? 0) > 0
+                    ? ([["admin_test", `แอดมิน / Owner (${(stats.billing.active_admin_passes ?? 0).toLocaleString()})`]] as const)
+                    : []),
                 ] as const
               ).map(([key, label]) => (
                 <button
@@ -560,6 +563,11 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
               <div className="mt-0.5 font-mono text-[11px] text-dim/90">
                 {`ยอดชำระรวม ${stats.billing.total_revenue_thb.toLocaleString()} บาท (${stats.billing.total_paid_orders.toLocaleString()} ออเดอร์)`}
               </div>
+              {(stats.billing.admin_test_orders ?? 0) > 0 && (
+                <div className="mt-0.5 font-mono text-[11px] text-dim">
+                  {`ไม่รวมทดสอบแอดมิน ${stats.billing.admin_test_orders} รายการ (${(stats.billing.admin_test_revenue_thb ?? 0).toLocaleString()} บ.)`}
+                </div>
+              )}
             </div>
 
             <div className="border border-line bg-bg/60 p-3.5">
@@ -603,6 +611,8 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
               <tbody className="divide-y divide-line">
                 {(() => {
                   const list = (stats.billing?.active_passes ?? []).filter((item) => {
+                    if (passSourceFilter === "admin_test") return Boolean(item.is_admin);
+                    if (item.is_admin) return false;
                     if (passSourceFilter === "paid") return item.source === "paid";
                     if (passSourceFilter === "team_member") return item.source === "team_member";
                     if (passSourceFilter === "promo_free") return item.source === "promo_free";
@@ -632,7 +642,11 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                       </td>
                       <td className="px-3 py-2">
                         <div className="flex flex-col items-start gap-0.5">
-                          {item.source === "paid" ? (
+                          {item.is_admin ? (
+                            <span className="border border-blue/50 bg-blue/15 px-2 py-0.5 text-xs font-bold text-blue">
+                              Owner / แอดมิน
+                            </span>
+                          ) : item.source === "paid" ? (
                             <span className="border border-good/40 bg-good/15 px-2 py-0.5 text-xs font-bold text-good">
                               {`เติมเงิน · ${item.paid_amount_thb.toLocaleString()} บ.`}
                             </span>
@@ -647,6 +661,11 @@ export function AdminDashboardView({ onBack }: AdminDashboardViewProps) {
                           ) : (
                             <span className="border border-line-strong bg-panel-2 px-2 py-0.5 text-xs text-muted">
                               Manual
+                            </span>
+                          )}
+                          {item.is_admin && item.paid_orders > 0 && (
+                            <span className="text-[11px] text-dim">
+                              {`ทดสอบ · ${item.paid_amount_thb.toLocaleString()} บ.`}
                             </span>
                           )}
                           {item.source !== "team_member" && item.team_owner_username && (

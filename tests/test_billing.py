@@ -1244,8 +1244,11 @@ def test_admin_stats_and_users_include_paid_and_promo_passes(sandbox, monkeypatc
     db.invite_team_member(biz_owner.id, biz_member.username)
     db.respond_to_team_invite(biz_member.id, biz_owner.id, True)
 
-    claim_res = client.post("/billing/promo/claim", headers=ORIGIN, json={"expected_username": USERNAME})
+    promo_holder = db.register_user("promo_claim_user", "test-password", display_name="Promo Holder")
+    client.cookies.set(SESSION_COOKIE_NAME, db.create_session(promo_holder.id))
+    claim_res = client.post("/billing/promo/claim", headers=ORIGIN, json={"expected_username": "promo_claim_user"})
     assert claim_res.status_code == 200
+    client.cookies.set(SESSION_COOKIE_NAME, db.create_session(promo_user.id))
 
     stats_res = client.get("/admin/stats")
     assert stats_res.status_code == 200
@@ -1272,10 +1275,10 @@ def test_admin_stats_and_users_include_paid_and_promo_passes(sandbox, monkeypatc
     assert by_name["biz_member_admin"]["team_owner_username"] == "biz_owner_admin"
     assert by_name["biz_member_admin"]["paid_amount_thb"] == 0.0
     assert by_name["biz_member_admin"]["acquired_at_th"] is None
-    assert by_name[USERNAME]["tier"] == "pro"
-    assert by_name[USERNAME]["source"] == "promo_free"
-    assert by_name[USERNAME]["days_left"] >= 9
-    assert by_name[USERNAME]["acquired_at_th"]
+    assert by_name["promo_claim_user"]["tier"] == "pro"
+    assert by_name["promo_claim_user"]["source"] == "promo_free"
+    assert by_name["promo_claim_user"]["days_left"] >= 9
+    assert by_name["promo_claim_user"]["acquired_at_th"]
 
     users_res = client.get("/admin/users")
     assert users_res.status_code == 200
@@ -1286,9 +1289,60 @@ def test_admin_stats_and_users_include_paid_and_promo_passes(sandbox, monkeypatc
     assert users_by_name["biz_member_admin"]["pass_tier"] == "team_pro"
     assert users_by_name["biz_member_admin"]["pass_source"] == "team_member"
     assert users_by_name["biz_member_admin"]["pass_team_owner"] == "biz_owner_admin"
-    assert users_by_name[USERNAME]["pass_tier"] == "pro"
-    assert users_by_name[USERNAME]["pass_source"] == "promo_free"
-    assert users_by_name[USERNAME]["pass_expires_at_th"]
+    assert users_by_name["promo_claim_user"]["pass_tier"] == "pro"
+    assert users_by_name["promo_claim_user"]["pass_source"] == "promo_free"
+    assert users_by_name["promo_claim_user"]["pass_expires_at_th"]
+
+
+def test_admin_stats_separates_admin_test_orders_and_promo_status(sandbox, monkeypatch):
+    client, _, db, promo_user = sandbox
+    future_ts = int(time.time()) + 2 * 86400
+    monkeypatch.setattr(api.config, "free_promo_until", str(future_ts))
+    monkeypatch.setattr(api.config, "admin_usernames", frozenset({USERNAME}))
+
+    # Admin owner account purchases Pro (test order) while real customer buys Business
+    admin_order = db.reserve_billing_order(promo_user.id, "pro", 30, 5900, ORIGIN["Origin"])
+    db.settle_billing_order(admin_order["id"], "cs_test_admin_self", 5900, "pi_admin_self")
+
+    customer = db.register_user("real_biz_cust", "test-password", display_name="Real Biz")
+    cust_order = db.reserve_billing_order(customer.id, "team_pro", 90, 56900, ORIGIN["Origin"])
+    db.settle_billing_order(cust_order["id"], "cs_test_real_biz", 56900, "pi_real_biz")
+
+    promo_tester = db.register_user("promo_expiring_u", "test-password", display_name="Promo Expiring")
+    client.cookies.set(SESSION_COOKIE_NAME, db.create_session(promo_tester.id))
+    assert (
+        client.post("/billing/promo/claim", headers=ORIGIN, json={"expected_username": "promo_expiring_u"}).status_code
+        == 200
+    )
+    me_promo = client.get("/auth/me").json()
+    assert me_promo["user"]["pass_source"] == "promo_free"
+    assert me_promo["user"]["pass_tier"] == "pro"
+    assert me_promo["user"]["pass_expires_at"] == future_ts
+
+    billing_promo = client.get("/billing").json()
+    assert billing_promo["active_pass"]["source"] == "promo_free"
+    assert billing_promo["is_owner_account"] is False
+
+    client.cookies.set(SESSION_COOKIE_NAME, db.create_session(promo_user.id))
+    me_admin = client.get("/auth/me").json()
+    assert me_admin["is_admin"] is True
+    assert me_admin["user"]["pass_source"] == "paid"
+    assert client.get("/billing").json()["is_owner_account"] is True
+
+    stats_res = client.get("/admin/stats")
+    assert stats_res.status_code == 200
+    billing = stats_res.json()["billing"]
+    assert billing["active_paid_users"] == 1
+    assert billing["total_paid_orders"] == 1
+    assert billing["total_revenue_thb"] == 569.0
+    assert billing["active_promo_users"] == 1
+    assert billing["active_total"] == 2
+    assert billing["active_admin_passes"] == 1
+    assert billing["admin_test_orders"] == 1
+    assert billing["admin_test_revenue_thb"] == 59.0
+    by_name = {item["username"]: item for item in billing["active_passes"]}
+    assert by_name[USERNAME]["is_admin"] is True
+    assert by_name["real_biz_cust"]["is_admin"] is False
 
 
 def test_practice_history_limit_free_100_and_paid_1000(sandbox):
@@ -1327,6 +1381,8 @@ def test_practice_history_limit_free_100_and_paid_1000(sandbox):
 
     me_paid = client.get("/auth/me").json()
     assert me_paid["user"]["is_paid"] is True
+    assert me_paid["user"]["pass_source"] == "paid"
+    assert me_paid["user"]["pass_tier"] == "pro"
     assert me_paid["user"]["practice_history_limit"] == 1000
 
     res_paid = client.put(

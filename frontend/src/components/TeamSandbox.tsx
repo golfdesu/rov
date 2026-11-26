@@ -71,7 +71,7 @@ export function TeamSandbox({ currentUsername }: { currentUsername: string }) {
   if (!team && !received.length && !error) return null;
 
   return (
-    <section className="border border-line-strong bg-panel" aria-labelledby={titleId}>
+    <section id="team-setup" className="border border-line-strong bg-panel" aria-labelledby={titleId}>
       <header className="border-b border-line bg-linear-to-r from-blue/10 to-transparent p-4 sm:p-5">
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
@@ -136,6 +136,41 @@ export function TeamSandbox({ currentUsername }: { currentUsername: string }) {
                 </li>
               ))}
             </ul>
+          </div>
+        )}
+        {team?.is_owner && team.members.length === 1 && (
+          <div className="space-y-2.5 border border-blue/40 bg-blue/10 p-3.5 text-xs">
+            <p className="font-display text-sm font-bold text-blue">
+              {t("เริ่มต้นใช้งานทีม (3 ขั้นตอน)")}
+            </p>
+            <ol className="space-y-1.5 text-ink/90">
+              <li>
+                <span className="font-bold text-gold">1. </span>
+                {t("ชวนเพื่อนหรือโค้ช: ให้เพื่อนเข้าสู่ระบบ 1 ครั้ง แล้วคัดลอก @username จากหน้าโปรไฟล์มาให้คุณกรอกเชิญด้านล่าง")}
+              </li>
+              <li>
+                <span className="font-bold text-gold">2. </span>
+                {t("แชร์ประวัติทีม: เปิด 'ประวัติเกม' บนกระดานดราฟต์ (แท็บทีม) เพื่อบันทึกหรือย้ายเกมเข้าทีม แล้วดูผลรวมในหน้าสถิติซ้อมทีม")}
+              </li>
+              <li>
+                <span className="font-bold text-gold">3. </span>
+                {t("ตั้ง Hero Pool ทีม: เปิดปุ่ม 'Hero Pools' บนกระดานดราฟต์ แล้วเลือกแท็บ 'Pool ร่วมทีม' เพื่อตั้งพูล 5 เลนใช้ร่วมกัน")}
+              </li>
+            </ol>
+            <div className="flex flex-wrap gap-2 pt-1">
+              <a
+                href="#"
+                className="inline-flex min-h-8 items-center border border-line-strong bg-panel px-2.5 font-display text-xs font-semibold text-ink hover:border-gold/60 hover:text-gold"
+              >
+                {t("ไปกระดานดราฟต์")}
+              </a>
+              <a
+                href="#analytics"
+                className="inline-flex min-h-8 items-center border border-blue/50 bg-panel px-2.5 font-display text-xs font-semibold text-blue hover:bg-blue/20"
+              >
+                {t("เปิดสถิติซ้อมทีม")}
+              </a>
+            </div>
           </div>
         )}
         {team?.is_owner && (seatsUsed < team.capacity ? (
