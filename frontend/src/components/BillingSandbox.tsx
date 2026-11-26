@@ -444,7 +444,7 @@ export function BillingSandbox({
           {summary && !pending && (allDisplayPackages.length > 0 ? (
             <>
               {isOwnerAccount && (
-                <p className="mx-auto max-w-2xl border border-rose-800/70 bg-rose-950/60 px-4 py-2 text-center text-xs text-rose-200">
+                <p className="mx-auto max-w-2xl border border-purple-400/50 bg-purple-500/12 px-4 py-2 text-center text-xs text-purple-200">
                   {t("มุมมอง Owner — แสดงหน้าแพ็กเกจเหมือนผู้ใช้ทั่วไป (ปิดปุ่มชำระเงินไว้)")}
                 </p>
               )}
@@ -721,7 +721,7 @@ export function BillingSandbox({
         </div>
       )}
       {isOwnerAccount && !pending && (
-        <a href="#plans" className={`${actionClass} w-full gap-2 border-rose-800/70 bg-rose-950/50 text-rose-200 hover:bg-rose-950/80 sm:w-auto`}>
+        <a href="#plans" className={`${actionClass} w-full gap-2 border-purple-400/60 bg-purple-500/12 text-purple-300 hover:border-purple-400 hover:bg-purple-500/20 sm:w-auto`}>
           <span>{t("ดูหน้าแพ็กเกจ")}</span>
           <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
         </a>

@@ -150,8 +150,8 @@ function Workspace({
   const isProfileTab = tab === "profile";
   const profileButtonClass = isAdmin
     ? isProfileTab
-      ? "border-rose-500 bg-rose-900/90 text-rose-100"
-      : "border-rose-800 bg-rose-950/90 text-rose-200 hover:border-rose-600 hover:bg-rose-900/90 hover:text-white"
+      ? "border-purple-400 bg-purple-500/20 text-purple-300"
+      : "border-purple-400/60 bg-purple-500/12 text-purple-300 hover:border-purple-400 hover:bg-purple-500/20"
     : authUser?.pass_tier === "team_pro"
       ? isProfileTab
         ? "border-blue bg-blue/20 text-blue"
