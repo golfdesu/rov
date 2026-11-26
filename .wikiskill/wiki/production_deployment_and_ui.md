@@ -16,7 +16,7 @@ Live production runs at **`https://minidraft.app/`** on Azure VM `rov-draft-vm` 
 - **SQLite Persistence (`deploy_rov_db_data` -> `/app/db/rov_app.db`)**:
   - **NEVER** delete, truncate, or overwrite `deploy_rov_db_data` or `deploy/.env`.
   - Always create an online SQLite backup inside the volume before any schema migration (e.g., when `user_practice_histories` was added on `2026-11-21`).
-  - **Open Free Access**: `minidraft.app` is 100% free during launch; do not add paywalls unless explicitly instructed (`docs/SUBSCRIPTION_ROADMAP.md` is future spec only).
+  - **Billing & Free Pro Promo**: Live Stripe PromptPay billing (`Pro`, `Duo`, `Business`) is enabled alongside a time-limited Free Pro promo (`free_pro_1796576400`, expiring Dec 7, 2026). See Section 3 for live limits and pass setup.
 - **Production-Only VM Checkout (`git sparse-checkout --no-cone`)**: `~/rov` on `rov-draft-vm` checks out only the production subset required by `Dockerfile` and `deploy/` (`/Dockerfile`, `/.dockerignore`, `/requirements.txt`, `/deploy/`, `/configs/`, `/src/`, `/frontend/`, `/models/sota_draft_gnn_transformer.pt`, and the 11 serving `/data/*` files). Dev/training/doc folders (`tests/`, `scripts/`, `docs/`, `.wikiskill/`, `.agents/`, `.claude/`, `best_params/`, `models/archive/`, `models/*heuristic*`, and non-serving `data/*` files) are excluded from the VM disk. Do not run `git pull` on the VM for docs-only commits.
 
 ---
@@ -40,6 +40,9 @@ Live production runs at **`https://minidraft.app/`** on Azure VM `rov-draft-vm` 
    - **Access & Navigation**: `AdminStatsModal` keeps its compact modal layout intact and provides a `Dashboard` link opening `/#admin` in a new tab. All `/admin/*` endpoints (`/admin/stats`, `/admin/feedback`, `/admin/users`, `/admin/analytics`) return fail-closed HTTP `404` for guests and non-owner accounts. Both `AdminStatsModal` and `AdminDashboardView` surface the user feedback inbox (`GET /admin/feedback`) fed by `POST /feedback` from the Update Announcement & Feedback modal (`PricingSurveyModal.tsx`).
    - **Plain-Thai Translation Invariant**: While `src/analytics.py` computes rigorous models (BG/NBD `P(Alive)`, 3x3 Markov chain, right-censored Kaplan-Meier survival, Wilson/Katz 95% CIs, Kohavi statistical power, Sifa behavioral feature correlations), the main dashboard UI MUST translate every card title, column header, and status badge into everyday, self-explanatory Thai with a 1-sentence owner takeaway (`สรุปให้:`). Reserve academic citations and raw notation for the collapsed reference `<details>` drawer at the bottom.
    - **Thai Typography Floor (`>= 12px` / `text-xs`)**: Never use `text-[9px]` or `text-[10px]` on Thai dashboard copy or tables (Thai vowels and tone marks become illegible below `12px`); use `text-xs sm:text-sm` (`12px–14px`) for body/table cells, `text-sm sm:text-base` for card titles, and `fontSize="11"` on SVG chart axes.
+6. **Retired Controls, Telemetry Caveats & Owner Identity**:
+   - **No Lookahead UI Toggle (`useLookahead`)**: The frontend UI button/toggle to enable `useLookahead` was retired and removed; there is no `setUseLookahead` control anywhere in the React UI. Remaining `predict_lookahead_count` telemetry events come solely from legacy saved `user_draft_states` sessions that still hold `"useLookahead": true` — **never** suggest adding, moving, or fixing UI discoverability for a Lookahead button.
+   - **Owner / Admin Account (`@chayanin5392`)**: `@chayanin5392` is the project owner's admin account. Its test `Pro` (`59 THB`) order in `billing_orders` is an internal owner test purchase and must not be mistaken for a new external paying customer.
 
 ---
 
@@ -64,8 +67,8 @@ Live production runs at **`https://minidraft.app/`** on Azure VM `rov-draft-vm` 
      - Development Sandbox (`ROV_ENV=development` + `sk_test_`/`rk_test_` + `whsec_`): accepts `cs_test_`, `livemode=False`, loopback origins, and shows `"โหมดทดสอบ"` (`Test Mode`) badges.
      - Production Live (`ROV_ENV=production` + `ROV_STRIPE_LIVE_ENABLED!=false` + `sk_live_`/`rk_live_` + `whsec_`): accepts `cs_live_`, `livemode=True`, HTTPS `config.cors_origins` (`https://minidraft.app`), unblocks `/billing` & `/billing/*` in `security_and_lockdown_middleware`, and hides test badges. Cross-mode keys or test-vs-live webhook events are rejected fail-closed.
    - **Active Limits & Pass Catalog (`PRICE_SATANG`)**:
-     - Guest: `3` browser-local games | Free Registered: `21` synced games, `2` personal Hero Pools.
-     - Paid (`500` games, `50` Hero Pools, Scrim Analytics): **Pro** (`59 THB / 30d`, `139 THB / 90d`), **Duo** (`109 THB / 30d`, `259 THB / 90d`, 2 seats), **Business (`team_pro`)** (`239 THB / 30d`, `569 THB / 90d`, 5 seats + shared Team History & Pools).
+     - Guest: `3` browser-local Draft Board games, `100` browser-local Draft vs AI games | Free Registered: `14` synced Draft Board games, `100` synced Draft vs AI games, `2` personal Hero Pools.
+     - Paid (`500` Draft Board games, `1,000` Draft vs AI games, `50` Hero Pools, Scrim Analytics with real server-side `RPL 2026 Winter` `307`-game and `RPL 2026 Summer` `291`-game sample leagues): **Pro** (`59 THB / 30d`, `139 THB / 90d`), **Duo** (`109 THB / 30d`, `259 THB / 90d`, 2 seats), **Business (`team_pro`)** (`239 THB / 30d`, `569 THB / 90d`, 5 seats + shared Team History & Pools).
 
 ---
 

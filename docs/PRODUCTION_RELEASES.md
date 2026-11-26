@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `a821939` (`main`: use real RPL 2026 Summer and Winter sample datasets) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-8QUWNewd.js` (`483.64 kB`) + `dist-prod/assets/index-C4BQQffz.css` (`114.16 kB`), `dist-prod/index.html` (`3.12 kB`) |
+| **Git Base Commit on VM** | `5aec988` (`main`: add team onboarding, promo expiry/willing nudges, owner display, and admin stats separation) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-31ipnxx8.js` (`486.66 kB`) + `dist-prod/assets/index-C4BQQffz.css` (`114.16 kB`), `dist-prod/index.html` (`3.12 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-26 14:04 (UTC+7)` |
+| **Last Updated** | `2026-11-26 21:16 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,16 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-26 21:16 (UTC+7) — Team Onboarding, Free Pro Conversion & Expiry Nudges, Owner Pass, and Admin Revenue Separation (`5aec988`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `a821939` to `5aec988` (`main`, 19-path sparse-checkout intact).
+- **Live DB Owner Pass Update (`/app/db/rov_app.db`):** Created online SQLite backup `/app/db/rov_app.db.bak-20261126-ownerpass` (`5,259,264` bytes) and updated `@chayanin5392` (`user_id = 3`) in `billing_passes` to `tier = 'team_pro'`, `expires_at = 4070908800` (`2099-01-01`).
+- **Team Onboarding (`TeamSandbox.tsx`, `BillingSandbox.tsx`, `ScrimDashboardView.tsx`):** Added `#team-setup` anchor and a 3-step quick-start guide when a Duo/Business owner still has `members.length === 1`, plus actionable empty-state links in `#analytics` team history.
+- **Free Pro Expiry & Willing Nudges (`src/db.py`, `src/schemas.py`, `src/billing.py`, `src/api.py`, `App.tsx`, `BillingSandbox.tsx`, `ScrimDashboardView.tsx`):** Exposed `pass_tier`, `pass_source`, `pass_expires_at` (`BillingPass.source`, `is_owner_account`), added `<= 4`-day navbar/mobile/profile expiry alerts for `promo_free` holders, added a dismissible navbar-strip Free Pro nudge for returning `willing` survey respondents, and surfaced the Free Pro CTA inside `#analytics` demo mode. Displayed `Owner` pass label on `#profile` for admin `team_pro` accounts.
+- **Admin Revenue Separation (`src/db.py`, `src/api.py`, `AdminDashboardView.tsx`, `tests/test_billing.py`):** Passed `config.admin_usernames` into `get_admin_stats()`, separated admin test orders/passes (`is_admin`, `active_admin_passes`, `admin_test_orders`, `admin_test_revenue_thb`) from commercial metrics, and added the `แอดมิน / Owner` filter pill in `#admin`.
+- **Bundle Built:** `dist-prod/index.html` (`3.12 kB`), `dist-prod/assets/index-31ipnxx8.js` (`486.66 kB`), `dist-prod/assets/index-C4BQQffz.css` (`114.16 kB`).
+- **Verification:** `ruff check/format` clean, `pytest -q --tb=short tests/test_billing.py tests/test_api.py` (`72 passed`), `oxlint` (`0` warnings/errors), `vite build` & `build:prod`, `audit_copy_i18n.py` (`[PASS]`, 100% EN coverage), `preflight_check.py` (`[OK]`); live `https://minidraft.app/health` -> `200`, live HTML serving `assets/index-31ipnxx8.js` and `assets/index-C4BQQffz.css`; `/app/db/rov_app.db` intact (`users: 1063`, `promo_claims: 44`, `billing_orders: 5`, `billing_passes: 45`).
+- **VM Sync Note:** Docs-only commit recording this release (plus `.wikiskill/wiki/production_deployment_and_ui.md` and `AGENTS.md` updates) is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
 
 ### 📅 2026-11-26 14:04 (UTC+7) — Real RPL 2026 Winter & Summer Sample Analytics Datasets (`a821939`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `3805788` to `a821939` (`main`, 19-path sparse-checkout intact).

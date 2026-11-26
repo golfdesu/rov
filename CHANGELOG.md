@@ -27,6 +27,25 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-26 21:16 (UTC+7) — Team Onboarding, Free Pro Conversion/Expiry Nudges, Owner Pass & Admin Revenue Separation
+**Agent:** Antigravity Agent
+
+### ✅ Completed Work
+- **Team Onboarding (`frontend/src/components/TeamSandbox.tsx`, `BillingSandbox.tsx`, `ScrimDashboardView.tsx`):** Added `#team-setup` 3-step quick-start card for Duo/Business owners with `1` member, profile anchor link, and `#analytics` empty team-history onboarding guidance.
+- **Promo Expiry & Willing Conversion Nudges (`src/db.py`, `src/schemas.py`, `src/billing.py`, `src/api.py`, `App.tsx`, `BillingSandbox.tsx`, `ScrimDashboardView.tsx`):** Exposed `pass_tier`, `pass_source`, and `pass_expires_at` (`BillingPass.source`, `is_owner_account`), added `<= 4`-day expiration warnings for `promo_free` passes, added a dismissible Free Pro nudge for returning `willing` survey users, surfaced Free Pro CTAs in `#analytics` demo banner, and rendered `Owner` pass status on `#profile` for owner admin accounts.
+- **Admin Stats Separation & Live Owner Pass (`src/db.py`, `src/api.py`, `AdminDashboardView.tsx`, `tests/test_billing.py`):** Excluded `config.admin_usernames` test orders/passes from commercial KPIs in `get_admin_stats()`, added `is_admin` + `แอดมิน / Owner` filter pill in `#admin`, updated live DB `/app/db/rov_app.db` (`@chayanin5392` `team_pro` until `2099-01-01` after online backup `/app/db/rov_app.db.bak-20261126-ownerpass`), and updated WikiSkill/AGENTS docs (`production_deployment_and_ui.md`, `AGENTS.md`).
+
+### 📁 Modified Files
+- `src/db.py`, `src/schemas.py`, `src/billing.py`, `src/api.py`, `tests/test_billing.py`
+- `frontend/src/types/auth.ts`, `frontend/src/App.tsx`, `frontend/src/components/TeamSandbox.tsx`, `frontend/src/components/BillingSandbox.tsx`, `frontend/src/components/AdminDashboardView.tsx`, `frontend/src/components/ScrimDashboardView.tsx`, `frontend/src/i18n/englishMessages.ts`
+- `AGENTS.md`, `.wikiskill/wiki/production_deployment_and_ui.md`, `docs/PRODUCTION_RELEASES.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- Verified locally with `ruff check/format` clean, `pytest -q --tb=short tests/test_billing.py tests/test_api.py` (`72 passed`), `npm --prefix frontend run lint` (`0` warnings, `0` errors), `vite build`, `build:prod`, `audit_copy_i18n.py` (`[PASS]`, 100% EN coverage), and `preflight_check.py` (`[OK]`).
+- Verified live production deploy (`5aec988` on `20.2.210.230`) with `https://minidraft.app/health` (`200`), active bundle (`index-31ipnxx8.js`), and SQLite DB integrity (`users: 1063`, `promo_claims: 44`, `billing_orders: 5`, `billing_passes: 45`).
+
+---
+
 ## 📅 2026-11-26 14:04 (UTC+7) — Real RPL 2026 Winter & Summer Sample Analytics Datasets
 **Agent:** Antigravity Agent
 
