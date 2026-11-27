@@ -92,11 +92,12 @@ def test_onnx_runtime_has_zero_torch_import():
 
     script = (
         "import sys; "
-        "from src.predictor import RoVDraftPredictor; "
-        "from src.schemas import DraftStateRequest; "
-        "p = RoVDraftPredictor(); "
-        "assert p.inference_backend == 'onnx', p.inference_backend; "
-        "r = p.predict(DraftStateRequest(mode='pick', phase=1, side='blue', top_k=3)); "
+        "from fastapi.testclient import TestClient; "
+        "import src.api as api_mod; "
+        "assert api_mod.predictor.inference_backend == 'onnx'; "
+        "client = TestClient(api_mod.app); "
+        "h = client.get('/health'); assert h.status_code == 200 and h.json()['model_loaded'] is True; "
+        "r = api_mod.predictor.predict(api_mod.DraftStateRequest(mode='pick', phase=1, side='blue', top_k=3)); "
         "assert len(r.recommendations) == 3; "
         "assert 'torch' not in sys.modules, 'torch unexpectedly imported'"
     )

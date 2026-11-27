@@ -750,14 +750,15 @@ def require_development() -> None:
 
 @app.get("/health", response_model=HealthResponse, response_model_exclude_none=True)
 def health_check():
+    model_loaded = predictor.inference_model is not None
     if config.is_production:
         return HealthResponse(
             status="healthy",
-            model_loaded=predictor.model is not None,
+            model_loaded=model_loaded,
         )
     return HealthResponse(
         status="healthy",
-        model_loaded=predictor.model is not None,
+        model_loaded=model_loaded,
         architecture=predictor.architecture,
         num_heroes=len(predictor.hero_names),
         val_loss=round(predictor.val_loss, 5),
