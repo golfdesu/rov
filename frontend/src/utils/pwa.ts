@@ -23,6 +23,15 @@ function isDismissed(): boolean {
   }
 }
 
+function isIosDevice(): boolean {
+  if (typeof window === "undefined") return false;
+  const nav = window.navigator;
+  const ua = nav.userAgent || "";
+  const isLegacyIos = /iPad|iPhone|iPod/i.test(ua);
+  const isIpadOsDesktopUa = nav.platform === "MacIntel" && nav.maxTouchPoints > 1;
+  return isLegacyIos || isIpadOsDesktopUa;
+}
+
 export function initPwaInstallListener(): void {
   if (typeof window === "undefined" || listenerInitialized) return;
   listenerInitialized = true;
@@ -73,6 +82,7 @@ export function usePwaInstall() {
       (window.navigator as Navigator & { standalone?: boolean }).standalone === true);
 
   const canInstall = Boolean(deferredInstallPrompt) && !isStandalone && !isDismissed();
+  const canInstallIos = !canInstall && isIosDevice() && !isStandalone && !isDismissed();
 
   const promptInstall = useCallback(async () => {
     const promptEvent = deferredInstallPrompt;
@@ -97,5 +107,5 @@ export function usePwaInstall() {
     notifySubscribers();
   }, []);
 
-  return { canInstall, promptInstall, dismissInstall };
+  return { canInstall, canInstallIos, promptInstall, dismissInstall };
 }

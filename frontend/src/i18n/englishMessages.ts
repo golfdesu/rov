@@ -2038,4 +2038,8 @@ export const englishMessages: Readonly<Record<string, string>> = {
   "มั่นใจได้เปรียบ {0}%": "{0}% confidence in lane advantage",
   "โอกาสเสียเปรียบจริง {0}%": "{0}% chance of true disadvantage",
   "ติดตั้งแอป": "Install App",
+  "วิธีติดตั้งบน iPhone / iPad": "How to install on iPhone / iPad",
+  "1. แตะปุ่มแชร์บนแถบ Safari": "1. Tap the Share button on the Safari toolbar",
+  "2. เลือกเพิ่มไปยังหน้าจอโฮม": "2. Choose Add to Home Screen",
+  "เปิดผ่าน Safari หากยังไม่เห็นเมนูนี้": "Open in Safari if you do not see this option",
 };

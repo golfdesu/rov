@@ -1,7 +1,7 @@
 import { StableButtonLabel } from "./StableButtonLabel";
 import { useLanguage } from "../i18n/language";
 import { LanguageSwitch } from "../i18n/LanguageProvider";
-import { BarChart3, BookOpen, Coffee, Crown, Download, LogIn, LogOut, Megaphone, User, Users, X } from "lucide-react";
+import { BarChart3, BookOpen, Coffee, Crown, Download, LogIn, LogOut, Megaphone, Share, User, Users, X } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { AuthUser } from "../types/auth";
 import { accountLabel } from "../utils/auth";
@@ -59,7 +59,8 @@ export function MobileNavDrawer<T extends string>({
   onClose,
 }: MobileNavDrawerProps<T>) {
   const { t } = useLanguage();
-  const { canInstall, promptInstall } = usePwaInstall();
+  const { canInstall, canInstallIos, promptInstall } = usePwaInstall();
+  const [showIosGuide, setShowIosGuide] = useState(false);
   const accountName = authUser ? accountLabel(authUser) : "";
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -310,18 +311,40 @@ export function MobileNavDrawer<T extends string>({
               </span>
             </button>
 
-            {canInstall && (
-              <button
-                type="button"
-                onClick={() => {
-                  void promptInstall();
-                  requestClose();
-                }}
-                className="flex min-h-11 w-full items-center gap-2 border border-gold/50 bg-gold/10 px-3 py-1.5 text-left font-display text-xs font-semibold text-gold transition-colors hover:bg-gold hover:text-bg"
-              >
-                <Download className="h-4 w-4 shrink-0" />
-                <StableButtonLabel message="ติดตั้งแอป" className="inline-grid text-left" />
-              </button>
+            {(canInstall || canInstallIos) && (
+              <div className="flex flex-col gap-1.5">
+                <button
+                  type="button"
+                  aria-expanded={canInstallIos ? showIosGuide : undefined}
+                  onClick={() => {
+                    if (canInstall) {
+                      void promptInstall();
+                      requestClose();
+                    } else {
+                      setShowIosGuide((v) => !v);
+                    }
+                  }}
+                  className="flex min-h-11 w-full items-center gap-2 border border-gold/50 bg-gold/10 px-3 py-1.5 text-left font-display text-xs font-semibold text-gold transition-colors hover:bg-gold hover:text-bg"
+                >
+                  <Download className="h-4 w-4 shrink-0" />
+                  <StableButtonLabel message="ติดตั้งแอป" className="inline-grid text-left" />
+                </button>
+                {canInstallIos && showIosGuide && (
+                  <div className="border border-gold/30 bg-bg/80 px-3 py-2 text-[11px] leading-relaxed text-ink">
+                    <div className="font-display font-semibold text-gold">
+                      {t("วิธีติดตั้งบน iPhone / iPad")}
+                    </div>
+                    <p className="mt-1">
+                      {t("1. แตะปุ่มแชร์บนแถบ Safari")}{" "}
+                      <Share className="inline h-3.5 w-3.5 align-text-bottom text-gold" aria-hidden="true" />
+                    </p>
+                    <p>{t("2. เลือกเพิ่มไปยังหน้าจอโฮม")}</p>
+                    <p className="mt-1 text-[10px] text-dim">
+                      {t("เปิดผ่าน Safari หากยังไม่เห็นเมนูนี้")}
+                    </p>
+                  </div>
+                )}
+              </div>
             )}
 
             <button
