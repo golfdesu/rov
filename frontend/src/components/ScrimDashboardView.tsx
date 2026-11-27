@@ -280,11 +280,6 @@ function fmtSignedPct(value: number, digits = 1): string {
   return `${value >= 0 ? "+" : ""}${value.toFixed(digits)}%`;
 }
 
-function fmtPValue(p: number): string {
-  if (p < 0.001) return "<0.001";
-  return p.toFixed(3);
-}
-
 function filterAndSortHeroes<T extends HeroPerf>(
   list: readonly T[],
   laneFilter: LaneFilterKey,
@@ -400,7 +395,7 @@ function HeroTableToolbar({
           >
             <option value="games">{t("เรียงตามจำนวนเกม")}</option>
             {includeContestSort && <option value="contest">{t("เรียงตาม Contest Rate")}</option>}
-            <option value="bayesian">{t("เรียงตาม Win Rate ปรับฐาน")}</option>
+            <option value="bayesian">{t("เรียงตาม WR ถ่วงน้ำหนัก")}</option>
             {includeDeltaSort && <option value="delta">{t("เรียงตามส่วนต่างเทียบทีม")}</option>}
             <option value="winRate">{t("เรียงตาม Win Rate")}</option>
             <option value="phase1">{t("เรียงตาม % หยิบ Phase 1")}</option>
@@ -577,28 +572,28 @@ function MethodsReferenceCard() {
       </summary>
       <div className="mt-3 grid grid-cols-1 gap-3 border-t border-line pt-3 md:grid-cols-2">
         <div>
-          <strong className="text-ink">1. {t("ช่วง Win Rate (95% CI) & โอกาสชนะซีรีส์")}:</strong>{" "}
-          {t("ประมาณช่วง Win Rate ที่น่าเชื่อถือเมื่อจำนวนเกมยังน้อย และคำนวณโอกาสปิดซีรีส์ Bo5/Bo7 แบบสลับฝั่ง Blue/Red")}
+          <strong className="text-ink">1. {t("ช่วงอัตราชนะ & โอกาสปิดซีรีส์")}:</strong>{" "}
+          {t("ประเมินช่วงอัตราชนะที่น่าเชื่อถือเมื่อจำนวนเกมยังน้อย และคำนวณโอกาสชนะซีรีส์ Bo5/Bo7 แบบสลับฝั่ง Blue/Red")}
         </div>
         <div>
-          <strong className="text-ink">2. Empirical Bayes Shrinkage &amp; AI Draft Edge:</strong>{" "}
-          {t("ดึงฮีโร่ที่เล่นไม่กี่เกมเข้าหาค่าเฉลี่ยทีม (Prior k=8) เพื่อวัด Bayes Delta และเทียบผลชนะจริงกับค่าคาดการณ์ของ AI เพื่อดูว่าชนะเกินคาดกี่เกม")}
+          <strong className="text-ink">2. {t("อัตราชนะถ่วงน้ำหนัก & เทียบคาดการณ์ AI")}:</strong>{" "}
+          {t("ลดความเพี้ยนของฮีโร่ที่เพิ่งเล่นไม่กี่เกมให้เทียบกับค่าเฉลี่ยทีมได้ยุติธรรมขึ้น และเทียบจำนวนเกมที่ชนะจริงกับค่าที่ AI คาดการณ์ไว้")}
         </div>
         <div>
-          <strong className="text-ink">3. Bradley-Terry (1952) Synergy &amp; Lane Counter Lift:</strong>{" "}
-          {t("เทียบ Win Rate คอมโบและคู่ชนเลนกับค่า Expected จากความเก่งเดี่ยว บอกได้ว่าคู่ไหนเสริมกันจริง (Lift +%) พร้อม Co-Pick และ Protective Ban Lift")}
+          <strong className="text-ink">3. {t("คู่คอมโบ & การชนเลนตรง")}:</strong>{" "}
+          {t("วัดว่าฮีโร่ที่หยิบคู่กันหรือชนเลนกันช่วยเพิ่มโอกาสชนะได้มากกว่าปกติแค่ไหน พร้อมจับคู่ฮีโร่ที่มักโดนแบนเพื่อป้องกันแผน")}
         </div>
         <div>
-          <strong className="text-ink">4. Shannon Entropy Effective Pool &amp; EWMA Momentum:</strong>{" "}
-          {t("exp(H) วัดจำนวนฮีโร่ที่ทีมใช้งานกระจายจริงใน Global Ban ส่วน Weighted Linear Slope (G1–G7) และ EWMA (alpha=0.15) จับอาการล้าและฟอร์มล่าสุด")}
+          <strong className="text-ink">4. {t("ความกว้างคลังฮีโร่ & ฟอร์มช่วงหลัง")}:</strong>{" "}
+          {t("นับจำนวนฮีโร่ตัวหลักที่ทีมหมุนใช้งานจริงในระบบ Global Ban พร้อมดูอาการล้าช่วงท้ายซีรีส์ (G1–G7) และแนวโน้มฟอร์มล่าสุด")}
         </div>
         <div>
-          <strong className="text-ink">{t("5. Positional Pool, Flex & Blind/Counter:")}</strong>{" "}
-          {t("วัด Shannon Entropy ราย 5 เลนเพื่อเตือนจุดเสี่ยงโดนบีบ Global Ban, แยก WR ตอนหยิบเปิด (P1–P3) vs หยิบปิด (P4–P5) และเทียบเกมที่ใช้ตัว Flex")}
+          <strong className="text-ink">{t("5. คลังฮีโร่รายเลน, ตัว Flex & หยิบเปิด/แก้ทาง:")}</strong>{" "}
+          {t("เช็กความลึกของคลังฮีโร่ทั้ง 5 เลนเพื่อเตือนจุดเสี่ยงโดนบีบแบน แยกผลงานตอนหยิบเปิด (P1–P3) กับหยิบปิด (P4–P5) และดูผลของการใช้ตัว Flex")}
         </div>
         <div>
-          <strong className="text-ink">{t("6. Trio Core, Comp Archetypes & Period Diff:")}</strong>{" "}
-          {t("วิเคราะห์แกน 3 ตัว (JGL+MID+SUP), จำแนกสไตล์คอมพ์ทีมจาก Role, ความหลากหลาย Phase 1 และเทียบเมต้าข้ามช่วงเวลา/ทัวร์นาเมนต์")}
+          <strong className="text-ink">{t("6. สามประสาน, แผนคอมพ์ทีม & เทียบช่วงเวลา:")}</strong>{" "}
+          {t("วิเคราะห์แกน 3 ตัว (ป่า+เมจ+โรม), แบ่งสไตล์คอมพ์ทีมจากบทบาทฮีโร่, ดูความหลากหลายช่วงเปิดดราฟต์ และเทียบเมต้าข้ามช่วงเวลา")}
         </div>
         <div className="md:col-span-2">
           <strong className="text-ink">{t("7. จำนวนเกมที่แนะนำ:")}</strong>{" "}
@@ -639,6 +634,7 @@ function CiRangeBar({
   ratePct: number;
   ci: [number, number];
 }) {
+  const { t } = useLanguage();
   const lo = Math.max(0, Math.min(100, ci[0]));
   const hi = Math.max(lo, Math.min(100, ci[1]));
   const pt = Math.max(0, Math.min(100, ratePct));
@@ -658,7 +654,7 @@ function CiRangeBar({
       <div className="flex justify-between font-mono text-[10px] text-dim">
         <span>0%</span>
         <span>
-          95% CI: [{lo.toFixed(1)}% – {hi.toFixed(1)}%]
+          {t("ช่วงที่น่าเชื่อถือ: {0}% – {1}%", lo.toFixed(1), hi.toFixed(1))}
         </span>
         <span>100%</span>
       </div>
@@ -1706,7 +1702,7 @@ export function ScrimDashboardView({
                     </span>
                     <p
                       className="font-mono text-[11px] tabular-nums text-dim"
-                      title={allStats.blueCi ? `Wilson 95% CI: [${allStats.blueCi[0].toFixed(0)}–${allStats.blueCi[1].toFixed(0)}%]` : undefined}
+                      title={allStats.blueCi ? t("ช่วงอัตราชนะที่น่าเชื่อถือ: {0}%–{1}%", allStats.blueCi[0].toFixed(0), allStats.blueCi[1].toFixed(0)) : undefined}
                     >
                       {allStats.blueWins}/{allStats.decided}
                       {allStats.blueCi ? ` · ${allStats.blueCi[0].toFixed(0)}–${allStats.blueCi[1].toFixed(0)}%` : ""}
@@ -1719,7 +1715,7 @@ export function ScrimDashboardView({
                     </span>
                     <p
                       className="font-mono text-[11px] tabular-nums text-dim"
-                      title={allStats.redCi ? `Wilson 95% CI: [${allStats.redCi[0].toFixed(0)}–${allStats.redCi[1].toFixed(0)}%]` : undefined}
+                      title={allStats.redCi ? t("ช่วงอัตราชนะที่น่าเชื่อถือ: {0}%–{1}%", allStats.redCi[0].toFixed(0), allStats.redCi[1].toFixed(0)) : undefined}
                     >
                       {allStats.redWins}/{allStats.decided}
                       {allStats.redCi ? ` · ${allStats.redCi[0].toFixed(0)}–${allStats.redCi[1].toFixed(0)}%` : ""}
@@ -1727,7 +1723,7 @@ export function ScrimDashboardView({
                   </div>
                 </div>
                 <p
-                  title={`p=${fmtPValue(allStats.sideTest.pValue)}`}
+                  title={t(allStats.sideTest.significant95 ? "ความต่างชัดเจนตามสถิติ" : "ความต่างยังไม่ชัดเจนตามสถิติ")}
                   className={`mt-2 font-mono text-[11px] ${allStats.sideTest.significant95 ? "font-bold text-gold" : "text-dim"}`}
                 >
                   {t(sideVerdict)}
@@ -1741,7 +1737,7 @@ export function ScrimDashboardView({
                 </p>
                 <p
                   className="mt-1 font-mono text-xs tabular-nums text-gold"
-                  title="Effective Hero Pool (inverse Simpson / perplexity)"
+                  title={t("จำนวนฮีโร่ที่ทีมหมุนใช้งานจริงในระบบ Global Ban")}
                 >
                   {t("ตัวหลัก:")} <strong>{allStats.effectiveHeroPool.toFixed(1)}</strong> {t("ตัว")}
                   <span className="text-dim"> · {t("กระจายใช้งาน")} {allStats.poolEvennessPct.toFixed(0)}%</span>
@@ -1967,7 +1963,12 @@ export function ScrimDashboardView({
                           <th className="whitespace-nowrap px-3 py-2 text-right">Contest%</th>
                           <th className="whitespace-nowrap px-3 py-2 text-right">W - L</th>
                           <th className="whitespace-nowrap px-3 py-2">{t("Win Rate")}</th>
-                          <th className="whitespace-nowrap px-3 py-2 text-right">{t("WR ปรับฐาน")}</th>
+                          <th
+                            className="whitespace-nowrap px-3 py-2 text-right"
+                            title={t("ลดความเพี้ยนของฮีโร่ที่เพิ่งเล่นไม่กี่เกม")}
+                          >
+                            {t("WR ถ่วงน้ำหนัก")}
+                          </th>
                           <th className="whitespace-nowrap px-3 py-2 text-right">{t("หยิบ P1")}</th>
                         </tr>
                       </thead>
@@ -2066,7 +2067,7 @@ export function ScrimDashboardView({
                           {(isCardExpanded("allLane") ? allStats.laneStrengths : allStats.laneStrengths.slice(0, 8)).map((m) => (
                             <li
                               key={`als-${m.lane}-${m.allyHero}-${m.enemyHero}`}
-                              title={`${t("มั่นใจ")} ${m.probAdvantagePct.toFixed(0)}% · Z=${m.zScore.toFixed(2)} · Counter Lift ${fmtSignedPct(m.counterLiftPct)}`}
+                              title={t("มั่นใจ {0}% · ชนะทางเพิ่ม {1}", m.probAdvantagePct.toFixed(0), fmtSignedPct(m.counterLiftPct))}
                               className="flex flex-wrap items-center justify-between gap-2 border border-line bg-bg px-2.5 py-1.5 text-xs"
                             >
                               <div className="flex min-w-0 items-center gap-1.5">
@@ -2168,7 +2169,7 @@ export function ScrimDashboardView({
                     </span>
                     <p
                       className="font-mono text-[11px] tabular-nums text-dim"
-                      title={stats.blueCi ? `Wilson 95% CI: [${stats.blueCi[0].toFixed(0)}–${stats.blueCi[1].toFixed(0)}%]` : undefined}
+                      title={stats.blueCi ? t("ช่วงอัตราชนะที่น่าเชื่อถือ: {0}%–{1}%", stats.blueCi[0].toFixed(0), stats.blueCi[1].toFixed(0)) : undefined}
                     >
                       {stats.blueWins}/{stats.blueDecided}
                       {stats.blueCi ? ` · ${stats.blueCi[0].toFixed(0)}–${stats.blueCi[1].toFixed(0)}%` : ""}
@@ -2181,7 +2182,7 @@ export function ScrimDashboardView({
                     </span>
                     <p
                       className="font-mono text-[11px] tabular-nums text-dim"
-                      title={stats.redCi ? `Wilson 95% CI: [${stats.redCi[0].toFixed(0)}–${stats.redCi[1].toFixed(0)}%]` : undefined}
+                      title={stats.redCi ? t("ช่วงอัตราชนะที่น่าเชื่อถือ: {0}%–{1}%", stats.redCi[0].toFixed(0), stats.redCi[1].toFixed(0)) : undefined}
                     >
                       {stats.redWins}/{stats.redDecided}
                       {stats.redCi ? ` · ${stats.redCi[0].toFixed(0)}–${stats.redCi[1].toFixed(0)}%` : ""}
@@ -2189,7 +2190,7 @@ export function ScrimDashboardView({
                   </div>
                 </div>
                 <p
-                  title={`p=${fmtPValue(stats.sideTest.pValue)}`}
+                  title={t(stats.sideTest.significant95 ? "ความต่างชัดเจนตามสถิติ" : "ความต่างยังไม่ชัดเจนตามสถิติ")}
                   className={`mt-2 font-mono text-[11px] ${stats.sideTest.significant95 ? "font-bold text-gold" : "text-dim"}`}
                 >
                   {t(sideVerdict)}
@@ -2213,7 +2214,7 @@ export function ScrimDashboardView({
                 </p>
                 <p
                   className="mt-1 font-mono text-xs tabular-nums text-gold"
-                  title="Effective Hero Pool (inverse Simpson / perplexity)"
+                  title={t("จำนวนฮีโร่ที่ทีมหมุนใช้งานจริงในระบบ Global Ban")}
                 >
                   {t("ตัวหลัก:")} <strong>{stats.effectiveHeroPool.toFixed(1)}</strong> {t("ตัว")}
                   <span className="text-dim"> · {t("กระจายใช้งาน")} {stats.poolEvennessPct.toFixed(0)}%</span>
@@ -2238,7 +2239,7 @@ export function ScrimDashboardView({
                   <div className="flex flex-wrap items-center gap-2 font-mono text-[11px] tabular-nums">
                     {stats.fatigueSlopePctPerGame !== null ? (
                       <span
-                        title={`G1→G7 slope: ${fmtSignedPct(stats.fatigueSlopePctPerGame)}/game`}
+                        title={t("แนวโน้มท้ายซีรีส์: {0} ต่อเกม", fmtSignedPct(stats.fatigueSlopePctPerGame))}
                         className={`border px-2 py-0.5 ${
                           stats.fatigueSlopePctPerGame >= 0
                             ? "border-good/40 bg-good/10 text-good"
@@ -2268,7 +2269,9 @@ export function ScrimDashboardView({
                     const row = stats.byGameNum.get(gNum);
                     const pct = row && row.decided > 0 ? (row.wins / row.decided) * 100 : 0;
                     const hasData = Boolean(row && row.decided > 0);
-                    const ciLabel = row?.ci ? `95% CI: [${row.ci[0].toFixed(1)}%–${row.ci[1].toFixed(1)}%]` : undefined;
+                    const ciLabel = row?.ci
+                      ? t("ช่วงอัตราชนะที่น่าเชื่อถือ: {0}%–{1}%", row.ci[0].toFixed(1), row.ci[1].toFixed(1))
+                      : undefined;
                     return (
                       <div key={gNum} title={ciLabel} className="flex min-w-[82px] shrink-0 snap-start flex-col justify-between border border-line bg-bg p-2 lg:min-w-0">
                         <div className="flex items-center justify-between font-mono text-[11px] tabular-nums">
@@ -2312,7 +2315,7 @@ export function ScrimDashboardView({
 
             <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
               <CollapsibleCard
-                title={t("สถิติเจอแต่ละทีม (Head-to-Head)")}
+                title={t("สถิติเจอแต่ละทีม")}
                 headerRight={
                   opponentFilter !== "ALL" ? (
                     <button
@@ -2340,7 +2343,7 @@ export function ScrimDashboardView({
                         const decided = row.wins + row.losses;
                         const active = opponentFilter.toLowerCase() === row.opponent.toLowerCase();
                         const ciTip = row.ci
-                          ? `Wilson 95% CI: [${row.ci[0].toFixed(1)}%–${row.ci[1].toFixed(1)}%] · p=${fmtPValue(row.vsTeamTest.pValue)}`
+                          ? t("ช่วงอัตราชนะที่น่าเชื่อถือ: {0}%–{1}%", row.ci[0].toFixed(1), row.ci[1].toFixed(1))
                           : undefined;
                         return (
                           <tr
@@ -2372,7 +2375,7 @@ export function ScrimDashboardView({
                             >
                               {wrPct(row.wins, decided)}
                               {row.vsTeamTest.significant95 && (
-                                <span className="ml-1 text-[10px] text-gold" title={`p=${fmtPValue(row.vsTeamTest.pValue)}`}>
+                                <span className="ml-1 text-[10px] text-gold" title={t("ความต่างชัดเจนตามสถิติ")}>
                                   *
                                 </span>
                               )}
@@ -2532,7 +2535,7 @@ export function ScrimDashboardView({
                       <th className="whitespace-nowrap px-3 py-2">{t("Win Rate")}</th>
                       <th
                         className="whitespace-nowrap px-3 py-2 text-right"
-                        title={t("Win Rate ปรับฐานเทียบค่าเฉลี่ยของทีม")}
+                        title={t("อัตราชนะถ่วงน้ำหนักเทียบค่าเฉลี่ยของทีม")}
                       >
                         {t("ฟอร์มเทียบทีม")}
                       </th>
@@ -2713,10 +2716,7 @@ export function ScrimDashboardView({
                               <div className="flex shrink-0 items-center gap-2 font-mono tabular-nums">
                                 <span className={`font-bold ${isToughTab ? "text-red" : "text-good"}`}>{fmtSignedPct(e.threatDeltaPct)}</span>
                                 <span className="text-ink">{wrPct(e.ourWins, e.decided)}</span>
-                                <span
-                                  className="text-[11px] text-dim"
-                                  title={`Z=${e.zScore.toFixed(2)}`}
-                                >
+                                <span className="text-[11px] text-dim">
                                   ({e.ourWins}W-{e.ourLosses}L · {t(isToughTab ? "แพ้ทางจริง" : "ชนะทางจริง")}{" "}
                                   {(isToughTab ? e.probThreatPct : 100 - e.probThreatPct).toFixed(0)}%)
                                 </span>
@@ -2754,7 +2754,7 @@ export function ScrimDashboardView({
                           {(isCardExpanded("teamLane") ? stats.laneStrengths : stats.laneStrengths.slice(0, 6)).map((m) => (
                             <li
                               key={`ls-${m.lane}-${m.allyHero}-${m.enemyHero}`}
-                              title={`${t("มั่นใจ")} ${m.probAdvantagePct.toFixed(0)}% · Z=${m.zScore.toFixed(2)}`}
+                              title={t("มั่นใจได้เปรียบ {0}%", m.probAdvantagePct.toFixed(0))}
                               className="flex flex-wrap items-center justify-between gap-1.5 border border-line bg-bg px-2 py-1.5 text-[11px]"
                             >
                               <div className="flex min-w-0 items-center gap-1">
@@ -2784,7 +2784,7 @@ export function ScrimDashboardView({
                           {(isCardExpanded("teamLane") ? stats.laneWeaknesses : stats.laneWeaknesses.slice(0, 6)).map((m) => (
                             <li
                               key={`lw-${m.lane}-${m.allyHero}-${m.enemyHero}`}
-                              title={`${t("เสียเปรียบจริง")} ${(100 - m.probAdvantagePct).toFixed(0)}% · Z=${m.zScore.toFixed(2)}`}
+                              title={t("โอกาสเสียเปรียบจริง {0}%", (100 - m.probAdvantagePct).toFixed(0))}
                               className="flex flex-wrap items-center justify-between gap-1.5 border border-line bg-bg px-2 py-1.5 text-[11px]"
                             >
                               <div className="flex min-w-0 items-center gap-1">
