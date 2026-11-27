@@ -49,6 +49,7 @@ import { HeroPortrait } from "./HeroPortrait";
 import { LaneIcon } from "./LaneIcon";
 import {
   BlindCounterSlotCard,
+  CollapsibleCard,
   CompArchetypeCard,
   FlexEffectivenessCard,
   PeriodDiffCard,
@@ -326,8 +327,6 @@ function filterAndSortHeroes<T extends HeroPerf>(
 }
 
 function HeroTableToolbar({
-  title,
-  count,
   laneFilter,
   onLaneChange,
   heroSearch,
@@ -337,8 +336,6 @@ function HeroTableToolbar({
   includeContestSort,
   includeDeltaSort,
 }: {
-  title: string;
-  count: number;
   laneFilter: LaneFilterKey;
   onLaneChange: (lane: LaneFilterKey) => void;
   heroSearch: string;
@@ -350,11 +347,7 @@ function HeroTableToolbar({
 }) {
   const { t } = useLanguage();
   return (
-    <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-      <h2 className="font-display text-sm font-bold tracking-wider text-ink">
-        {title} ({count})
-      </h2>
-      <div className="flex flex-wrap items-center gap-2">
+    <div className="mb-3 flex flex-wrap items-center gap-2">
         <div className="flex flex-wrap gap-1">
           <button
             type="button"
@@ -412,7 +405,6 @@ function HeroTableToolbar({
             <option value="phase1">{t("เรียงตาม % หยิบ Phase 1")}</option>
           </select>
         </label>
-      </div>
     </div>
   );
 }
@@ -433,13 +425,10 @@ function PhasePickCard({
   const maxRows = Math.max(phase1Top.length, phase2Top.length);
   const expandedHeightClass = previewLimit >= 9 ? "max-h-[28rem]" : "max-h-80";
   return (
-    <div className="border border-line bg-panel p-4">
-      <div className="mb-3 flex items-center gap-2">
-        <Sparkles className="size-4 text-gold" />
-        <h2 className="font-display text-sm font-bold tracking-wider text-ink">
-          {t("จังหวะการหยิบ (Phase 1 vs Phase 2)")}
-        </h2>
-      </div>
+    <CollapsibleCard
+      icon={<Sparkles className="size-4 text-gold" />}
+      title={t("จังหวะการหยิบ (Phase 1 vs Phase 2)")}
+    >
       <div className="grid gap-4 sm:grid-cols-2">
         {([
           ["หยิบเปิด Phase 1 (P1–P3)", "text-gold", phase1Top, (h: HeroPerf) => h.phase1Count, "p1"],
@@ -476,7 +465,7 @@ function PhasePickCard({
         previewLimit={previewLimit}
         onToggle={() => setExpanded((v) => !v)}
       />
-    </div>
+    </CollapsibleCard>
   );
 }
 
@@ -521,21 +510,20 @@ function DuosCard({ duos, heroMap }: { duos: readonly DuoStat[]; heroMap: Map<st
   const previewLimit = 8;
   const visibleDuos = expanded ? duos : duos.slice(0, previewLimit);
   return (
-    <div className="border border-line bg-panel p-4">
-      <div className="mb-3 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <Users className="size-4 text-good" />
-          <h2 className="font-display text-sm font-bold tracking-wider text-ink">
-            {t("คู่คอมโบเด่น")}
-          </h2>
-          {duos.length > previewLimit && (
-            <span className="font-mono text-[11px] text-dim">({duos.length})</span>
-          )}
-        </div>
+    <CollapsibleCard
+      icon={<Users className="size-4 text-good" />}
+      title={t("คู่คอมโบเด่น")}
+      badge={
+        duos.length > previewLimit ? (
+          <span className="font-mono text-[11px] text-dim">({duos.length})</span>
+        ) : undefined
+      }
+      headerRight={
         <span className="font-mono text-[10px] text-dim">
           {t("ชนะมากกว่าคาด")}
         </span>
-      </div>
+      }
+    >
       {duos.length === 0 ? (
         <p className="text-xs text-dim">{t("ยังไม่มีข้อมูลคู่คอมโบเพียงพอ")}</p>
       ) : (
@@ -574,7 +562,7 @@ function DuosCard({ duos, heroMap }: { duos: readonly DuoStat[]; heroMap: Map<st
           />
         </>
       )}
-    </div>
+    </CollapsibleCard>
   );
 }
 
@@ -1624,7 +1612,7 @@ export function ScrimDashboardView({
               <StableButtonLabel message="ลองใหม่" />
             </button>
           </Alert>
-        ) : showSampleData && (sampleLoading || !sampleData) ? (
+        ) : showSampleData && !sampleData ? (
           <section role="status" className="border border-dashed border-line bg-panel/40 p-8 text-center text-sm text-muted">
             {t("กำลังโหลดข้อมูลตัวอย่าง…")}
           </section>
@@ -1681,7 +1669,10 @@ export function ScrimDashboardView({
             )}
           </section>
         ) : (
-          <>
+          <div
+            aria-busy={showSampleData && sampleLoading}
+            className={`space-y-4 transition-opacity ${showSampleData && sampleLoading ? "opacity-75" : ""}`}
+          >
             {!showSampleData && (allTeamsMode && allStats ? allStats.decided : stats.decided) < 40 && (
               <SampleSizeNotice decided={allTeamsMode && allStats ? allStats.decided : stats.decided} />
             )}
@@ -1784,17 +1775,13 @@ export function ScrimDashboardView({
 
             {activeTab === "overview" && (
               <div className="space-y-4">
-                <section id="scrim-form" className="grid gap-4 lg:grid-cols-12">
-                  <div className="min-w-0 border border-line bg-panel p-4 lg:col-span-7">
-                    <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <Layers className="size-4 text-gold" />
-                        <h2 className="font-display text-sm font-bold tracking-wider text-ink">
-                          {t("สัดส่วนชนะ Blue vs Red แยกตามเกม (G1–G7)")}
-                        </h2>
-                      </div>
-                      <span className="font-mono text-[11px] text-dim">Blue % / Red %</span>
-                    </div>
+                <section id="scrim-form" className="grid items-start gap-4 lg:grid-cols-12">
+                  <CollapsibleCard
+                    className="min-w-0 lg:col-span-7"
+                    icon={<Layers className="size-4 text-gold" />}
+                    title={t("สัดส่วนชนะ Blue vs Red แยกตามเกม (G1–G7)")}
+                    headerRight={<span className="font-mono text-[11px] text-dim">Blue % / Red %</span>}
+                  >
                     <div className="flex snap-x gap-1.5 overflow-x-auto pb-1 lg:grid lg:grid-cols-7 lg:overflow-visible lg:pb-0">
                       {[1, 2, 3, 4, 5, 6, 7].map((gNum) => {
                         const row = allStats.byGameNum.get(gNum);
@@ -1828,18 +1815,14 @@ export function ScrimDashboardView({
                         );
                       })}
                     </div>
-                  </div>
+                  </CollapsibleCard>
 
-                  <div className="border border-line bg-panel p-4 lg:col-span-5">
-                    <div className="mb-3 flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <Trophy className="size-4 text-gold" />
-                        <h2 className="font-display text-sm font-bold tracking-wider text-ink">
-                          {t("อันดับผลงานแต่ละทีม")}
-                        </h2>
-                      </div>
-                      <span className="font-mono text-[10px] text-dim">{t("คลิกเพื่อดูรายทีม")}</span>
-                    </div>
+                  <CollapsibleCard
+                    className="lg:col-span-5"
+                    icon={<Trophy className="size-4 text-gold" />}
+                    title={t("อันดับผลงานแต่ละทีม")}
+                    headerRight={<span className="font-mono text-[10px] text-dim">{t("คลิกเพื่อดูรายทีม")}</span>}
+                  >
                     <div className="max-h-56 overflow-y-auto border border-line">
                       <table className="w-full border-collapse text-left text-xs">
                         <thead className="sticky top-0 bg-panel-2 font-mono text-[10px] text-muted">
@@ -1877,7 +1860,7 @@ export function ScrimDashboardView({
                         </tbody>
                       </table>
                     </div>
-                  </div>
+                  </CollapsibleCard>
                 </section>
 
                 <PositionalPoolCard advanced={advancedStats} heroMap={heroMap} />
@@ -1890,13 +1873,11 @@ export function ScrimDashboardView({
                 <section id="scrim-draft" className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
                   <PhasePickCard phase1Top={allStats.phase1Top} phase2Top={allStats.phase2Top} heroMap={heroMap} previewLimit={6} />
 
-                  <div className="space-y-3 border border-line bg-panel p-4">
-                    <div className="flex items-center gap-2">
-                      <ShieldBan className="size-4 text-red" />
-                      <h2 className="font-display text-sm font-bold tracking-wider text-ink">
-                        {t("ฮีโร่ที่ถูกแบนบ่อย & Contest Rate")}
-                      </h2>
-                    </div>
+                  <CollapsibleCard
+                    icon={<ShieldBan className="size-4 text-red" />}
+                    title={t("ฮีโร่ที่ถูกแบนบ่อย & Contest Rate")}
+                  >
+                    <div className="space-y-3">
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
                         <p className="mb-2 font-mono text-[11px] font-bold text-red">{t("ฮีโร่ที่ถูกแบนบ่อย")}</p>
@@ -1943,7 +1924,8 @@ export function ScrimDashboardView({
                       previewLimit={6}
                       onToggle={() => toggleCard("allBans")}
                     />
-                  </div>
+                    </div>
+                  </CollapsibleCard>
                 </section>
 
                 <section className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
@@ -1955,10 +1937,12 @@ export function ScrimDashboardView({
 
             {activeTab === "heroes" && (
               <div className="space-y-4">
-                <section id="scrim-heroes" className="border border-line bg-panel p-4">
+                <CollapsibleCard
+                  as="section"
+                  id="scrim-heroes"
+                  title={`${t("ตารางผลงานฮีโร่ทั้งหมด")} (${filteredAllHeroRows.length})`}
+                >
                   <HeroTableToolbar
-                    title={t("ตารางผลงานฮีโร่ทั้งหมด")}
-                    count={filteredAllHeroRows.length}
                     laneFilter={laneFilter}
                     onLaneChange={setLaneFilter}
                     heroSearch={heroSearch}
@@ -2036,7 +2020,7 @@ export function ScrimDashboardView({
                       </tbody>
                     </table>
                   </div>
-                </section>
+                </CollapsibleCard>
 
                 <PeriodDiffCard
                   scopedGames={scopedGames}
@@ -2057,19 +2041,16 @@ export function ScrimDashboardView({
                 <section id="scrim-matchups" className="grid items-start gap-4 lg:grid-cols-2">
                   <DuosCard duos={allStats.topDuos} heroMap={heroMap} />
 
-                  <div className="border border-line bg-panel p-4">
-                    <div className="mb-3 flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <Swords className="size-4 text-gold" />
-                        <h2 className="font-display text-sm font-bold tracking-wider text-ink">
-                          {t("สถิติชนเลนตรง (ตัวต่อตัว)")}
-                        </h2>
-                        {allStats.laneStrengths.length > 8 && (
-                          <span className="font-mono text-[11px] text-dim">({allStats.laneStrengths.length})</span>
-                        )}
-                      </div>
-                      <span className="font-mono text-[10px] text-dim">{t("ความได้เปรียบเลน")}</span>
-                    </div>
+                  <CollapsibleCard
+                    icon={<Swords className="size-4 text-gold" />}
+                    title={t("สถิติชนเลนตรง (ตัวต่อตัว)")}
+                    badge={
+                      allStats.laneStrengths.length > 8 ? (
+                        <span className="font-mono text-[11px] text-dim">({allStats.laneStrengths.length})</span>
+                      ) : undefined
+                    }
+                    headerRight={<span className="font-mono text-[10px] text-dim">{t("ความได้เปรียบเลน")}</span>}
+                  >
                     {allStats.laneStrengths.length === 0 ? (
                       <p className="text-xs text-dim">
                         {t("ยังไม่มีข้อมูลการชนเลนตรง (ต้องลงตำแหน่งเลนของฮีโร่อย่างน้อย 2 เกมต่อคู่)")}
@@ -2113,7 +2094,7 @@ export function ScrimDashboardView({
                         />
                       </>
                     )}
-                  </div>
+                  </CollapsibleCard>
                 </section>
 
                 <TrioSynergyCard advanced={advancedStats} heroMap={heroMap} />
@@ -2243,15 +2224,12 @@ export function ScrimDashboardView({
 
             {activeTab === "overview" && (
               <div className="space-y-4">
-                <section id="scrim-form" className="grid gap-4 lg:grid-cols-12">
-              <div className="min-w-0 border border-line bg-panel p-4 lg:col-span-7">
-                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <Layers className="size-4 text-gold" />
-                    <h2 className="font-display text-sm font-bold tracking-wider text-ink">
-                      {t("ผลงานแยกตามลำดับเกมในซีรีส์ Global Ban (G1–G7)")}
-                    </h2>
-                  </div>
+                <section id="scrim-form" className="grid items-start gap-4 lg:grid-cols-12">
+              <CollapsibleCard
+                className="min-w-0 lg:col-span-7"
+                icon={<Layers className="size-4 text-gold" />}
+                title={t("ผลงานแยกตามลำดับเกมในซีรีส์ Global Ban (G1–G7)")}
+                headerRight={
                   <div className="flex flex-wrap items-center gap-2 font-mono text-[11px] tabular-nums">
                     {stats.fatigueSlopePctPerGame !== null ? (
                       <span
@@ -2278,7 +2256,8 @@ export function ScrimDashboardView({
                         </span>
                       )}
                   </div>
-                </div>
+                }
+              >
                 <div className="flex snap-x gap-1.5 overflow-x-auto pb-1 lg:grid lg:grid-cols-7 lg:overflow-visible lg:pb-0">
                   {[1, 2, 3, 4, 5, 6, 7].map((gNum) => {
                     const row = stats.byGameNum.get(gNum);
@@ -2309,32 +2288,28 @@ export function ScrimDashboardView({
                     );
                   })}
                 </div>
-              </div>
+              </CollapsibleCard>
 
-              <div className="border border-line bg-panel p-4 lg:col-span-5">
-                <div className="mb-3 flex items-center gap-2">
-                  <Activity className="size-4 text-gold" />
-                  <h2 className="font-display text-sm font-bold tracking-wider text-ink">
-                    {t("ฟอร์มช่วงหลัง")}
-                  </h2>
-                </div>
+              <CollapsibleCard
+                className="lg:col-span-5"
+                icon={<Activity className="size-4 text-gold" />}
+                title={t("ฟอร์มช่วงหลัง")}
+              >
                 <EwmaSparkline
                   points={stats.ewmaSeries}
                   currentPct={stats.ewmaCurrentPct}
                   deltaPct={stats.ewmaDeltaPct}
                 />
-              </div>
+              </CollapsibleCard>
             </section>
 
             <PositionalPoolCard advanced={advancedStats} heroMap={heroMap} />
 
             <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
-              <div className="border border-line bg-panel p-4">
-                <div className="mb-3 flex items-center justify-between gap-2">
-                  <h2 className="font-display text-sm font-bold tracking-wider text-ink">
-                    {t("สถิติเจอแต่ละทีม (Head-to-Head)")}
-                  </h2>
-                  {opponentFilter !== "ALL" && (
+              <CollapsibleCard
+                title={t("สถิติเจอแต่ละทีม (Head-to-Head)")}
+                headerRight={
+                  opponentFilter !== "ALL" ? (
                     <button
                       type="button"
                       onClick={() => setOpponentFilter("ALL")}
@@ -2342,8 +2317,9 @@ export function ScrimDashboardView({
                     >
                       {t("ดูทุกทีม")}
                     </button>
-                  )}
-                </div>
+                  ) : undefined
+                }
+              >
                 <div className="max-h-72 overflow-y-auto border border-line">
                   <table className="w-full border-collapse text-left text-xs">
                     <thead className="sticky top-0 bg-panel-2 font-mono text-[10px] text-muted">
@@ -2405,7 +2381,7 @@ export function ScrimDashboardView({
                     </tbody>
                   </table>
                 </div>
-              </div>
+              </CollapsibleCard>
 
               <CompArchetypeCard advanced={advancedStats} heroMap={heroMap} />
             </div>
@@ -2417,13 +2393,11 @@ export function ScrimDashboardView({
                 <section id="scrim-draft" className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
               <PhasePickCard phase1Top={stats.phase1Top} phase2Top={stats.phase2Top} heroMap={heroMap} previewLimit={9} />
 
-              <div className="space-y-3 border border-line bg-panel p-4">
-                <div className="flex items-center gap-2">
-                  <ShieldBan className="size-4 text-red" />
-                  <h2 className="font-display text-sm font-bold tracking-wider text-ink">
-                    {t("สถิติการแบน (โดนคู่แข่ง Target Ban vs แบนออกเอง)")}
-                  </h2>
-                </div>
+              <CollapsibleCard
+                icon={<ShieldBan className="size-4 text-red" />}
+                title={t("สถิติการแบน (โดนคู่แข่ง Target Ban vs แบนออกเอง)")}
+              >
+                <div className="space-y-3">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <p className="mb-2 font-mono text-[11px] font-bold text-red">{t("โดนคู่แข่งแบนใส่บ่อยสุด")}</p>
@@ -2514,7 +2488,8 @@ export function ScrimDashboardView({
                     />
                   </div>
                 )}
-              </div>
+                </div>
+              </CollapsibleCard>
             </section>
 
             <section className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
@@ -2526,10 +2501,12 @@ export function ScrimDashboardView({
 
             {activeTab === "heroes" && (
               <div className="space-y-4">
-                <section id="scrim-heroes" className="border border-line bg-panel p-4">
+                <CollapsibleCard
+                  as="section"
+                  id="scrim-heroes"
+                  title={`${t("ตารางผลงานฮีโร่ทั้งหมดของทีม")} (${filteredHeroRows.length})`}
+                >
               <HeroTableToolbar
-                title={t("ตารางผลงานฮีโร่ทั้งหมดของทีม")}
-                count={filteredHeroRows.length}
                 laneFilter={laneFilter}
                 onLaneChange={setLaneFilter}
                 heroSearch={heroSearch}
@@ -2651,7 +2628,7 @@ export function ScrimDashboardView({
                   </tbody>
                 </table>
               </div>
-            </section>
+            </CollapsibleCard>
 
             <PeriodDiffCard
               scopedGames={scopedGames}
@@ -2678,16 +2655,11 @@ export function ScrimDashboardView({
                 const enemyExpandKey = isToughTab ? "teamEnemiesTough" : "teamEnemiesFavorable";
                 const enemyExpanded = isCardExpanded(enemyExpandKey);
                 return (
-                  <div className="border border-line bg-panel p-4">
-                    <div className="mb-3 flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <Swords className={`size-4 ${isToughTab ? "text-red" : "text-good"}`} />
-                        <h2 className="font-display text-sm font-bold tracking-wider text-ink">
-                          {t("ผลงานเมื่อเจอฮีโร่ฝั่งตรงข้าม")}
-                        </h2>
-                      </div>
-                      <span className="font-mono text-[10px] text-dim">{t("เทียบ Win Rate เฉลี่ยทีม")}</span>
-                    </div>
+                  <CollapsibleCard
+                    icon={<Swords className={`size-4 ${isToughTab ? "text-red" : "text-good"}`} />}
+                    title={t("ผลงานเมื่อเจอฮีโร่ฝั่งตรงข้าม")}
+                    headerRight={<span className="font-mono text-[10px] text-dim">{t("เทียบ Win Rate เฉลี่ยทีม")}</span>}
+                  >
                     <div role="tablist" aria-label={t("ผลงานเมื่อเจอฮีโร่ฝั่งตรงข้าม")} className="mb-3 grid grid-cols-2 gap-1.5 border border-line bg-bg p-1">
                       <button
                         type="button"
@@ -2755,20 +2727,15 @@ export function ScrimDashboardView({
                         />
                       </>
                     )}
-                  </div>
+                  </CollapsibleCard>
                 );
               })()}
 
-              <div className="border border-line bg-panel p-4">
-                <div className="mb-3 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <Swords className="size-4 text-gold" />
-                    <h2 className="font-display text-sm font-bold tracking-wider text-ink">
-                      {t("สถิติชนเลนตรง (ตัวต่อตัว)")}
-                    </h2>
-                  </div>
-                  <span className="font-mono text-[10px] text-dim">{t("ความได้เปรียบเลน")}</span>
-                </div>
+              <CollapsibleCard
+                icon={<Swords className="size-4 text-gold" />}
+                title={t("สถิติชนเลนตรง (ตัวต่อตัว)")}
+                headerRight={<span className="font-mono text-[10px] text-dim">{t("ความได้เปรียบเลน")}</span>}
+              >
                 {stats.laneStrengths.length === 0 && stats.laneWeaknesses.length === 0 ? (
                   <p className="text-xs text-dim">
                     {t("ยังไม่มีข้อมูลการชนเลนตรง (ต้องลงตำแหน่งเลนของฮีโร่อย่างน้อย 2 เกมต่อคู่)")}
@@ -2845,7 +2812,7 @@ export function ScrimDashboardView({
                     />
                   </>
                 )}
-              </div>
+              </CollapsibleCard>
             </section>
 
             <TrioSynergyCard advanced={advancedStats} heroMap={heroMap} />
@@ -2855,7 +2822,7 @@ export function ScrimDashboardView({
             <MethodsReferenceCard />
           </>
         )}
-          </>
+          </div>
         )}
       </div>
 

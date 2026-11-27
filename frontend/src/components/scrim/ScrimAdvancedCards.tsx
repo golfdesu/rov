@@ -38,52 +38,64 @@ function fmtSigned(v: number, digits = 1): string {
   return `${v >= 0 ? "+" : ""}${v.toFixed(digits)}%`;
 }
 
-function CollapsibleCard({
+export function CollapsibleCard({
+  id,
+  as = "div",
+  className = "",
   title,
   icon,
   badge,
+  headerRight,
   defaultCollapsed = false,
   children,
 }: {
+  id?: string;
+  as?: "div" | "section";
+  className?: string;
   title: string;
-  icon: ReactNode;
+  icon?: ReactNode;
   badge?: ReactNode;
+  headerRight?: ReactNode;
   defaultCollapsed?: boolean;
   children: ReactNode;
 }) {
   const { t } = useLanguage();
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
+  const Tag = as;
 
   return (
-    <div className="border border-line bg-panel p-4">
+    <Tag id={id} className={`border border-line bg-panel p-4 ${className}`.trim()}>
       <div className={`flex flex-wrap items-center justify-between gap-2 ${collapsed ? "" : "mb-3"}`}>
         <div className="flex min-w-0 items-center gap-2">
           {icon}
           <h2 className="font-display text-sm font-bold tracking-wider text-ink">{title}</h2>
           {badge}
         </div>
-        <button
-          type="button"
-          aria-expanded={!collapsed}
-          aria-label={t(collapsed ? "กางกล่องวิเคราะห์" : "พับกล่องวิเคราะห์")}
-          onClick={() => setCollapsed((v) => !v)}
-          className="inline-flex min-h-8 items-center gap-1 border border-line bg-bg px-2.5 font-mono text-[11px] font-semibold text-muted transition-colors hover:border-gold/50 hover:text-gold"
-        >
-          {collapsed ? (
-            <>
-              <ChevronDown className="size-3.5 shrink-0" aria-hidden="true" />
-              <span>{t("กางดู")}</span>
-            </>
-          ) : (
-            <>
-              <ChevronUp className="size-3.5 shrink-0" aria-hidden="true" />
-              <span>{t("พับเก็บ")}</span>
-            </>
-          )}
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          {headerRight}
+          <button
+            type="button"
+            aria-expanded={!collapsed}
+            aria-label={t(collapsed ? "กางกล่องวิเคราะห์" : "พับกล่องวิเคราะห์")}
+            onClick={() => setCollapsed((v) => !v)}
+            className="inline-flex min-h-8 items-center gap-1 border border-line bg-bg px-2.5 font-mono text-[11px] font-semibold text-muted transition-colors hover:border-gold/50 hover:text-gold"
+          >
+            {collapsed ? (
+              <>
+                <ChevronDown className="size-3.5 shrink-0" aria-hidden="true" />
+                <span>{t("กางดู")}</span>
+              </>
+            ) : (
+              <>
+                <ChevronUp className="size-3.5 shrink-0" aria-hidden="true" />
+                <span>{t("พับเก็บ")}</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
       {!collapsed && children}
-    </div>
+    </Tag>
   );
 }
 
