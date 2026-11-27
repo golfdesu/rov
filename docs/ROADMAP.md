@@ -14,7 +14,7 @@
 - [x] **Section 10:** Hero Pools & Team-Name Auto-Sync (personal & shared team pools)
 - [x] **Section 11:** Scrim Analytics & A4 PDF Scouting Report (`ScrimDashboardView.tsx`)
 - [ ] **Section 12:** Screenshot Draft Import *(on hold — awaiting in-game Ban/Pick screenshot dataset; see `docs/archive/screenshot_draft_import/`)*
-- [ ] **Section 13:** Future Product & Growth Backlog (`1 / 15` completed — see below)
+- [ ] **Section 13:** Future Product & Growth Backlog (`1 / 17` completed — see below)
 
 ---
 
@@ -209,7 +209,9 @@ Selected from the post-launch data review of `minidraft.app` (1,082 users, 60%+ 
 
 ### Quick Wins & Growth
 - [x] **Mobile PWA:** Add web app manifest, home-screen install prompt, icons, and offline-shell caching for the 60%+ mobile audience.
-- [ ] **Shareable Draft Image / Match Card:** 1-click PNG export of the completed 18-slot draft board, estimated win rate, and subtle MiniDraft watermark for sharing in Discord, LINE, or Facebook groups.
+- [ ] **Shareable Draft Image / Match Card:** 1-click PNG export of the completed 18-slot draft board, estimated win rate, and subtle `minidraft.app` watermark to drive organic discovery when shared in Discord, LINE, Facebook, or TikTok.
+- [ ] **Shareable Draft vs AI Score / Grade Card:** 1-click PNG summary card showing Draft vs AI grade/win-rate score with subtle MiniDraft attribution to turn high Practice-mode engagement (>2x Draft Board completions) into a social sharing loop.
+- [ ] **Public SEO Meta & Counter-Pick Pages:** Indexable public pages for patch-current Pro Tier Lists and hero counter-pick guides (backed by our 130-hero & 4,352-match dataset) to capture recurring organic Google Search traffic every patch/tournament.
 - [ ] **Team Pro Onboarding Wizard:** Trigger a 3-step setup flow right after Team Pro activation (set team name -> copy invite link -> configure 5-lane Hero Pool) to unlock unused group collaboration.
 - [ ] **1-Click Demo / Interactive Onboarding Tour:** Guided 3-step walkthrough for first-time visitors covering AI recommendations, saving games, and Scrim Analytics.
 - [ ] **Referral Program:** Invite friends via referral links to grant +7 free Pro days to both the referrer and invitee upon signup/verification.
@@ -223,7 +225,7 @@ Selected from the post-launch data review of `minidraft.app` (1,082 users, 60%+ 
 
 ### Realtime & Ecosystem
 - [ ] **Live Co-Draft Room (2–5 Users Realtime):** Shared WebSocket draft room where coach and players (or two scrimming coaches) see live picks/bans together.
-- [ ] **OBS / Streamer Broadcast Overlay:** Transparent browser-source overlay URL displaying live MiniDraft picks/bans with corner MiniDraft attribution for amateur tournament broadcasts.
+- [ ] **OBS / Streamer Broadcast Overlay:** Transparent browser-source overlay URL displaying live MiniDraft picks/bans with corner `minidraft.app` attribution for amateur, university, and community tournament streams as a zero-ad-spend discovery loop.
 - [ ] **Discord Bot Integration:** Slash commands (`/draft`, `/counter`, `/meta`) and automatic post-match scrim summary embeds pushed to team Discord channels.
 
 ### Planned — On Hold (Pending UX / Data Blockers)

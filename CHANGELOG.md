@@ -27,6 +27,24 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-27 16:15 (UTC+7) — Add Organic Acquisition Loops to `docs/ROADMAP.md`
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Expanded **Section 13** in [`docs/ROADMAP.md`](docs/ROADMAP.md) (`1 / 17`) with recurring organic user-acquisition loops: **Shareable Draft vs AI Score / Grade Card**, **Public SEO Meta & Counter-Pick Pages**, and enriched **Shareable Draft Image** + **OBS / Streamer Broadcast Overlay** discovery details.
+
+### 📁 Modified Files
+- `docs/ROADMAP.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `git diff --check`: clean.
+
+### ⚠️ Open Issues / Important Notes
+- Docs-only commit pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
+
+---
+
 ## 📅 2026-11-27 15:58 (UTC+7) — Document External Services, APIs & Pure ONNX VM Config in WikiSkill
 **Agent:** Antigravity
 
