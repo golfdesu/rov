@@ -50,7 +50,7 @@ export function FinishGameModal({
           <Trophy className="h-5 w-5 shrink-0 text-gold" />
           <div className="min-w-0">
             <h2 id={titleId} className="font-display text-base font-bold text-ink">
-              {t("จบ Game")} {gameNumber} {t("— เลือกทีมที่ชนะ")}
+              {t("บันทึกดราฟต์ Game")} {gameNumber}
             </h2>
             <p className="truncate font-mono text-[11px] text-muted">
               {seriesName} {t("· สกอร์ซีรีส์")} {blueTeamName} {blueWins} - {redWins} {redTeamName}
@@ -138,16 +138,16 @@ export function FinishGameModal({
         <button
           type="button"
           onClick={() => onConfirmWinner(undefined)}
-          className="border border-line bg-panel px-3 py-1.5 font-display text-xs font-semibold text-muted transition-colors hover:border-gold/50 hover:text-ink"
+          className="border border-gold/50 bg-gold/10 px-3 py-1.5 font-display text-xs font-semibold text-gold transition-colors hover:bg-gold hover:text-bg"
         >
-          <StableButtonLabel message="ข้าม (ไม่ระบุผู้ชนะ)" />
+          <StableButtonLabel message="บันทึกไว้ก่อน (ยังไม่ระบุผล)" />
         </button>
         <button
           type="button"
           onClick={() => requestClose()}
           className="border border-line bg-panel-2 px-3.5 py-1.5 font-display text-xs font-semibold text-ink transition-colors hover:bg-panel"
         >
-          <StableButtonLabel message="ยกเลิก" />
+          <StableButtonLabel message="ดูบอร์ดก่อน" />
         </button>
       </div>
         </>

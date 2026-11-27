@@ -675,26 +675,13 @@ export function DraftBoardView({
     if (completePromptTimerRef.current !== null) {
       window.clearTimeout(completePromptTimerRef.current);
     }
-    const gameNum = globalBans.gameNumber;
     completePromptTimerRef.current = window.setTimeout(() => {
       completePromptTimerRef.current = null;
-      setConfirmState((prev) =>
-        prev ?? {
-          title: t("ดราฟต์ Game {0} ครบแล้ว", gameNum),
-          message: t("บันทึกผลเกมนี้เพื่อเก็บสถิติและซิงค์ Global Ban ไปเกมถัดไปเลยไหม?"),
-          confirmLabel: "บันทึกผลเกม",
-          cancelLabel: "ดูบอร์ดก่อน",
-          tone: "gold",
-          onConfirm: () => {
-            setConfirmState(null);
-            if (isPersonalHistoryBlocked) {
-              setHistoryUpgradeOpen(true);
-            } else {
-              setIsFinishGameModalOpen(true);
-            }
-          },
-        },
-      );
+      if (isPersonalHistoryBlocked) {
+        setHistoryUpgradeOpen(true);
+      } else {
+        setIsFinishGameModalOpen(true);
+      }
     }, 1800);
   }, [
     isDraftComplete,
@@ -702,9 +689,7 @@ export function DraftBoardView({
     conflictMessage,
     fromTeamHistory,
     isCurrentGameLocked,
-    globalBans.gameNumber,
     isPersonalHistoryBlocked,
-    t,
   ]);
 
   useEffect(() => {
@@ -716,6 +701,7 @@ export function DraftBoardView({
       isHistoryModalOpen ||
       isNewSeriesModalOpen ||
       isPoolsModalOpen ||
+      confirmState !== null ||
       globalBanModalCat !== null
     ) {
       if (completePromptTimerRef.current !== null) {
@@ -731,6 +717,7 @@ export function DraftBoardView({
     isHistoryModalOpen,
     isNewSeriesModalOpen,
     isPoolsModalOpen,
+    confirmState,
     globalBanModalCat,
   ]);
 
