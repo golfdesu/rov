@@ -21,6 +21,7 @@ from src.search.draft_mcts import (
     DraftMinimaxSearch,
     DraftSearchState,
     ModelInput,
+    OnnxDraftModel,
     encode_batch,
     run_model,
 )
@@ -98,8 +99,32 @@ class RoVDraftPredictor:
         self.model.eval()
         self.model.precompute_gnn_embeddings()
         raw_threads = os.getenv("ROV_TORCH_NUM_THREADS", "").strip()
-        if raw_threads.isdigit() and int(raw_threads) > 0:
-            torch.set_num_threads(int(raw_threads))
+        num_threads = int(raw_threads) if raw_threads.isdigit() and int(raw_threads) > 0 else None
+        if num_threads is not None:
+            torch.set_num_threads(num_threads)
+
+        backend = os.getenv("ROV_INFERENCE_BACKEND", "auto").strip().lower() or "auto"
+        if backend not in ("auto", "onnx", "torch"):
+            raise ValueError(f"Unsupported ROV_INFERENCE_BACKEND={backend!r}; expected 'auto', 'onnx', or 'torch'")
+        onnx_path = self.model_path.with_suffix(".onnx")
+        self.onnx_model: OnnxDraftModel | None = None
+        self.inference_backend = "torch"
+        self.inference_model: torch.nn.Module | OnnxDraftModel = self.model
+        if backend in ("auto", "onnx"):
+            if onnx_path.exists():
+                try:
+                    ort_threads = num_threads
+                    if ort_threads is None:
+                        omp_raw = os.getenv("OMP_NUM_THREADS", "").strip()
+                        ort_threads = int(omp_raw) if omp_raw.isdigit() and int(omp_raw) > 0 else 1
+                    self.onnx_model = OnnxDraftModel(onnx_path, num_threads=ort_threads)
+                    self.inference_model = self.onnx_model
+                    self.inference_backend = "onnx"
+                except Exception:
+                    if backend == "onnx":
+                        raise
+            elif backend == "onnx":
+                raise FileNotFoundError(f"ONNX model artifact not found at {onnx_path}")
         self._predict_cache: OrderedDict[tuple, DraftPredictionResponse] = OrderedDict()
         self._predict_cache_lock = threading.Lock()
         self._predict_cache_maxsize = 512
@@ -891,7 +916,7 @@ class RoVDraftPredictor:
                 break
 
             arrays = encode_batch(inputs, len(self.hero_names))
-            probs_t, win_t = run_model(self.model, arrays, self.device)
+            probs_t, win_t = run_model(self.inference_model, arrays, self.device)
             probs, win = probs_t.cpu().numpy(), win_t.cpu().numpy()
             ap, ep, unavail = arrays[0], arrays[1], arrays[4]
 
@@ -1116,7 +1141,7 @@ class RoVDraftPredictor:
                 step_idx=17,
             )
             step17_arrays = encode_batch([step17_input], len(self.hero_names))
-            _, step17_win_t = run_model(self.model, step17_arrays, self.device)
+            _, step17_win_t = run_model(self.inference_model, step17_arrays, self.device)
             red_final_win = float(step17_win_t[0, self.hero_to_id[red_picks[4]]].item())
             acting_final_win = (1.0 - red_final_win) if req.side == "blue" else red_final_win
             win_probs = np.full(len(self.hero_names), acting_final_win, dtype=np.float32)

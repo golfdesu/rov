@@ -14,7 +14,7 @@
 - [x] **Section 10:** Hero Pools & Team-Name Auto-Sync (personal & shared team pools)
 - [x] **Section 11:** Scrim Analytics & A4 PDF Scouting Report (`ScrimDashboardView.tsx`)
 - [ ] **Section 12:** Screenshot Draft Import *(on hold — awaiting in-game Ban/Pick screenshot dataset; see `docs/archive/screenshot_draft_import/`)*
-- [ ] **Section 13:** Future Product & Growth Backlog (`0 / 15` completed — see below)
+- [ ] **Section 13:** Future Product & Growth Backlog (`1 / 15` completed — see below)
 
 ---
 
@@ -208,7 +208,7 @@ Pro, Duo, and Team Pro share the same Hero Pool capabilities so solo coaches, du
 Selected from the post-launch data review of `minidraft.app` (1,082 users, 60%+ mobile visits, 2x Practice completions vs standard Draft Board, and 0 active team invite/pool sharing so far):
 
 ### Quick Wins & Growth
-- [ ] **Mobile PWA:** Add web app manifest, home-screen install prompt, icons, and offline-shell caching for the 60%+ mobile audience.
+- [x] **Mobile PWA:** Add web app manifest, home-screen install prompt, icons, and offline-shell caching for the 60%+ mobile audience.
 - [ ] **Shareable Draft Image / Match Card:** 1-click PNG export of the completed 18-slot draft board, estimated win rate, and subtle MiniDraft watermark for sharing in Discord, LINE, or Facebook groups.
 - [ ] **Team Pro Onboarding Wizard:** Trigger a 3-step setup flow right after Team Pro activation (set team name -> copy invite link -> configure 5-lane Hero Pool) to unlock unused group collaboration.
 - [ ] **1-Click Demo / Interactive Onboarding Tour:** Guided 3-step walkthrough for first-time visitors covering AI recommendations, saving games, and Scrim Analytics.

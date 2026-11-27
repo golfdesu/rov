@@ -1,3 +1,5 @@
+import { captureAnalyticsEvent } from "./analytics";
+
 const TELEMETRY_CLIENT_ID_KEY = "minidraft_pricing_survey_client_id_v1";
 
 export type TelemetryMetricKey =
@@ -71,6 +73,7 @@ function flushTelemetryQueue(): void {
 
 export function trackTelemetryEvent(metric: TelemetryMetricKey, delta = 1): void {
   if (typeof window === "undefined" || delta <= 0) return;
+  captureAnalyticsEvent(metric, { delta });
   queuedCounts[metric] = Math.min(50, (queuedCounts[metric] ?? 0) + delta);
   if (flushTimer === null) {
     flushTimer = window.setTimeout(flushTelemetryQueue, 2000);

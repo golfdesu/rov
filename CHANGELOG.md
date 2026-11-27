@@ -27,6 +27,38 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-27 15:08 (UTC+7) — Upgrade CI/CD Pipeline, Add Mobile PWA, Wire PostHog Analytics & Enable ONNX Runtime Inference
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **GitHub Actions CI/CD (`.github/workflows/ci.yaml`):** Switched CI Python setup to CPU PyTorch wheels, added `ruff check` / `ruff format --check`, dual `dist` + `dist-prod` Vite builds, `audit_copy_i18n.py`, and added a `publish-image` job pushing tagged Docker images (`:latest` and `:<sha>`) to `ghcr.io` on `main` pushes.
+- **Mobile PWA (`frontend/`):** Generated `frontend/public/icon-192.png`, updated `frontend/public/manifest.webmanifest` and `frontend/index.html` iOS/PWA metadata, added dependency-free Service Worker `frontend/public/sw.js` (caching hero avatars/static assets while keeping API routes network-only), created `frontend/src/utils/pwa.ts` (`registerServiceWorker`, `usePwaInstall`), added an English-synced install button in `MobileNavDrawer.tsx`, and added `Cache-Control: no-cache` for `/sw.js` in `src/api.py`.
+- **PostHog Analytics & Feature Flags (`frontend/` & CSP):** Installed `posthog-js`, added optional key-gated `frontend/src/utils/analytics.ts` (safe no-op when `VITE_POSTHOG_KEY` is unset), wired user identity/funnel events (`App.tsx`, `telemetry.ts`, `BillingSandbox.tsx`), exposed optional build args in `Dockerfile` / `deploy/compose.yaml`, and permitted PostHog origins in `src/api.py` CSP (`connect-src`).
+- **ONNX Runtime Inference Engine:** Added `scripts/export_onnx.py` to export `models/sota_draft_gnn_transformer.pt` to `models/sota_draft_gnn_transformer.onnx` (verified numerical parity <= `6.68e-06` and CPU `bs=1` speedup `1.73 ms -> 0.65 ms`), added `OnnxDraftModel` + `ROV_INFERENCE_BACKEND=auto|onnx|torch` support in `src/search/draft_mcts.py` and `src/predictor.py`, added `onnxruntime>=1.20.0` to `requirements.txt`, and added unit tests in `tests/test_onnx_inference.py`.
+- **Roadmap:** Marked **Mobile PWA** as completed in `docs/ROADMAP.md` (`1 / 15` in Section 13).
+
+### 📁 Modified Files
+- `.github/workflows/ci.yaml`
+- `Dockerfile`, `deploy/compose.yaml`, `requirements.txt`
+- `src/api.py`, `src/predictor.py`, `src/search/draft_mcts.py`, `scripts/export_onnx.py`
+- `models/sota_draft_gnn_transformer.onnx`
+- `frontend/package.json`, `frontend/package-lock.json`, `frontend/index.html`, `frontend/public/manifest.webmanifest`, `frontend/public/icon-192.png`, `frontend/public/sw.js`
+- `frontend/src/main.tsx`, `frontend/src/App.tsx`, `frontend/src/utils/pwa.ts`, `frontend/src/utils/analytics.ts`, `frontend/src/utils/telemetry.ts`, `frontend/src/components/MobileNavDrawer.tsx`, `frontend/src/components/BillingSandbox.tsx`, `frontend/src/i18n/englishMessages.ts`
+- `tests/test_onnx_inference.py`, `tests/test_security.py`
+- `CHANGELOG.md`, `docs/ROADMAP.md`
+
+### 🧪 Verification
+- `ruff check --fix .` & `ruff format .`: clean (`All checks passed!`).
+- `python scripts/export_onnx.py`: parity `max_abs_diff <= 6.68e-06`; CPU `bs=1` `1.73 ms` (PyTorch) vs `0.65 ms` (ONNX).
+- `audit_regression_guard.py`: 72/72 prediction snapshots & 3/3 combat duels passed under both `torch` and `onnx` backends.
+- `npm --prefix frontend run lint`, `npm --prefix frontend run build` (`dist` & `dist-prod`), and `audit_copy_i18n.py`: all passed cleanly.
+- `pytest -q --tb=short`: passed cleanly.
+
+### ⚠️ Open Issues / Important Notes
+- Changes remain local (not pushed to `origin/main` or deployed to the VM). `VITE_POSTHOG_KEY` is optional until configured for production builds.
+
+---
+
 ## 📅 2026-11-27 12:38 (UTC+7) — Record `@golfdesu` as Owner Secondary Account in `AGENTS.md`
 **Agent:** Antigravity
 

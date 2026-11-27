@@ -10,6 +10,7 @@ This module implements sequential multi-step draft planning for RoV Pro Draft:
 from __future__ import annotations
 
 import dataclasses
+import os
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, NamedTuple
 
@@ -167,18 +168,68 @@ def encode_batch(inputs: Sequence[ModelInput], num_heroes: int) -> tuple[np.ndar
     return ap, ep, ab, eb, unavail, tok_heroes, tok_types, tok_steps, tok_pad, meta, act_types, phases
 
 
+ONNX_INPUT_NAMES = (
+    "ally_picks_vec",
+    "enemy_picks_vec",
+    "ally_bans_vec",
+    "enemy_bans_vec",
+    "unavailable_mask",
+    "tok_heroes",
+    "tok_types",
+    "tok_steps",
+    "tok_pad_mask",
+    "meta_ctx",
+    "action_type",
+    "phase",
+)
+ONNX_OUTPUT_NAMES = ["policy_logits", "q_win_logits"]
+
+
+class OnnxDraftModel:
+    """ONNX Runtime inference wrapper matching the run_model() batch contract."""
+
+    def __init__(self, onnx_path: str | os.PathLike[str], num_threads: int | None = None):
+        import onnxruntime as ort
+
+        sess_opts = ort.SessionOptions()
+        if num_threads is not None and num_threads > 0:
+            sess_opts.intra_op_num_threads = int(num_threads)
+            sess_opts.inter_op_num_threads = 1
+        self.onnx_path = str(onnx_path)
+        self.session = ort.InferenceSession(
+            self.onnx_path,
+            sess_options=sess_opts,
+            providers=["CPUExecutionProvider"],
+        )
+
+    def run_arrays(self, arrays: tuple[np.ndarray, ...]) -> tuple[np.ndarray, np.ndarray]:
+        """Run one batched ONNX Runtime forward pass using numpy arrays from encode_batch()."""
+        inputs = {name: arr for name, arr in zip(ONNX_INPUT_NAMES, arrays, strict=True)}
+        logits, win_logits = self.session.run(ONNX_OUTPUT_NAMES, inputs)
+        return logits, win_logits
+
+
 def run_model(
-    model: torch.nn.Module, arrays: tuple[np.ndarray, ...], device: torch.device
+    model: torch.nn.Module | OnnxDraftModel,
+    arrays: tuple[np.ndarray, ...],
+    device: torch.device,
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """Runs one batched forward pass; returns (policy probs, acting-team win probs), each (batch, heroes)."""
-    with torch.inference_mode():
-        tensors = tuple(torch.from_numpy(a).to(device) for a in arrays)
-        logits, q_win_logits = model(*tensors)
-        probs = torch.softmax(logits, dim=-1)
-        probs = probs.masked_fill(tensors[4], 0.0)
-        sums = probs.sum(dim=-1, keepdim=True)
-        probs = torch.where(sums > 0, probs / sums, probs)
-        return probs, torch.sigmoid(q_win_logits)
+    if isinstance(model, OnnxDraftModel):
+        logits_np, q_win_np = model.run_arrays(arrays)
+        logits = torch.from_numpy(logits_np)
+        q_win_logits = torch.from_numpy(q_win_np)
+        unavail = torch.from_numpy(arrays[4])
+    else:
+        with torch.inference_mode():
+            tensors = tuple(torch.from_numpy(a).to(device) for a in arrays)
+            logits, q_win_logits = model(*tensors)
+            unavail = tensors[4]
+    probs = torch.softmax(logits, dim=-1)
+    probs = probs.masked_fill(unavail, 0.0)
+    sums = probs.sum(dim=-1, keepdim=True)
+    probs = torch.where(sums > 0, probs / sums, probs)
+    return probs, torch.sigmoid(q_win_logits)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -283,7 +334,7 @@ class DraftMinimaxSearch:
 
     def __init__(self, predictor: RoVDraftPredictor):
         self.predictor = predictor
-        self.model = predictor.model
+        self.model = getattr(predictor, "inference_model", predictor.model)
         self.device = predictor.device
         self.num_heroes = len(predictor.hero_names)
 

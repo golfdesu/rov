@@ -171,7 +171,7 @@ _SECURITY_HEADERS = {
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
         "font-src 'self' https://fonts.gstatic.com data:; "
         "img-src 'self' data: blob:; "
-        "connect-src 'self' https://cloudflareinsights.com; "
+        "connect-src 'self' https://cloudflareinsights.com https://us.i.posthog.com https://eu.i.posthog.com https://us-assets.i.posthog.com https://eu-assets.i.posthog.com; "
         "object-src 'none'; "
         "base-uri 'self'; "
         "form-action 'self'; "
@@ -2388,7 +2388,7 @@ class _FrontendStaticFiles(StaticFiles):
             return "public, max-age=31536000, immutable"
         if path.startswith("/avatars/") or path == "/hero_images.json":
             return "public, max-age=86400"
-        if "text/html" in content_type or path in ("", "/", "/index.html"):
+        if "text/html" in content_type or path in ("", "/", "/index.html", "/sw.js"):
             return "no-cache"
         return None
 

@@ -57,6 +57,7 @@ import type {
   PricingSurveyChoice,
 } from "./types/auth";
 import type { DraftSessionPayload } from "./types/draft";
+import { identifyAnalyticsUser, resetAnalyticsUser } from "./utils/analytics";
 import { accountLabel, restorePreviewAccountStorage } from "./utils/auth";
 import { APP_NAVIGATE_EVENT, handleSpaLinkClick, navigateTo } from "./utils/navigation";
 import { trackTelemetryEvent } from "./utils/telemetry";
@@ -1017,6 +1018,18 @@ export function App() {
     updateGuestEntered(false);
     broadcastAuthChange(null);
   };
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (authUser) {
+      identifyAnalyticsUser(authUser.username, {
+        plan_tier: authUser.pass_tier ?? "free",
+        is_paid: Boolean(authUser.is_paid),
+      });
+    } else {
+      resetAnalyticsUser();
+    }
+  }, [authLoading, authUser]);
 
   const lastTrackedTabRef = useRef<Tab | null>(null);
   useEffect(() => {

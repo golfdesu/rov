@@ -1,10 +1,11 @@
 import { StableButtonLabel } from "./StableButtonLabel";
 import { useLanguage } from "../i18n/language";
 import { LanguageSwitch } from "../i18n/LanguageProvider";
-import { BarChart3, BookOpen, Coffee, Crown, LogIn, LogOut, Megaphone, User, Users, X } from "lucide-react";
+import { BarChart3, BookOpen, Coffee, Crown, Download, LogIn, LogOut, Megaphone, User, Users, X } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { AuthUser } from "../types/auth";
 import { accountLabel } from "../utils/auth";
+import { usePwaInstall } from "../utils/pwa";
 import { MiniDraftLogo } from "./MiniDraftLogo";
 
 const FOCUSABLE =
@@ -58,6 +59,7 @@ export function MobileNavDrawer<T extends string>({
   onClose,
 }: MobileNavDrawerProps<T>) {
   const { t } = useLanguage();
+  const { canInstall, promptInstall } = usePwaInstall();
   const accountName = authUser ? accountLabel(authUser) : "";
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -307,6 +309,20 @@ export function MobileNavDrawer<T extends string>({
                 />
               </span>
             </button>
+
+            {canInstall && (
+              <button
+                type="button"
+                onClick={() => {
+                  void promptInstall();
+                  requestClose();
+                }}
+                className="flex min-h-11 w-full items-center gap-2 border border-gold/50 bg-gold/10 px-3 py-1.5 text-left font-display text-xs font-semibold text-gold transition-colors hover:bg-gold hover:text-bg"
+              >
+                <Download className="h-4 w-4 shrink-0" />
+                <StableButtonLabel message="ติดตั้งแอป" className="inline-grid text-left" />
+              </button>
+            )}
 
             <button
               type="button"

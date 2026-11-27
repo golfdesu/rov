@@ -2,6 +2,7 @@ import { ArrowLeft, ArrowRight, Check, CreditCard, Crosshair, Gift, Users, Users
 import { useEffect, useId, useRef, useState } from "react";
 import { ApiError, getJson, postJson } from "../api/client";
 import { useLanguage } from "../i18n/language";
+import { captureAnalyticsEvent } from "../utils/analytics";
 import { handleSpaLinkClick, navigateTo } from "../utils/navigation";
 import { Alert } from "./Alert";
 import { StableButtonLabel } from "./StableButtonLabel";
@@ -253,6 +254,11 @@ export function BillingSandbox({
   async function checkout(pass: PrepaidPass) {
     setProcessing(pass.tier);
     setError(null);
+    captureAnalyticsEvent("checkout_started", {
+      tier: pass.tier,
+      days: pass.days,
+      amount: pass.amount,
+    });
     try {
       const { url } = await postJson<{ url: string | null }>("/billing/checkout", {
         tier: pass.tier,
@@ -303,6 +309,7 @@ export function BillingSandbox({
       const claimed = await postJson<{ tier: Tier; expires_at: number }>("/billing/promo/claim", {
         expected_username: username,
       });
+      captureAnalyticsEvent("promo_claimed", { tier: claimed.tier });
       setPromoClaimedUntil(claimed.expires_at);
       window.dispatchEvent(new Event("activepasschange"));
     } catch (err) {

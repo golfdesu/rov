@@ -2037,4 +2037,5 @@ export const englishMessages: Readonly<Record<string, string>> = {
   "แนวโน้มท้ายซีรีส์: {0} ต่อเกม": "Late-series trend: {0} per game",
   "มั่นใจได้เปรียบ {0}%": "{0}% confidence in lane advantage",
   "โอกาสเสียเปรียบจริง {0}%": "{0}% chance of true disadvantage",
+  "ติดตั้งแอป": "Install App",
 };

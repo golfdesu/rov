@@ -252,7 +252,11 @@ def test_production_stream_body_cap_csrf_nan_and_csp(monkeypatch, tmp_path):
         csp = prod_client.get("/health").headers.get("content-security-policy", "")
         assert "form-action 'self'" in csp
         assert "script-src 'self' https://static.cloudflareinsights.com;" in csp
-        assert "connect-src 'self' https://cloudflareinsights.com;" in csp
+        assert (
+            "connect-src 'self' https://cloudflareinsights.com "
+            "https://us.i.posthog.com https://eu.i.posthog.com "
+            "https://us-assets.i.posthog.com https://eu-assets.i.posthog.com;" in csp
+        )
         assert "'unsafe-inline'" not in csp.split("script-src", 1)[1].split(";", 1)[0]
 
 
