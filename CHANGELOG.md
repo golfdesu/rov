@@ -27,6 +27,19 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-28 00:08 (UTC+7) — Draft Reset Cache Fix, Retention/Combat/Sync Speedups & Full-Stack Optimizer Skill (`da515c4`)
+- **Production Bug Fixes & Optimizations (`da515c4`, deployed to `20.2.210.230`)**:
+  - `frontend/src/hooks/useDraft.ts`: Restored cached AI recommendations on step resets / fast Undo->Redo / same-board hydrate (`hasPrediction` guard), guarded `switchSeries` against parking/overwriting locked or unchanged games, and split `serializedSyncIdentity` + `lastProcessedSyncStateRef` to avoid redundant `JSON.stringify` passes across up to 500 `seriesGames`.
+  - `frontend/src/components/GlobalBanModal.tsx`: Derived `maxUnlockedGame` directly from `gameUnlockStatuses`, avoiding a duplicate `getMaxUnlockedGame()` pass.
+  - `src/combat_calculator.py`: Prevented skill casts while self-stasis is active (`me["stasis_until"] <= t`), added `include_summary: bool = True` to `duel()`, removed duplicate `candidates[0]` evaluation, and skipped redundant 30-level sweeps in `recommend_matchup_runes()`.
+  - `src/analytics.py`: Replaced daily `isoformat()` formatting inside `_compute_markov_retention()` with pre-parsed per-client integer day offsets (`client_parsed`).
+- **Tests, Skill & Automation**:
+  - Extended `tests/test_bugfix_regressions.py` with Markov retention parity and self-stasis/rune-recommender regression tests.
+  - Created `.agents/skills/full-stack-bugfix-optimizer/` (mirrored to `.claude/skills/`) with `scripts/run_all_audits.py` and cross-linked neighbor skills and `AGENTS.md`.
+- **Verification**: All `14/14` local checks passed (`run_all_audits.py`), live `https://minidraft.app/health` returned `model_loaded: true`, and Playwright checks on live `/`, `/practice`, `/analytics` passed with HTTP `200` and `0` console/page errors.
+
+---
+
 ## 📅 2026-11-27 23:36 (UTC+7) — Comprehensive Bug-Fix Sweep, PostHog Lazy-Loading & Pre-Serialized `/heroes` (`eb52a2b`)
 **Agent:** Antigravity
 

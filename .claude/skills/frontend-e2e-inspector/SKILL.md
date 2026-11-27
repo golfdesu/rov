@@ -94,3 +94,4 @@ When conducting live UI walkthroughs or checking layout regressions, use the **P
 - [`rov-draft-serving`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/rov-draft-serving/SKILL.md): Serve FastAPI backend and web UI, execute builds, and run CLI scenarios.
 - [`regression-guard`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/regression-guard/SKILL.md): Regression testing for 72 golden draft states and 3 combat duel simulations backing the UI.
 - [`security-audit`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/security-audit/SKILL.md): Verifies static media containment, path traversal immunity, and input bounds.
+- [`full-stack-bugfix-optimizer`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/full-stack-bugfix-optimizer/SKILL.md): End-to-end bug-hunting, fixing, and entry-bundle/API optimization workflow.

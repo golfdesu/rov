@@ -86,3 +86,4 @@ Deploy targeted inspection across the project's critical vulnerability categorie
 - [`frontend-e2e-inspector`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/frontend-e2e-inspector/SKILL.md): Audits production frontend bundles, media assets, and endpoint health.
 - [`regression-guard`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/regression-guard/SKILL.md): Protects against algorithmic regression and bounds simulation runtime.
 - [`arch-perf-auditor`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/arch-perf-auditor/SKILL.md): Audits fail-closed config defaults, sync revisions, SQLite plans, and leakage hygiene.
+- [`full-stack-bugfix-optimizer`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/full-stack-bugfix-optimizer/SKILL.md): Orchestrates full-stack bug scanning, fixes, and bundle/API optimizations across the repo.

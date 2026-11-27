@@ -66,7 +66,7 @@ Every AI agent (including fast models like `3.8flash`) MUST strictly obey these 
 | :--- | :--- |
 | `AGENTS.md` / `frontend/AGENTS.md` / `CHANGELOG.md` / `DESIGN.md` | Root & scoped agent rules, work log, UI design spec |
 | `docs/PRODUCTION_RELEASES.md` / `docs/ARCHITECTURE_MAP.md` | Prod state & VM hotfix ledger; full file map |
-| `.agents/skills/` (mirrored to `.claude/skills/`) | 10 skills: `rov-data-guardian`, `hpo-parsimony-selector`, `erawan-hpc-ops`, `rov-draft-serving`, `draft-screenshot-reader`, `security-audit`, `frontend-e2e-inspector`, `moba-meta-intel`, `regression-guard`, `arch-perf-auditor` |
+| `.agents/skills/` (mirrored to `.claude/skills/`) | 11 skills: `rov-data-guardian`, `hpo-parsimony-selector`, `erawan-hpc-ops`, `rov-draft-serving`, `draft-screenshot-reader`, `security-audit`, `frontend-e2e-inspector`, `moba-meta-intel`, `regression-guard`, `arch-perf-auditor`, `full-stack-bugfix-optimizer` |
 | `.wikiskill/` | LLM Wiki (`wiki/INDEX.md`, `traces/`, `skills/scripts/`) |
 | `src/` | FastAPI (`api.py`, `db.py`, `schemas.py`, `config.py`), Predictor/MCTS (`predictor.py`, `search/draft_mcts.py`), Combat Engine (`combat_calculator.py`, `skill_mechanics.py`), Trainer/HPO (`train_sota_model.py`, `hpo_sota_optuna.py`), scrapers/builders |
 | `frontend/` | React 19 + TS + Vite + Tailwind 4 UI (`DraftBoardView`, `components/lab/`, `meta_lab/`, `tierlist/`, OAuth/Accounts; `dist/`, `dist-prod/`) |

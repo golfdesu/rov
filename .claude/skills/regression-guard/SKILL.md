@@ -73,3 +73,4 @@ python -c "from tests.test_predictor_golden import regenerate; regenerate()"
 - [`rov-data-guardian`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/rov-data-guardian/SKILL.md): Maintains canonical datasets, hero skills, and match archives.
 - [`frontend-e2e-inspector`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/frontend-e2e-inspector/SKILL.md): Audits production frontend bundle, media assets, and endpoints.
 - [`arch-perf-auditor`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/arch-perf-auditor/SKILL.md): Audits serving GNN caching, SQLite index query plans, sync consistency, and train/val split leakage.
+- [`full-stack-bugfix-optimizer`](file:///C:/Users/chaya/Documents/Program/Project/ROV/.agents/skills/full-stack-bugfix-optimizer/SKILL.md): End-to-end bug-hunting, fixing, and performance optimization workflow.

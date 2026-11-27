@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `eb52a2b` (`main`: Bug-fix hardening across sync/billing/SW/UI + lazy-load `posthog-js` & pre-serialized `/heroes`) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-D_w9GAo2.js` (`228.80 kB`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/module-nirBTNJt.js` (`363.95 kB` lazy PostHog) + `dist-prod/assets/englishMessages-D5GI6MRi.js` (`208.11 kB`) + `dist-prod/assets/index-CPVI40NI.css` (`116.29 kB`), `sw.js`, `icon-192.png` |
+| **Git Base Commit on VM** | `da515c4` (`main`: Restore cached AI predictions on draft resets and optimize retention/combat/sync paths) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-Ds5_IlFn.js` (`229.11 kB`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/module-nirBTNJt.js` (`363.95 kB` lazy PostHog) + `dist-prod/assets/englishMessages-D5GI6MRi.js` (`208.11 kB`) + `dist-prod/assets/index-CPVI40NI.css` (`116.29 kB`), `sw.js`, `icon-192.png` |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.onnx` (`7.93 MB`) + `models/sota_draft_gnn_transformer.meta.npz` (`74.0 KB`), exported from `sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, Trial #31) |
-| **Last Updated** | `2026-11-27 23:36 (UTC+7)` |
+| **Last Updated** | `2026-11-28 00:08 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,21 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-28 00:08 (UTC+7) — Draft Reset Cache Fix & Retention/Combat/Sync Optimization (`da515c4`)
+- **Pulled & Rebuilt from `main` (`da515c4`, fast-forward from `eb52a2b`)**:
+  - Kept the VM `git sparse-checkout` locked at `21` paths (`deploy-app-1` rebuilt cleanly with `docker compose -f deploy/compose.yaml up -d --build app`, `deploy-caddy-1` unchanged).
+  - **`frontend/src/hooks/useDraft.ts`**:
+    - Fixed cached AI prediction restoration on `startNewSeries` from step 0, fast Undo-to-Redo, and same-board hydration (`hasPrediction = state.prediction !== EMPTY_PREDICTION` guard).
+    - Added `previous?.locked` and `isSameRecordedDraft(previous, draftToRecord)` guard in `switchSeries` so locked or unchanged recorded games are not overwritten or parked into `unsavedDraftsRef`.
+    - Split `serializedSyncIdentity` (`useMemo` excluding `winHistory`/`blueWinRate`) + `lastProcessedSyncStateRef` so UI loading/error flags do not re-run `JSON.stringify` over up to 500 `seriesGames`.
+  - **`frontend/src/components/GlobalBanModal.tsx`**: Derived `maxUnlockedGame` directly from `gameUnlockStatuses`, eliminating a duplicate `getMaxUnlockedGame()` scan.
+  - **`src/combat_calculator.py`**: Guarded skill casting against self-stasis (`me["stasis_until"] <= t`), added `include_summary: bool = True` to `duel()`, eliminated duplicate `candidates[0]` evaluation, and skipped 30-iteration level sweeps in `recommend_matchup_runes()` (~4x faster).
+  - **`src/analytics.py`**: Optimized `_compute_markov_retention()` with pre-parsed per-client integer day offsets (`client_parsed`) instead of daily `isoformat()` formatting (~114x faster at scale with identical outputs).
+- **Verification**:
+  - Local `14/14` full-stack audit suite passed prior to commit (`ruff`, `oxlint`, `vite build`, entry bundle budget, `i18n`, `wikiskill preflight`, `pytest` including `tests/test_bugfix_regressions.py` + `test_skills_sync.py`, security, arch-perf, regression guard `72/72` + `3/3`, data guardian, E2E, Playwright UX/UI).
+  - Live `https://minidraft.app/health` returned `{"status":"healthy","model_loaded":true}`; Playwright live check across `/`, `/practice`, and `/analytics` returned HTTP `200` with `0` console errors and `0` page errors.
+- **VM Sync Policy Note**: The subsequent non-production commit (adding `tests/test_bugfix_regressions.py`, the `full-stack-bugfix-optimizer` skill, `AGENTS.md`, `docs/PRODUCTION_RELEASES.md`, and `CHANGELOG.md`) was pushed to `origin/main` and intentionally **NOT** pulled onto the VM (`21` sparse-checkout paths preserved).
 
 ### 📅 2026-11-27 23:36 (UTC+7) — Bug-Fix Hardening & Performance Optimization (`eb52a2b`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `b58a0b6` to `eb52a2b` (`main`, 21-path sparse-checkout intact). Uncommitted local dev Share Card work remained strictly excluded.

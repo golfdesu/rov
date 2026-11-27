@@ -143,3 +143,87 @@ def test_clear_practice_history_tombstone_is_monotonic(tmp_path: Path) -> None:
     assert stored["updatedAt"] == tomb
     assert stored["clearedAt"] == tomb
     assert stored["entries"] == []
+
+
+def test_compute_markov_retention_matches_reference_implementation() -> None:
+    from datetime import date, timedelta
+
+    from src.analytics import _compute_markov_retention
+
+    client_dates = {
+        "c_d0_only": {"2026-11-27"},
+        "c_retained_streak": {"2026-11-20", "2026-11-21", "2026-11-22", "2026-11-25"},
+        "c_resurrect": {"2026-11-18", "2026-11-22", "2026-11-27"},
+        "c_same_day": {"2026-11-24"},
+    }
+    first_seen = {cid: min(days) for cid, days in client_dates.items()}
+    today_dt = date(2026, 11, 27)
+
+    got = _compute_markov_retention(client_dates, "2026-11-27")
+
+    # Brute-force reference calculation
+    new_stay = new_leave = ret_stay = ret_leave = dorm_res = dorm_stay = 0
+    for cid, days in client_dates.items():
+        fs = date.fromisoformat(first_seen[cid])
+        age = (today_dt - fs).days
+        for off in range(age):
+            d_cur = (fs + timedelta(days=off)).isoformat()
+            d_next = (fs + timedelta(days=off + 1)).isoformat()
+            cur_a, next_a = d_cur in days, d_next in days
+            if off == 0:
+                if next_a:
+                    new_stay += 1
+                else:
+                    new_leave += 1
+            elif cur_a:
+                if next_a:
+                    ret_stay += 1
+                else:
+                    ret_leave += 1
+            else:
+                if next_a:
+                    dorm_res += 1
+                else:
+                    dorm_stay += 1
+
+    assert got["transitions"]["new_sample"] == new_stay + new_leave
+    assert got["transitions"]["retained_sample"] == ret_stay + ret_leave
+    assert got["transitions"]["dormant_sample"] == dorm_res + dorm_stay
+    assert got["survival_curve"][0]["eligible"] == 4
+    assert got["survival_curve"][3]["survived"] == 2
+
+
+def test_combat_stasis_blocks_skill_casts_and_rune_recommender_works() -> None:
+    from src.combat_calculator import Build, CombatEngine, simulate_duel
+
+    engine = CombatEngine()
+    stats_a = engine.build_stats(Build(hero="Arum", level=4))
+    stats_b = engine.build_stats(Build(hero="Toro", level=15))
+    skills_a = engine.skill_damage(stats_a, stats_b, Build(hero="Arum", level=4))
+    skills_b = engine.skill_damage(stats_b, stats_a, Build(hero="Toro", level=15))
+
+    # Ultimate puts Arum in self-stasis at t=0. Skill 1 becomes ready at t=1.0 with cooldown=99s:
+    # if Skill 1 mistakenly cast during self-stasis it would deal 0 dmg and burn its 99s CD.
+    test_skills_a = []
+    for sk in skills_a:
+        copy = dict(sk)
+        if sk["slot"] == "Ultimate":
+            copy["cooldown"] = 99.0
+            test_skills_a.append(copy)
+        elif sk["slot"] == "Skill 1":
+            copy["ready"] = 1.0
+            copy["cooldown"] = 99.0
+            copy["raw_damage"] = 500.0
+            test_skills_a.append(copy)
+
+    skill1_name = next(sk["name"] for sk in test_skills_a if sk["slot"] == "Skill 1")
+    sim = simulate_duel(
+        (stats_a, test_skills_a, engine.basic_attack(stats_a, stats_b), []),
+        (stats_b, skills_b, engine.basic_attack(stats_b, stats_a), []),
+    )
+    assert sim["a"]["damage_breakdown"].get(skill1_name, 0) > 0
+
+    rec = engine.recommend_matchup_runes("Florentino", "Omen", level=1)
+    assert "recommended_preset" in rec
+    assert rec["recommended_preset"]["name"]
+    assert len(rec["recommended_preset"]["runes"]) >= 1
