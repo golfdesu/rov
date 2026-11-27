@@ -5,13 +5,13 @@ import re
 import threading
 from collections import OrderedDict
 from pathlib import Path
-from typing import Literal, NamedTuple
+from typing import Any, Literal, NamedTuple
 
 import numpy as np
 import pandas as pd
-import torch
 
 from src.config import config
+from src.league_utils import get_league_vector
 from src.schemas import (
     DraftPredictionResponse,
     DraftStateRequest,
@@ -25,7 +25,6 @@ from src.search.draft_mcts import (
     encode_batch,
     run_model,
 )
-from src.train_sota_model import RoVDraftGNNTransformer, get_league_vector
 
 LANE_LABELS = [
     "DS_Lane (ออฟเลน)",
@@ -53,85 +52,151 @@ class TeamDraft(NamedTuple):
 class RoVDraftPredictor:
     """Production OOP Inference Engine for SOTA RoVDraftGNNTransformer."""
 
-    def __init__(self, model_path: Path | str | None = None):
-        if model_path is not None:
-            self.model_path = Path(model_path)
-        elif config.paths.sota_model_path.exists():
-            self.model_path = config.paths.sota_model_path
-        elif (config.paths.models_dir / "archive" / "sota_draft_gnn_transformer.pt").exists():
-            self.model_path = config.paths.models_dir / "archive" / "sota_draft_gnn_transformer.pt"
-        else:
-            self.model_path = config.paths.sota_model_path
+    _CANONICAL_TO_LEGACY = {"Mortos": "Arthur", "Celica": "Brunhilda", "Riktor": "Richter"}
 
+    @classmethod
+    def _apply_hero_aliases(cls, hero_to_id: dict[str, int]) -> dict[str, int]:
+        for can, leg in cls._CANONICAL_TO_LEGACY.items():
+            if leg in hero_to_id and can not in hero_to_id:
+                hero_to_id[can] = hero_to_id[leg]
+            elif can in hero_to_id and leg not in hero_to_id:
+                hero_to_id[leg] = hero_to_id[can]
+        return hero_to_id
+
+    @property
+    def ckpt(self) -> dict[str, Any]:
+        if self._ckpt is None:
+            self._load_torch_checkpoint(set_active=False)
+        assert self._ckpt is not None
+        return self._ckpt
+
+    @property
+    def model(self) -> Any:
+        if self._torch_model is None:
+            self._load_torch_checkpoint(set_active=False)
+        return self._torch_model
+
+    def _load_torch_checkpoint(self, set_active: bool = False) -> None:
         if not self.model_path.exists():
             raise FileNotFoundError(
-                f"SOTA model artifact not found at {self.model_path}. Please run training on HPC first."
+                f"PyTorch checkpoint not found at {self.model_path}. Please run training on HPC first."
             )
+        import torch
 
-        self.ckpt = torch.load(self.model_path, map_location="cpu", weights_only=False)
-        self.hero_names: list[str] = self.ckpt["hero_names"]
-        self.hero_to_id: dict[str, int] = dict(self.ckpt["hero_to_id"])
-        canonical_to_legacy = {"Mortos": "Arthur", "Celica": "Brunhilda", "Riktor": "Richter"}
-        for can, leg in canonical_to_legacy.items():
-            if leg in self.hero_to_id and can not in self.hero_to_id:
-                self.hero_to_id[can] = self.hero_to_id[leg]
-            elif can in self.hero_to_id and leg not in self.hero_to_id:
-                self.hero_to_id[leg] = self.hero_to_id[can]
+        from src.train_sota_model import RoVDraftGNNTransformer
 
-        self.architecture: str = self.ckpt.get("architecture", "RoVDraftGNNTransformer")
-        self.val_loss: float = float(self.ckpt.get("val_loss", 0.0))
-
-        model_cfg = self.ckpt.get(
+        ckpt = torch.load(self.model_path, map_location="cpu", weights_only=False)
+        hero_names: list[str] = list(ckpt["hero_names"])
+        hero_to_id = self._apply_hero_aliases(dict(ckpt["hero_to_id"]))
+        model_cfg = ckpt.get(
             "model_config",
             {"d_model": config.model.d_model, "nhead": config.model.nhead, "num_layers": config.model.num_layers},
         )
-        self.model = RoVDraftGNNTransformer(
-            num_heroes=len(self.hero_names),
-            hero_features=self.ckpt["hero_features"],
-            lane_probs=self.ckpt["lane_probs"],
-            graphs=self.ckpt["graphs"],
-            priors=self.ckpt["priors"],
+        torch_model = RoVDraftGNNTransformer(
+            num_heroes=len(hero_names),
+            hero_features=ckpt["hero_features"],
+            lane_probs=ckpt["lane_probs"],
+            graphs=ckpt["graphs"],
+            priors=ckpt["priors"],
             **model_cfg,
         )
-        self.model.load_state_dict(self.ckpt["model_state_dict"])
-        self.device = torch.device("cpu")
-        self.model.to(self.device)
-        self.model.eval()
-        self.model.precompute_gnn_embeddings()
+        torch_model.load_state_dict(ckpt["model_state_dict"])
+        device = torch.device("cpu")
+        torch_model.to(device)
+        torch_model.eval()
+        torch_model.precompute_gnn_embeddings()
+        if self._num_threads is not None:
+            torch.set_num_threads(self._num_threads)
+
+        self._ckpt = ckpt
+        self._torch_model = torch_model
+        self.device = device
+        if set_active or not hasattr(self, "hero_names"):
+            self.hero_names = hero_names
+            self.hero_to_id = hero_to_id
+            self.architecture = str(ckpt.get("architecture", "RoVDraftGNNTransformer"))
+            self.val_loss = float(ckpt.get("val_loss", 0.0))
+            self._lane_probs = np.asarray(ckpt["lane_probs"], dtype=np.float32)
+            self._synergy_mat = np.asarray(ckpt["graphs"]["synergy_mat"], dtype=np.float32)
+            self._counter_mat = np.asarray(ckpt["graphs"]["counter_mat"], dtype=np.float32)
+        if set_active:
+            self.inference_model = torch_model
+            self.inference_backend = "torch"
+
+    def __init__(self, model_path: Path | str | None = None):
+        default_onnx = config.paths.sota_model_path.with_suffix(".onnx")
+        archive_pt = config.paths.models_dir / "archive" / "sota_draft_gnn_transformer.pt"
+        if model_path is not None:
+            self.model_path = Path(model_path)
+        elif config.paths.sota_model_path.exists() or (
+            default_onnx.exists() and default_onnx.with_suffix(".meta.npz").exists()
+        ):
+            self.model_path = config.paths.sota_model_path
+        elif archive_pt.exists():
+            self.model_path = archive_pt
+        else:
+            self.model_path = config.paths.sota_model_path
+
+        onnx_path = self.model_path.with_suffix(".onnx")
+        meta_path = self.model_path.with_suffix(".meta.npz")
+        pt_exists = self.model_path.exists()
+        onnx_ready = onnx_path.exists() and meta_path.exists()
+        if not pt_exists and not onnx_ready:
+            raise FileNotFoundError(
+                f"SOTA model artifact not found at {self.model_path} (or {onnx_path}). Please run training on HPC first."
+            )
+
         raw_threads = os.getenv("ROV_TORCH_NUM_THREADS", "").strip()
-        num_threads = int(raw_threads) if raw_threads.isdigit() and int(raw_threads) > 0 else None
-        if num_threads is not None:
-            torch.set_num_threads(num_threads)
+        self._num_threads: int | None = int(raw_threads) if raw_threads.isdigit() and int(raw_threads) > 0 else None
 
         backend = os.getenv("ROV_INFERENCE_BACKEND", "auto").strip().lower() or "auto"
         if backend not in ("auto", "onnx", "torch"):
             raise ValueError(f"Unsupported ROV_INFERENCE_BACKEND={backend!r}; expected 'auto', 'onnx', or 'torch'")
-        onnx_path = self.model_path.with_suffix(".onnx")
+
+        self._ckpt: dict[str, Any] | None = None
+        self._torch_model: Any = None
+        self.device: Any = None
         self.onnx_model: OnnxDraftModel | None = None
         self.inference_backend = "torch"
-        self.inference_model: torch.nn.Module | OnnxDraftModel = self.model
+        self.inference_model: Any = None
+
+        loaded_onnx = False
         if backend in ("auto", "onnx"):
-            if onnx_path.exists():
+            if onnx_ready:
                 try:
-                    ort_threads = num_threads
+                    ort_threads = self._num_threads
                     if ort_threads is None:
                         omp_raw = os.getenv("OMP_NUM_THREADS", "").strip()
                         ort_threads = int(omp_raw) if omp_raw.isdigit() and int(omp_raw) > 0 else 1
+                    with np.load(meta_path, allow_pickle=False) as meta_npz:
+                        meta_info = json.loads(str(meta_npz["metadata_json"].item()))
+                        self._lane_probs = np.asarray(meta_npz["lane_probs"], dtype=np.float32)
+                        self._synergy_mat = np.asarray(meta_npz["synergy_mat"], dtype=np.float32)
+                        self._counter_mat = np.asarray(meta_npz["counter_mat"], dtype=np.float32)
+                    self.hero_names = list(meta_info["hero_names"])
+                    self.hero_to_id = self._apply_hero_aliases(dict(meta_info["hero_to_id"]))
+                    self.architecture = str(meta_info.get("architecture", "RoVDraftGNNTransformer"))
+                    self.val_loss = float(meta_info.get("val_loss", 0.0))
                     self.onnx_model = OnnxDraftModel(onnx_path, num_threads=ort_threads)
                     self.inference_model = self.onnx_model
                     self.inference_backend = "onnx"
+                    loaded_onnx = True
                 except Exception:
                     if backend == "onnx":
                         raise
             elif backend == "onnx":
-                raise FileNotFoundError(f"ONNX model artifact not found at {onnx_path}")
+                raise FileNotFoundError(f"ONNX model artifact or metadata not found at {onnx_path} / {meta_path}")
+
+        if not loaded_onnx:
+            self._load_torch_checkpoint(set_active=True)
+
         self._predict_cache: OrderedDict[tuple, DraftPredictionResponse] = OrderedDict()
         self._predict_cache_lock = threading.Lock()
         self._predict_cache_maxsize = 512
 
         self.heroes_df = pd.read_csv(config.paths.heroes_csv_path).set_index("name")
         self.stats_df = pd.read_csv(config.paths.hero_stats_csv_path).set_index("name")
-        for can, leg in canonical_to_legacy.items():
+        for can, leg in self._CANONICAL_TO_LEGACY.items():
             if leg in self.heroes_df.index and can not in self.heroes_df.index:
                 self.heroes_df.loc[can] = self.heroes_df.loc[leg]
             elif can in self.heroes_df.index and leg not in self.heroes_df.index:
@@ -436,8 +501,8 @@ class RoVDraftPredictor:
         triggered_by: list[str] | None = None,
         trigger_reason: Literal["counter", "combo", "ban_unlock", "protect"] | None = None,
     ) -> HeroRecommendation:
-        syn_mat = self.ckpt["graphs"]["synergy_mat"]
-        cnt_mat = self.ckpt["graphs"]["counter_mat"]
+        syn_mat = self._synergy_mat
+        cnt_mat = self._counter_mat
 
         syn_edge = float(ap_row @ syn_mat[h_idx]) * 100.0
         cnt_edge = float(ep_row @ cnt_mat[h_idx]) * 100.0
@@ -464,8 +529,8 @@ class RoVDraftPredictor:
         enemy_picks: list[str],
         ban_triggers: dict[int, list[str]],
     ) -> tuple[list[str], Literal["counter", "combo", "ban_unlock", "protect"] | None]:
-        cnt_mat = self.ckpt["graphs"]["counter_mat"]
-        syn_mat = self.ckpt["graphs"]["synergy_mat"]
+        cnt_mat = self._counter_mat
+        syn_mat = self._synergy_mat
         ids = self.hero_to_id
 
         # 1. Counter priority: Check if this hero counters any picked enemy hero
@@ -582,7 +647,7 @@ class RoVDraftPredictor:
         if not auto_picks or len(covered) >= len(LANE_KEYS):
             return covered
 
-        lane_probs = self.ckpt["lane_probs"]
+        lane_probs = self._lane_probs
         options_per_hero: list[list[tuple[str, float]]] = []
         for h in auto_picks:
             hid = self.hero_to_id[h]
@@ -644,7 +709,7 @@ class RoVDraftPredictor:
         covered_lanes = self._solve_flex_lane_assignment(picks, explicit, pool_hero_lanes=pool_hero_lanes)
         if explicit or has_pool_override or pick_vec_row is None:
             lane_cov = np.zeros(len(LANE_KEYS), dtype=np.float32)
-            lane_probs = self.ckpt["lane_probs"]
+            lane_probs = self._lane_probs
             for h in picks:
                 if h in explicit and explicit[h] in _LANE_INDEX:
                     lane_cov[_LANE_INDEX[explicit[h]]] += 1.0
@@ -656,7 +721,7 @@ class RoVDraftPredictor:
                 else:
                     lane_cov += lane_probs[self.hero_to_id[h]]
         else:
-            lane_cov = pick_vec_row @ self.ckpt["lane_probs"]
+            lane_cov = pick_vec_row @ self._lane_probs
         open_lanes = {LANE_KEYS[i] for i in range(5) if lane_cov[i] < 0.65}
         needed = open_lanes - covered_lanes
         remaining_slots = max(0, len(ALL_LANE_KEYS) - len(picks))
@@ -916,8 +981,7 @@ class RoVDraftPredictor:
                 break
 
             arrays = encode_batch(inputs, len(self.hero_names))
-            probs_t, win_t = run_model(self.inference_model, arrays, self.device)
-            probs, win = probs_t.cpu().numpy(), win_t.cpu().numpy()
+            probs, win = run_model(self.inference_model, arrays, self.device)
             ap, ep, unavail = arrays[0], arrays[1], arrays[4]
 
             offset = 0
@@ -1141,8 +1205,8 @@ class RoVDraftPredictor:
                 step_idx=17,
             )
             step17_arrays = encode_batch([step17_input], len(self.hero_names))
-            _, step17_win_t = run_model(self.inference_model, step17_arrays, self.device)
-            red_final_win = float(step17_win_t[0, self.hero_to_id[red_picks[4]]].item())
+            _, step17_win = run_model(self.inference_model, step17_arrays, self.device)
+            red_final_win = float(step17_win[0, self.hero_to_id[red_picks[4]]])
             acting_final_win = (1.0 - red_final_win) if req.side == "blue" else red_final_win
             win_probs = np.full(len(self.hero_names), acting_final_win, dtype=np.float32)
 
@@ -1364,8 +1428,8 @@ class RoVDraftPredictor:
         """
         num_heroes = len(self.hero_names)
         ids = self.hero_to_id
-        syn_mat = self.ckpt["graphs"]["synergy_mat"]
-        cnt_mat = self.ckpt["graphs"]["counter_mat"]
+        syn_mat = self._synergy_mat
+        cnt_mat = self._counter_mat
 
         ally_picks = self.resolve_heroes(req.ally_picks)
         enemy_picks = self.resolve_heroes(req.enemy_picks)

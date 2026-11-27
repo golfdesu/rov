@@ -29,6 +29,7 @@ services:
       - OMP_NUM_THREADS=${OMP_NUM_THREADS:-1}
       - MKL_NUM_THREADS=${MKL_NUM_THREADS:-1}
       - ROV_TORCH_NUM_THREADS=${ROV_TORCH_NUM_THREADS:-1}
+      - ROV_INFERENCE_BACKEND=${ROV_INFERENCE_BACKEND:-onnx}
     volumes:
       - rov_db_data:/app/db
     expose:

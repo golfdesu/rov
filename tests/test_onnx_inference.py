@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+import os
+import subprocess
+import sys
+
 import pytest
 
 from src.config import config
@@ -78,3 +82,24 @@ def test_torch_fallback_and_invalid_backend(monkeypatch):
     monkeypatch.setenv("ROV_INFERENCE_BACKEND", "invalid_backend")
     with pytest.raises(ValueError, match="ROV_INFERENCE_BACKEND"):
         RoVDraftPredictor()
+
+
+def test_onnx_runtime_has_zero_torch_import():
+    onnx_path = config.paths.sota_model_path.with_suffix(".onnx")
+    meta_path = config.paths.sota_model_path.with_suffix(".meta.npz")
+    if not onnx_path.exists() or not meta_path.exists():
+        pytest.skip("ONNX/metadata artifacts not found; run python scripts/export_onnx.py")
+
+    script = (
+        "import sys; "
+        "from src.predictor import RoVDraftPredictor; "
+        "from src.schemas import DraftStateRequest; "
+        "p = RoVDraftPredictor(); "
+        "assert p.inference_backend == 'onnx', p.inference_backend; "
+        "r = p.predict(DraftStateRequest(mode='pick', phase=1, side='blue', top_k=3)); "
+        "assert len(r.recommendations) == 3; "
+        "assert 'torch' not in sys.modules, 'torch unexpectedly imported'"
+    )
+    env = {**os.environ, "ROV_INFERENCE_BACKEND": "onnx"}
+    proc = subprocess.run([sys.executable, "-c", script], env=env, capture_output=True, text=True, check=False)
+    assert proc.returncode == 0, f"stderr: {proc.stderr}\nstdout: {proc.stdout}"

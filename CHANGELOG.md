@@ -27,6 +27,31 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-27 15:33 (UTC+7) — Pure ONNX Production Serving (Remove PyTorch from Docker Image)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Zero-Torch League Utilities (`src/league_utils.py`, `src/train_sota_model.py`):** Extracted `get_league_vector`, `encode_league_id`, and league weight constants into a dependency-free module while re-exporting in `src/train_sota_model.py`.
+- **Companion Pickle-Safe Metadata (`scripts/export_onnx.py`):** Exported `models/sota_draft_gnn_transformer.meta.npz` (`74.0 KB`) alongside `sota_draft_gnn_transformer.onnx` (`7.93 MB`) containing `hero_names`, `hero_to_id`, `architecture`, `val_loss`, `lane_probs`, `synergy_mat`, and `counter_mat`.
+- **Torch-Free Serving Path (`src/search/draft_mcts.py`, `src/predictor.py`):** Converted `run_model()` and `DraftMinimaxSearch.evaluate_batch()` to pure NumPy (`_masked_softmax_np`, `_sigmoid_np`) and made PyTorch checkpoint/model loading lazy inside `RoVDraftPredictor` so `ROV_INFERENCE_BACKEND=onnx` loads and serves drafts with zero `torch` imports or `.pt` file.
+- **Slim Production Container (`requirements-prod.txt`, `Dockerfile`, `deploy/compose.yaml`, `AGENTS.md`):** Created serving-only `requirements-prod.txt` (removed `torch` and training/HPO stack from `Dockerfile`), defaulted `ROV_INFERENCE_BACKEND=onnx` in Docker and Compose, updated `AGENTS.md` Rule 15 to `21` sparse-checkout paths, and added zero-`torch` subprocess assertion in `tests/test_onnx_inference.py`.
+
+### 📁 Modified Files
+- `src/league_utils.py`, `src/train_sota_model.py`, `src/predictor.py`, `src/search/draft_mcts.py`
+- `scripts/export_onnx.py`, `models/sota_draft_gnn_transformer.meta.npz`
+- `requirements-prod.txt`, `Dockerfile`, `deploy/compose.yaml`
+- `tests/test_onnx_inference.py`, `AGENTS.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check --fix .` & `ruff format --check .`: `All checks passed! 148 files already formatted`.
+- `audit_regression_guard.py`: `72/72` prediction states & `3/3` combat duels passed under both `onnx` and `torch` backends.
+- `pytest -q --tb=short`: `177 passed` (including `test_onnx_runtime_has_zero_torch_import` and `tests/test_model_pipeline.py`).
+
+### ⚠️ Open Issues / Important Notes
+- Deploying to Azure VM `20.2.210.230` next (`21` production paths in VM sparse-checkout).
+
+---
+
 ## 📅 2026-11-27 15:08 (UTC+7) — Upgrade CI/CD Pipeline, Add Mobile PWA, Wire PostHog Analytics & Enable ONNX Runtime Inference
 **Agent:** Antigravity
 

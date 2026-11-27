@@ -12,12 +12,11 @@ from __future__ import annotations
 import dataclasses
 import os
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, NamedTuple
+from typing import TYPE_CHECKING, Any, NamedTuple
 
 import numpy as np
-import torch
 
-from src.train_sota_model import get_league_vector
+from src.league_utils import get_league_vector
 
 if TYPE_CHECKING:
     from src.predictor import RoVDraftPredictor
@@ -209,27 +208,41 @@ class OnnxDraftModel:
         return logits, win_logits
 
 
+def _masked_softmax_np(logits: np.ndarray, unavail: np.ndarray) -> np.ndarray:
+    """Compute numerically stable masked softmax along the hero axis in pure NumPy."""
+    masked = np.where(unavail, -1e9, logits.astype(np.float32, copy=False))
+    shifted = masked - np.max(masked, axis=-1, keepdims=True)
+    exp = np.exp(np.clip(shifted, -80.0, 0.0))
+    exp = np.where(unavail, 0.0, exp)
+    sums = exp.sum(axis=-1, keepdims=True)
+    return np.where(sums > 0.0, exp / np.maximum(sums, 1e-12), 0.0).astype(np.float32, copy=False)
+
+
+def _sigmoid_np(x: np.ndarray) -> np.ndarray:
+    """Compute numerically stable sigmoid in pure NumPy."""
+    clipped = np.clip(x.astype(np.float32, copy=False), -60.0, 60.0)
+    return (1.0 / (1.0 + np.exp(-clipped))).astype(np.float32, copy=False)
+
+
 def run_model(
-    model: torch.nn.Module | OnnxDraftModel,
+    model: Any,
     arrays: tuple[np.ndarray, ...],
-    device: torch.device,
-) -> tuple[torch.Tensor, torch.Tensor]:
-    """Runs one batched forward pass; returns (policy probs, acting-team win probs), each (batch, heroes)."""
+    device: Any = None,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Runs one batched forward pass; returns (policy probs, acting-team win probs) numpy arrays."""
     if isinstance(model, OnnxDraftModel):
         logits_np, q_win_np = model.run_arrays(arrays)
-        logits = torch.from_numpy(logits_np)
-        q_win_logits = torch.from_numpy(q_win_np)
-        unavail = torch.from_numpy(arrays[4])
     else:
+        import torch
+
         with torch.inference_mode():
-            tensors = tuple(torch.from_numpy(a).to(device) for a in arrays)
-            logits, q_win_logits = model(*tensors)
-            unavail = tensors[4]
-    probs = torch.softmax(logits, dim=-1)
-    probs = probs.masked_fill(unavail, 0.0)
-    sums = probs.sum(dim=-1, keepdim=True)
-    probs = torch.where(sums > 0, probs / sums, probs)
-    return probs, torch.sigmoid(q_win_logits)
+            tensors = tuple(
+                torch.from_numpy(a).to(device) if device is not None else torch.from_numpy(a) for a in arrays
+            )
+            logits_t, q_win_t = model(*tensors)
+            logits_np = logits_t.detach().cpu().numpy()
+            q_win_np = q_win_t.detach().cpu().numpy()
+    return _masked_softmax_np(logits_np, arrays[4]), _sigmoid_np(q_win_np)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -334,7 +347,7 @@ class DraftMinimaxSearch:
 
     def __init__(self, predictor: RoVDraftPredictor):
         self.predictor = predictor
-        self.model = getattr(predictor, "inference_model", predictor.model)
+        self.model = predictor.inference_model if hasattr(predictor, "inference_model") else predictor.model
         self.device = predictor.device
         self.num_heroes = len(predictor.hero_names)
 
@@ -368,7 +381,7 @@ class DraftMinimaxSearch:
             s.phase,
         )
 
-    def evaluate_batch(self, states: list[DraftSearchState]) -> tuple[torch.Tensor, torch.Tensor]:
+    def evaluate_batch(self, states: list[DraftSearchState]) -> tuple[np.ndarray, np.ndarray]:
         """Evaluate a batch of draft states through the neural network.
 
         Returns:
@@ -376,7 +389,7 @@ class DraftMinimaxSearch:
             win_probs: (batch_size, num_heroes) acting team win rates from Value Head
         """
         if not states:
-            return torch.empty(0), torch.empty(0)
+            return np.empty(0, dtype=np.float32), np.empty(0, dtype=np.float32)
 
         arrays = encode_batch([self._to_model_input(s) for s in states], self.num_heroes)
         return run_model(self.model, arrays, self.device)
@@ -481,9 +494,7 @@ class DraftMinimaxSearch:
         needed_cache: dict[tuple[int, tuple[int, ...], tuple[tuple[str, str], ...]], set[str]] | None = None,
     ) -> list[float]:
         """Batched recursive adversarial minimax/expectiminimax evaluation for depth >= 2."""
-        probs_batch, win_batch = self.evaluate_batch(nodes)
-        probs_np = probs_batch.cpu().numpy()
-        win_np = win_batch.cpu().numpy()
+        probs_np, win_np = self.evaluate_batch(nodes)
 
         node_actions: list[tuple[np.ndarray, list[int]]] = [
             self._filtered_action_dist(
@@ -616,7 +627,7 @@ class DraftMinimaxSearch:
             root_w_np = root_win_probs
         else:
             _root_probs, root_win = self.evaluate_batch([root_state])
-            root_w_np = root_win[0].cpu().numpy()
+            root_w_np = root_win[0]
 
         if depth <= 1 or root_state.is_last_step:
             for hid in candidate_hero_indices:
@@ -653,9 +664,7 @@ class DraftMinimaxSearch:
                 results[hid] = round(float(val * 100.0), 2)
             return results
 
-        c_probs_batch, c_win_batch = self.evaluate_batch(child_states)
-        c_probs_np = c_probs_batch.cpu().numpy()
-        c_win_np = c_win_batch.cpu().numpy()
+        c_probs_np, c_win_np = self.evaluate_batch(child_states)
 
         for idx, (hid, next_state) in enumerate(zip(valid_candidates, child_states)):
             next_acting_side = next_state.acting_side

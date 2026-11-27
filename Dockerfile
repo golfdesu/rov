@@ -17,14 +17,13 @@ ENV VITE_POSTHOG_KEY=$VITE_POSTHOG_KEY
 ENV VITE_POSTHOG_HOST=$VITE_POSTHOG_HOST
 RUN npm run build
 
-# Stage 2: FastAPI serving image
+# Stage 2: FastAPI serving image (Pure ONNX Runtime, no PyTorch)
 FROM python:3.12-slim
 
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir "torch>=2.2.0" --index-url https://download.pytorch.org/whl/cpu \
-    && pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
+COPY requirements-prod.txt .
+RUN pip install --no-cache-dir -r requirements-prod.txt
 
 COPY src/ ./src/
 COPY \
@@ -40,12 +39,13 @@ COPY \
     data/arcana.json \
     data/enchantments.json \
     ./data/
-COPY models/sota_draft_gnn_transformer.pt ./models/
+COPY models/sota_draft_gnn_transformer.onnx models/sota_draft_gnn_transformer.meta.npz ./models/
 COPY configs/ ./configs/
 COPY frontend/public/hero_images.json ./frontend/public/hero_images.json
 ARG VITE_OUT_DIR=dist-prod
 ENV ROV_ENV=production
 ENV ROV_DB_PATH=/app/db/rov_app.db
+ENV ROV_INFERENCE_BACKEND=onnx
 COPY --from=frontend /frontend/${VITE_OUT_DIR}/ ./frontend/${VITE_OUT_DIR}/
 
 RUN mkdir -p /app/db && useradd -m appuser && chown -R appuser:appuser /app

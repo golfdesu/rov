@@ -7,6 +7,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 import time
 from pathlib import Path
@@ -207,7 +208,22 @@ def export_model(pt_path: Path, onnx_path: Path, max_diff: float = 1e-3) -> None
 
     pt_mb = pt_path.stat().st_size / (1024 * 1024)
     onnx_mb = onnx_path.stat().st_size / (1024 * 1024)
-    print(f"Exported {onnx_path} ({onnx_mb:.2f} MB vs PyTorch {pt_mb:.2f} MB)")
+    meta_path = onnx_path.with_suffix(".meta.npz")
+    metadata_payload = {
+        "hero_names": list(hero_names),
+        "hero_to_id": dict(ckpt["hero_to_id"]),
+        "architecture": ckpt.get("architecture", "RoVDraftGNNTransformer"),
+        "val_loss": float(ckpt.get("val_loss", 0.0)),
+    }
+    np.savez_compressed(
+        meta_path,
+        metadata_json=np.array(json.dumps(metadata_payload, ensure_ascii=False)),
+        lane_probs=np.asarray(ckpt["lane_probs"], dtype=np.float32),
+        synergy_mat=np.asarray(ckpt["graphs"]["synergy_mat"], dtype=np.float32),
+        counter_mat=np.asarray(ckpt["graphs"]["counter_mat"], dtype=np.float32),
+    )
+    meta_kb = meta_path.stat().st_size / 1024.0
+    print(f"Exported {onnx_path} ({onnx_mb:.2f} MB) + {meta_path.name} ({meta_kb:.1f} KB) vs PyTorch {pt_mb:.2f} MB")
     print(f"CPU bs=1 latency: PyTorch={pt_ms:.2f} ms, ONNX={ort_ms:.2f} ms")
 
 
