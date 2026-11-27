@@ -12,6 +12,7 @@ import sqlite3
 import threading
 import time
 import uuid
+from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
@@ -1798,6 +1799,9 @@ def record_daily_visit(
     client_ip = _client_ip(request)
     if not _telemetry_rate_limiter.check_and_record(f"visit:{client_ip}"):
         raise HTTPException(status_code=429, detail="Too many telemetry requests")
+    if payload.device_type is None:
+        today_str = datetime.now(timezone(timedelta(hours=7))).strftime("%Y-%m-%d")
+        return DailyVisitResponse(recorded=False, visit_date=today_str)
     visit_date = get_user_db().record_daily_visit(
         client_id=payload.client_id,
         user_id=user.id if user is not None else None,
