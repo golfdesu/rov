@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `774467a` (`main`: make all Scrim Analytics cards collapsible and prevent sample refetch scroll jump) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-CJhDewGW.js` (`226.04 kB`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/createLucideIcon-Bjkpe-ll.js` (`5.34 kB`) + `dist-prod/assets/index-WR-kJNtJ.css` (`116.25 kB`), `dist-prod/index.html` (`3.13 kB`) |
+| **Git Base Commit on VM** | `b6641de` (`main`: switch to clean path URLs `/` `/practice` `/analytics` `/plans` `/profile` `/admin` & add FastAPI SPA routes) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-JFMszWUU.js` (`226.38 kB`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/createLucideIcon-Bjkpe-ll.js` (`5.34 kB`) + `dist-prod/assets/index-WR-kJNtJ.css` (`116.25 kB`), `dist-prod/index.html` (`3.13 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-27 10:40 (UTC+7)` |
+| **Last Updated** | `2026-11-27 10:53 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,13 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-27 10:53 (UTC+7) — Clean Path Routing (`/analytics`, `/practice`, `/plans`, `/profile`, `/admin`) (`b6641de`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `774467a` to `b6641de` (`main`, 19-path sparse-checkout intact).
+- **Frontend History API Routing (`frontend/src/utils/navigation.ts`, `App.tsx`, `vite.config.ts`, 7 UI components):** Replaced all hash-based routes (`#practice`, `#analytics`, `#plans`, `#profile`, `#admin`, `href="#"`) with `history.pushState` / `popstate` path navigation (`/`, `/practice`, `/analytics`, `/plans`, `/profile`, `/admin`) via `navigateTo` + `handleSpaLinkClick`, keeping same-page `#team-setup` anchor scrolling intact and refining Vite dev proxy regex so `/admin` and `/analytics` SPA pages stay on Vite while `/admin/*` and `/analytics/*` API calls proxy to FastAPI.
+- **Backend SPA Routes & Billing Redirect (`src/api.py`, `src/billing.py`):** Registered `GET`/`HEAD` SPA routes for `/practice`, `/analytics`, `/plans`, `/profile`, `/admin` returning `FRONTEND_DIST/index.html` with `Cache-Control: no-cache` without colliding with `/analytics/*` or `/admin/*` endpoints, and updated Stripe `success_url` / `cancel_url` to `/profile`.
+- **Live Verification (`20.2.210.230`):** Rebuilt & started `deploy-app-1` (`dist-prod/assets/index-JFMszWUU.js` `226.38 kB`, `react-vendor-DpjQJ7Lb.js` `218.79 kB`, `createLucideIcon-Bjkpe-ll.js` `5.34 kB`, `index-WR-kJNtJ.css` `116.25 kB`, `dist-prod/index.html` `3.13 kB`); verified `https://minidraft.app/health` (`200`), all 5 SPA URLs (`/analytics`, `/practice`, `/plans`, `/profile`, `/admin` -> `200 OK`, `Cache-Control: no-cache`), and `/app/db/rov_app.db` (`users: 1078`, `promo_claims: 50`, `billing_orders: 6`, `billing_passes: 51`).
+- **VM Sync Note:** Tests & docs commit recording this release (`tests/test_billing.py`, `tests/test_perf_optimizations.py`, `docs/PRODUCTION_RELEASES.md`, `CHANGELOG.md`) is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
 
 ### 📅 2026-11-27 10:40 (UTC+7) — Unified Collapsible Analytics Cards & Sample Refetch Scroll-Jump Fix (`774467a`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `24918b6` to `774467a` (`main`, 19-path sparse-checkout intact).

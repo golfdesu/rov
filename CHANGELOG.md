@@ -27,6 +27,31 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-27 10:53 (UTC+7) — Clean Path Routing (`/analytics`, `/plans`, `/profile`, `/practice`, `/admin`) (`b6641de`)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Added `frontend/src/utils/navigation.ts` (`navigateTo`, `handleSpaLinkClick`, `APP_NAVIGATE_EVENT`) using `history.pushState` / `popstate` and migrated `frontend/src/App.tsx`, `AdminStatsModal.tsx`, `BillingSandbox.tsx`, `DraftBoardView.tsx`, `HeroPoolsModal.tsx`, `ProfileView.tsx`, `ScrimDashboardView.tsx`, and `TeamSandbox.tsx` to clean path URLs (`/`, `/practice`, `/analytics`, `/plans`, `/profile`, `/admin`), removing all legacy hash route links (`#profile`, `#plans`, `#analytics`, `#admin`, `#practice`, `href="#"`).
+- Updated `frontend/vite.config.ts` dev proxy so top-level `/admin` and `/analytics` stay on Vite while `/admin/*` and `/analytics/*` still forward to FastAPI.
+- Added FastAPI `GET`/`HEAD` SPA routes in `src/api.py` serving `index.html` (`Cache-Control: no-cache`) for `/practice`, `/analytics`, `/plans`, `/profile`, `/admin` and updated Stripe `success_url` / `cancel_url` in `src/billing.py` to `/profile`.
+- Updated `tests/test_billing.py` (`success_url` `/profile`) and added `test_spa_routes_serve_index_html_without_conflicting_with_api` in `tests/test_perf_optimizations.py`.
+- Committed production code (`b6641de`), fast-forwarded `~/rov` on `20.2.210.230` (19-path sparse-checkout preserved), and rebuilt/restarted `deploy-app-1`.
+
+### 📁 Modified Files
+- `frontend/src/utils/navigation.ts`
+- `frontend/src/App.tsx`, `frontend/vite.config.ts`, `frontend/src/components/{AdminStatsModal,BillingSandbox,DraftBoardView,HeroPoolsModal,ProfileView,ScrimDashboardView,TeamSandbox}.tsx`
+- `src/api.py`, `src/billing.py`
+- `tests/test_billing.py`, `tests/test_perf_optimizations.py`
+- `docs/PRODUCTION_RELEASES.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check --fix .` & `ruff format .`: clean (`145` files unchanged); `pytest -q --tb=short tests/test_billing.py tests/test_api.py tests/test_perf_optimizations.py`: `78 passed`.
+- `npm --prefix frontend run lint` (`oxlint`): `0` warnings, `0` errors across 66 files; `npm --prefix frontend run build` and `build:prod` clean (`index-JFMszWUU.js` `226.38 kB` in Docker `dist-prod`); `audit_copy_i18n.py`: `[PASS]`.
+- Live `https://minidraft.app/`: `/health` (`200`), `/analytics`, `/practice`, `/plans`, `/profile`, `/admin` all return `200 OK` with `Cache-Control: no-cache`; live DB `/app/db/rov_app.db` verified intact (`users: 1078`, `promo_claims: 50`, `billing_orders: 6`, `billing_passes: 51`).
+
+### ⚠️ Open Issues / Important Notes
+- Tests & docs commit is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
+
 ## 📅 2026-11-27 10:40 (UTC+7) — Unified Collapsible Analytics Cards & Sample Refetch Scroll Fix (`774467a`)
 **Agent:** Antigravity
 

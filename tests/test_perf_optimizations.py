@@ -135,3 +135,21 @@ def test_sqlite_pragmas_indexes_and_query_plans(tmp_path):
             ).fetchall()
         )
         assert "TEMP B-TREE" not in eqp_recent_orders
+
+
+def test_spa_routes_serve_index_html_without_conflicting_with_api():
+    from src.api import FRONTEND_DIST
+
+    if not (FRONTEND_DIST.is_dir() and (FRONTEND_DIST / "index.html").is_file()):
+        return
+
+    client = TestClient(app)
+    for path in ("/practice", "/analytics", "/plans", "/profile", "/admin"):
+        res = client.get(path)
+        assert res.status_code == 200, path
+        assert "text/html" in res.headers.get("content-type", ""), path
+        assert res.headers.get("Cache-Control") == "no-cache", path
+
+    api_res = client.get("/analytics/sample")
+    assert api_res.status_code == 200
+    assert "application/json" in api_res.headers.get("content-type", "")

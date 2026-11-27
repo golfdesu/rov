@@ -109,7 +109,7 @@ def test_checkout_uses_server_price_and_keeps_one_open_order(sandbox):
     assert fake.last_params["mode"] == "payment"
     assert fake.last_params["allowed_payment_method_types"] == ["promptpay"]
     assert fake.last_params["line_items"][0]["price_data"]["unit_amount"] == 5900
-    assert fake.last_params["success_url"] == "http://localhost:3000/#profile"
+    assert fake.last_params["success_url"] == "http://localhost:3000/profile"
     assert create_checkout(client).status_code == 200
     assert len(fake.by_id) == 1
     assert create_checkout(client, days=90).json()["detail"] == "pending_order"
