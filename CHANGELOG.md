@@ -27,6 +27,27 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-27 22:45 (UTC+7) — Open `FinishGameModal` Directly on 18-Step Draft Completion (`b58a0b6`)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **1-Step Draft Save UX (`frontend/src/components/DraftBoardView.tsx`, `frontend/src/components/FinishGameModal.tsx`):** Replaced the extra `ConfirmDialog` hop after 18 draft steps with opening `FinishGameModal` directly after `1,800 ms` (cancelling the timer when `confirmState !== null`), updated the modal heading to `Save Game` wording, styled the no-winner save CTA in gold (`Save Without Winner`) so players can store Global Ban drafts before the match finishes, and added 2 synced EN entries in [`frontend/src/i18n/englishMessages.ts`](frontend/src/i18n/englishMessages.ts).
+- **Production Deployment & Docs:** Fast-forwarded `rov-draft-vm` (`20.2.210.230`) cleanly (`21`-path sparse-checkout preserved), rebuilt `deploy-app-1`, and updated [`docs/PRODUCTION_RELEASES.md`](docs/PRODUCTION_RELEASES.md). Uncommitted local dev Share Card work remained excluded and intact.
+
+### 📁 Modified Files
+- `frontend/src/components/DraftBoardView.tsx`
+- `frontend/src/components/FinishGameModal.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `docs/PRODUCTION_RELEASES.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): 0 warnings, 0 errors; `npm --prefix frontend run build`: passed cleanly.
+- `python .agents/skills/frontend-e2e-inspector/scripts/audit_copy_i18n.py`: `[PASS]` (`0` missing EN keys).
+- Live Playwright E2E on `https://minidraft.app/`: completed 18 draft picks/bans and confirmed `FinishGameModal` opened directly after `1.8 s` with Save Without Winner CTA and zero page errors.
+
+---
+
 ## 📅 2026-11-27 22:16 (UTC+7) — Production Hotfix for EN `StableButtonLabel` (`55c132c`) & iOS/iPadOS Safari Install Guide (`85f06bf`)
 **Agent:** Antigravity
 

@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `85f06bf` (`main`: EN `StableButtonLabel` invisible button fix + iOS/iPadOS Safari PWA install guide) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-B20XqNtj.js` (`593.30 kB`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/englishMessages-YyaWe75M.js` (`207.95 kB`) + `dist-prod/assets/MobileNavDrawer-4d6nXBfK.js` (`11.63 kB`) + `dist-prod/assets/index-CPVI40NI.css` (`116.29 kB`), `sw.js`, `icon-192.png` |
+| **Git Base Commit on VM** | `b58a0b6` (`main`: 1-click `FinishGameModal` auto-open after 18 steps & Save Without Winner CTA) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-DiHgNR39.js` (`592.88 kB`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/englishMessages-D5GI6MRi.js` (`208.11 kB`) + `dist-prod/assets/FinishGameModal-B0Rw8byW.js` (`5.59 kB`) + `dist-prod/assets/MobileNavDrawer-hqrod_K-.js` (`11.63 kB`) + `dist-prod/assets/index-CPVI40NI.css` (`116.29 kB`), `sw.js`, `icon-192.png` |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.onnx` (`7.93 MB`) + `models/sota_draft_gnn_transformer.meta.npz` (`74.0 KB`), exported from `sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, Trial #31) |
-| **Last Updated** | `2026-11-27 22:16 (UTC+7)` |
+| **Last Updated** | `2026-11-27 22:45 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,12 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-27 22:45 (UTC+7) — Direct 1-Click Draft Save Flow (`FinishGameModal`) on 18-Step Completion (`b58a0b6`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `85f06bf` to `b58a0b6` (`main`, 21-path sparse-checkout intact). Uncommitted local dev Share Card work remained strictly excluded.
+- **Draft Save UX (`frontend/src/components/DraftBoardView.tsx`, `frontend/src/components/FinishGameModal.tsx`, `frontend/src/i18n/englishMessages.ts`):** Removed the intermediate `ConfirmDialog` step so completing all 18 draft steps opens `FinishGameModal` directly after `1,800 ms` (with a guard cancelling the timer if `confirmState !== null`). Updated modal copy to `"Save Game {N}"`, highlighted the gold-accented `"Save Without Winner"` button for saving drafts before a live match ends, changed the secondary close button to inspect-board wording, and added 2 synced EN translations.
+- **Live Verification (`20.2.210.230`):** Rebuilt `deploy-app-1` (`dist-prod/assets/index-DiHgNR39.js` `592.88 kB`, `FinishGameModal-B0Rw8byW.js` `5.59 kB`, `englishMessages-D5GI6MRi.js` `208.11 kB`); verified `https://minidraft.app/health` (`200`, `{"status":"healthy","model_loaded":true}`), and ran a live Playwright 18-step completion E2E on `https://minidraft.app/` confirming `FinishGameModal` opens automatically after `1.8 s` with both the Save Without Winner and board-inspection actions and zero JS page errors.
+- **VM Sync Note:** Docs-only commit recording this release is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
 
 ### 📅 2026-11-27 22:16 (UTC+7) — EN `StableButtonLabel` Hotfix (`55c132c`) & iOS/iPadOS Safari PWA Install Guide (`85f06bf`)
 - **Base Commits:** Fast-forwarded `~/rov` cleanly from `6e9434e` through `55c132c` and `85f06bf` (`main`, 21-path sparse-checkout intact). Uncommitted local dev Share Card work was strictly excluded from both commits.
