@@ -5,6 +5,7 @@ import { getTeam, groupName, teamErrorMessage, teamPath, type TeamOverview } fro
 import { type Message, translateMessage, useLanguage } from "../i18n/language";
 import { Alert } from "./Alert";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { handleSpaLinkClick } from "../utils/navigation";
 import { StableButtonLabel } from "./StableButtonLabel";
 
 const controlClass = "inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 border px-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-gold disabled:opacity-50";
@@ -159,13 +160,15 @@ export function TeamSandbox({ currentUsername }: { currentUsername: string }) {
             </ol>
             <div className="flex flex-wrap gap-2 pt-1">
               <a
-                href="#"
+                href="/"
+                onClick={(e) => handleSpaLinkClick(e, "/")}
                 className="inline-flex min-h-8 items-center border border-line-strong bg-panel px-2.5 font-display text-xs font-semibold text-ink hover:border-gold/60 hover:text-gold"
               >
                 {t("ไปกระดานดราฟต์")}
               </a>
               <a
-                href="#analytics"
+                href="/analytics"
+                onClick={(e) => handleSpaLinkClick(e, "/analytics")}
                 className="inline-flex min-h-8 items-center border border-blue/50 bg-panel px-2.5 font-display text-xs font-semibold text-blue hover:bg-blue/20"
               >
                 {t("เปิดสถิติซ้อมทีม")}

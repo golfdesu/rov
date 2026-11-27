@@ -24,7 +24,7 @@ from fastapi import BackgroundTasks, Cookie, Depends, FastAPI, Header, HTTPExcep
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from google.auth.transport import requests as google_auth_requests
 from google.oauth2 import id_token as google_id_token
@@ -2408,5 +2408,21 @@ class _FrontendStaticFiles(StaticFiles):
 
 
 # Mounted last so the API routes above take precedence over static files.
+_SPA_PAGE_PATHS = ("/practice", "/analytics", "/plans", "/profile", "/admin")
+
 if FRONTEND_DIST.is_dir():
+    _FRONTEND_INDEX = FRONTEND_DIST / "index.html"
+    if _FRONTEND_INDEX.is_file():
+
+        async def _serve_spa_index() -> FileResponse:
+            return FileResponse(_FRONTEND_INDEX, media_type="text/html", headers={"Cache-Control": "no-cache"})
+
+        for _spa_path in _SPA_PAGE_PATHS:
+            app.add_api_route(
+                _spa_path,
+                _serve_spa_index,
+                methods=["GET", "HEAD"],
+                include_in_schema=False,
+            )
+
     app.mount("/", _FrontendStaticFiles(directory=FRONTEND_DIST, html=True), name="frontend")

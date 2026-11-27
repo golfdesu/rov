@@ -17,6 +17,7 @@ import { useLanguage } from "../i18n/language";
 import type { Hero, LaneKey } from "../types/draft";
 import { LANE_SHORT } from "../utils/draft";
 import { displayName } from "../utils/heroNames";
+import { handleSpaLinkClick } from "../utils/navigation";
 import { Alert } from "./Alert";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { HeroPortrait } from "./HeroPortrait";
@@ -318,8 +319,11 @@ export function HeroPoolsModal({
             </div>
             {overview && !overview.is_paid && (
               <a
-                href="#plans"
-                onClick={() => requestClose()}
+                href="/plans"
+                onClick={(e) => {
+                  handleSpaLinkClick(e, "/plans");
+                  requestClose();
+                }}
                 className="inline-flex min-h-7 items-center border border-gold/40 bg-gold/10 px-2.5 py-1 text-xs font-semibold text-gold transition-colors hover:bg-gold hover:text-bg"
               >
                 {t("Free เพิ่มได้ 2 ทีม · อัปเกรด Pro เพื่อเพิ่มได้ถึง 50 ทีม")}
@@ -718,8 +722,9 @@ export function HeroPoolsModal({
                       {t("อัปเกรดเป็น Pro, Duo หรือ Business เพื่อเก็บสูงสุด 50 ทีม พร้อมซิงก์ตามชื่อทีมและให้ AI จัดอันดับตาม Pool")}
                     </p>
                     <a
-                      href="#plans"
-                      onClick={() => {
+                      href="/plans"
+                      onClick={(e) => {
+                        handleSpaLinkClick(e, "/plans");
                         setUpgradeModalOpen(false);
                         requestClose();
                       }}

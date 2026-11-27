@@ -119,7 +119,7 @@ export function AdminStatsModal({ onClose }: AdminStatsModalProps) {
             </div>
             <div className="flex shrink-0 items-center gap-1.5">
               <a
-                href="/#admin"
+                href="/admin"
                 target="_blank"
                 rel="noopener noreferrer"
                 title={t("เปิดหน้า Dashboard เต็มจอในแท็บใหม่")}

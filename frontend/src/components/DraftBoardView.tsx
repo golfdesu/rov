@@ -1,4 +1,5 @@
 import { type Message, translateMessage, useLanguage } from "../i18n/language";
+import { handleSpaLinkClick } from "../utils/navigation";
 import {
   ArrowLeftRight,
   ArrowRight,
@@ -1653,8 +1654,11 @@ export function DraftBoardView({
                     </button>
                   ) : (
                     <a
-                      href="#plans"
-                      onClick={() => requestClose()}
+                      href="/plans"
+                      onClick={(e) => {
+                        handleSpaLinkClick(e, "/plans");
+                        requestClose();
+                      }}
                       className="inline-flex min-h-10 items-center justify-center border border-gold bg-gold px-5 font-display text-xs font-bold text-bg hover:bg-gold/90"
                     >
                       <StableButtonLabel message="ดูแพ็ก" />

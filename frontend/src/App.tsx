@@ -58,6 +58,7 @@ import type {
 } from "./types/auth";
 import type { DraftSessionPayload } from "./types/draft";
 import { accountLabel, restorePreviewAccountStorage } from "./utils/auth";
+import { APP_NAVIGATE_EVENT, handleSpaLinkClick, navigateTo } from "./utils/navigation";
 import { trackTelemetryEvent } from "./utils/telemetry";
 
 export type Tab = "draft" | "practice" | "profile" | "plans" | "analytics" | "admin";
@@ -75,11 +76,12 @@ function visibleTabs(sandboxBilling: boolean): { key: Tab; label: string }[] {
 }
 
 function initialTab(): Tab {
-  if (window.location.hash === "#admin") return "admin";
-  if (window.location.hash === "#analytics") return "analytics";
-  if (window.location.hash === "#profile") return "profile";
-  if (window.location.hash === "#plans") return "plans";
-  if (window.location.hash === "#practice") return "practice";
+  const path = window.location.pathname.replace(/\/+$/, "") || "/";
+  if (path === "/admin") return "admin";
+  if (path === "/analytics") return "analytics";
+  if (path === "/profile") return "profile";
+  if (path === "/plans") return "plans";
+  if (path === "/practice") return "practice";
   return "draft";
 }
 
@@ -279,7 +281,8 @@ function Workspace({
             )}
             {authLoading ? null : isAuthenticated ? (
               <a
-                href="#profile"
+                href="/profile"
+                onClick={(e) => handleSpaLinkClick(e, "/profile")}
                 aria-label={t("เปิดโปรไฟล์ของ {0}", accountName)}
                 aria-current={tab === "profile" ? "page" : undefined}
                 title={t("เปิดโปรไฟล์ของ {0}", accountName)}
@@ -752,7 +755,7 @@ export function App() {
     if (!params.has("auth_error")) return;
     params.delete("auth_error");
     const nextQuery = params.toString();
-    const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}${window.location.hash}`;
+    const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}`;
     window.history.replaceState(null, "", nextUrl);
   }, []);
 
@@ -763,8 +766,12 @@ export function App() {
 
   useEffect(() => {
     const syncTab = () => setTab(initialTab());
-    window.addEventListener("hashchange", syncTab);
-    return () => window.removeEventListener("hashchange", syncTab);
+    window.addEventListener("popstate", syncTab);
+    window.addEventListener(APP_NAVIGATE_EVENT, syncTab);
+    return () => {
+      window.removeEventListener("popstate", syncTab);
+      window.removeEventListener(APP_NAVIGATE_EVENT, syncTab);
+    };
   }, []);
 
   const refreshAuthSession = useCallback(
@@ -972,7 +979,7 @@ export function App() {
 
   const selectTab = (next: Tab) => {
     setTab(next);
-    window.history.replaceState(null, "", next === "draft" ? "#" : `#${next}`);
+    navigateTo(next === "draft" ? "/" : `/${next}`);
   };
 
   const handleSaveDisplayName = async (displayName: string) => {
@@ -994,10 +1001,10 @@ export function App() {
     }
     if (
       requestedTab === "profile" || requestedTab === "plans" || requestedTab === "analytics" || requestedTab === "admin" ||
-      ["#profile", "#plans", "#analytics", "#admin"].includes(window.location.hash)
+      ["/profile", "/plans", "/analytics", "/admin"].includes(window.location.pathname)
     ) {
       setTab("draft");
-      window.history.replaceState(null, "", "#");
+      navigateTo("/", true);
     }
     setExpectedAuthUser(null);
     setAuthUser(null);
@@ -1246,7 +1253,7 @@ export function App() {
             onOpenHeroPools={() => openDraftTool("pools")}
             onOpenPlans={() => selectTab("plans")}
             onOpenAuth={() => setAuthModalOpen(true)}
-            onOpenProfile={() => { window.location.hash = "profile"; }}
+            onOpenProfile={() => selectTab("profile")}
             onLogout={() => void handleLogout()}
             onClose={() => setMobileDrawerOpen(false)}
           />

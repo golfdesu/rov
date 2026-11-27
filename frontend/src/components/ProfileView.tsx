@@ -4,6 +4,7 @@ import { ApiError } from "../api/client";
 import { useLanguage } from "../i18n/language";
 import type { AuthUser } from "../types/auth";
 import { accountLabel } from "../utils/auth";
+import { handleSpaLinkClick } from "../utils/navigation";
 import { Alert } from "./Alert";
 import { BillingSandbox } from "./BillingSandbox";
 import { TeamSandbox } from "./TeamSandbox";
@@ -118,7 +119,11 @@ export function ProfileView({ user, onSaveDisplayName }: ProfileViewProps) {
   return (
     <main className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:py-8">
       <div className={`mx-auto space-y-4 ${user.stripe_sandbox_enabled ? "max-w-4xl" : "max-w-xl"}`}>
-        <a href="#" className="inline-flex min-h-9 items-center gap-2 text-sm text-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-gold">
+        <a
+          href="/"
+          onClick={(e) => handleSpaLinkClick(e, "/")}
+          className="inline-flex min-h-9 items-center gap-2 text-sm text-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-gold"
+        >
           <ArrowLeft className="size-4" aria-hidden="true" />
           {t("กลับไปหน้าดราฟต์")}
         </a>

@@ -57,6 +57,7 @@ import {
   TrioSynergyCard,
 } from "./scrim/ScrimAdvancedCards";
 import { StableButtonLabel } from "./StableButtonLabel";
+import { handleSpaLinkClick } from "../utils/navigation";
 import { trackTelemetryEvent } from "../utils/telemetry";
 
 const ScoutingReportModal = lazy(() =>
@@ -1317,7 +1318,8 @@ export function ScrimDashboardView({
                   </button>
                 ) : (
                   <a
-                    href="#plans"
+                    href="/plans"
+                    onClick={(e) => handleSpaLinkClick(e, "/plans")}
                     className="inline-flex min-h-9 w-full shrink-0 items-center justify-center gap-1.5 border border-gold bg-gold px-4 text-center font-display text-xs font-bold text-bg hover:bg-gold/90 sm:w-auto"
                   >
                     <Gift className="size-3.5 shrink-0" aria-hidden="true" />
@@ -1338,7 +1340,8 @@ export function ScrimDashboardView({
                 </button>
               ) : (
                 <a
-                  href="#plans"
+                  href="/plans"
+                  onClick={(e) => handleSpaLinkClick(e, "/plans")}
                   className={`inline-flex min-h-9 w-full shrink-0 items-center justify-center border px-4 text-center font-display text-xs font-bold sm:w-auto ${
                     demoPromoActive
                       ? "border-gold/60 bg-panel text-gold hover:bg-gold/10"
@@ -1636,14 +1639,16 @@ export function ScrimDashboardView({
             {showTeamHistory && team && teamGames.length === 0 ? (
               <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
                 <a
-                  href="#"
+                  href="/"
+                  onClick={(e) => handleSpaLinkClick(e, "/")}
                   className="inline-flex min-h-9 items-center border border-gold bg-gold px-4 font-display text-xs font-bold text-bg hover:bg-gold/90"
                 >
                   {t("ไปกระดานดราฟต์")}
                 </a>
                 {team.is_owner && team.members.length === 1 && (
                   <a
-                    href="#profile"
+                    href="/profile"
+                    onClick={(e) => handleSpaLinkClick(e, "/profile")}
                     className="inline-flex min-h-9 items-center border border-blue/50 bg-blue/10 px-4 font-display text-xs font-bold text-blue hover:bg-blue/20"
                   >
                     {t("ชวนเพื่อนเข้าทีม")}

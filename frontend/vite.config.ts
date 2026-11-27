@@ -42,8 +42,8 @@ export default defineConfig({
   server: {
     port: 3000,
     proxy: {
-      // Every FastAPI route; add a prefix here when the backend gains a new top-level path
-      "^/(auth|heroes(?:-media)?|predict|draft|health|combat|items-media|privacy|telemetry|survey|feedback|admin|billing|analytics)(?:/|$|\\?)": "http://127.0.0.1:8000",
+      // Every FastAPI route; /admin and /analytics SPA entry pages stay on Vite unless followed by a sub-path
+      "^/(auth|heroes(?:-media)?|predict|draft|health|combat|items-media|privacy|telemetry|survey|feedback|billing)(?:/|$|\\?)|^/(admin|analytics)/": "http://127.0.0.1:8000",
     },
   },
   build: {

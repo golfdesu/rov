@@ -2,6 +2,7 @@ import { ArrowLeft, ArrowRight, Check, CreditCard, Crosshair, Gift, Users, Users
 import { useEffect, useId, useRef, useState } from "react";
 import { ApiError, getJson, postJson } from "../api/client";
 import { useLanguage } from "../i18n/language";
+import { handleSpaLinkClick, navigateTo } from "../utils/navigation";
 import { Alert } from "./Alert";
 import { StableButtonLabel } from "./StableButtonLabel";
 
@@ -263,7 +264,7 @@ export function BillingSandbox({
         return;
       }
       if (view === "plans") {
-        window.location.hash = "#profile";
+        navigateTo("/profile");
       }
     } catch (error) {
       const detail = error instanceof ApiError ? error.detail : null;
@@ -377,7 +378,8 @@ export function BillingSandbox({
       >
         <div className={`mx-auto space-y-4 sm:space-y-6 ${displayPackages.length > 2 ? "max-w-6xl" : "max-w-4xl"}`}>
           <a
-            href="#profile"
+            href="/profile"
+            onClick={(e) => handleSpaLinkClick(e, "/profile")}
             className="inline-flex min-h-9 items-center gap-2 text-sm font-medium text-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-gold"
           >
             <ArrowLeft className="size-4 shrink-0" aria-hidden="true" />
@@ -721,13 +723,21 @@ export function BillingSandbox({
         </div>
       )}
       {isOwnerAccount && !pending && (
-        <a href="#plans" className={`${actionClass} w-full gap-2 border-purple-400/60 bg-purple-500/12 text-purple-300 hover:border-purple-400 hover:bg-purple-500/20 sm:w-auto`}>
+        <a
+          href="/plans"
+          onClick={(e) => handleSpaLinkClick(e, "/plans")}
+          className={`${actionClass} w-full gap-2 border-purple-400/60 bg-purple-500/12 text-purple-300 hover:border-purple-400 hover:bg-purple-500/20 sm:w-auto`}
+        >
           <span>{t("ดูหน้าแพ็กเกจ")}</span>
           <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
         </a>
       )}
       {!isOwnerAccount && !pending && (packages.length > 0 ? (
-        <a href="#plans" className={`${actionClass} w-full gap-2 border-gold/60 text-gold hover:bg-gold/10 sm:w-auto`}>
+        <a
+          href="/plans"
+          onClick={(e) => handleSpaLinkClick(e, "/plans")}
+          className={`${actionClass} w-full gap-2 border-gold/60 text-gold hover:bg-gold/10 sm:w-auto`}
+        >
           <StableButtonLabel message={activePass ? "จัดการ / เปลี่ยนแพ็ก" : "ดูแพ็ก"} alternatives={["จัดการ / เปลี่ยนแพ็ก", "ดูแพ็ก"]} />
           <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
         </a>

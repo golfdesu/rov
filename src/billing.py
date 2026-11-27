@@ -253,8 +253,8 @@ def checkout_session(
                 "adaptive_pricing": {"enabled": False},
                 "client_reference_id": order["id"],
                 "metadata": {"minidraft_order_id": order["id"]},
-                "success_url": f"{origin}/#profile",
-                "cancel_url": f"{origin}/#profile",
+                "success_url": f"{origin}/profile",
+                "cancel_url": f"{origin}/profile",
                 "expires_at": max(order["created_at"] + 3600, int(time.time()) + 1860),
                 "line_items": [
                     {
