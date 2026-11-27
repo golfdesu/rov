@@ -15,6 +15,7 @@ from pydantic import (
 HeroStr = Annotated[str, Field(min_length=1, max_length=64)]
 ShortStr = Annotated[str, Field(max_length=64)]
 FinitePct = Annotated[float, Field(allow_inf_nan=False, ge=0.0, le=100.0)]
+MAX_EPOCH_MS = 32_503_680_000_000  # 3000-01-01T00:00:00Z in epoch milliseconds
 LaneKey = Literal["DS_Lane", "Jungle", "Mid", "Dragon_Lane", "Roam"]
 
 
@@ -483,7 +484,7 @@ class DraftSessionStateSchema(BaseModel):
     updatedAt: int = Field(
         default=0,
         ge=0,
-        le=9223372036854775807,
+        le=MAX_EPOCH_MS,
         description="Epoch milliseconds of last state update",
     )
 
@@ -736,7 +737,7 @@ class CombatBuildsSyncSchema(BaseModel):
     b: CombatBuildRequest | None = None
     enable_kiting: bool = True
     enable_actives: bool = True
-    updatedAt: int = Field(default=0, ge=0, le=9223372036854775807)
+    updatedAt: int = Field(default=0, ge=0, le=MAX_EPOCH_MS)
 
 
 class PracticeHistoryEntrySchema(BaseModel):
@@ -769,6 +770,6 @@ class PracticeHistoryEntrySchema(BaseModel):
 
 class PracticeHistorySyncSchema(BaseModel):
     entries: list[PracticeHistoryEntrySchema] = Field(default_factory=list, max_length=1000)
-    updatedAt: int = Field(default=0, ge=0, le=9223372036854775807)
+    updatedAt: int = Field(default=0, ge=0, le=MAX_EPOCH_MS)
     deletedIds: list[ShortStr] = Field(default_factory=list, max_length=100)
-    clearedAt: int = Field(default=0, ge=0, le=9223372036854775807)
+    clearedAt: int = Field(default=0, ge=0, le=MAX_EPOCH_MS)

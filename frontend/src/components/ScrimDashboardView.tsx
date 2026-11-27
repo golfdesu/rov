@@ -920,7 +920,11 @@ export function ScrimDashboardView({
       })
       .catch((err) => {
         if (!cancelled && !isAbortError(err)) {
-          if (err instanceof ApiError && err.status === 422 && (sampleQueryTeam || sampleQueryOpp !== "ALL")) {
+          if (
+            err instanceof ApiError &&
+            err.status === 422 &&
+            ((sampleQueryTeam && sampleQueryTeam !== DEFAULT_SAMPLE_TEAM) || sampleQueryOpp !== "ALL")
+          ) {
             setSelectedTeam(DEFAULT_SAMPLE_TEAM);
             setAllTeamsSelected(false);
             setOpponentFilter("ALL");
@@ -1215,6 +1219,7 @@ export function ScrimDashboardView({
     setDatePreset("all");
     setDateFrom("");
     setDateTo("");
+    if (sortBy === "delta") setSortBy("games");
   }
 
   function enterSampleSource(datasetId: SampleDatasetId = DEFAULT_SAMPLE_TOURNAMENT_ID) {
@@ -1224,6 +1229,7 @@ export function ScrimDashboardView({
     setSelectedTeam((prev) => (prev.trim() && prev.trim().toLowerCase() !== "vgd" ? prev : DEFAULT_SAMPLE_TEAM));
     setOpponentFilter("ALL");
     setSeriesFilter([]);
+    if (sortBy === "contest") setSortBy("games");
   }
 
   function selectSpecificTeam(teamName: string) {
@@ -1231,6 +1237,7 @@ export function ScrimDashboardView({
     setSelectedTeam(teamName);
     setOpponentFilter("ALL");
     setSeriesFilter([]);
+    if (sortBy === "contest") setSortBy("games");
   }
 
   const overallWrPct = stats.decided > 0 ? (stats.wins / stats.decided) * 100 : 0;

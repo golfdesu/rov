@@ -234,11 +234,7 @@ export function PracticeDraftView({ scope, persistSession = false, historyLimit 
       };
       historyRef.current = nextState;
       savePracticeHistoryState(scope, nextState, resolvedHistoryLimit);
-      setHistoryState({
-        entries: nextEntries,
-        updatedAt: nextUpdatedAt,
-        ...(currentClearedAt > 0 ? { clearedAt: currentClearedAt } : {}),
-      });
+      setHistoryState(nextState);
       if (persistSession) {
         void pushToServer(nextState);
       }
@@ -276,9 +272,11 @@ export function PracticeDraftView({ scope, persistSession = false, historyLimit 
     savePracticeHistoryState(scope, cleared, resolvedHistoryLimit);
     setHistoryState(cleared);
     if (persistSession) {
+      const seq = ++pushSeqRef.current;
       void (async () => {
         try {
           const res = await deleteJson<PracticeHistorySyncPayload>("/draft/practice-history");
+          if (seq !== pushSeqRef.current) return;
           if (typeof res?.updatedAt === "number" && res.updatedAt >= lastSavedAtRef.current) {
             const clearedAt = typeof res?.clearedAt === "number" && res.clearedAt > 0 ? res.clearedAt : res.updatedAt;
             lastSavedAtRef.current = res.updatedAt;
@@ -356,7 +354,9 @@ function PracticeRound({
   const { t } = useLanguage();
   const { startingSide, gameCount, showHints, previousEstimates } = meta;
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [confirmAction, setConfirmAction] = useState<"reset" | "restart" | null>(null);
+  const [confirmAction, setConfirmAction] = useState<"reset" | "restart" | { kind: "switch_side"; side: Side } | null>(
+    null,
+  );
   const [laneResetKey, setLaneResetKey] = useState(0);
   const aiTurnStartedAt = useRef(0);
   const handledSignaturesRef = useRef<Set<string>>(new Set(historyEntries.map((item) => item.signature)));
@@ -689,6 +689,15 @@ function PracticeRound({
     </div>
   );
 
+  function requestSwitchSide(targetSide: Side, allowSameSide = false) {
+    if (!hasAnyAction && gameNumber === 1) {
+      if (!allowSameSide && targetSide === playerSide) return;
+      onSwitchSide(targetSide);
+      return;
+    }
+    setConfirmAction({ kind: "switch_side", side: targetSide });
+  }
+
   const stepTone = !currentStep
     ? "text-gold"
     : playerTurn
@@ -769,10 +778,10 @@ function PracticeRound({
             <div className="inline-flex shrink-0 items-center border border-line bg-bg p-0.5">
               <button
                 type="button"
-                aria-pressed={startingSide === "blue" && gameNumber === 1}
+                aria-pressed={playerSide === "blue"}
                 aria-label={t("ฝั่งน้ำเงิน")}
                 title={t("ฝั่งน้ำเงิน")}
-                onClick={() => onSwitchSide("blue")}
+                onClick={() => requestSwitchSide("blue")}
                 className={`h-7 px-1.5 font-display text-[11px] font-bold transition-colors sm:px-2 ${
                   playerSide === "blue"
                     ? "bg-blue/20 text-blue"
@@ -784,10 +793,10 @@ function PracticeRound({
               </button>
               <button
                 type="button"
-                aria-pressed={startingSide === "red" && gameNumber === 1}
+                aria-pressed={playerSide === "red"}
                 aria-label={t("ฝั่งแดง")}
                 title={t("ฝั่งแดง")}
-                onClick={() => onSwitchSide("red")}
+                onClick={() => requestSwitchSide("red")}
                 className={`h-7 px-1.5 font-display text-[11px] font-bold transition-colors sm:px-2 ${
                   playerSide === "red"
                     ? "bg-red/20 text-red"
@@ -801,7 +810,7 @@ function PracticeRound({
                 type="button"
                 title={t("สุ่มฝั่ง")}
                 aria-label={t("สุ่มฝั่ง")}
-                onClick={() => onSwitchSide(Math.random() < 0.5 ? "blue" : "red")}
+                onClick={() => requestSwitchSide(Math.random() < 0.5 ? "blue" : "red", true)}
                 className="inline-flex h-7 items-center gap-1 border-l border-line px-1.5 font-display text-[11px] font-semibold text-muted transition-colors hover:text-gold sm:px-2"
               >
                 <Shuffle className="size-3 shrink-0" aria-hidden="true" />
@@ -1065,13 +1074,13 @@ function PracticeRound({
       )}
       {confirmAction && (
         <ConfirmDialog
-          title={t(confirmAction === "restart" ? "เริ่มรอบใหม่ทั้งหมด?" : "รีเซ็ตเกมนี้?")}
+          title={t(confirmAction === "reset" ? "รีเซ็ตเกมนี้?" : "เริ่มรอบใหม่ทั้งหมด?")}
           message={t(
-            confirmAction === "restart"
-              ? "ล้างกระดานและ Global Ban ทั้งซีรีส์เพื่อเริ่มฝึกดราฟต์รอบใหม่ใช่ไหม?"
-              : "ล้างตัวที่เลือกและแบนทั้งหมดในเกมปัจจุบันเพื่อเริ่มเกมนี้ใหม่ใช่ไหม?",
+            confirmAction === "reset"
+              ? "ล้างตัวที่เลือกและแบนทั้งหมดในเกมปัจจุบันเพื่อเริ่มเกมนี้ใหม่ใช่ไหม?"
+              : "ล้างกระดานและ Global Ban ทั้งซีรีส์เพื่อเริ่มฝึกดราฟต์รอบใหม่ใช่ไหม?",
           )}
-          confirmLabel={confirmAction === "restart" ? "เริ่มรอบใหม่" : "รีเซ็ตกระดาน"}
+          confirmLabel={confirmAction === "reset" ? "รีเซ็ตกระดาน" : "เริ่มรอบใหม่"}
           cancelLabel="ยกเลิก"
           tone="danger"
           onCancel={() => setConfirmAction(null)}
@@ -1079,7 +1088,8 @@ function PracticeRound({
             const action = confirmAction;
             setConfirmAction(null);
             if (action === "restart") onRestart();
-            else draft.reset();
+            else if (action === "reset") draft.reset();
+            else onSwitchSide(action.side);
           }}
         />
       )}

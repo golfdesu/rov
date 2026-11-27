@@ -563,6 +563,24 @@ except Exception:
 
 _PUBLIC_HERO_KEYS = ("id", "name", "role", "lane", "main_pro_lane", "tier", "image_url")
 public_hero_details_cache = [{k: h[k] for k in _PUBLIC_HERO_KEYS if k in h} for h in hero_details_cache]
+_dev_heroes_json_bytes = json.dumps(
+    {
+        "count": len(predictor.hero_names),
+        "heroes": predictor.hero_names,
+        "hero_details": hero_details_cache,
+    },
+    ensure_ascii=False,
+    allow_nan=False,
+).encode("utf-8")
+_public_heroes_json_bytes = json.dumps(
+    {
+        "count": len(predictor.hero_names),
+        "heroes": predictor.hero_names,
+        "hero_details": public_hero_details_cache,
+    },
+    ensure_ascii=False,
+    allow_nan=False,
+).encode("utf-8")
 
 dataset_metadata_path = DATA_DIR / "dataset_metadata.json"
 
@@ -767,14 +785,13 @@ def health_check():
 
 
 @app.get("/heroes")
-def list_heroes(response: Response):
-    response.headers["Cache-Control"] = "public, max-age=3600"
-    details = public_hero_details_cache if config.is_production else hero_details_cache
-    return {
-        "count": len(predictor.hero_names),
-        "heroes": predictor.hero_names,
-        "hero_details": details,
-    }
+def list_heroes():
+    payload = _public_heroes_json_bytes if config.is_production else _dev_heroes_json_bytes
+    return Response(
+        content=payload,
+        media_type="application/json",
+        headers={"Cache-Control": "public, max-age=3600"},
+    )
 
 
 @app.get("/draft/steps")
@@ -1740,10 +1757,8 @@ def clear_practice_history_remote(
     x_expected_user: str | None = Header(default=None, alias="X-Expected-User"),
 ):
     _verify_expected_user(user, x_expected_user)
-    get_user_db().clear_user_practice_history(user.id)
-    raw = get_user_db().get_user_practice_history(user.id)
-    tomb = int((raw or {}).get("updatedAt", 0))
-    return PracticeHistorySyncSchema(entries=[], updatedAt=tomb, clearedAt=int((raw or {}).get("clearedAt", tomb)))
+    tomb = get_user_db().clear_user_practice_history(user.id)
+    return PracticeHistorySyncSchema(entries=[], updatedAt=tomb, clearedAt=tomb)
 
 
 @app.get("/combat/builds", response_model=CombatBuildsSyncSchema)
@@ -2387,7 +2402,13 @@ class _FrontendStaticFiles(StaticFiles):
     def _cache_control_for(path: str, content_type: str) -> str | None:
         if path.startswith("/assets/"):
             return "public, max-age=31536000, immutable"
-        if path.startswith("/avatars/") or path == "/hero_images.json":
+        if path.startswith(("/avatars/", "/cards/")) or path in (
+            "/hero_images.json",
+            "/hero_cards.json",
+            "/logo.png",
+            "/icon-192.png",
+            "/favicon.svg",
+        ):
             return "public, max-age=86400"
         if "text/html" in content_type or path in ("", "/", "/index.html", "/sw.js"):
             return "no-cache"

@@ -35,6 +35,7 @@ export function ProfileView({ user, onSaveDisplayName }: ProfileViewProps) {
   const editRef = useRef<HTMLButtonElement>(null);
   const quotaRef = useRef<HTMLParagraphElement>(null);
   const returnToEditRef = useRef(false);
+  const copyTimerRef = useRef<number | null>(null);
   const [editing, setEditing] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [saving, setSaving] = useState(false);
@@ -54,6 +55,12 @@ export function ProfileView({ user, onSaveDisplayName }: ProfileViewProps) {
       : t("เปลี่ยนชื่อได้ (หลังบันทึกต้องรอ 14 วัน)");
 
   useEffect(() => titleRef.current?.focus(), []);
+  useEffect(
+    () => () => {
+      if (copyTimerRef.current !== null) window.clearTimeout(copyTimerRef.current);
+    },
+    [],
+  );
   useEffect(() => {
     if (!coolingDown) return;
     const timer = window.setTimeout(() => setNow(Date.now()), Math.max(0, unlockAt - Date.now()));
@@ -110,10 +117,17 @@ export function ProfileView({ user, onSaveDisplayName }: ProfileViewProps) {
 
   function copyUsername() {
     if (typeof navigator === "undefined" || !navigator.clipboard?.writeText) return;
-    void navigator.clipboard.writeText(`@${user.username}`).then(() => {
-      setCopiedUsername(true);
-      window.setTimeout(() => setCopiedUsername(false), 2000);
-    });
+    void navigator.clipboard
+      .writeText(`@${user.username}`)
+      .then(() => {
+        setCopiedUsername(true);
+        if (copyTimerRef.current !== null) window.clearTimeout(copyTimerRef.current);
+        copyTimerRef.current = window.setTimeout(() => {
+          copyTimerRef.current = null;
+          setCopiedUsername(false);
+        }, 2000);
+      })
+      .catch(() => {});
   }
 
   return (

@@ -35,9 +35,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!languageSwitchEnabled || language !== "en" || enMessages !== null) return;
     let cancelled = false;
-    void loadEnglishMessages().then((dict) => {
-      if (!cancelled) setEnMessages(dict);
-    });
+    void loadEnglishMessages()
+      .then((dict) => {
+        if (!cancelled) setEnMessages(dict);
+      })
+      .catch(() => {});
     return () => {
       cancelled = true;
     };

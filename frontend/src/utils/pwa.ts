@@ -9,6 +9,7 @@ interface BeforeInstallPromptEvent extends Event {
 
 let deferredInstallPrompt: BeforeInstallPromptEvent | null = null;
 let listenerInitialized = false;
+let dismissedInMemory = false;
 const subscribers = new Set<() => void>();
 
 function notifySubscribers(): void {
@@ -16,6 +17,7 @@ function notifySubscribers(): void {
 }
 
 function isDismissed(): boolean {
+  if (dismissedInMemory) return true;
   try {
     return window.localStorage.getItem(INSTALL_DISMISSED_KEY) === "1";
   } catch {
@@ -99,6 +101,7 @@ export function usePwaInstall() {
   }, []);
 
   const dismissInstall = useCallback(() => {
+    dismissedInMemory = true;
     try {
       window.localStorage.setItem(INSTALL_DISMISSED_KEY, "1");
     } catch {

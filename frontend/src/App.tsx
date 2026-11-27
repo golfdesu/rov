@@ -629,6 +629,7 @@ export function App() {
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const authUserRef = useRef<AuthUser | null>(null);
   const authRefreshInFlightRef = useRef(false);
+  const pendingForceRefreshRef = useRef(false);
   const lastAuthCheckAtRef = useRef(0);
   const [authLoading, setAuthLoading] = useState(true);
   const [sandboxBilling, setSandboxBilling] = useState(false);
@@ -778,59 +779,66 @@ export function App() {
   const refreshAuthSession = useCallback(
     async (signal?: AbortSignal, allowGuestMigration = false, force = false) => {
       const now = Date.now();
-      if (authRefreshInFlightRef.current) return;
+      if (authRefreshInFlightRef.current) {
+        if (force) pendingForceRefreshRef.current = true;
+        return;
+      }
       if (!force && now - lastAuthCheckAtRef.current < 30_000) return;
       authRefreshInFlightRef.current = true;
       lastAuthCheckAtRef.current = now;
       try {
-        const res = await getJson<AuthStatusResponse>("/auth/me", signal);
-        setSandboxBilling(Boolean(res.stripe_sandbox_enabled));
-        setFreePromoUntil(res.free_promo_until ?? null);
-        setGoogleLoginEnabled(Boolean(res.google_login_enabled));
-        setDiscordLoginEnabled(Boolean(res.discord_login_enabled));
-        if (res.authenticated && res.user) {
-          setIsAdminUser(Boolean(res.is_admin));
-          setPricingSurveyChoice(res.pricing_survey_choice ?? null);
-          if (allowGuestMigration && loadGuestEntered()) {
-            const pending = readPendingGuestDraft();
-            if (pending) {
-              setAuthModalOpen(false);
-              setPendingMigration({ user: res.user, draft: pending });
-              return;
+        do {
+          pendingForceRefreshRef.current = false;
+          const res = await getJson<AuthStatusResponse>("/auth/me", signal);
+          setSandboxBilling(Boolean(res.stripe_sandbox_enabled));
+          setFreePromoUntil(res.free_promo_until ?? null);
+          setGoogleLoginEnabled(Boolean(res.google_login_enabled));
+          setDiscordLoginEnabled(Boolean(res.discord_login_enabled));
+          if (res.authenticated && res.user) {
+            setIsAdminUser(Boolean(res.is_admin));
+            setPricingSurveyChoice(res.pricing_survey_choice ?? null);
+            if (allowGuestMigration && loadGuestEntered()) {
+              const pending = readPendingGuestDraft();
+              if (pending) {
+                setAuthModalOpen(false);
+                setPendingMigration({ user: res.user, draft: pending });
+                pendingForceRefreshRef.current = false;
+                return;
+              }
+              updateGuestEntered(false);
             }
-            updateGuestEntered(false);
+            const user = res.user;
+            prepareAuthenticatedUser(user);
+            setAuthUser((prev) => (
+              prev?.id === user.id &&
+              prev.username === user.username &&
+              prev.display_name === user.display_name &&
+              prev.display_name_is_custom === user.display_name_is_custom &&
+              prev.display_label === user.display_label &&
+              prev.display_name_changes_remaining === user.display_name_changes_remaining &&
+              prev.display_name_next_change_at === user.display_name_next_change_at &&
+              prev.stripe_sandbox_enabled === user.stripe_sandbox_enabled &&
+              prev.stripe_livemode === user.stripe_livemode &&
+              prev.draft_history_limit === user.draft_history_limit &&
+              prev.practice_history_limit === user.practice_history_limit &&
+              prev.is_paid === user.is_paid &&
+              prev.pass_tier === user.pass_tier &&
+              prev.pass_source === user.pass_source &&
+              prev.pass_expires_at === user.pass_expires_at &&
+              prev.auth_provider === user.auth_provider
+                ? prev : user
+            ));
+          } else {
+            setExpectedAuthUser(null);
+            setIsAdminUser(false);
+            setPricingSurveyChoice(null);
+            setAdminStatsModalOpen(false);
+            if (authUserRef.current !== null) {
+              setOauthError("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่");
+            }
+            setAuthUser(null);
           }
-          const user = res.user;
-          prepareAuthenticatedUser(user);
-          setAuthUser((prev) => (
-            prev?.id === user.id &&
-            prev.username === user.username &&
-            prev.display_name === user.display_name &&
-            prev.display_name_is_custom === user.display_name_is_custom &&
-            prev.display_label === user.display_label &&
-            prev.display_name_changes_remaining === user.display_name_changes_remaining &&
-            prev.display_name_next_change_at === user.display_name_next_change_at &&
-            prev.stripe_sandbox_enabled === user.stripe_sandbox_enabled &&
-            prev.stripe_livemode === user.stripe_livemode &&
-            prev.draft_history_limit === user.draft_history_limit &&
-            prev.practice_history_limit === user.practice_history_limit &&
-            prev.is_paid === user.is_paid &&
-            prev.pass_tier === user.pass_tier &&
-            prev.pass_source === user.pass_source &&
-            prev.pass_expires_at === user.pass_expires_at &&
-            prev.auth_provider === user.auth_provider
-              ? prev : user
-          ));
-        } else {
-          setExpectedAuthUser(null);
-          setIsAdminUser(false);
-          setPricingSurveyChoice(null);
-          setAdminStatsModalOpen(false);
-          if (authUserRef.current !== null) {
-            setOauthError("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่");
-          }
-          setAuthUser(null);
-        }
+        } while (pendingForceRefreshRef.current && !signal?.aborted);
       } catch {
         // Keep current client state on transient offline checks during focus refresh
       } finally {

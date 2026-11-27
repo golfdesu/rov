@@ -70,7 +70,8 @@ async function networkFirstNavigation(request) {
   const cache = await caches.open(STATIC_CACHE);
   try {
     const response = await fetch(request);
-    if (response && response.ok) {
+    const contentType = response.headers.get("content-type") || "";
+    if (response && response.ok && !response.redirected && contentType.includes("text/html")) {
       cache.put("/", response.clone()).catch(() => {});
     }
     return response;
@@ -89,13 +90,13 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  if (request.mode === "navigate") {
-    event.respondWith(networkFirstNavigation(request));
+  const { pathname } = url;
+  if (isNetworkOnlyPath(pathname) || pathname === "/sw.js") {
     return;
   }
 
-  const { pathname } = url;
-  if (isNetworkOnlyPath(pathname) || pathname === "/sw.js") {
+  if (request.mode === "navigate") {
+    event.respondWith(networkFirstNavigation(request));
     return;
   }
 

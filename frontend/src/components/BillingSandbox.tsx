@@ -240,13 +240,21 @@ export function BillingSandbox({
       }
     }
     const reloadOnReturn = () => setRefresh((value) => value + 1);
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        setProcessing(null);
+        reloadOnReturn();
+      }
+    };
     void load();
     window.addEventListener("focus", reloadOnReturn);
+    window.addEventListener("pageshow", handlePageShow);
     window.addEventListener("billingchange", reloadOnReturn);
     return () => {
       controller.abort();
       window.clearTimeout(timer);
       window.removeEventListener("focus", reloadOnReturn);
+      window.removeEventListener("pageshow", handlePageShow);
       window.removeEventListener("billingchange", reloadOnReturn);
     };
   }, [refresh]);

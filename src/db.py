@@ -18,7 +18,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from src.schemas import RecordedDraftGameSchema
+from src.schemas import MAX_EPOCH_MS, RecordedDraftGameSchema
 
 if TYPE_CHECKING:
     from src.schemas import DraftHistoryNameTarget
@@ -608,7 +608,7 @@ class UserDatabase:
                 """,
                 (user_id, expires_at),
             )
-            return {"tier": "pro", "expires_at": expires_at, "is_owner": True}
+            return {"tier": "pro", "expires_at": expires_at, "is_owner": True, "source": "promo_free"}
 
     def get_auth_user_context(
         self,
@@ -671,7 +671,13 @@ class UserDatabase:
                 (user_id, now),
             ).fetchone()
             active_pass = team if team is not None else own
-            if own is not None:
+            if team is not None and not team["is_owner"]:
+                pass_status: tuple[str, str, int] | None = (
+                    str(team["tier"]),
+                    "team_member",
+                    int(team["expires_at"]),
+                )
+            elif own is not None:
                 has_paid = conn.execute(
                     "SELECT 1 FROM billing_orders WHERE user_id = ? AND status = 'paid' LIMIT 1",
                     (user_id,),
@@ -684,7 +690,7 @@ class UserDatabase:
                         (user_id,),
                     ).fetchone()
                     source = "promo_free" if has_promo is not None else "manual"
-                pass_status: tuple[str, str, int] | None = (str(own["tier"]), source, int(own["expires_at"]))
+                pass_status = (str(own["tier"]), source, int(own["expires_at"]))
             elif team is not None:
                 pass_status = (str(team["tier"]), "team_member", int(team["expires_at"]))
             else:
@@ -880,6 +886,9 @@ class UserDatabase:
 
     @classmethod
     def _user_pass_status(cls, conn: sqlite3.Connection, user_id: int, now: int) -> tuple[str, str, int] | None:
+        team = cls._active_team(conn, user_id, now)
+        if team is not None and not team["is_owner"]:
+            return (str(team["tier"]), "team_member", int(team["expires_at"]))
         own = conn.execute(
             "SELECT tier, expires_at FROM billing_passes WHERE user_id = ? AND expires_at > ?",
             (user_id, now),
@@ -898,7 +907,6 @@ class UserDatabase:
                 ).fetchone()
                 source = "promo_free" if has_promo is not None else "manual"
             return (str(own["tier"]), source, int(own["expires_at"]))
-        team = cls._active_team(conn, user_id, now)
         if team is not None:
             return (str(team["tier"]), "team_member", int(team["expires_at"]))
         return None
@@ -1926,7 +1934,7 @@ class UserDatabase:
             conn.execute("BEGIN IMMEDIATE")
             existing = conn.execute(f"SELECT updated_at FROM {table} WHERE user_id = ?", (user_id,)).fetchone()
             prev_ts = int(existing["updated_at"]) if existing is not None else 0
-            tombstone_at = max(int(time.time() * 1000), prev_ts + 1)
+            tombstone_at = min(max(int(time.time() * 1000), prev_ts + 1), MAX_EPOCH_MS)
             encoded = json.dumps({"updatedAt": tombstone_at}, ensure_ascii=False, allow_nan=False)
             conn.execute(
                 f"""
@@ -2031,7 +2039,7 @@ class UserDatabase:
             )
             if existing is not None and changed and merged_updated_at <= existing_updated_at:
                 # Server-issued monotonic bump so concurrent devices detect merges from older client clocks.
-                merged_updated_at = max(existing_updated_at + 1, int(time.time() * 1000))
+                merged_updated_at = min(max(existing_updated_at + 1, int(time.time() * 1000)), MAX_EPOCH_MS)
             stored_payload: dict = {
                 "entries": merged_entries,
                 "updatedAt": merged_updated_at,
@@ -2052,12 +2060,17 @@ class UserDatabase:
             )
             return stored_payload
 
-    def clear_user_practice_history(self, user_id: int) -> None:
-        tombstone_at = int(time.time() * 1000)
-        cleared_payload = {"entries": [], "updatedAt": tombstone_at, "clearedAt": tombstone_at, "deletedIds": []}
-        encoded = json.dumps(cleared_payload, ensure_ascii=False, allow_nan=False)
+    def clear_user_practice_history(self, user_id: int) -> int:
         self.ensure_schema()
         with self._lock, self._connect() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            existing = conn.execute(
+                "SELECT updated_at FROM user_practice_histories WHERE user_id = ?", (user_id,)
+            ).fetchone()
+            prev_ts = int(existing["updated_at"]) if existing is not None else 0
+            tombstone_at = min(max(int(time.time() * 1000), prev_ts + 1), MAX_EPOCH_MS)
+            cleared_payload = {"entries": [], "updatedAt": tombstone_at, "clearedAt": tombstone_at, "deletedIds": []}
+            encoded = json.dumps(cleared_payload, ensure_ascii=False, allow_nan=False)
             conn.execute(
                 """
                 INSERT INTO user_practice_histories (user_id, payload_json, updated_at)
@@ -2068,6 +2081,7 @@ class UserDatabase:
                 """,
                 (user_id, encoded, tombstone_at),
             )
+        return tombstone_at
 
     def get_pricing_survey_choice(self, user_id: int) -> str | None:
         self.ensure_schema()
@@ -2262,7 +2276,7 @@ class UserDatabase:
 
         with self._lock, self._connect() as conn:
             already_today = conn.execute(
-                "SELECT 1 FROM daily_visits WHERE client_id = ? AND visit_date = ?",
+                "SELECT device_type FROM daily_visits WHERE client_id = ? AND visit_date = ?",
                 (client_id, today_str),
             ).fetchone()
             row = conn.execute(
@@ -2277,11 +2291,12 @@ class UserDatabase:
                 VALUES (?, ?, ?, ?, ?, ?)
                 ON CONFLICT(client_id, visit_date) DO UPDATE SET
                     user_id = COALESCE(daily_visits.user_id, excluded.user_id),
+                    first_seen_date = MIN(daily_visits.first_seen_date, excluded.first_seen_date),
                     device_type = COALESCE(daily_visits.device_type, excluded.device_type)
                 """,
                 (client_id, today_str, user_id, first_seen, now, norm_device),
             )
-            if already_today is None and norm_device is not None:
+            if (already_today is None or already_today["device_type"] is None) and norm_device is not None:
                 conn.execute(
                     """
                     INSERT INTO site_events_daily (event_date, metric_key, count)
@@ -2374,11 +2389,15 @@ class UserDatabase:
                     """
                     INSERT INTO daily_visits
                         (client_id, visit_date, user_id, first_seen_date, created_at, predict_count)
-                    VALUES (?, ?, NULL, ?, ?, 1)
+                    VALUES (
+                        ?, ?, NULL,
+                        COALESCE((SELECT MIN(visit_date) FROM daily_visits WHERE client_id = ?), ?),
+                        ?, 1
+                    )
                     ON CONFLICT(client_id, visit_date) DO UPDATE SET
                         predict_count = daily_visits.predict_count + 1
                     """,
-                    (valid_cid, today_str, today_str, now),
+                    (valid_cid, today_str, valid_cid, today_str, now),
                 )
 
     def get_admin_statistical_analytics(self) -> dict[str, Any]:
@@ -2928,7 +2947,10 @@ class UserDatabase:
             if not raw_val or int(raw_val) <= 0:
                 return None
             secs = int(raw_val) / 1000.0 if is_ms else int(raw_val)
-            return datetime.fromtimestamp(secs, tz_th).strftime("%Y-%m-%d %H:%M:%S")
+            try:
+                return datetime.fromtimestamp(secs, tz_th).strftime("%Y-%m-%d %H:%M:%S")
+            except (OSError, OverflowError, ValueError):
+                return None
 
         with self._connect() as conn:
             rows = conn.execute(
