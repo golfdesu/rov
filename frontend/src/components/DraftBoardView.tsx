@@ -617,12 +617,8 @@ export function DraftBoardView({
   const hasAnyAction = bluePicks.length + redPicks.length + blueBans.length + redBans.length > 0;
   const isDraftComplete = currentStep === null;
   const prevDraftCompleteRef = useRef(isDraftComplete);
-  useEffect(() => {
-    if (!prevDraftCompleteRef.current && isDraftComplete) {
-      trackTelemetryEvent("draft_completed_18");
-    }
-    prevDraftCompleteRef.current = isDraftComplete;
-  }, [isDraftComplete]);
+  const completePromptTimerRef = useRef<number | null>(null);
+  const game7PromptTimerRef = useRef<number | null>(null);
   const conflictCount = globalBanConflicts.length;
   const conflictCountLabel = conflictCount === 1 ? t("เหลือ 1 ช่อง") : t("เหลือ {0} ช่อง", conflictCount);
   const conflictMessage = globalBanConflict
@@ -666,6 +662,88 @@ export function DraftBoardView({
   });
   const isResultSaved = isDraftComplete && isCurrentGameSavedUnchanged;
   const resultMessage = RESULT_MESSAGES[isResultSaved ? "saved" : savedCurrentGame ? "update" : "save"];
+
+  useEffect(() => {
+    const justCompleted = !prevDraftCompleteRef.current && isDraftComplete;
+    prevDraftCompleteRef.current = isDraftComplete;
+    if (!justCompleted) return;
+    trackTelemetryEvent("draft_completed_18");
+    if (isResultSaved || conflictMessage || fromTeamHistory || isCurrentGameLocked) {
+      return;
+    }
+    if (completePromptTimerRef.current !== null) {
+      window.clearTimeout(completePromptTimerRef.current);
+    }
+    const gameNum = globalBans.gameNumber;
+    completePromptTimerRef.current = window.setTimeout(() => {
+      completePromptTimerRef.current = null;
+      setConfirmState((prev) =>
+        prev ?? {
+          title: t("ดราฟต์ Game {0} ครบแล้ว", gameNum),
+          message: t("บันทึกผลเกมนี้เพื่อเก็บสถิติและซิงค์ Global Ban ไปเกมถัดไปเลยไหม?"),
+          confirmLabel: "บันทึกผลเกม",
+          cancelLabel: "ดูบอร์ดก่อน",
+          tone: "gold",
+          onConfirm: () => {
+            setConfirmState(null);
+            if (isPersonalHistoryBlocked) {
+              setHistoryUpgradeOpen(true);
+            } else {
+              setIsFinishGameModalOpen(true);
+            }
+          },
+        },
+      );
+    }, 1800);
+  }, [
+    isDraftComplete,
+    isResultSaved,
+    conflictMessage,
+    fromTeamHistory,
+    isCurrentGameLocked,
+    globalBans.gameNumber,
+    isPersonalHistoryBlocked,
+    t,
+  ]);
+
+  useEffect(() => {
+    if (
+      !isDraftComplete ||
+      isResultSaved ||
+      Boolean(conflictMessage) ||
+      isFinishGameModalOpen ||
+      isHistoryModalOpen ||
+      isNewSeriesModalOpen ||
+      isPoolsModalOpen ||
+      globalBanModalCat !== null
+    ) {
+      if (completePromptTimerRef.current !== null) {
+        window.clearTimeout(completePromptTimerRef.current);
+        completePromptTimerRef.current = null;
+      }
+    }
+  }, [
+    isDraftComplete,
+    isResultSaved,
+    conflictMessage,
+    isFinishGameModalOpen,
+    isHistoryModalOpen,
+    isNewSeriesModalOpen,
+    isPoolsModalOpen,
+    globalBanModalCat,
+  ]);
+
+  useEffect(
+    () => () => {
+      if (completePromptTimerRef.current !== null) {
+        window.clearTimeout(completePromptTimerRef.current);
+      }
+      if (game7PromptTimerRef.current !== null) {
+        window.clearTimeout(game7PromptTimerRef.current);
+      }
+    },
+    [],
+  );
 
   const { enabled: timerEnabled, isExpired: timerExpired, resetTurnTimer } = timer;
   const handleUndoWithTimer = useCallback(() => {
@@ -1025,6 +1103,7 @@ export function DraftBoardView({
                   className="flex h-8 shrink-0 items-center gap-1.5 border border-line-strong bg-panel-2 px-2 font-display text-xs font-semibold tracking-wide whitespace-nowrap text-ink transition-colors hover:border-gold/60 hover:text-gold sm:h-7"
                 >
                   <PlusCircle className="h-3.5 w-3.5 shrink-0 text-gold" />
+                  <span className="sm:hidden">{t("ใหม่")}</span>
                   <span className="hidden sm:inline"><StableButtonLabel message="แมตช์ใหม่" /></span>
                 </button>
 
@@ -1043,7 +1122,7 @@ export function DraftBoardView({
                       setIsFinishGameModalOpen(false);
                       selectGameNumber(g);
                     }}
-                    className="h-8 w-[86px] truncate border border-line-strong bg-panel px-1.5 font-mono text-xs font-bold text-ink cursor-pointer focus:border-gold/60 focus:outline-none sm:h-7 sm:w-32 sm:px-2"
+                    className="h-8 w-[78px] truncate border border-line-strong bg-panel px-1.5 font-mono text-xs font-bold text-ink cursor-pointer focus:border-gold/60 focus:outline-none sm:h-7 sm:w-32 sm:px-2"
                   >
                     {[1, 2, 3, 4, 5, 6, 7].map((g, idx) => {
                       const unlockStatus = gameUnlockStatuses[idx];
@@ -1142,7 +1221,7 @@ export function DraftBoardView({
                     aria-hidden="true"
                     className={`h-3 w-3 shrink-0 text-gold transition-transform ${
                       !canSwapBoardAndTeams
-                        ? "invisible"
+                        ? "hidden sm:inline invisible"
                         : isSwapMenuOpen
                           ? "rotate-180"
                           : ""
@@ -1208,6 +1287,7 @@ export function DraftBoardView({
                   className="flex h-8 shrink-0 items-center gap-1.5 border border-gold/60 bg-gold/15 px-2 font-display text-xs font-bold whitespace-nowrap text-gold transition-colors hover:bg-gold hover:text-bg sm:h-7"
                 >
                   <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <span className="sm:hidden">{t("ล็อก")}</span>
                   <StableButtonLabel
                     message={RESULT_MESSAGES.locked}
                     alternatives={Object.values(RESULT_MESSAGES)}
@@ -1246,6 +1326,7 @@ export function DraftBoardView({
                   }`}
                 >
                   <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                  <span className="sm:hidden">{isResultSaved ? t("บันทึกแล้ว") : t("บันทึก")}</span>
                   <StableButtonLabel
                     message={resultMessage}
                     alternatives={Object.values(RESULT_MESSAGES)}
@@ -1358,7 +1439,13 @@ export function DraftBoardView({
           onSaveCurrentSnapshot={() => {
             const saved = saveCurrentDraftSnapshot();
             if (saved && globalBans.gameNumber >= 7) {
-              promptNewMatchAfterGame7();
+              if (game7PromptTimerRef.current !== null) {
+                window.clearTimeout(game7PromptTimerRef.current);
+              }
+              game7PromptTimerRef.current = window.setTimeout(() => {
+                game7PromptTimerRef.current = null;
+                promptNewMatchAfterGame7();
+              }, 900);
             }
             return saved;
           }}
@@ -1415,6 +1502,10 @@ export function DraftBoardView({
           initialTournament={newSeriesContext.tournament}
           hasCurrentActions={hasAnyAction && !fromTeamHistory}
           onConfirm={(...args) => {
+            if (game7PromptTimerRef.current !== null) {
+              window.clearTimeout(game7PromptTimerRef.current);
+              game7PromptTimerRef.current = null;
+            }
             setIsFinishGameModalOpen(false);
             startNewSeries(...args);
           }}
@@ -1501,7 +1592,13 @@ export function DraftBoardView({
               return;
             }
             if (saved && globalBans.gameNumber >= 7) {
-              promptNewMatchAfterGame7();
+              if (game7PromptTimerRef.current !== null) {
+                window.clearTimeout(game7PromptTimerRef.current);
+              }
+              game7PromptTimerRef.current = window.setTimeout(() => {
+                game7PromptTimerRef.current = null;
+                promptNewMatchAfterGame7();
+              }, 900);
             }
           }}
           onClose={() => setIsFinishGameModalOpen(false)}

@@ -2009,4 +2009,7 @@ export const englishMessages: Readonly<Record<string, string>> = {
   "รับ Pro ฟรีเลย": "Claim Free Pro",
   "มุมมอง Owner — แสดงหน้าแพ็กเกจเหมือนผู้ใช้ทั่วไป (ปิดปุ่มชำระเงินไว้)": "Owner preview — showing the exact plans view seen by users (checkout disabled)",
   "ดูหน้าแพ็กเกจ": "View plans page",
+  "ดราฟต์ Game {0} ครบแล้ว": "Game {0} draft complete",
+  "บันทึกผลเกมนี้เพื่อเก็บสถิติและซิงค์ Global Ban ไปเกมถัดไปเลยไหม?": "Record this game's result to save stats and sync Global Bans to the next game?",
+  "ดูบอร์ดก่อน": "View board first",
 };
