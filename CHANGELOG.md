@@ -27,6 +27,30 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-27 22:16 (UTC+7) — Production Hotfix for EN `StableButtonLabel` (`55c132c`) & iOS/iPadOS Safari Install Guide (`85f06bf`)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **EN Button Visibility Fix (`55c132c`):** Updated `createTranslator()` in [`frontend/src/i18n/language.ts`](frontend/src/i18n/language.ts) to read `cachedEnglishMessages` dynamically when `messages` is omitted rather than capturing `null` at module load, and added a defensive `variants.has(label)` fallback in [`frontend/src/components/StableButtonLabel.tsx`](frontend/src/components/StableButtonLabel.tsx) so buttons never go blank when switching to English.
+- **iOS / iPadOS Safari PWA Install Guide (`85f06bf`):** Added `isIosDevice()` and `canInstallIos` to [`frontend/src/utils/pwa.ts`](frontend/src/utils/pwa.ts) (handling iPhone, iPad, and iPadOS desktop-UA touch devices where `beforeinstallprompt` does not exist), wired an expandable 2-step Share -> Add to Home Screen guide inside [`frontend/src/components/MobileNavDrawer.tsx`](frontend/src/components/MobileNavDrawer.tsx), and added 4 synced EN translations in [`frontend/src/i18n/englishMessages.ts`](frontend/src/i18n/englishMessages.ts).
+- **Production Deployment & Docs:** Fast-forwarded `rov-draft-vm` (`20.2.210.230`) cleanly (`21`-path sparse-checkout preserved), rebuilt `deploy-app-1`, and updated [`docs/PRODUCTION_RELEASES.md`](docs/PRODUCTION_RELEASES.md). Uncommitted local dev Share Card work remained excluded and intact.
+
+### 📁 Modified Files
+- `frontend/src/i18n/language.ts`
+- `frontend/src/components/StableButtonLabel.tsx`
+- `frontend/src/utils/pwa.ts`
+- `frontend/src/components/MobileNavDrawer.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `docs/PRODUCTION_RELEASES.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): 0 warnings, 0 errors; `npm --prefix frontend run build` (`vite build`) passed cleanly.
+- `python .agents/skills/frontend-e2e-inspector/scripts/audit_copy_i18n.py`: `[PASS]` (`0` missing EN keys).
+- Live Playwright checks on `https://minidraft.app/`: verified `health` (`200`), zero invisible `StableButtonLabel` buttons in EN mode across `/`, `/practice`, `/analytics`, and verified the iPhone Safari mobile drawer `"Install App"` guide toggle.
+
+---
+
 ## 📅 2026-11-27 16:15 (UTC+7) — Add Organic Acquisition Loops to `docs/ROADMAP.md`
 **Agent:** Antigravity
 

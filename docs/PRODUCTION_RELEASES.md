@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `6e9434e` (`main`: Pure ONNX Runtime serving without PyTorch in Docker image) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-CVBi7Tl4.js` (`580K`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/index-WR-kJNtJ.css` (`114K`), `sw.js` (`3.0K`), `icon-192.png` (`42K`) |
+| **Git Base Commit on VM** | `85f06bf` (`main`: EN `StableButtonLabel` invisible button fix + iOS/iPadOS Safari PWA install guide) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-B20XqNtj.js` (`593.30 kB`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/englishMessages-YyaWe75M.js` (`207.95 kB`) + `dist-prod/assets/MobileNavDrawer-4d6nXBfK.js` (`11.63 kB`) + `dist-prod/assets/index-CPVI40NI.css` (`116.29 kB`), `sw.js`, `icon-192.png` |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.onnx` (`7.93 MB`) + `models/sota_draft_gnn_transformer.meta.npz` (`74.0 KB`), exported from `sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, Trial #31) |
-| **Last Updated** | `2026-11-27 15:37 (UTC+7)` |
+| **Last Updated** | `2026-11-27 22:16 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,13 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-27 22:16 (UTC+7) — EN `StableButtonLabel` Hotfix (`55c132c`) & iOS/iPadOS Safari PWA Install Guide (`85f06bf`)
+- **Base Commits:** Fast-forwarded `~/rov` cleanly from `6e9434e` through `55c132c` and `85f06bf` (`main`, 21-path sparse-checkout intact). Uncommitted local dev Share Card work was strictly excluded from both commits.
+- **EN Button Translation Hotfix (`55c132c`, `frontend/src/i18n/language.ts`, `frontend/src/components/StableButtonLabel.tsx`):** Updated `createTranslator()` to resolve `cachedEnglishMessages` dynamically at call time when `messages` is omitted (fixing the module-init `null` capture after lazy-loading `englishMessages.ts` in `fa137ac`), and added a defensive fallback in `StableButtonLabel` ensuring active `label` is always rendered visibly instead of leaving all stacked spans `invisible` when switching to English.
+- **iOS / iPadOS Safari PWA Install Support (`85f06bf`, `frontend/src/utils/pwa.ts`, `frontend/src/components/MobileNavDrawer.tsx`, `frontend/src/i18n/englishMessages.ts`):** Because iOS/iPadOS Safari does not fire `beforeinstallprompt`, added `isIosDevice()` (covering `iPhone|iPad|iPod` plus iPadOS desktop-mode `MacIntel` with `maxTouchPoints > 1`) returning `canInstallIos` from `usePwaInstall()`. Clicking the install-app button on iOS/iPadOS expands a 2-step Safari Share -> Add to Home Screen guide inside the mobile drawer with synced EN translations.
+- **Live Verification (`20.2.210.230`):** Rebuilt `deploy-app-1` (`dist-prod/assets/index-B20XqNtj.js` `593.30 kB`, `englishMessages-YyaWe75M.js` `207.95 kB`, `MobileNavDrawer-4d6nXBfK.js` `11.63 kB`, `index-CPVI40NI.css` `116.29 kB`); verified `https://minidraft.app/health` (`200`, `{"status":"healthy","model_loaded":true}`), Playwright live EN mode across `/`, `/practice`, `/analytics` (`0` invisible `StableButtonLabel` buttons), and Playwright iPhone Safari mobile viewport (`390x844`) confirming the install button expands the guide and switches cleanly to `"Install App"` + EN instructions.
+- **VM Sync Note:** Docs-only commit recording these releases is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
 
 ### 📅 2026-11-27 15:37 (UTC+7) — Pure ONNX Runtime Production Container (PyTorch Removed) (`6e9434e`)
 - **Base Commit:** Fast-forwarded `~/rov` from `48e4c99` through `c5673aa`, `c4eccf5`, and `6e9434e` (`main`, updated VM `git sparse-checkout` cleanly to `21` production paths replacing `.pt` with `.onnx` + `.meta.npz` + `requirements-prod.txt`).
