@@ -224,7 +224,7 @@ function Workspace({
               type="button"
               onClick={() => selectTab("draft")}
               aria-label="MiniDraft Home"
-              className="inline-flex min-h-8 shrink-0 items-center gap-1.5 text-left transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-gold lg:border-r lg:border-line lg:pr-3"
+              className="hidden min-h-8 shrink-0 items-center gap-1.5 text-left transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-gold sm:inline-flex lg:border-r lg:border-line lg:pr-3"
             >
               <MiniDraftLogo className="h-6 w-6 shrink-0" />
               <span className="font-display text-xs font-extrabold tracking-widest text-ink sm:text-sm">
