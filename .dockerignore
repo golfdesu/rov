@@ -29,7 +29,8 @@ data/*
 !data/arcana.json
 !data/enchantments.json
 models/*
-!models/sota_draft_gnn_transformer.pt
+!models/sota_draft_gnn_transformer.onnx
+!models/sota_draft_gnn_transformer.meta.npz
 heroes/
 item/
 tests/
