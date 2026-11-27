@@ -14,26 +14,26 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `48e4c99` (`main`: CI/CD GHCR publish, mobile PWA, PostHog analytics, ONNX runtime engine) |
+| **Git Base Commit on VM** | `6e9434e` (`main`: Pure ONNX Runtime serving without PyTorch in Docker image) |
 | **Active Frontend Bundle** | `dist-prod/assets/index-CVBi7Tl4.js` (`580K`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/index-WR-kJNtJ.css` (`114K`), `sw.js` (`3.0K`), `icon-192.png` (`42K`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
-| **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-27 15:20 (UTC+7)` |
+| **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.onnx` (`7.93 MB`) + `models/sota_draft_gnn_transformer.meta.npz` (`74.0 KB`), exported from `sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, Trial #31) |
+| **Last Updated** | `2026-11-27 15:37 (UTC+7)` |
 
 ---
 
 ## Production VM Sparse-Checkout Invariant (NEVER Pull Non-Production Files)
 
-`~/rov` on `rov-draft-vm` (`20.2.210.230`) is locked with `git sparse-checkout --no-cone` to check out **ONLY** the 19 production paths required by `Dockerfile` and `deploy/`:
-- `/Dockerfile`, `/.dockerignore`, `/requirements.txt`
+`~/rov` on `rov-draft-vm` (`20.2.210.230`) is locked with `git sparse-checkout --no-cone` to check out **ONLY** the 21 production paths required by `Dockerfile` and `deploy/`:
+- `/Dockerfile`, `/.dockerignore`, `/requirements.txt`, `/requirements-prod.txt`
 - `/deploy/**`, `/configs/**`, `/src/**`, `/frontend/**`
-- `/models/sota_draft_gnn_transformer.pt`
+- `/models/sota_draft_gnn_transformer.onnx`, `/models/sota_draft_gnn_transformer.meta.npz`
 - `/data/heroes_130_summary.csv`, `/data/hero_draft_stats.csv`, `/data/hero_tier_overrides.json`, `/data/dataset_metadata.json`, `/data/matches_training.json`, `/data/heroes_130_full.json`, `/data/hero_level_stats.json`, `/data/hero_skills_full.json`, `/data/items.json`, `/data/arcana.json`, `/data/enchantments.json`
 
 **Hard Guardrails for All Agents:**
 1. **NEVER** run `git sparse-checkout disable` or widen the sparse-checkout list on the VM to include `tests/`, `scripts/`, `docs/`, `.wikiskill/`, `.agents/`, `.claude/`, `best_params/`, `models/archive/`, `models/*heuristic*`, `data/draft_screenshots/`, or non-serving `data/*` files.
 2. **NEVER** `scp` or `rsync` non-production files onto the VM.
-3. **NEVER** SSH to run `git pull` on the VM for commits that only touch `docs/`, `.wikiskill/`, `CHANGELOG.md`, `AGENTS.md`, `tests/`, or `scripts/`. Only pull on the VM when deploying changes to the 19 production paths above.
+3. **NEVER** SSH to run `git pull` on the VM for commits that only touch `docs/`, `.wikiskill/`, `CHANGELOG.md`, `AGENTS.md`, `tests/`, or `scripts/`. Only pull on the VM when deploying changes to the 21 production paths above.
 
 ---
 
@@ -53,6 +53,13 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-27 15:37 (UTC+7) — Pure ONNX Runtime Production Container (PyTorch Removed) (`6e9434e`)
+- **Base Commit:** Fast-forwarded `~/rov` from `48e4c99` through `c5673aa`, `c4eccf5`, and `6e9434e` (`main`, updated VM `git sparse-checkout` cleanly to `21` production paths replacing `.pt` with `.onnx` + `.meta.npz` + `requirements-prod.txt`).
+- **Zero-Torch Serving (`src/league_utils.py`, `src/predictor.py`, `src/search/draft_mcts.py`, `src/api.py`, `scripts/export_onnx.py`):** Separated league encoding from training modules, exported pickle-safe `models/sota_draft_gnn_transformer.meta.npz` (`74.0 KB`), converted `run_model()` / `DraftMinimaxSearch` to pure NumPy, lazy-loaded PyTorch only for dev/HPC fallback, and updated `/health` in `src/api.py` to check `predictor.inference_model`.
+- **Slim Docker Stack (`requirements-prod.txt`, `.dockerignore`, `Dockerfile`, `deploy/compose.yaml`):** Removed `torch` and training/HPO libraries from production Docker builds (`deploy-app:latest` image size `666MB`, pip install `18.0s`), defaulting `ROV_INFERENCE_BACKEND=onnx`.
+- **Live Verification (`20.2.210.230`):** Verified `TORCH_ABSENT: OK` (`import torch` raises `ModuleNotFoundError`), `API_BACKEND: onnx`, `TORCH_IN_SYS: False`, `https://minidraft.app/health` (`200`, `{"status":"healthy","model_loaded":true}`), and `POST https://minidraft.app/predict` (`200`).
+- **VM Sync Note:** Docs-only commit recording this release is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
 
 ### 📅 2026-11-27 15:20 (UTC+7) — Mobile PWA, PostHog Analytics, ONNX Inference Support & CI/CD (`48e4c99`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `a6eccb8` to `48e4c99` (`main`, 19-path sparse-checkout intact).
