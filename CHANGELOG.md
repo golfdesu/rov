@@ -27,6 +27,22 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-27 12:38 (UTC+7) — Record `@golfdesu` as Owner Secondary Account in `AGENTS.md`
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Updated `AGENTS.md` Rule 15 to record `@golfdesu` as the owner's secondary/test account alongside `@chayanin5392` (Admin) so analytics and feedback audits exclude owner test activity cleanly.
+
+### 📁 Modified Files
+- `AGENTS.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `git diff --check`: clean.
+
+### ⚠️ Open Issues / Important Notes
+- Docs-only commit pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
+
 ## 📅 2026-11-27 12:34 (UTC+7) — Consolidate `docs/SUBSCRIPTION_ROADMAP.md` into `docs/ROADMAP.md` with Progress Checkboxes & Backlog
 **Agent:** Antigravity
 
