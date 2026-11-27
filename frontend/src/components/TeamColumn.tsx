@@ -389,7 +389,7 @@ export const TeamColumn = memo(function TeamColumn({
   }
 
   return (
-    <section aria-label={`${side} team`} className="flex h-full min-h-0 min-w-0 flex-col gap-2 overflow-hidden">
+    <section aria-label={`${side} team`} className="flex h-full min-h-0 min-w-0 flex-col gap-2 overflow-y-auto">
       {/* Team header */}
       <div className={`flex shrink-0 items-center justify-between gap-2 ${isBlue ? "" : "flex-row-reverse"}`}>
         <div className={`flex min-w-0 items-center gap-2 ${isBlue ? "" : "flex-row-reverse"}`}>
@@ -496,7 +496,7 @@ export const TeamColumn = memo(function TeamColumn({
         </div>
 
       {/* Pick slots — flex-1 min-h-0 scales smoothly to fit any laptop/desktop screen height */}
-      <div className="flex min-h-0 flex-1 flex-col gap-2">
+      <div className="flex min-h-[234px] flex-1 flex-col gap-1.5 xl:gap-2">
         {Array.from({ length: 5 }).map((_, i) => {
           const name = picks[i];
           const pickTimedOut = name ? timedOutHeroes[name] : undefined;
@@ -540,7 +540,7 @@ export const TeamColumn = memo(function TeamColumn({
                     ? t("AI คาดการณ์ตัวถัดไป #{0}: {1} ({2}%){3}", ghostOffset + 1, displayName(ghost.hero_name), ghost.probability_pct.toFixed(1), triggerList.length > 0 ? ` · ${triggerLabel}` : "")
                     : undefined
               )}
-              className={`group relative min-h-[52px] flex-1 max-h-[96px] overflow-hidden border bg-panel clip-chamfer ${
+              className={`group relative min-h-[42px] flex-1 max-h-[96px] overflow-hidden border bg-panel clip-chamfer ${
                 isActive
                   ? "border-gold animate-slot-pulse"
                   : edit?.isEditing
@@ -716,7 +716,7 @@ export const TeamColumn = memo(function TeamColumn({
         const showGlobalBanSection = Boolean(onOpenGlobalBanForTeam || gameNumber > 1 || usedHeroes.length > 0);
         return (
           <div
-            className={`flex shrink-0 flex-col overflow-hidden border bg-panel/90 p-1.5 sm:p-2 ${
+            className={`flex min-h-0 max-h-[132px] shrink flex-col overflow-hidden border bg-panel/90 p-1.5 sm:p-2 xl:max-h-[168px] ${
               isBlue ? "border-blue/35" : "border-red/35"
             }`}
           >
@@ -787,7 +787,7 @@ export const TeamColumn = memo(function TeamColumn({
                     </div>
                   )
                 ) : (
-                  <div className="flex max-h-[82px] flex-wrap gap-1 overflow-y-auto pr-0.5">
+                  <div className="flex min-h-0 flex-1 flex-wrap content-start gap-1 overflow-y-auto pr-0.5">
                     {usedHeroes.map((name) => {
                       const hero = heroMap.get(name);
                       const originGame = usedHeroOriginGames[name];
