@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `fa137ac` (`main`: optimize frontend bundle splitting, LRU inference cache, HTTP headers, and SQLite WAL/indexes) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-DZ579WS6.js` (`224.54 kB`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/createLucideIcon-CpX25kZH.js` (`5.34 kB`) + `dist-prod/assets/index-3Q07jOHG.css` (`116.22 kB`), `dist-prod/index.html` (`3.13 kB`) |
+| **Git Base Commit on VM** | `668cc63` (`main`: hide `MiniDraft Home` logo button on mobile screens `< 640px`) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-vyhFz7zv.js` (`224.55 kB`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/createLucideIcon-CpX25kZH.js` (`5.34 kB`) + `dist-prod/assets/index-3Q07jOHG.css` (`116.22 kB`), `dist-prod/index.html` (`3.13 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-26 22:26 (UTC+7)` |
+| **Last Updated** | `2026-11-27 09:35 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,12 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-27 09:35 (UTC+7) — Hide `MiniDraft Home` Navbar Logo on Mobile Screens (`668cc63`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `fa137ac` to `668cc63` (`main`, 19-path sparse-checkout intact).
+- **Mobile Navbar UI (`frontend/src/App.tsx`):** Updated the `MiniDraft Home` logo button (`aria-label="MiniDraft Home"`) from `inline-flex` to `hidden sm:inline-flex`, hiding it on viewports below `640px` (`sm`) while keeping it rendered on tablet/desktop screens (`MobileNavDrawer` retains the mobile drawer logo).
+- **Live Verification (`20.2.210.230`):** Rebuilt & started `deploy-app-1` (`dist-prod/assets/index-vyhFz7zv.js` `224.55 kB`, `react-vendor-DpjQJ7Lb.js` `218.79 kB`, `createLucideIcon-CpX25kZH.js` `5.34 kB`, `index-3Q07jOHG.css` `116.22 kB`, `dist-prod/index.html` `3.13 kB`); verified `https://minidraft.app/health` (`200`), live HTML bundle references, and `/app/db/rov_app.db` (`users: 1076`, `promo_claims: 50`, `billing_orders: 6`, `billing_passes: 51`).
+- **VM Sync Note:** Docs-only commit recording this release is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
 
 ### 📅 2026-11-26 22:26 (UTC+7) — Full-Stack Performance Optimization (`fa137ac`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `ff7f2ec` to `fa137ac` (`main`, 19-path sparse-checkout intact).

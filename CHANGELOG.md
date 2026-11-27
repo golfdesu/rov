@@ -27,6 +27,27 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-27 09:35 (UTC+7) — Hide `MiniDraft Home` Navbar Logo on Mobile Screens (`668cc63`)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Updated the `MiniDraft Home` brand button in the unified top navigation bar (`frontend/src/App.tsx`) from `inline-flex` to `hidden sm:inline-flex`, hiding it on mobile/iPhone viewports below `640px` while keeping it visible on `sm` (`>= 640px`) and desktop viewports (`MobileNavDrawer` retains the drawer logo on mobile).
+- Committed `frontend/src/App.tsx` (`668cc63`), fast-forwarded `~/rov` on `20.2.210.230` (19-path sparse-checkout preserved), and rebuilt/restarted `deploy-app-1`.
+
+### 📁 Modified Files
+- `frontend/src/App.tsx`
+- `docs/PRODUCTION_RELEASES.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): `0` warnings, `0` errors across 65 files.
+- `npm --prefix frontend run build` and `build:prod` (`tsc -b && vite build`): succeeded cleanly (`index-vyhFz7zv.js` `224.55 kB` in Docker `dist-prod`).
+- Live `https://minidraft.app/health`: `200 {"status":"healthy","model_loaded":true}`; live HTML serves `assets/index-vyhFz7zv.js`, `assets/react-vendor-DpjQJ7Lb.js`, `assets/createLucideIcon-CpX25kZH.js`, and `assets/index-3Q07jOHG.css`.
+- Live `/app/db/rov_app.db` verified intact (`users: 1076`, `promo_claims: 50`, `billing_orders: 6`, `billing_passes: 51`).
+
+### ⚠️ Open Issues / Important Notes
+- Docs-only release log commit is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
+
 ## 📅 2026-11-26 22:32 (UTC+7) — Upgrade `arch-perf-auditor` Skill & Record Optimization Invariants in WikiSkill
 **Agent:** Antigravity Agent
 
