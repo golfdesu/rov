@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `a6eccb8` (`main`: ignore stale-bundle `/telemetry/visit` pings missing `device_type`) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-8m0RJQkO.js` (`226.38 kB`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/createLucideIcon-FqRLNzYq.js` (`5.34 kB`) + `dist-prod/assets/index-WR-kJNtJ.css` (`116.25 kB`), `dist-prod/index.html` (`3.13 kB`) |
+| **Git Base Commit on VM** | `48e4c99` (`main`: CI/CD GHCR publish, mobile PWA, PostHog analytics, ONNX runtime engine) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-CVBi7Tl4.js` (`580K`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/index-WR-kJNtJ.css` (`114K`), `sw.js` (`3.0K`), `icon-192.png` (`42K`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-27 11:59 (UTC+7)` |
+| **Last Updated** | `2026-11-27 15:20 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,14 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-27 15:20 (UTC+7) — Mobile PWA, PostHog Analytics, ONNX Inference Support & CI/CD (`48e4c99`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `a6eccb8` to `48e4c99` (`main`, 19-path sparse-checkout intact).
+- **Mobile PWA (`frontend/` & `src/api.py`):** Shipped `manifest.webmanifest`, `icon-192.png`, `sw.js` (caching hero avatars/assets while keeping API paths network-only), `usePwaInstall()` prompt in `MobileNavDrawer.tsx`, and `Cache-Control: no-cache` for `/sw.js` on FastAPI origin.
+- **PostHog Analytics (`frontend/`, `deploy/.env`, `src/api.py`):** Configured `VITE_POSTHOG_KEY` + `VITE_POSTHOG_HOST` (`https://us.i.posthog.com`) in `deploy/.env` on VM, baked `phc_...` token into `dist-prod/assets/index-CVBi7Tl4.js`, and permitted PostHog `connect-src` origins in CSP.
+- **ONNX Runtime (`src/predictor.py`, `src/search/draft_mcts.py`, `requirements.txt`):** Added `onnxruntime>=1.20.0` + `ROV_INFERENCE_BACKEND=auto|onnx|torch` support in backend (`models/sota_draft_gnn_transformer.pt` remains the active VM sparse-checkout model path for now).
+- **Live Verification (`20.2.210.230`):** Rebuilt & started `deploy-app-1`; verified `https://minidraft.app/health` (`200`, `model_loaded: true`, PostHog CSP header), `https://minidraft.app/sw.js` (`200`, origin `Cache-Control: no-cache`), `https://minidraft.app/manifest.webmanifest` (`200`, contains `icon-192.png`), `https://minidraft.app/icon-192.png` (`200`, `42120` bytes), and confirmed PostHog project key presence inside `dist-prod/assets/index-CVBi7Tl4.js`.
+- **VM Sync Note:** Docs-only commit recording this release is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
 
 ### 📅 2026-11-27 11:59 (UTC+7) — Ignore Stale-Tab `/telemetry/visit` Ghost Pings & Clean `@eakkasit.k` DB Noise (`a6eccb8`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `286a1f0` to `a6eccb8` (`main`, 19-path sparse-checkout intact).
