@@ -27,6 +27,27 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-27 15:58 (UTC+7) — Document External Services, APIs & Pure ONNX VM Config in WikiSkill
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Updated [`.wikiskill/wiki/production_deployment_and_ui.md`](.wikiskill/wiki/production_deployment_and_ui.md) to reflect Pure ONNX (`21`-path VM sparse-checkout, `ROV_INFERENCE_BACKEND=onnx`, Mobile PWA), record `@golfdesu` alongside `@chayanin5392` in Section 2, and add **Section 5: External Services, APIs & Environment Variables Inventory** covering Azure VM, Cloudflare, Google/Discord OAuth, Stripe Thailand, PostHog (`771611`), GitHub/GHCR, ERAWAN HPC, Google Fonts, and Liquipedia (zero raw secrets).
+- Updated [`.wikiskill/wiki/INDEX.md`](.wikiskill/wiki/INDEX.md) summary for `production_deployment_and_ui.md`.
+
+### 📁 Modified Files
+- `.wikiskill/wiki/production_deployment_and_ui.md`
+- `.wikiskill/wiki/INDEX.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `python .wikiskill/skills/scripts/preflight_check.py`: passed cleanly.
+- `pytest -q --tb=short tests/test_security.py`: passed cleanly (including secret leak scan).
+
+### ⚠️ Open Issues / Important Notes
+- Docs-only commit pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
+
+---
+
 ## 📅 2026-11-27 15:33 (UTC+7) — Pure ONNX Production Serving (Remove PyTorch from Docker Image)
 **Agent:** Antigravity
 

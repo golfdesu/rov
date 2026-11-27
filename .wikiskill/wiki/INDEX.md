@@ -14,7 +14,7 @@ Constructed under the 3-layer **WikiSkill** institutional memory architecture (*
 | [`production_hyperparameters_and_hpo.md`](production_hyperparameters_and_hpo.md) | **Production Hyperparameters & HPO** | 80-trial H100 Optuna HPO, `delta <= 1.0%` parsimony rule, Trial #31 (`Val = 2.76992`), served checkpoint (`Val = 2.81796`), and model capacity locks |
 | [`erawan_hpc_playbook.md`](erawan_hpc_playbook.md) | **ERAWAN HPC & H100 Playbook** | `compute4` (`gpu-h100`) SLURM rules, `torch.compile()` ban, `GPUTensorBatcher`, and vectorized evaluation requirements |
 | [`combat_engine_and_mechanics.md`](combat_engine_and_mechanics.md) | **Combat Engine & 130x130 Matchups** | Mitigation math, stat stacking, `skill_mechanics.py` passives/overrides, 16,770 matchup duels, 235 counter-item flips, and known data gaps |
-| [`production_deployment_and_ui.md`](production_deployment_and_ui.md) | **Production Deployment & UI/UX** | Live `minidraft.app` Docker/Caddy stack, `VITE_DRAFT_ONLY=true` scope, SQLite DB safety, Spotlight Replace, Draft Timer, and Practice sync |
+| [`production_deployment_and_ui.md`](production_deployment_and_ui.md) | **Production Deployment & UI/UX** | Live `minidraft.app` Pure ONNX Docker/Caddy stack, PWA, `VITE_DRAFT_ONLY=true` scope, SQLite DB safety, External Services/APIs inventory, and UX invariants |
 
 ---
 
