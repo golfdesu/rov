@@ -27,6 +27,30 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-27 10:40 (UTC+7) — Unified Collapsible Analytics Cards & Sample Refetch Scroll Fix (`774467a`)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Exported and extended `CollapsibleCard` in `frontend/src/components/scrim/ScrimAdvancedCards.tsx` (`id`, `as`, `className`, `headerRight`, optional `icon`) and wrapped all 14 main tournament and team analytics cards in `frontend/src/components/ScrimDashboardView.tsx` (adding `items-start` on overview grid rows and streamlining `HeroTableToolbar`).
+- Fixed the sample-data scroll-reset bug in `frontend/src/components/ScrimDashboardView.tsx` when switching period-comparison buttons (`ครึ่งแรก vs ครึ่งหลัง` / `7 วันล่าสุด vs ก่อนหน้า`) or filters: changed the loading guard from `showSampleData && (sampleLoading || !sampleData)` to `showSampleData && !sampleData` and wrapped the active dashboard in an `aria-busy` / `opacity-75` container so existing cards stay mounted during background sample refetches.
+- Committed production code (`774467a`), fast-forwarded `~/rov` on `20.2.210.230` (19-path sparse-checkout preserved), and rebuilt/restarted `deploy-app-1`.
+
+### 📁 Modified Files
+- `frontend/src/components/scrim/ScrimAdvancedCards.tsx`
+- `frontend/src/components/ScrimDashboardView.tsx`
+- `docs/PRODUCTION_RELEASES.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): `0` warnings, `0` errors across 65 files.
+- `npm --prefix frontend run build` and `build:prod` (`tsc -b && vite build`): succeeded cleanly (`ScrimDashboardView-5lTuARk3.js` `155.43 kB`, `index-CJhDewGW.js` `226.04 kB` in Docker `dist-prod`).
+- `python .agents/skills/frontend-e2e-inspector/scripts/audit_copy_i18n.py`: `[PASS]` (`100% EN dictionary coverage`).
+- Live `https://minidraft.app/health`: `200 {"status":"healthy","model_loaded":true}`; live HTML serves `assets/index-CJhDewGW.js`, `assets/react-vendor-DpjQJ7Lb.js`, `assets/createLucideIcon-Bjkpe-ll.js`, and `assets/index-WR-kJNtJ.css`.
+- Live `/app/db/rov_app.db` verified intact (`users: 1077`, `promo_claims: 50`, `billing_orders: 6`, `billing_passes: 51`).
+
+### ⚠️ Open Issues / Important Notes
+- Docs-only release log commit is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
+
 ## 📅 2026-11-27 10:05 (UTC+7) — Delayed Draft Completion Prompts & Mobile Sub-Header Labels (`24918b6`)
 **Agent:** Antigravity
 
