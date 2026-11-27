@@ -27,6 +27,27 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-27 12:34 (UTC+7) — Consolidate `docs/SUBSCRIPTION_ROADMAP.md` into `docs/ROADMAP.md` with Progress Checkboxes & Backlog
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Renamed `docs/SUBSCRIPTION_ROADMAP.md` to `docs/ROADMAP.md` via `git mv`.
+- Added a top-level **Progress Overview** checklist marking shipped features (`[x]` Sections 1–3, 5, 7, 8, 10, 11) vs open items (`[ ]` Section 4 Concurrent Slots, Section 5.3 `manage_subscription.py`, Section 9 Draft Comparison, Section 12 Screenshot Import).
+- Appended **Section 13: Future Product & Growth Backlog (2026-11-27)** capturing all 15 selected roadmap items (Quick Wins & Growth, Draft Intelligence & Coach Analytics, Realtime & Ecosystem, and On-Hold blockers for Ranked Mode and In-Game Screenshot Import).
+- Updated references in `docs/ARCHITECTURE_MAP.md` and `README.md`.
+
+### 📁 Modified Files
+- `docs/ROADMAP.md` (renamed from `docs/SUBSCRIPTION_ROADMAP.md`)
+- `docs/ARCHITECTURE_MAP.md`
+- `README.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `git diff --check`: clean (no whitespace errors); confirmed no leftover references to `SUBSCRIPTION_ROADMAP.md` outside historical `CHANGELOG.md` entries.
+
+### ⚠️ Open Issues / Important Notes
+- Docs-only commit pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
+
 ## 📅 2026-11-27 11:59 (UTC+7) — Ignore Stale-Tab `/telemetry/visit` Ghost Pings & Clean `@eakkasit.k` DB Noise (`a6eccb8`)
 **Agent:** Antigravity
 

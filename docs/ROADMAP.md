@@ -1,13 +1,24 @@
-# MiniDraft Future Monetization & Subscription Roadmap
+# MiniDraft Product & Monetization Roadmap
 
 > [!NOTE]
-> **Status:** `minidraft.app` remains in its free launch. Development supports Stripe Sandbox purchases of Pro, Duo, and Business (`team_pro`), group invitations, and Draft Board history limits. The Sandbox uses the proposed Duo prices.
+> **Status:** Pro, Duo, and Business (`team_pro`) live PromptPay billing, Hero Pools, Scrim Analytics (+ A4 PDF Scouting Report), Draft History JSON Export/Import, and the Draft Board Assistant are **live in production on `minidraft.app`** (alongside the time-limited Free Pro launch promo). Remaining items below track unbuilt monetization controls, deep draft tools, and the 2026-11-27 product & growth backlog.
 
-This roadmap records the freemium design from the 2026-11-16 review and subsequent product decisions.
+## Progress Overview
+
+- [x] **Sections 1–3, 5:** Tier Packaging (Pro / Duo / Business), Prepaid Passes, Group Invites & Shared Team History, Live Stripe PromptPay Checkout & Webhooks
+- [ ] **Section 4:** Simultaneous Pro Use (2 active paid-drafting slots per account with 5-minute inactivity timeout)
+- [ ] **Section 5.3:** Admin CLI `scripts/manage_subscription.py` for order/support management
+- [x] **Section 7:** Draft History JSON Export & Import (`DraftHistoryModal.tsx`)
+- [x] **Section 8:** Draft Board Assistant (`useLookahead` toggle retired; Assistant active across all tiers)
+- [ ] **Section 9:** Interactive Draft Comparison (side-by-side 2-candidate branching)
+- [x] **Section 10:** Hero Pools & Team-Name Auto-Sync (personal & shared team pools)
+- [x] **Section 11:** Scrim Analytics & A4 PDF Scouting Report (`ScrimDashboardView.tsx`)
+- [ ] **Section 12:** Screenshot Draft Import *(on hold — awaiting in-game Ban/Pick screenshot dataset; see `docs/archive/screenshot_draft_import/`)*
+- [ ] **Section 13:** Future Product & Growth Backlog (`0 / 15` completed — see below)
 
 ---
 
-## 1. Tier Matrix & Feature Packaging
+## 1. Tier Matrix & Feature Packaging [x]
 
 Production remains focused on the **Draft Board** (`VITE_DRAFT_ONLY=true`; Meta Tier List, MetaLab, and Combat Lab stay dev-only unless explicitly opened later).
 
@@ -40,7 +51,7 @@ The 30-day Team Pro price is designed for four or five active members. Four indi
 
 ---
 
-## 2. Upgrade, Renewal & Edge-Case Rules
+## 2. Upgrade, Renewal & Edge-Case Rules [x]
 
 1. **Same-Tier Renewal:** The profile offers another pass once the current pass expires. The server blocks both 30- and 90-day purchases of the current tier while it is active. The next term starts when payment is confirmed.
 2. **Pro -> Team Pro Upgrade:** Converts remaining full Pro days at a 1/3 ratio (`remaining_days // 3`) and adds the purchased Team Pro duration (30 or 90 days) from `now` as `team_pro`.
@@ -52,7 +63,7 @@ During Sandbox testing, accounts can buy Duo after their current paid pass expir
 
 ---
 
-## 3. Duo and Team Pro Membership & Shared History
+## 3. Duo and Team Pro Membership & Shared History [x]
 
 1. The owner pays once for the group and occupies one member slot. Duo owners can invite one other account so both receive full personal Pro entitlements (500 personal games, 50 personal Hero Pools, personal Scrim Analytics). Team Pro owners can invite up to four other accounts and unlock shared Team History + shared Team Hero Pools. Owners invite by username and manage removals. Each invitee accepts from their own account.
 2. Personal History is private to each account and holds up to 500 games per member. Team Pro additionally includes Shared Team History (500 games total for the group, visible to active members).
@@ -61,7 +72,7 @@ During Sandbox testing, accounts can buy Duo after their current paid pass expir
 
 ---
 
-## 4. Simultaneous Pro Use
+## 4. Simultaneous Pro Use [ ]
 
 1. Pro subscribers and members of Duo or Team Pro can stay signed in on multiple devices. A session occupies one of the account's two slots while it is actively using paid drafting features. Tabs that share the same signed-in session share a slot. Only user-initiated paid drafting activity renews the slot.
 2. When both slots are occupied, a third session can sign in and receives a message when it tries to use a paid drafting feature. The two active sessions continue their drafts. The third session can retry once a slot is available.
@@ -69,7 +80,7 @@ During Sandbox testing, accounts can buy Duo after their current paid pass expir
 
 ---
 
-## 5. Payment via Stripe PromptPay (Thailand Market)
+## 5. Payment via Stripe PromptPay (Thailand Market) [x]
 
 1. **One-Time Checkout:** A signed-in user selects an eligible tier and a 30- or 90-day prepaid term. MiniDraft creates an order tied to the account and the server-side package price in THB. Hosted Stripe Checkout displays the order's PromptPay QR. [Stripe PromptPay](https://docs.stripe.com/payments/promptpay)
 2. **Automatic Activation:** MiniDraft verifies the Stripe webhook signature and confirms the payment status, amount, currency, and order before granting access. Record the Stripe payment ID and extend access in the same database transaction. A unique payment ID prevents duplicate extensions when confirmation is delivered again. Activation works even if the customer closes Checkout after paying. [Stripe Checkout fulfillment](https://docs.stripe.com/checkout/fulfillment)
@@ -130,13 +141,13 @@ The Sandbox stores orders in `billing_orders` and test entitlements in `billing_
 
 ---
 
-## 7. Future Draft History Export
+## 7. Draft History JSON Export & Import [x]
 
 Add an **Export** button to Draft History so users can download their saved games as a `.json` file before deleting entries to free up space.
 
 ---
 
-## 8. Draft Board Assistant
+## 8. Draft Board Assistant [x]
 
 Replace the standalone Lookahead button on the Draft Board with the **Assistant** toggle from Draft vs AI. Reuse its localized label and toggle design.
 
@@ -146,7 +157,7 @@ Replace the standalone Lookahead button on the Draft Board with the **Assistant*
 
 ---
 
-## 9. Interactive Draft Comparison
+## 9. Interactive Draft Comparison [ ]
 
 Free, Pro, Duo, and Team Pro use the same draft recommendation model. Pro, Duo, and Team Pro are planned to get a separate, on-demand tool for comparing two candidate picks side by side.
 
@@ -163,7 +174,7 @@ Free, Pro, Duo, and Team Pro use the same draft recommendation model. Pro, Duo, 
 
 ---
 
-## 10. Hero Pools & Team-Name Auto-Sync
+## 10. Hero Pools & Team-Name Auto-Sync [x]
 
 Pro, Duo, and Team Pro share the same Hero Pool capabilities so solo coaches, duo partners, and full rosters get identical drafting depth.
 
@@ -176,7 +187,7 @@ Pro, Duo, and Team Pro share the same Hero Pool capabilities so solo coaches, du
 
 ---
 
-## 11. Scrim Analytics
+## 11. Scrim Analytics & Scouting Report PDF [x]
 
 1. **Zero-Friction Calculation:** Computes actionable team and individual analytics directly from saved draft records (`bluePicks`, `redPicks`, `blueBans`, `redBans`, `winner`, `pickLanes`, `gameNumber`, `seriesName`) with no external game-client integration required.
 2. **Core Metrics & Filters:** Overall win rate, Blue vs. Red side win rate, Game 1–7 performance, most-picked heroes and per-lane win rates, most-banned heroes (by and against the team), lowest-win-rate enemy matchups, and opponent/series filters.
@@ -184,8 +195,37 @@ Pro, Duo, and Team Pro share the same Hero Pool capabilities so solo coaches, du
 
 ---
 
-## 12. Screenshot Draft Import
+## 12. Screenshot Draft Import [ ]
 
 1. **Automated Extraction at Zero Marginal Cost:** Lets coaches and players upload an in-game RoV Ban/Pick draft screenshot after a match so the server extracts all 8 Bans and 10 Picks in 1–2 seconds using local CPU computer vision matched against the 130 canonical hero icons (`frontend/public/avatars/`).
 2. **Target Screen & Aspect-Ratio Tolerance:** Targets the in-game Ban/Pick screen (which renders default non-skin hero portraits and includes all 8 Bans + 10 Picks) rather than the skin-heavy Loading screen, using dynamic frame localization across Android, iPhone, and iPad aspect ratios.
 3. **Human-in-the-Loop Review & Privacy:** Displays detected slots with confidence scores, highlights low-confidence slots with 1-click Top-3 candidate swaps before saving to Personal/Team History or Global Ban, enforces strict file-size/type limits, and discards uploaded images immediately in memory without persisting them to disk. (An optional 1–2 trial imports for Free may be tested at launch.)
+
+---
+
+## 13. Future Product & Growth Backlog (2026-11-27)
+
+Selected from the post-launch data review of `minidraft.app` (1,082 users, 60%+ mobile visits, 2x Practice completions vs standard Draft Board, and 0 active team invite/pool sharing so far):
+
+### Quick Wins & Growth
+- [ ] **Mobile PWA:** Add web app manifest, home-screen install prompt, icons, and offline-shell caching for the 60%+ mobile audience.
+- [ ] **Shareable Draft Image / Match Card:** 1-click PNG export of the completed 18-slot draft board, estimated win rate, and subtle MiniDraft watermark for sharing in Discord, LINE, or Facebook groups.
+- [ ] **Team Pro Onboarding Wizard:** Trigger a 3-step setup flow right after Team Pro activation (set team name -> copy invite link -> configure 5-lane Hero Pool) to unlock unused group collaboration.
+- [ ] **1-Click Demo / Interactive Onboarding Tour:** Guided 3-step walkthrough for first-time visitors covering AI recommendations, saving games, and Scrim Analytics.
+- [ ] **Referral Program:** Invite friends via referral links to grant +7 free Pro days to both the referrer and invitee upon signup/verification.
+
+### Draft Intelligence & Coach Analytics
+- [ ] **Team Comp Radar / Win Condition Bar:** Side-by-side indicators on the Draft Board for early/mid/late power curve, engage, waveclear, physical vs magic damage split, and CC density.
+- [ ] **Ban Priority & "If We Don't Pick Now" Alert:** Warn when high-contest or flex heroes are likely to be stolen in the opponent's immediate next turn.
+- [ ] **Opponent Scouting Profile:** Automated per-opponent scouting summary built from saved scrim records (favorite B1 openings, frequent bans, and matchup weaknesses).
+- [ ] **Compare Two Series / Patch Comparison:** Side-by-side comparison across two series ranges, before/after patch windows, or team stats vs pro-league benchmarks.
+- [ ] **Export / Import CSV & Google Sheets Sync:** Spreadsheet-friendly CSV export/import and Google Sheets workflow support for coaches maintaining existing scrim sheets.
+
+### Realtime & Ecosystem
+- [ ] **Live Co-Draft Room (2–5 Users Realtime):** Shared WebSocket draft room where coach and players (or two scrimming coaches) see live picks/bans together.
+- [ ] **OBS / Streamer Broadcast Overlay:** Transparent browser-source overlay URL displaying live MiniDraft picks/bans with corner MiniDraft attribution for amateur tournament broadcasts.
+- [ ] **Discord Bot Integration:** Slash commands (`/draft`, `/counter`, `/meta`) and automatic post-match scrim summary embeds pushed to team Discord channels.
+
+### Planned — On Hold (Pending UX / Data Blockers)
+- [ ] **Ranked Draft Mode (6-Ban / 10-Ban):** Requested directly via user feedback (`"ทำโหมด rank หน่อย"`). *Blocker: designing an intuitive UX flow for simultaneous/blind bans and ranked pick order.* Ref: [`docs/archive/ranked_10_ban_mode/RANKED_MODE_BACKUP.md`](archive/ranked_10_ban_mode/RANKED_MODE_BACKUP.md).
+- [ ] **Auto-Import Draft from In-Game Screenshot (OCR/Vision):** Auto-extract all 8 bans + 10 picks into saved scrim history. *Blocker: collecting in-game Ban/Pick screenshots across device aspect ratios.* Ref: Section 12 & [`docs/archive/screenshot_draft_import/SCREENSHOT_IMPORT_BACKUP.md`](archive/screenshot_draft_import/SCREENSHOT_IMPORT_BACKUP.md).

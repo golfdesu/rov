@@ -51,7 +51,7 @@ ROV/
 │   ├── PRODUCTION_RELEASES.md       # Live production (minidraft.app) commit snapshot, bundle ledger & deploy history
 │   ├── MECHANICAL_MATCHUP_DISCOVERY.md # 130x130 combat simulation matchup & counter-item flip report
 │   ├── COMPETITORS.md               # Competitive landscape vs other draft tools
-│   └── SUBSCRIPTION_ROADMAP.md      # Planned tier pricing, prepaid passes, and Stripe PromptPay Checkout
+│   └── ROADMAP.md                   # Product, subscription tiers, completed checklist & future backlog
 ├── data/
 │   ├── dataset_metadata.json        # Auto-generated SSOT metrics (matches, heroes, skills, true order %)
 │   ├── heroes_130_full.json         # Full 130 RoV heroes + skills + capability flags
