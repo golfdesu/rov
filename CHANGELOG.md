@@ -27,6 +27,27 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-27 11:14 (UTC+7) — Plain Coach-Friendly Scrim Analytics Copy (`286a1f0`)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Simplified `MethodsReferenceCard`, `CiRangeBar`, tooltips, and card/table headings in `frontend/src/components/ScrimDashboardView.tsx` into plain, coach-friendly Thai copy (replacing `Wilson 95% CI`, `p=`, `Z=`, `Empirical Bayes Shrinkage`, `Bradley-Terry`, `Shannon Entropy`, `EWMA`, `Head-to-Head`, `WR ปรับฐาน`, and removing unused `fmtPValue`), with 25 new EN translations in `frontend/src/i18n/englishMessages.ts`.
+- Committed production code (`286a1f0`), fast-forwarded `~/rov` on `20.2.210.230` (19-path sparse-checkout preserved), and rebuilt/restarted `deploy-app-1`.
+
+### 📁 Modified Files
+- `frontend/src/components/ScrimDashboardView.tsx`
+- `frontend/src/i18n/englishMessages.ts`
+- `docs/PRODUCTION_RELEASES.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`oxlint`): `0` warnings, `0` errors across 66 files; `npm --prefix frontend run build` and `build:prod` succeeded cleanly (`ScrimDashboardView-BvDf0Xt_.js` `157.10 kB`, `index-8m0RJQkO.js` `226.38 kB`).
+- `python .agents/skills/frontend-e2e-inspector/scripts/audit_copy_i18n.py`: `[PASS]` (`100% EN dictionary coverage`, zero `ScrimDashboardView` legacy gloss warnings).
+- Live `https://minidraft.app/health` (`200 {"status":"healthy","model_loaded":true}`), `https://minidraft.app/analytics` (`200`, serving `assets/index-8m0RJQkO.js`, `assets/react-vendor-DpjQJ7Lb.js`, `assets/createLucideIcon-FqRLNzYq.js`, `assets/index-WR-kJNtJ.css`), and `/app/db/rov_app.db` intact (`users: 1078`, `promo_claims: 50`, `billing_orders: 6`, `billing_passes: 51`).
+
+### ⚠️ Open Issues / Important Notes
+- Docs-only release log commit is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
+
 ## 📅 2026-11-27 10:53 (UTC+7) — Clean Path Routing (`/analytics`, `/plans`, `/profile`, `/practice`, `/admin`) (`b6641de`)
 **Agent:** Antigravity
 

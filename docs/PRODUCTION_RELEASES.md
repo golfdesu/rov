@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `b6641de` (`main`: switch to clean path URLs `/` `/practice` `/analytics` `/plans` `/profile` `/admin` & add FastAPI SPA routes) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-JFMszWUU.js` (`226.38 kB`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/createLucideIcon-Bjkpe-ll.js` (`5.34 kB`) + `dist-prod/assets/index-WR-kJNtJ.css` (`116.25 kB`), `dist-prod/index.html` (`3.13 kB`) |
+| **Git Base Commit on VM** | `286a1f0` (`main`: simplify Scrim Analytics jargon into plain coach-friendly Thai & EN copy) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-8m0RJQkO.js` (`226.38 kB`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/createLucideIcon-FqRLNzYq.js` (`5.34 kB`) + `dist-prod/assets/index-WR-kJNtJ.css` (`116.25 kB`), `dist-prod/index.html` (`3.13 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-27 10:53 (UTC+7)` |
+| **Last Updated** | `2026-11-27 11:14 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,12 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-27 11:14 (UTC+7) — Plain Coach-Friendly Scrim Analytics Copy (`286a1f0`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `b6641de` to `286a1f0` (`main`, 19-path sparse-checkout intact).
+- **Analytics Terminology (`frontend/src/components/ScrimDashboardView.tsx`, `frontend/src/i18n/englishMessages.ts`):** Rewrote `MethodsReferenceCard`, `CiRangeBar`, statistical tooltips, and table/card labels (`WR ถ่วงน้ำหนัก`, `สถิติเจอแต่ละทีม`, removing `Wilson 95% CI`, `p=`, `Z=`, `Empirical Bayes`, `Bradley-Terry`, `Shannon Entropy`, `EWMA`, `Head-to-Head` jargon and unused `fmtPValue`), plus added 25 synced EN translations.
+- **Live Verification (`20.2.210.230`):** Rebuilt & started `deploy-app-1` (`dist-prod/assets/index-8m0RJQkO.js` `226.38 kB`, `react-vendor-DpjQJ7Lb.js` `218.79 kB`, `createLucideIcon-FqRLNzYq.js` `5.34 kB`, `ScrimDashboardView-BvDf0Xt_.js` `157.10 kB`, `englishMessages-Co47WdZF.js` `207.45 kB`, `index-WR-kJNtJ.css` `116.25 kB`, `dist-prod/index.html` `3.13 kB`); verified `https://minidraft.app/health` (`200`), `https://minidraft.app/analytics` (`200`), and `/app/db/rov_app.db` (`users: 1078`, `promo_claims: 50`, `billing_orders: 6`, `billing_passes: 51`).
+- **VM Sync Note:** Docs-only commit recording this release is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
 
 ### 📅 2026-11-27 10:53 (UTC+7) — Clean Path Routing (`/analytics`, `/practice`, `/plans`, `/profile`, `/admin`) (`b6641de`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `774467a` to `b6641de` (`main`, 19-path sparse-checkout intact).
