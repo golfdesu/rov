@@ -196,6 +196,7 @@ def _compute_markov_retention(client_dates: dict[str, set[str]], today_str: str)
     new_stay = new_leave = 0
     ret_stay = ret_leave = 0
     dormant_resurrect = dormant_stay = 0
+    client_parsed: list[tuple[int, int]] = []
 
     for cid, days in client_dates.items():
         if not days:
@@ -205,27 +206,34 @@ def _compute_markov_retention(client_dates: dict[str, set[str]], today_str: str)
             fs_dt = date.fromisoformat(fs_str)
         except ValueError:
             continue
-        age_total = (today_dt - fs_dt).days
-        for offset in range(max(0, age_total)):
-            d_cur = (fs_dt + timedelta(days=offset)).isoformat()
-            d_next = (fs_dt + timedelta(days=offset + 1)).isoformat()
-            cur_active = d_cur in days
-            next_active = d_next in days
-            if offset == 0:
-                if next_active:
-                    new_stay += 1
-                else:
-                    new_leave += 1
-            elif cur_active:
-                if next_active:
-                    ret_stay += 1
-                else:
-                    ret_leave += 1
-            else:
-                if next_active:
-                    dormant_resurrect += 1
-                else:
-                    dormant_stay += 1
+        age_total = max(0, (today_dt - fs_dt).days)
+        offsets: set[int] = set()
+        for day_str in days:
+            try:
+                offsets.add((date.fromisoformat(day_str) - fs_dt).days)
+            except ValueError:
+                continue
+        if not offsets:
+            continue
+        client_parsed.append((age_total, max(offsets)))
+        if age_total <= 0:
+            continue
+        if 1 in offsets:
+            new_stay += 1
+        else:
+            new_leave += 1
+        if age_total >= 2:
+            n_ret_c = 0
+            for o in offsets:
+                if 1 <= o < age_total:
+                    n_ret_c += 1
+                    if (o + 1) in offsets:
+                        ret_stay += 1
+                    else:
+                        ret_leave += 1
+            n_res_c = sum(1 for o in offsets if 2 <= o <= age_total and (o - 1) not in offsets)
+            dormant_resurrect += n_res_c
+            dormant_stay += (age_total - 1) - n_ret_c - n_res_c
 
     n_new = new_stay + new_leave
     n_ret = ret_stay + ret_leave
@@ -286,16 +294,11 @@ def _compute_markov_retention(client_dates: dict[str, set[str]], today_str: str)
     for k in range(max_k + 1):
         eligible = 0
         survived = 0
-        for cid, days in client_dates.items():
-            try:
-                fs_dt = date.fromisoformat(first_seen[cid])
-            except ValueError:
-                continue
-            if (today_dt - fs_dt).days < k:
+        for age_total, max_offset in client_parsed:
+            if age_total < k:
                 continue
             eligible += 1
-            cutoff_str = (fs_dt + timedelta(days=k)).isoformat()
-            if k == 0 or any(d >= cutoff_str for d in days):
+            if k == 0 or max_offset >= k:
                 survived += 1
         pct = round((survived / eligible) * 100.0, 1) if eligible > 0 else 0.0
         survival_curve.append({"day": k, "eligible": eligible, "survived": survived, "pct": pct})

@@ -151,7 +151,13 @@ export function GlobalBanModal({
     [globalBans, seriesGames],
   );
   const currentUnlockStatus = gameUnlockStatuses[globalBans.gameNumber - 1] ?? gameUnlockStatuses[0];
-  const maxUnlockedGame = useMemo(() => getMaxUnlockedGame(globalBans, seriesGames), [globalBans, seriesGames]);
+  const maxUnlockedGame = useMemo(() => {
+    let max = 1;
+    for (let i = 0; i < gameUnlockStatuses.length; i++) {
+      if (gameUnlockStatuses[i].isUnlocked) max = i + 1;
+    }
+    return max;
+  }, [gameUnlockStatuses]);
 
   const toggleHero = (heroName: string) => {
     const list = globalBans[activeCategory];

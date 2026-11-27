@@ -1404,7 +1404,7 @@ class CombatEngine:
             and not (sk["slot"].startswith("Passive") and hero in STATEFUL_PASSIVE_HEROES)
         ]
 
-    def duel(self, build_a: Build, build_b: Build) -> dict:
+    def duel(self, build_a: Build, build_b: Build, *, include_summary: bool = True) -> dict:
         stats_a, stats_b = self.build_stats(build_a), self.build_stats(build_b)
         skills_a = self.skill_damage(stats_a, stats_b, build_a)
         skills_b = self.skill_damage(stats_b, stats_a, build_b)
@@ -1459,6 +1459,9 @@ class CombatEngine:
             sim_meta_a=sim_meta_a,
             sim_meta_b=sim_meta_b,
         )
+
+        if not include_summary:
+            return {"simulation": sim}
 
         def summary(stats, skills, enemy, build):
             s, e = stats["stats"], enemy["stats"]
@@ -1551,9 +1554,7 @@ class CombatEngine:
         std_my_name, std_my_runes = get_standard_rune(my_h, my_meta)
         std_enemy_name, std_enemy_runes = get_standard_rune(enemy_h, enemy_meta)
 
-        candidates: list[tuple[str, dict[str, int], str]] = [
-            (std_my_name, std_my_runes, "เซ็ตมาตรฐานประจำสายอาชีพ"),
-        ]
+        candidates: list[tuple[str, dict[str, int], str]] = []
 
         my_is_magic = my_role == "Mage" or (
             my_meta.get("damage_type") == "Magic" and my_role not in ("Tank", "Support")
@@ -1685,7 +1686,7 @@ class CombatEngine:
         build_enemy = Build(hero=enemy_h, level=level, arcana=std_enemy_runes)
         build_my_std = Build(hero=my_h, level=level, arcana=std_my_runes)
 
-        duel_std = self.duel(build_my_std, build_enemy)
+        duel_std = self.duel(build_my_std, build_enemy, include_summary=False)
         std_sim = duel_std["simulation"]
         std_my_rem = std_sim["a"]["remaining_hp"]
         std_my_pct = std_sim["a"]["remaining_hp_pct"]
@@ -1705,7 +1706,7 @@ class CombatEngine:
 
         for name, runes, reason in candidates:
             b_cand = Build(hero=my_h, level=level, arcana=runes)
-            d_cand = self.duel(b_cand, build_enemy)
+            d_cand = self.duel(b_cand, build_enemy, include_summary=False)
             sim = d_cand["simulation"]
             cand_rem = sim["a"]["remaining_hp"]
             cand_pct = sim["a"]["remaining_hp_pct"]
@@ -3176,7 +3177,7 @@ def simulate_duel(
             skill_used = None
             base_hit_count = 0
 
-            if t + 1e-9 >= me["next_cast"]:
+            if t + 1e-9 >= me["next_cast"] and me["stasis_until"] <= t:
                 for sk in me["skills"]:
                     has_charge = sk.get("charges", 1) > 0
                     if has_charge and t + 1e-9 >= sk["ready"]:

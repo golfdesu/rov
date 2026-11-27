@@ -742,6 +742,7 @@ export function useDraft(options: UseDraftOptions = {}) {
   const isHydratingRemoteRef = useRef<boolean>(false);
   const initialSnapshotKeyRef = useRef<string | null>(null);
   const lastLocalSnapshotKeyRef = useRef<string | null>(null);
+  const lastProcessedSyncStateRef = useRef<unknown>(null);
   const lastSyncedSnapshotKeyRef = useRef<string | null>(null);
   const hasCompletedInitialSyncRef = useRef<boolean>(!persistSession);
   const hasDirtyLocalChangesRef = useRef<boolean>(false);
@@ -909,7 +910,7 @@ export function useDraft(options: UseDraftOptions = {}) {
   );
   const predictPayloadKey = useMemo(() => JSON.stringify(predictPayload), [predictPayload]);
 
-  const serializedSyncState = useMemo(() => {
+  const serializedSyncIdentity = useMemo(() => {
     const syncIdentity = {
       stepIndex,
       bluePicks,
@@ -925,13 +926,7 @@ export function useDraft(options: UseDraftOptions = {}) {
       fromTeamHistory,
       seriesGames,
     };
-    const syncIdentityKey = JSON.stringify(syncIdentity);
-    const bodyWithoutTimestamp = {
-      ...syncIdentity,
-      winHistory: state.winHistory.map((v) => (typeof v === "number" && Number.isFinite(v) ? v : null)),
-      blueWinRate: state.blueWinRate,
-    };
-    return { syncIdentityKey, bodyWithoutTimestamp };
+    return { syncIdentity, syncIdentityKey: JSON.stringify(syncIdentity) };
   }, [
     stepIndex,
     bluePicks,
@@ -940,8 +935,6 @@ export function useDraft(options: UseDraftOptions = {}) {
     redBans,
     activePickLanes,
     state.history,
-    state.winHistory,
-    state.blueWinRate,
     useLookahead,
     engine,
     league,
@@ -950,15 +943,29 @@ export function useDraft(options: UseDraftOptions = {}) {
     seriesGames,
   ]);
 
+  const serializedSyncState = useMemo(() => {
+    const bodyWithoutTimestamp = {
+      ...serializedSyncIdentity.syncIdentity,
+      winHistory: state.winHistory.map((v) => (typeof v === "number" && Number.isFinite(v) ? v : null)),
+      blueWinRate: state.blueWinRate,
+    };
+    return { syncIdentityKey: serializedSyncIdentity.syncIdentityKey, bodyWithoutTimestamp };
+  }, [serializedSyncIdentity, state.winHistory, state.blueWinRate]);
+
   // Persist every draft/series change to both localStorage (instant F5 reload) and backend disk (/draft/session)
   useEffect(() => {
     if (storageKey === null && !persistSession) return;
     const { syncIdentityKey, bodyWithoutTimestamp } = serializedSyncState;
-    const localSnapshot = { ...bodyWithoutTimestamp, parkedDrafts: unsavedDraftsRef.current };
-    const fullSnapshotKey = JSON.stringify(localSnapshot);
+    const shouldRecomputeLocalSnapshot =
+      serializedSyncState !== lastProcessedSyncStateRef.current || lastLocalSnapshotKeyRef.current === null;
+    const localSnapshot = shouldRecomputeLocalSnapshot
+      ? { ...bodyWithoutTimestamp, parkedDrafts: unsavedDraftsRef.current }
+      : null;
+    const fullSnapshotKey = localSnapshot ? JSON.stringify(localSnapshot) : lastLocalSnapshotKeyRef.current!;
 
     if (isHydratingRemoteRef.current) {
       isHydratingRemoteRef.current = false;
+      lastProcessedSyncStateRef.current = serializedSyncState;
       initialSnapshotKeyRef.current = syncIdentityKey;
       lastLocalSnapshotKeyRef.current = fullSnapshotKey;
       lastSyncedSnapshotKeyRef.current = syncIdentityKey;
@@ -973,10 +980,12 @@ export function useDraft(options: UseDraftOptions = {}) {
 
     // In StrictMode or before initial GET /draft/session settles, ignore unchanged mount state
     if (persistSession && !hasCompletedInitialSyncRef.current && syncIdentityKey === initialSnapshotKeyRef.current) {
+      lastProcessedSyncStateRef.current = serializedSyncState;
       return;
     }
 
-    if (fullSnapshotKey !== lastLocalSnapshotKeyRef.current) {
+    lastProcessedSyncStateRef.current = serializedSyncState;
+    if (localSnapshot && fullSnapshotKey !== lastLocalSnapshotKeyRef.current) {
       lastLocalSnapshotKeyRef.current = fullSnapshotKey;
       const now = Date.now();
       lastSavedAtRef.current = now;
@@ -1058,6 +1067,7 @@ export function useDraft(options: UseDraftOptions = {}) {
 
   // Fetch AI recommendations whenever the draft or lookahead setting changes.
   // Reuses exact payload cache (0 requests on no-op swaps/undo) and debounces rapid bursts.
+  const hasPrediction = state.prediction !== EMPTY_PREDICTION;
   useEffect(() => {
     if (pausePredict || !canPredict || conflictingHero) return;
     const step = getCurrentDraftStep(stepIndex);
@@ -1101,7 +1111,7 @@ export function useDraft(options: UseDraftOptions = {}) {
     handledRetryKeyRef.current = predictRetryKey;
 
     if (!isRetry) {
-      if (lastPredictedKeyRef.current === payloadKey) {
+      if (lastPredictedKeyRef.current === payloadKey && (hasPrediction || !step)) {
         return;
       }
       const cached = predictCacheRef.current.get(payloadKey);
@@ -1168,6 +1178,7 @@ export function useDraft(options: UseDraftOptions = {}) {
     predictPayloadKey,
     poolContext,
     predictRetryKey,
+    hasPrediction,
   ]);
 
   const retryPredict = useCallback(() => {
@@ -1921,15 +1932,17 @@ export function useDraft(options: UseDraftOptions = {}) {
       if (conflictingHero) {
         parkCurrentDraft();
       } else if (hasCurrentActions) {
-        const overwrittenGames = seriesGames.filter(
+        const previous = seriesGames.find(
           (g) => getGameSeriesKey(g) === currentGroup && g.gameNumber === globalBans.gameNumber,
         );
-        const snapshot = createRecordedGame(overwrittenGames[0]?.winner);
-        nextSeriesGames = upsertSeriesGame(seriesGames, snapshot, currentGroup, personalHistoryLimit);
-        if (nextSeriesGames === seriesGames) parkCurrentDraft();
-        else {
-          delete unsavedDraftsRef.current[`${currentGroup}::g${globalBans.gameNumber}`];
-          setSeriesGames(nextSeriesGames);
+        if (!previous?.locked && !isSameRecordedDraft(previous, draftToRecord)) {
+          const snapshot = createRecordedGame(previous?.winner);
+          nextSeriesGames = upsertSeriesGame(seriesGames, snapshot, currentGroup, personalHistoryLimit);
+          if (nextSeriesGames === seriesGames) parkCurrentDraft();
+          else {
+            delete unsavedDraftsRef.current[`${currentGroup}::g${globalBans.gameNumber}`];
+            setSeriesGames(nextSeriesGames);
+          }
         }
       }
 
@@ -1997,6 +2010,7 @@ export function useDraft(options: UseDraftOptions = {}) {
       blueBans,
       redBans,
       createRecordedGame,
+      draftToRecord,
       conflictingHero,
       loadRecordedGame,
       parkCurrentDraft,
