@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `668cc63` (`main`: hide `MiniDraft Home` logo button on mobile screens `< 640px`) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-vyhFz7zv.js` (`224.55 kB`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/createLucideIcon-CpX25kZH.js` (`5.34 kB`) + `dist-prod/assets/index-3Q07jOHG.css` (`116.22 kB`), `dist-prod/index.html` (`3.13 kB`) |
+| **Git Base Commit on VM** | `24918b6` (`main`: delayed 18-step save & Game 7 new-match prompts + mobile sub-header labels) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-44toL8zw.js` (`226.04 kB`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/createLucideIcon-Bjkpe-ll.js` (`5.34 kB`) + `dist-prod/assets/index-DgKXZFWX.css` (`116.22 kB`), `dist-prod/index.html` (`3.13 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-27 09:35 (UTC+7)` |
+| **Last Updated** | `2026-11-27 10:05 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,12 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-27 10:05 (UTC+7) — Delayed Draft Completion Save Prompts & Mobile Action Labels (`24918b6`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `668cc63` to `24918b6` (`main`, 19-path sparse-checkout intact).
+- **Completion Prompts & Mobile Sub-Header (`frontend/src/components/DraftBoardView.tsx`, `frontend/src/i18n/englishMessages.ts`):** Added a `1,800 ms` delayed confirmation prompt when a draft transitions to 18 steps complete (if unsaved, conflict-free, unlocked, and not loaded from team history) offering direct save (`FinishGameModal` or upgrade modal) or board review, a `900 ms` delay before `promptNewMatchAfterGame7()` after recording Game 7 (with timer guards/cleanup on undo, modal opens, series changes, and unmount), and compact mobile labels (`ใหม่`, `บันทึก`/`บันทึกแล้ว`, `ล็อก`) in the Draft Board sub-header with 3 new EN i18n keys.
+- **Live Verification (`20.2.210.230`):** Rebuilt & started `deploy-app-1` (`dist-prod/assets/index-44toL8zw.js` `226.04 kB`, `react-vendor-DpjQJ7Lb.js` `218.79 kB`, `createLucideIcon-Bjkpe-ll.js` `5.34 kB`, `index-DgKXZFWX.css` `116.22 kB`, `dist-prod/index.html` `3.13 kB`); verified `https://minidraft.app/health` (`200`), live HTML bundle references, and `/app/db/rov_app.db` (`users: 1076`, `promo_claims: 50`, `billing_orders: 6`, `billing_passes: 51`).
+- **VM Sync Note:** Docs-only commit recording this release is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
 
 ### 📅 2026-11-27 09:35 (UTC+7) — Hide `MiniDraft Home` Navbar Logo on Mobile Screens (`668cc63`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `fa137ac` to `668cc63` (`main`, 19-path sparse-checkout intact).
