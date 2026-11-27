@@ -27,6 +27,30 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-27 23:36 (UTC+7) — Comprehensive Bug-Fix Sweep, PostHog Lazy-Loading & Pre-Serialized `/heroes` (`eb52a2b`)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Performance Optimization (`frontend/src/utils/analytics.ts`, `src/api.py`):** Converted `posthog-js` to `requestIdleCallback` dynamic import with bounded queue (`dist-prod` entry `index-*.js` shrank from `592.88 kB` to `228.80 kB`, `-364.08 kB` / `-61.4%`), pre-serialized `GET /heroes` JSON bytes at startup, and added `86400s` caching headers for `/logo.png`, `/icon-192.png`, `/favicon.svg`, `/cards/`, and `/hero_cards.json`.
+- **Backend Reliability (`src/schemas.py`, `src/db.py`, `src/api.py`, `tests/test_bugfix_regressions.py`):** Capped sync epoch ms (`MAX_EPOCH_MS`), hardened `_fmt_epoch` against overflow, fixed personal vs team pass precedence and promo `source`, fixed `record_predict_telemetry`/`record_daily_visit` race, and added monotonic `BEGIN IMMEDIATE` tombstone in `clear_user_practice_history` plus 5 regression tests.
+- **Frontend & PWA Reliability (`sw.js`, `PracticeDraftView.tsx`, `ScrimDashboardView.tsx`, `BillingSandbox.tsx`, `App.tsx`, `ProfileView.tsx`, `pwa.ts`, `LanguageProvider.tsx`):** Stopped PostHog CSP console errors (`disable_external_dependency_loading: true`), exempted `/auth/*` & `/privacy` from SW navigation caching, fixed Practice history sync/clear tombstones & mid-game side-switch confirmations, fixed Stripe Checkout `bfcache` stuck buttons, fixed Scrim 422 fallback & dangling `sortBy`, and added `force=true` auth refresh queueing.
+- **UX Auditor & Release Deployment:** Updated `/analytics` route check in `.agents/skills/frontend-e2e-inspector/scripts/audit_ux_ui.py` (mirrored to `.claude/skills/`), deployed `eb52a2b` to `rov-draft-vm` (`21`-path sparse-checkout preserved), and updated [`docs/PRODUCTION_RELEASES.md`](docs/PRODUCTION_RELEASES.md). Uncommitted Share Card dev work remained excluded and intact locally.
+
+### 📁 Modified Files
+- `src/schemas.py`, `src/db.py`, `src/api.py`
+- `frontend/public/sw.js`, `frontend/src/utils/analytics.ts`, `frontend/src/utils/pwa.ts`, `frontend/src/i18n/LanguageProvider.tsx`
+- `frontend/src/components/BillingSandbox.tsx`, `frontend/src/components/PracticeDraftView.tsx`, `frontend/src/components/ProfileView.tsx`, `frontend/src/components/ScrimDashboardView.tsx`, `frontend/src/App.tsx`
+- `tests/test_bugfix_regressions.py`
+- `.agents/skills/frontend-e2e-inspector/scripts/audit_ux_ui.py`, `.claude/skills/frontend-e2e-inspector/scripts/audit_ux_ui.py`
+- `docs/PRODUCTION_RELEASES.md`, `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check .` & `ruff format .`: passed; `pytest -q --tb=short`: **182 passed**.
+- `npm --prefix frontend run lint` (`0` warnings/errors), `vite build` clean, `audit_copy_i18n.py` (`[PASS]`).
+- Live `https://minidraft.app/`: `/health` `200`, `/heroes` `200` (`max-age=3600`), Playwright across `/`, `/practice`, `/analytics`: **0 CSP/console errors**, **0 page errors**.
+
+---
+
 ## 📅 2026-11-27 22:45 (UTC+7) — Open `FinishGameModal` Directly on 18-Step Draft Completion (`b58a0b6`)
 **Agent:** Antigravity
 

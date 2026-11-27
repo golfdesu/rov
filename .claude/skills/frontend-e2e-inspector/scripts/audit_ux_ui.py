@@ -309,14 +309,14 @@ def main() -> None:
                     f"Unexpected auto side-swap! Expected blueSideTeam='A', got {stored['globalBans']['blueSideTeam']}"
                 )
 
-                # 5. Multi-view clipping, overflow & EN localization audit (#analytics)
+                # 5. Multi-view clipping, overflow & EN localization audit (/analytics)
                 print("[5/5] Auditing Scrim Analytics (th/en clipping & overflow)...")
                 for lang in ("th", "en"):
                     page.evaluate(f"() => localStorage.setItem('minidraft_language', '{lang}')")
                     page.reload(wait_until="networkidle")
                     for w, h in [(375, 667), (1280, 800)]:
                         page.set_viewport_size({"width": w, "height": h})
-                        for route, wait_ms in [("#analytics", 400)]:
+                        for route, wait_ms in [("analytics", 400)]:
                             page.goto(f"{base_url}/{route}", wait_until="networkidle")
                             page.wait_for_timeout(wait_ms)
                             dom_res = _audit_menu_and_dom_clipping(page, check_en_leaks=(lang == "en"))

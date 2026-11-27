@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `b58a0b6` (`main`: 1-click `FinishGameModal` auto-open after 18 steps & Save Without Winner CTA) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-DiHgNR39.js` (`592.88 kB`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/englishMessages-D5GI6MRi.js` (`208.11 kB`) + `dist-prod/assets/FinishGameModal-B0Rw8byW.js` (`5.59 kB`) + `dist-prod/assets/MobileNavDrawer-hqrod_K-.js` (`11.63 kB`) + `dist-prod/assets/index-CPVI40NI.css` (`116.29 kB`), `sw.js`, `icon-192.png` |
+| **Git Base Commit on VM** | `eb52a2b` (`main`: Bug-fix hardening across sync/billing/SW/UI + lazy-load `posthog-js` & pre-serialized `/heroes`) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-D_w9GAo2.js` (`228.80 kB`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/module-nirBTNJt.js` (`363.95 kB` lazy PostHog) + `dist-prod/assets/englishMessages-D5GI6MRi.js` (`208.11 kB`) + `dist-prod/assets/index-CPVI40NI.css` (`116.29 kB`), `sw.js`, `icon-192.png` |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.onnx` (`7.93 MB`) + `models/sota_draft_gnn_transformer.meta.npz` (`74.0 KB`), exported from `sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, Trial #31) |
-| **Last Updated** | `2026-11-27 22:45 (UTC+7)` |
+| **Last Updated** | `2026-11-27 23:36 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,16 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-27 23:36 (UTC+7) — Bug-Fix Hardening & Performance Optimization (`eb52a2b`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `b58a0b6` to `eb52a2b` (`main`, 21-path sparse-checkout intact). Uncommitted local dev Share Card work remained strictly excluded.
+- **Performance Optimization (`frontend/src/utils/analytics.ts`, `src/api.py`):**
+  - Switched `posthog-js` from top-level static import to lazy `import("posthog-js")` scheduled via `requestIdleCallback` (`timeout: 1500`) with bounded event queueing, shrinking `dist-prod` entry bundle `index-D_w9GAo2.js` from `592.88 kB` down to **`228.80 kB`** (`-364.08 kB`, `-61.4%`, zero >500 kB Vite chunk warning).
+  - Pre-serialized `GET /heroes` JSON bytes at FastAPI startup (`_public_heroes_json_bytes` / `_dev_heroes_json_bytes`) and added `public, max-age=86400` `Cache-Control` for `/logo.png`, `/icon-192.png`, `/favicon.svg`, `/cards/`, and `/hero_cards.json`.
+- **Backend Bug Fixes (`src/schemas.py`, `src/db.py`, `src/api.py`):** Capped `updatedAt`/`clearedAt` to `MAX_EPOCH_MS = 32_503_680_000_000` (year 3000) and wrapped `_fmt_epoch` against overflow in `/admin/users`; fixed team-member pass precedence vs personal `pro` pass + added `"source": "promo_free"` to `claim_free_pro_promo`; fixed `record_predict_telemetry` vs `record_daily_visit` race preserving `first_seen_date` and `device_*` counts; made `clear_user_practice_history` use `BEGIN IMMEDIATE` monotonic tombstones.
+- **Frontend & SW Bug Fixes (`sw.js`, `analytics.ts`, `pwa.ts`, `LanguageProvider.tsx`, `BillingSandbox.tsx`, `ProfileView.tsx`, `PracticeDraftView.tsx`, `ScrimDashboardView.tsx`, `App.tsx`):** Disabled PostHog external script injection (`surveys.js`/`web-vitals`) fixing CSP console errors; bypassed SW navigation handling for `/auth/*`, `/privacy`, and network-only paths while guarding `"/"` HTML caching; preserved `deletedIds` and `pushSeqRef` in `PracticeDraftView` + added ConfirmDialog guard for active-game side switches; added `pageshow` `bfcache` recovery in `BillingSandbox`; fixed Scrim 422 default-team fallback and invalid `sortBy` resets; queued `force=true` auth refreshes across in-flight calls and added `pwa.ts` in-memory dismiss + promise `.catch` guards.
+- **Live Verification (`20.2.210.230`):** Rebuilt `deploy-app-1` (`index-D_w9GAo2.js` `228.80 kB`, `module-nirBTNJt.js` `363.95 kB` lazy); verified `https://minidraft.app/health` (`200`, `{"status":"healthy","model_loaded":true}`), `GET https://minidraft.app/heroes` (`200`, `Cache-Control: public, max-age=3600`, `19,948` bytes), and Playwright across `/`, `/practice`, `/analytics` with **zero console/CSP errors** and **zero page errors**.
+- **VM Sync Note:** Docs, tests, and auditor commit (`tests/test_bugfix_regressions.py`, `audit_ux_ui.py`, `PRODUCTION_RELEASES.md`, `CHANGELOG.md`) is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
 
 ### 📅 2026-11-27 22:45 (UTC+7) — Direct 1-Click Draft Save Flow (`FinishGameModal`) on 18-Step Completion (`b58a0b6`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `85f06bf` to `b58a0b6` (`main`, 21-path sparse-checkout intact). Uncommitted local dev Share Card work remained strictly excluded.
