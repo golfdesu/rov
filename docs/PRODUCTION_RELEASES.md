@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `286a1f0` (`main`: simplify Scrim Analytics jargon into plain coach-friendly Thai & EN copy) |
+| **Git Base Commit on VM** | `a6eccb8` (`main`: ignore stale-bundle `/telemetry/visit` pings missing `device_type`) |
 | **Active Frontend Bundle** | `dist-prod/assets/index-8m0RJQkO.js` (`226.38 kB`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/createLucideIcon-FqRLNzYq.js` (`5.34 kB`) + `dist-prod/assets/index-WR-kJNtJ.css` (`116.25 kB`), `dist-prod/index.html` (`3.13 kB`) |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, 90d half-life Trial #31, 3,535 training games / 4,352 total matches) |
-| **Last Updated** | `2026-11-27 11:14 (UTC+7)` |
+| **Last Updated** | `2026-11-27 11:59 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,11 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-27 11:59 (UTC+7) — Ignore Stale-Tab `/telemetry/visit` Ghost Pings & Clean `@eakkasit.k` DB Noise (`a6eccb8`)
+- **Base Commit:** Fast-forwarded `~/rov` cleanly from `286a1f0` to `a6eccb8` (`main`, 19-path sparse-checkout intact).
+- **Backend Fix (`src/api.py`):** `record_daily_visit()` now returns `{"recorded": false, "visit_date": <today_th>}` without inserting into `daily_visits` whenever `device_type` is omitted (`None`, i.e., stale cached JS tabs waking from browser sleep).
+- **Live Verification & DB Hygiene (`20.2.210.230`):** Rebuilt `deploy-app-1` via `deploy/compose.yaml`, verified `https://minidraft.app/health` (`200`), and confirmed live `POST /telemetry/visit` without `device_type` returns `{"recorded":false,"visit_date":"2026-11-27"}`. Removed `@eakkasit.k` (`user_id = 6`) ghost-ping rows from `/app/db/rov_app.db` (`3` rows from `daily_visits` on Nov 23/25/26, `2` rows from `user_usage_daily` on Nov 23/25; real activity on Nov 20, 21, 22, and 24 preserved).
 
 ### 📅 2026-11-27 11:14 (UTC+7) — Plain Coach-Friendly Scrim Analytics Copy (`286a1f0`)
 - **Base Commit:** Fast-forwarded `~/rov` cleanly from `b6641de` to `286a1f0` (`main`, 19-path sparse-checkout intact).

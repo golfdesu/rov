@@ -27,6 +27,28 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-27 11:59 (UTC+7) — Ignore Stale-Tab `/telemetry/visit` Ghost Pings & Clean `@eakkasit.k` DB Noise (`a6eccb8`)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- Updated `record_daily_visit()` in `src/api.py` so legacy/stale browser tabs omitting `device_type` return HTTP `200` (`recorded: false`) without writing noise rows to `daily_visits`, while current bundles (`"mobile"` / `"desktop"` sent after pointer/keyboard interaction) continue recording normally.
+- Updated `test_daily_visit_telemetry_and_retention_stats` in `tests/test_api.py` with `"device_type"` payloads and added regression assertions confirming omitted `device_type` returns `recorded: false` and leaves `daily_visits` untouched.
+- Committed `src/api.py` (`a6eccb8`), pulled cleanly onto `rov-draft-vm` (19-path sparse-checkout preserved), rebuilt `deploy-app-1` via `deploy/compose.yaml`, and cleaned up `@eakkasit.k` (`user_id = 6`) ghost-ping rows in live `/app/db/rov_app.db` (`3` rows from `daily_visits`, `2` rows from `user_usage_daily`, preserving real activity on Nov 20, 21, 22, and 24).
+
+### 📁 Modified Files
+- `src/api.py`
+- `tests/test_api.py`
+- `docs/PRODUCTION_RELEASES.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `ruff check --fix .` & `ruff format .`: clean (`All checks passed!`).
+- `pytest -q --tb=short tests/test_api.py`: `52 passed`.
+- Live `https://minidraft.app/health`: `{"status":"healthy","model_loaded":true}`; live `POST https://minidraft.app/telemetry/visit` with `{"client_id":"probe_stale_check"}`: `{"recorded":false,"visit_date":"2026-11-27"}`; `/app/db/rov_app.db` intact (`users: 1082`, `daily_visits: 1987`, `user_usage_daily: 497`, `billing_orders: 6`, `billing_passes: 52`, `promo_claims: 51`).
+
+### ⚠️ Open Issues / Important Notes
+- Tests/docs commit pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
+
 ## 📅 2026-11-27 11:14 (UTC+7) — Plain Coach-Friendly Scrim Analytics Copy (`286a1f0`)
 **Agent:** Antigravity
 

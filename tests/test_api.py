@@ -2018,12 +2018,17 @@ def test_daily_visit_telemetry_and_retention_stats(tmp_path, monkeypatch):
     assert guest.post("/telemetry/visit", json={"client_id": "bad$id"}).status_code == 422
 
     # Same client_id visiting twice today counts only once
-    r1 = guest.post("/telemetry/visit", json={"client_id": "cid_today_only"})
-    r2 = guest.post("/telemetry/visit", json={"client_id": "cid_today_only"})
+    r1 = guest.post("/telemetry/visit", json={"client_id": "cid_today_only", "device_type": "desktop"})
+    r2 = guest.post("/telemetry/visit", json={"client_id": "cid_today_only", "device_type": "desktop"})
     assert r1.status_code == 200
     assert r2.status_code == 200
     assert r1.json()["recorded"] is True
     today_str = r1.json()["visit_date"]
+
+    # Stale browser tabs without device_type return 200 (recorded=False) without polluting daily_visits
+    r_stale = guest.post("/telemetry/visit", json={"client_id": "cid_stale_bundle"})
+    assert r_stale.status_code == 200
+    assert r_stale.json() == {"recorded": False, "visit_date": today_str}
 
     # Seed yesterday's visits + a 3-day active regular + a >7d dormant returning client
     tz_th = timezone(timedelta(hours=7))
@@ -2048,8 +2053,10 @@ def test_daily_visit_telemetry_and_retention_stats(tmp_path, monkeypatch):
     owner = TestClient(app)
     reg = owner.post("/auth/register", json={"username": "chayanin5392", "password": "owner-secret-pass"})
     assert reg.status_code == 201
-    r_ret = owner.post("/telemetry/visit", json={"client_id": "cid_returning"})
+    r_ret = owner.post("/telemetry/visit", json={"client_id": "cid_returning", "device_type": "mobile"})
     assert r_ret.status_code == 200
+    with db._connect() as conn:
+        assert conn.execute("SELECT 1 FROM daily_visits WHERE client_id = ?", ("cid_stale_bundle",)).fetchone() is None
 
     stats = owner.get("/admin/stats")
     assert stats.status_code == 200
