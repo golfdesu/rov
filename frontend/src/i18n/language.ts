@@ -49,12 +49,13 @@ const formatMessage: Translate = (message, ...values) =>
 
 export function createTranslator(
   language: Language,
-  messages: Readonly<Record<string, string>> | null = cachedEnglishMessages,
+  messages?: Readonly<Record<string, string>> | null,
 ): Translate {
   return (message, ...values) => {
+    const dict = messages === undefined ? cachedEnglishMessages : messages;
     const text =
-      languageSwitchEnabled && language === "en" && messages && Object.hasOwn(messages, message)
-        ? messages[message]
+      languageSwitchEnabled && language === "en" && dict && Object.hasOwn(dict, message)
+        ? dict[message]
         : message;
     return values.length ? formatMessage(text, ...values) : text;
   };

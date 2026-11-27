@@ -16,7 +16,7 @@ function formatLabel(translate: Translate, message: Message, suffixes: readonly 
 
 /** Keeps the button the same size for each translation and listed state. */
 export function StableButtonLabel({ message, alternatives = [], suffixes = [], className = "inline-grid" }: StableButtonLabelProps) {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const label = formatLabel(t, message, suffixes);
   const variants = new Map<string, Language | undefined>();
   for (const variant of [message, ...alternatives]) {
@@ -25,13 +25,16 @@ export function StableButtonLabel({ message, alternatives = [], suffixes = [], c
     variants.set(thai, thai === english ? undefined : "th");
     if (thai !== english) variants.set(english, "en");
   }
+  if (!variants.has(label)) {
+    variants.set(label, language);
+  }
 
   return (
     <span className={`min-w-0 max-w-full ${className}`}>
-      {[...variants].map(([variant, language]) => (
+      {[...variants].map(([variant, variantLanguage]) => (
         <span
           key={variant}
-          lang={language}
+          lang={variantLanguage}
           aria-hidden={variant !== label}
           className={`col-start-1 row-start-1 self-center ${variant === label ? "" : "invisible"}`}
         >
