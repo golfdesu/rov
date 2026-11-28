@@ -27,6 +27,28 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-28 07:22 (UTC+7) — Stale Lazy-Chunk Auto-Reload Recovery (`82da23f`)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Stale Chunk Recovery (`frontend/src/utils/chunkRecovery.ts`, `frontend/src/main.tsx`, `frontend/src/components/ErrorBoundary.tsx`, deployed as `82da23f`):**
+  - Added `vite:preloadError` listener and `ErrorBoundary` stale-chunk detection (`isStaleChunkError`, `tryRecoverFromStaleChunk`) with `navigator.onLine` check and `60s` `sessionStorage` cooldown (`minidraft_chunk_reload_at`) to auto-reload once seamlessly after deploys without infinite loops.
+  - Updated `ErrorBoundary` retry button to execute `window.location.reload()` on stale-chunk fallback errors.
+- **Production Deployment & Docs:** Fast-forwarded `rov-draft-vm` (`20.2.210.230`, `21` sparse-checkout paths preserved), rebuilt `deploy-app-1`, and updated [`docs/PRODUCTION_RELEASES.md`](docs/PRODUCTION_RELEASES.md). Uncommitted local Share Card dev files remained excluded and intact.
+
+### 📁 Modified Files
+- `frontend/src/utils/chunkRecovery.ts`
+- `frontend/src/main.tsx`
+- `frontend/src/components/ErrorBoundary.tsx`
+- `docs/PRODUCTION_RELEASES.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`0` warnings/errors) and `npm --prefix frontend run build` clean.
+- Live `https://minidraft.app/health` (`200`, `model_loaded: true`) and Playwright `vite:preloadError` test confirmed 1 auto-reload (`defaultPrevented: true`, `navs: 1 -> 2`), 60s circuit-breaker skip on immediate 2nd dispatch (`defaultPrevented: false`, `navs: 2`), and `0` console/page errors.
+
+---
+
 ## 📅 2026-11-28 07:09 (UTC+7) — Compact Mobile Global Ban Single-Row Button (`a00e221`)
 **Agent:** Antigravity
 

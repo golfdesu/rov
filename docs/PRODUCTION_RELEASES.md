@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `a00e221` (`main`: Compact mobile Global Ban into a single-row button in `TeamColumn`) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-82mCf4S0.js` (`231.06 kB`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/module-nirBTNJt.js` (`363.95 kB` lazy PostHog) + `dist-prod/assets/englishMessages-D5GI6MRi.js` (`208.11 kB`) + `dist-prod/assets/index-Dg6RL5if.css` (`116.37 kB`), `sw.js`, `icon-192.png` |
+| **Git Base Commit on VM** | `82da23f` (`main`: Auto-reload once on stale lazy-chunk preload errors) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-B4vWeHJK.js` (`231.93 kB`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/module-nirBTNJt.js` (`363.95 kB` lazy PostHog) + `dist-prod/assets/englishMessages-D5GI6MRi.js` (`208.11 kB`) + `dist-prod/assets/index-Dg6RL5if.css` (`116.37 kB`), `sw.js`, `icon-192.png` |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.onnx` (`7.93 MB`) + `models/sota_draft_gnn_transformer.meta.npz` (`74.0 KB`), exported from `sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, Trial #31) |
-| **Last Updated** | `2026-11-28 07:09 (UTC+7)` |
+| **Last Updated** | `2026-11-28 07:22 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,18 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-28 07:22 (UTC+7) — Stale Lazy-Chunk Auto-Reload Recovery (`82da23f`)
+- **Pulled & Rebuilt from `main` (`82da23f`, fast-forward from `a00e221`)**:
+  - Kept VM `git sparse-checkout` locked at `21` paths; rebuilt `deploy-app-1` cleanly via `sudo docker compose -f deploy/compose.yaml up -d --build app` (`dist-prod/assets/index-B4vWeHJK.js` `231.93 kB`, `index-Dg6RL5if.css` `116.37 kB`).
+  - **`frontend/src/utils/chunkRecovery.ts`, `frontend/src/main.tsx`, `frontend/src/components/ErrorBoundary.tsx`**:
+    - Added `initChunkErrorRecovery()` listening for `vite:preloadError` and `ErrorBoundary` catching stale dynamic-import chunk errors after a deploy.
+    - Checks `navigator.onLine` and enforces a `60s` `sessionStorage` cooldown (`minidraft_chunk_reload_at`) before triggering `window.location.reload()` once so open tabs recover seamlessly without reload loops.
+    - Updated `ErrorBoundary` fallback retry button to call `window.location.reload()` when a stale chunk error reaches the boundary (e.g. offline or within cooldown).
+- **Verification**:
+  - Local `oxlint` (`0` warnings/errors) and `tsc -b && vite build` passed; uncommitted Share Card dev files remained excluded and intact.
+  - Live `https://minidraft.app/health` returned `200` (`{"status":"healthy","model_loaded":true}`), live `/` served `index-B4vWeHJK.js`, and Playwright verified `vite:preloadError` triggers 1 reload (`defaultPrevented: true`, `navs: 1 -> 2`) and skips an immediate 2nd dispatch (`defaultPrevented: false`, `navs: 2`, `0` console/page errors).
+- **VM Sync Policy Note**: The subsequent docs-only commit (`docs/PRODUCTION_RELEASES.md`, `CHANGELOG.md`) is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
 
 ### 📅 2026-11-28 07:09 (UTC+7) — Compact Mobile Global Ban Single-Row Button (`a00e221`)
 - **Pulled & Rebuilt from `main` (`a00e221`, fast-forward from `d0f4857`)**:
