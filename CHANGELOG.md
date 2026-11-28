@@ -27,6 +27,26 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-28 07:09 (UTC+7) — Compact Mobile Global Ban Single-Row Button (`a00e221`)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Mobile Team Board Simplification (`frontend/src/components/TeamColumn.tsx`, deployed as `a00e221`):**
+  - Replaced the on-board Global Ban hero-chip grid on mobile (`md:hidden`) with a compact single-row tappable button (`GLOBAL BAN` + count/`ULT` badge + `+`/`>` icon) that opens `GlobalBanModal` to view or edit used heroes.
+  - Kept the full header, G7 banner, and internally scrollable hero-chip list (`hidden md:flex`) on `md+` screens.
+- **Production Deployment & Docs:** Fast-forwarded `rov-draft-vm` (`20.2.210.230`, `21` sparse-checkout paths preserved), rebuilt `deploy-app-1`, and updated [`docs/PRODUCTION_RELEASES.md`](docs/PRODUCTION_RELEASES.md). Uncommitted local Share Card dev files remained excluded and intact.
+
+### 📁 Modified Files
+- `frontend/src/components/TeamColumn.tsx`
+- `docs/PRODUCTION_RELEASES.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`0` warnings/errors) and `npm --prefix frontend run build` clean.
+- Live `https://minidraft.app/health` (`200`, `model_loaded: true`) and live Playwright with `20` Global Ban heroes: mobile `390x844` stayed `46px` tall (`"GLOBAL BAN 20"`, `overlap: false`, `overflowX: false`, `0` errors) and desktop `1366x768` rendered `20` scrollable chips (`chipsScrollable: true`, `overlap: false`, `0` errors).
+
+---
+
 ## 📅 2026-11-28 07:03 (UTC+7) — Prevent Global Ban Card Overlapping Pick #5 (`d0f4857`)
 **Agent:** Antigravity
 

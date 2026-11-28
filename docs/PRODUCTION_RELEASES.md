@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `d0f4857` (`main`: Prevent Global Ban card from overlapping Pick #5 in `TeamColumn`) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-ByTWREAH.js` (`229.18 kB`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/module-nirBTNJt.js` (`363.95 kB` lazy PostHog) + `dist-prod/assets/englishMessages-D5GI6MRi.js` (`208.11 kB`) + `dist-prod/assets/index-Dg6RL5if.css` (`116.37 kB`), `sw.js`, `icon-192.png` |
+| **Git Base Commit on VM** | `a00e221` (`main`: Compact mobile Global Ban into a single-row button in `TeamColumn`) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-82mCf4S0.js` (`231.06 kB`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/module-nirBTNJt.js` (`363.95 kB` lazy PostHog) + `dist-prod/assets/englishMessages-D5GI6MRi.js` (`208.11 kB`) + `dist-prod/assets/index-Dg6RL5if.css` (`116.37 kB`), `sw.js`, `icon-192.png` |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.onnx` (`7.93 MB`) + `models/sota_draft_gnn_transformer.meta.npz` (`74.0 KB`), exported from `sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, Trial #31) |
-| **Last Updated** | `2026-11-28 07:03 (UTC+7)` |
+| **Last Updated** | `2026-11-28 07:09 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,18 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-28 07:09 (UTC+7) — Compact Mobile Global Ban Single-Row Button (`a00e221`)
+- **Pulled & Rebuilt from `main` (`a00e221`, fast-forward from `d0f4857`)**:
+  - Kept VM `git sparse-checkout` locked at `21` paths; rebuilt `deploy-app-1` cleanly via `sudo docker compose -f deploy/compose.yaml up -d --build app` (`dist-prod/assets/index-82mCf4S0.js` `231.06 kB`, `index-Dg6RL5if.css` `116.37 kB`).
+  - **`frontend/src/components/TeamColumn.tsx`**:
+    - Collapsed the on-board Global Ban section on mobile (`md:hidden`) into a compact single-row tappable button (`46px` tall) showing `GLOBAL BAN` + count badge (`0` / `N` / `ULT`) + chevron/plus icon that opens `GlobalBanModal` on tap.
+    - Preserved the full header + scrollable hero chip list (`hidden md:flex`) on tablet/desktop viewports (`md+`).
+- **Verification**:
+  - Local `oxlint` (`0` warnings/errors) and `tsc -b && vite build` passed; uncommitted Share Card dev work remained excluded and intact.
+  - Live `https://minidraft.app/health` returned `200` (`{"status":"healthy","model_loaded":true}`), and live `/` served `index-82mCf4S0.js`.
+  - Live Playwright verification with `20` Global Ban heroes: mobile `390x844` Teams tab remained `46px` tall (`"GLOBAL BAN 20"`, `visibleChipContainers: 0`, `gapPx: 8`, `overlap: false`, `overflowX: false`, `0` errors) and desktop `1366x768` rendered all `20` scrollable chips (`chipsScrollable: true`, `gapPx: 8`, `overlap: false`, `0` errors).
+- **VM Sync Policy Note**: The subsequent docs-only commit (`docs/PRODUCTION_RELEASES.md`, `CHANGELOG.md`) is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
 
 ### 📅 2026-11-28 07:03 (UTC+7) — Prevent Global Ban Card from Overlapping Pick #5 (`d0f4857`)
 - **Pulled & Rebuilt from `main` (`d0f4857`, fast-forward from `da515c4`)**:
