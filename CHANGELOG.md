@@ -27,6 +27,27 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-28 07:03 (UTC+7) — Prevent Global Ban Card Overlapping Pick #5 (`d0f4857`)
+**Agent:** Antigravity
+
+### ✅ Completed Work
+- **Team Column Global Ban Layout Fix (`frontend/src/components/TeamColumn.tsx`, deployed as `d0f4857`):**
+  - Enforced `min-h-[234px]` on the 5-pick stack (`min-h-[42px]` per slot, `gap-1.5 xl:gap-2`) so Pick #5 never overflows downward into the Global Ban card.
+  - Bounded the on-board Global Ban / Hero Pool container with `min-h-0 max-h-[132px] shrink xl:max-h-[168px]` and updated the hero-chips list to `min-h-0 flex-1 flex-wrap content-start overflow-y-auto` so large Global Ban lists scroll internally instead of colliding with Pick #5.
+  - Switched the `variant="full"` team `<section>` from `overflow-hidden` to `overflow-y-auto` for ultra-short viewports.
+- **Production Deployment & Docs:** Fast-forwarded `rov-draft-vm` (`20.2.210.230`, `21` sparse-checkout paths preserved), rebuilt `deploy-app-1`, and updated [`docs/PRODUCTION_RELEASES.md`](docs/PRODUCTION_RELEASES.md). Uncommitted local Share Card dev files remained excluded and intact.
+
+### 📁 Modified Files
+- `frontend/src/components/TeamColumn.tsx`
+- `docs/PRODUCTION_RELEASES.md`
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm --prefix frontend run lint` (`0` warnings/errors) and `npm --prefix frontend run build` clean.
+- Live `https://minidraft.app/health` (`200`, `model_loaded: true`) and live Playwright across `1366x768`, `1440x900`, and `390x844` with `20` Global Ban heroes confirmed `overlap: false` (`gapPx: 8`), `chipsScrollable: true`, and `0` console/page errors.
+
+---
+
 ## 📅 2026-11-28 00:08 (UTC+7) — Draft Reset Cache Fix, Retention/Combat/Sync Speedups & Full-Stack Optimizer Skill (`da515c4`)
 - **Production Bug Fixes & Optimizations (`da515c4`, deployed to `20.2.210.230`)**:
   - `frontend/src/hooks/useDraft.ts`: Restored cached AI recommendations on step resets / fast Undo->Redo / same-board hydrate (`hasPrediction` guard), guarded `switchSeries` against parking/overwriting locked or unchanged games, and split `serializedSyncIdentity` + `lastProcessedSyncStateRef` to avoid redundant `JSON.stringify` passes across up to 500 `seriesGames`.

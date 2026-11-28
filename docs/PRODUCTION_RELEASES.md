@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `da515c4` (`main`: Restore cached AI predictions on draft resets and optimize retention/combat/sync paths) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-Ds5_IlFn.js` (`229.11 kB`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/module-nirBTNJt.js` (`363.95 kB` lazy PostHog) + `dist-prod/assets/englishMessages-D5GI6MRi.js` (`208.11 kB`) + `dist-prod/assets/index-CPVI40NI.css` (`116.29 kB`), `sw.js`, `icon-192.png` |
+| **Git Base Commit on VM** | `d0f4857` (`main`: Prevent Global Ban card from overlapping Pick #5 in `TeamColumn`) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-ByTWREAH.js` (`229.18 kB`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/module-nirBTNJt.js` (`363.95 kB` lazy PostHog) + `dist-prod/assets/englishMessages-D5GI6MRi.js` (`208.11 kB`) + `dist-prod/assets/index-Dg6RL5if.css` (`116.37 kB`), `sw.js`, `icon-192.png` |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.onnx` (`7.93 MB`) + `models/sota_draft_gnn_transformer.meta.npz` (`74.0 KB`), exported from `sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, Trial #31) |
-| **Last Updated** | `2026-11-28 00:08 (UTC+7)` |
+| **Last Updated** | `2026-11-28 07:03 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,19 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-28 07:03 (UTC+7) — Prevent Global Ban Card from Overlapping Pick #5 (`d0f4857`)
+- **Pulled & Rebuilt from `main` (`d0f4857`, fast-forward from `da515c4`)**:
+  - Kept VM `git sparse-checkout` locked at `21` paths; rebuilt `deploy-app-1` cleanly via `sudo docker compose -f deploy/compose.yaml up -d --build app` (`dist-prod/assets/index-ByTWREAH.js` `229.18 kB`, `index-Dg6RL5if.css` `116.37 kB`).
+  - **`frontend/src/components/TeamColumn.tsx`**:
+    - Set `min-h-[234px]` on the 5-pick stack wrapper (`gap-1.5 xl:gap-2`) with `min-h-[42px]` per pick card so Pick #5 cannot overflow downward into the Global Ban section.
+    - Replaced `shrink-0` on the on-board Global Ban / Hero Pool card with `min-h-0 max-h-[132px] shrink xl:max-h-[168px]` and converted the used-hero chips container to `min-h-0 flex-1 flex-wrap content-start overflow-y-auto` so long Global Ban lists scroll internally.
+    - Switched the `variant="full"` `<section>` container from `overflow-hidden` to `overflow-y-auto` for ultra-short viewports.
+- **Verification**:
+  - Local `oxlint` (`0` warnings/errors) and `tsc -b && vite build` passed; uncommitted local Share Card dev work remained excluded and intact.
+  - Live `https://minidraft.app/health` returned `200` (`{"status":"healthy","model_loaded":true}`), and live `/` served `index-ByTWREAH.js` + `index-Dg6RL5if.css`.
+  - Live Playwright verification with `20` Global Ban heroes added via UI across `1366x768`, `1440x900`, and `390x844` (Mobile -> Teams tab) confirmed `overlap: false`, `gapPx: 8`, `chipsScrollable: true`, and `0` console/page errors.
+- **VM Sync Policy Note**: The subsequent docs-only commit (`docs/PRODUCTION_RELEASES.md`, `CHANGELOG.md`) is pushed to `origin/main` without running `git pull` on the VM (sparse-checkout guardrail).
 
 ### 📅 2026-11-28 00:08 (UTC+7) — Draft Reset Cache Fix & Retention/Combat/Sync Optimization (`da515c4`)
 - **Pulled & Rebuilt from `main` (`da515c4`, fast-forward from `eb52a2b`)**:
