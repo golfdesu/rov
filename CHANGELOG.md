@@ -27,6 +27,28 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
+## 📅 2026-11-28 18:48 (UTC+7) — Route Admin Stats Directly to the Admin Dashboard
+**Agent:** Codex / GPT-6
+
+### ✅ Completed Work
+- Removed the separate Admin Stats modal and its lazy-loaded component.
+- Updated the mobile drawer's Admin stats action to close the drawer and navigate to `/admin` in the current tab through the existing SPA router.
+
+### 📁 Modified Files
+- `frontend/src/App.tsx`
+- `frontend/src/components/MobileNavDrawer.tsx`
+- `frontend/src/components/AdminStatsModal.tsx` (deleted)
+- `CHANGELOG.md`
+
+### 🧪 Verification
+- `npm run lint` and `npm run build` in `frontend/` passed.
+- `audit_copy_i18n.py`, `inspect_frontend_e2e.py`, and `audit_ux_ui.py` passed; the copy audit reported two existing non-blocking legacy notices.
+
+### ⚠️ Open Issues / Important Notes
+- Production deployment is pending.
+
+---
+
 ## 📅 2026-11-28 07:22 (UTC+7) — Stale Lazy-Chunk Auto-Reload Recovery (`82da23f`)
 **Agent:** Antigravity
 

@@ -28,7 +28,7 @@ interface MobileNavDrawerProps<T extends string> {
   onOpenGuide: () => void;
   onOpenSurvey: () => void;
   onOpenDonate: () => void;
-  onOpenAdminStats?: () => void;
+  onOpenAdminDashboard?: () => void;
   onOpenHeroPools?: () => void;
   onOpenPlans?: () => void;
   onOpenAuth: () => void;
@@ -50,7 +50,7 @@ export function MobileNavDrawer<T extends string>({
   onOpenGuide,
   onOpenSurvey,
   onOpenDonate,
-  onOpenAdminStats,
+  onOpenAdminDashboard,
   onOpenHeroPools,
   onOpenPlans,
   onOpenAuth,
@@ -356,10 +356,10 @@ export function MobileNavDrawer<T extends string>({
               <StableButtonLabel message="สนับสนุนผู้พัฒนา" className="inline-grid text-left" />
             </button>
 
-            {isAdmin && onOpenAdminStats && (
+            {isAdmin && onOpenAdminDashboard && (
               <button
                 type="button"
-                onClick={() => requestClose(onOpenAdminStats)}
+                onClick={() => requestClose(onOpenAdminDashboard)}
                 className="flex min-h-10 w-full items-center gap-2 border border-line-strong bg-panel-2 px-3 py-1.5 text-left font-display text-xs font-semibold text-ink transition-colors hover:border-gold/60 hover:text-gold"
               >
                 <BarChart3 className="h-4 w-4 shrink-0 text-gold" />

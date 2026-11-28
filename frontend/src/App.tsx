@@ -29,9 +29,6 @@ const UserGuideModal = lazy(() =>
 const AdminDashboardView = lazy(() =>
   import("./components/AdminDashboardView").then((m) => ({ default: m.AdminDashboardView })),
 );
-const AdminStatsModal = lazy(() =>
-  import("./components/AdminStatsModal").then((m) => ({ default: m.AdminStatsModal })),
-);
 const BillingSandbox = lazy(() =>
   import("./components/BillingSandbox").then((m) => ({ default: m.BillingSandbox })),
 );
@@ -652,7 +649,6 @@ export function App() {
   const [authModalOpen, setAuthModalOpen] = useState<boolean>(() => Boolean(oauthError && loadGuestEntered()));
   const [donateModalOpen, setDonateModalOpen] = useState(false);
   const [guideModalOpen, setGuideModalOpen] = useState(false);
-  const [adminStatsModalOpen, setAdminStatsModalOpen] = useState(false);
   const [isAdminUser, setIsAdminUser] = useState(false);
   const tab =
     (requestedTab === "profile" && !authUser) ||
@@ -690,7 +686,6 @@ export function App() {
     pendingMigration === null &&
     !donateModalOpen &&
     !guideModalOpen &&
-    !adminStatsModalOpen &&
     !mobileDrawerOpen &&
     activeDraftTool === null;
 
@@ -832,7 +827,6 @@ export function App() {
             setExpectedAuthUser(null);
             setIsAdminUser(false);
             setPricingSurveyChoice(null);
-            setAdminStatsModalOpen(false);
             if (authUserRef.current !== null) {
               setOauthError("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่");
             }
@@ -944,7 +938,6 @@ export function App() {
       setExpectedAuthUser(null);
       setAuthUser(null);
       setIsAdminUser(false);
-      setAdminStatsModalOpen(false);
       setActiveDraftTool(null);
       setPendingMigration(null);
       setMigrationBusy(false);
@@ -1019,7 +1012,6 @@ export function App() {
     setAuthUser(null);
     setMobileDrawerOpen(false);
     setManualSurveyOpen(false);
-    setAdminStatsModalOpen(false);
     setActiveDraftTool(null);
     setIsAdminUser(false);
     setPricingSurveyChoice(null);
@@ -1202,7 +1194,6 @@ export function App() {
     pendingMigration === null &&
     !donateModalOpen &&
     !guideModalOpen &&
-    !adminStatsModalOpen &&
     !mobileDrawerOpen &&
     activeDraftTool === null &&
     (manualSurveyOpen || (autoSurveyOpen && !(shouldWatchOtherDialogs && otherModalOpen)));
@@ -1244,7 +1235,6 @@ export function App() {
           pendingMigration !== null ||
           donateModalOpen ||
           guideModalOpen ||
-          adminStatsModalOpen ||
           mobileDrawerOpen ||
           pricingSurveyOpen
         }
@@ -1270,7 +1260,7 @@ export function App() {
               setManualSurveyOpen(true);
             }}
             onOpenDonate={() => setDonateModalOpen(true)}
-            onOpenAdminStats={() => setAdminStatsModalOpen(true)}
+            onOpenAdminDashboard={() => selectTab("admin")}
             onOpenHeroPools={() => openDraftTool("pools")}
             onOpenPlans={() => selectTab("plans")}
             onOpenAuth={() => setAuthModalOpen(true)}
@@ -1278,11 +1268,6 @@ export function App() {
             onLogout={() => void handleLogout()}
             onClose={() => setMobileDrawerOpen(false)}
           />
-        </Suspense>
-      )}
-      {adminStatsModalOpen && isAdminUser && (
-        <Suspense fallback={null}>
-          <AdminStatsModal onClose={() => setAdminStatsModalOpen(false)} />
         </Suspense>
       )}
       {pricingSurveyOpen && (
