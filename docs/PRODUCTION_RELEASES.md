@@ -14,11 +14,11 @@ Dedicated operational record for the live production deployment of **MiniDraft (
 | **Live Domain** | `https://minidraft.app/` (`www.minidraft.app`) |
 | **Host VM** | Azure VM `rov-draft-vm` (`20.2.210.230`, `azureuser`, `~/rov` via `git sparse-checkout --no-cone` production-only working tree) |
 | **Container Stack** | `deploy-app-1` (`VITE_DRAFT_ONLY=true` serving **Draft Board + Draft vs AI + Scrim Analytics + Live PromptPay Billing & Promo**, `ROV_ENV=production`), `deploy-caddy-1`, `rov-cloudflared` |
-| **Git Base Commit on VM** | `82da23f` (`main`: Auto-reload once on stale lazy-chunk preload errors) |
-| **Active Frontend Bundle** | `dist-prod/assets/index-B4vWeHJK.js` (`231.93 kB`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/module-nirBTNJt.js` (`363.95 kB` lazy PostHog) + `dist-prod/assets/englishMessages-D5GI6MRi.js` (`208.11 kB`) + `dist-prod/assets/index-Dg6RL5if.css` (`116.37 kB`), `sw.js`, `icon-192.png` |
+| **Git Base Commit on VM** | `1c2d147` (`main`: Route Admin stats directly to the Admin Dashboard) |
+| **Active Frontend Bundle** | `dist-prod/assets/index-xHU1oPMo.js` (`231.53 kB`) + `dist-prod/assets/react-vendor-DpjQJ7Lb.js` (`218.79 kB`) + `dist-prod/assets/module-nirBTNJt.js` (`363.95 kB` lazy PostHog) + `dist-prod/assets/englishMessages-D5GI6MRi.js` (`208.11 kB`) + `dist-prod/assets/index-C9i2iZ6d.css` (`116.03 kB`), `sw.js`, `icon-192.png` |
 | **Persistent Database** | Docker volume `deploy_rov_db_data` -> `/app/db/rov_app.db` (SQLite; **NEVER** delete or overwrite) |
 | **Active Model Checkpoint** | `models/sota_draft_gnn_transformer.onnx` (`7.93 MB`) + `models/sota_draft_gnn_transformer.meta.npz` (`74.0 KB`), exported from `sota_draft_gnn_transformer.pt` (`val_loss = 2.81796`, `win_acc = 51.69%`, Trial #31) |
-| **Last Updated** | `2026-11-28 07:22 (UTC+7)` |
+| **Last Updated** | `2026-11-28 18:49 (UTC+7)` |
 
 ---
 
@@ -53,6 +53,17 @@ These features exist in the local workspace (`main`) and remain **excluded** fro
 ---
 
 ## Production Deploy & Hotfix History
+
+### 📅 2026-11-28 18:49 (UTC+7) — Route Admin Stats Directly to the Admin Dashboard (`1c2d147`)
+- **Pulled & Rebuilt from `main` (`1c2d147`, fast-forward from `82da23f`):**
+  - Preserved the VM production-only sparse-checkout at `21` paths and rebuilt only `deploy-app-1` with `cd ~/rov/deploy && sudo docker compose up -d --build app`.
+  - Removed the separate Admin Stats modal and changed the mobile drawer's Admin stats action to close the drawer and navigate to `/admin` through the existing SPA router in the same tab.
+  - Kept `deploy-caddy-1`, `rov-cloudflared`, and persistent volume `deploy_rov_db_data` untouched.
+- **Bundle Built:** `dist-prod/index.html` (`3.46 kB`), `dist-prod/assets/index-xHU1oPMo.js` (`231.53 kB`), and `dist-prod/assets/index-C9i2iZ6d.css` (`116.03 kB`).
+- **Verification:** Local `oxlint` and `tsc -b && vite build` passed; `audit_copy_i18n.py` passed with two non-blocking legacy notices, `inspect_frontend_e2e.py` passed, and `audit_ux_ui.py` passed. Live `/health`, `/admin`, `/`, `MobileNavDrawer-Cuuzp29e.js`, and `AdminDashboardView-H75l1OpU.js` returned HTTP `200`; the drawer bundle includes the new Admin dashboard callback and no old stats-modal callback. `/app/db/rov_app.db` remained intact (`users: 1109`, `billing_orders: 6`, `billing_passes: 69`).
+- **VM Sync Policy Note:** This release contains production frontend changes, so the VM was fast-forwarded to `1c2d147`; the follow-up release documentation will be pushed without another VM pull.
+
+---
 
 ### 📅 2026-11-28 07:22 (UTC+7) — Stale Lazy-Chunk Auto-Reload Recovery (`82da23f`)
 - **Pulled & Rebuilt from `main` (`82da23f`, fast-forward from `a00e221`)**:

@@ -27,7 +27,7 @@ Maintains continuity and shared state across disparate sessions and agents.
 
 ---
 
-## 📅 2026-11-28 18:48 (UTC+7) — Route Admin Stats Directly to the Admin Dashboard
+## 📅 2026-11-28 18:48 (UTC+7) — Route Admin Stats Directly to the Admin Dashboard (`1c2d147`)
 **Agent:** Codex / GPT-6
 
 ### ✅ Completed Work
@@ -39,13 +39,15 @@ Maintains continuity and shared state across disparate sessions and agents.
 - `frontend/src/components/MobileNavDrawer.tsx`
 - `frontend/src/components/AdminStatsModal.tsx` (deleted)
 - `CHANGELOG.md`
+- `docs/PRODUCTION_RELEASES.md`
 
 ### 🧪 Verification
 - `npm run lint` and `npm run build` in `frontend/` passed.
 - `audit_copy_i18n.py`, `inspect_frontend_e2e.py`, and `audit_ux_ui.py` passed; the copy audit reported two existing non-blocking legacy notices.
+- Deployed `1c2d147`; production `/health`, `/admin`, and required frontend assets returned HTTP `200`. The mobile drawer bundle contains the new Admin dashboard callback and no old stats-modal callback. Production database row counts remained readable (`users: 1109`, `billing_orders: 6`, `billing_passes: 69`).
 
 ### ⚠️ Open Issues / Important Notes
-- Production deployment is pending.
+- None.
 
 ---
 
