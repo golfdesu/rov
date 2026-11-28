@@ -4,8 +4,10 @@ import './index.css'
 import App from './App.tsx'
 import { LanguageProvider } from './i18n/LanguageProvider'
 import { initAnalytics } from './utils/analytics'
+import { initChunkErrorRecovery } from './utils/chunkRecovery'
 import { initPwaInstallListener, registerServiceWorker } from './utils/pwa'
 
+initChunkErrorRecovery()
 initAnalytics()
 initPwaInstallListener()
 registerServiceWorker()
